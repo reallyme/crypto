@@ -1,0 +1,9 @@
+{
+  "alg": "ES512",
+  "curve": "P-521",
+  "secret_key": "ASt8PZRY4Q9zpsIZTYC17jVqCdxBl_JuGKvFAH0jWYTvEkiwbNcxmgX-YotE0XYguj-ZDlLIFKdtKPNFjAG5bzNa",
+  "public_key_compressed": "AwCxcyb3lSGY_gJm7QMd71MeUizbIwnuNoPyEVxgiO_aK7gq4ixEk1-ayy6cAmaofdNhZlimM7IYk5MqYamILvr0tA",
+  "public_key_uncompressed": "BACxcyb3lSGY_gJm7QMd71MeUizbIwnuNoPyEVxgiO_aK7gq4ixEk1-ayy6cAmaofdNhZlimM7IYk5MqYamILvr0tAD-dnjuhHoo31KuvagJhEskELTafffli5_zNGS09cY2XTU71cK-qCJzGpYUnd96CThoaTYQ4rpxYGmwtn6pvnM3kw",
+  "message": "UmVhbGx5TWUgc2lnbmF0dXJlIGNvbmZvcm1hbmNlIHZlY3Rvcg",
+  "signature_der": "MIGHAkESNZ_mRxirrOcDRtVLb0f1qQUAXDJQh_-cvKj6fCqWZVfNNPUfVNMC4TIU907VIattXDN_H6EkGatBxu0KkRb1cwJCARO9vl3su4vmc43BocdNs_4wzIciqU1LjM2KYDnGIw07KW6SrgvOftO5euF4NPNVZT7zONjWG0uxp79d34HvdMM5"
+}

@@ -1,0 +1,14 @@
+{
+  "hmac_sha256": {
+    "alg": "HMAC-SHA-256",
+    "key": "CwsLCwsLCwsLCwsLCwsLCwsLCws",
+    "message": "SGkgVGhlcmU",
+    "tag": "sDRMYdjbOFNcqK_OrwvxK4gdwgDJgz2nJuk3bC4yz_c"
+  },
+  "hmac_sha512": {
+    "alg": "HMAC-SHA-512",
+    "key": "CwsLCwsLCwsLCwsLCwsLCwsLCws",
+    "message": "SGkgVGhlcmU",
+    "tag": "h6p83qXvYZ1P8LQkGh1ssCN59OLOTsJ4etCzBUXhfN7aqDO31rinAgOLJ06uo_Tkvp2RTuth8XAuaWwgOhJoVA"
+  }
+}

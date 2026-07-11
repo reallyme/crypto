@@ -1,0 +1,34 @@
+{
+  "p256_sha256_aes256gcm": {
+    "alg": "HPKE-P256-SHA256-AES256GCM",
+    "mode": "base",
+    "kem_id": 16,
+    "kdf_id": 1,
+    "aead_id": 2,
+    "recipient_secret_key": "IU-LbKKdMxCVR2YScoOv7g0ZQVt8ItQ5UYqwZS-Rw0Q",
+    "recipient_public_key": "BAf8y0NFCW-WIXJvxOQ3vgz4HEMQgfMo5VSWcjmsVSLuDZcUdT7G939Veqc3FCadWs_rcpS-vc_8Z8FaZREVX4A",
+    "encaps_seed": "qDEPlcRich1YniC7BjFv5FzXgSqTT7VgGuo9DHeEGS4",
+    "info": "cmVhbGx5bWUtaHBrZS1yZmM5MTgwLWluZm8",
+    "aad": "cmVhbGx5bWUtaHBrZS1yZmM5MTgwLWFhZA",
+    "plaintext": "UmVhbGx5TWUgSFBLRSBSRkMgOTE4MCBCYXNlIHZlY3Rvcg",
+    "encapsulated_key": "BJSRrrdjybpDiedf6tztDSyFIeSUNsCRZjv44YCker98G6dK48lq6AW6PleTVk33U6r7e6SNUA8WQQ2B8ltrINI",
+    "ciphertext": "HXZsW_I424dEnLuaT7C7yPK4__1mo-FpLbROqjYdcgcKRjrWiOGqjTqdDWYKdT7ZA8w",
+    "tampered_ciphertext": "HHZsW_I424dEnLuaT7C7yPK4__1mo-FpLbROqjYdcgcKRjrWiOGqjTqdDWYKdT7ZA8w"
+  },
+  "x25519_sha256_chacha20poly1305": {
+    "alg": "HPKE-X25519-SHA256-CHACHA20POLY1305",
+    "mode": "base",
+    "kem_id": 32,
+    "kdf_id": 1,
+    "aead_id": 3,
+    "recipient_secret_key": "E7QOQ0MpyDlZIqZtb7jFDTs1Jj-OXAbKxiSoZSfTswQ",
+    "recipient_public_key": "y77BzmdEAIfQO_2FNuo_f6kiz1KavGZXi2Lzv1qyYUE",
+    "encaps_seed": "wlSKOe8SZ5BBs9xqGPUjfpsE0Wg1yoIPV74pkeRAfBU",
+    "info": "cmVhbGx5bWUtaHBrZS1yZmM5MTgwLWluZm8",
+    "aad": "cmVhbGx5bWUtaHBrZS1yZmM5MTgwLWFhZA",
+    "plaintext": "UmVhbGx5TWUgSFBLRSBSRkMgOTE4MCBCYXNlIHZlY3Rvcg",
+    "encapsulated_key": "g1Ze68IeTepcVf8OImd0iA10zj5zLp0lgvvIjI1a0SY",
+    "ciphertext": "_rnNfmP5CviOGjZoJGBZvbFUg3_5bi-7G4V4eZfrQhK1kVmCZM04DpFUnJawDAk8-QQ",
+    "tampered_ciphertext": "_7nNfmP5CviOGjZoJGBZvbFUg3_5bi-7G4V4eZfrQhK1kVmCZM04DpFUnJawDAk8-QQ"
+  }
+}

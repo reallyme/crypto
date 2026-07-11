@@ -1,0 +1,48 @@
+{
+  "name": "@reallyme/crypto",
+  "version": "0.1.1",
+  "description": "ReallyMe crypto SDK for TypeScript/JavaScript with an explicit, pinned provider set.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./proto": {
+      "types": "./dist/proto.d.ts",
+      "default": "./dist/proto.js"
+    },
+    "./wasm/reallyme_crypto_wasm.js": {
+      "types": "./dist/wasmModuleTypes.d.ts",
+      "default": "./dist/wasm/reallyme_crypto_wasm.js"
+    },
+    "./wasm/reallyme_crypto_wasm_bg.wasm": {
+      "default": "./dist/wasm/reallyme_crypto_wasm_bg.wasm"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "npm run build:wasm && tsc",
+    "build:ts": "tsc",
+    "build:wasm": "node scripts/build-wasm.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && node --test \"test/*.test.mjs\""
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "2.12.1",
+    "@noble/curves": "2.2.0",
+    "@noble/hashes": "2.2.0"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "alg": "Argon2id",
+  "kdf_version": 1,
+  "memory_cost_kib": 262144,
+  "time_cost": 3,
+  "parallelism": 1,
+  "secret": "UmVhbGx5TWUgQXJnb24yaWQgY29uZm9ybWFuY2Ugc2VjcmV0",
+  "salt": "4OHi4-Tl5ufo6err7O3u7w",
+  "derived_key": "q8cyQddIhCikG0v5RRDMQTJ94fZ8DXVHvp8cTLQAwrA"
+}

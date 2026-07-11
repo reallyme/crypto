@@ -1,0 +1,208 @@
+{
+  "raw": "UmVhbGx5TWUgY29kZWMgdmVjdG9y",
+  "base64url": "UmVhbGx5TWUgY29kZWMgdmVjdG9y",
+  "multibase_base64url": "uUmVhbGx5TWUgY29kZWMgdmVjdG9y",
+  "multibase_base58btc": "z64sF3hHyEpRZfFcpkdFWhEWGFnqMb",
+  "dag_cbor": "o2RuYW1lZWNvZGVjZ3BheWxvYWRVUmVhbGx5TWUgY29kZWMgdmVjdG9yZ3ZlcnNpb24B",
+  "dag_cbor_cid": "bafyreic5jgpmvlnlfzksnjn5z7nd2xrzelz4o2pcxdzxiks45g3ldgtbge",
+  "multicodec_name": "ed25519-pub",
+  "multicodec_alg": "Ed25519",
+  "multicodec_prefixes": [
+    {
+      "name": "sha2-256",
+      "alg": "SHA2-256",
+      "prefix": "Eg"
+    },
+    {
+      "name": "sha2-512",
+      "alg": "SHA2-512",
+      "prefix": "Ew"
+    },
+    {
+      "name": "sha3-512",
+      "alg": "SHA3-512",
+      "prefix": "FA"
+    },
+    {
+      "name": "sha3-384",
+      "alg": "SHA3-384",
+      "prefix": "FQ"
+    },
+    {
+      "name": "sha3-256",
+      "alg": "SHA3-256",
+      "prefix": "Fg"
+    },
+    {
+      "name": "sha3-224",
+      "alg": "SHA3-224",
+      "prefix": "Fw"
+    },
+    {
+      "name": "sha2-384",
+      "alg": "SHA2-384",
+      "prefix": "IA"
+    },
+    {
+      "name": "aes-128",
+      "alg": "AES-128",
+      "prefix": "oAE"
+    },
+    {
+      "name": "aes-192",
+      "alg": "AES-192",
+      "prefix": "oQE"
+    },
+    {
+      "name": "aes-256",
+      "alg": "AES-256",
+      "prefix": "ogE"
+    },
+    {
+      "name": "chacha-128",
+      "alg": "ChaCha-128",
+      "prefix": "owE"
+    },
+    {
+      "name": "chacha-256",
+      "alg": "ChaCha-256",
+      "prefix": "pAE"
+    },
+    {
+      "name": "ed25519-pub",
+      "alg": "Ed25519",
+      "prefix": "7QE"
+    },
+    {
+      "name": "x25519-pub",
+      "alg": "X25519",
+      "prefix": "7AE"
+    },
+    {
+      "name": "p256-pub",
+      "alg": "P-256",
+      "prefix": "gCQ"
+    },
+    {
+      "name": "p384-pub",
+      "alg": "P-384",
+      "prefix": "gSQ"
+    },
+    {
+      "name": "p521-pub",
+      "alg": "P-521",
+      "prefix": "giQ"
+    },
+    {
+      "name": "ed448-pub",
+      "alg": "Ed448",
+      "prefix": "gyQ"
+    },
+    {
+      "name": "rsa-pub",
+      "alg": "RSA",
+      "prefix": "hSQ"
+    },
+    {
+      "name": "secp256k1-pub",
+      "alg": "secp256k1",
+      "prefix": "5wE"
+    },
+    {
+      "name": "mldsa-44-pub",
+      "alg": "ML-DSA-44",
+      "prefix": "kCQ"
+    },
+    {
+      "name": "mldsa-65-pub",
+      "alg": "ML-DSA-65",
+      "prefix": "kSQ"
+    },
+    {
+      "name": "mldsa-87-pub",
+      "alg": "ML-DSA-87",
+      "prefix": "kiQ"
+    },
+    {
+      "name": "mlkem-512-pub",
+      "alg": "ML-KEM-512",
+      "prefix": "iyQ"
+    },
+    {
+      "name": "mlkem-768-pub",
+      "alg": "ML-KEM-768",
+      "prefix": "jCQ"
+    },
+    {
+      "name": "mlkem-1024-pub",
+      "alg": "ML-KEM-1024",
+      "prefix": "jSQ"
+    },
+    {
+      "name": "ed25519-priv",
+      "alg": "Ed25519",
+      "prefix": "gCY"
+    },
+    {
+      "name": "secp256k1-priv",
+      "alg": "secp256k1",
+      "prefix": "gSY"
+    },
+    {
+      "name": "x25519-priv",
+      "alg": "X25519",
+      "prefix": "giY"
+    },
+    {
+      "name": "rsa-priv",
+      "alg": "RSA",
+      "prefix": "hSY"
+    },
+    {
+      "name": "p256-priv",
+      "alg": "P-256",
+      "prefix": "hiY"
+    },
+    {
+      "name": "p384-priv",
+      "alg": "P-384",
+      "prefix": "hyY"
+    },
+    {
+      "name": "p521-priv",
+      "alg": "P-521",
+      "prefix": "iCY"
+    },
+    {
+      "name": "ed448-priv",
+      "alg": "Ed448",
+      "prefix": "kSY"
+    },
+    {
+      "name": "mlkem-512-priv",
+      "alg": "ML-KEM-512",
+      "prefix": "kyY"
+    },
+    {
+      "name": "mlkem-768-priv",
+      "alg": "ML-KEM-768",
+      "prefix": "lCY"
+    },
+    {
+      "name": "mlkem-1024-priv",
+      "alg": "ML-KEM-1024",
+      "prefix": "lSY"
+    },
+    {
+      "name": "aes-gcm-256",
+      "alg": "AES-256-GCM",
+      "prefix": "gEA"
+    },
+    {
+      "name": "chacha20-poly1305",
+      "alg": "ChaCha20-Poly1305",
+      "prefix": "gMAC"
+    }
+  ],
+  "multikey": "z6MkmrAaRuQVyKa9GsPxn5YcmsieyS1hNDTNcsdoL7he7v4Z"
+}

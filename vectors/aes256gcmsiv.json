@@ -1,0 +1,8 @@
+{
+  "alg": "AES-256-GCM-SIV",
+  "key": "MDEyMzQ1Njc4OTo7PD0-P0BBQkNERUZHSElKS0xNTk8",
+  "nonce": "0NHS09TV1tfY2drb",
+  "aad": "cmVhbGx5bWUtY3J5cHRvLWdjbS1zaXYtdmVjdG9yLWFhZA",
+  "plaintext": "UmVhbGx5TWUgQUVTLTI1Ni1HQ00tU0lWIGNvbmZvcm1hbmNlIHZlY3Rvcg",
+  "ciphertext_with_tag": "830aIA-5lFFihlRNK2QIUHoFRAQXaaBqX2nDndhvyVq-EcnpsGqtqHVZC1bTdM8kugkvV_o3Ve9HQq4"
+}
