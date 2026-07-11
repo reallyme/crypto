@@ -5,10 +5,11 @@
 use crypto_core::{CryptoError, KdfAlgorithm, KdfFailureKind, KdfProfile};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
+#[cfg(any(feature = "native", feature = "wasm"))]
+use crate::constants::{PBKDF2_MAX_OUTPUT_LENGTH, PBKDF2_MIN_OUTPUT_LENGTH};
 use crate::constants::{
-    PBKDF2_MAX_OUTPUT_LENGTH, PBKDF2_MAX_PASSWORD_LENGTH, PBKDF2_MAX_SALT_LENGTH,
-    PBKDF2_MIN_ITERATIONS, PBKDF2_MIN_OUTPUT_LENGTH, PBKDF2_MIN_PASSWORD_LENGTH,
-    PBKDF2_MIN_SALT_LENGTH,
+    PBKDF2_MAX_PASSWORD_LENGTH, PBKDF2_MAX_SALT_LENGTH, PBKDF2_MIN_ITERATIONS,
+    PBKDF2_MIN_PASSWORD_LENGTH, PBKDF2_MIN_SALT_LENGTH,
 };
 
 /// PRF used by PBKDF2.
@@ -105,6 +106,7 @@ pub struct Pbkdf2Output {
 }
 
 impl Pbkdf2Output {
+    #[cfg(any(feature = "native", feature = "wasm"))]
     pub(crate) fn from_vec(bytes: Vec<u8>) -> Self {
         Self {
             bytes: Zeroizing::new(bytes),
@@ -138,6 +140,7 @@ impl core::fmt::Debug for Pbkdf2Output {
     }
 }
 
+#[cfg(any(feature = "native", feature = "wasm"))]
 pub(crate) fn validate_output_len(len: usize, prf: Pbkdf2Prf) -> Result<(), CryptoError> {
     if !(PBKDF2_MIN_OUTPUT_LENGTH..=PBKDF2_MAX_OUTPUT_LENGTH).contains(&len) {
         return Err(kdf_error(prf, KdfFailureKind::InvalidOutputLength));
