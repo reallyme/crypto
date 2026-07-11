@@ -34,6 +34,25 @@ function run(command, args, options = {}) {
   return result;
 }
 
+function sleepMs(delayMs) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, delayMs);
+}
+
+function retryAfterMs(output) {
+  const match = /try again after ([^\n.]+ GMT)/i.exec(output);
+  if (!match) {
+    return null;
+  }
+
+  const retryAt = Date.parse(match[1]);
+  if (!Number.isFinite(retryAt)) {
+    return null;
+  }
+
+  const delayMs = retryAt - Date.now() + 10000;
+  return Math.max(delayMs, 10000);
+}
+
 const metadataResult = run("cargo", ["metadata", "--format-version", "1", "--no-deps"], {
   capture: true,
 });
@@ -92,12 +111,8 @@ for (const pkg of ordered) {
 
 function publishPackage(pkg) {
   const args = ["publish", "-p", pkg.name, "--locked"];
-  const token = process.env.CARGO_REGISTRY_TOKEN;
-  if (token) {
-    args.push("--token", token);
-  }
 
-  for (let attempt = 1; attempt <= 8; attempt += 1) {
+  for (let attempt = 1; attempt <= 12; attempt += 1) {
     const result = run("cargo", args, { capture: true });
     process.stdout.write(result.stdout);
     process.stderr.write(result.stderr);
@@ -112,7 +127,17 @@ function publishPackage(pkg) {
       return;
     }
 
-    if (!combined.includes("no matching package named") || attempt === 8) {
+    const lowerCombined = combined.toLowerCase();
+    const rateLimitDelayMs = retryAfterMs(combined);
+    if (lowerCombined.includes("too many requests") && rateLimitDelayMs !== null) {
+      console.log(
+        `crates.io rate-limited new crate uploads; retrying ${pkg.name} in ${Math.ceil(rateLimitDelayMs / 1000)}s...`,
+      );
+      sleepMs(rateLimitDelayMs);
+      continue;
+    }
+
+    if (!combined.includes("no matching package named") || attempt === 12) {
       process.exit(result.status ?? 1);
     }
 
@@ -120,7 +145,7 @@ function publishPackage(pkg) {
     console.log(
       `crates.io index has not observed a freshly published dependency yet; retrying ${pkg.name} in ${delayMs / 1000}s...`,
     );
-    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, delayMs);
+    sleepMs(delayMs);
   }
 }
 
