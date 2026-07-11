@@ -11,20 +11,20 @@ pub use constants::{
     SLH_DSA_SHA2_128S_SECRET_KEY_LEN, SLH_DSA_SHA2_128S_SIGNATURE_LEN,
 };
 
-#[cfg(all(feature = "native", not(all(feature = "wasm", target_arch = "wasm32"))))]
+#[cfg(feature = "native")]
 mod native;
 
-#[cfg(all(feature = "native", not(all(feature = "wasm", target_arch = "wasm32"))))]
+#[cfg(feature = "native")]
 pub use native::{
     decode_slh_dsa_sha2_128s_public_key, derive_slh_dsa_sha2_128s_keypair,
     encode_slh_dsa_sha2_128s_public_key, generate_slh_dsa_sha2_128s_keypair,
     sign_slh_dsa_sha2_128s, verify_slh_dsa_sha2_128s,
 };
 
-#[cfg(all(feature = "wasm", target_arch = "wasm32"))]
+#[cfg(all(feature = "wasm", target_arch = "wasm32", not(feature = "native")))]
 mod wasm;
 
-#[cfg(all(feature = "wasm", target_arch = "wasm32"))]
+#[cfg(all(feature = "wasm", target_arch = "wasm32", not(feature = "native")))]
 pub use wasm::{
     decode_slh_dsa_sha2_128s_public_key, derive_slh_dsa_sha2_128s_keypair,
     encode_slh_dsa_sha2_128s_public_key, generate_slh_dsa_sha2_128s_keypair,

@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-signer"
-version = "0.1.1"
+version = "0.1.2"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -23,7 +23,7 @@ wasm = ["crypto-dispatch/wasm"]
 
 [dependencies]
 crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "../core" }
-crypto-dispatch = { package = "reallyme-crypto-dispatch", version = "0.1.1", path = "../dispatch", default-features = false }
+crypto-dispatch = { package = "reallyme-crypto-dispatch", version = "0.1.2", path = "../dispatch", default-features = false }
 secrecy = { workspace = true }
 thiserror = { workspace = true }
 zeroize = { workspace = true }

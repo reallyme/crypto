@@ -158,7 +158,7 @@ large_include_file = "deny"
 
 [package]
 name = "reallyme-crypto"
-version = "0.1.3"
+version = "0.1.4"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -169,36 +169,36 @@ include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 
 [dependencies]
 crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "crates/crypto/core" }
-crypto-dispatch = { package = "reallyme-crypto-dispatch", version = "0.1.1", path = "crates/crypto/dispatch", optional = true, default-features = false }
-crypto-signer = { package = "reallyme-crypto-signer", version = "0.1.1", path = "crates/crypto/signer", optional = true, default-features = false }
+crypto-dispatch = { package = "reallyme-crypto-dispatch", version = "0.1.2", path = "crates/crypto/dispatch", optional = true, default-features = false }
+crypto-signer = { package = "reallyme-crypto-signer", version = "0.1.2", path = "crates/crypto/signer", optional = true, default-features = false }
 crypto-aes-kw = { package = "reallyme-crypto-aes-kw", version = "0.1.1", path = "crates/crypto/primitives/aes-kw", optional = true, default-features = false }
-crypto-aes256-gcm = { package = "reallyme-crypto-aes256-gcm", version = "0.1.1", path = "crates/crypto/primitives/aes256-gcm", optional = true, default-features = false }
+crypto-aes256-gcm = { package = "reallyme-crypto-aes256-gcm", version = "0.1.2", path = "crates/crypto/primitives/aes256-gcm", optional = true, default-features = false }
 crypto-aes256-gcm-siv = { package = "reallyme-crypto-aes256-gcm-siv", version = "0.1.1", path = "crates/crypto/primitives/aes256-gcm-siv", optional = true, default-features = false }
 crypto-argon2id = { package = "reallyme-crypto-argon2id", version = "0.1.1", path = "crates/crypto/primitives/argon2id", optional = true, default-features = false }
 crypto-chacha20-poly1305 = { package = "reallyme-crypto-chacha20-poly1305", version = "0.1.1", path = "crates/crypto/primitives/chacha20-poly1305", optional = true, default-features = false }
 crypto-constant-time = { package = "reallyme-crypto-constant-time", version = "0.1.1", path = "crates/crypto/primitives/constant-time", optional = true, default-features = false }
 crypto-csprng = { package = "reallyme-crypto-csprng", version = "0.1.1", path = "crates/crypto/primitives/csprng", optional = true, default-features = false }
-crypto-ed25519 = { package = "reallyme-crypto-ed25519", version = "0.1.1", path = "crates/crypto/primitives/ed25519", optional = true, default-features = false }
+crypto-ed25519 = { package = "reallyme-crypto-ed25519", version = "0.1.2", path = "crates/crypto/primitives/ed25519", optional = true, default-features = false }
 crypto-hmac = { package = "reallyme-crypto-hmac", version = "0.1.1", path = "crates/crypto/primitives/hmac", optional = true, default-features = false }
 crypto-hkdf = { package = "reallyme-crypto-hkdf", version = "0.1.1", path = "crates/crypto/primitives/hkdf", optional = true, default-features = false }
-crypto-ml-dsa-44 = { package = "reallyme-crypto-ml-dsa-44", version = "0.1.1", path = "crates/crypto/primitives/ml-dsa-44", optional = true, default-features = false }
-crypto-ml-dsa-65 = { package = "reallyme-crypto-ml-dsa-65", version = "0.1.1", path = "crates/crypto/primitives/ml-dsa-65", optional = true, default-features = false }
-crypto-ml-dsa-87 = { package = "reallyme-crypto-ml-dsa-87", version = "0.1.1", path = "crates/crypto/primitives/ml-dsa-87", optional = true, default-features = false }
-crypto-ml-kem-512 = { package = "reallyme-crypto-ml-kem-512", version = "0.1.1", path = "crates/crypto/primitives/ml-kem-512", optional = true, default-features = false }
-crypto-ml-kem-1024 = { package = "reallyme-crypto-ml-kem-1024", version = "0.1.2", path = "crates/crypto/primitives/ml-kem-1024", optional = true, default-features = false }
-crypto-ml-kem-768 = { package = "reallyme-crypto-ml-kem-768", version = "0.1.2", path = "crates/crypto/primitives/ml-kem-768", optional = true, default-features = false }
-crypto-p256 = { package = "reallyme-crypto-p256", version = "0.1.2", path = "crates/crypto/primitives/p256", optional = true, default-features = false }
+crypto-ml-dsa-44 = { package = "reallyme-crypto-ml-dsa-44", version = "0.1.2", path = "crates/crypto/primitives/ml-dsa-44", optional = true, default-features = false }
+crypto-ml-dsa-65 = { package = "reallyme-crypto-ml-dsa-65", version = "0.1.2", path = "crates/crypto/primitives/ml-dsa-65", optional = true, default-features = false }
+crypto-ml-dsa-87 = { package = "reallyme-crypto-ml-dsa-87", version = "0.1.2", path = "crates/crypto/primitives/ml-dsa-87", optional = true, default-features = false }
+crypto-ml-kem-512 = { package = "reallyme-crypto-ml-kem-512", version = "0.1.2", path = "crates/crypto/primitives/ml-kem-512", optional = true, default-features = false }
+crypto-ml-kem-1024 = { package = "reallyme-crypto-ml-kem-1024", version = "0.1.3", path = "crates/crypto/primitives/ml-kem-1024", optional = true, default-features = false }
+crypto-ml-kem-768 = { package = "reallyme-crypto-ml-kem-768", version = "0.1.3", path = "crates/crypto/primitives/ml-kem-768", optional = true, default-features = false }
+crypto-p256 = { package = "reallyme-crypto-p256", version = "0.1.3", path = "crates/crypto/primitives/p256", optional = true, default-features = false }
 crypto-p384 = { package = "reallyme-crypto-p384", version = "0.1.1", path = "crates/crypto/primitives/p384", optional = true, default-features = false }
 crypto-p521 = { package = "reallyme-crypto-p521", version = "0.1.1", path = "crates/crypto/primitives/p521", optional = true, default-features = false }
 crypto-pbkdf2 = { package = "reallyme-crypto-pbkdf2", version = "0.1.1", path = "crates/crypto/primitives/pbkdf2", optional = true, default-features = false }
 crypto-rsa = { package = "reallyme-crypto-rsa", version = "0.1.1", path = "crates/crypto/primitives/rsa", optional = true, default-features = false }
-crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "0.1.2", path = "crates/crypto/primitives/secp256k1", optional = true, default-features = false }
+crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "0.1.3", path = "crates/crypto/primitives/secp256k1", optional = true, default-features = false }
 crypto-sha2 = { package = "reallyme-crypto-sha2", version = "0.1.1", path = "crates/crypto/primitives/sha2", optional = true, default-features = false }
 crypto-sha2-256 = { package = "reallyme-crypto-sha2-256", version = "0.1.1", path = "crates/crypto/primitives/sha2-256", optional = true, default-features = false }
 crypto-sha3 = { package = "reallyme-crypto-sha3", version = "0.1.1", path = "crates/crypto/primitives/sha3", optional = true, default-features = false }
 crypto-sha3-256 = { package = "reallyme-crypto-sha3-256", version = "0.1.1", path = "crates/crypto/primitives/sha3-256", optional = true, default-features = false }
-crypto-slh-dsa = { package = "reallyme-crypto-slh-dsa", version = "0.1.1", path = "crates/crypto/primitives/slh-dsa", optional = true, default-features = false }
-crypto-x25519 = { package = "reallyme-crypto-x25519", version = "0.1.1", path = "crates/crypto/primitives/x25519", optional = true, default-features = false }
+crypto-slh-dsa = { package = "reallyme-crypto-slh-dsa", version = "0.1.2", path = "crates/crypto/primitives/slh-dsa", optional = true, default-features = false }
+crypto-x25519 = { package = "reallyme-crypto-x25519", version = "0.1.2", path = "crates/crypto/primitives/x25519", optional = true, default-features = false }
 crypto-x-wing = { package = "reallyme-crypto-x-wing", version = "0.1.1", path = "crates/crypto/primitives/x-wing", optional = true, default-features = false }
 crypto-hpke = { package = "reallyme-crypto-hpke", version = "0.1.1", path = "crates/crypto/protocols/hpke", optional = true, default-features = false }
 reallyme-codec = { version = "0.1.1", path = "crates/codec", optional = true, default-features = false }
@@ -209,8 +209,8 @@ codec-jcs = { package = "reallyme-codec-jcs", version = "0.1.1", path = "crates/
 codec-multibase = { package = "reallyme-codec-multibase", version = "0.1.1", path = "crates/codec/multibase", optional = true }
 codec-multicodec = { package = "reallyme-codec-multicodec", version = "0.1.1", path = "crates/codec/multicodec", optional = true }
 codec-multikey = { package = "reallyme-codec-multikey", version = "0.1.1", path = "crates/codec/multikey", optional = true }
-envelopes-jwk = { package = "reallyme-crypto-jwk", version = "0.1.1", path = "crates/envelopes/jwk", optional = true, default-features = false }
-envelopes-jwk-multikey = { package = "reallyme-crypto-jwk-multikey", version = "0.1.1", path = "crates/envelopes/jwk-multikey", optional = true, default-features = false }
+envelopes-jwk = { package = "reallyme-crypto-jwk", version = "0.1.2", path = "crates/envelopes/jwk", optional = true, default-features = false }
+envelopes-jwk-multikey = { package = "reallyme-crypto-jwk-multikey", version = "0.1.2", path = "crates/envelopes/jwk-multikey", optional = true, default-features = false }
 
 [features]
 default = [

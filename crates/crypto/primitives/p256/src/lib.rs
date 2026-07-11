@@ -13,20 +13,20 @@ pub use jose_signature::{
 };
 pub use secure_enclave_handle::{decode_se_handle, encode_se_handle, SE_HANDLE_PREFIX};
 
-#[cfg(all(feature = "native", not(all(feature = "wasm", target_arch = "wasm32"))))]
+#[cfg(feature = "native")]
 mod native;
 
-#[cfg(all(feature = "native", not(all(feature = "wasm", target_arch = "wasm32"))))]
+#[cfg(feature = "native")]
 pub use native::{
     compress_p256, compress_public_key, decompress_p256, decompress_public_key,
     derive_p256_shared_secret, generate_p256_keypair, generate_p256_keypair_from_secret_key,
     sign_p256_der_prehash, verify_p256_der_prehash,
 };
 
-#[cfg(all(feature = "wasm", target_arch = "wasm32"))]
+#[cfg(all(feature = "wasm", target_arch = "wasm32", not(feature = "native")))]
 mod wasm;
 
-#[cfg(all(feature = "wasm", target_arch = "wasm32"))]
+#[cfg(all(feature = "wasm", target_arch = "wasm32", not(feature = "native")))]
 pub use wasm::{
     compress_p256, compress_public_key, decompress_p256, decompress_public_key,
     derive_p256_shared_secret, generate_p256_keypair, sign_p256_der_prehash,
