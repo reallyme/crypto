@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 
 # @reallyme/crypto
 
-[![npm](https://img.shields.io/npm/v/@reallyme/crypto?label=npm)](https://www.npmjs.com/package/@reallyme/crypto)
+[![npm](https://img.shields.io/npm/v/@reallyme/crypto?label=npm&color=2563eb)](https://www.npmjs.com/package/@reallyme/crypto)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](https://github.com/reallyme/crypto/blob/main/LICENSE)
 
 ReallyMe Crypto provides a platform-agnostic cryptography API for TypeScript,

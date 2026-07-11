@@ -7,9 +7,9 @@ SPDX-License-Identifier: Apache-2.0
 # reallyme-crypto
 
 [![Rust CI](https://github.com/reallyme/crypto/actions/workflows/rust-ci.yml/badge.svg)](https://github.com/reallyme/crypto/actions/workflows/rust-ci.yml)
-[![reallyme-crypto](https://img.shields.io/crates/v/reallyme-crypto?label=reallyme-crypto)](https://crates.io/crates/reallyme-crypto)
-[![reallyme-codec](https://img.shields.io/crates/v/reallyme-codec?label=reallyme-codec)](https://crates.io/crates/reallyme-codec)
-[![npm](https://img.shields.io/npm/v/@reallyme/crypto?label=npm)](https://www.npmjs.com/package/@reallyme/crypto)
+[![reallyme-crypto](https://img.shields.io/crates/v/reallyme-crypto?label=reallyme-crypto&color=2563eb)](https://crates.io/crates/reallyme-crypto)
+[![reallyme-codec](https://img.shields.io/crates/v/reallyme-codec?label=reallyme-codec&color=0f766e)](https://crates.io/crates/reallyme-codec)
+[![npm](https://img.shields.io/npm/v/@reallyme/crypto?label=npm&color=2563eb)](https://www.npmjs.com/package/@reallyme/crypto)
 [![Maven Central](https://img.shields.io/maven-central/v/me.really/crypto?label=maven)](https://central.sonatype.com/artifact/me.really/crypto)
 [![Security Policy](https://img.shields.io/badge/security-policy-0f766e)](SECURITY.md)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
