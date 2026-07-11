@@ -2,13 +2,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-use crypto_core::{CryptoError, SignatureFailureKind, SignatureOperation};
 use js_sys::{Object, Reflect, Uint8Array};
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
 use zeroize::{Zeroize, Zeroizing};
 
-use crate::map_error::{invalid_input, invalid_signature, provider_failure};
+use crate::map_error::{invalid_input, map_crypto_error, provider_failure};
 
 const ML_DSA_44_PUBLIC_KEY_LEN: usize = 1_312;
 const ML_DSA_44_SIGNATURE_LEN: usize = 2_420;
@@ -17,30 +16,6 @@ const ML_DSA_65_SIGNATURE_LEN: usize = 3_309;
 const ML_DSA_87_PUBLIC_KEY_LEN: usize = 2_592;
 const ML_DSA_87_SIGNATURE_LEN: usize = 4_627;
 const ML_DSA_SECRET_KEY_LEN: usize = 32;
-
-fn map_ml_dsa_error(error: CryptoError) -> JsValue {
-    match error {
-        CryptoError::InvalidKey => invalid_input(),
-        CryptoError::Signature {
-            operation:
-                SignatureOperation::Sign
-                | SignatureOperation::Verify
-                | SignatureOperation::KeyManagement,
-            kind: SignatureFailureKind::InvalidPrivateKey | SignatureFailureKind::InvalidPublicKey,
-            ..
-        } => invalid_input(),
-        CryptoError::Signature {
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature | SignatureFailureKind::InvalidMessage,
-            ..
-        } => invalid_signature(),
-        CryptoError::Signature {
-            kind: SignatureFailureKind::KeyGenerationFailed | SignatureFailureKind::BackendFailure,
-            ..
-        } => provider_failure(),
-        _ => provider_failure(),
-    }
-}
 
 fn require_len(bytes: &Uint8Array, expected_len: usize) -> Result<Vec<u8>, JsValue> {
     let bytes = bytes.to_vec();
@@ -83,7 +58,7 @@ fn signature_to_js(signature: Vec<u8>, signature_len: usize) -> Result<Uint8Arra
 /// Generate an ML-DSA-44 keypair.
 pub fn ml_dsa_44_generate_keypair() -> Result<JsValue, JsValue> {
     let (public_key, secret_key) =
-        crypto_ml_dsa_44::generate_ml_dsa_44_keypair().map_err(map_ml_dsa_error)?;
+        crypto_ml_dsa_44::generate_ml_dsa_44_keypair().map_err(map_crypto_error)?;
     keypair_to_js(public_key, secret_key, ML_DSA_44_PUBLIC_KEY_LEN)
 }
 
@@ -95,7 +70,7 @@ pub fn ml_dsa_44_derive_keypair(secret_key: &Uint8Array) -> Result<JsValue, JsVa
         .map_err(|_| invalid_input())?;
     let (public_key, secret_key) =
         crypto_ml_dsa_44::generate_ml_dsa_44_keypair_from_seed(secret_key)
-            .map_err(map_ml_dsa_error)?;
+            .map_err(map_crypto_error)?;
     keypair_to_js(public_key, secret_key, ML_DSA_44_PUBLIC_KEY_LEN)
 }
 
@@ -108,7 +83,7 @@ pub fn ml_dsa_44_sign(
     let secret_key = Zeroizing::new(require_len(secret_key, ML_DSA_SECRET_KEY_LEN)?);
     let message = message.to_vec();
     let signature =
-        crypto_ml_dsa_44::sign_ml_dsa_44(&secret_key, &message).map_err(map_ml_dsa_error)?;
+        crypto_ml_dsa_44::sign_ml_dsa_44(&secret_key, &message).map_err(map_crypto_error)?;
     signature_to_js(signature, ML_DSA_44_SIGNATURE_LEN)
 }
 
@@ -122,14 +97,14 @@ pub fn ml_dsa_44_verify(
     let public_key = require_len(public_key, ML_DSA_44_PUBLIC_KEY_LEN)?;
     let signature = require_len(signature, ML_DSA_44_SIGNATURE_LEN)?;
     crypto_ml_dsa_44::verify_ml_dsa_44(&public_key, &message.to_vec(), &signature)
-        .map_err(map_ml_dsa_error)
+        .map_err(map_crypto_error)
 }
 
 #[wasm_bindgen(js_name = mlDsa65GenerateKeypair)]
 /// Generate an ML-DSA-65 keypair.
 pub fn ml_dsa_65_generate_keypair() -> Result<JsValue, JsValue> {
     let (public_key, secret_key) =
-        crypto_ml_dsa_65::generate_ml_dsa_65_keypair().map_err(map_ml_dsa_error)?;
+        crypto_ml_dsa_65::generate_ml_dsa_65_keypair().map_err(map_crypto_error)?;
     keypair_to_js(public_key, secret_key, ML_DSA_65_PUBLIC_KEY_LEN)
 }
 
@@ -141,7 +116,7 @@ pub fn ml_dsa_65_derive_keypair(secret_key: &Uint8Array) -> Result<JsValue, JsVa
         .map_err(|_| invalid_input())?;
     let (public_key, secret_key) =
         crypto_ml_dsa_65::generate_ml_dsa_65_keypair_from_seed(secret_key)
-            .map_err(map_ml_dsa_error)?;
+            .map_err(map_crypto_error)?;
     keypair_to_js(public_key, secret_key, ML_DSA_65_PUBLIC_KEY_LEN)
 }
 
@@ -154,7 +129,7 @@ pub fn ml_dsa_65_sign(
     let secret_key = Zeroizing::new(require_len(secret_key, ML_DSA_SECRET_KEY_LEN)?);
     let message = message.to_vec();
     let signature =
-        crypto_ml_dsa_65::sign_ml_dsa_65(&secret_key, &message).map_err(map_ml_dsa_error)?;
+        crypto_ml_dsa_65::sign_ml_dsa_65(&secret_key, &message).map_err(map_crypto_error)?;
     signature_to_js(signature, ML_DSA_65_SIGNATURE_LEN)
 }
 
@@ -168,14 +143,14 @@ pub fn ml_dsa_65_verify(
     let public_key = require_len(public_key, ML_DSA_65_PUBLIC_KEY_LEN)?;
     let signature = require_len(signature, ML_DSA_65_SIGNATURE_LEN)?;
     crypto_ml_dsa_65::verify_ml_dsa_65(&public_key, &message.to_vec(), &signature)
-        .map_err(map_ml_dsa_error)
+        .map_err(map_crypto_error)
 }
 
 #[wasm_bindgen(js_name = mlDsa87GenerateKeypair)]
 /// Generate an ML-DSA-87 keypair.
 pub fn ml_dsa_87_generate_keypair() -> Result<JsValue, JsValue> {
     let (public_key, secret_key) =
-        crypto_ml_dsa_87::generate_ml_dsa_87_keypair().map_err(map_ml_dsa_error)?;
+        crypto_ml_dsa_87::generate_ml_dsa_87_keypair().map_err(map_crypto_error)?;
     keypair_to_js(public_key, secret_key, ML_DSA_87_PUBLIC_KEY_LEN)
 }
 
@@ -187,7 +162,7 @@ pub fn ml_dsa_87_derive_keypair(secret_key: &Uint8Array) -> Result<JsValue, JsVa
         .map_err(|_| invalid_input())?;
     let (public_key, secret_key) =
         crypto_ml_dsa_87::generate_ml_dsa_87_keypair_from_seed(secret_key)
-            .map_err(map_ml_dsa_error)?;
+            .map_err(map_crypto_error)?;
     keypair_to_js(public_key, secret_key, ML_DSA_87_PUBLIC_KEY_LEN)
 }
 
@@ -200,7 +175,7 @@ pub fn ml_dsa_87_sign(
     let secret_key = Zeroizing::new(require_len(secret_key, ML_DSA_SECRET_KEY_LEN)?);
     let message = message.to_vec();
     let signature =
-        crypto_ml_dsa_87::sign_ml_dsa_87(&secret_key, &message).map_err(map_ml_dsa_error)?;
+        crypto_ml_dsa_87::sign_ml_dsa_87(&secret_key, &message).map_err(map_crypto_error)?;
     signature_to_js(signature, ML_DSA_87_SIGNATURE_LEN)
 }
 
@@ -214,5 +189,5 @@ pub fn ml_dsa_87_verify(
     let public_key = require_len(public_key, ML_DSA_87_PUBLIC_KEY_LEN)?;
     let signature = require_len(signature, ML_DSA_87_SIGNATURE_LEN)?;
     crypto_ml_dsa_87::verify_ml_dsa_87(&public_key, &message.to_vec(), &signature)
-        .map_err(map_ml_dsa_error)
+        .map_err(map_crypto_error)
 }

@@ -93,7 +93,7 @@ cargo add reallyme-codec
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.1.1"
+    from: "0.1.3"
 )
 ```
 
@@ -105,7 +105,7 @@ cargo add reallyme-codec
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.1.1")
+    implementation("me.really:crypto:0.1.3")
 }
 ```
 

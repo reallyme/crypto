@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-use crypto_core::CryptoError;
+use crypto_core::{CryptoError, KeyWrapFailureKind, SignatureFailureKind, SignatureOperation};
 use wasm_bindgen::JsValue;
 
 pub(crate) fn invalid_input() -> JsValue {
@@ -23,14 +23,31 @@ pub(crate) fn unsupported_algorithm() -> JsValue {
 
 pub(crate) fn map_crypto_error(error: CryptoError) -> JsValue {
     match error {
-        CryptoError::InvalidKey => invalid_input(),
-        CryptoError::InvalidAeadKeyLength { .. }
+        CryptoError::InvalidKey
+        | CryptoError::InvalidAeadKeyLength { .. }
         | CryptoError::InvalidAeadNonceLength { .. }
         | CryptoError::InvalidCiphertextLength { .. } => invalid_input(),
-        CryptoError::Unsupported => invalid_input(),
-        CryptoError::AeadDecrypt { .. }
-        | CryptoError::AeadEncrypt { .. }
-        | CryptoError::ConstantTimeComparison { .. }
+        CryptoError::Unsupported => unsupported_algorithm(),
+        CryptoError::Signature {
+            kind: SignatureFailureKind::InvalidPrivateKey | SignatureFailureKind::InvalidPublicKey,
+            ..
+        } => invalid_input(),
+        CryptoError::Signature {
+            operation: SignatureOperation::Verify,
+            kind: SignatureFailureKind::InvalidSignature | SignatureFailureKind::InvalidMessage,
+            ..
+        } => invalid_signature(),
+        CryptoError::KeyWrap {
+            kind:
+                KeyWrapFailureKind::InvalidKekLength
+                | KeyWrapFailureKind::InvalidPlaintextLength
+                | KeyWrapFailureKind::InvalidWrappedLength
+                | KeyWrapFailureKind::LengthOverflow,
+            ..
+        } => invalid_input(),
+        CryptoError::ConstantTimeComparison { .. } => invalid_signature(),
+        CryptoError::AeadEncrypt { .. }
+        | CryptoError::AeadDecrypt { .. }
         | CryptoError::Hkdf { .. }
         | CryptoError::Kdf { .. }
         | CryptoError::KemFailure { .. }

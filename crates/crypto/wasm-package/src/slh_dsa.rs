@@ -2,42 +2,17 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-use crypto_core::{CryptoError, SignatureFailureKind, SignatureOperation};
 use js_sys::{Object, Reflect, Uint8Array};
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
 use zeroize::{Zeroize, Zeroizing};
 
-use crate::map_error::{invalid_input, invalid_signature, provider_failure};
+use crate::map_error::{invalid_input, map_crypto_error, provider_failure};
 
 const SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN: usize = 32;
 const SLH_DSA_SHA2_128S_SECRET_KEY_LEN: usize = 64;
 const SLH_DSA_SHA2_128S_SIGNATURE_LEN: usize = 7_856;
 const SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN: usize = 16;
-
-fn map_slh_dsa_error(error: CryptoError) -> JsValue {
-    match error {
-        CryptoError::InvalidKey => invalid_input(),
-        CryptoError::Signature {
-            operation:
-                SignatureOperation::Sign
-                | SignatureOperation::Verify
-                | SignatureOperation::KeyManagement,
-            kind: SignatureFailureKind::InvalidPrivateKey | SignatureFailureKind::InvalidPublicKey,
-            ..
-        } => invalid_input(),
-        CryptoError::Signature {
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature | SignatureFailureKind::InvalidMessage,
-            ..
-        } => invalid_signature(),
-        CryptoError::Signature {
-            kind: SignatureFailureKind::KeyGenerationFailed | SignatureFailureKind::BackendFailure,
-            ..
-        } => provider_failure(),
-        _ => provider_failure(),
-    }
-}
 
 fn require_len(bytes: &Uint8Array, expected_len: usize) -> Result<Vec<u8>, JsValue> {
     let bytes = bytes.to_vec();
@@ -74,7 +49,7 @@ fn keypair_to_js(
 /// Generate an SLH-DSA-SHA2-128s keypair.
 pub fn slh_dsa_sha2_128s_generate_keypair() -> Result<JsValue, JsValue> {
     let (public_key, secret_key) =
-        crypto_slh_dsa::generate_slh_dsa_sha2_128s_keypair().map_err(map_slh_dsa_error)?;
+        crypto_slh_dsa::generate_slh_dsa_sha2_128s_keypair().map_err(map_crypto_error)?;
     keypair_to_js(public_key, secret_key)
 }
 
@@ -90,7 +65,7 @@ pub fn slh_dsa_sha2_128s_derive_keypair(
     let pk_seed = require_len(pk_seed, SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN)?;
     let (public_key, secret_key) =
         crypto_slh_dsa::derive_slh_dsa_sha2_128s_keypair(&sk_seed, &sk_prf, &pk_seed)
-            .map_err(map_slh_dsa_error)?;
+            .map_err(map_crypto_error)?;
     keypair_to_js(public_key, secret_key)
 }
 
@@ -102,7 +77,7 @@ pub fn slh_dsa_sha2_128s_sign(
 ) -> Result<Uint8Array, JsValue> {
     let secret_key = Zeroizing::new(require_len(secret_key, SLH_DSA_SHA2_128S_SECRET_KEY_LEN)?);
     let signature = crypto_slh_dsa::sign_slh_dsa_sha2_128s(&secret_key, &message.to_vec())
-        .map_err(map_slh_dsa_error)?;
+        .map_err(map_crypto_error)?;
     if signature.len() != SLH_DSA_SHA2_128S_SIGNATURE_LEN {
         return Err(provider_failure());
     }
@@ -119,5 +94,5 @@ pub fn slh_dsa_sha2_128s_verify(
     let public_key = require_len(public_key, SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN)?;
     let signature = require_len(signature, SLH_DSA_SHA2_128S_SIGNATURE_LEN)?;
     crypto_slh_dsa::verify_slh_dsa_sha2_128s(&public_key, &message.to_vec(), &signature)
-        .map_err(map_slh_dsa_error)
+        .map_err(map_crypto_error)
 }
