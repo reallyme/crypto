@@ -10,13 +10,12 @@
 //!
 //! ## Platform lanes
 //!
-//! Every primitive is available through four backend lanes selected by
-//! Cargo feature and target: `native` (portable Rust), `wasm` (browser
-//! bindings), `swift` (Apple CryptoKit / Secure Enclave), and `kotlin`
-//! (Android Keystore). Selecting a platform lane compiles against that
-//! platform's crypto; a lane never silently falls back to native Rust —
-//! an Apple/Android build without the corresponding link cfg fails to
-//! compile rather than substituting a different backend.
+//! Rust exposes two backend lanes selected by Cargo feature and target:
+//! `native` (portable Rust) and `wasm` (browser/Node host bindings).
+//! Swift and Kotlin provider selection lives in their package facades; those
+//! facades call this Rust workspace through FFI/JNI only for algorithms whose
+//! provider policy explicitly selects Rust. A lane never silently falls back to
+//! another backend.
 //!
 //! ## Security posture
 //!
@@ -166,8 +165,14 @@ pub mod csprng {
 pub mod ed25519 {
     pub use crypto_ed25519::{
         assert_public_key, decode_public_key, encode_public_key, generate_ed25519_keypair,
-        generate_ed25519_keypair_from_seed, sign_ed25519, verify_ed25519,
+        sign_ed25519, verify_ed25519,
     };
+
+    // Pure wasm primitive crates intentionally expose only their host-provider
+    // contract. Import/deterministic helpers stay native here; TypeScript
+    // consumers get equivalent deriveKeyPair APIs from the package facade.
+    #[cfg(not(all(feature = "wasm", target_arch = "wasm32", not(feature = "native"))))]
+    pub use crypto_ed25519::generate_ed25519_keypair_from_seed;
 }
 
 /// HMAC authentication tags over SHA-256 and SHA-512.
@@ -185,11 +190,16 @@ pub mod hmac {
 pub mod p256 {
     pub use crypto_p256::{
         compress_public_key, decode_se_handle, decompress_public_key, derive_p256_shared_secret,
-        encode_se_handle, generate_p256_keypair, generate_p256_keypair_from_secret_key,
-        p256_ecdsa_der_to_jose_signature, p256_ecdsa_der_to_jose_signature_permissive,
-        p256_ecdsa_jose_signature_to_der, sign_p256_der_prehash, verify_p256_der_prehash,
-        P256_ECDSA_JOSE_SIGNATURE_LEN, SE_HANDLE_PREFIX,
+        encode_se_handle, generate_p256_keypair, p256_ecdsa_der_to_jose_signature,
+        p256_ecdsa_der_to_jose_signature_permissive, p256_ecdsa_jose_signature_to_der,
+        sign_p256_der_prehash, verify_p256_der_prehash, P256_ECDSA_JOSE_SIGNATURE_LEN,
+        SE_HANDLE_PREFIX,
     };
+
+    // See the Ed25519 gate: pure wasm does not widen the JS host-provider
+    // contract for import helpers.
+    #[cfg(not(all(feature = "wasm", target_arch = "wasm32", not(feature = "native"))))]
+    pub use crypto_p256::generate_p256_keypair_from_secret_key;
 }
 
 /// NIST P-384 (secp384r1) ECDSA over pre-hashed messages, with public-key
@@ -244,13 +254,17 @@ pub mod secp256k1 {
     pub use crypto_secp256k1::{
         decode_bip340_schnorr_public_key, decode_public_key, decompress_public_key,
         derive_bip340_schnorr_public_key, encode_bip340_schnorr_public_key, encode_public_key,
-        generate_secp256k1_keypair, generate_secp256k1_keypair_from_secret_key,
-        secp256k1_ecdsa_der_to_jose_signature, secp256k1_ecdsa_der_to_jose_signature_permissive,
-        secp256k1_ecdsa_jose_signature_to_der, sign_bip340_schnorr, sign_secp256k1,
-        verify_bip340_schnorr, verify_secp256k1, BIP340_SCHNORR_AUX_RAND_LEN,
-        BIP340_SCHNORR_MESSAGE_LEN, BIP340_SCHNORR_PUBLIC_KEY_LEN, BIP340_SCHNORR_SIGNATURE_LEN,
-        SECP256K1_ECDSA_JOSE_SIGNATURE_LEN, SECP256K1_SECRET_KEY_LEN,
+        generate_secp256k1_keypair, secp256k1_ecdsa_der_to_jose_signature,
+        secp256k1_ecdsa_der_to_jose_signature_permissive, secp256k1_ecdsa_jose_signature_to_der,
+        sign_bip340_schnorr, sign_secp256k1, verify_bip340_schnorr, verify_secp256k1,
+        BIP340_SCHNORR_AUX_RAND_LEN, BIP340_SCHNORR_MESSAGE_LEN, BIP340_SCHNORR_PUBLIC_KEY_LEN,
+        BIP340_SCHNORR_SIGNATURE_LEN, SECP256K1_ECDSA_JOSE_SIGNATURE_LEN, SECP256K1_SECRET_KEY_LEN,
     };
+
+    // See the Ed25519 gate: pure wasm does not widen the JS host-provider
+    // contract for import helpers.
+    #[cfg(not(all(feature = "wasm", target_arch = "wasm32", not(feature = "native"))))]
+    pub use crypto_secp256k1::generate_secp256k1_keypair_from_secret_key;
 }
 
 /// X25519 Diffie–Hellman key agreement and public-key encoding.
@@ -258,8 +272,12 @@ pub mod secp256k1 {
 pub mod x25519 {
     pub use crypto_x25519::{
         decode_public_key, derive_x25519_shared_secret, encode_public_key, generate_x25519_keypair,
-        generate_x25519_keypair_from_seed,
     };
+
+    // See the Ed25519 gate: pure wasm does not widen the JS host-provider
+    // contract for import helpers.
+    #[cfg(not(all(feature = "wasm", target_arch = "wasm32", not(feature = "native"))))]
+    pub use crypto_x25519::generate_x25519_keypair_from_seed;
 }
 
 /// X-Wing hybrid KEM suites over X25519 plus ML-KEM-768 or ML-KEM-1024.
@@ -303,9 +321,14 @@ pub mod hkdf {
 #[cfg(feature = "ml-dsa-44")]
 pub mod ml_dsa_44 {
     pub use crypto_ml_dsa_44::{
-        decode_public_key, encode_public_key, generate_ml_dsa_44_keypair,
-        generate_ml_dsa_44_keypair_from_seed, sign_ml_dsa_44, verify_ml_dsa_44,
+        decode_public_key, encode_public_key, generate_ml_dsa_44_keypair, sign_ml_dsa_44,
+        verify_ml_dsa_44,
     };
+
+    // See the Ed25519 gate: pure wasm does not widen the JS host-provider
+    // contract for deterministic helpers.
+    #[cfg(not(all(feature = "wasm", target_arch = "wasm32", not(feature = "native"))))]
+    pub use crypto_ml_dsa_44::generate_ml_dsa_44_keypair_from_seed;
 }
 
 /// ML-DSA-65 (FIPS 204) post-quantum signatures: keygen, sign/verify, and
@@ -313,9 +336,14 @@ pub mod ml_dsa_44 {
 #[cfg(feature = "ml-dsa-65")]
 pub mod ml_dsa_65 {
     pub use crypto_ml_dsa_65::{
-        decode_public_key, encode_public_key, generate_ml_dsa_65_keypair,
-        generate_ml_dsa_65_keypair_from_seed, sign_ml_dsa_65, verify_ml_dsa_65,
+        decode_public_key, encode_public_key, generate_ml_dsa_65_keypair, sign_ml_dsa_65,
+        verify_ml_dsa_65,
     };
+
+    // See the Ed25519 gate: pure wasm does not widen the JS host-provider
+    // contract for deterministic helpers.
+    #[cfg(not(all(feature = "wasm", target_arch = "wasm32", not(feature = "native"))))]
+    pub use crypto_ml_dsa_65::generate_ml_dsa_65_keypair_from_seed;
 }
 
 /// ML-DSA-87 (FIPS 204) post-quantum signatures: keygen, sign/verify, and
@@ -323,9 +351,14 @@ pub mod ml_dsa_65 {
 #[cfg(feature = "ml-dsa-87")]
 pub mod ml_dsa_87 {
     pub use crypto_ml_dsa_87::{
-        decode_public_key, encode_public_key, generate_ml_dsa_87_keypair,
-        generate_ml_dsa_87_keypair_from_seed, sign_ml_dsa_87, verify_ml_dsa_87,
+        decode_public_key, encode_public_key, generate_ml_dsa_87_keypair, sign_ml_dsa_87,
+        verify_ml_dsa_87,
     };
+
+    // See the Ed25519 gate: pure wasm does not widen the JS host-provider
+    // contract for deterministic helpers.
+    #[cfg(not(all(feature = "wasm", target_arch = "wasm32", not(feature = "native"))))]
+    pub use crypto_ml_dsa_87::generate_ml_dsa_87_keypair_from_seed;
 }
 
 /// SLH-DSA-SHA2-128s (FIPS 205) hash-based post-quantum signatures.
@@ -345,8 +378,14 @@ pub mod slh_dsa {
 #[cfg(feature = "ml-kem-512")]
 pub mod ml_kem_512 {
     pub use crypto_ml_kem_512::{
-        generate_ml_kem_512_keypair, generate_ml_kem_512_keypair_from_seed, ml_kem_512_decapsulate,
-        ml_kem_512_encapsulate, ml_kem_512_encapsulate_derand,
+        generate_ml_kem_512_keypair, ml_kem_512_decapsulate, ml_kem_512_encapsulate,
+    };
+
+    // See the Ed25519 gate: pure wasm does not widen the JS host-provider
+    // contract for deterministic helpers.
+    #[cfg(not(all(feature = "wasm", target_arch = "wasm32", not(feature = "native"))))]
+    pub use crypto_ml_kem_512::{
+        generate_ml_kem_512_keypair_from_seed, ml_kem_512_encapsulate_derand,
     };
 }
 
@@ -355,8 +394,14 @@ pub mod ml_kem_512 {
 #[cfg(feature = "ml-kem-768")]
 pub mod ml_kem_768 {
     pub use crypto_ml_kem_768::{
-        generate_ml_kem_768_keypair, generate_ml_kem_768_keypair_from_seed, ml_kem_768_decapsulate,
-        ml_kem_768_encapsulate, ml_kem_768_encapsulate_derand,
+        generate_ml_kem_768_keypair, ml_kem_768_decapsulate, ml_kem_768_encapsulate,
+    };
+
+    // See the Ed25519 gate: pure wasm does not widen the JS host-provider
+    // contract for deterministic helpers.
+    #[cfg(not(all(feature = "wasm", target_arch = "wasm32", not(feature = "native"))))]
+    pub use crypto_ml_kem_768::{
+        generate_ml_kem_768_keypair_from_seed, ml_kem_768_encapsulate_derand,
     };
 }
 
@@ -365,8 +410,14 @@ pub mod ml_kem_768 {
 #[cfg(feature = "ml-kem-1024")]
 pub mod ml_kem_1024 {
     pub use crypto_ml_kem_1024::{
-        generate_ml_kem_1024_keypair, generate_ml_kem_1024_keypair_from_seed,
-        ml_kem_1024_decapsulate, ml_kem_1024_encapsulate, ml_kem_1024_encapsulate_derand,
+        generate_ml_kem_1024_keypair, ml_kem_1024_decapsulate, ml_kem_1024_encapsulate,
+    };
+
+    // See the Ed25519 gate: pure wasm does not widen the JS host-provider
+    // contract for deterministic helpers.
+    #[cfg(not(all(feature = "wasm", target_arch = "wasm32", not(feature = "native"))))]
+    pub use crypto_ml_kem_1024::{
+        generate_ml_kem_1024_keypair_from_seed, ml_kem_1024_encapsulate_derand,
     };
 }
 

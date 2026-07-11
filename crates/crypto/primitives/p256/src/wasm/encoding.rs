@@ -15,6 +15,7 @@ extern "C" {
     fn js_decompress_p256_public_key(pub_compressed: Uint8Array) -> Uint8Array;
 }
 
+/// Compresses a 65-byte SEC1 P-256 public key through the JavaScript provider.
 pub fn compress_p256(pubkey_uncompressed: &[u8]) -> Result<Vec<u8>, CryptoError> {
     if pubkey_uncompressed.len() != 65 {
         return Err(CryptoError::InvalidKey);
@@ -30,6 +31,7 @@ pub fn compress_p256(pubkey_uncompressed: &[u8]) -> Result<Vec<u8>, CryptoError>
     Ok(out)
 }
 
+/// Decompresses a 33-byte SEC1 P-256 public key through the JavaScript provider.
 pub fn decompress_p256(pubkey_compressed: &[u8]) -> Result<Vec<u8>, CryptoError> {
     if pubkey_compressed.len() != 33 {
         return Err(CryptoError::InvalidKey);

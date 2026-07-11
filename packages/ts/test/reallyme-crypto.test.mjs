@@ -1230,7 +1230,7 @@ test("ml-kem rejects malformed inputs through typed errors", () => {
   assert.equal(publicKey.length, ML_KEM_768_PUBLIC_KEY_LENGTH);
 });
 
-test("ml-kem derives keypairs and deterministic encapsulations through WASM", () => {
+test("ml-kem derives vector keypairs and deterministic encapsulations through WASM", () => {
   const cases = [
     {
       algorithm: "ML-KEM-512",
@@ -1250,14 +1250,20 @@ test("ml-kem derives keypairs and deterministic encapsulations through WASM", ()
   ];
 
   for (const testCase of cases) {
-    const secretKey = new Uint8Array(ML_KEM_SECRET_KEY_LENGTH).fill(0x21);
-    const randomness = new Uint8Array(ML_KEM_ENCAPSULATION_RANDOMNESS_LENGTH).fill(0x22);
+    const vector = mlKemCase(testCase.algorithm);
+    const secretKey = base64UrlBytes(vectorString(vector, "secret_key"));
+    const publicKey = base64UrlBytes(vectorString(vector, "public_key"));
+    const randomness = base64UrlBytes(vectorString(vector, "encaps_randomness"));
+    const ciphertext = base64UrlBytes(vectorString(vector, "ciphertext"));
+    const sharedSecret = base64UrlBytes(vectorString(vector, "shared_secret"));
     const first = ReallyMeMlKem.deriveKeyPair(testCase.algorithm, secretKey);
     const second = ReallyMeMlKem.deriveKeyPair(testCase.algorithm, secretKey);
 
     assert.deepEqual(first, second);
     assert.equal(first.publicKey.length, testCase.publicKeyLength);
+    assert.deepEqual(first.publicKey, publicKey);
     assert.deepEqual(first.secretKey, secretKey);
+    assert.equal(randomness.length, ML_KEM_ENCAPSULATION_RANDOMNESS_LENGTH);
 
     const firstEncapsulation = ReallyMeMlKem.encapsulateDeterministicallyForTest(
       testCase.algorithm,
@@ -1270,6 +1276,8 @@ test("ml-kem derives keypairs and deterministic encapsulations through WASM", ()
       randomness,
     );
     assert.deepEqual(firstEncapsulation, secondEncapsulation);
+    assert.deepEqual(firstEncapsulation.ciphertext, ciphertext);
+    assert.deepEqual(firstEncapsulation.sharedSecret, sharedSecret);
     assert.equal(firstEncapsulation.ciphertext.length, testCase.ciphertextLength);
     assert.deepEqual(
       ReallyMeMlKem.decapsulate(
@@ -1350,7 +1358,7 @@ test("ml-dsa vectors sign and verify through WASM", () => {
   }
 });
 
-test("ml-dsa derives keypairs from supplied seeds through WASM", () => {
+test("ml-dsa derives vector keypairs from supplied seeds through WASM", () => {
   const cases = [
     {
       algorithm: "ML-DSA-44",
@@ -1367,13 +1375,19 @@ test("ml-dsa derives keypairs from supplied seeds through WASM", () => {
   ];
 
   for (const testCase of cases) {
-    const seed = new Uint8Array(ML_DSA_SECRET_KEY_LENGTH).fill(0x31);
+    const vector = mlDsaCase(testCase.algorithm);
+    const seed = base64UrlBytes(vectorString(vector, "secret_key"));
+    const publicKey = base64UrlBytes(vectorString(vector, "public_key"));
     const first = ReallyMeMlDsa.deriveKeyPair(testCase.algorithm, seed);
     const second = ReallyMeMlDsa.deriveKeyPair(testCase.algorithm, seed);
+    const facade = ReallyMeCrypto.deriveKeyPair(testCase.algorithm, seed);
 
     assert.deepEqual(first, second);
     assert.equal(first.publicKey.length, testCase.publicKeyLength);
+    assert.deepEqual(first.publicKey, publicKey);
     assert.deepEqual(first.secretKey, seed);
+    assert.deepEqual(facade.publicKey, publicKey);
+    assert.deepEqual(facade.secretKey, seed);
   }
 
   assert.throws(
@@ -1513,6 +1527,11 @@ test("slh-dsa rejects tampered and malformed inputs through typed errors", () =>
   assert.deepEqual(
     ReallyMeSlhDsa.sign("SLH-DSA-SHA2-128s", message, secretKey),
     signature,
+  );
+  // SLH-DSA derivation needs three FIPS seed components, so the facade's
+  // single-secret deriveKeyPair deliberately reports it as unsupported.
+  assertUnsupportedAlgorithm(() =>
+    ReallyMeCrypto.deriveKeyPair("SLH-DSA-SHA2-128s", secretKey),
   );
 });
 

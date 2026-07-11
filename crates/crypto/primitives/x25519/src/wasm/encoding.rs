@@ -4,6 +4,7 @@
 
 use crypto_core::CryptoError;
 
+/// Length in bytes of a raw X25519 public key.
 pub const X25519_PUBLIC_KEY_LEN: usize = 32;
 
 /// Validate that a value is a 32-byte X25519 public key.

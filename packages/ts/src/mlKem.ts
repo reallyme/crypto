@@ -103,6 +103,8 @@ export const ReallyMeMlKem = {
   },
 
   deriveKeyPair(algorithm: ReallyMeKemAlgorithm, secretKey: Uint8Array): ReallyMeMlKemKeyPair {
+    // Import an existing FIPS 203 seed-form secret and reconstruct its public
+    // key. Do not feed passwords or other low-entropy material here.
     const suite = mlKemSuite(algorithm);
     ensureBytes(secretKey, ML_KEM_SECRET_KEY_LENGTH);
     return readKeyPair(suite.deriveKeyPair(secretKey), suite);
