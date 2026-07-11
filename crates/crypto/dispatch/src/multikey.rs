@@ -32,11 +32,31 @@ fn compress_p256_public_key(input: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
 }
 
 fn compress_p384_public_key(input: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
-    crypto_p384::compress_p384(input).map_err(|_| AlgorithmError::InvalidKey(Algorithm::P384))
+    #[cfg(any(feature = "native", feature = "wasm"))]
+    {
+        return crypto_p384::compress_p384(input)
+            .map_err(|_| AlgorithmError::InvalidKey(Algorithm::P384));
+    }
+
+    #[cfg(not(any(feature = "native", feature = "wasm")))]
+    {
+        let _ = input;
+        Err(AlgorithmError::UnsupportedAlgorithm(Algorithm::P384))
+    }
 }
 
 fn compress_p521_public_key(input: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
-    crypto_p521::compress_p521(input).map_err(|_| AlgorithmError::InvalidKey(Algorithm::P521))
+    #[cfg(any(feature = "native", feature = "wasm"))]
+    {
+        return crypto_p521::compress_p521(input)
+            .map_err(|_| AlgorithmError::InvalidKey(Algorithm::P521));
+    }
+
+    #[cfg(not(any(feature = "native", feature = "wasm")))]
+    {
+        let _ = input;
+        Err(AlgorithmError::UnsupportedAlgorithm(Algorithm::P521))
+    }
 }
 
 fn canonicalize_sec1_public_key(

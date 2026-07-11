@@ -16,7 +16,7 @@ description = "JWK envelope encoding and canonicalization for ReallyMe Crypto ke
 name = "envelopes_jwk"
 
 [features]
-default = []
+default = ["native"]
 
 native = [
     "crypto-p256/native",
