@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
 use crypto_rsa::{
     verify_rsa_pkcs1v15, verify_rsa_pss, RsaHash, RsaPssParams, RsaPublicKeyDerEncoding,
 };
@@ -10,7 +9,7 @@ use js_sys::Uint8Array;
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
 
-use crate::map_error::{invalid_input, invalid_signature, provider_failure};
+use crate::map_error::{invalid_input, map_crypto_error};
 
 fn parse_encoding(value: u32) -> Result<RsaPublicKeyDerEncoding, JsValue> {
     RsaPublicKeyDerEncoding::from_ffi_id(value).ok_or_else(invalid_input)
@@ -18,32 +17,6 @@ fn parse_encoding(value: u32) -> Result<RsaPublicKeyDerEncoding, JsValue> {
 
 fn parse_hash(value: u32) -> Result<RsaHash, JsValue> {
     RsaHash::from_ffi_id(value).ok_or_else(invalid_input)
-}
-
-fn map_rsa_error(error: CryptoError) -> JsValue {
-    match error {
-        CryptoError::InvalidKey => invalid_input(),
-        CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature | SignatureFailureKind::InvalidMessage,
-        } => invalid_signature(),
-        CryptoError::Unsupported
-        | CryptoError::AeadDecrypt { .. }
-        | CryptoError::AeadEncrypt { .. }
-        | CryptoError::ConstantTimeComparison { .. }
-        | CryptoError::Hkdf { .. }
-        | CryptoError::InvalidAeadKeyLength { .. }
-        | CryptoError::InvalidAeadNonceLength { .. }
-        | CryptoError::InvalidCiphertextLength { .. }
-        | CryptoError::Kdf { .. }
-        | CryptoError::KemFailure { .. }
-        | CryptoError::KeyAgreementFailure { .. }
-        | CryptoError::KeyWrap { .. }
-        | CryptoError::Mac { .. }
-        | CryptoError::Rng { .. }
-        | CryptoError::Signature { .. } => provider_failure(),
-    }
 }
 
 #[wasm_bindgen(js_name = rsaVerifyPkcs1v15)]
@@ -64,7 +37,7 @@ pub fn rsa_verify_pkcs1v15(
         &message.to_vec(),
         &signature.to_vec(),
     )
-    .map_err(map_rsa_error)
+    .map_err(map_crypto_error)
 }
 
 #[wasm_bindgen(js_name = rsaVerifyPss)]
@@ -93,5 +66,5 @@ pub fn rsa_verify_pss(
         &message.to_vec(),
         &signature.to_vec(),
     )
-    .map_err(map_rsa_error)
+    .map_err(map_crypto_error)
 }

@@ -99,6 +99,8 @@ public object ReallyMeMlKem {
             )
         } catch (_: IllegalArgumentException) {
             throw ReallyMeCryptoException.InvalidInput()
+        } catch (_: MlKemDeterministicRandomExhaustedException) {
+            throw ReallyMeCryptoException.ProviderFailure()
         }
 
         return try {
@@ -168,9 +170,11 @@ private class MlKemFixedSecureRandom(private val seed: ByteArray) : SecureRandom
     override fun nextBytes(bytes: ByteArray) {
         val nextOffset = offset + bytes.size
         if (nextOffset > seed.size) {
-            throw IllegalStateException()
+            throw MlKemDeterministicRandomExhaustedException()
         }
         System.arraycopy(seed, offset, bytes, 0, bytes.size)
         offset = nextOffset
     }
 }
+
+private class MlKemDeterministicRandomExhaustedException : RuntimeException()

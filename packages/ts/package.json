@@ -1,6 +1,6 @@
 {
   "name": "@reallyme/crypto",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "ReallyMe crypto SDK for TypeScript/JavaScript with an explicit, pinned provider set.",
   "license": "Apache-2.0",
   "type": "module",

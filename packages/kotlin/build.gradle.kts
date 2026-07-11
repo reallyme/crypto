@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+import org.gradle.external.javadoc.StandardJavadocDocletOptions
+
 plugins {
     kotlin("jvm") version "2.4.0"
     `java-library`
@@ -10,7 +12,7 @@ plugins {
 }
 
 group = "me.really"
-version = "0.1.1"
+version = "0.1.3"
 
 val remoteMavenRepositoryUrl = providers.gradleProperty("reallyme.maven.repositoryUrl")
     .orElse(providers.environmentVariable("REALLYME_MAVEN_REPOSITORY_URL"))
@@ -67,6 +69,11 @@ tasks.test {
     if (ffiLibraryPath.isPresent) {
         systemProperty("java.library.path", file(ffiLibraryPath.get()).parent)
     }
+}
+
+tasks.withType<Javadoc>().configureEach {
+    val standardOptions = options as StandardJavadocDocletOptions
+    standardOptions.addStringOption("Xdoclint:none", "-quiet")
 }
 
 publishing {

@@ -26,9 +26,9 @@ crypto-hpke = { package = "reallyme-crypto-hpke", version = "0.1.1", path = "../
 crypto-ml-dsa-44 = { package = "reallyme-crypto-ml-dsa-44", version = "0.1.1", path = "../primitives/ml-dsa-44", default-features = false, features = ["native"] }
 crypto-ml-dsa-65 = { package = "reallyme-crypto-ml-dsa-65", version = "0.1.1", path = "../primitives/ml-dsa-65", default-features = false, features = ["native"] }
 crypto-ml-dsa-87 = { package = "reallyme-crypto-ml-dsa-87", version = "0.1.1", path = "../primitives/ml-dsa-87", default-features = false, features = ["native"] }
-crypto-ml-kem-1024 = { package = "reallyme-crypto-ml-kem-1024", version = "0.1.1", path = "../primitives/ml-kem-1024", default-features = false, features = ["native"] }
+crypto-ml-kem-1024 = { package = "reallyme-crypto-ml-kem-1024", version = "0.1.2", path = "../primitives/ml-kem-1024", default-features = false, features = ["native"] }
 crypto-ml-kem-512 = { package = "reallyme-crypto-ml-kem-512", version = "0.1.1", path = "../primitives/ml-kem-512", default-features = false, features = ["native"] }
-crypto-ml-kem-768 = { package = "reallyme-crypto-ml-kem-768", version = "0.1.1", path = "../primitives/ml-kem-768", default-features = false, features = ["native"] }
+crypto-ml-kem-768 = { package = "reallyme-crypto-ml-kem-768", version = "0.1.2", path = "../primitives/ml-kem-768", default-features = false, features = ["native"] }
 crypto-rsa = { package = "reallyme-crypto-rsa", version = "0.1.1", path = "../primitives/rsa", default-features = false, features = ["wasm"] }
 crypto-slh-dsa = { package = "reallyme-crypto-slh-dsa", version = "0.1.1", path = "../primitives/slh-dsa", default-features = false, features = ["native"] }
 crypto-x-wing = { package = "reallyme-crypto-x-wing", version = "0.1.1", path = "../primitives/x-wing", default-features = false, features = ["wasm"] }

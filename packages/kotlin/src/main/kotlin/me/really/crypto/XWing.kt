@@ -153,6 +153,10 @@ public object ReallyMeXWing {
             mlKemRandomness.fill(0)
             x25519EphemeralSecret.fill(0)
             throw ReallyMeCryptoException.InvalidInput()
+        } catch (_: XWingDeterministicRandomExhaustedException) {
+            mlKemRandomness.fill(0)
+            x25519EphemeralSecret.fill(0)
+            throw ReallyMeCryptoException.ProviderFailure()
         }
     }
 
@@ -261,9 +265,11 @@ private class FixedSecureRandom(private val seed: ByteArray) : SecureRandom() {
     override fun nextBytes(bytes: ByteArray) {
         val nextOffset = offset + bytes.size
         if (nextOffset > seed.size) {
-            throw IllegalStateException()
+            throw XWingDeterministicRandomExhaustedException()
         }
         System.arraycopy(seed, offset, bytes, 0, bytes.size)
         offset = nextOffset
     }
 }
+
+private class XWingDeterministicRandomExhaustedException : RuntimeException()
