@@ -50,5 +50,12 @@ fn rejects_coordinates_that_are_not_a_curve_point() {
         kid: None,
     });
 
+    #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
     assert_eq!(jwk_to_multikey(&jwk), Err(JwkMultikeyError::InvalidJwk));
+
+    #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
+    assert_eq!(
+        jwk_to_multikey(&jwk),
+        Err(JwkMultikeyError::UnsupportedAlgorithm)
+    );
 }

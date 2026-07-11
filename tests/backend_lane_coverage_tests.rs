@@ -41,6 +41,43 @@ const PRIMITIVE_CRATES: &[&str] = &[
 // selection is enforced in the SDK package matrix, not primitive Cargo features.
 const REQUIRED_BACKEND_LANES: &[&str] = &["native", "wasm"];
 
+const ROOT_BACKEND_FORWARD_DEPS: &[&str] = &[
+    "crypto-aes-kw",
+    "crypto-aes256-gcm",
+    "crypto-aes256-gcm-siv",
+    "crypto-argon2id",
+    "crypto-chacha20-poly1305",
+    "crypto-constant-time",
+    "crypto-csprng",
+    "crypto-dispatch",
+    "crypto-ed25519",
+    "crypto-hkdf",
+    "crypto-hmac",
+    "crypto-hpke",
+    "crypto-ml-dsa-44",
+    "crypto-ml-dsa-65",
+    "crypto-ml-dsa-87",
+    "crypto-ml-kem-1024",
+    "crypto-ml-kem-512",
+    "crypto-ml-kem-768",
+    "crypto-p256",
+    "crypto-p384",
+    "crypto-p521",
+    "crypto-pbkdf2",
+    "crypto-rsa",
+    "crypto-secp256k1",
+    "crypto-sha2",
+    "crypto-sha2-256",
+    "crypto-sha3",
+    "crypto-sha3-256",
+    "crypto-signer",
+    "crypto-slh-dsa",
+    "crypto-x-wing",
+    "crypto-x25519",
+    "envelopes-jwk",
+    "envelopes-jwk-multikey",
+];
+
 #[test]
 fn every_crypto_primitive_has_backend_lane_tests() {
     let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -63,6 +100,24 @@ fn every_crypto_primitive_has_backend_lane_tests() {
             assert!(
                 test_source.contains(&cfg_marker),
                 "missing {lane} backend lane assertion for {crate_name}"
+            );
+        }
+    }
+}
+
+#[test]
+fn root_backend_lanes_forward_to_enabled_backend_dependencies() {
+    let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let manifest_path = workspace_root.join("Cargo.toml");
+    let manifest =
+        std::fs::read_to_string(&manifest_path).expect("root Cargo.toml should be readable");
+
+    for dependency in ROOT_BACKEND_FORWARD_DEPS {
+        for lane in REQUIRED_BACKEND_LANES {
+            let feature = format!("\"{dependency}?/{lane}\"");
+            assert!(
+                manifest.contains(&feature),
+                "root {lane} feature must weak-forward to {dependency}/{lane}"
             );
         }
     }

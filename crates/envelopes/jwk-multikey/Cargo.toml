@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-jwk-multikey"
-version = "0.1.2"
+version = "0.1.3"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -18,9 +18,9 @@ name = "envelopes_jwk_multikey"
 [features]
 default = []
 
-native = ["crypto-p256/native", "crypto-secp256k1/native"]
+native = ["envelopes-jwk/native", "crypto-p256/native", "crypto-secp256k1/native"]
 
-wasm = ["crypto-p256/wasm", "crypto-secp256k1/wasm"]
+wasm = ["envelopes-jwk/wasm", "crypto-p256/wasm", "crypto-secp256k1/wasm"]
 
 [dependencies]
 thiserror.workspace = true
@@ -29,7 +29,7 @@ thiserror.workspace = true
 codec-multikey = { package = "reallyme-codec-multikey", version = "0.1.1", path = "../../codec/multikey" }
 
 # JWK envelope
-envelopes-jwk = { package = "reallyme-crypto-jwk", version = "0.1.2", path = "../jwk" }
+envelopes-jwk = { package = "reallyme-crypto-jwk", version = "0.1.2", path = "../jwk", default-features = false }
 
 # base64url
 codec-base64url = { package = "reallyme-codec-base64url", version = "0.1.1", path = "../../codec/base64url" }

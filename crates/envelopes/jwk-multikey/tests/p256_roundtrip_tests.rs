@@ -4,11 +4,16 @@
 
 #![allow(clippy::expect_used, missing_docs)]
 
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use crypto_core::Algorithm;
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use crypto_dispatch::{generate_keypair, public_key_to_multikey};
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use envelopes_jwk::JwkOptions;
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use envelopes_jwk_multikey::*;
 
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 #[test]
 fn p256_multikey_jwk_roundtrip() {
     // Generate a REAL P-256 keypair via dispatch
