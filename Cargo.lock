@@ -1513,7 +1513,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "reallyme-codec",
  "reallyme-codec-base64",
@@ -1822,10 +1822,11 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-p256"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "ecdsa",
  "hex",
+ "hex-literal",
  "js-sys",
  "p256",
  "reallyme-crypto-core",
@@ -1897,7 +1898,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-secp256k1"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "ecdsa",
  "hex",

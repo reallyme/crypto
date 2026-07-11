@@ -186,7 +186,9 @@ pub mod p256 {
     pub use crypto_p256::{
         compress_public_key, decode_se_handle, decompress_public_key, derive_p256_shared_secret,
         encode_se_handle, generate_p256_keypair, generate_p256_keypair_from_secret_key,
-        sign_p256_der_prehash, verify_p256_der_prehash, SE_HANDLE_PREFIX,
+        p256_ecdsa_der_to_jose_signature, p256_ecdsa_der_to_jose_signature_permissive,
+        p256_ecdsa_jose_signature_to_der, sign_p256_der_prehash, verify_p256_der_prehash,
+        P256_ECDSA_JOSE_SIGNATURE_LEN, SE_HANDLE_PREFIX,
     };
 }
 
@@ -243,9 +245,11 @@ pub mod secp256k1 {
         decode_bip340_schnorr_public_key, decode_public_key, decompress_public_key,
         derive_bip340_schnorr_public_key, encode_bip340_schnorr_public_key, encode_public_key,
         generate_secp256k1_keypair, generate_secp256k1_keypair_from_secret_key,
-        sign_bip340_schnorr, sign_secp256k1, verify_bip340_schnorr, verify_secp256k1,
-        BIP340_SCHNORR_AUX_RAND_LEN, BIP340_SCHNORR_MESSAGE_LEN, BIP340_SCHNORR_PUBLIC_KEY_LEN,
-        BIP340_SCHNORR_SIGNATURE_LEN, SECP256K1_SECRET_KEY_LEN,
+        secp256k1_ecdsa_der_to_jose_signature, secp256k1_ecdsa_der_to_jose_signature_permissive,
+        secp256k1_ecdsa_jose_signature_to_der, sign_bip340_schnorr, sign_secp256k1,
+        verify_bip340_schnorr, verify_secp256k1, BIP340_SCHNORR_AUX_RAND_LEN,
+        BIP340_SCHNORR_MESSAGE_LEN, BIP340_SCHNORR_PUBLIC_KEY_LEN, BIP340_SCHNORR_SIGNATURE_LEN,
+        SECP256K1_ECDSA_JOSE_SIGNATURE_LEN, SECP256K1_SECRET_KEY_LEN,
     };
 }
 

@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-p256"
-version = "0.1.1"
+version = "0.1.2"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -51,6 +51,7 @@ js-sys = { workspace = true, optional = true }
 
 [dev-dependencies]
 hex = { workspace = true }
+hex-literal = { workspace = true }
 
 [lints]
 workspace = true

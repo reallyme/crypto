@@ -4,8 +4,13 @@
 
 //! P-256 ECDSA signatures and ECDH key agreement.
 
+mod jose_signature;
 mod secure_enclave_handle;
 
+pub use jose_signature::{
+    p256_ecdsa_der_to_jose_signature, p256_ecdsa_der_to_jose_signature_permissive,
+    p256_ecdsa_jose_signature_to_der, P256_ECDSA_JOSE_SIGNATURE_LEN,
+};
 pub use secure_enclave_handle::{decode_se_handle, encode_se_handle, SE_HANDLE_PREFIX};
 
 #[cfg(all(feature = "native", not(all(feature = "wasm", target_arch = "wasm32"))))]

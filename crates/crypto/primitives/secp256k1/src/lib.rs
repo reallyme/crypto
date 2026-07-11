@@ -5,10 +5,15 @@
 //! secp256k1 ECDSA signatures and BIP-340 Schnorr signatures.
 
 mod constants;
+mod jose_signature;
 
 pub use constants::{
     BIP340_SCHNORR_AUX_RAND_LEN, BIP340_SCHNORR_MESSAGE_LEN, BIP340_SCHNORR_PUBLIC_KEY_LEN,
     BIP340_SCHNORR_SIGNATURE_LEN, SECP256K1_SECRET_KEY_LEN,
+};
+pub use jose_signature::{
+    secp256k1_ecdsa_der_to_jose_signature, secp256k1_ecdsa_der_to_jose_signature_permissive,
+    secp256k1_ecdsa_jose_signature_to_der, SECP256K1_ECDSA_JOSE_SIGNATURE_LEN,
 };
 
 #[cfg(all(feature = "native", not(all(feature = "wasm", target_arch = "wasm32"))))]
