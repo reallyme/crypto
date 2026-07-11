@@ -1,0 +1,127 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Release Preflight
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rust-crates:
+    name: rust crate metadata
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: 1.96.0
+
+      - name: Install Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+
+      - name: Check workspace metadata
+        run: cargo metadata --format-version 1 --no-deps
+
+      - name: Check umbrella crate tarballs
+        run: |
+          cargo package -p reallyme-crypto --list
+          cargo package -p reallyme-codec --list
+
+      - name: Check generated provider matrix
+        run: node scripts/generate_provider_matrix.mjs --check
+
+      - name: Check release readiness contract
+        run: node scripts/check_release_readiness.mjs
+
+  swift-package:
+    name: swift package preflight
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Select Xcode 26.3
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.3.app
+          swift --version
+
+      - name: Build crypto-ffi dylib
+        run: cargo build -p crypto-ffi
+
+      - name: Test Swift package
+        run: swift test
+        env:
+          REALLYME_CRYPTO_FFI_LIBRARY_PATH: ${{ github.workspace }}/target/debug/libcrypto_ffi.dylib
+
+  kotlin-package:
+    name: kotlin maven preflight
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Install Java
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build crypto-ffi dylib
+        run: cargo build -p crypto-ffi
+
+      - name: Test and publish to Maven local
+        working-directory: packages/kotlin
+        run: ./gradlew test publishToMavenLocal
+        env:
+          REALLYME_CRYPTO_FFI_LIBRARY_PATH: ${{ github.workspace }}/target/debug/libcrypto_ffi.dylib
+
+  npm-package:
+    name: npm package preflight
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Install Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: packages/ts/package-lock.json
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: 1.96.0
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # wasm-pack
+        with:
+          tool: wasm-pack@0.15.0
+
+      - name: Install wasm-bindgen-cli
+        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # wasm-bindgen-cli
+        with:
+          tool: wasm-bindgen-cli@0.2.126
+
+      - name: Install TypeScript package dependencies
+        run: npm ci
+        working-directory: packages/ts
+
+      - name: Test TypeScript package
+        run: npm test
+        working-directory: packages/ts
+
+      - name: Build npm tarball dry run
+        run: npm pack --dry-run
+        working-directory: packages/ts

@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-aes-kw"
+version = "0.1.1"
+edition.workspace = true
+rust-version.workspace = true
+publish = true
+description = "AES Key Wrap primitive for ReallyMe Crypto."
+license.workspace = true
+repository.workspace = true
+
+[lib]
+name = "crypto_aes_kw"
+
+[features]
+default = []
+native = []
+wasm = []
+
+[dependencies]
+aes-kw = { workspace = true, default-features = false, features = ["zeroize"] }
+crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "../../core" }
+zeroize = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+hex-literal = { workspace = true }
+
+[lints]
+workspace = true

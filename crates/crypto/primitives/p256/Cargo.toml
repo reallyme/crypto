@@ -1,0 +1,56 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-p256"
+version = "0.1.1"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = true
+description = "P-256 ECDSA and ECDH primitives for ReallyMe Crypto."
+
+[lib]
+name = "crypto_p256"
+
+[features]
+default = []
+
+native = [
+    "dep:p256",
+    "dep:ecdsa",
+    "dep:sha2",
+]
+
+# Platform backends
+wasm = [
+    "dep:wasm-bindgen",
+    "dep:js-sys",
+]
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "../../core" }
+zeroize = { workspace = true }
+
+# -----------------------------
+# Native-only crypto deps
+# -----------------------------
+# NOTE: p256 0.14 has no `zeroize` cargo feature; zeroization support is
+# unconditional in elliptic-curve 0.14 (SecretKey zeroizes on drop).
+p256 = { workspace = true, features = ["ecdh", "ecdsa"], optional = true }
+ecdsa = { workspace = true, features = ["der"], optional = true }
+sha2 = { workspace = true, optional = true }
+
+# -----------------------------
+# WASM-only deps (only if used in wasm/*.rs)
+# -----------------------------
+wasm-bindgen = { workspace = true, optional = true }
+js-sys = { workspace = true, optional = true }
+
+[dev-dependencies]
+hex = { workspace = true }
+
+[lints]
+workspace = true

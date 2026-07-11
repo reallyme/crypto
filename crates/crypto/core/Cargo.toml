@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-core"
+version = "0.1.1"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = true
+description = "Shared typed errors and algorithm identifiers for ReallyMe Crypto."
+
+
+[lib]
+name = "crypto_core"
+
+[dependencies]
+thiserror = { workspace = true }
+
+[lints]
+workspace = true

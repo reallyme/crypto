@@ -1,0 +1,43 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-hpke"
+version = "0.1.1"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = true
+description = "ReallyMe RFC 9180 HPKE protocol wrapper."
+
+[lib]
+name = "crypto_hpke"
+
+[features]
+default = []
+native = [
+    "dep:getrandom",
+    "dep:hpke",
+    "hpke/alloc",
+    "hpke/aes",
+    "hpke/chacha",
+    "hpke/hkdfsha2",
+    "hpke/nistp",
+    "hpke/x25519",
+]
+wasm = ["native"]
+test-vectors = ["native"]
+
+[dependencies]
+getrandom = { workspace = true, optional = true }
+hpke = { workspace = true, optional = true }
+thiserror = { workspace = true }
+zeroize = { workspace = true }
+
+[dev-dependencies]
+hex = { workspace = true }
+
+[lints]
+workspace = true

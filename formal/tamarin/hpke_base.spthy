@@ -1,0 +1,114 @@
+/*
+SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+
+SPDX-License-Identifier: Apache-2.0
+
+Symbolic (Dolev-Yao) model of HPKE Base mode (RFC 9180) as composed by the
+ReallyMe crypto layer (crates/crypto/protocols/hpke): DHKEM encap/decap, the
+HKDF key schedule, and a single-shot AEAD seal/open.
+
+Scope and abstractions (stated honestly — this is a symbolic model, not a
+computational proof):
+
+  * DH is the built-in Tamarin diffie-hellman theory. This covers both
+    package suites, which are both DH-based KEMs:
+      - DHKEM-P256-HKDF-SHA256 ... AES-256-GCM
+      - DHKEM-X25519-HKDF-SHA256 ... ChaCha20-Poly1305
+    The specific curve and the specific AEAD are abstracted away; the model
+    reasons about the *composition*, not the primitives' bit-level security.
+  * HKDF Extract-then-Expand (LabeledExtract/LabeledExpand + the key schedule)
+    is abstracted as the free function `kdf/1` applied to the transcript. This
+    is the standard symbolic abstraction of a random oracle / PRF chain.
+  * The AEAD is modelled as authenticated encryption `aead(pt, key, aad)` with
+    `adec(aead(pt,key,aad), key, aad) = pt`, i.e. only the key holder recovers
+    the plaintext and the tag binds the aad. The HPKE `info` value and AEAD
+    `aad` value are separate public inputs, matching the Rust wrapper's
+    HpkeSealRequest/HpkeOpenRequest fields. Nonce management is folded into the
+    per-message key derivation (Base mode seals one message per context here).
+
+Property proven: HPKE Base gives *plaintext confidentiality* to the holder of
+the recipient static key. Base mode intentionally provides NO sender
+authentication (anyone may seal to a public key), so we do not claim it.
+*/
+
+theory HPKE_Base
+begin
+
+builtins: diffie-hellman
+
+functions: kdf/1, aead/3, adec/3
+equations: adec(aead(m, k, ad), k, ad) = m
+
+/* A recipient generates a static key pair and publishes the public key
+   pkR = g^skR. The KEM shared secret is bound to pkR. */
+rule Register_Recipient:
+    [ Fr(~skR) ]
+  --[ RegisterR($R, ~skR) ]->
+    [ !Ltk($R, ~skR)
+    , !Pk($R, 'g'^~skR)
+    , Out('g'^~skR)
+    ]
+
+/* Harvest-now-decrypt-later / key-compromise: the adversary may reveal a
+   recipient's static secret. Every use is logged so lemmas can exclude it. */
+rule Reveal_Recipient:
+    [ !Ltk($R, ~skR) ]
+  --[ RevealR($R) ]->
+    [ Out(~skR) ]
+
+/* Sender runs DHKEM encap to recipient R and seals a fresh secret plaintext.
+
+     skE, pkE = g^skE          (ephemeral)
+     dh       = pkR^skE        (= g^(skR*skE))
+     ss       = kdf(<'shared_secret', pkE, pkR, dh>)   (DHKEM ExtractAndExpand)
+     key      = kdf(<'key', ss, info>)                 (HPKE key schedule)
+     enc      = pkE
+     ct       = aead(pt, key, aad)
+
+   The model puts public `info` and `aad` on the wire so the recipient can use
+   the same application context. This is conservative: both are non-secret
+   caller-supplied HPKE inputs. */
+rule Seal:
+    let pkE = 'g'^~skE
+        dh  = pkR^~skE
+        ss  = kdf(<'shared_secret', pkE, pkR, dh>)
+        key = kdf(<'key', ss, $info>)
+        ct  = aead(~pt, key, $aad)
+    in
+    [ Fr(~skE), Fr(~pt), !Pk($R, pkR) ]
+  --[ Seal($R, ~pt, $info, $aad) ]->
+    [ Out(<pkE, ct, $info, $aad>) ]
+
+/* Recipient runs DHKEM decap and opens.
+
+     dh   = enc^skR            (= g^(skE*skR) = the same shared point)
+     ss   = kdf(<'shared_secret', enc, g^skR, dh>)
+     key  = kdf(<'key', ss, info>)
+     pt   = adec(ct, key, aad) */
+rule Open:
+    let dh  = enc^~skR
+        pkR = 'g'^~skR
+        ss  = kdf(<'shared_secret', enc, pkR, dh>)
+        key = kdf(<'key', ss, $info>)
+        pt  = adec(ct, key, $aad)
+    in
+    [ !Ltk($R, ~skR), In(<enc, ct, $info, $aad>) ]
+  --[ Open($R, pt, $info, $aad) ]->
+    [ ]
+
+/* Sanity: a normal run exists — a sealed plaintext is opened, unchanged, by the
+   intended recipient under the same context. Guards against a model that proves
+   secrecy vacuously. */
+lemma sanity_roundtrip_exists:
+  exists-trace
+  "Ex R pt info aad #i #j. Seal(R, pt, info, aad) @ i & Open(R, pt, info, aad) @ j"
+
+/* Main property: a plaintext sealed to recipient R under HPKE Base stays secret
+   from the Dolev-Yao adversary UNLESS R's static key was revealed. */
+lemma plaintext_secrecy:
+  all-traces
+  "All R pt info aad #i.
+     Seal(R, pt, info, aad) @ i & (Ex #k. K(pt) @ k)
+       ==> (Ex #r. RevealR(R) @ r)"
+
+end

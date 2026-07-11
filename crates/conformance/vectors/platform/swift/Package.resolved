@@ -1,0 +1,60 @@
+{
+  "originHash" : "f8edb71b26939ee08f51e343196741c1ff17ff739a4a59abec19911f3d6a2e62",
+  "pins" : [
+    {
+      "identity" : "asn1",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/leif-ibsen/ASN1",
+      "state" : {
+        "revision" : "e38d1b8b43d8b53ffadde9836f34289176bb7a0c",
+        "version" : "2.7.0"
+      }
+    },
+    {
+      "identity" : "bigint",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/leif-ibsen/BigInt",
+      "state" : {
+        "revision" : "7c7b1be2f6714ce03833879b0aab4b20293c0207",
+        "version" : "1.24.0"
+      }
+    },
+    {
+      "identity" : "csecp256k1",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/reallyme/CSecp256k1",
+      "state" : {
+        "revision" : "90c1cb68726d8b3e22ced1fc74a79eb68951ad2f",
+        "version" : "0.1.0"
+      }
+    },
+    {
+      "identity" : "digest",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/leif-ibsen/Digest",
+      "state" : {
+        "revision" : "95ba89b494aaff5f3cd2933c03b9a890323dbf2c",
+        "version" : "1.13.0"
+      }
+    },
+    {
+      "identity" : "swiftdilithium",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/leif-ibsen/SwiftDilithium",
+      "state" : {
+        "revision" : "452e507c68879a4a584502e1ef55605efb224e79",
+        "version" : "3.6.0"
+      }
+    },
+    {
+      "identity" : "swiftkyber",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/leif-ibsen/SwiftKyber",
+      "state" : {
+        "revision" : "9dcd9efd90c48f10ad8ec2e6dced43e325625a1a",
+        "version" : "3.5.0"
+      }
+    }
+  ],
+  "version" : 3
+}

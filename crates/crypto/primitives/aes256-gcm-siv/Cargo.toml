@@ -1,0 +1,36 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-aes256-gcm-siv"
+version = "0.1.1"
+edition.workspace = true
+rust-version.workspace = true
+publish = true
+description = "AES-256-GCM-SIV authenticated encryption primitive for ReallyMe Crypto."
+license.workspace = true
+repository.workspace = true
+
+[package.metadata.cargo-machete]
+ignored = [
+    # Enables getrandom's wasm entropy backend for the transitive RustCrypto stack.
+    "getrandom",
+]
+
+[lib]
+name = "crypto_aes256_gcm_siv"
+
+[features]
+default = []
+native = ["dep:aes-gcm-siv"]
+wasm = ["dep:aes-gcm-siv", "dep:getrandom"]
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "../../core" }
+zeroize = { workspace = true, features = ["derive"] }
+aes-gcm-siv = { workspace = true, optional = true }
+getrandom = { workspace = true, features = ["wasm_js"], optional = true }
+
+[lints]
+workspace = true

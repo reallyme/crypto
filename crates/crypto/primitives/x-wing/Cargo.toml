@@ -1,0 +1,36 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-x-wing"
+version = "0.1.1"
+edition.workspace = true
+rust-version.workspace = true
+publish = true
+license.workspace = true
+repository.workspace = true
+description = "X-Wing hybrid KEM primitives over X25519 and ML-KEM."
+
+[lib]
+name = "crypto_x_wing"
+
+[features]
+default = []
+native = ["crypto-sha3/native", "crypto-sha3-256/native"]
+wasm = ["crypto-sha3/wasm", "crypto-sha3-256/wasm"]
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "../../core" }
+crypto-sha3 = { package = "reallyme-crypto-sha3", version = "0.1.1", path = "../sha3", default-features = false }
+crypto-sha3-256 = { package = "reallyme-crypto-sha3-256", version = "0.1.1", path = "../sha3-256", default-features = false }
+getrandom = { workspace = true, features = ["wasm_js"] }
+ml-kem = { workspace = true, features = ["getrandom", "hazmat", "zeroize"] }
+x25519-dalek = { workspace = true, features = ["getrandom", "static_secrets", "zeroize"] }
+zeroize = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+hex = { workspace = true }
+
+[lints]
+workspace = true

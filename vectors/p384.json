@@ -1,0 +1,9 @@
+{
+  "alg": "ES384",
+  "curve": "P-384",
+  "secret_key": "XY9hKpTANncb4lCuR5wD0WJ6tO6IIQk18ETKfRmDtlIP2XArrFgT5nSRIs86vVUI",
+  "public_key_compressed": "AyQp1rInwuJ6H3lh1jS8OWwLrBsZlrgiW1LT6Ms4zFbG8LkHlEsn0gExi5n81-3ozg",
+  "public_key_uncompressed": "BCQp1rInwuJ6H3lh1jS8OWwLrBsZlrgiW1LT6Ms4zFbG8LkHlEsn0gExi5n81-3ozj7Js486PskcNoC-dRTNTVVLwzDSOKKGiljYr7-FqFsFcRhZt69X5Yv9AYmwy0hfiw",
+  "message": "UmVhbGx5TWUgc2lnbmF0dXJlIGNvbmZvcm1hbmNlIHZlY3Rvcg",
+  "signature_der": "MGQCMD5Kk9Jp6OdOrMquMfql17066VoQOyLWM1dbA1V0y8EGC5JoQnV5WTszbSwjbNNsQAIwH7pIiDMeSU6I1l44_t3qBAXlkQDDlZbp-ZIR0YdOYYXbQdRUxbFii6Iq7jprgE3g"
+}

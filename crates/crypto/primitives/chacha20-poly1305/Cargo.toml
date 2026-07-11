@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-chacha20-poly1305"
+version = "0.1.1"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = true
+description = "ChaCha20-Poly1305 and XChaCha20-Poly1305 primitives for ReallyMe Crypto."
+
+[lib]
+name = "crypto_chacha20_poly1305"
+
+[features]
+default = []
+native = ["dep:chacha20poly1305"]
+wasm = ["dep:chacha20poly1305"]
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "../../core" }
+zeroize = { workspace = true, features = ["zeroize_derive"] }
+chacha20poly1305 = { workspace = true, optional = true, features = ["zeroize"] }
+
+[dev-dependencies]
+hex = { workspace = true }
+
+[lints]
+workspace = true

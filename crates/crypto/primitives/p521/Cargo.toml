@@ -1,0 +1,35 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-p521"
+version = "0.1.1"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = true
+description = "P-521 ECDSA primitive for ReallyMe Crypto."
+
+[lib]
+name = "crypto_p521"
+
+[features]
+default = []
+native = ["dep:p521", "dep:ecdsa", "dep:sha2"]
+wasm = ["native"]
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "../../core" }
+zeroize = { workspace = true }
+
+p521 = { workspace = true, features = ["ecdsa"], optional = true }
+ecdsa = { workspace = true, features = ["der"], optional = true }
+sha2 = { workspace = true, optional = true }
+
+[dev-dependencies]
+hex = { workspace = true }
+
+[lints]
+workspace = true

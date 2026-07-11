@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-codec-base64url"
+version = "0.1.1"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = true
+description = "Base64url codec utilities for ReallyMe Crypto."
+
+[lib]
+name = "codec_base64url"
+
+[dependencies]
+base64 = { workspace = true }
+thiserror = { workspace = true }
+
+[lints]
+workspace = true

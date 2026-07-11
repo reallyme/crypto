@@ -1,0 +1,11 @@
+{
+  "alg": "BIP-340",
+  "scheme": "BIP-340 Schnorr",
+  "curve": "secp256k1",
+  "public_key_format": "x-only",
+  "secret_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM",
+  "public_key_xonly": "-TCKAZJYwxBJNE-F-J1SKbUxyEWDb5mwhgHxE7zgNvk",
+  "message": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  "aux_rand": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  "signature": "6QeDH4CEjRBppTcbQCQQNkvfHF-DB7AITFXxzi3KghUl9mpKheqLceSCp084LSzl6-7o_bIXL0d99JANMQU2wA"
+}

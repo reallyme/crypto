@@ -1,0 +1,8 @@
+{
+  "alg": "EdDSA",
+  "curve": "Ed25519",
+  "secret_key": "m3EjVcRqCJ9BgnAYUs3vQyIRbaB-OUq82F8TJpKhvnc",
+  "public_key": "bd_77DacquIWpfuZCAps4BN5nYvqANOYBNepDXNQLYI",
+  "message": "UmVhbGx5TWUgc2lnbmF0dXJlIGNvbmZvcm1hbmNlIHZlY3Rvcg",
+  "signature": "adNguDlYPONjICHoyms4JTP2joxT9Jls2E39pUgnNlk2RliHUufY0iqEzczcTLhOa4x4HmcnRaylrOJEPMzeAw"
+}

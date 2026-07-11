@@ -1,0 +1,185 @@
+// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package reallyme.crypto.v1;
+
+option java_multiple_files = true;
+option java_package = "me.really.crypto.v1";
+option swift_prefix = "ReallyMeProto";
+
+// CryptoAlgorithmFamily classifies an algorithm identifier without implying
+// that the identifier is valid for a specific operation.
+enum CryptoAlgorithmFamily {
+  CRYPTO_ALGORITHM_FAMILY_UNSPECIFIED = 0;
+  CRYPTO_ALGORITHM_FAMILY_SIGNATURE = 1;
+  CRYPTO_ALGORITHM_FAMILY_KEY_AGREEMENT = 2;
+  CRYPTO_ALGORITHM_FAMILY_KEM = 3;
+  CRYPTO_ALGORITHM_FAMILY_AEAD = 4;
+  CRYPTO_ALGORITHM_FAMILY_HASH = 5;
+  CRYPTO_ALGORITHM_FAMILY_MAC = 6;
+  CRYPTO_ALGORITHM_FAMILY_KDF = 7;
+  CRYPTO_ALGORITHM_FAMILY_KEY_WRAP = 8;
+  CRYPTO_ALGORITHM_FAMILY_HPKE = 9;
+}
+
+// SignatureAlgorithm identifies signature suites supported or reserved by the
+// crypto repository. RSA values identify verification suites; RSA signing is
+// intentionally not exposed by this package today.
+enum SignatureAlgorithm {
+  SIGNATURE_ALGORITHM_UNSPECIFIED = 0;
+  SIGNATURE_ALGORITHM_ED25519 = 1;
+  SIGNATURE_ALGORITHM_ECDSA_P256_SHA256 = 2;
+  SIGNATURE_ALGORITHM_ECDSA_P384_SHA384 = 3;
+  SIGNATURE_ALGORITHM_ECDSA_P521_SHA512 = 4;
+  SIGNATURE_ALGORITHM_ECDSA_SECP256K1_SHA256 = 5;
+  SIGNATURE_ALGORITHM_BIP340_SCHNORR_SECP256K1_SHA256 = 6;
+  SIGNATURE_ALGORITHM_RSA_PKCS1V15_SHA1 = 7;
+  SIGNATURE_ALGORITHM_RSA_PKCS1V15_SHA256 = 8;
+  SIGNATURE_ALGORITHM_RSA_PKCS1V15_SHA384 = 9;
+  SIGNATURE_ALGORITHM_RSA_PKCS1V15_SHA512 = 10;
+  SIGNATURE_ALGORITHM_RSA_PSS_SHA1_MGF1_SHA1 = 11;
+  SIGNATURE_ALGORITHM_RSA_PSS_SHA256_MGF1_SHA256 = 12;
+  SIGNATURE_ALGORITHM_RSA_PSS_SHA384_MGF1_SHA384 = 13;
+  SIGNATURE_ALGORITHM_RSA_PSS_SHA512_MGF1_SHA512 = 14;
+  SIGNATURE_ALGORITHM_ML_DSA_44 = 15;
+  SIGNATURE_ALGORITHM_ML_DSA_65 = 16;
+  SIGNATURE_ALGORITHM_ML_DSA_87 = 17;
+  SIGNATURE_ALGORITHM_SLH_DSA_SHA2_128S = 18;
+}
+
+// KeyAgreementAlgorithm identifies direct shared-secret derivation suites.
+// Callers must still feed derived shared secrets through a protocol KDF.
+enum KeyAgreementAlgorithm {
+  KEY_AGREEMENT_ALGORITHM_UNSPECIFIED = 0;
+  KEY_AGREEMENT_ALGORITHM_X25519 = 1;
+  KEY_AGREEMENT_ALGORITHM_P256_ECDH = 2;
+}
+
+// KemAlgorithm identifies encapsulation suites. X-Wing values are ReallyMe's
+// supported hybrid KEM variants over X25519 and ML-KEM.
+enum KemAlgorithm {
+  KEM_ALGORITHM_UNSPECIFIED = 0;
+  KEM_ALGORITHM_ML_KEM_512 = 1;
+  KEM_ALGORITHM_ML_KEM_768 = 2;
+  KEM_ALGORITHM_ML_KEM_1024 = 3;
+  KEM_ALGORITHM_X_WING_768 = 4;
+  KEM_ALGORITHM_X_WING_1024 = 5;
+}
+
+// HpkeSuite identifies supported RFC 9180 HPKE Base-mode ciphersuites.
+enum HpkeSuite {
+  HPKE_SUITE_UNSPECIFIED = 0;
+  HPKE_SUITE_DHKEM_P256_HKDF_SHA256_HKDF_SHA256_AES_256_GCM = 1;
+  HPKE_SUITE_DHKEM_X25519_HKDF_SHA256_HKDF_SHA256_CHACHA20_POLY1305 = 2;
+}
+
+// AeadAlgorithm identifies authenticated-encryption suites.
+enum AeadAlgorithm {
+  AEAD_ALGORITHM_UNSPECIFIED = 0;
+  AEAD_ALGORITHM_AES_256_GCM = 1;
+  AEAD_ALGORITHM_AES_256_GCM_SIV = 2;
+  AEAD_ALGORITHM_CHACHA20_POLY1305 = 3;
+  AEAD_ALGORITHM_XCHACHA20_POLY1305 = 4;
+}
+
+// HashAlgorithm identifies digest algorithms exposed by the hash primitives.
+enum HashAlgorithm {
+  HASH_ALGORITHM_UNSPECIFIED = 0;
+  HASH_ALGORITHM_SHA2_256 = 1;
+  HASH_ALGORITHM_SHA2_384 = 2;
+  HASH_ALGORITHM_SHA2_512 = 3;
+  HASH_ALGORITHM_SHA3_224 = 4;
+  HASH_ALGORITHM_SHA3_256 = 5;
+  HASH_ALGORITHM_SHA3_384 = 6;
+  HASH_ALGORITHM_SHA3_512 = 7;
+}
+
+// MacAlgorithm identifies message-authentication-code suites.
+enum MacAlgorithm {
+  MAC_ALGORITHM_UNSPECIFIED = 0;
+  MAC_ALGORITHM_HMAC_SHA256 = 1;
+  MAC_ALGORITHM_HMAC_SHA512 = 2;
+}
+
+// KdfAlgorithm identifies key-derivation functions. PBKDF2 values are retained
+// for legacy interoperability; new password storage should prefer Argon2id.
+enum KdfAlgorithm {
+  KDF_ALGORITHM_UNSPECIFIED = 0;
+  KDF_ALGORITHM_HKDF_SHA256 = 1;
+  KDF_ALGORITHM_ARGON2ID = 2;
+  KDF_ALGORITHM_PBKDF2_HMAC_SHA256 = 3;
+  KDF_ALGORITHM_PBKDF2_HMAC_SHA512 = 4;
+}
+
+// KeyWrapAlgorithm identifies key-wrapping algorithms.
+enum KeyWrapAlgorithm {
+  KEY_WRAP_ALGORITHM_UNSPECIFIED = 0;
+  KEY_WRAP_ALGORITHM_AES_256_KW = 1;
+}
+
+// MulticodecKeyAlgorithm identifies table-backed key codecs that ReallyMe
+// recognizes. These are codec identifiers, not permission to expose private key
+// material in protobuf payloads.
+enum MulticodecKeyAlgorithm {
+  MULTICODEC_KEY_ALGORITHM_UNSPECIFIED = 0;
+  MULTICODEC_KEY_ALGORITHM_ED25519_PUB = 1;
+  MULTICODEC_KEY_ALGORITHM_X25519_PUB = 2;
+  MULTICODEC_KEY_ALGORITHM_SECP256K1_PUB = 3;
+  MULTICODEC_KEY_ALGORITHM_P256_PUB = 4;
+  MULTICODEC_KEY_ALGORITHM_P384_PUB = 5;
+  MULTICODEC_KEY_ALGORITHM_P521_PUB = 6;
+  MULTICODEC_KEY_ALGORITHM_ED448_PUB = 7;
+  MULTICODEC_KEY_ALGORITHM_RSA_PUB = 8;
+  MULTICODEC_KEY_ALGORITHM_ML_KEM_512_PUB = 9;
+  MULTICODEC_KEY_ALGORITHM_ML_KEM_768_PUB = 10;
+  MULTICODEC_KEY_ALGORITHM_ML_KEM_1024_PUB = 11;
+  MULTICODEC_KEY_ALGORITHM_ML_DSA_44_PUB = 12;
+  MULTICODEC_KEY_ALGORITHM_ML_DSA_65_PUB = 13;
+  MULTICODEC_KEY_ALGORITHM_ML_DSA_87_PUB = 14;
+  MULTICODEC_KEY_ALGORITHM_ED25519_PRIV = 15;
+  MULTICODEC_KEY_ALGORITHM_X25519_PRIV = 16;
+  MULTICODEC_KEY_ALGORITHM_SECP256K1_PRIV = 17;
+  MULTICODEC_KEY_ALGORITHM_P256_PRIV = 18;
+  MULTICODEC_KEY_ALGORITHM_P384_PRIV = 19;
+  MULTICODEC_KEY_ALGORITHM_P521_PRIV = 20;
+  MULTICODEC_KEY_ALGORITHM_ED448_PRIV = 21;
+  MULTICODEC_KEY_ALGORITHM_RSA_PRIV = 22;
+  MULTICODEC_KEY_ALGORITHM_ML_KEM_512_PRIV = 23;
+  MULTICODEC_KEY_ALGORITHM_ML_KEM_768_PRIV = 24;
+  MULTICODEC_KEY_ALGORITHM_ML_KEM_1024_PRIV = 25;
+}
+
+// CryptoAlgorithmIdentifier is a oneof wrapper for protocol messages that need
+// to carry a typed algorithm choice without using free-form strings.
+message CryptoAlgorithmIdentifier {
+  oneof algorithm {
+    SignatureAlgorithm signature = 1;
+    KeyAgreementAlgorithm key_agreement = 2;
+    KemAlgorithm kem = 3;
+    HpkeSuite hpke = 4;
+    AeadAlgorithm aead = 5;
+    HashAlgorithm hash = 6;
+    MacAlgorithm mac = 7;
+    KdfAlgorithm kdf = 8;
+    KeyWrapAlgorithm key_wrap = 9;
+    MulticodecKeyAlgorithm multicodec_key = 10;
+  }
+}
+
+// JsonWebKey carries a public JWK document at API/storage boundaries. The JSON
+// member is the canonical JCS form used by the package vectors; private key
+// material is intentionally out of scope for this message.
+message JsonWebKey {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes public_key = 2;
+  bytes canonical_jcs = 3;
+}
+
+// JsonWebKeySet is the protobuf boundary equivalent of the JSON { "keys": [] }
+// JWKS wrapper. It stores parsed public-key records rather than arbitrary JSON.
+message JsonWebKeySet {
+  repeated JsonWebKey keys = 1;
+}

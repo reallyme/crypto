@@ -1,0 +1,45 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-codec"
+version = "0.1.1"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = true
+description = "ReallyMe codec utilities for multibase, multicodec, multikey, CBOR, JCS, and base encodings."
+readme = "README.md"
+include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
+
+[dependencies]
+codec-base64 = { package = "reallyme-codec-base64", version = "0.1.1", path = "base64", optional = true }
+codec-base64url = { package = "reallyme-codec-base64url", version = "0.1.1", path = "base64url", optional = true }
+codec-cbor = { package = "reallyme-codec-cbor", version = "0.1.1", path = "cbor", optional = true }
+codec-jcs = { package = "reallyme-codec-jcs", version = "0.1.1", path = "jcs", optional = true }
+codec-multibase = { package = "reallyme-codec-multibase", version = "0.1.1", path = "multibase", optional = true }
+codec-multicodec = { package = "reallyme-codec-multicodec", version = "0.1.1", path = "multicodec", optional = true }
+codec-multikey = { package = "reallyme-codec-multikey", version = "0.1.1", path = "multikey", optional = true }
+
+[features]
+default = [
+    "base64",
+    "base64url",
+    "cbor",
+    "jcs",
+    "multibase",
+    "multicodec",
+    "multikey",
+]
+base64 = ["dep:codec-base64"]
+base64url = ["dep:codec-base64url"]
+cbor = ["dep:codec-cbor"]
+jcs = ["dep:codec-jcs"]
+multibase = ["dep:codec-multibase", "base64url"]
+multicodec = ["dep:codec-multicodec"]
+multikey = ["dep:codec-multikey", "multibase", "multicodec"]
+
+[lints]
+workspace = true

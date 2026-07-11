@@ -1,0 +1,131 @@
+#!/usr/bin/env node
+// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+//
+// SPDX-License-Identifier: Apache-2.0
+
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
+const releaseVersion = "0.1.1";
+const requiredLanes = ["swift", "kotlin_jvm", "kotlin_android", "typescript_wasm"];
+const allowedStatuses = new Set(["supported", "provider_aware", "partial", "unsupported"]);
+const allowedFallbacks = new Set([
+  "typed_provider_failure",
+  "typed_unsupported_algorithm",
+  "explicit_provider_required",
+]);
+
+const readText = (path) => readFileSync(resolve(root, path), "utf8");
+const readJson = (path) => JSON.parse(readText(path));
+
+const fail = (message) => {
+  console.error(`release readiness check failed: ${message}`);
+  process.exit(1);
+};
+
+const assertContains = (path, needle) => {
+  if (!readText(path).includes(needle)) {
+    fail(`${path} does not contain ${needle}`);
+  }
+};
+
+const manifest = readJson("provider_manifest.json");
+const byId = new Map();
+for (const algorithm of manifest.algorithms) {
+  byId.set(algorithm.id, algorithm);
+}
+
+const resolveAlgorithm = (algorithm) => {
+  if (algorithm.lanes) {
+    return algorithm;
+  }
+  const source = byId.get(algorithm.sameAs);
+  if (!source || !source.lanes) {
+    fail(`unresolved sameAs for ${algorithm.id}`);
+  }
+  return { ...algorithm, lanes: source.lanes };
+};
+
+const statusCounts = new Map();
+for (const rawAlgorithm of manifest.algorithms) {
+  const algorithm = resolveAlgorithm(rawAlgorithm);
+  for (const laneName of requiredLanes) {
+    const lane = algorithm.lanes[laneName];
+    if (!lane) {
+      fail(`${algorithm.id} is missing lane ${laneName}`);
+    }
+    if (!allowedStatuses.has(lane.status)) {
+      fail(`${algorithm.id}/${laneName} has unknown status ${lane.status}`);
+    }
+    if (!allowedFallbacks.has(lane.fallback)) {
+      fail(`${algorithm.id}/${laneName} has unknown fallback ${lane.fallback}`);
+    }
+    if (!Array.isArray(lane.providers)) {
+      fail(`${algorithm.id}/${laneName} providers is not an array`);
+    }
+    if (typeof lane.usesRust !== "boolean") {
+      fail(`${algorithm.id}/${laneName} usesRust is not boolean`);
+    }
+    if (typeof lane.api !== "string" || lane.api.length === 0) {
+      fail(`${algorithm.id}/${laneName} api is empty`);
+    }
+    const countKey = `${laneName}:${lane.status}`;
+    statusCounts.set(countKey, (statusCounts.get(countKey) ?? 0) + 1);
+  }
+}
+
+const rootCargo = readText("Cargo.toml");
+if (!rootCargo.includes(`version = "${releaseVersion}"`)) {
+  fail(`root Cargo.toml is not versioned ${releaseVersion}`);
+}
+if (
+  !rootCargo.includes(
+    'include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]',
+  )
+) {
+  fail("root Cargo.toml must use an anchored package include allowlist");
+}
+
+const ffiCargo = readText("crates/crypto/ffi/Cargo.toml");
+if (!ffiCargo.includes("publish = false")) {
+  fail("crates/crypto/ffi must remain publish = false");
+}
+
+const codecCargo = readText("crates/codec/Cargo.toml");
+if (
+  !codecCargo.includes(
+    'include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]',
+  )
+) {
+  fail("crates/codec/Cargo.toml must use an anchored package include allowlist");
+}
+
+const tsPackage = readJson("packages/ts/package.json");
+if (tsPackage.version !== releaseVersion) {
+  fail(`packages/ts/package.json is not versioned ${releaseVersion}`);
+}
+if (tsPackage.private === true) {
+  fail("packages/ts/package.json is still private and cannot be published to npm");
+}
+
+const kotlinBuild = readText("packages/kotlin/build.gradle.kts");
+if (!kotlinBuild.includes(`version = "${releaseVersion}"`)) {
+  fail(`packages/kotlin/build.gradle.kts is not versioned ${releaseVersion}`);
+}
+
+assertContains("README.md", "actions/workflows/rust-ci.yml/badge.svg");
+assertContains("README.md", "actions/workflows/release-preflight.yml/badge.svg");
+assertContains("README.md", "PROVIDER_POLICY.md");
+assertContains("README.md", "CONTRACT.md");
+assertContains("SECURITY.md", "PROVIDER_POLICY.md");
+assertContains("SECURITY_MEMORY_MODEL.md", "scripts/check_release_readiness.mjs");
+assertContains("PROVIDER_POLICY.md", "Generated from `provider_manifest.json`");
+
+const orderedCounts = [...statusCounts.entries()].sort(([left], [right]) =>
+  left.localeCompare(right),
+);
+for (const [key, count] of orderedCounts) {
+  console.log(`${key} ${count}`);
+}
