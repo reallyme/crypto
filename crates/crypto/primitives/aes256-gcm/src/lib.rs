@@ -10,14 +10,14 @@ pub use types::{
     AES_256_GCM_KEY_LENGTH, AES_256_GCM_NONCE_LENGTH, AES_256_GCM_TAG_LENGTH,
 };
 
-#[cfg(all(feature = "native", not(all(feature = "wasm", target_arch = "wasm32"))))]
+#[cfg(feature = "native")]
 mod native;
 
-#[cfg(all(feature = "native", not(all(feature = "wasm", target_arch = "wasm32"))))]
+#[cfg(feature = "native")]
 pub use native::{decrypt, encrypt};
 
-#[cfg(all(feature = "wasm", target_arch = "wasm32"))]
+#[cfg(all(feature = "wasm", target_arch = "wasm32", not(feature = "native")))]
 mod wasm;
 
-#[cfg(all(feature = "wasm", target_arch = "wasm32"))]
+#[cfg(all(feature = "wasm", target_arch = "wasm32", not(feature = "native")))]
 pub use wasm::{decrypt, encrypt};

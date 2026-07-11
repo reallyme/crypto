@@ -28,6 +28,7 @@ cargo nextest run --workspace --all-features
 cargo nextest run --workspace --no-default-features --features native
 cargo check --workspace --no-default-features --features native
 cargo check --workspace --no-default-features --features wasm
+cargo check --workspace --no-default-features --features wasm --target wasm32-unknown-unknown
 cargo run -p crypto-conformance-vectors --bin gen_vectors
 npm run --prefix crates/conformance/vectors verify:ts-native
 npm run --prefix crates/conformance/vectors verify:noble-pq
