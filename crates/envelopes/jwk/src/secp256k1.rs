@@ -9,9 +9,11 @@
 
 use crate::{EcJwk, JwkOptions, JwtError};
 
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use codec_base64url::bytes_to_base64url;
 use codec_jcs::canonicalize_json;
 
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use crypto_secp256k1::decompress_public_key;
 
 /// Convert a compressed SEC1 secp256k1 public key into a JWK.
@@ -26,27 +28,36 @@ pub fn secp256k1_public_key_to_jwk(
         return Err(JwtError::InvalidSecp256k1Key);
     }
 
-    let (x, y) =
-        decompress_public_key(compressed_sec1).map_err(|_| JwtError::InvalidSecp256k1Key)?;
-
-    let mut jwk = EcJwk {
-        kty: "EC".to_string(),
-        crv: "secp256k1".to_string(),
-        x: bytes_to_base64url(&x),
-        y: bytes_to_base64url(&y),
-        alg: None,
-        use_: None,
-        kid: options.kid,
-    };
-
-    if options.alg {
-        jwk.alg = Some("ES256K".into());
-    }
-    if options.use_sig {
-        jwk.use_ = Some("sig".into());
+    #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
+    {
+        let _ = options;
+        return Err(JwtError::UnsupportedKeyFormat);
     }
 
-    Ok(jwk)
+    #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
+    {
+        let (x, y) =
+            decompress_public_key(compressed_sec1).map_err(|_| JwtError::InvalidSecp256k1Key)?;
+
+        let mut jwk = EcJwk {
+            kty: "EC".to_string(),
+            crv: "secp256k1".to_string(),
+            x: bytes_to_base64url(&x),
+            y: bytes_to_base64url(&y),
+            alg: None,
+            use_: None,
+            kid: options.kid,
+        };
+
+        if options.alg {
+            jwk.alg = Some("ES256K".into());
+        }
+        if options.use_sig {
+            jwk.use_ = Some("sig".into());
+        }
+
+        Ok(jwk)
+    }
 }
 
 /// Convert secp256k1 public key → **JCS-canonicalized JWK string**

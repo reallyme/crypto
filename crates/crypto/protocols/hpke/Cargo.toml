@@ -34,7 +34,7 @@ test-vectors = ["native"]
 getrandom = { workspace = true, optional = true }
 hpke = { workspace = true, optional = true }
 thiserror = { workspace = true }
-zeroize = { workspace = true }
+zeroize = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
 hex = { workspace = true }

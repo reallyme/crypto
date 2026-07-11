@@ -16,6 +16,7 @@ use crate::{EcJwk, JwkOptions, JwtError};
 
 use codec_base64url::bytes_to_base64url;
 use codec_jcs::canonicalize_json;
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use crypto_p256::decompress_public_key;
 
 /// Convert a SEC1 P-256 public key (compressed or uncompressed) into a JWK.
@@ -26,7 +27,17 @@ pub fn p256_public_key_to_jwk(
     // Normalize to uncompressed SEC1
     let uncompressed = match public_key_sec1.len() {
         // compressed SEC1
-        33 => decompress_public_key(public_key_sec1).map_err(|_| JwtError::InvalidP256Key)?,
+        33 => {
+            #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
+            {
+                decompress_public_key(public_key_sec1).map_err(|_| JwtError::InvalidP256Key)?
+            }
+
+            #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
+            {
+                return Err(JwtError::UnsupportedKeyFormat);
+            }
+        }
 
         // already uncompressed
         65 => public_key_sec1.to_vec(),

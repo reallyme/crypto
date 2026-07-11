@@ -5,7 +5,9 @@
 //! Shared JWK data structures.
 
 use codec_base64url::base64url_to_bytes;
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use crypto_p256::decompress_public_key as decompress_p256_public_key;
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use crypto_secp256k1::decompress_public_key as decompress_secp256k1_public_key;
 use serde::{Deserialize, Serialize};
 
@@ -173,16 +175,26 @@ fn ec_public_key_bytes(ec: &EcJwk) -> Result<Vec<u8>, JwtError> {
     let mut compressed = Vec::with_capacity(33);
     compressed.push(prefix);
     compressed.extend_from_slice(&x);
-    match ec.crv.as_str() {
-        "P-256" => {
-            decompress_p256_public_key(&compressed).map_err(|_| invalid_error)?;
-        }
-        "secp256k1" => {
-            decompress_secp256k1_public_key(&compressed).map_err(|_| invalid_error)?;
-        }
-        _ => return Err(JwtError::UnsupportedKeyFormat),
-    };
-    Ok(compressed)
+
+    #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
+    {
+        let _ = compressed;
+        return Err(JwtError::UnsupportedKeyFormat);
+    }
+
+    #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
+    {
+        match ec.crv.as_str() {
+            "P-256" => {
+                decompress_p256_public_key(&compressed).map_err(|_| invalid_error)?;
+            }
+            "secp256k1" => {
+                decompress_secp256k1_public_key(&compressed).map_err(|_| invalid_error)?;
+            }
+            _ => return Err(JwtError::UnsupportedKeyFormat),
+        };
+        Ok(compressed)
+    }
 }
 
 fn akp_public_key_bytes(akp: &AkpJwk) -> Result<Vec<u8>, JwtError> {
