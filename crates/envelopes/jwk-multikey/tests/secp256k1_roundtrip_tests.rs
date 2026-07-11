@@ -4,10 +4,14 @@
 
 #![allow(clippy::expect_used, missing_docs)]
 
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use codec_multikey::encode_multikey;
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use envelopes_jwk::JwkOptions;
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use envelopes_jwk_multikey::*;
 
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 #[test]
 fn secp256k1_multikey_jwk_roundtrip() {
     // Deterministic compressed secp256k1 public key

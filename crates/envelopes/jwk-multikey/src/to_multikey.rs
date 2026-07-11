@@ -74,14 +74,22 @@ fn ec_to_multikey(jwk: &EcJwk) -> Result<String, JwkMultikeyError> {
     sec1.extend_from_slice(&x);
     sec1.extend_from_slice(&y);
 
+    #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
     match jwk.crv.as_str() {
         "secp256k1" => compress_secp256k1(&sec1),
         "P-256" => compress_p256(&sec1),
         _ => Err(JwkMultikeyError::UnsupportedAlgorithm),
     }
+
+    #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
+    {
+        let _ = sec1;
+        Err(JwkMultikeyError::UnsupportedAlgorithm)
+    }
 }
 
 /// Deterministic secp256k1 compression
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 fn compress_secp256k1(sec1: &[u8]) -> Result<String, JwkMultikeyError> {
     let x = sec1.get(1..33).ok_or(JwkMultikeyError::InvalidJwk)?;
     let y = sec1.get(33..65).ok_or(JwkMultikeyError::InvalidJwk)?;
@@ -103,6 +111,7 @@ fn compress_secp256k1(sec1: &[u8]) -> Result<String, JwkMultikeyError> {
 }
 
 /// Deterministic P-256 compression
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 fn compress_p256(sec1: &[u8]) -> Result<String, JwkMultikeyError> {
     let compressed = crypto_p256::compress_p256(sec1).map_err(|_| JwkMultikeyError::InvalidJwk)?;
     encode_multikey("p256-pub", &compressed).map_err(|_| JwkMultikeyError::EncodingError)

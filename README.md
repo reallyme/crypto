@@ -82,6 +82,26 @@ private keys, or provide RSA encryption/decryption APIs.
 cargo add reallyme-crypto --features native,dispatch,ed25519
 ```
 
+When default features are disabled, enable one backend lane and each algorithm
+surface your crate calls:
+
+```toml
+reallyme-crypto = { version = "0.1", default-features = false, features = [
+  "native",
+  "ed25519",
+  "p256",
+  "secp256k1",
+  "sha2",
+  "codec",
+] }
+```
+
+The `native` and `wasm` features select the Rust backend lane. They do not, by
+themselves, enable every primitive. Algorithm features such as `ed25519`,
+`p256`, or `codec` enable the root modules and re-exports. This keeps
+no-default consumers from pulling unused cryptography while still forwarding
+the selected backend into every enabled primitive crate.
+
 Codec-only consumers:
 
 ```sh

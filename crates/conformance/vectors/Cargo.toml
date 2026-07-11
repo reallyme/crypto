@@ -154,7 +154,7 @@ codec-multibase = { package = "reallyme-codec-multibase", version = "0.1.1", pat
 codec-multicodec = { package = "reallyme-codec-multicodec", version = "0.1.1", path = "../../codec/multicodec" }
 codec-multikey = { package = "reallyme-codec-multikey", version = "0.1.1", path = "../../codec/multikey" }
 envelopes-jwk = { package = "reallyme-crypto-jwk", version = "0.1.2", path = "../../envelopes/jwk", default-features = false }
-envelopes-jwk-multikey = { package = "reallyme-crypto-jwk-multikey", version = "0.1.2", path = "../../envelopes/jwk-multikey", default-features = false }
+envelopes-jwk-multikey = { package = "reallyme-crypto-jwk-multikey", version = "0.1.3", path = "../../envelopes/jwk-multikey", default-features = false }
 zeroize = { workspace = true }
 
 [lints]

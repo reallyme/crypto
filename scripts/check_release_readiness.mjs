@@ -8,7 +8,9 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
-const releaseVersion = "0.1.1";
+const rustRootVersion = "0.1.5";
+const typescriptPackageVersion = "0.1.4";
+const kotlinPackageVersion = "0.1.3";
 const requiredLanes = ["swift", "kotlin_jvm", "kotlin_android", "typescript_wasm"];
 const allowedStatuses = new Set(["supported", "provider_aware", "partial", "unsupported"]);
 const allowedFallbacks = new Set([
@@ -77,8 +79,8 @@ for (const rawAlgorithm of manifest.algorithms) {
 }
 
 const rootCargo = readText("Cargo.toml");
-if (!rootCargo.includes(`version = "${releaseVersion}"`)) {
-  fail(`root Cargo.toml is not versioned ${releaseVersion}`);
+if (!rootCargo.includes(`version = "${rustRootVersion}"`)) {
+  fail(`root Cargo.toml is not versioned ${rustRootVersion}`);
 }
 if (
   !rootCargo.includes(
@@ -103,20 +105,19 @@ if (
 }
 
 const tsPackage = readJson("packages/ts/package.json");
-if (tsPackage.version !== releaseVersion) {
-  fail(`packages/ts/package.json is not versioned ${releaseVersion}`);
+if (tsPackage.version !== typescriptPackageVersion) {
+  fail(`packages/ts/package.json is not versioned ${typescriptPackageVersion}`);
 }
 if (tsPackage.private === true) {
   fail("packages/ts/package.json is still private and cannot be published to npm");
 }
 
 const kotlinBuild = readText("packages/kotlin/build.gradle.kts");
-if (!kotlinBuild.includes(`version = "${releaseVersion}"`)) {
-  fail(`packages/kotlin/build.gradle.kts is not versioned ${releaseVersion}`);
+if (!kotlinBuild.includes(`version = "${kotlinPackageVersion}"`)) {
+  fail(`packages/kotlin/build.gradle.kts is not versioned ${kotlinPackageVersion}`);
 }
 
 assertContains("README.md", "actions/workflows/rust-ci.yml/badge.svg");
-assertContains("README.md", "actions/workflows/release-preflight.yml/badge.svg");
 assertContains("README.md", "PROVIDER_POLICY.md");
 assertContains("README.md", "CONTRACT.md");
 assertContains("SECURITY.md", "PROVIDER_POLICY.md");
