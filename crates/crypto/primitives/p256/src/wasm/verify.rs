@@ -16,6 +16,7 @@ extern "C" {
     ) -> bool;
 }
 
+/// Verifies a DER-encoded P-256 ECDSA signature over a pre-hashed message.
 pub fn verify_p256_der_prehash(
     signature_der: &[u8],
     message: &[u8],

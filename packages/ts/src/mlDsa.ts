@@ -93,6 +93,8 @@ export const ReallyMeMlDsa = {
     algorithm: ReallyMeSignatureAlgorithm,
     secretKey: Uint8Array,
   ): ReallyMeMlDsaKeyPair {
+    // Import an existing FIPS 204 seed and reconstruct its public key. Do not
+    // feed passwords or other low-entropy material here.
     const suite = mlDsaSuite(algorithm);
     ensureBytes(secretKey, ML_DSA_SECRET_KEY_LENGTH);
     return readKeyPair(suite.deriveKeyPair(secretKey), suite);

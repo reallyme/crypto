@@ -18,6 +18,7 @@ extern "C" {
     ) -> bool;
 }
 
+/// Verifies an Ed25519 signature through the JavaScript provider.
 pub fn verify_ed25519(public: &[u8], message: &[u8], signature: &[u8]) -> Result<(), CryptoError> {
     if public.len() != 32 {
         return Err(CryptoError::InvalidKey);

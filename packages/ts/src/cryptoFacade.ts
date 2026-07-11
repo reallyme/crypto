@@ -261,6 +261,9 @@ export const ReallyMeCrypto = {
     algorithm: ReallyMeSignatureAlgorithm,
     secretKey: Uint8Array,
   ): ReallyMeSignatureKeyPair {
+    // Import an existing secret and reconstruct its public key. Do not use
+    // this as key generation from passwords or other low-entropy input; use
+    // generateKeyPair for new keys, or a protocol-approved KDF before import.
     if (algorithm === ED25519) {
       return ReallyMeEd25519.deriveKeyPair(secretKey);
     }
@@ -279,6 +282,10 @@ export const ReallyMeCrypto = {
       case "ML-DSA-65":
       case "ML-DSA-87":
         return ReallyMeMlDsa.deriveKeyPair(algorithm, secretKey);
+      case "SLH-DSA-SHA2-128s":
+        // SLH-DSA deterministic derivation uses three FIPS seed components,
+        // so it deliberately does not fit this single-secret import shape.
+        throw new ReallyMeCryptoError("unsupported-algorithm");
       default:
         throw new ReallyMeCryptoError("unsupported-algorithm");
     }

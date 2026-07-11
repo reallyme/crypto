@@ -28,7 +28,12 @@ export const ReallyMeEd25519 = {
     };
   },
 
-  /** Derives the Ed25519 keypair from a 32-byte seed. */
+  /**
+   * Reconstructs an Ed25519 keypair from stored 32-byte secret material.
+   *
+   * This is an import path, not password-based key generation. Use
+   * `generateKeyPair` for fresh keys.
+   */
   deriveKeyPair(secretKey: Uint8Array): { publicKey: Uint8Array; secretKey: Uint8Array } {
     return {
       publicKey: this.derivePublicKey(secretKey),

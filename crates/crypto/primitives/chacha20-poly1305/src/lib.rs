@@ -5,9 +5,9 @@
 //! ChaCha20-Poly1305 (RFC 8439) and XChaCha20-Poly1305 authenticated
 //! encryption.
 //!
-//! The `native`, `wasm`, `swift`, and `kotlin` lanes intentionally use the
-//! same audited RustCrypto implementation until platform ABIs with matching
-//! XChaCha semantics are added.
+//! The Rust `native` and `wasm` lanes intentionally use the same audited
+//! RustCrypto implementation. Swift and Kotlin package facades call through
+//! FFI/JNI for XChaCha and other AEADs whose provider policy selects Rust.
 
 #![forbid(unsafe_code)]
 

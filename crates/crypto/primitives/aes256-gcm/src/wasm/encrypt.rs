@@ -10,6 +10,7 @@ use crate::{CiphertextWithTag, EncryptRequest, AES_256_GCM_TAG_LENGTH};
 
 use super::bindings::js_aes256_gcm_encrypt;
 
+/// Encrypts with AES-256-GCM through the JavaScript host provider.
 pub fn encrypt(request: &EncryptRequest<'_>) -> Result<CiphertextWithTag, CryptoError> {
     let key = Uint8Array::from(request.key.as_bytes().as_ref());
     let nonce = Uint8Array::from(request.nonce.as_bytes().as_ref());

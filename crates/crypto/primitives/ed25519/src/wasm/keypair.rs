@@ -15,6 +15,7 @@ extern "C" {
     fn js_generate_ed25519_keypair() -> JsValue;
 }
 
+/// Generates an Ed25519 keypair through the JavaScript provider.
 pub fn generate_ed25519_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
     let v = js_generate_ed25519_keypair();
     let obj = Object::from(v);

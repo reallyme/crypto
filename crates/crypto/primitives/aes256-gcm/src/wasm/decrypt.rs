@@ -9,6 +9,7 @@ use crate::DecryptRequest;
 
 use super::bindings::js_aes256_gcm_decrypt;
 
+/// Decrypts with AES-256-GCM through the JavaScript host provider.
 pub fn decrypt(request: &DecryptRequest<'_>) -> Result<Vec<u8>, CryptoError> {
     let key = Uint8Array::from(request.key.as_bytes().as_ref());
     let nonce = Uint8Array::from(request.nonce.as_bytes().as_ref());

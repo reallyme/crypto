@@ -14,6 +14,7 @@ extern "C" {
     fn js_sign_ed25519(message: Uint8Array, secret_key: Uint8Array) -> Uint8Array;
 }
 
+/// Signs a message with Ed25519 through the JavaScript provider.
 pub fn sign_ed25519(privkey: &[u8], message: &[u8]) -> Result<Vec<u8>, CryptoError> {
     // Match Rust signing semantics: accept 32-byte seed or 64-byte expanded key.
     let seed: &[u8] = match privkey.len() {

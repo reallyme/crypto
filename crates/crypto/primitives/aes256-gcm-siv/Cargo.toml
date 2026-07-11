@@ -16,6 +16,10 @@ repository.workspace = true
 ignored = [
     # Enables getrandom's wasm entropy backend for the transitive RustCrypto stack.
     "getrandom",
+    # The RustCrypto 0.10 stack still uses getrandom 0.2, whose wasm feature is
+    # named `js`; keep it explicit so wasm32-unknown-unknown builds do not rely
+    # on an unrelated dependency enabling entropy support.
+    "getrandom02",
 ]
 
 [lib]
@@ -24,13 +28,14 @@ name = "crypto_aes256_gcm_siv"
 [features]
 default = []
 native = ["dep:aes-gcm-siv"]
-wasm = ["dep:aes-gcm-siv", "dep:getrandom"]
+wasm = ["dep:aes-gcm-siv", "dep:getrandom", "dep:getrandom02"]
 
 [dependencies]
 crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "../../core" }
 zeroize = { workspace = true, features = ["derive"] }
 aes-gcm-siv = { workspace = true, optional = true }
 getrandom = { workspace = true, features = ["wasm_js"], optional = true }
+getrandom02 = { package = "getrandom", version = "0.2.17", features = ["js"], optional = true }
 
 [lints]
 workspace = true

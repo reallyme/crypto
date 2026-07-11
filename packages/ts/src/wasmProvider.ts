@@ -66,6 +66,11 @@ type HpkeSealDerandFn = (
   plaintext: Uint8Array,
 ) => unknown;
 type DeriveKeypairFn = (secretKey: Uint8Array) => unknown;
+type SlhDsaDeriveKeypairFn = (
+  skSeed: Uint8Array,
+  skPrf: Uint8Array,
+  pkSeed: Uint8Array,
+) => unknown;
 type EncapsulateFn = (publicKey: Uint8Array) => unknown;
 type EncapsulateDerandFn = (publicKey: Uint8Array, seed: Uint8Array) => unknown;
 type DecapsulateFn = (ciphertext: Uint8Array, secretKey: Uint8Array) => unknown;
@@ -126,7 +131,7 @@ export type ReallyMeWasmProvider = Readonly<{
   mlKem1024EncapsulateDerand: EncapsulateDerandFn;
   mlKem1024Decapsulate: DecapsulateFn;
   slhDsaSha2128sGenerateKeypair: GenerateKeypairFn;
-  slhDsaSha2128sDeriveKeypair: SignatureVerifyFn;
+  slhDsaSha2128sDeriveKeypair: SlhDsaDeriveKeypairFn;
   slhDsaSha2128sSign: SignatureSignFn;
   slhDsaSha2128sVerify: SignatureVerifyFn;
   rsaVerifyPkcs1v15: RsaPkcs1v15VerifyFn;
@@ -214,6 +219,15 @@ const function3 = (module: object, name: string): SignatureVerifyFn => {
   const callable = requireFunction(module, name);
   return (first: Uint8Array, second: Uint8Array, third: Uint8Array): unknown =>
     callable(first, second, third);
+};
+
+const deriveSlhDsaFunction3 = (
+  module: object,
+  name: string,
+): SlhDsaDeriveKeypairFn => {
+  const callable = requireFunction(module, name);
+  return (skSeed: Uint8Array, skPrf: Uint8Array, pkSeed: Uint8Array): unknown =>
+    callable(skSeed, skPrf, pkSeed);
 };
 
 const function4 = (module: object, name: string): AeadFn => {
@@ -372,7 +386,7 @@ export const installReallyMeWasmProvider = (module: unknown): void => {
       providerModule,
       "slhDsaSha2128sGenerateKeypair",
     ),
-    slhDsaSha2128sDeriveKeypair: function3(
+    slhDsaSha2128sDeriveKeypair: deriveSlhDsaFunction3(
       providerModule,
       "slhDsaSha2128sDeriveKeypair",
     ),
