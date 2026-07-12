@@ -29,8 +29,5 @@ ml-kem = { workspace = true, features = ["getrandom", "hazmat", "zeroize"] }
 x25519-dalek = { workspace = true, features = ["getrandom", "static_secrets", "zeroize"] }
 zeroize = { workspace = true, features = ["derive"] }
 
-[dev-dependencies]
-hex = { workspace = true }
-
 [lints]
 workspace = true

@@ -90,7 +90,7 @@ When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.1", default-features = false, features = [
+reallyme-crypto = { version = "0.1.6", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -104,7 +104,7 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.1", default-features = false, features = [
+reallyme-crypto = { version = "0.1.6", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }
@@ -116,7 +116,7 @@ HKDF, HMAC, ML-KEM-768, SHA-2, and X25519. It does not enable `dispatch` or
 through algorithm-by-identifier dispatch:
 
 ```toml
-reallyme-crypto = { version = "0.1", default-features = false, features = [
+reallyme-crypto = { version = "0.1.6", default-features = false, features = [
   "native",
   "messaging-dispatch",
 ] }
@@ -156,7 +156,7 @@ cargo add reallyme-codec
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.1.5"
+    from: "0.1.6"
 )
 ```
 
@@ -168,7 +168,7 @@ cargo add reallyme-codec
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.1.5")
+    implementation("me.really:crypto:0.1.6")
 }
 ```
 

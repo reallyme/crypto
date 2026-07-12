@@ -13,20 +13,6 @@ publish = false
 
 [package.metadata.cargo-machete]
 ignored = [
-  # These crates are intentionally present so the conformance crate's
-  # native/wasm feature packs compile-gate every primitive backend lane.
-  "crypto-ml-dsa-87",
-  "crypto-ml-kem-1024",
-  "crypto-ml-dsa-44",
-  "crypto-ml-dsa-65",
-  "crypto-ml-kem-512",
-  "crypto-ml-kem-768",
-  "crypto-slh-dsa",
-  "crypto-x-wing",
-  "crypto-secp256k1",
-  "crypto-p384",
-  "crypto-p521",
-  "crypto-rsa",
   # Enables getrandom's wasm entropy backend for independent oracle crates.
   "getrandom",
 ]
@@ -50,6 +36,7 @@ native = [
   "crypto-chacha20-poly1305/native",
   "crypto-concat-kdf/native",
   "crypto-hkdf/native",
+  "crypto-hkdf/sha3",
   "crypto-hmac/native",
   "crypto-hpke/test-vectors",
   "crypto-sha2/native",
@@ -81,6 +68,7 @@ wasm = [
   "crypto-chacha20-poly1305/wasm",
   "crypto-concat-kdf/wasm",
   "crypto-hkdf/wasm",
+  "crypto-hkdf/sha3",
   "crypto-hmac/wasm",
   "crypto-hpke/wasm",
   "crypto-sha2/wasm",
@@ -117,26 +105,24 @@ ml-kem-conformance = { package = "ml-kem", version = "0.3.2", features = ["zeroi
 p256-conformance = { package = "p256", version = "0.14", features = ["ecdh", "ecdsa"] }
 p384-conformance = { package = "p384", version = "0.14", features = ["ecdsa"] }
 p521-conformance = { package = "p521", version = "0.14", features = ["ecdsa"] }
-sha1 = { workspace = true }
-sha2 = { workspace = true }
 x25519-dalek-conformance = { package = "x25519-dalek", version = "3", features = ["static_secrets"] }
 
-crypto-aes-kw = { package = "reallyme-crypto-aes-kw", version = "0.1.1", path = "../../crypto/primitives/aes-kw", default-features = false }
-crypto-aes256-gcm = { package = "reallyme-crypto-aes256-gcm", version = "0.1.2", path = "../../crypto/primitives/aes256-gcm", default-features = false }
-crypto-aes256-gcm-siv = { package = "reallyme-crypto-aes256-gcm-siv", version = "0.1.1", path = "../../crypto/primitives/aes256-gcm-siv", default-features = false }
-crypto-argon2id = { package = "reallyme-crypto-argon2id", version = "0.1.1", path = "../../crypto/primitives/argon2id", default-features = false }
-crypto-chacha20-poly1305 = { package = "reallyme-crypto-chacha20-poly1305", version = "0.1.1", path = "../../crypto/primitives/chacha20-poly1305", default-features = false }
-crypto-concat-kdf = { package = "reallyme-crypto-concat-kdf", version = "0.1.0", path = "../../crypto/primitives/concat-kdf", default-features = false }
+crypto-aes-kw = { package = "reallyme-crypto-aes-kw", version = "0.1.2", path = "../../crypto/primitives/aes-kw", default-features = false }
+crypto-aes256-gcm = { package = "reallyme-crypto-aes256-gcm", version = "0.1.3", path = "../../crypto/primitives/aes256-gcm", default-features = false }
+crypto-aes256-gcm-siv = { package = "reallyme-crypto-aes256-gcm-siv", version = "0.1.2", path = "../../crypto/primitives/aes256-gcm-siv", default-features = false }
+crypto-argon2id = { package = "reallyme-crypto-argon2id", version = "0.1.2", path = "../../crypto/primitives/argon2id", default-features = false }
+crypto-chacha20-poly1305 = { package = "reallyme-crypto-chacha20-poly1305", version = "0.1.2", path = "../../crypto/primitives/chacha20-poly1305", default-features = false }
+crypto-concat-kdf = { package = "reallyme-crypto-concat-kdf", version = "0.1.1", path = "../../crypto/primitives/concat-kdf", default-features = false }
 crypto-core = { package = "reallyme-crypto-core", version = "0.1.2", path = "../../crypto/core" }
-crypto-hkdf = { package = "reallyme-crypto-hkdf", version = "0.1.1", path = "../../crypto/primitives/hkdf", default-features = false }
+crypto-hkdf = { package = "reallyme-crypto-hkdf", version = "0.1.6", path = "../../crypto/primitives/hkdf", default-features = false }
 crypto-hmac = { package = "reallyme-crypto-hmac", version = "0.1.1", path = "../../crypto/primitives/hmac", default-features = false }
 crypto-hpke = { package = "reallyme-crypto-hpke", version = "0.1.1", path = "../../crypto/protocols/hpke", default-features = false }
 crypto-sha2 = { package = "reallyme-crypto-sha2", version = "0.1.1", path = "../../crypto/primitives/sha2", default-features = false }
 crypto-sha3 = { package = "reallyme-crypto-sha3", version = "0.1.1", path = "../../crypto/primitives/sha3", default-features = false }
 crypto-p256 = { package = "reallyme-crypto-p256", version = "0.1.3", path = "../../crypto/primitives/p256", default-features = false }
-crypto-p384 = { package = "reallyme-crypto-p384", version = "0.1.2", path = "../../crypto/primitives/p384", default-features = false }
-crypto-p521 = { package = "reallyme-crypto-p521", version = "0.1.2", path = "../../crypto/primitives/p521", default-features = false }
-crypto-pbkdf2 = { package = "reallyme-crypto-pbkdf2", version = "0.1.1", path = "../../crypto/primitives/pbkdf2", default-features = false }
+crypto-p384 = { package = "reallyme-crypto-p384", version = "0.1.3", path = "../../crypto/primitives/p384", default-features = false }
+crypto-p521 = { package = "reallyme-crypto-p521", version = "0.1.3", path = "../../crypto/primitives/p521", default-features = false }
+crypto-pbkdf2 = { package = "reallyme-crypto-pbkdf2", version = "0.1.2", path = "../../crypto/primitives/pbkdf2", default-features = false }
 crypto-rsa = { package = "reallyme-crypto-rsa", version = "0.1.1", path = "../../crypto/primitives/rsa", default-features = false }
 crypto-ed25519 = { package = "reallyme-crypto-ed25519", version = "0.1.2", path = "../../crypto/primitives/ed25519", default-features = false }
 crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "0.1.3", path = "../../crypto/primitives/secp256k1", default-features = false }
@@ -157,7 +143,7 @@ codec-multibase = { package = "reallyme-codec-multibase", version = "0.1.1", pat
 codec-multicodec = { package = "reallyme-codec-multicodec", version = "0.1.1", path = "../../codec/multicodec" }
 codec-multikey = { package = "reallyme-codec-multikey", version = "0.1.1", path = "../../codec/multikey" }
 envelopes-jwk = { package = "reallyme-crypto-jwk", version = "0.1.2", path = "../../envelopes/jwk", default-features = false }
-envelopes-jwk-multikey = { package = "reallyme-crypto-jwk-multikey", version = "0.1.3", path = "../../envelopes/jwk-multikey", default-features = false }
+envelopes-jwk-multikey = { package = "reallyme-crypto-jwk-multikey", version = "0.1.6", path = "../../envelopes/jwk-multikey", default-features = false }
 zeroize = { workspace = true }
 
 [lints]

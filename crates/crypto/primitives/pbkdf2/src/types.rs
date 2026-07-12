@@ -129,6 +129,10 @@ impl Pbkdf2Output {
     }
 
     /// Consumes the output and returns owned bytes.
+    ///
+    /// The returned buffer is no longer zeroized by this type. Callers that
+    /// keep or transform the derived key material must wipe the returned
+    /// buffer as soon as it is no longer needed.
     pub fn into_vec(self) -> Vec<u8> {
         self.as_bytes().to_vec()
     }
