@@ -12,7 +12,7 @@ use zeroize::{Zeroize, Zeroizing};
 ///
 /// The public key is returned as compressed SEC1; the secret key is the raw
 /// scalar in a zeroizing heap buffer owned by the caller.
-pub fn generate_p384_keypair() -> (Vec<u8>, Zeroizing<Vec<u8>>) {
+pub fn generate_p384_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
     let secret_key = SecretKey::generate();
     let signing_key = SigningKey::from(&secret_key);
     let verifying_key = signing_key.verifying_key();
@@ -22,7 +22,7 @@ pub fn generate_p384_keypair() -> (Vec<u8>, Zeroizing<Vec<u8>>) {
     secret_stack.zeroize();
     let public_bytes = verifying_key.to_sec1_point(true).as_bytes().to_vec();
 
-    (public_bytes, secret_bytes)
+    Ok((public_bytes, secret_bytes))
 }
 
 /// Derive a P-384 keypair from an existing 48-byte secret scalar.

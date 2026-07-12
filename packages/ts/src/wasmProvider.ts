@@ -78,6 +78,10 @@ type WasmArgument = Uint8Array | number | string;
 type WasmCallable = (...args: ReadonlyArray<WasmArgument>) => unknown;
 
 export type ReallyMeWasmProvider = Readonly<{
+  aes128GcmSeal: AeadFn;
+  aes128GcmOpen: AeadFn;
+  aes192GcmSeal: AeadFn;
+  aes192GcmOpen: AeadFn;
   aes256GcmSeal: AeadFn;
   aes256GcmOpen: AeadFn;
   aes256GcmSivSeal: AeadFn;
@@ -321,6 +325,10 @@ const rsaPssVerifyFunction = (module: object, name: string): RsaPssVerifyFn => {
 export const installReallyMeWasmProvider = (module: unknown): void => {
   const providerModule = requireObject(module);
   installedProvider = {
+    aes128GcmSeal: function4(providerModule, "aes128GcmSeal"),
+    aes128GcmOpen: function4(providerModule, "aes128GcmOpen"),
+    aes192GcmSeal: function4(providerModule, "aes192GcmSeal"),
+    aes192GcmOpen: function4(providerModule, "aes192GcmOpen"),
     aes256GcmSeal: function4(providerModule, "aes256GcmSeal"),
     aes256GcmOpen: function4(providerModule, "aes256GcmOpen"),
     aes256GcmSivSeal: function4(providerModule, "aes256GcmSivSeal"),

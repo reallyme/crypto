@@ -8,16 +8,18 @@
 
 use crypto_core::CryptoError;
 use crypto_p384::{
-    compress_p384, decompress_p384, generate_p384_keypair, generate_p384_keypair_from_secret_key,
+    compress_p384, compress_public_key, decompress_p384, decompress_public_key,
+    derive_p384_shared_secret, generate_p384_keypair, generate_p384_keypair_from_secret_key,
     sign_p384_der_prehash, verify_p384_der_prehash, P384_PUBLIC_KEY_COMPRESSED_LEN,
-    P384_PUBLIC_KEY_UNCOMPRESSED_LEN, P384_SECRET_KEY_LEN,
+    P384_PUBLIC_KEY_UNCOMPRESSED_LEN, P384_SECRET_KEY_LEN, P384_SHARED_SECRET_LEN,
 };
 
 #[test]
-fn key_sizes_are_correct() {
-    let (public_key, secret_key) = generate_p384_keypair();
+fn key_sizes_are_correct() -> Result<(), CryptoError> {
+    let (public_key, secret_key) = generate_p384_keypair()?;
     assert_eq!(secret_key.len(), P384_SECRET_KEY_LEN);
     assert_eq!(public_key.len(), P384_PUBLIC_KEY_COMPRESSED_LEN);
+    Ok(())
 }
 
 #[test]
@@ -39,7 +41,7 @@ fn secret_key_constructor_is_deterministic_and_rejects_zero() -> Result<(), Cryp
 
 #[test]
 fn sign_and_verify_roundtrip() -> Result<(), CryptoError> {
-    let (public_key, secret_key) = generate_p384_keypair();
+    let (public_key, secret_key) = generate_p384_keypair()?;
     let message = b"p384 test";
     let signature = sign_p384_der_prehash(&secret_key, message)?;
 
@@ -49,7 +51,7 @@ fn sign_and_verify_roundtrip() -> Result<(), CryptoError> {
 
 #[test]
 fn verification_fails_on_modified_message() -> Result<(), CryptoError> {
-    let (public_key, secret_key) = generate_p384_keypair();
+    let (public_key, secret_key) = generate_p384_keypair()?;
     let signature = sign_p384_der_prehash(&secret_key, b"hello")?;
 
     assert!(verify_p384_der_prehash(&signature, b"hell0", &public_key).is_err());
@@ -58,7 +60,7 @@ fn verification_fails_on_modified_message() -> Result<(), CryptoError> {
 
 #[test]
 fn compression_roundtrip() -> Result<(), CryptoError> {
-    let (compressed, _secret_key) = generate_p384_keypair();
+    let (compressed, _secret_key) = generate_p384_keypair()?;
     let uncompressed = decompress_p384(&compressed)?;
     let recompressed = compress_p384(&uncompressed)?;
 
@@ -68,8 +70,21 @@ fn compression_roundtrip() -> Result<(), CryptoError> {
 }
 
 #[test]
+fn uniform_public_key_aliases_match_curve_specific_names() -> Result<(), CryptoError> {
+    let (compressed, _secret_key) = generate_p384_keypair()?;
+    let uncompressed = decompress_public_key(&compressed)?;
+
+    assert_eq!(uncompressed, decompress_p384(&compressed)?);
+    assert_eq!(
+        compress_public_key(&uncompressed)?,
+        compress_p384(&uncompressed)?
+    );
+    Ok(())
+}
+
+#[test]
 fn verify_accepts_uncompressed_public_key() -> Result<(), CryptoError> {
-    let (compressed, secret_key) = generate_p384_keypair();
+    let (compressed, secret_key) = generate_p384_keypair()?;
     let uncompressed = decompress_p384(&compressed)?;
     let message = b"p384 uncompressed";
     let signature = sign_p384_der_prehash(&secret_key, message)?;
@@ -79,17 +94,47 @@ fn verify_accepts_uncompressed_public_key() -> Result<(), CryptoError> {
 }
 
 #[test]
-fn invalid_inputs_are_rejected() {
+fn ecdh_shared_secret_matches_for_both_parties() -> Result<(), CryptoError> {
+    let (alice_public, alice_secret) = generate_p384_keypair()?;
+    let (bob_public, bob_secret) = generate_p384_keypair()?;
+
+    let alice_shared = derive_p384_shared_secret(&alice_secret, &bob_public)?;
+    let bob_shared = derive_p384_shared_secret(&bob_secret, &alice_public)?;
+
+    assert_eq!(alice_shared.len(), P384_SHARED_SECRET_LEN);
+    assert_eq!(alice_shared.as_slice(), bob_shared.as_slice());
+    Ok(())
+}
+
+#[test]
+fn ecdh_accepts_uncompressed_public_key() -> Result<(), CryptoError> {
+    let (alice_public, alice_secret) = generate_p384_keypair()?;
+    let (bob_public, bob_secret) = generate_p384_keypair()?;
+    let bob_public_uncompressed = decompress_p384(&bob_public)?;
+
+    let alice_shared = derive_p384_shared_secret(&alice_secret, &bob_public_uncompressed)?;
+    let bob_shared = derive_p384_shared_secret(&bob_secret, &alice_public)?;
+
+    assert_eq!(alice_shared.as_slice(), bob_shared.as_slice());
+    Ok(())
+}
+
+#[test]
+fn invalid_inputs_are_rejected() -> Result<(), CryptoError> {
     assert!(sign_p384_der_prehash(&[0u8; 10], b"message").is_err());
     assert!(verify_p384_der_prehash(&[0x30, 0x00], b"message", &[0x04; 10]).is_err());
     assert!(compress_p384(&[0x04; 10]).is_err());
     assert!(decompress_p384(&[0x02; 10]).is_err());
+    let (public, secret) = generate_p384_keypair()?;
+    assert!(derive_p384_shared_secret(&[0u8; 10], &public).is_err());
+    assert!(derive_p384_shared_secret(&secret, &[0x02; 10]).is_err());
+    Ok(())
 }
 
 #[test]
 fn signature_does_not_verify_under_different_key() -> Result<(), CryptoError> {
-    let (_public_key_1, secret_key_1) = generate_p384_keypair();
-    let (public_key_2, _secret_key_2) = generate_p384_keypair();
+    let (_public_key_1, secret_key_1) = generate_p384_keypair()?;
+    let (public_key_2, _secret_key_2) = generate_p384_keypair()?;
     let message = b"p384 wrong key";
     let signature = sign_p384_der_prehash(&secret_key_1, message)?;
 
@@ -99,7 +144,7 @@ fn signature_does_not_verify_under_different_key() -> Result<(), CryptoError> {
 
 #[test]
 fn verification_fails_on_modified_signature() -> Result<(), CryptoError> {
-    let (public_key, secret_key) = generate_p384_keypair();
+    let (public_key, secret_key) = generate_p384_keypair()?;
     let message = b"p384 tamper";
     let mut signature = sign_p384_der_prehash(&secret_key, message)?;
     signature[0] ^= 0x01;

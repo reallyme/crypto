@@ -28,6 +28,14 @@ public enum KeyAgreementAlgorithm
    * <code>KEY_AGREEMENT_ALGORITHM_P256_ECDH = 2;</code>
    */
   KEY_AGREEMENT_ALGORITHM_P256_ECDH(2),
+  /**
+   * <code>KEY_AGREEMENT_ALGORITHM_P384_ECDH = 3;</code>
+   */
+  KEY_AGREEMENT_ALGORITHM_P384_ECDH(3),
+  /**
+   * <code>KEY_AGREEMENT_ALGORITHM_P521_ECDH = 4;</code>
+   */
+  KEY_AGREEMENT_ALGORITHM_P521_ECDH(4),
   UNRECOGNIZED(-1),
   ;
 
@@ -43,6 +51,14 @@ public enum KeyAgreementAlgorithm
    * <code>KEY_AGREEMENT_ALGORITHM_P256_ECDH = 2;</code>
    */
   public static final int KEY_AGREEMENT_ALGORITHM_P256_ECDH_VALUE = 2;
+  /**
+   * <code>KEY_AGREEMENT_ALGORITHM_P384_ECDH = 3;</code>
+   */
+  public static final int KEY_AGREEMENT_ALGORITHM_P384_ECDH_VALUE = 3;
+  /**
+   * <code>KEY_AGREEMENT_ALGORITHM_P521_ECDH = 4;</code>
+   */
+  public static final int KEY_AGREEMENT_ALGORITHM_P521_ECDH_VALUE = 4;
 
 
   @java.lang.Override
@@ -68,6 +84,8 @@ public enum KeyAgreementAlgorithm
       case 0: return KEY_AGREEMENT_ALGORITHM_UNSPECIFIED;
       case 1: return KEY_AGREEMENT_ALGORITHM_X25519;
       case 2: return KEY_AGREEMENT_ALGORITHM_P256_ECDH;
+      case 3: return KEY_AGREEMENT_ALGORITHM_P384_ECDH;
+      case 4: return KEY_AGREEMENT_ALGORITHM_P521_ECDH;
       default: return null;
     }
   }

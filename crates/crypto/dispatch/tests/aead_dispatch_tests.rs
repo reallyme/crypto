@@ -15,6 +15,7 @@ use crypto_core::{AeadAlgorithm, CryptoError};
 use crypto_dispatch::{aead_decrypt, aead_encrypt, AeadParams, AlgorithmError};
 
 struct DispatchAesVector {
+    algorithm: AeadAlgorithm,
     key: Vec<u8>,
     nonce: Vec<u8>,
     aad: Vec<u8>,
@@ -25,6 +26,30 @@ struct DispatchAesVector {
 fn regression_vectors() -> Vec<DispatchAesVector> {
     vec![
         DispatchAesVector {
+            algorithm: AeadAlgorithm::Aes128Gcm,
+            key: hex::decode("00000000000000000000000000000000")
+                .expect("vector key must decode"),
+            nonce: hex::decode("000000000000000000000000").expect("vector nonce must decode"),
+            aad: Vec::new(),
+            plaintext: hex::decode("00000000000000000000000000000000")
+                .expect("vector plaintext must decode"),
+            ciphertext_and_tag: hex::decode(
+                "0388dace60b6a392f328c2b971b2fe78ab6e47d42cec13bdf53a67b21257bddf",
+            )
+            .expect("vector ciphertext must decode"),
+        },
+        DispatchAesVector {
+            algorithm: AeadAlgorithm::Aes192Gcm,
+            key: hex::decode("000000000000000000000000000000000000000000000000")
+                .expect("vector key must decode"),
+            nonce: hex::decode("000000000000000000000000").expect("vector nonce must decode"),
+            aad: Vec::new(),
+            plaintext: Vec::new(),
+            ciphertext_and_tag: hex::decode("cd33b28ac773f74ba00ed1f312572435")
+                .expect("vector tag must decode"),
+        },
+        DispatchAesVector {
+            algorithm: AeadAlgorithm::Aes256Gcm,
             key: hex::decode(
                 "feffe9928665731c6d6a8f9467308308feffe9928665731c6d6a8f9467308308",
             )
@@ -49,6 +74,7 @@ fn regression_vectors() -> Vec<DispatchAesVector> {
             .expect("vector ciphertext must decode"),
         },
         DispatchAesVector {
+            algorithm: AeadAlgorithm::Aes256Gcm,
             key: hex::decode(
                 "000102030405060708090a0b0c0d0e0f\
                  101112131415161718191a1b1c1d1e1f",
@@ -67,6 +93,44 @@ fn regression_vectors() -> Vec<DispatchAesVector> {
             .expect("vector ciphertext must decode"),
         },
     ]
+}
+
+#[test]
+fn aes128_gcm_dispatch_roundtrip() {
+    let key = [0xAA; 16];
+    let nonce = [0xBB; 12];
+    let params = AeadParams {
+        key: &key,
+        nonce: &nonce,
+        aad: b"dispatch-aad",
+    };
+
+    let encrypted = aead_encrypt(AeadAlgorithm::Aes128Gcm, &params, b"dispatch-plaintext")
+        .expect("dispatch encryption should succeed");
+
+    let decrypted = aead_decrypt(AeadAlgorithm::Aes128Gcm, &params, &encrypted)
+        .expect("dispatch decryption should succeed");
+
+    assert_eq!(decrypted.as_slice(), b"dispatch-plaintext");
+}
+
+#[test]
+fn aes192_gcm_dispatch_roundtrip() {
+    let key = [0xAA; 24];
+    let nonce = [0xBB; 12];
+    let params = AeadParams {
+        key: &key,
+        nonce: &nonce,
+        aad: b"dispatch-aad",
+    };
+
+    let encrypted = aead_encrypt(AeadAlgorithm::Aes192Gcm, &params, b"dispatch-plaintext")
+        .expect("dispatch encryption should succeed");
+
+    let decrypted = aead_decrypt(AeadAlgorithm::Aes192Gcm, &params, &encrypted)
+        .expect("dispatch decryption should succeed");
+
+    assert_eq!(decrypted.as_slice(), b"dispatch-plaintext");
 }
 
 #[test]
@@ -122,12 +186,12 @@ fn aes256_gcm_dispatch_matches_regression_vectors() {
             aad: &vector.aad,
         };
 
-        let encrypted = aead_encrypt(AeadAlgorithm::Aes256Gcm, &params, &vector.plaintext)
+        let encrypted = aead_encrypt(vector.algorithm, &params, &vector.plaintext)
             .expect("dispatch encryption must succeed");
 
         assert_eq!(encrypted, vector.ciphertext_and_tag);
 
-        let decrypted = aead_decrypt(AeadAlgorithm::Aes256Gcm, &params, &encrypted)
+        let decrypted = aead_decrypt(vector.algorithm, &params, &encrypted)
             .expect("dispatch decryption must succeed");
 
         assert_eq!(decrypted.as_slice(), vector.plaintext);

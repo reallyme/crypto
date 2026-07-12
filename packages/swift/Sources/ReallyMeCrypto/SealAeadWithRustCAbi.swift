@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+private let rustCAbiAes192GcmKeyLength = 24
 private let rustCAbiAeadKeyLength = 32
 private let rustCAbiAeadNonceLength = 12
 private let rustCAbiXChaCha20Poly1305NonceLength = 24
@@ -27,12 +28,22 @@ private typealias RustCAbiAeadFunction = @convention(c) (
 /// and XChaCha are Rust-only because Apple does not expose first-party APIs
 /// with those exact semantics.
 public struct ReallyMeRustCAbiAead: Sendable {
+    private let aes192GcmSealFunction: RustCAbiAeadFunction
+    private let aes192GcmOpenFunction: RustCAbiAeadFunction
     private let aes256GcmSivSealFunction: RustCAbiAeadFunction
     private let aes256GcmSivOpenFunction: RustCAbiAeadFunction
     private let xchacha20Poly1305SealFunction: RustCAbiAeadFunction
     private let xchacha20Poly1305OpenFunction: RustCAbiAeadFunction
 
     public init(library: ReallyMeRustCAbiLibrary) throws {
+        aes192GcmSealFunction = try library.loadFunction(
+            "rm_crypto_aes192_gcm_encrypt",
+            as: RustCAbiAeadFunction.self
+        )
+        aes192GcmOpenFunction = try library.loadFunction(
+            "rm_crypto_aes192_gcm_decrypt",
+            as: RustCAbiAeadFunction.self
+        )
         aes256GcmSivSealFunction = try library.loadFunction(
             "rm_crypto_aes256_gcm_siv_encrypt",
             as: RustCAbiAeadFunction.self
@@ -51,6 +62,40 @@ public struct ReallyMeRustCAbiAead: Sendable {
         )
     }
 
+    public func sealAes192Gcm(
+        key: [UInt8],
+        nonce: [UInt8],
+        aad: [UInt8],
+        plaintext: [UInt8]
+    ) throws -> [UInt8] {
+        try seal(
+            key: key,
+            expectedKeyLength: rustCAbiAes192GcmKeyLength,
+            nonce: nonce,
+            expectedNonceLength: rustCAbiAeadNonceLength,
+            aad: aad,
+            plaintext: plaintext,
+            function: aes192GcmSealFunction
+        )
+    }
+
+    public func openAes192Gcm(
+        key: [UInt8],
+        nonce: [UInt8],
+        aad: [UInt8],
+        ciphertextWithTag: [UInt8]
+    ) throws -> [UInt8] {
+        try open(
+            key: key,
+            expectedKeyLength: rustCAbiAes192GcmKeyLength,
+            nonce: nonce,
+            expectedNonceLength: rustCAbiAeadNonceLength,
+            aad: aad,
+            ciphertextWithTag: ciphertextWithTag,
+            function: aes192GcmOpenFunction
+        )
+    }
+
     public func sealAes256GcmSiv(
         key: [UInt8],
         nonce: [UInt8],
@@ -59,6 +104,7 @@ public struct ReallyMeRustCAbiAead: Sendable {
     ) throws -> [UInt8] {
         try seal(
             key: key,
+            expectedKeyLength: rustCAbiAeadKeyLength,
             nonce: nonce,
             expectedNonceLength: rustCAbiAeadNonceLength,
             aad: aad,
@@ -75,6 +121,7 @@ public struct ReallyMeRustCAbiAead: Sendable {
     ) throws -> [UInt8] {
         try open(
             key: key,
+            expectedKeyLength: rustCAbiAeadKeyLength,
             nonce: nonce,
             expectedNonceLength: rustCAbiAeadNonceLength,
             aad: aad,
@@ -91,6 +138,7 @@ public struct ReallyMeRustCAbiAead: Sendable {
     ) throws -> [UInt8] {
         try seal(
             key: key,
+            expectedKeyLength: rustCAbiAeadKeyLength,
             nonce: nonce,
             expectedNonceLength: rustCAbiXChaCha20Poly1305NonceLength,
             aad: aad,
@@ -107,6 +155,7 @@ public struct ReallyMeRustCAbiAead: Sendable {
     ) throws -> [UInt8] {
         try open(
             key: key,
+            expectedKeyLength: rustCAbiAeadKeyLength,
             nonce: nonce,
             expectedNonceLength: rustCAbiXChaCha20Poly1305NonceLength,
             aad: aad,
@@ -117,13 +166,19 @@ public struct ReallyMeRustCAbiAead: Sendable {
 
     private func seal(
         key: [UInt8],
+        expectedKeyLength: Int,
         nonce: [UInt8],
         expectedNonceLength: Int,
         aad: [UInt8],
         plaintext: [UInt8],
         function: RustCAbiAeadFunction
     ) throws -> [UInt8] {
-        try validate(key: key, nonce: nonce, expectedNonceLength: expectedNonceLength)
+        try validate(
+            key: key,
+            expectedKeyLength: expectedKeyLength,
+            nonce: nonce,
+            expectedNonceLength: expectedNonceLength
+        )
         let outputLength = plaintext.count.addingReportingOverflow(rustCAbiAeadTagLength)
         guard !outputLength.overflow else {
             throw ReallyMeCryptoError.invalidInput
@@ -163,13 +218,19 @@ public struct ReallyMeRustCAbiAead: Sendable {
 
     private func open(
         key: [UInt8],
+        expectedKeyLength: Int,
         nonce: [UInt8],
         expectedNonceLength: Int,
         aad: [UInt8],
         ciphertextWithTag: [UInt8],
         function: RustCAbiAeadFunction
     ) throws -> [UInt8] {
-        try validate(key: key, nonce: nonce, expectedNonceLength: expectedNonceLength)
+        try validate(
+            key: key,
+            expectedKeyLength: expectedKeyLength,
+            nonce: nonce,
+            expectedNonceLength: expectedNonceLength
+        )
         guard ciphertextWithTag.count >= rustCAbiAeadTagLength else {
             throw ReallyMeCryptoError.invalidInput
         }
@@ -207,8 +268,13 @@ public struct ReallyMeRustCAbiAead: Sendable {
         return Array(plaintext.prefix(producedLength))
     }
 
-    private func validate(key: [UInt8], nonce: [UInt8], expectedNonceLength: Int) throws {
-        guard key.count == rustCAbiAeadKeyLength,
+    private func validate(
+        key: [UInt8],
+        expectedKeyLength: Int,
+        nonce: [UInt8],
+        expectedNonceLength: Int
+    ) throws {
+        guard key.count == expectedKeyLength,
               nonce.count == expectedNonceLength
         else {
             throw ReallyMeCryptoError.invalidInput
@@ -226,6 +292,11 @@ public extension ReallyMeCrypto {
         rustCAbiLibrary: ReallyMeRustCAbiLibrary
     ) throws -> [UInt8] {
         switch algorithm {
+        case .aes128Gcm:
+            return try ReallyMeAesGcm.sealAes128Gcm(key: key, nonce: nonce, aad: aad, plaintext: plaintext)
+        case .aes192Gcm:
+            return try ReallyMeRustCAbiAead(library: rustCAbiLibrary)
+                .sealAes192Gcm(key: key, nonce: nonce, aad: aad, plaintext: plaintext)
         case .aes256Gcm:
             return try ReallyMeAesGcm.seal(key: key, nonce: nonce, aad: aad, plaintext: plaintext)
         case .chacha20Poly1305:
@@ -248,6 +319,16 @@ public extension ReallyMeCrypto {
         rustCAbiLibrary: ReallyMeRustCAbiLibrary
     ) throws -> [UInt8] {
         switch algorithm {
+        case .aes128Gcm:
+            return try ReallyMeAesGcm.openAes128Gcm(
+                key: key,
+                nonce: nonce,
+                aad: aad,
+                ciphertextWithTag: ciphertextWithTag
+            )
+        case .aes192Gcm:
+            return try ReallyMeRustCAbiAead(library: rustCAbiLibrary)
+                .openAes192Gcm(key: key, nonce: nonce, aad: aad, ciphertextWithTag: ciphertextWithTag)
         case .aes256Gcm:
             return try ReallyMeAesGcm.open(
                 key: key,

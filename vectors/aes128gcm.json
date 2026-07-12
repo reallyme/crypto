@@ -1,0 +1,8 @@
+{
+  "alg": "AES-128-GCM",
+  "key": "AAECAwQFBgcICQoLDA0ODw",
+  "nonce": "oKGio6Slpqeoqaqr",
+  "aad": "cmVhbGx5bWUtY3J5cHRvLXZlY3Rvci1hYWQ",
+  "plaintext": "UmVhbGx5TWUgQUVTLTEyOC1HQ00gY29uZm9ybWFuY2UgdmVjdG9y",
+  "ciphertext_with_tag": "-ONZ1xLwfm-qOfBTayOCWH6pYEWjdFLBQ38D9iPj7M261SBSe4Wee6AWTSOh1_kwY4stOFUFBw"
+}

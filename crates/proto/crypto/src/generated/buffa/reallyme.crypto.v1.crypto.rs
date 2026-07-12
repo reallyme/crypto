@@ -651,6 +651,8 @@ pub enum KeyAgreementAlgorithm {
     KEY_AGREEMENT_ALGORITHM_UNSPECIFIED = 0i32,
     KEY_AGREEMENT_ALGORITHM_X25519 = 1i32,
     KEY_AGREEMENT_ALGORITHM_P256_ECDH = 2i32,
+    KEY_AGREEMENT_ALGORITHM_P384_ECDH = 3i32,
+    KEY_AGREEMENT_ALGORITHM_P521_ECDH = 4i32,
 }
 impl KeyAgreementAlgorithm {
     ///Idiomatic alias for [`Self::KEY_AGREEMENT_ALGORITHM_UNSPECIFIED`]; `Debug` prints the variant name.
@@ -662,6 +664,12 @@ impl KeyAgreementAlgorithm {
     ///Idiomatic alias for [`Self::KEY_AGREEMENT_ALGORITHM_P256_ECDH`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const P256Ecdh: Self = Self::KEY_AGREEMENT_ALGORITHM_P256_ECDH;
+    ///Idiomatic alias for [`Self::KEY_AGREEMENT_ALGORITHM_P384_ECDH`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const P384Ecdh: Self = Self::KEY_AGREEMENT_ALGORITHM_P384_ECDH;
+    ///Idiomatic alias for [`Self::KEY_AGREEMENT_ALGORITHM_P521_ECDH`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const P521Ecdh: Self = Self::KEY_AGREEMENT_ALGORITHM_P521_ECDH;
 }
 impl ::core::default::Default for KeyAgreementAlgorithm {
     fn default() -> Self {
@@ -765,6 +773,8 @@ impl ::buffa::Enumeration for KeyAgreementAlgorithm {
             }
             1i32 => ::core::option::Option::Some(Self::KEY_AGREEMENT_ALGORITHM_X25519),
             2i32 => ::core::option::Option::Some(Self::KEY_AGREEMENT_ALGORITHM_P256_ECDH),
+            3i32 => ::core::option::Option::Some(Self::KEY_AGREEMENT_ALGORITHM_P384_ECDH),
+            4i32 => ::core::option::Option::Some(Self::KEY_AGREEMENT_ALGORITHM_P521_ECDH),
             _ => ::core::option::Option::None,
         }
     }
@@ -780,6 +790,12 @@ impl ::buffa::Enumeration for KeyAgreementAlgorithm {
             Self::KEY_AGREEMENT_ALGORITHM_P256_ECDH => {
                 "KEY_AGREEMENT_ALGORITHM_P256_ECDH"
             }
+            Self::KEY_AGREEMENT_ALGORITHM_P384_ECDH => {
+                "KEY_AGREEMENT_ALGORITHM_P384_ECDH"
+            }
+            Self::KEY_AGREEMENT_ALGORITHM_P521_ECDH => {
+                "KEY_AGREEMENT_ALGORITHM_P521_ECDH"
+            }
         }
     }
     fn from_proto_name(name: &str) -> ::core::option::Option<Self> {
@@ -793,6 +809,12 @@ impl ::buffa::Enumeration for KeyAgreementAlgorithm {
             "KEY_AGREEMENT_ALGORITHM_P256_ECDH" => {
                 ::core::option::Option::Some(Self::KEY_AGREEMENT_ALGORITHM_P256_ECDH)
             }
+            "KEY_AGREEMENT_ALGORITHM_P384_ECDH" => {
+                ::core::option::Option::Some(Self::KEY_AGREEMENT_ALGORITHM_P384_ECDH)
+            }
+            "KEY_AGREEMENT_ALGORITHM_P521_ECDH" => {
+                ::core::option::Option::Some(Self::KEY_AGREEMENT_ALGORITHM_P521_ECDH)
+            }
             _ => ::core::option::Option::None,
         }
     }
@@ -801,6 +823,8 @@ impl ::buffa::Enumeration for KeyAgreementAlgorithm {
             Self::KEY_AGREEMENT_ALGORITHM_UNSPECIFIED,
             Self::KEY_AGREEMENT_ALGORITHM_X25519,
             Self::KEY_AGREEMENT_ALGORITHM_P256_ECDH,
+            Self::KEY_AGREEMENT_ALGORITHM_P384_ECDH,
+            Self::KEY_AGREEMENT_ALGORITHM_P521_ECDH,
         ]
     }
 }
@@ -1162,6 +1186,8 @@ pub enum AeadAlgorithm {
     AEAD_ALGORITHM_AES_256_GCM_SIV = 2i32,
     AEAD_ALGORITHM_CHACHA20_POLY1305 = 3i32,
     AEAD_ALGORITHM_XCHACHA20_POLY1305 = 4i32,
+    AEAD_ALGORITHM_AES_128_GCM = 5i32,
+    AEAD_ALGORITHM_AES_192_GCM = 6i32,
 }
 impl AeadAlgorithm {
     ///Idiomatic alias for [`Self::AEAD_ALGORITHM_UNSPECIFIED`]; `Debug` prints the variant name.
@@ -1179,6 +1205,12 @@ impl AeadAlgorithm {
     ///Idiomatic alias for [`Self::AEAD_ALGORITHM_XCHACHA20_POLY1305`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const Xchacha20Poly1305: Self = Self::AEAD_ALGORITHM_XCHACHA20_POLY1305;
+    ///Idiomatic alias for [`Self::AEAD_ALGORITHM_AES_128_GCM`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Aes128Gcm: Self = Self::AEAD_ALGORITHM_AES_128_GCM;
+    ///Idiomatic alias for [`Self::AEAD_ALGORITHM_AES_192_GCM`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Aes192Gcm: Self = Self::AEAD_ALGORITHM_AES_192_GCM;
 }
 impl ::core::default::Default for AeadAlgorithm {
     fn default() -> Self {
@@ -1279,6 +1311,8 @@ impl ::buffa::Enumeration for AeadAlgorithm {
             2i32 => ::core::option::Option::Some(Self::AEAD_ALGORITHM_AES_256_GCM_SIV),
             3i32 => ::core::option::Option::Some(Self::AEAD_ALGORITHM_CHACHA20_POLY1305),
             4i32 => ::core::option::Option::Some(Self::AEAD_ALGORITHM_XCHACHA20_POLY1305),
+            5i32 => ::core::option::Option::Some(Self::AEAD_ALGORITHM_AES_128_GCM),
+            6i32 => ::core::option::Option::Some(Self::AEAD_ALGORITHM_AES_192_GCM),
             _ => ::core::option::Option::None,
         }
     }
@@ -1294,6 +1328,8 @@ impl ::buffa::Enumeration for AeadAlgorithm {
             Self::AEAD_ALGORITHM_XCHACHA20_POLY1305 => {
                 "AEAD_ALGORITHM_XCHACHA20_POLY1305"
             }
+            Self::AEAD_ALGORITHM_AES_128_GCM => "AEAD_ALGORITHM_AES_128_GCM",
+            Self::AEAD_ALGORITHM_AES_192_GCM => "AEAD_ALGORITHM_AES_192_GCM",
         }
     }
     fn from_proto_name(name: &str) -> ::core::option::Option<Self> {
@@ -1313,6 +1349,12 @@ impl ::buffa::Enumeration for AeadAlgorithm {
             "AEAD_ALGORITHM_XCHACHA20_POLY1305" => {
                 ::core::option::Option::Some(Self::AEAD_ALGORITHM_XCHACHA20_POLY1305)
             }
+            "AEAD_ALGORITHM_AES_128_GCM" => {
+                ::core::option::Option::Some(Self::AEAD_ALGORITHM_AES_128_GCM)
+            }
+            "AEAD_ALGORITHM_AES_192_GCM" => {
+                ::core::option::Option::Some(Self::AEAD_ALGORITHM_AES_192_GCM)
+            }
             _ => ::core::option::Option::None,
         }
     }
@@ -1323,6 +1365,8 @@ impl ::buffa::Enumeration for AeadAlgorithm {
             Self::AEAD_ALGORITHM_AES_256_GCM_SIV,
             Self::AEAD_ALGORITHM_CHACHA20_POLY1305,
             Self::AEAD_ALGORITHM_XCHACHA20_POLY1305,
+            Self::AEAD_ALGORITHM_AES_128_GCM,
+            Self::AEAD_ALGORITHM_AES_192_GCM,
         ]
     }
 }
@@ -1688,6 +1732,7 @@ pub enum KdfAlgorithm {
     KDF_ALGORITHM_ARGON2ID = 2i32,
     KDF_ALGORITHM_PBKDF2_HMAC_SHA256 = 3i32,
     KDF_ALGORITHM_PBKDF2_HMAC_SHA512 = 4i32,
+    KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256 = 5i32,
 }
 impl KdfAlgorithm {
     ///Idiomatic alias for [`Self::KDF_ALGORITHM_UNSPECIFIED`]; `Debug` prints the variant name.
@@ -1705,6 +1750,9 @@ impl KdfAlgorithm {
     ///Idiomatic alias for [`Self::KDF_ALGORITHM_PBKDF2_HMAC_SHA512`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const Pbkdf2HmacSha512: Self = Self::KDF_ALGORITHM_PBKDF2_HMAC_SHA512;
+    ///Idiomatic alias for [`Self::KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwaConcatKdfSha256: Self = Self::KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256;
 }
 impl ::core::default::Default for KdfAlgorithm {
     fn default() -> Self {
@@ -1805,6 +1853,9 @@ impl ::buffa::Enumeration for KdfAlgorithm {
             2i32 => ::core::option::Option::Some(Self::KDF_ALGORITHM_ARGON2ID),
             3i32 => ::core::option::Option::Some(Self::KDF_ALGORITHM_PBKDF2_HMAC_SHA256),
             4i32 => ::core::option::Option::Some(Self::KDF_ALGORITHM_PBKDF2_HMAC_SHA512),
+            5i32 => {
+                ::core::option::Option::Some(Self::KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256)
+            }
             _ => ::core::option::Option::None,
         }
     }
@@ -1818,6 +1869,9 @@ impl ::buffa::Enumeration for KdfAlgorithm {
             Self::KDF_ALGORITHM_ARGON2ID => "KDF_ALGORITHM_ARGON2ID",
             Self::KDF_ALGORITHM_PBKDF2_HMAC_SHA256 => "KDF_ALGORITHM_PBKDF2_HMAC_SHA256",
             Self::KDF_ALGORITHM_PBKDF2_HMAC_SHA512 => "KDF_ALGORITHM_PBKDF2_HMAC_SHA512",
+            Self::KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256 => {
+                "KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256"
+            }
         }
     }
     fn from_proto_name(name: &str) -> ::core::option::Option<Self> {
@@ -1837,6 +1891,9 @@ impl ::buffa::Enumeration for KdfAlgorithm {
             "KDF_ALGORITHM_PBKDF2_HMAC_SHA512" => {
                 ::core::option::Option::Some(Self::KDF_ALGORITHM_PBKDF2_HMAC_SHA512)
             }
+            "KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256" => {
+                ::core::option::Option::Some(Self::KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256)
+            }
             _ => ::core::option::Option::None,
         }
     }
@@ -1847,6 +1904,7 @@ impl ::buffa::Enumeration for KdfAlgorithm {
             Self::KDF_ALGORITHM_ARGON2ID,
             Self::KDF_ALGORITHM_PBKDF2_HMAC_SHA256,
             Self::KDF_ALGORITHM_PBKDF2_HMAC_SHA512,
+            Self::KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256,
         ]
     }
 }

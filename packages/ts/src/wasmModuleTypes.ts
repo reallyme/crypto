@@ -10,6 +10,34 @@ export declare function initSync(module: {
   module: Uint8Array;
 }): ReallyMeWasmInitOutput;
 
+export declare function aes128GcmOpen(
+  key: Uint8Array,
+  nonce: Uint8Array,
+  aad: Uint8Array,
+  ciphertextWithTag: Uint8Array,
+): Uint8Array;
+
+export declare function aes128GcmSeal(
+  key: Uint8Array,
+  nonce: Uint8Array,
+  aad: Uint8Array,
+  plaintext: Uint8Array,
+): Uint8Array;
+
+export declare function aes192GcmOpen(
+  key: Uint8Array,
+  nonce: Uint8Array,
+  aad: Uint8Array,
+  ciphertextWithTag: Uint8Array,
+): Uint8Array;
+
+export declare function aes192GcmSeal(
+  key: Uint8Array,
+  nonce: Uint8Array,
+  aad: Uint8Array,
+  plaintext: Uint8Array,
+): Uint8Array;
+
 export declare function aes256GcmOpen(
   key: Uint8Array,
   nonce: Uint8Array,

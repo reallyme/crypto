@@ -6,7 +6,12 @@ use codec_base64url::base64url_to_bytes;
 use codec_cbor::{decode_dag_cbor, verify_dag_cbor_cid, CborValue};
 use codec_multibase::multibase_to_bytes;
 use codec_multikey::parse_multikey;
-use crypto_aes256_gcm::{decrypt, Aes256GcmKey, Aes256GcmNonce, CiphertextWithTag, DecryptRequest};
+use crypto_aes256_gcm::{
+    decrypt, decrypt_aes128_gcm, decrypt_aes192_gcm, encrypt_aes128_gcm, encrypt_aes192_gcm,
+    Aes128GcmDecryptRequest, Aes128GcmEncryptRequest, Aes128GcmKey, Aes128GcmNonce,
+    Aes192GcmDecryptRequest, Aes192GcmEncryptRequest, Aes192GcmKey, Aes192GcmNonce, Aes256GcmKey,
+    Aes256GcmNonce, CiphertextWithTag, DecryptRequest,
+};
 use crypto_aes256_gcm_siv::{
     decrypt as gcm_siv_decrypt, encrypt as gcm_siv_encrypt, Aes256GcmSivKey, Aes256GcmSivNonce,
     CiphertextWithTag as GcmSivCiphertextWithTag, DecryptRequest as GcmSivDecryptRequest,
@@ -21,6 +26,10 @@ use crypto_chacha20_poly1305::{
     ChaCha20Poly1305Nonce, CiphertextWithTag as ChaChaCiphertextWithTag,
     DecryptRequest as ChaChaDecryptRequest, XChaCha20Poly1305DecryptRequest,
     XChaCha20Poly1305Nonce,
+};
+use crypto_concat_kdf::{
+    derive_jwa_concat_kdf_sha256, JwaAlgorithmId, JwaConcatKdfRequest, JwaPartyInfo,
+    JwaSharedSecret,
 };
 use crypto_core::MacAlgorithm;
 use crypto_hkdf::{
@@ -89,6 +98,110 @@ fn aes256gcm_vector_round_trips() -> Result<(), VectorTestError> {
         nonce,
         aad: &tampered_aad,
         ciphertext: &ciphertext,
+    })
+    .is_ok()
+    {
+        return Err(VectorTestError::AesDecrypt);
+    }
+
+    Ok(())
+}
+
+#[test]
+fn aes128gcm_vector_round_trips_and_reproduces_ciphertext() -> Result<(), VectorTestError> {
+    let v = load("aes128gcm.json")?;
+    assert_eq!(field_string(&v, "alg")?, "AES-128-GCM");
+
+    let key_bytes = b64u_to_bytes(field_string(&v, "key")?)?;
+    let nonce_bytes = b64u_to_bytes(field_string(&v, "nonce")?)?;
+    let aad = b64u_to_bytes(field_string(&v, "aad")?)?;
+    let plaintext = b64u_to_bytes(field_string(&v, "plaintext")?)?;
+    let ciphertext_bytes = b64u_to_bytes(field_string(&v, "ciphertext_with_tag")?)?;
+
+    let key = Aes128GcmKey::from_slice(&key_bytes).map_err(|_| VectorTestError::AesKey)?;
+    let nonce = Aes128GcmNonce::from_slice(&nonce_bytes).map_err(|_| VectorTestError::AesNonce)?;
+    let encrypted = encrypt_aes128_gcm(&Aes128GcmEncryptRequest {
+        key: &key,
+        nonce,
+        aad: &aad,
+        plaintext: &plaintext,
+    })
+    .map_err(|_| VectorTestError::AesEncrypt)?;
+    assert_eq!(encrypted.as_bytes(), ciphertext_bytes.as_slice());
+
+    let ciphertext = CiphertextWithTag::from_vec(ciphertext_bytes.clone())
+        .map_err(|_| VectorTestError::AesCiphertext)?;
+    let decrypted = decrypt_aes128_gcm(&Aes128GcmDecryptRequest {
+        key: &key,
+        nonce,
+        aad: &aad,
+        ciphertext: &ciphertext,
+    })
+    .map_err(|_| VectorTestError::AesDecrypt)?;
+    assert_eq!(decrypted, plaintext);
+
+    let mut tampered_tag = ciphertext_bytes.clone();
+    let last = tampered_tag.len() - 1;
+    tampered_tag[last] ^= 0x01;
+    let tampered_tag =
+        CiphertextWithTag::from_vec(tampered_tag).map_err(|_| VectorTestError::AesCiphertext)?;
+    if decrypt_aes128_gcm(&Aes128GcmDecryptRequest {
+        key: &key,
+        nonce,
+        aad: &aad,
+        ciphertext: &tampered_tag,
+    })
+    .is_ok()
+    {
+        return Err(VectorTestError::AesDecrypt);
+    }
+
+    Ok(())
+}
+
+#[test]
+fn aes192gcm_vector_round_trips_and_reproduces_ciphertext() -> Result<(), VectorTestError> {
+    let v = load("aes192gcm.json")?;
+    assert_eq!(field_string(&v, "alg")?, "AES-192-GCM");
+
+    let key_bytes = b64u_to_bytes(field_string(&v, "key")?)?;
+    let nonce_bytes = b64u_to_bytes(field_string(&v, "nonce")?)?;
+    let aad = b64u_to_bytes(field_string(&v, "aad")?)?;
+    let plaintext = b64u_to_bytes(field_string(&v, "plaintext")?)?;
+    let ciphertext_bytes = b64u_to_bytes(field_string(&v, "ciphertext_with_tag")?)?;
+
+    let key = Aes192GcmKey::from_slice(&key_bytes).map_err(|_| VectorTestError::AesKey)?;
+    let nonce = Aes192GcmNonce::from_slice(&nonce_bytes).map_err(|_| VectorTestError::AesNonce)?;
+    let encrypted = encrypt_aes192_gcm(&Aes192GcmEncryptRequest {
+        key: &key,
+        nonce,
+        aad: &aad,
+        plaintext: &plaintext,
+    })
+    .map_err(|_| VectorTestError::AesEncrypt)?;
+    assert_eq!(encrypted.as_bytes(), ciphertext_bytes.as_slice());
+
+    let ciphertext = CiphertextWithTag::from_vec(ciphertext_bytes.clone())
+        .map_err(|_| VectorTestError::AesCiphertext)?;
+    let decrypted = decrypt_aes192_gcm(&Aes192GcmDecryptRequest {
+        key: &key,
+        nonce,
+        aad: &aad,
+        ciphertext: &ciphertext,
+    })
+    .map_err(|_| VectorTestError::AesDecrypt)?;
+    assert_eq!(decrypted, plaintext);
+
+    let mut tampered_tag = ciphertext_bytes.clone();
+    let last = tampered_tag.len() - 1;
+    tampered_tag[last] ^= 0x01;
+    let tampered_tag =
+        CiphertextWithTag::from_vec(tampered_tag).map_err(|_| VectorTestError::AesCiphertext)?;
+    if decrypt_aes192_gcm(&Aes192GcmDecryptRequest {
+        key: &key,
+        nonce,
+        aad: &aad,
+        ciphertext: &tampered_tag,
     })
     .is_ok()
     {
@@ -306,6 +419,47 @@ fn hkdf_vector_matches_workspace_primitive() -> Result<(), VectorTestError> {
     .map_err(|_| VectorTestError::Hkdf)?;
 
     assert_eq!(output.as_bytes(), okm.as_slice());
+    Ok(())
+}
+
+#[test]
+fn jwa_concat_kdf_vector_matches_rfc7518_appendix_c() -> Result<(), VectorTestError> {
+    let v = load("concat_kdf.json")?;
+    assert_eq!(field_string(&v, "alg")?, "JWA-CONCAT-KDF-SHA256");
+    assert_eq!(field_string(&v, "profile")?, "ECDH-ES+A128GCM");
+
+    let shared_secret_bytes = b64u_to_bytes(field_string(&v, "shared_secret")?)?;
+    let algorithm_id_bytes = b64u_to_bytes(field_string(&v, "algorithm_id")?)?;
+    let party_u_info_bytes = b64u_to_bytes(field_string(&v, "party_u_info")?)?;
+    let party_v_info_bytes = b64u_to_bytes(field_string(&v, "party_v_info")?)?;
+    let derived_key = b64u_to_bytes(field_string(&v, "derived_key")?)?;
+    let output_len = v
+        .get("output_len")
+        .and_then(Value::as_u64)
+        .and_then(|value| usize::try_from(value).ok())
+        .ok_or(VectorTestError::InvalidField)?;
+
+    if output_len != 16 || derived_key.len() != 16 {
+        return Err(VectorTestError::ConcatKdf);
+    }
+
+    let shared_secret = JwaSharedSecret::from_slice(&shared_secret_bytes)
+        .map_err(|_| VectorTestError::ConcatKdf)?;
+    let algorithm_id =
+        JwaAlgorithmId::from_slice(&algorithm_id_bytes).map_err(|_| VectorTestError::ConcatKdf)?;
+    let party_u_info =
+        JwaPartyInfo::from_slice(&party_u_info_bytes).map_err(|_| VectorTestError::ConcatKdf)?;
+    let party_v_info =
+        JwaPartyInfo::from_slice(&party_v_info_bytes).map_err(|_| VectorTestError::ConcatKdf)?;
+    let output = derive_jwa_concat_kdf_sha256::<16>(&JwaConcatKdfRequest {
+        shared_secret: &shared_secret,
+        algorithm_id: &algorithm_id,
+        party_u_info: &party_u_info,
+        party_v_info: &party_v_info,
+    })
+    .map_err(|_| VectorTestError::ConcatKdf)?;
+
+    assert_eq!(output.as_bytes(), derived_key.as_slice());
     Ok(())
 }
 

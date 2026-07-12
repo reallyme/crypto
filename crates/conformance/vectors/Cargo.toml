@@ -48,6 +48,7 @@ native = [
   "crypto-aes256-gcm-siv/native",
   "crypto-argon2id/native",
   "crypto-chacha20-poly1305/native",
+  "crypto-concat-kdf/native",
   "crypto-hkdf/native",
   "crypto-hmac/native",
   "crypto-hpke/test-vectors",
@@ -78,6 +79,7 @@ wasm = [
   "crypto-aes256-gcm-siv/wasm",
   "crypto-argon2id/wasm",
   "crypto-chacha20-poly1305/wasm",
+  "crypto-concat-kdf/wasm",
   "crypto-hkdf/wasm",
   "crypto-hmac/wasm",
   "crypto-hpke/wasm",
@@ -124,6 +126,7 @@ crypto-aes256-gcm = { package = "reallyme-crypto-aes256-gcm", version = "0.1.2",
 crypto-aes256-gcm-siv = { package = "reallyme-crypto-aes256-gcm-siv", version = "0.1.1", path = "../../crypto/primitives/aes256-gcm-siv", default-features = false }
 crypto-argon2id = { package = "reallyme-crypto-argon2id", version = "0.1.1", path = "../../crypto/primitives/argon2id", default-features = false }
 crypto-chacha20-poly1305 = { package = "reallyme-crypto-chacha20-poly1305", version = "0.1.1", path = "../../crypto/primitives/chacha20-poly1305", default-features = false }
+crypto-concat-kdf = { package = "reallyme-crypto-concat-kdf", version = "0.1.0", path = "../../crypto/primitives/concat-kdf", default-features = false }
 crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "../../crypto/core" }
 crypto-hkdf = { package = "reallyme-crypto-hkdf", version = "0.1.1", path = "../../crypto/primitives/hkdf", default-features = false }
 crypto-hmac = { package = "reallyme-crypto-hmac", version = "0.1.1", path = "../../crypto/primitives/hmac", default-features = false }

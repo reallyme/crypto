@@ -5,5 +5,9 @@
   "public_key_compressed": "AyQp1rInwuJ6H3lh1jS8OWwLrBsZlrgiW1LT6Ms4zFbG8LkHlEsn0gExi5n81-3ozg",
   "public_key_uncompressed": "BCQp1rInwuJ6H3lh1jS8OWwLrBsZlrgiW1LT6Ms4zFbG8LkHlEsn0gExi5n81-3ozj7Js486PskcNoC-dRTNTVVLwzDSOKKGiljYr7-FqFsFcRhZt69X5Yv9AYmwy0hfiw",
   "message": "UmVhbGx5TWUgc2lnbmF0dXJlIGNvbmZvcm1hbmNlIHZlY3Rvcg",
-  "signature_der": "MGQCMD5Kk9Jp6OdOrMquMfql17066VoQOyLWM1dbA1V0y8EGC5JoQnV5WTszbSwjbNNsQAIwH7pIiDMeSU6I1l44_t3qBAXlkQDDlZbp-ZIR0YdOYYXbQdRUxbFii6Iq7jprgE3g"
+  "signature_der": "MGQCMD5Kk9Jp6OdOrMquMfql17066VoQOyLWM1dbA1V0y8EGC5JoQnV5WTszbSwjbNNsQAIwH7pIiDMeSU6I1l44_t3qBAXlkQDDlZbp-ZIR0YdOYYXbQdRUxbFii6Iq7jprgE3g",
+  "peer_secret_key": "KnPlGESRzW-wNYwh2mcE7pAbV8Jq-DkQvk2CBXzhM69pJNhQDLdDlvIVeskxbohd",
+  "peer_public_key_compressed": "Aq2Oc53kYhoPAGTMXlEqgljI-we9Wn16em0ScbohwlRadoiRzdx52eHK-gigZgTsIw",
+  "peer_public_key_uncompressed": "BK2Oc53kYhoPAGTMXlEqgljI-we9Wn16em0ScbohwlRadoiRzdx52eHK-gigZgTsI-Vtf1V1_v1Wup6RXTS-oKJ30dCf4BgXUwfionE-vkWBS4e86DA07IEo9H2MPmmkaA",
+  "shared_secret": "4rVcfZ5JccXZoOsgX74hgoj468NztGflBonS740PoiX1S14IgBDL0wpLMGYCwa6Y"
 }

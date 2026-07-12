@@ -24,7 +24,7 @@ by Git URL; the source lives under `packages/swift` with the other language SDKs
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.1.3"
+    from: "0.1.5"
 )
 ```
 
@@ -79,6 +79,8 @@ Provider selection is explicit:
 
 - CryptoKit for Apple-native classical primitives where it matches the shared
   contract.
+- Security.framework / Secure Enclave for P-256 ECDH keys that must stay
+  non-exportable.
 - [reallyme/CSecp256k1](https://github.com/reallyme/CSecp256k1) for
   secp256k1 ECDSA, since CryptoKit does not provide secp256k1.
 - Digest for SHA-3, which CryptoKit does not expose.
@@ -96,6 +98,33 @@ Reserved identifiers, future contract entries, and unsupported overload shapes
 throw `ReallyMeCryptoError.unsupportedAlgorithm`. The Swift package does not
 silently fall back to a different provider. The complete lane is tracked in
 [PROVIDER_POLICY.md](../../PROVIDER_POLICY.md).
+
+## Secure Enclave ECDH
+
+Use the handle-backed P-256 API when an application needs a platform-held key
+for JOSE/JWE or another ECDH flow. The private key is generated as a permanent
+Secure Enclave key; callers store the returned handle, not raw private-key
+bytes.
+
+```swift
+let tag = Array("me.really.example.p256.jwe".utf8)
+let keyPair = try ReallyMeCrypto.generateSecureEnclaveKeyAgreementKeyPair(
+    .p256Ecdh,
+    tag: tag,
+    overwriteExisting: false
+)
+
+let sharedSecret = try ReallyMeCrypto.deriveSharedSecretWithPrivateKeyHandle(
+    .p256Ecdh,
+    publicKey: peerPublicKey,
+    privateKeyHandle: keyPair.privateKeyHandle
+)
+```
+
+The handle API is intentionally separate from `ReallyMeP256Ecdh`, which accepts
+raw private-key bytes. Unsupported platforms return
+`ReallyMeCryptoError.unsupportedPlatform`; unsupported algorithms return
+`ReallyMeCryptoError.unsupportedAlgorithm`.
 
 ## Protobuf
 

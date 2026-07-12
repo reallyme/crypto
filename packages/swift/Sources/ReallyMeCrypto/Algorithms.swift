@@ -37,6 +37,8 @@ public enum ReallyMeHashAlgorithm: String, CaseIterable, Sendable {
 
 /// AEAD algorithm identifiers reserved by the package facade.
 public enum ReallyMeAeadAlgorithm: String, CaseIterable, Sendable {
+    case aes128Gcm = "AES-128-GCM"
+    case aes192Gcm = "AES-192-GCM"
     case aes256Gcm = "AES-256-GCM"
     case aes256GcmSiv = "AES-256-GCM-SIV"
     case chacha20Poly1305 = "ChaCha20-Poly1305"
@@ -56,6 +58,8 @@ public enum ReallyMeKemAlgorithm: String, CaseIterable, Sendable {
 public enum ReallyMeKeyAgreementAlgorithm: String, CaseIterable, Sendable {
     case x25519 = "X25519"
     case p256Ecdh = "P-256-ECDH"
+    case p384Ecdh = "P-384-ECDH"
+    case p521Ecdh = "P-521-ECDH"
 }
 
 /// MAC algorithm identifiers reserved by the package facade.
@@ -70,6 +74,7 @@ public enum ReallyMeKdfAlgorithm: String, CaseIterable, Sendable {
     case argon2id = "Argon2id"
     case pbkdf2HmacSha256 = "PBKDF2-HMAC-SHA-256"
     case pbkdf2HmacSha512 = "PBKDF2-HMAC-SHA-512"
+    case jwaConcatKdfSha256 = "JWA-CONCAT-KDF-SHA256"
 }
 
 /// Key-wrap identifiers reserved by the package facade.

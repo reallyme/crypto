@@ -36,6 +36,8 @@ public enum class ReallyMeHashAlgorithm(public val algorithmName: String) {
 }
 
 public enum class ReallyMeAeadAlgorithm(public val algorithmName: String) {
+    AES_128_GCM("AES-128-GCM"),
+    AES_192_GCM("AES-192-GCM"),
     AES_256_GCM("AES-256-GCM"),
     AES_256_GCM_SIV("AES-256-GCM-SIV"),
     CHACHA20_POLY1305("ChaCha20-Poly1305"),
@@ -53,6 +55,8 @@ public enum class ReallyMeKemAlgorithm(public val algorithmName: String) {
 public enum class ReallyMeKeyAgreementAlgorithm(public val algorithmName: String) {
     X25519("X25519"),
     P256_ECDH("P-256-ECDH"),
+    P384_ECDH("P-384-ECDH"),
+    P521_ECDH("P-521-ECDH"),
 }
 
 public enum class ReallyMeMacAlgorithm(public val algorithmName: String) {
@@ -65,6 +69,7 @@ public enum class ReallyMeKdfAlgorithm(public val algorithmName: String) {
     ARGON2ID("Argon2id"),
     PBKDF2_HMAC_SHA256("PBKDF2-HMAC-SHA-256"),
     PBKDF2_HMAC_SHA512("PBKDF2-HMAC-SHA-512"),
+    JWA_CONCAT_KDF_SHA256("JWA-CONCAT-KDF-SHA256"),
 }
 
 public enum class ReallyMeKeyWrapAlgorithm(public val algorithmName: String) {

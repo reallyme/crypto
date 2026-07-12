@@ -261,6 +261,8 @@ pub enum KdfAlgorithm {
     Argon2id,
     /// PBKDF2 password-based KDF for legacy interop.
     Pbkdf2,
+    /// NIST Concat KDF as profiled by JOSE/JWA ECDH-ES.
+    ConcatKdf,
 }
 
 impl core::fmt::Display for KdfAlgorithm {
@@ -268,6 +270,7 @@ impl core::fmt::Display for KdfAlgorithm {
         let detail = match self {
             KdfAlgorithm::Argon2id => "Argon2id",
             KdfAlgorithm::Pbkdf2 => "PBKDF2",
+            KdfAlgorithm::ConcatKdf => "Concat KDF",
         };
         write!(f, "{detail}")
     }
@@ -284,6 +287,8 @@ pub enum KdfProfile {
     Pbkdf2HmacSha256,
     /// PBKDF2 using HMAC-SHA-512 as the PRF.
     Pbkdf2HmacSha512,
+    /// JWA ECDH-ES Concat KDF using SHA-256.
+    JwaEcdhEsSha256,
 }
 
 impl core::fmt::Display for KdfProfile {
@@ -293,6 +298,7 @@ impl core::fmt::Display for KdfProfile {
             KdfProfile::Argon2idV2 => "Argon2id v2",
             KdfProfile::Pbkdf2HmacSha256 => "PBKDF2-HMAC-SHA-256",
             KdfProfile::Pbkdf2HmacSha512 => "PBKDF2-HMAC-SHA-512",
+            KdfProfile::JwaEcdhEsSha256 => "JWA ECDH-ES Concat KDF SHA-256",
         };
         write!(f, "{detail}")
     }

@@ -84,13 +84,18 @@ pub mod signer {
     };
 }
 
-/// AES-256-GCM authenticated encryption primitive and its typed key/nonce
+/// AES-GCM authenticated encryption primitives and their typed key/nonce
 /// wrappers and length constants.
 #[cfg(feature = "aes")]
 pub mod aes {
     pub use crypto_aes256_gcm::{
-        decrypt, encrypt, Aes256GcmKey, Aes256GcmNonce, CiphertextWithTag, DecryptRequest,
-        EncryptRequest, AES_256_GCM_KEY_LENGTH, AES_256_GCM_NONCE_LENGTH, AES_256_GCM_TAG_LENGTH,
+        decrypt, decrypt_aes128_gcm, decrypt_aes192_gcm, encrypt, encrypt_aes128_gcm,
+        encrypt_aes192_gcm, Aes128GcmDecryptRequest, Aes128GcmEncryptRequest, Aes128GcmKey,
+        Aes128GcmNonce, Aes192GcmDecryptRequest, Aes192GcmEncryptRequest, Aes192GcmKey,
+        Aes192GcmNonce, Aes256GcmKey, Aes256GcmNonce, CiphertextWithTag, DecryptRequest,
+        EncryptRequest, AES_128_GCM_KEY_LENGTH, AES_128_GCM_NONCE_LENGTH, AES_128_GCM_TAG_LENGTH,
+        AES_192_GCM_KEY_LENGTH, AES_192_GCM_NONCE_LENGTH, AES_192_GCM_TAG_LENGTH,
+        AES_256_GCM_KEY_LENGTH, AES_256_GCM_NONCE_LENGTH, AES_256_GCM_TAG_LENGTH,
     };
 }
 
@@ -184,45 +189,53 @@ pub mod hmac {
     };
 }
 
+/// JWA ECDH-ES Concat KDF over SHA-256 for deriving content-encryption keys
+/// from an ECDH shared secret.
+#[cfg(feature = "concat-kdf")]
+pub mod concat_kdf {
+    pub use crypto_concat_kdf::{
+        derive_jwa_concat_kdf_sha256, JwaAlgorithmId, JwaConcatKdfOutput, JwaConcatKdfRequest,
+        JwaPartyInfo, JwaSharedSecret, JWA_CONCAT_KDF_MAX_INFO_LENGTH,
+        JWA_CONCAT_KDF_MAX_SHARED_SECRET_LENGTH, JWA_CONCAT_KDF_SHA256_DIGEST_LENGTH,
+    };
+}
+
 /// NIST P-256 (secp256r1) ECDSA over pre-hashed messages, with public-key
 /// compression and Secure Enclave handle encoding.
 #[cfg(feature = "p256")]
 pub mod p256 {
     pub use crypto_p256::{
         compress_public_key, decode_se_handle, decompress_public_key, derive_p256_shared_secret,
-        encode_se_handle, generate_p256_keypair, p256_ecdsa_der_to_jose_signature,
-        p256_ecdsa_der_to_jose_signature_permissive, p256_ecdsa_jose_signature_to_der,
-        sign_p256_der_prehash, verify_p256_der_prehash, P256_ECDSA_JOSE_SIGNATURE_LEN,
-        SE_HANDLE_PREFIX,
+        encode_se_handle, generate_p256_keypair, generate_p256_keypair_from_secret_key,
+        p256_ecdsa_der_to_jose_signature, p256_ecdsa_der_to_jose_signature_permissive,
+        p256_ecdsa_jose_signature_to_der, sign_p256_der_prehash, verify_p256_der_prehash,
+        P256_ECDSA_JOSE_SIGNATURE_LEN, SE_HANDLE_PREFIX,
     };
-
-    // See the Ed25519 gate: pure wasm does not widen the JS host-provider
-    // contract for import helpers.
-    #[cfg(not(all(feature = "wasm", target_arch = "wasm32", not(feature = "native"))))]
-    pub use crypto_p256::generate_p256_keypair_from_secret_key;
 }
 
-/// NIST P-384 (secp384r1) ECDSA over pre-hashed messages, with public-key
+/// NIST P-384 (secp384r1) ECDSA and ECDH, with public-key
 /// compression/decompression helpers.
 #[cfg(feature = "p384")]
 pub mod p384 {
     pub use crypto_p384::{
-        compress_p384, decompress_p384, generate_p384_keypair,
-        generate_p384_keypair_from_secret_key, sign_p384_der_prehash, verify_p384_der_prehash,
-        P384_PUBLIC_KEY_COMPRESSED_LEN, P384_PUBLIC_KEY_RAW_LEN, P384_PUBLIC_KEY_UNCOMPRESSED_LEN,
-        P384_SECRET_KEY_LEN, P384_SIGNATURE_DER_MAX_LEN,
+        compress_p384, compress_public_key, decompress_p384, decompress_public_key,
+        derive_p384_shared_secret, generate_p384_keypair, generate_p384_keypair_from_secret_key,
+        sign_p384_der_prehash, verify_p384_der_prehash, P384_PUBLIC_KEY_COMPRESSED_LEN,
+        P384_PUBLIC_KEY_RAW_LEN, P384_PUBLIC_KEY_UNCOMPRESSED_LEN, P384_SECRET_KEY_LEN,
+        P384_SHARED_SECRET_LEN, P384_SIGNATURE_DER_MAX_LEN,
     };
 }
 
-/// NIST P-521 (secp521r1) ECDSA over pre-hashed messages, with public-key
+/// NIST P-521 (secp521r1) ECDSA and ECDH, with public-key
 /// compression/decompression helpers.
 #[cfg(feature = "p521")]
 pub mod p521 {
     pub use crypto_p521::{
-        compress_p521, decompress_p521, generate_p521_keypair,
-        generate_p521_keypair_from_secret_key, sign_p521_der_prehash, verify_p521_der_prehash,
-        P521_PUBLIC_KEY_COMPRESSED_LEN, P521_PUBLIC_KEY_RAW_LEN, P521_PUBLIC_KEY_UNCOMPRESSED_LEN,
-        P521_SECRET_KEY_LEN, P521_SIGNATURE_DER_MAX_LEN,
+        compress_p521, compress_public_key, decompress_p521, decompress_public_key,
+        derive_p521_shared_secret, generate_p521_keypair, generate_p521_keypair_from_secret_key,
+        sign_p521_der_prehash, verify_p521_der_prehash, P521_PUBLIC_KEY_COMPRESSED_LEN,
+        P521_PUBLIC_KEY_RAW_LEN, P521_PUBLIC_KEY_UNCOMPRESSED_LEN, P521_SECRET_KEY_LEN,
+        P521_SHARED_SECRET_LEN, P521_SIGNATURE_DER_MAX_LEN,
     };
 }
 

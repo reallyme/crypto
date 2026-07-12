@@ -142,6 +142,10 @@ public enum ReallyMeCryptoProtoAdapters {
         _ value: ReallyMeCryptoProto.ReallyMeProtoAeadAlgorithm
     ) throws -> ReallyMeAeadAlgorithm {
         switch value {
+        case .aes128Gcm:
+            .aes128Gcm
+        case .aes192Gcm:
+            .aes192Gcm
         case .aes256Gcm:
             .aes256Gcm
         case .aes256GcmSiv:
@@ -159,6 +163,10 @@ public enum ReallyMeCryptoProtoAdapters {
         _ value: ReallyMeAeadAlgorithm
     ) -> ReallyMeCryptoProto.ReallyMeProtoAeadAlgorithm {
         switch value {
+        case .aes128Gcm:
+            .aes128Gcm
+        case .aes192Gcm:
+            .aes192Gcm
         case .aes256Gcm:
             .aes256Gcm
         case .aes256GcmSiv:
@@ -214,6 +222,10 @@ public enum ReallyMeCryptoProtoAdapters {
             .x25519
         case .p256Ecdh:
             .p256Ecdh
+        case .p384Ecdh:
+            .p384Ecdh
+        case .p521Ecdh:
+            .p521Ecdh
         default:
             throw ReallyMeCryptoError.unsupportedAlgorithm
         }
@@ -227,6 +239,10 @@ public enum ReallyMeCryptoProtoAdapters {
             .x25519
         case .p256Ecdh:
             .p256Ecdh
+        case .p384Ecdh:
+            .p384Ecdh
+        case .p521Ecdh:
+            .p521Ecdh
         }
     }
 
@@ -266,6 +282,8 @@ public enum ReallyMeCryptoProtoAdapters {
             .pbkdf2HmacSha256
         case .pbkdf2HmacSha512:
             .pbkdf2HmacSha512
+        case .jwaConcatKdfSha256:
+            .jwaConcatKdfSha256
         default:
             throw ReallyMeCryptoError.unsupportedAlgorithm
         }
@@ -283,6 +301,8 @@ public enum ReallyMeCryptoProtoAdapters {
             .pbkdf2HmacSha256
         case .pbkdf2HmacSha512:
             .pbkdf2HmacSha512
+        case .jwaConcatKdfSha256:
+            .jwaConcatKdfSha256
         }
     }
 

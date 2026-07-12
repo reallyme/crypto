@@ -24,12 +24,15 @@ import { ReallyMeCryptoError } from "./errors.js";
 import { ReallyMeHkdf } from "./hkdf.js";
 import { ReallyMeHmac } from "./hmac.js";
 import { ReallyMeHpke } from "./hpke.js";
+import { ReallyMeJwaConcatKdf } from "./jwaConcatKdf.js";
 import { ReallyMeMlDsa } from "./mlDsa.js";
 import { ReallyMeMlKem } from "./mlKem.js";
 import { ReallyMeP256Ecdsa } from "./p256Ecdsa.js";
 import { ReallyMeP256Ecdh } from "./p256Ecdh.js";
 import { ReallyMeP384Ecdsa } from "./p384Ecdsa.js";
+import { ReallyMeP384Ecdh } from "./p384Ecdh.js";
 import { ReallyMeP521Ecdsa } from "./p521Ecdsa.js";
+import { ReallyMeP521Ecdh } from "./p521Ecdh.js";
 import { ReallyMePbkdf2 } from "./pbkdf2.js";
 import { ReallyMeRsa } from "./rsa.js";
 import { ReallyMeSecp256k1 } from "./secp256k1.js";
@@ -106,6 +109,8 @@ export const ReallyMeCrypto = {
     plaintext: Uint8Array,
   ): Uint8Array {
     switch (algorithm) {
+      case "AES-128-GCM":
+      case "AES-192-GCM":
       case "AES-256-GCM":
       case "AES-256-GCM-SIV":
       case "ChaCha20-Poly1305":
@@ -124,6 +129,8 @@ export const ReallyMeCrypto = {
     ciphertextWithTag: Uint8Array,
   ): Uint8Array {
     switch (algorithm) {
+      case "AES-128-GCM":
+      case "AES-192-GCM":
       case "AES-256-GCM":
       case "AES-256-GCM-SIV":
       case "ChaCha20-Poly1305":
@@ -197,6 +204,34 @@ export const ReallyMeCrypto = {
       case "HKDF-SHA256":
         return ReallyMeHkdf.deriveSha256(inputKeyMaterial, salt, info, outputLength);
       case "Argon2id":
+      case "PBKDF2-HMAC-SHA-256":
+      case "PBKDF2-HMAC-SHA-512":
+      case "JWA-CONCAT-KDF-SHA256":
+        throw new ReallyMeCryptoError("unsupported-algorithm");
+      default:
+        throw new ReallyMeCryptoError("unsupported-algorithm");
+    }
+  },
+
+  deriveJwaConcatKdfSha256(
+    algorithm: ReallyMeKdfAlgorithm,
+    sharedSecret: Uint8Array,
+    algorithmId: Uint8Array,
+    partyUInfo: Uint8Array,
+    partyVInfo: Uint8Array,
+    outputLength: number,
+  ): Uint8Array {
+    switch (algorithm) {
+      case "JWA-CONCAT-KDF-SHA256":
+        return ReallyMeJwaConcatKdf.deriveSha256(
+          sharedSecret,
+          algorithmId,
+          partyUInfo,
+          partyVInfo,
+          outputLength,
+        );
+      case "Argon2id":
+      case "HKDF-SHA256":
       case "PBKDF2-HMAC-SHA-256":
       case "PBKDF2-HMAC-SHA-512":
         throw new ReallyMeCryptoError("unsupported-algorithm");
@@ -386,6 +421,10 @@ export const ReallyMeCrypto = {
         return ReallyMeX25519.deriveSharedSecret(publicKey, secretKey);
       case "P-256-ECDH":
         return ReallyMeP256Ecdh.deriveSharedSecret(publicKey, secretKey);
+      case "P-384-ECDH":
+        return ReallyMeP384Ecdh.deriveSharedSecret(publicKey, secretKey);
+      case "P-521-ECDH":
+        return ReallyMeP521Ecdh.deriveSharedSecret(publicKey, secretKey);
       default:
         throw new ReallyMeCryptoError("unsupported-algorithm");
     }
@@ -400,6 +439,10 @@ export const ReallyMeCrypto = {
         return ReallyMeX25519.deriveKeyPair(secretKey);
       case "P-256-ECDH":
         return ReallyMeP256Ecdh.deriveKeyPair(secretKey);
+      case "P-384-ECDH":
+        return ReallyMeP384Ecdh.deriveKeyPair(secretKey);
+      case "P-521-ECDH":
+        return ReallyMeP521Ecdh.deriveKeyPair(secretKey);
       default:
         throw new ReallyMeCryptoError("unsupported-algorithm");
     }

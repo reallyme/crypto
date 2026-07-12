@@ -56,6 +56,8 @@ enum KeyAgreementAlgorithm {
   KEY_AGREEMENT_ALGORITHM_UNSPECIFIED = 0;
   KEY_AGREEMENT_ALGORITHM_X25519 = 1;
   KEY_AGREEMENT_ALGORITHM_P256_ECDH = 2;
+  KEY_AGREEMENT_ALGORITHM_P384_ECDH = 3;
+  KEY_AGREEMENT_ALGORITHM_P521_ECDH = 4;
 }
 
 // KemAlgorithm identifies encapsulation suites. X-Wing values are ReallyMe's
@@ -83,6 +85,8 @@ enum AeadAlgorithm {
   AEAD_ALGORITHM_AES_256_GCM_SIV = 2;
   AEAD_ALGORITHM_CHACHA20_POLY1305 = 3;
   AEAD_ALGORITHM_XCHACHA20_POLY1305 = 4;
+  AEAD_ALGORITHM_AES_128_GCM = 5;
+  AEAD_ALGORITHM_AES_192_GCM = 6;
 }
 
 // HashAlgorithm identifies digest algorithms exposed by the hash primitives.
@@ -112,6 +116,7 @@ enum KdfAlgorithm {
   KDF_ALGORITHM_ARGON2ID = 2;
   KDF_ALGORITHM_PBKDF2_HMAC_SHA256 = 3;
   KDF_ALGORITHM_PBKDF2_HMAC_SHA512 = 4;
+  KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256 = 5;
 }
 
 // KeyWrapAlgorithm identifies key-wrapping algorithms.

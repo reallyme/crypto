@@ -15,6 +15,7 @@ import Foundation
 /// linked. Do not add a provider here without a code path that uses it.
 public enum ReallyMeCryptoProvider: String, CaseIterable, Sendable {
     case cryptoKit = "CryptoKit"
+    case secureEnclaveKeychain = "Secure Enclave/Keychain"
     case cSecp256k1 = "CSecp256k1"
     case digest = "Digest"
     case rustCAbi = "ReallyMe Rust C ABI"
@@ -25,6 +26,7 @@ public enum ReallyMeCryptoProvider: String, CaseIterable, Sendable {
 public enum ReallyMeCryptoProviderCatalog {
     public static let compiledProviders: [ReallyMeCryptoProvider] = [
         .cryptoKit,
+        .secureEnclaveKeychain,
         .cSecp256k1,
         .digest,
         .rustCAbi,

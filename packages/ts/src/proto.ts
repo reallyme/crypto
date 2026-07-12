@@ -210,6 +210,10 @@ export const aeadAlgorithmFromProto = (
   value: AeadAlgorithm,
 ): ReallyMeAeadAlgorithm => {
   switch (value) {
+    case AeadAlgorithm.AES_128_GCM:
+      return "AES-128-GCM";
+    case AeadAlgorithm.AES_192_GCM:
+      return "AES-192-GCM";
     case AeadAlgorithm.AES_256_GCM:
       return "AES-256-GCM";
     case AeadAlgorithm.AES_256_GCM_SIV:
@@ -225,6 +229,10 @@ export const aeadAlgorithmFromProto = (
 
 export const aeadAlgorithmToProto = (value: ReallyMeAeadAlgorithm): AeadAlgorithm => {
   switch (value) {
+    case "AES-128-GCM":
+      return AeadAlgorithm.AES_128_GCM;
+    case "AES-192-GCM":
+      return AeadAlgorithm.AES_192_GCM;
     case "AES-256-GCM":
       return AeadAlgorithm.AES_256_GCM;
     case "AES-256-GCM-SIV":
@@ -276,6 +284,10 @@ export const keyAgreementAlgorithmFromProto = (
       return "X25519";
     case KeyAgreementAlgorithm.P256_ECDH:
       return "P-256-ECDH";
+    case KeyAgreementAlgorithm.P384_ECDH:
+      return "P-384-ECDH";
+    case KeyAgreementAlgorithm.P521_ECDH:
+      return "P-521-ECDH";
     default:
       throw new ReallyMeCryptoError("unsupported-algorithm");
   }
@@ -289,6 +301,10 @@ export const keyAgreementAlgorithmToProto = (
       return KeyAgreementAlgorithm.X25519;
     case "P-256-ECDH":
       return KeyAgreementAlgorithm.P256_ECDH;
+    case "P-384-ECDH":
+      return KeyAgreementAlgorithm.P384_ECDH;
+    case "P-521-ECDH":
+      return KeyAgreementAlgorithm.P521_ECDH;
   }
 };
 
@@ -322,6 +338,8 @@ export const kdfAlgorithmFromProto = (value: KdfAlgorithm): ReallyMeKdfAlgorithm
       return "PBKDF2-HMAC-SHA-256";
     case KdfAlgorithm.PBKDF2_HMAC_SHA512:
       return "PBKDF2-HMAC-SHA-512";
+    case KdfAlgorithm.JWA_CONCAT_KDF_SHA256:
+      return "JWA-CONCAT-KDF-SHA256";
     default:
       throw new ReallyMeCryptoError("unsupported-algorithm");
   }
@@ -337,6 +355,8 @@ export const kdfAlgorithmToProto = (value: ReallyMeKdfAlgorithm): KdfAlgorithm =
       return KdfAlgorithm.PBKDF2_HMAC_SHA256;
     case "PBKDF2-HMAC-SHA-512":
       return KdfAlgorithm.PBKDF2_HMAC_SHA512;
+    case "JWA-CONCAT-KDF-SHA256":
+      return KdfAlgorithm.JWA_CONCAT_KDF_SHA256;
   }
 };
 

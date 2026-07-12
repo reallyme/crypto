@@ -24,7 +24,10 @@ Application-specific document, token, and container formats are not part of this
 - `mlkem512.json`
 - `mlkem768.json`
 - `mlkem1024.json`
+- `aes128gcm.json`
+- `aes192gcm.json`
 - `aes256gcm.json`
+- `concat_kdf.json`
 - `chacha20poly1305.json`
 - `hmac.json`
 - `hashes.json`

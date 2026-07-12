@@ -206,6 +206,72 @@ class ReallyMeCryptoTest {
     }
 
     @Test
+    fun genericFacadeAes128GcmKnownAnswerAndTampering() {
+        val key = vectorField("aes128gcm.json", "key")
+        val nonce = vectorField("aes128gcm.json", "nonce")
+        val aad = vectorField("aes128gcm.json", "aad")
+        val plaintext = vectorField("aes128gcm.json", "plaintext")
+        val ciphertext = vectorField("aes128gcm.json", "ciphertext_with_tag")
+
+        assertContentEquals(
+            ciphertext,
+            ReallyMeCrypto.seal(ReallyMeAeadAlgorithm.AES_128_GCM, key, nonce, aad, plaintext),
+        )
+        assertContentEquals(
+            plaintext,
+            ReallyMeCrypto.open(ReallyMeAeadAlgorithm.AES_128_GCM, key, nonce, aad, ciphertext),
+        )
+
+        val tampered = ciphertext.copyOf()
+        tampered[0] = (tampered[0].toInt() xor 0x01).toByte()
+        assertFailsWith<ReallyMeCryptoException.AuthenticationFailed> {
+            ReallyMeCrypto.open(ReallyMeAeadAlgorithm.AES_128_GCM, key, nonce, aad, tampered)
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeCrypto.seal(
+                ReallyMeAeadAlgorithm.AES_128_GCM,
+                ByteArray(32),
+                nonce,
+                aad,
+                plaintext,
+            )
+        }
+    }
+
+    @Test
+    fun genericFacadeAes192GcmKnownAnswerAndTampering() {
+        val key = vectorField("aes192gcm.json", "key")
+        val nonce = vectorField("aes192gcm.json", "nonce")
+        val aad = vectorField("aes192gcm.json", "aad")
+        val plaintext = vectorField("aes192gcm.json", "plaintext")
+        val ciphertext = vectorField("aes192gcm.json", "ciphertext_with_tag")
+
+        assertContentEquals(
+            ciphertext,
+            ReallyMeCrypto.seal(ReallyMeAeadAlgorithm.AES_192_GCM, key, nonce, aad, plaintext),
+        )
+        assertContentEquals(
+            plaintext,
+            ReallyMeCrypto.open(ReallyMeAeadAlgorithm.AES_192_GCM, key, nonce, aad, ciphertext),
+        )
+
+        val tampered = ciphertext.copyOf()
+        tampered[0] = (tampered[0].toInt() xor 0x01).toByte()
+        assertFailsWith<ReallyMeCryptoException.AuthenticationFailed> {
+            ReallyMeCrypto.open(ReallyMeAeadAlgorithm.AES_192_GCM, key, nonce, aad, tampered)
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeCrypto.seal(
+                ReallyMeAeadAlgorithm.AES_192_GCM,
+                ByteArray(16),
+                nonce,
+                aad,
+                plaintext,
+            )
+        }
+    }
+
+    @Test
     fun genericFacadeAes256GcmKnownAnswerAndTampering() {
         val key = base64UrlBytes("AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8")
         val nonce = base64UrlBytes("oKGio6Slpqeoqaqr")
@@ -473,6 +539,88 @@ class ReallyMeCryptoTest {
     }
 
     @Test
+    fun genericFacadeJwaConcatKdfMatchesSharedVector() {
+        val sharedSecret = vectorField("concat_kdf.json", "shared_secret")
+        val algorithmId = vectorField("concat_kdf.json", "algorithm_id")
+        val partyUInfo = vectorField("concat_kdf.json", "party_u_info")
+        val partyVInfo = vectorField("concat_kdf.json", "party_v_info")
+        val outputLength = vectorNumber("concat_kdf.json", "output_len")
+        val derivedKey = vectorField("concat_kdf.json", "derived_key")
+
+        assertContentEquals(
+            derivedKey,
+            ReallyMeJwaConcatKdf.deriveSha256(
+                sharedSecret,
+                algorithmId,
+                partyUInfo,
+                partyVInfo,
+                outputLength,
+            ),
+        )
+        assertContentEquals(
+            derivedKey,
+            ReallyMeCrypto.deriveJwaConcatKdfSha256(
+                ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256,
+                sharedSecret,
+                algorithmId,
+                partyUInfo,
+                partyVInfo,
+                outputLength,
+            ),
+        )
+    }
+
+    @Test
+    fun genericFacadeJwaConcatKdfRejectsInvalidInputsAndUnsupportedKdf() {
+        val sharedSecret = vectorField("concat_kdf.json", "shared_secret")
+        val algorithmId = vectorField("concat_kdf.json", "algorithm_id")
+        val partyUInfo = vectorField("concat_kdf.json", "party_u_info")
+        val partyVInfo = vectorField("concat_kdf.json", "party_v_info")
+        val outputLength = vectorNumber("concat_kdf.json", "output_len")
+
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeCrypto.deriveJwaConcatKdfSha256(
+                ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256,
+                ByteArray(0),
+                algorithmId,
+                partyUInfo,
+                partyVInfo,
+                outputLength,
+            )
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeCrypto.deriveJwaConcatKdfSha256(
+                ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256,
+                sharedSecret,
+                ByteArray(0),
+                partyUInfo,
+                partyVInfo,
+                outputLength,
+            )
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeCrypto.deriveJwaConcatKdfSha256(
+                ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256,
+                sharedSecret,
+                algorithmId,
+                partyUInfo,
+                partyVInfo,
+                0,
+            )
+        }
+        assertFailsWith<ReallyMeCryptoException.UnsupportedAlgorithm> {
+            ReallyMeCrypto.deriveJwaConcatKdfSha256(
+                ReallyMeKdfAlgorithm.HKDF_SHA256,
+                sharedSecret,
+                algorithmId,
+                partyUInfo,
+                partyVInfo,
+                outputLength,
+            )
+        }
+    }
+
+    @Test
     fun genericFacadeRemainingFamiliesReturnTypedUnsupportedAlgorithm() {
         val empty = ByteArray(0)
 
@@ -504,7 +652,12 @@ class ReallyMeCryptoTest {
             ReallyMeMacAlgorithm.entries.toSet(),
         )
         assertEquals(
-            setOf(ReallyMeKeyAgreementAlgorithm.X25519, ReallyMeKeyAgreementAlgorithm.P256_ECDH),
+            setOf(
+                ReallyMeKeyAgreementAlgorithm.X25519,
+                ReallyMeKeyAgreementAlgorithm.P256_ECDH,
+                ReallyMeKeyAgreementAlgorithm.P384_ECDH,
+                ReallyMeKeyAgreementAlgorithm.P521_ECDH,
+            ),
             ReallyMeKeyAgreementAlgorithm.entries.toSet(),
         )
     }
@@ -594,6 +747,7 @@ class ReallyMeCryptoTest {
             ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA512,
         )
         val deriveHkdfSupported = setOf(ReallyMeKdfAlgorithm.HKDF_SHA256)
+        val deriveJwaConcatKdfSupported = setOf(ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256)
 
         ReallyMeKdfAlgorithm.entries
             .filter { algorithm -> !deriveKeySupported.contains(algorithm) }
@@ -612,6 +766,14 @@ class ReallyMeCryptoTest {
             .forEach { algorithm ->
                 assertFailsWith<ReallyMeCryptoException.UnsupportedAlgorithm>(message = algorithm.algorithmName) {
                     ReallyMeCrypto.deriveHkdf(algorithm, empty, empty, empty, 1)
+                }
+            }
+
+        ReallyMeKdfAlgorithm.entries
+            .filter { algorithm -> !deriveJwaConcatKdfSupported.contains(algorithm) }
+            .forEach { algorithm ->
+                assertFailsWith<ReallyMeCryptoException.UnsupportedAlgorithm>(message = algorithm.algorithmName) {
+                    ReallyMeCrypto.deriveJwaConcatKdfSha256(algorithm, empty, empty, empty, empty, 1)
                 }
             }
     }
@@ -1494,6 +1656,122 @@ class ReallyMeCryptoTest {
         assertContentEquals(aliceSecret, bobSecret)
     }
 
+    @Test
+    fun p384EcdhKnownAnswer() {
+        val secretKey = vectorField("p384.json", "secret_key")
+        val publicKey = vectorField("p384.json", "public_key_compressed")
+        val peerSecretKey = vectorField("p384.json", "peer_secret_key")
+        val peerPublicKey = vectorField("p384.json", "peer_public_key_compressed")
+        val sharedSecret = vectorField("p384.json", "shared_secret")
+
+        assertContentEquals(publicKey, ReallyMeP384Ecdh.derivePublicKey(secretKey))
+        val keyPair = ReallyMeCrypto.deriveKeyAgreementKeyPair(
+            ReallyMeKeyAgreementAlgorithm.P384_ECDH,
+            secretKey,
+        )
+        assertContentEquals(publicKey, keyPair.publicKey)
+        assertContentEquals(secretKey, keyPair.secretKey)
+        assertContentEquals(
+            sharedSecret,
+            ReallyMeP384Ecdh.deriveSharedSecret(peerPublicKey, secretKey),
+        )
+        assertContentEquals(
+            sharedSecret,
+            ReallyMeCrypto.deriveSharedSecret(
+                ReallyMeKeyAgreementAlgorithm.P384_ECDH,
+                publicKey,
+                peerSecretKey,
+            ),
+        )
+    }
+
+    @Test
+    fun p384EcdhRejectsMalformedInputs() {
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeP384Ecdh.derivePublicKey(byteArrayOf(0x01, 0x02))
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeP384Ecdh.deriveSharedSecret(ByteArray(ReallyMeP384Ecdh.COMPRESSED_PUBLIC_KEY_LENGTH), ByteArray(ReallyMeP384Ecdh.SECRET_KEY_LENGTH))
+        }
+    }
+
+    @Test
+    fun p384EcdhGenerateKeyPairRoundTrip() {
+        val alice = ReallyMeP384Ecdh.generateKeyPair()
+        val bob = ReallyMeP384Ecdh.generateKeyPair()
+        val aliceSecret = ReallyMeCrypto.deriveSharedSecret(
+            ReallyMeKeyAgreementAlgorithm.P384_ECDH,
+            bob.first,
+            alice.second,
+        )
+        val bobSecret = ReallyMeCrypto.deriveSharedSecret(
+            ReallyMeKeyAgreementAlgorithm.P384_ECDH,
+            alice.first,
+            bob.second,
+        )
+
+        assertEquals(ReallyMeP384Ecdh.SHARED_SECRET_LENGTH, aliceSecret.size)
+        assertContentEquals(aliceSecret, bobSecret)
+    }
+
+    @Test
+    fun p521EcdhKnownAnswer() {
+        val secretKey = vectorField("p521.json", "secret_key")
+        val publicKey = vectorField("p521.json", "public_key_compressed")
+        val peerSecretKey = vectorField("p521.json", "peer_secret_key")
+        val peerPublicKey = vectorField("p521.json", "peer_public_key_compressed")
+        val sharedSecret = vectorField("p521.json", "shared_secret")
+
+        assertContentEquals(publicKey, ReallyMeP521Ecdh.derivePublicKey(secretKey))
+        val keyPair = ReallyMeCrypto.deriveKeyAgreementKeyPair(
+            ReallyMeKeyAgreementAlgorithm.P521_ECDH,
+            secretKey,
+        )
+        assertContentEquals(publicKey, keyPair.publicKey)
+        assertContentEquals(secretKey, keyPair.secretKey)
+        assertContentEquals(
+            sharedSecret,
+            ReallyMeP521Ecdh.deriveSharedSecret(peerPublicKey, secretKey),
+        )
+        assertContentEquals(
+            sharedSecret,
+            ReallyMeCrypto.deriveSharedSecret(
+                ReallyMeKeyAgreementAlgorithm.P521_ECDH,
+                publicKey,
+                peerSecretKey,
+            ),
+        )
+    }
+
+    @Test
+    fun p521EcdhRejectsMalformedInputs() {
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeP521Ecdh.derivePublicKey(byteArrayOf(0x01, 0x02))
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeP521Ecdh.deriveSharedSecret(ByteArray(ReallyMeP521Ecdh.COMPRESSED_PUBLIC_KEY_LENGTH), ByteArray(ReallyMeP521Ecdh.SECRET_KEY_LENGTH))
+        }
+    }
+
+    @Test
+    fun p521EcdhGenerateKeyPairRoundTrip() {
+        val alice = ReallyMeP521Ecdh.generateKeyPair()
+        val bob = ReallyMeP521Ecdh.generateKeyPair()
+        val aliceSecret = ReallyMeCrypto.deriveSharedSecret(
+            ReallyMeKeyAgreementAlgorithm.P521_ECDH,
+            bob.first,
+            alice.second,
+        )
+        val bobSecret = ReallyMeCrypto.deriveSharedSecret(
+            ReallyMeKeyAgreementAlgorithm.P521_ECDH,
+            alice.first,
+            bob.second,
+        )
+
+        assertEquals(ReallyMeP521Ecdh.SHARED_SECRET_LENGTH, aliceSecret.size)
+        assertContentEquals(aliceSecret, bobSecret)
+    }
+
     // Keypair from vectors/secp256k1.json — the same KAT every lane proves.
     private val vectorSecretKey =
         bytes("4e390c72a5d15f209963812e37af04bce156489a2f730d8451c63b09f528617d")
@@ -1802,6 +2080,14 @@ class ReallyMeCryptoTest {
         val match = Regex("\"$fieldName\"\\s*:\\s*\"([^\"]+)\"").find(text)
             ?: throw IllegalStateException("missing vector field")
         return match.groupValues[1]
+    }
+
+    private fun vectorNumber(vectorName: String, fieldName: String): Int {
+        val vectorPath = Path.of("..", "..", "vectors", vectorName)
+        val text = Files.readString(vectorPath)
+        val match = Regex("\"$fieldName\"\\s*:\\s*([0-9]+)").find(text)
+            ?: throw IllegalStateException("missing vector field")
+        return match.groupValues[1].toInt()
     }
 
     private data class CodecPrefixVector(

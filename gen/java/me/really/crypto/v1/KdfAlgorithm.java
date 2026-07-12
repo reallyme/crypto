@@ -36,6 +36,10 @@ public enum KdfAlgorithm
    * <code>KDF_ALGORITHM_PBKDF2_HMAC_SHA512 = 4;</code>
    */
   KDF_ALGORITHM_PBKDF2_HMAC_SHA512(4),
+  /**
+   * <code>KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256 = 5;</code>
+   */
+  KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256(5),
   UNRECOGNIZED(-1),
   ;
 
@@ -59,6 +63,10 @@ public enum KdfAlgorithm
    * <code>KDF_ALGORITHM_PBKDF2_HMAC_SHA512 = 4;</code>
    */
   public static final int KDF_ALGORITHM_PBKDF2_HMAC_SHA512_VALUE = 4;
+  /**
+   * <code>KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256 = 5;</code>
+   */
+  public static final int KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256_VALUE = 5;
 
 
   @java.lang.Override
@@ -86,6 +94,7 @@ public enum KdfAlgorithm
       case 2: return KDF_ALGORITHM_ARGON2ID;
       case 3: return KDF_ALGORITHM_PBKDF2_HMAC_SHA256;
       case 4: return KDF_ALGORITHM_PBKDF2_HMAC_SHA512;
+      case 5: return KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256;
       default: return null;
     }
   }

@@ -46,6 +46,12 @@ typedef int32_t rm_crypto_status_t;
  *   Crypto FFI function supports in-place operation.
  */
 
+#define RM_CRYPTO_AES128_GCM_KEY_LEN        16
+#define RM_CRYPTO_AES128_GCM_NONCE_LEN      12
+#define RM_CRYPTO_AES128_GCM_TAG_LEN        16
+#define RM_CRYPTO_AES192_GCM_KEY_LEN        24
+#define RM_CRYPTO_AES192_GCM_NONCE_LEN      12
+#define RM_CRYPTO_AES192_GCM_TAG_LEN        16
 #define RM_CRYPTO_AES256_GCM_KEY_LEN        32
 #define RM_CRYPTO_AES256_GCM_NONCE_LEN      12
 #define RM_CRYPTO_AES256_GCM_TAG_LEN        16
@@ -101,10 +107,12 @@ typedef int32_t rm_crypto_status_t;
 #define RM_CRYPTO_P384_SECRET_KEY_LEN       48
 #define RM_CRYPTO_P384_PUBLIC_KEY_COMPRESSED_LEN    49
 #define RM_CRYPTO_P384_PUBLIC_KEY_UNCOMPRESSED_LEN  97
+#define RM_CRYPTO_P384_SHARED_SECRET_LEN            48
 #define RM_CRYPTO_P384_SIGNATURE_DER_MAX_LEN        104
 #define RM_CRYPTO_P521_SECRET_KEY_LEN       66
 #define RM_CRYPTO_P521_PUBLIC_KEY_COMPRESSED_LEN    67
 #define RM_CRYPTO_P521_PUBLIC_KEY_UNCOMPRESSED_LEN  133
+#define RM_CRYPTO_P521_SHARED_SECRET_LEN            66
 #define RM_CRYPTO_P521_SIGNATURE_DER_MAX_LEN        144
 #define RM_CRYPTO_RSA_HASH_SHA1                      1
 #define RM_CRYPTO_RSA_HASH_SHA256                    2
@@ -205,6 +213,62 @@ rm_crypto_status_t rm_crypto_sha3_512_digest(
     size_t message_len,
     uint8_t* digest_out,
     size_t digest_out_len
+);
+
+rm_crypto_status_t rm_crypto_aes128_gcm_encrypt(
+    const uint8_t* key,
+    size_t key_len,
+    const uint8_t* nonce,
+    size_t nonce_len,
+    const uint8_t* aad,
+    size_t aad_len,
+    const uint8_t* plaintext,
+    size_t plaintext_len,
+    uint8_t* ciphertext_out,
+    size_t ciphertext_out_len,
+    size_t* ciphertext_len_out
+);
+
+rm_crypto_status_t rm_crypto_aes128_gcm_decrypt(
+    const uint8_t* key,
+    size_t key_len,
+    const uint8_t* nonce,
+    size_t nonce_len,
+    const uint8_t* aad,
+    size_t aad_len,
+    const uint8_t* ciphertext,
+    size_t ciphertext_len,
+    uint8_t* plaintext_out,
+    size_t plaintext_out_len,
+    size_t* plaintext_len_out
+);
+
+rm_crypto_status_t rm_crypto_aes192_gcm_encrypt(
+    const uint8_t* key,
+    size_t key_len,
+    const uint8_t* nonce,
+    size_t nonce_len,
+    const uint8_t* aad,
+    size_t aad_len,
+    const uint8_t* plaintext,
+    size_t plaintext_len,
+    uint8_t* ciphertext_out,
+    size_t ciphertext_out_len,
+    size_t* ciphertext_len_out
+);
+
+rm_crypto_status_t rm_crypto_aes192_gcm_decrypt(
+    const uint8_t* key,
+    size_t key_len,
+    const uint8_t* nonce,
+    size_t nonce_len,
+    const uint8_t* aad,
+    size_t aad_len,
+    const uint8_t* ciphertext,
+    size_t ciphertext_len,
+    uint8_t* plaintext_out,
+    size_t plaintext_out_len,
+    size_t* plaintext_len_out
 );
 
 rm_crypto_status_t rm_crypto_aes256_gcm_encrypt(
@@ -549,6 +613,15 @@ rm_crypto_status_t rm_crypto_p384_verify_der_prehash(
     size_t public_key_len
 );
 
+rm_crypto_status_t rm_crypto_p384_derive_shared_secret(
+    const uint8_t* secret_key,
+    size_t secret_key_len,
+    const uint8_t* public_key,
+    size_t public_key_len,
+    uint8_t* shared_secret_out,
+    size_t shared_secret_out_len
+);
+
 rm_crypto_status_t rm_crypto_p384_compress_public_key(
     const uint8_t* public_key_uncompressed,
     size_t public_key_uncompressed_len,
@@ -596,6 +669,15 @@ rm_crypto_status_t rm_crypto_p521_verify_der_prehash(
     size_t message_len,
     const uint8_t* public_key,
     size_t public_key_len
+);
+
+rm_crypto_status_t rm_crypto_p521_derive_shared_secret(
+    const uint8_t* secret_key,
+    size_t secret_key_len,
+    const uint8_t* public_key,
+    size_t public_key_len,
+    uint8_t* shared_secret_out,
+    size_t shared_secret_out_len
 );
 
 rm_crypto_status_t rm_crypto_p521_compress_public_key(

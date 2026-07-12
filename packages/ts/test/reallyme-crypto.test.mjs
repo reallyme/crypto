@@ -6,6 +6,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
+  aes128GcmOpen,
+  aes128GcmSeal,
+  aes192GcmOpen,
+  aes192GcmSeal,
   aes256GcmOpen,
   aes256GcmSeal,
   aes256GcmSivOpen,
@@ -103,10 +107,13 @@ import {
   ReallyMeBip340Schnorr,
   ReallyMeP256Ecdsa,
   ReallyMeP256Ecdh,
+  ReallyMeP384Ecdh,
   ReallyMeP384Ecdsa,
+  ReallyMeP521Ecdh,
   ReallyMeP521Ecdsa,
   ReallyMeHpke,
   ReallyMeJwk,
+  ReallyMeJwaConcatKdf,
   ReallyMeMlDsa,
   ReallyMeMlKem,
   ReallyMeRsa,
@@ -136,6 +143,8 @@ import {
   P384_ECDSA_DER_SIGNATURE_MAX_LENGTH,
   P521_ECDSA_DER_SIGNATURE_MAX_LENGTH,
   P256_ECDH_SHARED_SECRET_LENGTH,
+  P384_ECDH_SHARED_SECRET_LENGTH,
+  P521_ECDH_SHARED_SECRET_LENGTH,
   SECP256K1_SIGNATURE_LENGTH,
   SLH_DSA_SHA2_128S_KEYGEN_SEED_LENGTH,
   SLH_DSA_SHA2_128S_PUBLIC_KEY_LENGTH,
@@ -150,11 +159,20 @@ import {
   X25519_SHARED_SECRET_LENGTH,
 } from "../dist/index.js";
 import {
+  AeadAlgorithm,
   HashAlgorithm,
+  KdfAlgorithm,
+  KeyAgreementAlgorithm,
   MulticodecKeyAlgorithm,
   SignatureAlgorithm,
+  aeadAlgorithmFromProto,
+  aeadAlgorithmToProto,
   hashAlgorithmFromProto,
   hashAlgorithmToProto,
+  kdfAlgorithmFromProto,
+  kdfAlgorithmToProto,
+  keyAgreementAlgorithmFromProto,
+  keyAgreementAlgorithmToProto,
   multicodecKeyAlgorithmFromProto,
   signatureAlgorithmFromProto,
   signatureAlgorithmToProto,
@@ -181,6 +199,10 @@ const wasmBytes = readFileSync(
 );
 initSync({ module: wasmBytes });
 installReallyMeWasmProvider({
+  aes128GcmOpen,
+  aes128GcmSeal,
+  aes192GcmOpen,
+  aes192GcmSeal,
   aes256GcmOpen,
   aes256GcmSeal,
   aes256GcmSivOpen,
@@ -259,6 +281,26 @@ test("proto adapters round-trip supported algorithms and reject reserved values"
   );
   assert.equal(hashAlgorithmFromProto(HashAlgorithm.SHA2_256), "SHA2-256");
   assert.equal(hashAlgorithmToProto("SHA3-512"), HashAlgorithm.SHA3_512);
+  assert.equal(aeadAlgorithmFromProto(AeadAlgorithm.AES_128_GCM), "AES-128-GCM");
+  assert.equal(aeadAlgorithmToProto("AES-128-GCM"), AeadAlgorithm.AES_128_GCM);
+  assert.equal(aeadAlgorithmFromProto(AeadAlgorithm.AES_192_GCM), "AES-192-GCM");
+  assert.equal(aeadAlgorithmToProto("AES-192-GCM"), AeadAlgorithm.AES_192_GCM);
+  assert.equal(
+    keyAgreementAlgorithmFromProto(KeyAgreementAlgorithm.P384_ECDH),
+    "P-384-ECDH",
+  );
+  assert.equal(
+    keyAgreementAlgorithmToProto("P-521-ECDH"),
+    KeyAgreementAlgorithm.P521_ECDH,
+  );
+  assert.equal(
+    kdfAlgorithmFromProto(KdfAlgorithm.JWA_CONCAT_KDF_SHA256),
+    "JWA-CONCAT-KDF-SHA256",
+  );
+  assert.equal(
+    kdfAlgorithmToProto("JWA-CONCAT-KDF-SHA256"),
+    KdfAlgorithm.JWA_CONCAT_KDF_SHA256,
+  );
   assert.equal(
     multicodecKeyAlgorithmFromProto(MulticodecKeyAlgorithm.ML_KEM_768_PUB),
     "mlkem-768-pub",
@@ -285,6 +327,12 @@ const vectorNumber = (object, name) => {
 const xWingVectors = JSON.parse(
   readFileSync(new URL("../../../vectors/x_wing.json", import.meta.url), "utf8"),
 );
+const aes128GcmVector = JSON.parse(
+  readFileSync(new URL("../../../vectors/aes128gcm.json", import.meta.url), "utf8"),
+);
+const aes192GcmVector = JSON.parse(
+  readFileSync(new URL("../../../vectors/aes192gcm.json", import.meta.url), "utf8"),
+);
 const aes256GcmVector = JSON.parse(
   readFileSync(new URL("../../../vectors/aes256gcm.json", import.meta.url), "utf8"),
 );
@@ -299,6 +347,9 @@ const aes256KwVector = JSON.parse(
 );
 const chachaVectors = JSON.parse(
   readFileSync(new URL("../../../vectors/chacha20poly1305.json", import.meta.url), "utf8"),
+);
+const concatKdfVector = JSON.parse(
+  readFileSync(new URL("../../../vectors/concat_kdf.json", import.meta.url), "utf8"),
 );
 const hpkeVectors = JSON.parse(
   readFileSync(new URL("../../../vectors/hpke.json", import.meta.url), "utf8"),
@@ -452,6 +503,32 @@ const p256EcdhPeerPublicKey = base64UrlBytes(
 );
 const p256EcdhSharedSecret = base64UrlBytes(
   vectorString(p256Vector, "shared_secret"),
+);
+const p384EcdhSecretKey = base64UrlBytes(vectorString(p384Vector, "secret_key"));
+const p384EcdhPublicKey = base64UrlBytes(
+  vectorString(p384Vector, "public_key_compressed"),
+);
+const p384EcdhPeerSecretKey = base64UrlBytes(
+  vectorString(p384Vector, "peer_secret_key"),
+);
+const p384EcdhPeerPublicKey = base64UrlBytes(
+  vectorString(p384Vector, "peer_public_key_compressed"),
+);
+const p384EcdhSharedSecret = base64UrlBytes(
+  vectorString(p384Vector, "shared_secret"),
+);
+const p521EcdhSecretKey = base64UrlBytes(vectorString(p521Vector, "secret_key"));
+const p521EcdhPublicKey = base64UrlBytes(
+  vectorString(p521Vector, "public_key_compressed"),
+);
+const p521EcdhPeerSecretKey = base64UrlBytes(
+  vectorString(p521Vector, "peer_secret_key"),
+);
+const p521EcdhPeerPublicKey = base64UrlBytes(
+  vectorString(p521Vector, "peer_public_key_compressed"),
+);
+const p521EcdhSharedSecret = base64UrlBytes(
+  vectorString(p521Vector, "shared_secret"),
 );
 const p256EcdsaMessage = base64UrlBytes(
   vectorString(p256Vector, "ecdsa_message"),
@@ -728,6 +805,93 @@ test("generic facade HKDF rejects invalid inputs and unsupported KDF", () => {
   );
 });
 
+test("generic facade JWA Concat KDF matches shared vector", () => {
+  const sharedSecret = base64UrlBytes(vectorString(concatKdfVector, "shared_secret"));
+  const algorithmId = base64UrlBytes(vectorString(concatKdfVector, "algorithm_id"));
+  const partyUInfo = base64UrlBytes(vectorString(concatKdfVector, "party_u_info"));
+  const partyVInfo = base64UrlBytes(vectorString(concatKdfVector, "party_v_info"));
+  const expected = base64UrlBytes(vectorString(concatKdfVector, "derived_key"));
+  const outputLength = vectorNumber(concatKdfVector, "output_len");
+
+  assert.deepEqual(
+    ReallyMeJwaConcatKdf.deriveSha256(
+      sharedSecret,
+      algorithmId,
+      partyUInfo,
+      partyVInfo,
+      outputLength,
+    ),
+    expected,
+  );
+  assert.deepEqual(
+    ReallyMeCrypto.deriveJwaConcatKdfSha256(
+      "JWA-CONCAT-KDF-SHA256",
+      sharedSecret,
+      algorithmId,
+      partyUInfo,
+      partyVInfo,
+      outputLength,
+    ),
+    expected,
+  );
+});
+
+test("generic facade JWA Concat KDF rejects invalid inputs and unsupported KDF", () => {
+  const sharedSecret = base64UrlBytes(vectorString(concatKdfVector, "shared_secret"));
+  const algorithmId = base64UrlBytes(vectorString(concatKdfVector, "algorithm_id"));
+  const partyUInfo = base64UrlBytes(vectorString(concatKdfVector, "party_u_info"));
+  const partyVInfo = base64UrlBytes(vectorString(concatKdfVector, "party_v_info"));
+
+  assert.throws(
+    () =>
+      ReallyMeCrypto.deriveJwaConcatKdfSha256(
+        "JWA-CONCAT-KDF-SHA256",
+        new Uint8Array(),
+        algorithmId,
+        partyUInfo,
+        partyVInfo,
+        16,
+      ),
+    (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
+  );
+  assert.throws(
+    () =>
+      ReallyMeCrypto.deriveJwaConcatKdfSha256(
+        "JWA-CONCAT-KDF-SHA256",
+        sharedSecret,
+        new Uint8Array(),
+        partyUInfo,
+        partyVInfo,
+        16,
+      ),
+    (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
+  );
+  assert.throws(
+    () =>
+      ReallyMeCrypto.deriveJwaConcatKdfSha256(
+        "JWA-CONCAT-KDF-SHA256",
+        sharedSecret,
+        algorithmId,
+        partyUInfo,
+        partyVInfo,
+        0,
+      ),
+    (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
+  );
+  assert.throws(
+    () =>
+      ReallyMeCrypto.deriveJwaConcatKdfSha256(
+        "HKDF-SHA256",
+        sharedSecret,
+        algorithmId,
+        partyUInfo,
+        partyVInfo,
+        16,
+      ),
+    (error) => error instanceof ReallyMeCryptoError && error.code === "unsupported-algorithm",
+  );
+});
+
 test("argon2id known answer derives through WASM", () => {
   const secret = new TextEncoder().encode("password");
   const salt = new TextEncoder().encode("somesaltvalue1234");
@@ -795,6 +959,14 @@ test("argon2id rejects invalid inputs through typed errors", () => {
 
 test("aead vectors seal and open through WASM", () => {
   const cases = [
+    {
+      algorithm: "AES-128-GCM",
+      vector: aes128GcmVector,
+    },
+    {
+      algorithm: "AES-192-GCM",
+      vector: aes192GcmVector,
+    },
     {
       algorithm: "AES-256-GCM",
       vector: aes256GcmVector,
@@ -873,6 +1045,21 @@ test("aead rejects malformed and tampered inputs through typed errors", () => {
   );
   assert.throws(
     () => ReallyMeCrypto.seal("AES-256-GCM", new Uint8Array(31), nonce, aad, plaintext),
+    (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
+  );
+  assert.throws(
+    () =>
+      ReallyMeCrypto.seal(
+        "AES-128-GCM",
+        new Uint8Array(32),
+        nonce,
+        aad,
+        plaintext,
+      ),
+    (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
+  );
+  assert.throws(
+    () => ReallyMeCrypto.seal("AES-192-GCM", new Uint8Array(23), nonce, aad, plaintext),
     (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
   );
   assert.throws(
@@ -1553,7 +1740,10 @@ test("generic facade supported algorithm sets are explicit", () => {
     ],
   );
   assert.deepEqual([...REALLYME_MAC_ALGORITHMS], ["HMAC-SHA-256", "HMAC-SHA-512"]);
-  assert.deepEqual([...REALLYME_KEY_AGREEMENT_ALGORITHMS], ["X25519", "P-256-ECDH"]);
+  assert.deepEqual(
+    [...REALLYME_KEY_AGREEMENT_ALGORITHMS],
+    ["X25519", "P-256-ECDH", "P-384-ECDH", "P-521-ECDH"],
+  );
 });
 
 test("generic facade unsupported signatures are exhaustive", () => {
@@ -1618,7 +1808,14 @@ test("generic facade unsupported reserved families are exhaustive", () => {
   ]);
   assert.deepEqual(
     [...REALLYME_AEAD_ALGORITHMS],
-    ["AES-256-GCM", "AES-256-GCM-SIV", "ChaCha20-Poly1305", "XChaCha20-Poly1305"],
+    [
+      "AES-128-GCM",
+      "AES-192-GCM",
+      "AES-256-GCM",
+      "AES-256-GCM-SIV",
+      "ChaCha20-Poly1305",
+      "XChaCha20-Poly1305",
+    ],
   );
 
   for (const algorithm of REALLYME_KEM_ALGORITHMS) {
@@ -1648,6 +1845,7 @@ test("generic facade unsupported KDF routes are exhaustive", () => {
     "PBKDF2-HMAC-SHA-512",
   ]);
   const deriveHkdfSupported = new Set(["HKDF-SHA256"]);
+  const deriveJwaConcatKdfSupported = new Set(["JWA-CONCAT-KDF-SHA256"]);
 
   for (const algorithm of REALLYME_KDF_ALGORITHMS) {
     if (!deriveKeySupported.has(algorithm)) {
@@ -1659,6 +1857,12 @@ test("generic facade unsupported KDF routes are exhaustive", () => {
     if (!deriveHkdfSupported.has(algorithm)) {
       assertUnsupportedAlgorithm(() =>
         ReallyMeCrypto.deriveHkdf(algorithm, empty, empty, empty, 1),
+      );
+    }
+
+    if (!deriveJwaConcatKdfSupported.has(algorithm)) {
+      assertUnsupportedAlgorithm(() =>
+        ReallyMeCrypto.deriveJwaConcatKdfSha256(algorithm, empty, empty, empty, empty, 1),
       );
     }
   }
@@ -1883,6 +2087,132 @@ test("p256 ecdh generate keypair round trip", () => {
   );
 
   assert.equal(aliceSecret.length, P256_ECDH_SHARED_SECRET_LENGTH);
+  assert.deepEqual(aliceSecret, bobSecret);
+});
+
+test("p384 ecdh known answer", () => {
+  assert.deepEqual(
+    ReallyMeP384Ecdh.derivePublicKey(p384EcdhSecretKey),
+    p384EcdhPublicKey,
+  );
+  assert.deepEqual(
+    ReallyMeP384Ecdh.deriveSharedSecret(
+      p384EcdhPeerPublicKey,
+      p384EcdhSecretKey,
+    ),
+    p384EcdhSharedSecret,
+  );
+  assert.deepEqual(
+    ReallyMeCrypto.deriveSharedSecret(
+      "P-384-ECDH",
+      p384EcdhPublicKey,
+      p384EcdhPeerSecretKey,
+    ),
+    p384EcdhSharedSecret,
+  );
+
+  const keyPair = ReallyMeCrypto.deriveKeyAgreementKeyPair(
+    "P-384-ECDH",
+    p384EcdhSecretKey,
+  );
+  assert.deepEqual(keyPair.publicKey, p384EcdhPublicKey);
+  assert.deepEqual(keyPair.secretKey, p384EcdhSecretKey);
+});
+
+test("p384 ecdh rejects malformed inputs", () => {
+  assert.throws(
+    () => ReallyMeP384Ecdh.derivePublicKey(new Uint8Array([1, 2])),
+    (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
+  );
+  assert.throws(
+    () => ReallyMeCrypto.deriveKeyAgreementKeyPair("P-384-ECDH", new Uint8Array([1, 2])),
+    (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
+  );
+
+  assert.throws(
+    () => ReallyMeP384Ecdh.deriveSharedSecret(new Uint8Array(49), p384EcdhSecretKey),
+    (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
+  );
+});
+
+test("p384 ecdh generate keypair round trip", () => {
+  const alice = ReallyMeP384Ecdh.generateKeyPair();
+  const bob = ReallyMeP384Ecdh.generateKeyPair();
+  const aliceSecret = ReallyMeCrypto.deriveSharedSecret(
+    "P-384-ECDH",
+    bob.publicKey,
+    alice.secretKey,
+  );
+  const bobSecret = ReallyMeCrypto.deriveSharedSecret(
+    "P-384-ECDH",
+    alice.publicKey,
+    bob.secretKey,
+  );
+
+  assert.equal(aliceSecret.length, P384_ECDH_SHARED_SECRET_LENGTH);
+  assert.deepEqual(aliceSecret, bobSecret);
+});
+
+test("p521 ecdh known answer", () => {
+  assert.deepEqual(
+    ReallyMeP521Ecdh.derivePublicKey(p521EcdhSecretKey),
+    p521EcdhPublicKey,
+  );
+  assert.deepEqual(
+    ReallyMeP521Ecdh.deriveSharedSecret(
+      p521EcdhPeerPublicKey,
+      p521EcdhSecretKey,
+    ),
+    p521EcdhSharedSecret,
+  );
+  assert.deepEqual(
+    ReallyMeCrypto.deriveSharedSecret(
+      "P-521-ECDH",
+      p521EcdhPublicKey,
+      p521EcdhPeerSecretKey,
+    ),
+    p521EcdhSharedSecret,
+  );
+
+  const keyPair = ReallyMeCrypto.deriveKeyAgreementKeyPair(
+    "P-521-ECDH",
+    p521EcdhSecretKey,
+  );
+  assert.deepEqual(keyPair.publicKey, p521EcdhPublicKey);
+  assert.deepEqual(keyPair.secretKey, p521EcdhSecretKey);
+});
+
+test("p521 ecdh rejects malformed inputs", () => {
+  assert.throws(
+    () => ReallyMeP521Ecdh.derivePublicKey(new Uint8Array([1, 2])),
+    (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
+  );
+  assert.throws(
+    () => ReallyMeCrypto.deriveKeyAgreementKeyPair("P-521-ECDH", new Uint8Array([1, 2])),
+    (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
+  );
+
+  assert.throws(
+    () => ReallyMeP521Ecdh.deriveSharedSecret(new Uint8Array(67), p521EcdhSecretKey),
+    (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
+  );
+});
+
+test("p521 ecdh generate keypair round trip", () => {
+  const alice = ReallyMeP521Ecdh.generateKeyPair();
+  const bob = ReallyMeP521Ecdh.generateKeyPair();
+  const aliceSecret = ReallyMeCrypto.deriveSharedSecret(
+    "P-521-ECDH",
+    bob.publicKey,
+    alice.secretKey,
+  );
+  const bobSecret = ReallyMeCrypto.deriveSharedSecret(
+    "P-521-ECDH",
+    alice.publicKey,
+    bob.secretKey,
+  );
+
+  assert.equal(aliceSecret.length, P521_ECDH_SHARED_SECRET_LENGTH);
   assert.deepEqual(aliceSecret, bobSecret);
 });
 

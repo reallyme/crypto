@@ -84,6 +84,10 @@ public enum ReallyMeCrypto {
         plaintext: [UInt8]
     ) throws -> [UInt8] {
         switch algorithm {
+        case .aes128Gcm:
+            return try ReallyMeAesGcm.sealAes128Gcm(key: key, nonce: nonce, aad: aad, plaintext: plaintext)
+        case .aes192Gcm:
+            return try ReallyMeAesGcm.sealAes192Gcm(key: key, nonce: nonce, aad: aad, plaintext: plaintext)
         case .aes256Gcm:
             return try ReallyMeAesGcm.seal(key: key, nonce: nonce, aad: aad, plaintext: plaintext)
         case .chacha20Poly1305:
@@ -101,6 +105,20 @@ public enum ReallyMeCrypto {
         ciphertextWithTag: [UInt8]
     ) throws -> [UInt8] {
         switch algorithm {
+        case .aes128Gcm:
+            return try ReallyMeAesGcm.openAes128Gcm(
+                key: key,
+                nonce: nonce,
+                aad: aad,
+                ciphertextWithTag: ciphertextWithTag
+            )
+        case .aes192Gcm:
+            return try ReallyMeAesGcm.openAes192Gcm(
+                key: key,
+                nonce: nonce,
+                aad: aad,
+                ciphertextWithTag: ciphertextWithTag
+            )
         case .aes256Gcm:
             return try ReallyMeAesGcm.open(
                 key: key,
@@ -169,7 +187,7 @@ public enum ReallyMeCrypto {
                 iterations: iterations,
                 outputLength: outputLength
             )
-        case .hkdfSha256, .argon2id:
+        case .hkdfSha256, .argon2id, .jwaConcatKdfSha256:
             throw ReallyMeCryptoError.unsupportedAlgorithm
         }
     }
@@ -189,7 +207,29 @@ public enum ReallyMeCrypto {
                 info: info,
                 outputLength: outputLength
             )
-        case .argon2id, .pbkdf2HmacSha256, .pbkdf2HmacSha512:
+        case .argon2id, .pbkdf2HmacSha256, .pbkdf2HmacSha512, .jwaConcatKdfSha256:
+            throw ReallyMeCryptoError.unsupportedAlgorithm
+        }
+    }
+
+    public static func deriveJwaConcatKdfSha256(
+        _ algorithm: ReallyMeKdfAlgorithm,
+        sharedSecret: [UInt8],
+        algorithmId: [UInt8],
+        partyUInfo: [UInt8],
+        partyVInfo: [UInt8],
+        outputLength: Int
+    ) throws -> [UInt8] {
+        switch algorithm {
+        case .jwaConcatKdfSha256:
+            return try ReallyMeJwaConcatKdf.deriveSha256(
+                sharedSecret: sharedSecret,
+                algorithmId: algorithmId,
+                partyUInfo: partyUInfo,
+                partyVInfo: partyVInfo,
+                outputLength: outputLength
+            )
+        case .argon2id, .hkdfSha256, .pbkdf2HmacSha256, .pbkdf2HmacSha512:
             throw ReallyMeCryptoError.unsupportedAlgorithm
         }
     }
@@ -320,6 +360,54 @@ public enum ReallyMeCrypto {
             return try ReallyMeX25519.deriveSharedSecret(publicKey: publicKey, secretKey: secretKey)
         case .p256Ecdh:
             return try ReallyMeP256Ecdh.deriveSharedSecret(publicKey: publicKey, secretKey: secretKey)
+        case .p384Ecdh:
+            return try ReallyMeP384Ecdh.deriveSharedSecret(publicKey: publicKey, secretKey: secretKey)
+        case .p521Ecdh:
+            return try ReallyMeP521Ecdh.deriveSharedSecret(publicKey: publicKey, secretKey: secretKey)
+        }
+    }
+
+    public static func generateSecureEnclaveKeyAgreementKeyPair(
+        _ algorithm: ReallyMeKeyAgreementAlgorithm,
+        tag: [UInt8],
+        overwriteExisting: Bool = false
+    ) throws -> ReallyMeKeyAgreementHandleKeyPair {
+        switch algorithm {
+        case .p256Ecdh:
+            return try ReallyMeP256SecureEnclaveEcdh.generateKeyPair(
+                tag: tag,
+                overwriteExisting: overwriteExisting
+            )
+        case .x25519, .p384Ecdh, .p521Ecdh:
+            throw ReallyMeCryptoError.unsupportedAlgorithm
+        }
+    }
+
+    public static func deriveSharedSecretWithPrivateKeyHandle(
+        _ algorithm: ReallyMeKeyAgreementAlgorithm,
+        publicKey: [UInt8],
+        privateKeyHandle: [UInt8]
+    ) throws -> [UInt8] {
+        switch algorithm {
+        case .p256Ecdh:
+            return try ReallyMeP256SecureEnclaveEcdh.deriveSharedSecret(
+                publicKey: publicKey,
+                privateKeyHandle: privateKeyHandle
+            )
+        case .x25519, .p384Ecdh, .p521Ecdh:
+            throw ReallyMeCryptoError.unsupportedAlgorithm
+        }
+    }
+
+    public static func deleteSecureEnclaveKeyAgreementKey(
+        _ algorithm: ReallyMeKeyAgreementAlgorithm,
+        privateKeyHandle: [UInt8]
+    ) throws {
+        switch algorithm {
+        case .p256Ecdh:
+            try ReallyMeP256SecureEnclaveEcdh.deleteKey(privateKeyHandle: privateKeyHandle)
+        case .x25519, .p384Ecdh, .p521Ecdh:
+            throw ReallyMeCryptoError.unsupportedAlgorithm
         }
     }
 
@@ -333,6 +421,12 @@ public enum ReallyMeCrypto {
             return ReallyMeKeyAgreementKeyPair(publicKey: keyPair.publicKey, secretKey: keyPair.secretKey)
         case .p256Ecdh:
             let keyPair = try ReallyMeP256Ecdh.deriveKeyPair(secretKey: secretKey)
+            return ReallyMeKeyAgreementKeyPair(publicKey: keyPair.publicKey, secretKey: keyPair.secretKey)
+        case .p384Ecdh:
+            let keyPair = try ReallyMeP384Ecdh.deriveKeyPair(secretKey: secretKey)
+            return ReallyMeKeyAgreementKeyPair(publicKey: keyPair.publicKey, secretKey: keyPair.secretKey)
+        case .p521Ecdh:
+            let keyPair = try ReallyMeP521Ecdh.deriveKeyPair(secretKey: secretKey)
             return ReallyMeKeyAgreementKeyPair(publicKey: keyPair.publicKey, secretKey: keyPair.secretKey)
         }
     }

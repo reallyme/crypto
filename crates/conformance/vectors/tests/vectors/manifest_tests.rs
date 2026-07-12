@@ -62,10 +62,13 @@ fn manifest_is_crypto_only() -> Result<(), VectorTestError> {
     assert!(vectors.contains(&Value::String("p521.json".to_owned())));
     assert!(vectors.contains(&Value::String("rsa.json".to_owned())));
     assert!(vectors.contains(&Value::String("bip340_schnorr.json".to_owned())));
+    assert!(vectors.contains(&Value::String("aes128gcm.json".to_owned())));
+    assert!(vectors.contains(&Value::String("aes192gcm.json".to_owned())));
     assert!(vectors.contains(&Value::String("aes256gcm.json".to_owned())));
     assert!(vectors.contains(&Value::String("aes256kw.json".to_owned())));
     assert!(vectors.contains(&Value::String("chacha20poly1305.json".to_owned())));
     assert!(vectors.contains(&Value::String("hmac.json".to_owned())));
+    assert!(vectors.contains(&Value::String("concat_kdf.json".to_owned())));
     assert!(vectors.contains(&Value::String("pbkdf2.json".to_owned())));
     assert!(vectors.contains(&Value::String("ml_dsa_44.json".to_owned())));
     assert!(vectors.contains(&Value::String("ml_dsa_65.json".to_owned())));

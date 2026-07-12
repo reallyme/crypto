@@ -89,6 +89,8 @@ public object ReallyMeCrypto {
         plaintext: ByteArray,
     ): ByteArray =
         when (algorithm) {
+            ReallyMeAeadAlgorithm.AES_128_GCM -> ReallyMeAesGcm.sealAes128Gcm(key, nonce, aad, plaintext)
+            ReallyMeAeadAlgorithm.AES_192_GCM -> ReallyMeAesGcm.sealAes192Gcm(key, nonce, aad, plaintext)
             ReallyMeAeadAlgorithm.AES_256_GCM -> ReallyMeAesGcm.seal(key, nonce, aad, plaintext)
             ReallyMeAeadAlgorithm.AES_256_GCM_SIV ->
                 ReallyMeRustAead.sealAes256GcmSiv(key, nonce, aad, plaintext)
@@ -106,6 +108,10 @@ public object ReallyMeCrypto {
         ciphertextWithTag: ByteArray,
     ): ByteArray =
         when (algorithm) {
+            ReallyMeAeadAlgorithm.AES_128_GCM ->
+                ReallyMeAesGcm.openAes128Gcm(key, nonce, aad, ciphertextWithTag)
+            ReallyMeAeadAlgorithm.AES_192_GCM ->
+                ReallyMeAesGcm.openAes192Gcm(key, nonce, aad, ciphertextWithTag)
             ReallyMeAeadAlgorithm.AES_256_GCM -> ReallyMeAesGcm.open(key, nonce, aad, ciphertextWithTag)
             ReallyMeAeadAlgorithm.AES_256_GCM_SIV ->
                 ReallyMeRustAead.openAes256GcmSiv(key, nonce, aad, ciphertextWithTag)
@@ -154,7 +160,9 @@ public object ReallyMeCrypto {
                 }
                 ReallyMeArgon2id.deriveKey(iterations, password, salt)
             }
-            ReallyMeKdfAlgorithm.HKDF_SHA256 -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
+            ReallyMeKdfAlgorithm.HKDF_SHA256,
+            ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256,
+            -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
         }
 
     public fun deriveHkdf(
@@ -168,6 +176,31 @@ public object ReallyMeCrypto {
             ReallyMeKdfAlgorithm.HKDF_SHA256 ->
                 ReallyMeHkdf.deriveSha256(inputKeyMaterial, salt, info, outputLength)
             ReallyMeKdfAlgorithm.ARGON2ID,
+            ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256,
+            ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA512,
+            ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256,
+            -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
+        }
+
+    public fun deriveJwaConcatKdfSha256(
+        algorithm: ReallyMeKdfAlgorithm,
+        sharedSecret: ByteArray,
+        algorithmId: ByteArray,
+        partyUInfo: ByteArray,
+        partyVInfo: ByteArray,
+        outputLength: Int,
+    ): ByteArray =
+        when (algorithm) {
+            ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256 ->
+                ReallyMeJwaConcatKdf.deriveSha256(
+                    sharedSecret,
+                    algorithmId,
+                    partyUInfo,
+                    partyVInfo,
+                    outputLength,
+                )
+            ReallyMeKdfAlgorithm.ARGON2ID,
+            ReallyMeKdfAlgorithm.HKDF_SHA256,
             ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256,
             ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA512,
             -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
@@ -359,6 +392,10 @@ public object ReallyMeCrypto {
                 ReallyMeX25519.deriveSharedSecret(publicKey, secretKey)
             ReallyMeKeyAgreementAlgorithm.P256_ECDH ->
                 ReallyMeP256Ecdh.deriveSharedSecret(publicKey, secretKey)
+            ReallyMeKeyAgreementAlgorithm.P384_ECDH ->
+                ReallyMeP384Ecdh.deriveSharedSecret(publicKey, secretKey)
+            ReallyMeKeyAgreementAlgorithm.P521_ECDH ->
+                ReallyMeP521Ecdh.deriveSharedSecret(publicKey, secretKey)
         }
 
     public fun deriveKeyAgreementKeyPair(
@@ -372,6 +409,14 @@ public object ReallyMeCrypto {
             }
             ReallyMeKeyAgreementAlgorithm.P256_ECDH -> {
                 val (publicKey, returnedSecretKey) = ReallyMeP256Ecdh.deriveKeyPair(secretKey)
+                ReallyMeKeyAgreementKeyPair(publicKey = publicKey, secretKey = returnedSecretKey)
+            }
+            ReallyMeKeyAgreementAlgorithm.P384_ECDH -> {
+                val (publicKey, returnedSecretKey) = ReallyMeP384Ecdh.deriveKeyPair(secretKey)
+                ReallyMeKeyAgreementKeyPair(publicKey = publicKey, secretKey = returnedSecretKey)
+            }
+            ReallyMeKeyAgreementAlgorithm.P521_ECDH -> {
+                val (publicKey, returnedSecretKey) = ReallyMeP521Ecdh.deriveKeyPair(secretKey)
                 ReallyMeKeyAgreementKeyPair(publicKey = publicKey, secretKey = returnedSecretKey)
             }
         }

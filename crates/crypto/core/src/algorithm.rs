@@ -11,9 +11,9 @@ pub enum Algorithm {
     X25519,
     /// NIST P-256 (secp256r1) ECDSA signature and ECDH key agreement.
     P256,
-    /// NIST P-384 (secp384r1) ECDSA signature algorithm.
+    /// NIST P-384 (secp384r1) ECDSA signature and ECDH key agreement.
     P384,
-    /// NIST P-521 (secp521r1) ECDSA signature algorithm.
+    /// NIST P-521 (secp521r1) ECDSA signature and ECDH key agreement.
     P521,
     /// secp256k1 ECDSA signature algorithm.
     Secp256k1,
@@ -78,6 +78,8 @@ impl Algorithm {
             self,
             Algorithm::X25519
                 | Algorithm::P256
+                | Algorithm::P384
+                | Algorithm::P521
                 | Algorithm::MlKem512
                 | Algorithm::MlKem768
                 | Algorithm::MlKem1024
@@ -96,6 +98,10 @@ impl core::fmt::Display for Algorithm {
 /// Authenticated encryption (AEAD) algorithm identifiers.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AeadAlgorithm {
+    /// AES-128 in Galois/Counter Mode.
+    Aes128Gcm,
+    /// AES-192 in Galois/Counter Mode.
+    Aes192Gcm,
     /// AES-256 in Galois/Counter Mode.
     Aes256Gcm,
     /// AES-256 in GCM-SIV (nonce-misuse-resistant) mode.
@@ -110,6 +116,8 @@ impl AeadAlgorithm {
     /// Canonical protocol identifier string.
     pub fn as_str(self) -> &'static str {
         match self {
+            AeadAlgorithm::Aes128Gcm => "AES-128-GCM",
+            AeadAlgorithm::Aes192Gcm => "AES-192-GCM",
             AeadAlgorithm::Aes256Gcm => "AES-256-GCM",
             AeadAlgorithm::Aes256GcmSiv => "AES-256-GCM-SIV",
             AeadAlgorithm::ChaCha20Poly1305 => "ChaCha20-Poly1305",

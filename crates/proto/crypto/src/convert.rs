@@ -73,6 +73,8 @@ impl TryFrom<KeyAgreementAlgorithm> for Algorithm {
         match value {
             KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_X25519 => Ok(Algorithm::X25519),
             KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_P256_ECDH => Ok(Algorithm::P256),
+            KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_P384_ECDH => Ok(Algorithm::P384),
+            KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_P521_ECDH => Ok(Algorithm::P521),
             _ => Err(UnsupportedProtoAlgorithm),
         }
     }
@@ -98,6 +100,8 @@ impl TryFrom<ProtoAead> for CoreAead {
 
     fn try_from(value: ProtoAead) -> Result<Self, Self::Error> {
         match value {
+            ProtoAead::AEAD_ALGORITHM_AES_128_GCM => Ok(CoreAead::Aes128Gcm),
+            ProtoAead::AEAD_ALGORITHM_AES_192_GCM => Ok(CoreAead::Aes192Gcm),
             ProtoAead::AEAD_ALGORITHM_AES_256_GCM => Ok(CoreAead::Aes256Gcm),
             ProtoAead::AEAD_ALGORITHM_AES_256_GCM_SIV => Ok(CoreAead::Aes256GcmSiv),
             ProtoAead::AEAD_ALGORITHM_CHACHA20_POLY1305 => Ok(CoreAead::ChaCha20Poly1305),
@@ -163,9 +167,9 @@ pub fn key_agreement_algorithm_to_proto(algorithm: Algorithm) -> Option<KeyAgree
     match algorithm {
         Algorithm::X25519 => Some(KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_X25519),
         Algorithm::P256 => Some(KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_P256_ECDH),
+        Algorithm::P384 => Some(KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_P384_ECDH),
+        Algorithm::P521 => Some(KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_P521_ECDH),
         Algorithm::Ed25519
-        | Algorithm::P384
-        | Algorithm::P521
         | Algorithm::Secp256k1
         | Algorithm::MlDsa44
         | Algorithm::MlDsa65
@@ -202,6 +206,8 @@ pub fn kem_algorithm_to_proto(algorithm: Algorithm) -> Option<KemAlgorithm> {
 impl From<CoreAead> for ProtoAead {
     fn from(value: CoreAead) -> Self {
         match value {
+            CoreAead::Aes128Gcm => ProtoAead::AEAD_ALGORITHM_AES_128_GCM,
+            CoreAead::Aes192Gcm => ProtoAead::AEAD_ALGORITHM_AES_192_GCM,
             CoreAead::Aes256Gcm => ProtoAead::AEAD_ALGORITHM_AES_256_GCM,
             CoreAead::Aes256GcmSiv => ProtoAead::AEAD_ALGORITHM_AES_256_GCM_SIV,
             CoreAead::ChaCha20Poly1305 => ProtoAead::AEAD_ALGORITHM_CHACHA20_POLY1305,
@@ -294,6 +300,8 @@ mod tests {
     #[test]
     fn aead_algorithms_round_trip() {
         for aead in [
+            CoreAead::Aes128Gcm,
+            CoreAead::Aes192Gcm,
             CoreAead::Aes256Gcm,
             CoreAead::Aes256GcmSiv,
             CoreAead::ChaCha20Poly1305,

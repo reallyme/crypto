@@ -17,12 +17,106 @@ pub struct Aes256GcmVector {
     pub ciphertext_and_tag: Vec<u8>,
 }
 
+pub struct Aes128GcmVector {
+    pub key: Vec<u8>,
+    pub nonce: Vec<u8>,
+    pub aad: Vec<u8>,
+    pub plaintext: Vec<u8>,
+    pub ciphertext_and_tag: Vec<u8>,
+}
+
+pub struct Aes192GcmVector {
+    pub key: Vec<u8>,
+    pub nonce: Vec<u8>,
+    pub aad: Vec<u8>,
+    pub plaintext: Vec<u8>,
+    pub ciphertext_and_tag: Vec<u8>,
+}
+
 pub fn all_regression_vectors() -> Vec<Aes256GcmVector> {
     vec![
         nist_vector_case_13(),
         regression_vector_case_alpha(),
         regression_vector_case_beta_empty_plaintext(),
     ]
+}
+
+pub fn all_aes128_regression_vectors() -> Vec<Aes128GcmVector> {
+    vec![
+        aes128_empty_plaintext_zero_key_vector(),
+        aes128_single_block_zero_key_vector(),
+    ]
+}
+
+pub fn all_aes192_regression_vectors() -> Vec<Aes192GcmVector> {
+    vec![
+        aes192_empty_plaintext_zero_key_vector(),
+        aes192_single_block_zero_key_vector(),
+    ]
+}
+
+pub fn aes128_empty_plaintext_zero_key_vector() -> Aes128GcmVector {
+    // NIST SP 800-38D AES-128-GCM example: empty plaintext/AAD with zero key
+    // and zero 96-bit IV. The ciphertext is empty and the output is the tag.
+    Aes128GcmVector {
+        key: hex::decode("00000000000000000000000000000000").expect("vector key hex must be valid"),
+        nonce: hex::decode("000000000000000000000000").expect("vector nonce hex must be valid"),
+        aad: Vec::new(),
+        plaintext: Vec::new(),
+        ciphertext_and_tag: hex::decode("58e2fccefa7e3061367f1d57a4e7455a")
+            .expect("vector tag hex must be valid"),
+    }
+}
+
+pub fn aes128_single_block_zero_key_vector() -> Aes128GcmVector {
+    // NIST SP 800-38D AES-128-GCM example with one zero plaintext block.
+    let mut ciphertext_and_tag = hex::decode("0388dace60b6a392f328c2b971b2fe78")
+        .expect("vector ciphertext hex must be valid");
+    ciphertext_and_tag.extend_from_slice(
+        &hex::decode("ab6e47d42cec13bdf53a67b21257bddf").expect("vector tag hex must be valid"),
+    );
+
+    Aes128GcmVector {
+        key: hex::decode("00000000000000000000000000000000").expect("vector key hex must be valid"),
+        nonce: hex::decode("000000000000000000000000").expect("vector nonce hex must be valid"),
+        aad: Vec::new(),
+        plaintext: hex::decode("00000000000000000000000000000000")
+            .expect("vector plaintext hex must be valid"),
+        ciphertext_and_tag,
+    }
+}
+
+pub fn aes192_empty_plaintext_zero_key_vector() -> Aes192GcmVector {
+    // NIST SP 800-38D AES-192-GCM example: empty plaintext/AAD with zero key
+    // and zero 96-bit IV. The ciphertext is empty and the output is the tag.
+    Aes192GcmVector {
+        key: hex::decode("000000000000000000000000000000000000000000000000")
+            .expect("vector key hex must be valid"),
+        nonce: hex::decode("000000000000000000000000").expect("vector nonce hex must be valid"),
+        aad: Vec::new(),
+        plaintext: Vec::new(),
+        ciphertext_and_tag: hex::decode("cd33b28ac773f74ba00ed1f312572435")
+            .expect("vector tag hex must be valid"),
+    }
+}
+
+pub fn aes192_single_block_zero_key_vector() -> Aes192GcmVector {
+    // NIST SP 800-38D AES-192-GCM example with one zero plaintext block.
+    let mut ciphertext_and_tag = hex::decode("98e7247c07f0fe411c267e4384b0f600")
+        .expect("vector ciphertext hex must be valid");
+    ciphertext_and_tag.extend_from_slice(
+        &hex::decode("2ff58d80033927ab8ef4d4587514f0fb").expect("vector tag hex must be valid"),
+    );
+
+    Aes192GcmVector {
+        key: hex::decode("000000000000000000000000000000000000000000000000")
+            .expect("vector key hex must be valid"),
+        nonce: hex::decode("000000000000000000000000").expect("vector nonce hex must be valid"),
+        aad: Vec::new(),
+        plaintext: hex::decode("00000000000000000000000000000000")
+            .expect("vector plaintext hex must be valid"),
+        ciphertext_and_tag,
+    }
 }
 
 pub fn nist_vector_case_13() -> Aes256GcmVector {

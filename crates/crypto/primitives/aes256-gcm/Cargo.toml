@@ -19,6 +19,7 @@ name = "crypto_aes256_gcm"
 default = []
 
 native = [
+    "dep:aes",
     "dep:aes-gcm",
 ]
 
@@ -33,6 +34,7 @@ crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "../
 zeroize = { workspace = true, features = ["zeroize_derive"] }
 
 # Native-only crypto deps
+aes = { workspace = true, optional = true }
 aes-gcm = { workspace = true, optional = true }
 wasm-bindgen = { workspace = true, optional = true }
 js-sys = { workspace = true, optional = true }
