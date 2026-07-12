@@ -9,8 +9,8 @@ import { fileURLToPath } from "node:url";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const rustRootVersion = "0.1.5";
-const typescriptPackageVersion = "0.1.4";
-const kotlinPackageVersion = "0.1.3";
+const typescriptPackageVersion = "0.1.5";
+const kotlinPackageVersion = "0.1.5";
 const requiredLanes = ["swift", "kotlin_jvm", "kotlin_android", "typescript_wasm"];
 const allowedStatuses = new Set(["supported", "provider_aware", "partial", "unsupported"]);
 const allowedFallbacks = new Set([

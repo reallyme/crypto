@@ -75,6 +75,84 @@ for (const pkg of metadata.packages) {
   }
 }
 
+function isWorkspacePathDependency(dep) {
+  return dep.source === null && typeof dep.path === "string" && publishable.has(dep.name);
+}
+
+function parseVersion(version) {
+  const parts = version.split(".");
+  if (parts.length !== 3) {
+    return null;
+  }
+
+  const parsed = parts.map((part) => Number.parseInt(part, 10));
+  if (parsed.some((part) => !Number.isSafeInteger(part) || part < 0)) {
+    return null;
+  }
+
+  return {
+    major: parsed[0],
+    minor: parsed[1],
+    patch: parsed[2],
+  };
+}
+
+function isCaretReqSatisfied(req, version) {
+  if (!req.startsWith("^")) {
+    return req === `=${version}` || req === version;
+  }
+
+  const minimum = parseVersion(req.slice(1));
+  const actual = parseVersion(version);
+  if (minimum === null || actual === null) {
+    return false;
+  }
+
+  if (actual.major !== minimum.major) {
+    return false;
+  }
+
+  if (minimum.major === 0 && actual.minor !== minimum.minor) {
+    return false;
+  }
+
+  if (actual.minor < minimum.minor) {
+    return false;
+  }
+
+  if (actual.minor === minimum.minor && actual.patch < minimum.patch) {
+    return false;
+  }
+
+  return true;
+}
+
+function checkPathDependencyVersions() {
+  const failures = [];
+  for (const pkg of publishable.values()) {
+    for (const dep of pkg.dependencies) {
+      if (!isWorkspacePathDependency(dep)) {
+        continue;
+      }
+
+      const target = publishable.get(dep.name);
+      if (!isCaretReqSatisfied(dep.req, target.version)) {
+        failures.push(
+          `${pkg.name} depends on ${dep.name} with ${dep.req}; local version is ${target.version}`,
+        );
+      }
+    }
+  }
+
+  if (failures.length !== 0) {
+    console.error("publishable workspace path dependency versions are stale:");
+    for (const failure of failures) {
+      console.error(`- ${failure}`);
+    }
+    process.exit(1);
+  }
+}
+
 const visiting = new Set();
 const visited = new Set();
 const ordered = [];
@@ -107,6 +185,74 @@ for (const pkg of publishable.values()) {
 console.log(`Publish order (${ordered.length} crates):`);
 for (const pkg of ordered) {
   console.log(`- ${pkg.name} ${pkg.version}`);
+}
+
+checkPathDependencyVersions();
+
+const orderedIndexByName = new Map();
+ordered.forEach((pkg, index) => {
+  orderedIndexByName.set(pkg.name, index);
+});
+
+function unresolvedRegistryPackages(output) {
+  const missing = [];
+  const noMatchPattern = /no matching package named `([^`]+)` found/g;
+  for (let match = noMatchPattern.exec(output); match !== null; match = noMatchPattern.exec(output)) {
+    missing.push(match[1]);
+  }
+
+  const versionSelectPattern = /failed to select a version for the requirement `([^`\s]+) =/g;
+  for (
+    let match = versionSelectPattern.exec(output);
+    match !== null;
+    match = versionSelectPattern.exec(output)
+  ) {
+    missing.push(match[1]);
+  }
+
+  return [...new Set(missing)];
+}
+
+function isEarlierWorkspaceDependency(pkg, depName) {
+  const pkgIndex = orderedIndexByName.get(pkg.name);
+  const depIndex = orderedIndexByName.get(depName);
+  return depIndex !== undefined && pkgIndex !== undefined && depIndex < pkgIndex;
+}
+
+function inspectPackage(pkg) {
+  const listArgs = ["package", "-p", pkg.name, "--list"];
+  if (allowDirty) {
+    listArgs.push("--allow-dirty");
+  }
+  const listResult = run("cargo", listArgs);
+  if (listResult.status !== 0) {
+    process.exit(listResult.status ?? 1);
+  }
+
+  const dryRunArgs = ["publish", "-p", pkg.name, "--dry-run", "--locked"];
+  if (allowDirty) {
+    dryRunArgs.push("--allow-dirty");
+  }
+  const dryRunResult = run("cargo", dryRunArgs, { capture: true });
+  process.stdout.write(dryRunResult.stdout);
+  process.stderr.write(dryRunResult.stderr);
+  if (dryRunResult.status === 0) {
+    return;
+  }
+
+  const combined = `${dryRunResult.stdout}\n${dryRunResult.stderr}`;
+  const missing = unresolvedRegistryPackages(combined);
+  if (
+    missing.length !== 0 &&
+    missing.every((depName) => isEarlierWorkspaceDependency(pkg, depName))
+  ) {
+    console.log(
+      `${pkg.name} dry-run reached unpublished ordered workspace dependencies: ${missing.join(", ")}`,
+    );
+    return;
+  }
+
+  process.exit(dryRunResult.status ?? 1);
 }
 
 function publishPackage(pkg) {
@@ -151,14 +297,7 @@ function publishPackage(pkg) {
 
 for (const pkg of ordered) {
   if (mode === MODE_INSPECT) {
-    const args = ["package", "-p", pkg.name, "--list"];
-    if (allowDirty) {
-      args.push("--allow-dirty");
-    }
-    const result = run("cargo", args);
-    if (result.status !== 0) {
-      process.exit(result.status ?? 1);
-    }
+    inspectPackage(pkg);
     continue;
   }
 
