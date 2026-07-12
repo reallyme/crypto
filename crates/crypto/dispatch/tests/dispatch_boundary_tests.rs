@@ -4,7 +4,26 @@
 
 #![allow(missing_docs)]
 #![allow(clippy::expect_used)]
-#![cfg(feature = "native")]
+#![cfg(all(
+    feature = "native",
+    feature = "aes",
+    feature = "aes-gcm-siv",
+    feature = "chacha20-poly1305",
+    feature = "ed25519",
+    feature = "hmac",
+    feature = "ml-dsa-44",
+    feature = "ml-dsa-65",
+    feature = "ml-dsa-87",
+    feature = "ml-kem-512",
+    feature = "ml-kem-768",
+    feature = "ml-kem-1024",
+    feature = "p256",
+    feature = "p384",
+    feature = "p521",
+    feature = "secp256k1",
+    feature = "x25519",
+    feature = "x-wing"
+))]
 
 use crypto_core::{AeadAlgorithm, Algorithm, MacAlgorithm};
 use crypto_dispatch::{

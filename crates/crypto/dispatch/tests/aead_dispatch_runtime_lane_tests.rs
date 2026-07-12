@@ -10,7 +10,7 @@
     clippy::print_stdout,
     clippy::unwrap_used
 )]
-#![cfg(all(feature = "native", not(target_arch = "wasm32")))]
+#![cfg(all(feature = "native", feature = "aes", not(target_arch = "wasm32")))]
 
 use aes_gcm::aead::consts::U12;
 use aes_gcm::aead::{Aead, KeyInit, Payload};

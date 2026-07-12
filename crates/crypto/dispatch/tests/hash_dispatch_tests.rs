@@ -9,6 +9,7 @@
     clippy::print_stdout,
     clippy::unwrap_used
 )]
+#![cfg(all(feature = "sha2", feature = "sha3"))]
 use crypto_core::HashAlgorithm;
 use crypto_dispatch::hash_digest;
 use crypto_sha2::{digest_sha2_384, digest_sha2_512};

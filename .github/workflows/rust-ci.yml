@@ -73,6 +73,15 @@ jobs:
       - name: Check all features
         run: cargo check --workspace --all-features
 
+      - name: Check narrow Rust feature surfaces
+        run: |
+          cargo test -p reallyme-crypto-dispatch --test feature_lane_tests --no-default-features
+          cargo test -p reallyme-crypto-dispatch --test feature_lane_tests --no-default-features --features native,x25519,ml-kem-768,chacha20-poly1305,hmac,sha2
+          cargo test -p reallyme-crypto-signer --no-default-features
+          cargo test -p reallyme-crypto-signer --no-default-features --features native
+          cargo test -p reallyme-crypto-signer --no-default-features --features native,ed25519
+          cargo check -p reallyme-crypto --no-default-features --features native,messaging-dispatch
+
       - name: Clippy
         run: cargo clippy --workspace --all-targets --all-features -- -D warnings
 

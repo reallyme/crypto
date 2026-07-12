@@ -4,6 +4,7 @@
 
 #![allow(missing_docs)]
 #![allow(clippy::unwrap_used)]
+#![cfg(feature = "hmac")]
 
 use crypto_core::MacAlgorithm;
 use crypto_dispatch::{mac_authenticate, mac_verify, MacParams};

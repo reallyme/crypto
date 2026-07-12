@@ -23,6 +23,12 @@ contract:
 ```sh
 cargo fmt --check
 cargo check --workspace --all-features
+cargo test -p reallyme-crypto-dispatch --test feature_lane_tests --no-default-features
+cargo test -p reallyme-crypto-dispatch --test feature_lane_tests --no-default-features --features native,x25519,ml-kem-768,chacha20-poly1305,hmac,sha2
+cargo test -p reallyme-crypto-signer --no-default-features
+cargo test -p reallyme-crypto-signer --no-default-features --features native
+cargo test -p reallyme-crypto-signer --no-default-features --features native,ed25519
+cargo check -p reallyme-crypto --no-default-features --features native,messaging-dispatch
 cargo clippy --workspace --all-targets --all-features -- -D warnings
 cargo nextest run --workspace --all-features
 cargo nextest run --workspace --no-default-features --features native

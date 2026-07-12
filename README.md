@@ -112,8 +112,19 @@ reallyme-crypto = { version = "0.1", default-features = false, features = [
 
 `messaging-primitives` enables only ChaCha20-Poly1305/XChaCha20-Poly1305,
 HKDF, HMAC, ML-KEM-768, SHA-2, and X25519. It does not enable `dispatch` or
-`signer`; those are broader runtime-router surfaces for applications that need
-algorithm-by-identifier dispatch.
+`signer`. Use `messaging-dispatch` when a crate needs the same narrow set
+through algorithm-by-identifier dispatch:
+
+```toml
+reallyme-crypto = { version = "0.1", default-features = false, features = [
+  "native",
+  "messaging-dispatch",
+] }
+```
+
+Dispatch and signer surfaces are feature-gated by algorithm, so enabling the
+router does not pull in unrelated primitives unless the matching algorithm
+feature is also selected.
 
 The `native` and `wasm` features select the Rust backend lane. They do not, by
 themselves, enable every primitive. Algorithm features such as `ed25519`,
