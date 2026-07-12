@@ -82,6 +82,10 @@ private keys, or provide RSA encryption/decryption APIs.
 cargo add reallyme-crypto --features native,dispatch,ed25519
 ```
 
+The Rust crates require Rust `1.96.0` or newer. That MSRV is intentional:
+ReallyMe Crypto tracks current stable Rust so the public packages can use the
+compiler, dependency, lint, and target support expected by the conformance wall.
+
 When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
@@ -96,11 +100,27 @@ reallyme-crypto = { version = "0.1", default-features = false, features = [
 ] }
 ```
 
+Messaging-focused consumers can use the narrow primitive bundle instead of the
+default feature set:
+
+```toml
+reallyme-crypto = { version = "0.1", default-features = false, features = [
+  "native",
+  "messaging-primitives",
+] }
+```
+
+`messaging-primitives` enables only ChaCha20-Poly1305/XChaCha20-Poly1305,
+HKDF, HMAC, ML-KEM-768, SHA-2, and X25519. It does not enable `dispatch` or
+`signer`; those are broader runtime-router surfaces for applications that need
+algorithm-by-identifier dispatch.
+
 The `native` and `wasm` features select the Rust backend lane. They do not, by
 themselves, enable every primitive. Algorithm features such as `ed25519`,
 `p256`, or `codec` enable the root modules and re-exports. This keeps
 no-default consumers from pulling unused cryptography while still forwarding
-the selected backend into every enabled primitive crate.
+the selected backend into every enabled primitive crate. The `wasm` lane is for
+`wasm32` builds; host builds should use `native`.
 
 Some Rust helper APIs are intentionally lane-scoped. P-256 raw scalar import is
 available in both native and wasm lanes through

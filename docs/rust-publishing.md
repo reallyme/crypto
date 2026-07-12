@@ -16,6 +16,22 @@ The smaller `reallyme-crypto-*` and `reallyme-codec-*` crates are transitive
 workspace components. They keep the development boundaries, lint posture, and
 feature gates clear while allowing crates.io to resolve published dependencies.
 
+## Toolchain
+
+The Rust packages require Rust `1.96.0` or newer. The project intentionally
+tracks current stable Rust for public releases so the conformance wall, lints,
+target support, and dependency graph are exercised on the same compiler family
+used by CI. Lowering MSRV should be treated as a compatibility project, not a
+metadata-only edit.
+
+Backend features are separate from algorithm features. `native` and `wasm`
+select the Rust backend lane for whichever primitive crates are enabled; they
+do not enable every algorithm by themselves. The root crate also exposes
+`messaging-primitives` for consumers that only need ChaCha20-Poly1305,
+HKDF, HMAC, ML-KEM-768, SHA-2, and X25519. The `dispatch` and `signer`
+features remain broader router surfaces and should be avoided by crates that
+want the smallest possible dependency graph.
+
 ## Order
 
 The dependency order matters. Core and codec leaves must exist on crates.io
