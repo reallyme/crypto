@@ -28,9 +28,10 @@ Backend features are separate from algorithm features. `native` and `wasm`
 select the Rust backend lane for whichever primitive crates are enabled; they
 do not enable every algorithm by themselves. The root crate also exposes
 `messaging-primitives` for consumers that only need ChaCha20-Poly1305,
-HKDF, HMAC, ML-KEM-768, SHA-2, and X25519. The `dispatch` and `signer`
-features remain broader router surfaces and should be avoided by crates that
-want the smallest possible dependency graph.
+HKDF, HMAC, ML-KEM-768, SHA-2, and X25519. Use `messaging-dispatch` when a
+crate needs that same set through algorithm-by-identifier dispatch. `dispatch`
+and `signer` are also algorithm-feature gated; they should be paired with the
+specific algorithm features a consumer actually calls.
 
 ## Order
 

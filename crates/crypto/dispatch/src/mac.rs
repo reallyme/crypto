@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::algorithms::hmac::{HmacSha256Algo, HmacSha512Algo};
-use crate::traits::{MacAlgorithmAdapter, MacParams};
+#[cfg(feature = "hmac")]
+use crate::traits::MacAlgorithmAdapter;
+use crate::traits::MacParams;
 use crate::AlgorithmError;
 use crypto_core::MacAlgorithm;
 
@@ -13,9 +14,30 @@ pub fn mac_authenticate(
     params: &MacParams<'_>,
     message: &[u8],
 ) -> Result<Vec<u8>, AlgorithmError> {
+    #[cfg(not(feature = "hmac"))]
+    let _ = (params, message);
+
     match alg {
-        MacAlgorithm::HmacSha256 => HmacSha256Algo::authenticate(params, message),
-        MacAlgorithm::HmacSha512 => HmacSha512Algo::authenticate(params, message),
+        MacAlgorithm::HmacSha256 => {
+            #[cfg(feature = "hmac")]
+            {
+                crate::algorithms::hmac::HmacSha256Algo::authenticate(params, message)
+            }
+            #[cfg(not(feature = "hmac"))]
+            {
+                Err(AlgorithmError::UnsupportedMacAlgorithm(alg))
+            }
+        }
+        MacAlgorithm::HmacSha512 => {
+            #[cfg(feature = "hmac")]
+            {
+                crate::algorithms::hmac::HmacSha512Algo::authenticate(params, message)
+            }
+            #[cfg(not(feature = "hmac"))]
+            {
+                Err(AlgorithmError::UnsupportedMacAlgorithm(alg))
+            }
+        }
     }
 }
 
@@ -26,8 +48,29 @@ pub fn mac_verify(
     message: &[u8],
     tag: &[u8],
 ) -> Result<(), AlgorithmError> {
+    #[cfg(not(feature = "hmac"))]
+    let _ = (params, message, tag);
+
     match alg {
-        MacAlgorithm::HmacSha256 => HmacSha256Algo::verify(params, message, tag),
-        MacAlgorithm::HmacSha512 => HmacSha512Algo::verify(params, message, tag),
+        MacAlgorithm::HmacSha256 => {
+            #[cfg(feature = "hmac")]
+            {
+                crate::algorithms::hmac::HmacSha256Algo::verify(params, message, tag)
+            }
+            #[cfg(not(feature = "hmac"))]
+            {
+                Err(AlgorithmError::UnsupportedMacAlgorithm(alg))
+            }
+        }
+        MacAlgorithm::HmacSha512 => {
+            #[cfg(feature = "hmac")]
+            {
+                crate::algorithms::hmac::HmacSha512Algo::verify(params, message, tag)
+            }
+            #[cfg(not(feature = "hmac"))]
+            {
+                Err(AlgorithmError::UnsupportedMacAlgorithm(alg))
+            }
+        }
     }
 }

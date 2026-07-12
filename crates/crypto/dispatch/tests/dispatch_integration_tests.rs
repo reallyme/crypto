@@ -9,7 +9,22 @@
     clippy::print_stdout,
     clippy::unwrap_used
 )]
-#![cfg(feature = "native")]
+#![cfg(all(
+    feature = "native",
+    feature = "ed25519",
+    feature = "ml-dsa-44",
+    feature = "ml-dsa-65",
+    feature = "ml-dsa-87",
+    feature = "ml-kem-512",
+    feature = "ml-kem-768",
+    feature = "ml-kem-1024",
+    feature = "p256",
+    feature = "p384",
+    feature = "p521",
+    feature = "secp256k1",
+    feature = "x25519",
+    feature = "x-wing"
+))]
 
 use crypto_core::Algorithm;
 use crypto_dispatch::{

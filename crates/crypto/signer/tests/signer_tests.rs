@@ -9,7 +9,7 @@
     clippy::print_stdout,
     clippy::unwrap_used
 )]
-#[cfg(feature = "native")]
+#[cfg(all(feature = "native", feature = "ed25519"))]
 #[test]
 fn dispatch_signer_signs_and_verifies() {
     use crypto_core::Algorithm;
@@ -28,7 +28,7 @@ fn dispatch_signer_signs_and_verifies() {
     verify(Algorithm::Ed25519, &public_key, message, &signature).expect("verification failed");
 }
 
-#[cfg(feature = "native")]
+#[cfg(all(feature = "native", feature = "ed25519"))]
 #[test]
 fn dispatch_verifier_accepts_valid_and_rejects_tampered() {
     use crypto_core::Algorithm;

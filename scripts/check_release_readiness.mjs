@@ -89,10 +89,32 @@ if (
 ) {
   fail("root Cargo.toml must use an anchored package include allowlist");
 }
+if (!rootCargo.includes('messaging-dispatch = ["dispatch", "messaging-primitives"]')) {
+  fail("root Cargo.toml must expose the narrow messaging-dispatch feature");
+}
+if (!rootCargo.includes('"crypto-dispatch?/ed25519"')) {
+  fail("root algorithm features must conditionally forward into dispatch");
+}
+if (!rootCargo.includes('"crypto-signer?/ed25519"')) {
+  fail("root signature features must conditionally forward into signer");
+}
 
 const ffiCargo = readText("crates/crypto/ffi/Cargo.toml");
 if (!ffiCargo.includes("publish = false")) {
   fail("crates/crypto/ffi must remain publish = false");
+}
+
+const dispatchCargo = readText("crates/crypto/dispatch/Cargo.toml");
+if (!dispatchCargo.includes('"crypto-ed25519?/native"')) {
+  fail("dispatch native feature must not enable every algorithm");
+}
+if (!dispatchCargo.includes('ed25519 = ["dep:crypto-ed25519"]')) {
+  fail("dispatch must keep explicit per-algorithm features");
+}
+
+const signerCargo = readText("crates/crypto/signer/Cargo.toml");
+if (!signerCargo.includes('ed25519 = ["crypto-dispatch/ed25519"]')) {
+  fail("signer must keep explicit signature-algorithm features");
 }
 
 const codecCargo = readText("crates/codec/Cargo.toml");

@@ -9,7 +9,15 @@
     clippy::print_stdout,
     clippy::unwrap_used
 )]
-#![cfg(feature = "native")]
+#![cfg(all(
+    feature = "native",
+    feature = "ed25519",
+    feature = "ml-kem-1024",
+    feature = "p256",
+    feature = "p384",
+    feature = "p521",
+    feature = "x25519"
+))]
 
 use crypto_core::Algorithm;
 use crypto_dispatch::{generate_keypair, public_key_to_multikey};

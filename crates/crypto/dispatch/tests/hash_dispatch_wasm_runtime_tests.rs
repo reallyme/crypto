@@ -9,7 +9,7 @@
     clippy::print_stdout,
     clippy::unwrap_used
 )]
-#![cfg(all(feature = "wasm", target_arch = "wasm32"))]
+#![cfg(all(feature = "wasm", feature = "sha3", target_arch = "wasm32"))]
 
 use crypto_core::HashAlgorithm;
 use crypto_dispatch::hash_digest;

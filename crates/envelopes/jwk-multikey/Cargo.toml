@@ -38,7 +38,7 @@ crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "0.1.3", p
 
 [dev-dependencies]
 crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "../../crypto/core" }
-crypto-dispatch = { package = "reallyme-crypto-dispatch", version = "0.1.2", path = "../../crypto/dispatch", default-features = false, features = ["native"] }
+crypto-dispatch = { package = "reallyme-crypto-dispatch", version = "0.1.2", path = "../../crypto/dispatch", default-features = false, features = ["native", "p256"] }
 
 [lints]
 workspace = true

@@ -4,31 +4,26 @@
 
 use zeroize::Zeroizing;
 
-use crate::traits::{AeadCipherAlgorithm, AeadParams, SignatureAlgorithm};
+#[cfg(any(
+    feature = "aes",
+    feature = "aes-gcm-siv",
+    feature = "chacha20-poly1305"
+))]
+use crate::traits::AeadCipherAlgorithm;
+use crate::traits::AeadParams;
+#[cfg(any(
+    feature = "ed25519",
+    feature = "p256",
+    feature = "p384",
+    feature = "p521",
+    feature = "secp256k1",
+    feature = "ml-dsa-44",
+    feature = "ml-dsa-65",
+    feature = "ml-dsa-87"
+))]
+use crate::traits::SignatureAlgorithm;
 use crate::AlgorithmError;
 use crypto_core::{AeadAlgorithm, Algorithm};
-
-// --- Signature algorithm adapters ---
-use crate::algorithms::ed25519::Ed25519Algo;
-use crate::algorithms::ml_dsa_44::MlDsa44Algo;
-use crate::algorithms::ml_dsa_65::MlDsa65Algo;
-use crate::algorithms::ml_dsa_87::MlDsa87Algo;
-use crate::algorithms::p256::P256Algo;
-use crate::algorithms::p384::P384Algo;
-use crate::algorithms::p521::P521Algo;
-use crate::algorithms::secp256k1::Secp256k1Algo;
-
-// --- Key agreement / KEM adapters ---
-use crate::algorithms::ml_kem_1024::MlKem1024Algo;
-use crate::algorithms::ml_kem_512::MlKem512Algo;
-use crate::algorithms::ml_kem_768::MlKem768Algo;
-use crate::algorithms::x25519::X25519Algo;
-use crate::algorithms::x_wing::{XWing1024Algo, XWing768Algo};
-
-// --- Symmetric adapters ---
-use crate::algorithms::aes256_gcm::{Aes128GcmAlgo, Aes192GcmAlgo, Aes256GcmAlgo};
-use crate::algorithms::aes256_gcm_siv::Aes256GcmSivAlgo;
-use crate::algorithms::chacha20_poly1305::{ChaCha20Poly1305Algo, XChaCha20Poly1305Algo};
 
 //
 // -----------------------------------------------------------------------------
@@ -45,21 +40,146 @@ use crate::algorithms::chacha20_poly1305::{ChaCha20Poly1305Algo, XChaCha20Poly13
 /// Returns (public_key, secret_key); the secret half zeroizes on drop.
 pub fn generate_keypair(alg: Algorithm) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), AlgorithmError> {
     match alg {
-        Algorithm::Ed25519 => Ed25519Algo::generate_keypair(),
-        Algorithm::P256 => P256Algo::generate_keypair(),
-        Algorithm::P384 => P384Algo::generate_keypair(),
-        Algorithm::P521 => P521Algo::generate_keypair(),
-        Algorithm::Secp256k1 => Secp256k1Algo::generate_keypair(),
-        Algorithm::MlDsa44 => MlDsa44Algo::generate_keypair(),
-        Algorithm::MlDsa65 => MlDsa65Algo::generate_keypair(),
-        Algorithm::MlDsa87 => MlDsa87Algo::generate_keypair(),
-
-        Algorithm::X25519 => X25519Algo::generate_keypair(),
-        Algorithm::MlKem512 => MlKem512Algo::generate_keypair(),
-        Algorithm::MlKem768 => MlKem768Algo::generate_keypair(),
-        Algorithm::MlKem1024 => MlKem1024Algo::generate_keypair(),
-        Algorithm::XWing768 => XWing768Algo::generate_keypair(),
-        Algorithm::XWing1024 => XWing1024Algo::generate_keypair(),
+        Algorithm::Ed25519 => {
+            #[cfg(feature = "ed25519")]
+            {
+                crate::algorithms::ed25519::Ed25519Algo::generate_keypair()
+            }
+            #[cfg(not(feature = "ed25519"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::P256 => {
+            #[cfg(feature = "p256")]
+            {
+                crate::algorithms::p256::P256Algo::generate_keypair()
+            }
+            #[cfg(not(feature = "p256"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::P384 => {
+            #[cfg(feature = "p384")]
+            {
+                crate::algorithms::p384::P384Algo::generate_keypair()
+            }
+            #[cfg(not(feature = "p384"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::P521 => {
+            #[cfg(feature = "p521")]
+            {
+                crate::algorithms::p521::P521Algo::generate_keypair()
+            }
+            #[cfg(not(feature = "p521"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::Secp256k1 => {
+            #[cfg(feature = "secp256k1")]
+            {
+                crate::algorithms::secp256k1::Secp256k1Algo::generate_keypair()
+            }
+            #[cfg(not(feature = "secp256k1"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::MlDsa44 => {
+            #[cfg(feature = "ml-dsa-44")]
+            {
+                crate::algorithms::ml_dsa_44::MlDsa44Algo::generate_keypair()
+            }
+            #[cfg(not(feature = "ml-dsa-44"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::MlDsa65 => {
+            #[cfg(feature = "ml-dsa-65")]
+            {
+                crate::algorithms::ml_dsa_65::MlDsa65Algo::generate_keypair()
+            }
+            #[cfg(not(feature = "ml-dsa-65"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::MlDsa87 => {
+            #[cfg(feature = "ml-dsa-87")]
+            {
+                crate::algorithms::ml_dsa_87::MlDsa87Algo::generate_keypair()
+            }
+            #[cfg(not(feature = "ml-dsa-87"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::X25519 => {
+            #[cfg(feature = "x25519")]
+            {
+                crate::algorithms::x25519::X25519Algo::generate_keypair()
+            }
+            #[cfg(not(feature = "x25519"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::MlKem512 => {
+            #[cfg(feature = "ml-kem-512")]
+            {
+                crate::algorithms::ml_kem_512::MlKem512Algo::generate_keypair()
+            }
+            #[cfg(not(feature = "ml-kem-512"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::MlKem768 => {
+            #[cfg(feature = "ml-kem-768")]
+            {
+                crate::algorithms::ml_kem_768::MlKem768Algo::generate_keypair()
+            }
+            #[cfg(not(feature = "ml-kem-768"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::MlKem1024 => {
+            #[cfg(feature = "ml-kem-1024")]
+            {
+                crate::algorithms::ml_kem_1024::MlKem1024Algo::generate_keypair()
+            }
+            #[cfg(not(feature = "ml-kem-1024"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::XWing768 => {
+            #[cfg(feature = "x-wing")]
+            {
+                crate::algorithms::x_wing::XWing768Algo::generate_keypair()
+            }
+            #[cfg(not(feature = "x-wing"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::XWing1024 => {
+            #[cfg(feature = "x-wing")]
+            {
+                crate::algorithms::x_wing::XWing1024Algo::generate_keypair()
+            }
+            #[cfg(not(feature = "x-wing"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
     }
 }
 
@@ -85,15 +205,99 @@ pub fn generate_keypair(alg: Algorithm) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>),
 /// # }
 /// ```
 pub fn sign(alg: Algorithm, secret: &[u8], msg: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
+    #[cfg(not(any(
+        feature = "ed25519",
+        feature = "p256",
+        feature = "p384",
+        feature = "p521",
+        feature = "secp256k1",
+        feature = "ml-dsa-44",
+        feature = "ml-dsa-65",
+        feature = "ml-dsa-87"
+    )))]
+    let _ = (secret, msg);
+
     match alg {
-        Algorithm::Ed25519 => Ed25519Algo::sign(secret, msg),
-        Algorithm::P256 => P256Algo::sign(secret, msg),
-        Algorithm::P384 => P384Algo::sign(secret, msg),
-        Algorithm::P521 => P521Algo::sign(secret, msg),
-        Algorithm::Secp256k1 => Secp256k1Algo::sign(secret, msg),
-        Algorithm::MlDsa44 => MlDsa44Algo::sign(secret, msg),
-        Algorithm::MlDsa65 => MlDsa65Algo::sign(secret, msg),
-        Algorithm::MlDsa87 => MlDsa87Algo::sign(secret, msg),
+        Algorithm::Ed25519 => {
+            #[cfg(feature = "ed25519")]
+            {
+                crate::algorithms::ed25519::Ed25519Algo::sign(secret, msg)
+            }
+            #[cfg(not(feature = "ed25519"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::P256 => {
+            #[cfg(feature = "p256")]
+            {
+                crate::algorithms::p256::P256Algo::sign(secret, msg)
+            }
+            #[cfg(not(feature = "p256"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::P384 => {
+            #[cfg(feature = "p384")]
+            {
+                crate::algorithms::p384::P384Algo::sign(secret, msg)
+            }
+            #[cfg(not(feature = "p384"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::P521 => {
+            #[cfg(feature = "p521")]
+            {
+                crate::algorithms::p521::P521Algo::sign(secret, msg)
+            }
+            #[cfg(not(feature = "p521"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::Secp256k1 => {
+            #[cfg(feature = "secp256k1")]
+            {
+                crate::algorithms::secp256k1::Secp256k1Algo::sign(secret, msg)
+            }
+            #[cfg(not(feature = "secp256k1"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::MlDsa44 => {
+            #[cfg(feature = "ml-dsa-44")]
+            {
+                crate::algorithms::ml_dsa_44::MlDsa44Algo::sign(secret, msg)
+            }
+            #[cfg(not(feature = "ml-dsa-44"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::MlDsa65 => {
+            #[cfg(feature = "ml-dsa-65")]
+            {
+                crate::algorithms::ml_dsa_65::MlDsa65Algo::sign(secret, msg)
+            }
+            #[cfg(not(feature = "ml-dsa-65"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::MlDsa87 => {
+            #[cfg(feature = "ml-dsa-87")]
+            {
+                crate::algorithms::ml_dsa_87::MlDsa87Algo::sign(secret, msg)
+            }
+            #[cfg(not(feature = "ml-dsa-87"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
         _ => Err(AlgorithmError::UnsupportedAlgorithm(alg)),
     }
 }
@@ -123,15 +327,99 @@ pub fn sign(alg: Algorithm, secret: &[u8], msg: &[u8]) -> Result<Vec<u8>, Algori
 /// # }
 /// ```
 pub fn verify(alg: Algorithm, public: &[u8], msg: &[u8], sig: &[u8]) -> Result<(), AlgorithmError> {
+    #[cfg(not(any(
+        feature = "ed25519",
+        feature = "p256",
+        feature = "p384",
+        feature = "p521",
+        feature = "secp256k1",
+        feature = "ml-dsa-44",
+        feature = "ml-dsa-65",
+        feature = "ml-dsa-87"
+    )))]
+    let _ = (public, msg, sig);
+
     match alg {
-        Algorithm::Ed25519 => Ed25519Algo::verify(public, msg, sig),
-        Algorithm::P256 => P256Algo::verify(public, msg, sig),
-        Algorithm::P384 => P384Algo::verify(public, msg, sig),
-        Algorithm::P521 => P521Algo::verify(public, msg, sig),
-        Algorithm::Secp256k1 => Secp256k1Algo::verify(public, msg, sig),
-        Algorithm::MlDsa44 => MlDsa44Algo::verify(public, msg, sig),
-        Algorithm::MlDsa65 => MlDsa65Algo::verify(public, msg, sig),
-        Algorithm::MlDsa87 => MlDsa87Algo::verify(public, msg, sig),
+        Algorithm::Ed25519 => {
+            #[cfg(feature = "ed25519")]
+            {
+                crate::algorithms::ed25519::Ed25519Algo::verify(public, msg, sig)
+            }
+            #[cfg(not(feature = "ed25519"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::P256 => {
+            #[cfg(feature = "p256")]
+            {
+                crate::algorithms::p256::P256Algo::verify(public, msg, sig)
+            }
+            #[cfg(not(feature = "p256"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::P384 => {
+            #[cfg(feature = "p384")]
+            {
+                crate::algorithms::p384::P384Algo::verify(public, msg, sig)
+            }
+            #[cfg(not(feature = "p384"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::P521 => {
+            #[cfg(feature = "p521")]
+            {
+                crate::algorithms::p521::P521Algo::verify(public, msg, sig)
+            }
+            #[cfg(not(feature = "p521"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::Secp256k1 => {
+            #[cfg(feature = "secp256k1")]
+            {
+                crate::algorithms::secp256k1::Secp256k1Algo::verify(public, msg, sig)
+            }
+            #[cfg(not(feature = "secp256k1"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::MlDsa44 => {
+            #[cfg(feature = "ml-dsa-44")]
+            {
+                crate::algorithms::ml_dsa_44::MlDsa44Algo::verify(public, msg, sig)
+            }
+            #[cfg(not(feature = "ml-dsa-44"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::MlDsa65 => {
+            #[cfg(feature = "ml-dsa-65")]
+            {
+                crate::algorithms::ml_dsa_65::MlDsa65Algo::verify(public, msg, sig)
+            }
+            #[cfg(not(feature = "ml-dsa-65"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::MlDsa87 => {
+            #[cfg(feature = "ml-dsa-87")]
+            {
+                crate::algorithms::ml_dsa_87::MlDsa87Algo::verify(public, msg, sig)
+            }
+            #[cfg(not(feature = "ml-dsa-87"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
         _ => Err(AlgorithmError::UnsupportedAlgorithm(alg)),
     }
 }
@@ -148,11 +436,55 @@ pub fn derive_shared_secret(
     secret_key: &[u8],
     public_key: &[u8],
 ) -> Result<Zeroizing<Vec<u8>>, AlgorithmError> {
+    #[cfg(not(any(
+        feature = "p256",
+        feature = "p384",
+        feature = "p521",
+        feature = "x25519"
+    )))]
+    let _ = (secret_key, public_key);
+
     match alg {
-        Algorithm::P256 => P256Algo::derive_shared_secret(secret_key, public_key),
-        Algorithm::P384 => P384Algo::derive_shared_secret(secret_key, public_key),
-        Algorithm::P521 => P521Algo::derive_shared_secret(secret_key, public_key),
-        Algorithm::X25519 => X25519Algo::derive_shared_secret(secret_key, public_key),
+        Algorithm::P256 => {
+            #[cfg(feature = "p256")]
+            {
+                crate::algorithms::p256::P256Algo::derive_shared_secret(secret_key, public_key)
+            }
+            #[cfg(not(feature = "p256"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::P384 => {
+            #[cfg(feature = "p384")]
+            {
+                crate::algorithms::p384::P384Algo::derive_shared_secret(secret_key, public_key)
+            }
+            #[cfg(not(feature = "p384"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::P521 => {
+            #[cfg(feature = "p521")]
+            {
+                crate::algorithms::p521::P521Algo::derive_shared_secret(secret_key, public_key)
+            }
+            #[cfg(not(feature = "p521"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::X25519 => {
+            #[cfg(feature = "x25519")]
+            {
+                crate::algorithms::x25519::X25519Algo::derive_shared_secret(secret_key, public_key)
+            }
+            #[cfg(not(feature = "x25519"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
         _ => Err(AlgorithmError::UnsupportedAlgorithm(alg)),
     }
 }
@@ -167,12 +499,65 @@ pub fn kem_encapsulate(
     alg: Algorithm,
     public_key: &[u8],
 ) -> Result<(Zeroizing<Vec<u8>>, Vec<u8>), AlgorithmError> {
+    #[cfg(not(any(
+        feature = "ml-kem-512",
+        feature = "ml-kem-768",
+        feature = "ml-kem-1024",
+        feature = "x-wing"
+    )))]
+    let _ = public_key;
+
     match alg {
-        Algorithm::MlKem512 => MlKem512Algo::encapsulate(public_key),
-        Algorithm::MlKem768 => MlKem768Algo::encapsulate(public_key),
-        Algorithm::MlKem1024 => MlKem1024Algo::encapsulate(public_key),
-        Algorithm::XWing768 => XWing768Algo::encapsulate(public_key),
-        Algorithm::XWing1024 => XWing1024Algo::encapsulate(public_key),
+        Algorithm::MlKem512 => {
+            #[cfg(feature = "ml-kem-512")]
+            {
+                crate::algorithms::ml_kem_512::MlKem512Algo::encapsulate(public_key)
+            }
+            #[cfg(not(feature = "ml-kem-512"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::MlKem768 => {
+            #[cfg(feature = "ml-kem-768")]
+            {
+                crate::algorithms::ml_kem_768::MlKem768Algo::encapsulate(public_key)
+            }
+            #[cfg(not(feature = "ml-kem-768"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::MlKem1024 => {
+            #[cfg(feature = "ml-kem-1024")]
+            {
+                crate::algorithms::ml_kem_1024::MlKem1024Algo::encapsulate(public_key)
+            }
+            #[cfg(not(feature = "ml-kem-1024"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::XWing768 => {
+            #[cfg(feature = "x-wing")]
+            {
+                crate::algorithms::x_wing::XWing768Algo::encapsulate(public_key)
+            }
+            #[cfg(not(feature = "x-wing"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::XWing1024 => {
+            #[cfg(feature = "x-wing")]
+            {
+                crate::algorithms::x_wing::XWing1024Algo::encapsulate(public_key)
+            }
+            #[cfg(not(feature = "x-wing"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
         _ => Err(AlgorithmError::UnsupportedAlgorithm(alg)),
     }
 }
@@ -183,12 +568,65 @@ pub fn kem_decapsulate(
     ciphertext: &[u8],
     secret_key: &[u8],
 ) -> Result<Zeroizing<Vec<u8>>, AlgorithmError> {
+    #[cfg(not(any(
+        feature = "ml-kem-512",
+        feature = "ml-kem-768",
+        feature = "ml-kem-1024",
+        feature = "x-wing"
+    )))]
+    let _ = (ciphertext, secret_key);
+
     match alg {
-        Algorithm::MlKem512 => MlKem512Algo::decapsulate(ciphertext, secret_key),
-        Algorithm::MlKem768 => MlKem768Algo::decapsulate(ciphertext, secret_key),
-        Algorithm::MlKem1024 => MlKem1024Algo::decapsulate(ciphertext, secret_key),
-        Algorithm::XWing768 => XWing768Algo::decapsulate(ciphertext, secret_key),
-        Algorithm::XWing1024 => XWing1024Algo::decapsulate(ciphertext, secret_key),
+        Algorithm::MlKem512 => {
+            #[cfg(feature = "ml-kem-512")]
+            {
+                crate::algorithms::ml_kem_512::MlKem512Algo::decapsulate(ciphertext, secret_key)
+            }
+            #[cfg(not(feature = "ml-kem-512"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::MlKem768 => {
+            #[cfg(feature = "ml-kem-768")]
+            {
+                crate::algorithms::ml_kem_768::MlKem768Algo::decapsulate(ciphertext, secret_key)
+            }
+            #[cfg(not(feature = "ml-kem-768"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::MlKem1024 => {
+            #[cfg(feature = "ml-kem-1024")]
+            {
+                crate::algorithms::ml_kem_1024::MlKem1024Algo::decapsulate(ciphertext, secret_key)
+            }
+            #[cfg(not(feature = "ml-kem-1024"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::XWing768 => {
+            #[cfg(feature = "x-wing")]
+            {
+                crate::algorithms::x_wing::XWing768Algo::decapsulate(ciphertext, secret_key)
+            }
+            #[cfg(not(feature = "x-wing"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
+        Algorithm::XWing1024 => {
+            #[cfg(feature = "x-wing")]
+            {
+                crate::algorithms::x_wing::XWing1024Algo::decapsulate(ciphertext, secret_key)
+            }
+            #[cfg(not(feature = "x-wing"))]
+            {
+                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            }
+        }
         _ => Err(AlgorithmError::UnsupportedAlgorithm(alg)),
     }
 }
@@ -223,13 +661,78 @@ pub fn aead_encrypt(
     params: &AeadParams<'_>,
     plaintext: &[u8],
 ) -> Result<Vec<u8>, AlgorithmError> {
+    #[cfg(not(any(
+        feature = "aes",
+        feature = "aes-gcm-siv",
+        feature = "chacha20-poly1305"
+    )))]
+    let _ = (params, plaintext);
+
     match alg {
-        AeadAlgorithm::Aes128Gcm => Aes128GcmAlgo::encrypt(params, plaintext),
-        AeadAlgorithm::Aes192Gcm => Aes192GcmAlgo::encrypt(params, plaintext),
-        AeadAlgorithm::Aes256Gcm => Aes256GcmAlgo::encrypt(params, plaintext),
-        AeadAlgorithm::Aes256GcmSiv => Aes256GcmSivAlgo::encrypt(params, plaintext),
-        AeadAlgorithm::ChaCha20Poly1305 => ChaCha20Poly1305Algo::encrypt(params, plaintext),
-        AeadAlgorithm::XChaCha20Poly1305 => XChaCha20Poly1305Algo::encrypt(params, plaintext),
+        AeadAlgorithm::Aes128Gcm => {
+            #[cfg(feature = "aes")]
+            {
+                crate::algorithms::aes256_gcm::Aes128GcmAlgo::encrypt(params, plaintext)
+            }
+            #[cfg(not(feature = "aes"))]
+            {
+                Err(AlgorithmError::UnsupportedAeadAlgorithm(alg))
+            }
+        }
+        AeadAlgorithm::Aes192Gcm => {
+            #[cfg(feature = "aes")]
+            {
+                crate::algorithms::aes256_gcm::Aes192GcmAlgo::encrypt(params, plaintext)
+            }
+            #[cfg(not(feature = "aes"))]
+            {
+                Err(AlgorithmError::UnsupportedAeadAlgorithm(alg))
+            }
+        }
+        AeadAlgorithm::Aes256Gcm => {
+            #[cfg(feature = "aes")]
+            {
+                crate::algorithms::aes256_gcm::Aes256GcmAlgo::encrypt(params, plaintext)
+            }
+            #[cfg(not(feature = "aes"))]
+            {
+                Err(AlgorithmError::UnsupportedAeadAlgorithm(alg))
+            }
+        }
+        AeadAlgorithm::Aes256GcmSiv => {
+            #[cfg(feature = "aes-gcm-siv")]
+            {
+                crate::algorithms::aes256_gcm_siv::Aes256GcmSivAlgo::encrypt(params, plaintext)
+            }
+            #[cfg(not(feature = "aes-gcm-siv"))]
+            {
+                Err(AlgorithmError::UnsupportedAeadAlgorithm(alg))
+            }
+        }
+        AeadAlgorithm::ChaCha20Poly1305 => {
+            #[cfg(feature = "chacha20-poly1305")]
+            {
+                crate::algorithms::chacha20_poly1305::ChaCha20Poly1305Algo::encrypt(
+                    params, plaintext,
+                )
+            }
+            #[cfg(not(feature = "chacha20-poly1305"))]
+            {
+                Err(AlgorithmError::UnsupportedAeadAlgorithm(alg))
+            }
+        }
+        AeadAlgorithm::XChaCha20Poly1305 => {
+            #[cfg(feature = "chacha20-poly1305")]
+            {
+                crate::algorithms::chacha20_poly1305::XChaCha20Poly1305Algo::encrypt(
+                    params, plaintext,
+                )
+            }
+            #[cfg(not(feature = "chacha20-poly1305"))]
+            {
+                Err(AlgorithmError::UnsupportedAeadAlgorithm(alg))
+            }
+        }
     }
 }
 
@@ -261,16 +764,82 @@ pub fn aead_decrypt(
     params: &AeadParams<'_>,
     ciphertext_with_tag: &[u8],
 ) -> Result<Zeroizing<Vec<u8>>, AlgorithmError> {
+    #[cfg(not(any(
+        feature = "aes",
+        feature = "aes-gcm-siv",
+        feature = "chacha20-poly1305"
+    )))]
+    let _ = (params, ciphertext_with_tag);
+
     match alg {
-        AeadAlgorithm::Aes128Gcm => Aes128GcmAlgo::decrypt(params, ciphertext_with_tag),
-        AeadAlgorithm::Aes192Gcm => Aes192GcmAlgo::decrypt(params, ciphertext_with_tag),
-        AeadAlgorithm::Aes256Gcm => Aes256GcmAlgo::decrypt(params, ciphertext_with_tag),
-        AeadAlgorithm::Aes256GcmSiv => Aes256GcmSivAlgo::decrypt(params, ciphertext_with_tag),
+        AeadAlgorithm::Aes128Gcm => {
+            #[cfg(feature = "aes")]
+            {
+                crate::algorithms::aes256_gcm::Aes128GcmAlgo::decrypt(params, ciphertext_with_tag)
+            }
+            #[cfg(not(feature = "aes"))]
+            {
+                Err(AlgorithmError::UnsupportedAeadAlgorithm(alg))
+            }
+        }
+        AeadAlgorithm::Aes192Gcm => {
+            #[cfg(feature = "aes")]
+            {
+                crate::algorithms::aes256_gcm::Aes192GcmAlgo::decrypt(params, ciphertext_with_tag)
+            }
+            #[cfg(not(feature = "aes"))]
+            {
+                Err(AlgorithmError::UnsupportedAeadAlgorithm(alg))
+            }
+        }
+        AeadAlgorithm::Aes256Gcm => {
+            #[cfg(feature = "aes")]
+            {
+                crate::algorithms::aes256_gcm::Aes256GcmAlgo::decrypt(params, ciphertext_with_tag)
+            }
+            #[cfg(not(feature = "aes"))]
+            {
+                Err(AlgorithmError::UnsupportedAeadAlgorithm(alg))
+            }
+        }
+        AeadAlgorithm::Aes256GcmSiv => {
+            #[cfg(feature = "aes-gcm-siv")]
+            {
+                crate::algorithms::aes256_gcm_siv::Aes256GcmSivAlgo::decrypt(
+                    params,
+                    ciphertext_with_tag,
+                )
+            }
+            #[cfg(not(feature = "aes-gcm-siv"))]
+            {
+                Err(AlgorithmError::UnsupportedAeadAlgorithm(alg))
+            }
+        }
         AeadAlgorithm::ChaCha20Poly1305 => {
-            ChaCha20Poly1305Algo::decrypt(params, ciphertext_with_tag)
+            #[cfg(feature = "chacha20-poly1305")]
+            {
+                crate::algorithms::chacha20_poly1305::ChaCha20Poly1305Algo::decrypt(
+                    params,
+                    ciphertext_with_tag,
+                )
+            }
+            #[cfg(not(feature = "chacha20-poly1305"))]
+            {
+                Err(AlgorithmError::UnsupportedAeadAlgorithm(alg))
+            }
         }
         AeadAlgorithm::XChaCha20Poly1305 => {
-            XChaCha20Poly1305Algo::decrypt(params, ciphertext_with_tag)
+            #[cfg(feature = "chacha20-poly1305")]
+            {
+                crate::algorithms::chacha20_poly1305::XChaCha20Poly1305Algo::decrypt(
+                    params,
+                    ciphertext_with_tag,
+                )
+            }
+            #[cfg(not(feature = "chacha20-poly1305"))]
+            {
+                Err(AlgorithmError::UnsupportedAeadAlgorithm(alg))
+            }
         }
     }
 }

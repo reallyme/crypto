@@ -9,7 +9,12 @@
     clippy::print_stdout,
     clippy::unwrap_used
 )]
-#![cfg(feature = "native")]
+#![cfg(all(
+    feature = "native",
+    feature = "aes",
+    feature = "aes-gcm-siv",
+    feature = "chacha20-poly1305"
+))]
 
 use crypto_core::{AeadAlgorithm, CryptoError};
 use crypto_dispatch::{aead_decrypt, aead_encrypt, AeadParams, AlgorithmError};
