@@ -170,7 +170,7 @@ description = "ReallyMe cryptographic primitives and platform backend lanes."
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 
 [dependencies]
-crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "crates/crypto/core" }
+crypto-core = { package = "reallyme-crypto-core", version = "0.1.2", path = "crates/crypto/core" }
 crypto-dispatch = { package = "reallyme-crypto-dispatch", version = "0.1.2", path = "crates/crypto/dispatch", optional = true, default-features = false }
 crypto-signer = { package = "reallyme-crypto-signer", version = "0.1.2", path = "crates/crypto/signer", optional = true, default-features = false }
 crypto-aes-kw = { package = "reallyme-crypto-aes-kw", version = "0.1.1", path = "crates/crypto/primitives/aes-kw", optional = true, default-features = false }
@@ -191,8 +191,8 @@ crypto-ml-kem-512 = { package = "reallyme-crypto-ml-kem-512", version = "0.1.2",
 crypto-ml-kem-1024 = { package = "reallyme-crypto-ml-kem-1024", version = "0.1.3", path = "crates/crypto/primitives/ml-kem-1024", optional = true, default-features = false }
 crypto-ml-kem-768 = { package = "reallyme-crypto-ml-kem-768", version = "0.1.3", path = "crates/crypto/primitives/ml-kem-768", optional = true, default-features = false }
 crypto-p256 = { package = "reallyme-crypto-p256", version = "0.1.3", path = "crates/crypto/primitives/p256", optional = true, default-features = false }
-crypto-p384 = { package = "reallyme-crypto-p384", version = "0.1.1", path = "crates/crypto/primitives/p384", optional = true, default-features = false }
-crypto-p521 = { package = "reallyme-crypto-p521", version = "0.1.1", path = "crates/crypto/primitives/p521", optional = true, default-features = false }
+crypto-p384 = { package = "reallyme-crypto-p384", version = "0.1.2", path = "crates/crypto/primitives/p384", optional = true, default-features = false }
+crypto-p521 = { package = "reallyme-crypto-p521", version = "0.1.2", path = "crates/crypto/primitives/p521", optional = true, default-features = false }
 crypto-pbkdf2 = { package = "reallyme-crypto-pbkdf2", version = "0.1.1", path = "crates/crypto/primitives/pbkdf2", optional = true, default-features = false }
 crypto-rsa = { package = "reallyme-crypto-rsa", version = "0.1.1", path = "crates/crypto/primitives/rsa", optional = true, default-features = false }
 crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "0.1.3", path = "crates/crypto/primitives/secp256k1", optional = true, default-features = false }

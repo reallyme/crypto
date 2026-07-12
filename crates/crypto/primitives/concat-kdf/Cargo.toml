@@ -21,7 +21,7 @@ native = []
 wasm = []
 
 [dependencies]
-crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "../../core" }
+crypto-core = { package = "reallyme-crypto-core", version = "0.1.2", path = "../../core" }
 sha2 = { workspace = true }
 zeroize = { workspace = true, features = ["derive"] }
 

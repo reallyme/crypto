@@ -1641,7 +1641,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-core"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "thiserror",
 ]
@@ -1852,7 +1852,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-p384"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "ecdsa",
  "hex",
@@ -1864,7 +1864,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-p521"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "ecdsa",
  "hex",
@@ -1887,7 +1887,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-proto"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "buffa",
  "reallyme-crypto-core",
