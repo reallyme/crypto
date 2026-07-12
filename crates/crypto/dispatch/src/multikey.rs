@@ -56,13 +56,30 @@ fn compress_p256_public_key(input: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
 
 #[cfg(feature = "p384")]
 fn compress_p384_public_key(input: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
-    #[cfg(all(feature = "p384", feature = "native"))]
+    #[cfg(all(
+        feature = "p384",
+        feature = "native",
+        not(all(feature = "wasm", target_arch = "wasm32"))
+    ))]
     {
         return crypto_p384::compress_p384(input)
             .map_err(|_| AlgorithmError::InvalidKey(Algorithm::P384));
     }
 
-    #[cfg(not(all(feature = "p384", feature = "native")))]
+    #[cfg(all(feature = "p384", feature = "wasm", target_arch = "wasm32"))]
+    {
+        return crypto_p384::compress_p384(input)
+            .map_err(|_| AlgorithmError::InvalidKey(Algorithm::P384));
+    }
+
+    #[cfg(not(any(
+        all(
+            feature = "p384",
+            feature = "native",
+            not(all(feature = "wasm", target_arch = "wasm32"))
+        ),
+        all(feature = "p384", feature = "wasm", target_arch = "wasm32")
+    )))]
     {
         let _ = input;
         Err(AlgorithmError::UnsupportedAlgorithm(Algorithm::P384))
@@ -71,13 +88,30 @@ fn compress_p384_public_key(input: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
 
 #[cfg(feature = "p521")]
 fn compress_p521_public_key(input: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
-    #[cfg(all(feature = "p521", feature = "native"))]
+    #[cfg(all(
+        feature = "p521",
+        feature = "native",
+        not(all(feature = "wasm", target_arch = "wasm32"))
+    ))]
     {
         return crypto_p521::compress_p521(input)
             .map_err(|_| AlgorithmError::InvalidKey(Algorithm::P521));
     }
 
-    #[cfg(not(all(feature = "p521", feature = "native")))]
+    #[cfg(all(feature = "p521", feature = "wasm", target_arch = "wasm32"))]
+    {
+        return crypto_p521::compress_p521(input)
+            .map_err(|_| AlgorithmError::InvalidKey(Algorithm::P521));
+    }
+
+    #[cfg(not(any(
+        all(
+            feature = "p521",
+            feature = "native",
+            not(all(feature = "wasm", target_arch = "wasm32"))
+        ),
+        all(feature = "p521", feature = "wasm", target_arch = "wasm32")
+    )))]
     {
         let _ = input;
         Err(AlgorithmError::UnsupportedAlgorithm(Algorithm::P521))

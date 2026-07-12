@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-//! HKDF (RFC 5869) extract-and-expand key derivation over the workspace's SHA-2 / SHA-3 suites.
+//! HKDF (RFC 5869) extract-and-expand key derivation over SHA-2, with optional SHA-3 support.
 
 #![forbid(unsafe_code)]
 

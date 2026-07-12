@@ -5,9 +5,10 @@
 #![allow(missing_docs)]
 use crypto_core::{CryptoError, HkdfFailureKind, HkdfHash};
 use crypto_hkdf::{
-    derive, derive_domain_key_32, DeriveRequest, DomainKeyPurpose, DomainTag, HkdfInfo,
-    HkdfInputKeyMaterial, HkdfSalt, HkdfSuite,
+    derive, DeriveRequest, DomainTag, HkdfInfo, HkdfInputKeyMaterial, HkdfSalt, HkdfSuite,
 };
+#[cfg(feature = "sha3")]
+use crypto_hkdf::{derive_domain_key_32, DomainKeyPurpose};
 
 #[test]
 fn derive_is_deterministic_with_same_inputs() {
@@ -75,6 +76,7 @@ fn derive_changes_when_info_changes() {
     assert_ne!(key_a_bytes, key_b_bytes);
 }
 
+#[cfg(feature = "sha3")]
 #[test]
 fn sha2_and_sha3_suites_produce_distinct_outputs() {
     let ikm = HkdfInputKeyMaterial::from_slice(b"root key material");
@@ -107,6 +109,23 @@ fn sha2_and_sha3_suites_produce_distinct_outputs() {
     };
 
     assert_ne!(sha2_bytes, sha3_bytes);
+}
+
+#[cfg(not(feature = "sha3"))]
+#[test]
+fn sha3_suite_is_explicitly_unsupported_without_sha3_feature() {
+    let ikm = HkdfInputKeyMaterial::from_slice(b"root key material");
+    let salt = HkdfSalt::from_slice(b"domain salt");
+    let info = HkdfInfo::from_slice(b"context");
+
+    let result = derive::<32>(&DeriveRequest {
+        suite: HkdfSuite::Sha3_256,
+        ikm: &ikm,
+        salt: Some(&salt),
+        info: &info,
+    });
+
+    assert!(matches!(result, Err(CryptoError::Unsupported)));
 }
 
 #[test]
@@ -193,6 +212,7 @@ fn domain_tag_validation_rejects_invalid_tags() {
     ));
 }
 
+#[cfg(feature = "sha3")]
 #[test]
 fn strict_domain_derivation_is_domain_and_purpose_separated() {
     let ikm = HkdfInputKeyMaterial::from_slice(b"root key material");

@@ -5,14 +5,19 @@
 use crypto_core::{CryptoError, HkdfFailureKind, HkdfHash};
 use hkdf::Hkdf;
 use sha2::Sha256;
+#[cfg(feature = "sha3")]
 use sha3::{Digest, Sha3_256};
+#[cfg(feature = "sha3")]
 use zeroize::{Zeroize, Zeroizing};
 
 use crate::material::{HkdfInfo, HkdfInputKeyMaterial, HkdfOutput, HkdfSalt};
 use crate::policy::{DomainKeyPurpose, DomainTag, HkdfSuite};
 
+#[cfg(feature = "sha3")]
 const SHA3_256_DIGEST_LEN: usize = 32;
+#[cfg(feature = "sha3")]
 const SHA3_256_HMAC_BLOCK_LEN: usize = 136;
+#[cfg(feature = "sha3")]
 const HKDF_MAX_BLOCKS: usize = 255;
 
 /// Parameters for a single HKDF extract-and-expand derivation.
@@ -27,6 +32,7 @@ pub struct DeriveRequest<'a> {
     pub info: &'a HkdfInfo,
 }
 
+#[cfg(feature = "sha3")]
 fn hmac_sha3_256(key: &[u8], message: &[u8]) -> [u8; SHA3_256_DIGEST_LEN] {
     let mut key_block = Zeroizing::new([0u8; SHA3_256_HMAC_BLOCK_LEN]);
 
@@ -59,6 +65,7 @@ fn hmac_sha3_256(key: &[u8], message: &[u8]) -> [u8; SHA3_256_DIGEST_LEN] {
     tag
 }
 
+#[cfg(feature = "sha3")]
 fn derive_sha3_256<const N: usize>(request: &DeriveRequest<'_>) -> Result<[u8; N], CryptoError> {
     let block_count = N
         .checked_add(SHA3_256_DIGEST_LEN - 1)
@@ -174,7 +181,15 @@ pub fn derive<const N: usize>(request: &DeriveRequest<'_>) -> Result<HkdfOutput<
                 })?;
         }
         HkdfSuite::Sha3_256 => {
-            output = derive_sha3_256::<N>(request)?;
+            #[cfg(feature = "sha3")]
+            {
+                output = derive_sha3_256::<N>(request)?;
+            }
+
+            #[cfg(not(feature = "sha3"))]
+            {
+                return Err(CryptoError::Unsupported);
+            }
         }
     }
 
@@ -185,6 +200,8 @@ pub fn derive<const N: usize>(request: &DeriveRequest<'_>) -> Result<HkdfOutput<
 ///
 /// Builds the `info` as `reallyme/crypto/hkdf/v1/<purpose>/<domain_tag>` and
 /// expands it; errors on length overflow or an underlying HKDF failure.
+/// Returns [`CryptoError::Unsupported`] unless the crate's `sha3` feature is
+/// enabled.
 pub fn derive_domain_key_32(
     ikm: &HkdfInputKeyMaterial,
     salt: Option<&HkdfSalt>,

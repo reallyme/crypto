@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-aes256-gcm"
-version = "0.1.2"
+version = "0.1.3"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -34,7 +34,7 @@ crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "../
 zeroize = { workspace = true, features = ["zeroize_derive"] }
 
 # Native-only crypto deps
-aes = { workspace = true, optional = true }
+aes = { workspace = true, features = ["zeroize"], optional = true }
 aes-gcm = { workspace = true, optional = true }
 wasm-bindgen = { workspace = true, optional = true }
 js-sys = { workspace = true, optional = true }

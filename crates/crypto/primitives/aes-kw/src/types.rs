@@ -67,6 +67,10 @@ impl AesKwKeyData {
     }
 
     /// Consumes the key material and returns owned bytes.
+    ///
+    /// The returned buffer is no longer zeroized by this type. Callers that
+    /// unwrap key material into owned memory must wipe the returned buffer as
+    /// soon as it is no longer needed.
     pub fn into_vec(self) -> Vec<u8> {
         self.as_bytes().to_vec()
     }
@@ -109,6 +113,9 @@ impl AesKwWrappedKey {
     }
 
     /// Consumes the wrapped key and returns owned bytes.
+    ///
+    /// Wrapped bytes are ciphertext, but callers should still wipe them when
+    /// policy treats wrapped key blobs as sensitive storage material.
     pub fn into_vec(self) -> Vec<u8> {
         self.as_bytes().to_vec()
     }

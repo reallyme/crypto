@@ -107,6 +107,9 @@ impl<const N: usize> JwaConcatKdfOutput<N> {
     }
 
     /// Consumes the output and returns the derived key bytes.
+    ///
+    /// The returned array is no longer zeroized by this type. Callers must wipe
+    /// it as soon as the derived key material is no longer needed.
     pub fn into_bytes(mut self) -> [u8; N] {
         let output = self.bytes;
         self.bytes.zeroize();

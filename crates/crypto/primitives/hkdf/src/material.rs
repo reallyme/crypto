@@ -81,8 +81,13 @@ impl<const N: usize> HkdfOutput<N> {
     }
 
     /// Consume the output and return its `N`-byte array.
-    pub fn into_bytes(self) -> [u8; N] {
-        self.bytes
+    ///
+    /// The returned array is no longer zeroized by this type. Callers must wipe
+    /// it as soon as the derived key material is no longer needed.
+    pub fn into_bytes(mut self) -> [u8; N] {
+        let output = self.bytes;
+        self.bytes.zeroize();
+        output
     }
 
     pub(crate) fn from_array(bytes: [u8; N]) -> Self {

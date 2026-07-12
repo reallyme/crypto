@@ -43,8 +43,5 @@ ml-kem = { workspace = true, features = ["getrandom", "zeroize"], optional = tru
 wasm-bindgen = { workspace = true, optional = true }
 js-sys = { workspace = true, optional = true }
 
-[dev-dependencies]
-hex = { workspace = true }
-
 [lints]
 workspace = true

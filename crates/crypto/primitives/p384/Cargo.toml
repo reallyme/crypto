@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-p384"
-version = "0.1.2"
+version = "0.1.3"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -12,13 +12,19 @@ repository.workspace = true
 publish = true
 description = "P-384 ECDSA primitive for ReallyMe Crypto."
 
+[package.metadata.cargo-machete]
+ignored = [
+    # Enables getrandom's wasm entropy backend for the transitive elliptic-curve stack.
+    "getrandom",
+]
+
 [lib]
 name = "crypto_p384"
 
 [features]
 default = []
-native = ["dep:p384", "dep:ecdsa", "dep:sha2"]
-wasm = ["native"]
+native = ["dep:p384", "dep:ecdsa", "dep:sha2", "dep:getrandom"]
+wasm = ["native", "dep:getrandom"]
 
 [dependencies]
 crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "../../core" }
@@ -27,9 +33,7 @@ zeroize = { workspace = true }
 p384 = { workspace = true, features = ["ecdh", "ecdsa"], optional = true }
 ecdsa = { workspace = true, features = ["der"], optional = true }
 sha2 = { workspace = true, optional = true }
-
-[dev-dependencies]
-hex = { workspace = true }
+getrandom = { workspace = true, features = ["wasm_js"], optional = true }
 
 [lints]
 workspace = true
