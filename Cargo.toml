@@ -253,6 +253,15 @@ default = [
     "envelopes",
 ]
 
+messaging-primitives = [
+    "chacha20-poly1305",
+    "hkdf",
+    "hmac",
+    "ml-kem-768",
+    "sha2",
+    "x25519",
+]
+
 native = [
     "envelopes-jwk?/native",
     "envelopes-jwk-multikey?/native",
