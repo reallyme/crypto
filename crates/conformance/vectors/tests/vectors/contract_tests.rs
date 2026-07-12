@@ -43,6 +43,8 @@ const PROTO_ENUM_VALUES: &[(&str, i32)] = &[
     ("KEY_AGREEMENT_ALGORITHM_UNSPECIFIED", 0),
     ("KEY_AGREEMENT_ALGORITHM_X25519", 1),
     ("KEY_AGREEMENT_ALGORITHM_P256_ECDH", 2),
+    ("KEY_AGREEMENT_ALGORITHM_P384_ECDH", 3),
+    ("KEY_AGREEMENT_ALGORITHM_P521_ECDH", 4),
     ("KEM_ALGORITHM_UNSPECIFIED", 0),
     ("KEM_ALGORITHM_ML_KEM_512", 1),
     ("KEM_ALGORITHM_ML_KEM_768", 2),
@@ -63,6 +65,8 @@ const PROTO_ENUM_VALUES: &[(&str, i32)] = &[
     ("AEAD_ALGORITHM_AES_256_GCM_SIV", 2),
     ("AEAD_ALGORITHM_CHACHA20_POLY1305", 3),
     ("AEAD_ALGORITHM_XCHACHA20_POLY1305", 4),
+    ("AEAD_ALGORITHM_AES_128_GCM", 5),
+    ("AEAD_ALGORITHM_AES_192_GCM", 6),
     ("HASH_ALGORITHM_UNSPECIFIED", 0),
     ("HASH_ALGORITHM_SHA2_256", 1),
     ("HASH_ALGORITHM_SHA2_384", 2),
@@ -79,6 +83,7 @@ const PROTO_ENUM_VALUES: &[(&str, i32)] = &[
     ("KDF_ALGORITHM_ARGON2ID", 2),
     ("KDF_ALGORITHM_PBKDF2_HMAC_SHA256", 3),
     ("KDF_ALGORITHM_PBKDF2_HMAC_SHA512", 4),
+    ("KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256", 5),
     ("KEY_WRAP_ALGORITHM_UNSPECIFIED", 0),
     ("KEY_WRAP_ALGORITHM_AES_256_KW", 1),
     ("MULTICODEC_KEY_ALGORITHM_UNSPECIFIED", 0),
@@ -111,7 +116,9 @@ const PROTO_ENUM_VALUES: &[(&str, i32)] = &[
 
 const VECTOR_ALG_STRINGS: &[&str] = &[
     "AES-128",
+    "AES-128-GCM",
     "AES-192",
+    "AES-192-GCM",
     "AES-256",
     "AES-256-GCM",
     "AES-256-GCM-SIV",
@@ -133,6 +140,7 @@ const VECTOR_ALG_STRINGS: &[&str] = &[
     "HMAC-SHA-512",
     "HPKE-P256-SHA256-AES256GCM",
     "HPKE-X25519-SHA256-CHACHA20POLY1305",
+    "JWA-CONCAT-KDF-SHA256",
     "ML-DSA-44",
     "ML-DSA-65",
     "ML-DSA-87",
@@ -508,9 +516,9 @@ fn typescript_contract_is_sync_and_webcrypto_free() -> Result<(), VectorTestErro
     let package = read_repo_file("packages/ts/package.json")?;
     let policy = read_repo_file("PROVIDER_POLICY.md")?;
 
-    assert!(contract.contains("The TypeScript facade is synchronous for v0.1.1."));
-    assert!(contract.contains("WebCrypto is not part of the v0.1.1 facade"));
-    assert!(policy.contains("WebCrypto is not part of v0.1.1"));
+    assert!(contract.contains("The TypeScript facade is synchronous for the 0.1 line."));
+    assert!(contract.contains("WebCrypto is not part of the 0.1 facade"));
+    assert!(policy.contains("WebCrypto is not part of the 0.1 line"));
     assert!(!package.contains("\"zod\""));
     assert!(!package.contains("\"io-ts\""));
 
@@ -544,6 +552,8 @@ const PACKAGE_ALGORITHM_IDENTIFIERS: &[&str] = &[
     // Key agreement
     "X25519",
     "P-256-ECDH",
+    "P-384-ECDH",
+    "P-521-ECDH",
     // KEM
     "ML-KEM-512",
     "ML-KEM-768",
@@ -551,6 +561,8 @@ const PACKAGE_ALGORITHM_IDENTIFIERS: &[&str] = &[
     "X-Wing-768",
     "X-Wing-1024",
     // AEAD
+    "AES-128-GCM",
+    "AES-192-GCM",
     "AES-256-GCM",
     "AES-256-GCM-SIV",
     "ChaCha20-Poly1305",

@@ -16,8 +16,10 @@ use codec_multibase::{bytes_to_multibase58btc, bytes_to_multibase_base64url};
 use codec_multicodec::{lookup_codec_prefix, MULTICODEC_TABLE};
 use codec_multikey::encode_multikey;
 use crypto_aes256_gcm::{
-    decrypt, encrypt, Aes256GcmKey, Aes256GcmNonce, CiphertextWithTag, DecryptRequest,
-    EncryptRequest,
+    decrypt, decrypt_aes128_gcm, decrypt_aes192_gcm, encrypt, encrypt_aes128_gcm,
+    encrypt_aes192_gcm, Aes128GcmDecryptRequest, Aes128GcmEncryptRequest, Aes128GcmKey,
+    Aes128GcmNonce, Aes192GcmDecryptRequest, Aes192GcmEncryptRequest, Aes192GcmKey, Aes192GcmNonce,
+    Aes256GcmKey, Aes256GcmNonce, CiphertextWithTag, DecryptRequest, EncryptRequest,
 };
 use crypto_aes256_gcm_siv::{
     decrypt as gcm_siv_decrypt, encrypt as gcm_siv_encrypt, Aes256GcmSivKey, Aes256GcmSivNonce,
@@ -35,6 +37,10 @@ use crypto_chacha20_poly1305::{
     EncryptRequest as ChaChaEncryptRequest, XChaCha20Poly1305DecryptRequest,
     XChaCha20Poly1305EncryptRequest, XChaCha20Poly1305Nonce,
 };
+use crypto_concat_kdf::{
+    derive_jwa_concat_kdf_sha256, JwaAlgorithmId, JwaConcatKdfRequest, JwaPartyInfo,
+    JwaSharedSecret,
+};
 use crypto_core::MacAlgorithm;
 use crypto_ed25519::{sign_ed25519, verify_ed25519};
 use crypto_hkdf::{
@@ -48,8 +54,8 @@ use crypto_hpke::{
 use crypto_p256::{
     decompress_p256, derive_p256_shared_secret, sign_p256_der_prehash, verify_p256_der_prehash,
 };
-use crypto_p384::{decompress_p384, sign_p384_der_prehash};
-use crypto_p521::{decompress_p521, sign_p521_der_prehash};
+use crypto_p384::{decompress_p384, derive_p384_shared_secret, sign_p384_der_prehash};
+use crypto_p521::{decompress_p521, derive_p521_shared_secret, sign_p521_der_prehash};
 use crypto_pbkdf2::{
     derive_key as derive_pbkdf2_key, Pbkdf2Iterations, Pbkdf2Password, Pbkdf2Prf, Pbkdf2Request,
     Pbkdf2Salt,
@@ -111,11 +117,27 @@ const AES_KEY: [u8; 32] = [
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
     0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
 ];
+const AES_128_KEY: [u8; 16] = [
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+];
+const AES_192_KEY: [u8; 24] = [
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+];
 const AES_NONCE: [u8; 12] = [
     0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xab,
 ];
 const AES_AAD: &[u8] = b"reallyme-crypto-vector-aad";
 const AES_PLAINTEXT: &[u8] = b"ReallyMe AES-256-GCM conformance vector";
+const AES_128_PLAINTEXT: &[u8] = b"ReallyMe AES-128-GCM conformance vector";
+const AES_192_PLAINTEXT: &[u8] = b"ReallyMe AES-192-GCM conformance vector";
+const CONCAT_KDF_Z: [u8; 32] = [
+    158, 86, 217, 29, 129, 113, 53, 211, 114, 131, 66, 131, 191, 132, 38, 156, 251, 49, 110, 163,
+    218, 128, 106, 72, 246, 218, 167, 121, 140, 254, 144, 196,
+];
+const CONCAT_KDF_ALGORITHM_ID: &[u8] = b"A128GCM";
+const CONCAT_KDF_PARTY_U_INFO: &[u8] = b"Alice";
+const CONCAT_KDF_PARTY_V_INFO: &[u8] = b"Bob";
 const AES_KW_KEY_DATA: [u8; 32] = [
     0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff,
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
@@ -200,12 +222,24 @@ const P384_SECRET: [u8; 48] = [
     0x62, 0x7a, 0xb4, 0xee, 0x88, 0x21, 0x09, 0x35, 0xf0, 0x44, 0xca, 0x7d, 0x19, 0x83, 0xb6, 0x52,
     0x0f, 0xd9, 0x70, 0x2b, 0xac, 0x58, 0x13, 0xe6, 0x74, 0x91, 0x22, 0xcf, 0x3a, 0xbd, 0x55, 0x08,
 ];
+const P384_PEER_SECRET: [u8; 48] = [
+    0x2a, 0x73, 0xe5, 0x18, 0x44, 0x91, 0xcd, 0x6f, 0xb0, 0x35, 0x8c, 0x21, 0xda, 0x67, 0x04, 0xee,
+    0x90, 0x1b, 0x57, 0xc2, 0x6a, 0xf8, 0x39, 0x10, 0xbe, 0x4d, 0x82, 0x05, 0x7c, 0xe1, 0x33, 0xaf,
+    0x69, 0x24, 0xd8, 0x50, 0x0c, 0xb7, 0x43, 0x96, 0xf2, 0x15, 0x7a, 0xc9, 0x31, 0x6e, 0x88, 0x5d,
+];
 const P521_SECRET: [u8; 66] = [
     0x01, 0x2b, 0x7c, 0x3d, 0x94, 0x58, 0xe1, 0x0f, 0x73, 0xa6, 0xc2, 0x19, 0x4d, 0x80, 0xb5, 0xee,
     0x35, 0x6a, 0x09, 0xdc, 0x41, 0x97, 0xf2, 0x6e, 0x18, 0xab, 0xc5, 0x00, 0x7d, 0x23, 0x59, 0x84,
     0xef, 0x12, 0x48, 0xb0, 0x6c, 0xd7, 0x31, 0x9a, 0x05, 0xfe, 0x62, 0x8b, 0x44, 0xd1, 0x76, 0x20,
     0xba, 0x3f, 0x99, 0x0e, 0x52, 0xc8, 0x14, 0xa7, 0x6d, 0x28, 0xf3, 0x45, 0x8c, 0x01, 0xb9, 0x6f,
     0x33, 0x5a,
+];
+const P521_PEER_SECRET: [u8; 66] = [
+    0x00, 0xf1, 0x39, 0x62, 0x8a, 0x45, 0xd0, 0x17, 0xbe, 0x74, 0x2c, 0x98, 0x53, 0xef, 0x06, 0xa1,
+    0xcd, 0x30, 0x7b, 0x84, 0x19, 0xd5, 0x42, 0x6e, 0xb0, 0x0f, 0x93, 0x58, 0xc4, 0x21, 0x7d, 0xaa,
+    0x36, 0xe9, 0x01, 0x4f, 0xb8, 0x25, 0x70, 0xdc, 0x13, 0x9a, 0x65, 0x2e, 0xf7, 0x40, 0x8c, 0x1b,
+    0xd2, 0x59, 0xa6, 0x03, 0x7e, 0xc8, 0x34, 0x91, 0x0a, 0x6b, 0xe4, 0x27, 0x5f, 0xb3, 0x18, 0x82,
+    0x49, 0xce,
 ];
 const ED25519_SECRET: [u8; 32] = [
     0x9b, 0x71, 0x23, 0x55, 0xc4, 0x6a, 0x08, 0x9f, 0x41, 0x82, 0x70, 0x18, 0x52, 0xcd, 0xef, 0x43,
@@ -345,16 +379,18 @@ enum VectorGenError {
     Ed25519Verify,
     #[error("failed to derive X25519 vector")]
     X25519Derive,
-    #[error("failed to construct AES-256-GCM key")]
+    #[error("failed to construct AES-GCM key")]
     AesKey,
-    #[error("failed to construct AES-256-GCM nonce")]
+    #[error("failed to construct AES-GCM nonce")]
     AesNonce,
-    #[error("failed to encrypt AES-256-GCM vector")]
+    #[error("failed to encrypt AES-GCM vector")]
     AesEncrypt,
-    #[error("failed to construct AES-256-GCM ciphertext")]
+    #[error("failed to construct AES-GCM ciphertext")]
     AesCiphertext,
-    #[error("failed to decrypt AES-256-GCM vector")]
+    #[error("failed to decrypt AES-GCM vector")]
     AesDecrypt,
+    #[error("failed to compute JWA Concat KDF vector")]
+    ConcatKdf,
     #[error("failed to compute AES-256-KW vector")]
     AesKw,
     #[error("failed to compute AES-256-GCM-SIV vector")]
@@ -439,6 +475,10 @@ struct Sec1EcdsaVector {
     public_key_uncompressed: String,
     message: String,
     signature_der: String,
+    peer_secret_key: String,
+    peer_public_key_compressed: String,
+    peer_public_key_uncompressed: String,
+    shared_secret: String,
 }
 
 #[derive(Serialize)]
@@ -629,6 +669,18 @@ struct AesGcmVector {
 }
 
 #[derive(Serialize)]
+struct ConcatKdfVector {
+    alg: &'static str,
+    profile: &'static str,
+    shared_secret: String,
+    algorithm_id: String,
+    party_u_info: String,
+    party_v_info: String,
+    output_len: usize,
+    derived_key: String,
+}
+
+#[derive(Serialize)]
 struct AesGcmSivVector {
     alg: &'static str,
     key: String,
@@ -772,8 +824,12 @@ struct GeneratedKeys {
     p256_peer_secret: Vec<u8>,
     p384_public: Vec<u8>,
     p384_secret: Vec<u8>,
+    p384_peer_public: Vec<u8>,
+    p384_peer_secret: Vec<u8>,
     p521_public: Vec<u8>,
     p521_secret: Vec<u8>,
+    p521_peer_public: Vec<u8>,
+    p521_peer_secret: Vec<u8>,
     ed25519_public: Vec<u8>,
     ed25519_secret: Vec<u8>,
     secp256k1_public: Vec<u8>,
@@ -1030,6 +1086,15 @@ fn generate_keys() -> Result<GeneratedKeys, VectorGenError> {
         .as_bytes()
         .to_vec();
     let p384_secret = p384_secret_key.to_bytes().to_vec();
+    let p384_peer_secret_key =
+        P384SecretKey::from_slice(&P384_PEER_SECRET).map_err(|_| VectorGenError::P384Keypair)?;
+    let p384_peer_signing_key = P384SigningKey::from(&p384_peer_secret_key);
+    let p384_peer_public = p384_peer_signing_key
+        .verifying_key()
+        .to_sec1_point(true)
+        .as_bytes()
+        .to_vec();
+    let p384_peer_secret = p384_peer_secret_key.to_bytes().to_vec();
 
     let p521_secret_key =
         P521SecretKey::from_slice(&P521_SECRET).map_err(|_| VectorGenError::P521Keypair)?;
@@ -1040,6 +1105,15 @@ fn generate_keys() -> Result<GeneratedKeys, VectorGenError> {
         .as_bytes()
         .to_vec();
     let p521_secret = p521_secret_key.to_bytes().to_vec();
+    let p521_peer_secret_key =
+        P521SecretKey::from_slice(&P521_PEER_SECRET).map_err(|_| VectorGenError::P521Keypair)?;
+    let p521_peer_signing_key = P521SigningKey::from(&p521_peer_secret_key);
+    let p521_peer_public = p521_peer_signing_key
+        .verifying_key()
+        .to_sec1_point(true)
+        .as_bytes()
+        .to_vec();
+    let p521_peer_secret = p521_peer_secret_key.to_bytes().to_vec();
 
     let ed25519_signing_key = Ed25519SigningKey::from_bytes(&ED25519_SECRET);
     let ed25519_public = ed25519_signing_key.verifying_key().to_bytes().to_vec();
@@ -1078,8 +1152,12 @@ fn generate_keys() -> Result<GeneratedKeys, VectorGenError> {
         p256_peer_secret,
         p384_public,
         p384_secret,
+        p384_peer_public,
+        p384_peer_secret,
         p521_public,
         p521_secret,
+        p521_peer_public,
+        p521_peer_secret,
         ed25519_public,
         ed25519_secret,
         secp256k1_public,
@@ -1141,6 +1219,16 @@ fn write_key_vectors(dir: &Path, keys: &GeneratedKeys) -> Result<(), VectorGenEr
 
     let p384_uncompressed =
         decompress_p384(&keys.p384_public).map_err(|_| VectorGenError::P384Decompress)?;
+    let p384_peer_uncompressed =
+        decompress_p384(&keys.p384_peer_public).map_err(|_| VectorGenError::P384Decompress)?;
+    let p384_shared_secret = derive_p384_shared_secret(&keys.p384_secret, &keys.p384_peer_public)
+        .map_err(|_| VectorGenError::P384Keypair)?;
+    let p384_peer_shared_secret =
+        derive_p384_shared_secret(&keys.p384_peer_secret, &keys.p384_public)
+            .map_err(|_| VectorGenError::P384Keypair)?;
+    if p384_shared_secret.as_slice() != p384_peer_shared_secret.as_slice() {
+        return Err(VectorGenError::P384Keypair);
+    }
     let p384_signature = sign_p384_der_prehash(&keys.p384_secret, SIGNATURE_MESSAGE)
         .map_err(|_| VectorGenError::P384Sign)?;
     write_json(
@@ -1153,11 +1241,25 @@ fn write_key_vectors(dir: &Path, keys: &GeneratedKeys) -> Result<(), VectorGenEr
             public_key_uncompressed: b64u(&p384_uncompressed),
             message: b64u(SIGNATURE_MESSAGE),
             signature_der: b64u(&p384_signature),
+            peer_secret_key: b64u(&keys.p384_peer_secret),
+            peer_public_key_compressed: b64u(&keys.p384_peer_public),
+            peer_public_key_uncompressed: b64u(&p384_peer_uncompressed),
+            shared_secret: b64u(p384_shared_secret.as_slice()),
         },
     )?;
 
     let p521_uncompressed =
         decompress_p521(&keys.p521_public).map_err(|_| VectorGenError::P521Decompress)?;
+    let p521_peer_uncompressed =
+        decompress_p521(&keys.p521_peer_public).map_err(|_| VectorGenError::P521Decompress)?;
+    let p521_shared_secret = derive_p521_shared_secret(&keys.p521_secret, &keys.p521_peer_public)
+        .map_err(|_| VectorGenError::P521Keypair)?;
+    let p521_peer_shared_secret =
+        derive_p521_shared_secret(&keys.p521_peer_secret, &keys.p521_public)
+            .map_err(|_| VectorGenError::P521Keypair)?;
+    if p521_shared_secret.as_slice() != p521_peer_shared_secret.as_slice() {
+        return Err(VectorGenError::P521Keypair);
+    }
     let p521_signature = sign_p521_der_prehash(&keys.p521_secret, SIGNATURE_MESSAGE)
         .map_err(|_| VectorGenError::P521Sign)?;
     write_json(
@@ -1170,6 +1272,10 @@ fn write_key_vectors(dir: &Path, keys: &GeneratedKeys) -> Result<(), VectorGenEr
             public_key_uncompressed: b64u(&p521_uncompressed),
             message: b64u(SIGNATURE_MESSAGE),
             signature_der: b64u(&p521_signature),
+            peer_secret_key: b64u(&keys.p521_peer_secret),
+            peer_public_key_compressed: b64u(&keys.p521_peer_public),
+            peer_public_key_uncompressed: b64u(&p521_peer_uncompressed),
+            shared_secret: b64u(p521_shared_secret.as_slice()),
         },
     )?;
 
@@ -1631,6 +1737,114 @@ fn write_aes_vector(dir: &Path) -> Result<(), VectorGenError> {
             aad: b64u(AES_AAD),
             plaintext: b64u(AES_PLAINTEXT),
             ciphertext_with_tag: b64u(&ciphertext_bytes),
+        },
+    )
+}
+
+fn write_aes128_gcm_vector(dir: &Path) -> Result<(), VectorGenError> {
+    let key = Aes128GcmKey::from_slice(&AES_128_KEY).map_err(|_| VectorGenError::AesKey)?;
+    let nonce = Aes128GcmNonce::from_slice(&AES_NONCE).map_err(|_| VectorGenError::AesNonce)?;
+    let ciphertext = encrypt_aes128_gcm(&Aes128GcmEncryptRequest {
+        key: &key,
+        nonce,
+        aad: AES_AAD,
+        plaintext: AES_128_PLAINTEXT,
+    })
+    .map_err(|_| VectorGenError::AesEncrypt)?;
+    let ciphertext_bytes = ciphertext.as_bytes().to_vec();
+    let ciphertext_for_decrypt = CiphertextWithTag::from_vec(ciphertext_bytes.clone())
+        .map_err(|_| VectorGenError::AesCiphertext)?;
+    let decrypted = decrypt_aes128_gcm(&Aes128GcmDecryptRequest {
+        key: &key,
+        nonce,
+        aad: AES_AAD,
+        ciphertext: &ciphertext_for_decrypt,
+    })
+    .map_err(|_| VectorGenError::AesDecrypt)?;
+
+    if decrypted != AES_128_PLAINTEXT {
+        return Err(VectorGenError::AesDecrypt);
+    }
+
+    write_json(
+        &dir.join("aes128gcm.json"),
+        &AesGcmVector {
+            alg: "AES-128-GCM",
+            key: b64u(&AES_128_KEY),
+            nonce: b64u(&AES_NONCE),
+            aad: b64u(AES_AAD),
+            plaintext: b64u(AES_128_PLAINTEXT),
+            ciphertext_with_tag: b64u(&ciphertext_bytes),
+        },
+    )
+}
+
+fn write_aes192_gcm_vector(dir: &Path) -> Result<(), VectorGenError> {
+    let key = Aes192GcmKey::from_slice(&AES_192_KEY).map_err(|_| VectorGenError::AesKey)?;
+    let nonce = Aes192GcmNonce::from_slice(&AES_NONCE).map_err(|_| VectorGenError::AesNonce)?;
+    let ciphertext = encrypt_aes192_gcm(&Aes192GcmEncryptRequest {
+        key: &key,
+        nonce,
+        aad: AES_AAD,
+        plaintext: AES_192_PLAINTEXT,
+    })
+    .map_err(|_| VectorGenError::AesEncrypt)?;
+    let ciphertext_bytes = ciphertext.as_bytes().to_vec();
+    let ciphertext_for_decrypt = CiphertextWithTag::from_vec(ciphertext_bytes.clone())
+        .map_err(|_| VectorGenError::AesCiphertext)?;
+    let decrypted = decrypt_aes192_gcm(&Aes192GcmDecryptRequest {
+        key: &key,
+        nonce,
+        aad: AES_AAD,
+        ciphertext: &ciphertext_for_decrypt,
+    })
+    .map_err(|_| VectorGenError::AesDecrypt)?;
+
+    if decrypted != AES_192_PLAINTEXT {
+        return Err(VectorGenError::AesDecrypt);
+    }
+
+    write_json(
+        &dir.join("aes192gcm.json"),
+        &AesGcmVector {
+            alg: "AES-192-GCM",
+            key: b64u(&AES_192_KEY),
+            nonce: b64u(&AES_NONCE),
+            aad: b64u(AES_AAD),
+            plaintext: b64u(AES_192_PLAINTEXT),
+            ciphertext_with_tag: b64u(&ciphertext_bytes),
+        },
+    )
+}
+
+fn write_concat_kdf_vector(dir: &Path) -> Result<(), VectorGenError> {
+    let shared_secret =
+        JwaSharedSecret::from_slice(&CONCAT_KDF_Z).map_err(|_| VectorGenError::ConcatKdf)?;
+    let algorithm_id = JwaAlgorithmId::from_slice(CONCAT_KDF_ALGORITHM_ID)
+        .map_err(|_| VectorGenError::ConcatKdf)?;
+    let party_u_info =
+        JwaPartyInfo::from_slice(CONCAT_KDF_PARTY_U_INFO).map_err(|_| VectorGenError::ConcatKdf)?;
+    let party_v_info =
+        JwaPartyInfo::from_slice(CONCAT_KDF_PARTY_V_INFO).map_err(|_| VectorGenError::ConcatKdf)?;
+    let derived_key = derive_jwa_concat_kdf_sha256::<16>(&JwaConcatKdfRequest {
+        shared_secret: &shared_secret,
+        algorithm_id: &algorithm_id,
+        party_u_info: &party_u_info,
+        party_v_info: &party_v_info,
+    })
+    .map_err(|_| VectorGenError::ConcatKdf)?;
+
+    write_json(
+        &dir.join("concat_kdf.json"),
+        &ConcatKdfVector {
+            alg: "JWA-CONCAT-KDF-SHA256",
+            profile: "ECDH-ES+A128GCM",
+            shared_secret: b64u(&CONCAT_KDF_Z),
+            algorithm_id: b64u(CONCAT_KDF_ALGORITHM_ID),
+            party_u_info: b64u(CONCAT_KDF_PARTY_U_INFO),
+            party_v_info: b64u(CONCAT_KDF_PARTY_V_INFO),
+            output_len: 16,
+            derived_key: b64u(derived_key.as_bytes()),
         },
     )
 }
@@ -2203,12 +2417,15 @@ fn write_manifest(dir: &Path) -> Result<(), VectorGenError> {
             "mlkem1024.json",
             "x_wing.json",
             "hpke.json",
+            "aes128gcm.json",
+            "aes192gcm.json",
             "aes256gcm.json",
             "aes256gcmsiv.json",
             "aes256kw.json",
             "argon2id.json",
             "chacha20poly1305.json",
             "hkdf.json",
+            "concat_kdf.json",
             "hmac.json",
             "pbkdf2.json",
             "hashes.json",
@@ -2240,12 +2457,15 @@ fn write_manifest(dir: &Path) -> Result<(), VectorGenError> {
                     "X-Wing-1024",
                     "HPKE-P256-SHA256-AES256GCM",
                     "HPKE-X25519-SHA256-CHACHA20POLY1305",
+                    "AES-128-GCM",
+                    "AES-192-GCM",
                     "AES-256-GCM",
                     "AES-256-KW",
                     "ChaCha20-Poly1305",
                     "XChaCha20-Poly1305",
                     "HMAC-SHA-256",
                     "HMAC-SHA-512",
+                    "JWA-CONCAT-KDF-SHA256",
                     "PBKDF2-HMAC-SHA-256",
                     "PBKDF2-HMAC-SHA-512",
                     "SHA2-256",
@@ -2289,11 +2509,14 @@ fn write_manifest(dir: &Path) -> Result<(), VectorGenError> {
                     "X-Wing-1024",
                     "HPKE-P256-SHA256-AES256GCM",
                     "HPKE-X25519-SHA256-CHACHA20POLY1305",
+                    "AES-128-GCM",
+                    "AES-192-GCM",
                     "AES-256-GCM",
                     "AES-256-KW",
                     "ChaCha20-Poly1305",
                     "HMAC-SHA-256",
                     "HMAC-SHA-512",
+                    "JWA-CONCAT-KDF-SHA256",
                     "PBKDF2-HMAC-SHA-256",
                     "PBKDF2-HMAC-SHA-512",
                     "SHA2-256",
@@ -2335,12 +2558,15 @@ fn write_manifest(dir: &Path) -> Result<(), VectorGenError> {
                     "X-Wing-1024",
                     "HPKE-P256-SHA256-AES256GCM",
                     "HPKE-X25519-SHA256-CHACHA20POLY1305",
+                    "AES-128-GCM",
+                    "AES-192-GCM",
                     "AES-256-GCM",
                     "AES-256-KW",
                     "ChaCha20-Poly1305",
                     "XChaCha20-Poly1305",
                     "HMAC-SHA-256",
                     "HMAC-SHA-512",
+                    "JWA-CONCAT-KDF-SHA256",
                     "PBKDF2-HMAC-SHA-256",
                     "PBKDF2-HMAC-SHA-512",
                     "SHA2-256",
@@ -2379,11 +2605,14 @@ fn write_manifest(dir: &Path) -> Result<(), VectorGenError> {
                     "X-Wing-1024",
                     "HPKE-P256-SHA256-AES256GCM",
                     "HPKE-X25519-SHA256-CHACHA20POLY1305",
+                    "AES-128-GCM",
+                    "AES-192-GCM",
                     "AES-256-GCM",
                     "AES-256-KW",
                     "ChaCha20-Poly1305",
                     "HMAC-SHA-256",
                     "HMAC-SHA-512",
+                    "JWA-CONCAT-KDF-SHA256",
                     "PBKDF2-HMAC-SHA-256",
                     "PBKDF2-HMAC-SHA-512",
                     "SHA2-256",
@@ -2397,7 +2626,7 @@ fn write_manifest(dir: &Path) -> Result<(), VectorGenError> {
                     "JWK-Multikey",
                 ],
                 notes: vec![
-                    "Uses CryptoKit for Apple-native P-256, Ed25519, X25519, HPKE, AES-256-GCM, ChaCha20-Poly1305, HMAC, and SHA-2 conformance.",
+                    "Uses CryptoKit for Apple-native P-256, Ed25519, X25519, HPKE, AES-GCM, ChaCha20-Poly1305, HMAC, and SHA-2 conformance.",
                     "Uses reallyme/CSecp256k1 0.1.0 (Bitcoin Core libsecp256k1 v0.7.1 as an XCFramework Clang module) for secp256k1 conformance.",
                     "Compiles SwiftKyber 3.5.0 and SwiftDilithium 3.6.0 as the Swift-native PQ provider candidates.",
                     "Uses the ReallyMe Rust C ABI for ML-DSA, ML-KEM, SLH-DSA, and SHA3 executable conformance until Swift PQ providers expose the workspace key contract.",
@@ -2427,11 +2656,14 @@ fn write_manifest(dir: &Path) -> Result<(), VectorGenError> {
                     "X-Wing-1024",
                     "HPKE-P256-SHA256-AES256GCM",
                     "HPKE-X25519-SHA256-CHACHA20POLY1305",
+                    "AES-128-GCM",
+                    "AES-192-GCM",
                     "AES-256-GCM",
                     "AES-256-KW",
                     "ChaCha20-Poly1305",
                     "HMAC-SHA-256",
                     "HMAC-SHA-512",
+                    "JWA-CONCAT-KDF-SHA256",
                     "PBKDF2-HMAC-SHA-256",
                     "PBKDF2-HMAC-SHA-512",
                     "SHA2-256",
@@ -2445,7 +2677,7 @@ fn write_manifest(dir: &Path) -> Result<(), VectorGenError> {
                     "JWK-Multikey",
                 ],
                 notes: vec![
-                    "Uses JVM JCA/JCE for platform algorithms, including AES-256-GCM, ChaCha20-Poly1305, HMAC, and SHA-2/SHA-3.",
+                    "Uses JVM JCA/JCE for platform algorithms, including AES-GCM, ChaCha20-Poly1305, HMAC, and SHA-2/SHA-3.",
                     "Uses Bouncy Castle bcprov-jdk18on 1.84 for secp256k1, ML-DSA, ML-KEM, and SLH-DSA shape/provider conformance.",
                     "The harness command includes --rerun-tasks so an audit run executes tests instead of accepting Gradle's up-to-date cache.",
                 ],
@@ -2474,6 +2706,8 @@ fn run() -> Result<(), VectorGenError> {
 
     let keys = generate_keys()?;
     write_key_vectors(&dir, &keys)?;
+    write_aes128_gcm_vector(&dir)?;
+    write_aes192_gcm_vector(&dir)?;
     write_aes_vector(&dir)?;
     write_aes_gcm_siv_vector(&dir)?;
     write_argon2id_vector(&dir)?;
@@ -2483,6 +2717,7 @@ fn run() -> Result<(), VectorGenError> {
     write_hpke_vector(&dir, &keys)?;
     write_hmac_vector(&dir)?;
     write_hkdf_vector(&dir)?;
+    write_concat_kdf_vector(&dir)?;
     write_pbkdf2_vector(&dir)?;
     write_hash_vector(&dir)?;
     write_codec_vector(&dir, &keys)?;

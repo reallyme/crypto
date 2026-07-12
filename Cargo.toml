@@ -16,6 +16,7 @@ members = [
     "crates/crypto/primitives/aes256-gcm-siv",
     "crates/crypto/primitives/argon2id",
     "crates/crypto/primitives/chacha20-poly1305",
+    "crates/crypto/primitives/concat-kdf",
     "crates/crypto/primitives/constant-time",
     "crates/crypto/primitives/csprng",
     "crates/crypto/primitives/ed25519",
@@ -97,6 +98,7 @@ pbkdf2 = "0.13"
 argon2 = { version = "0.5", default-features = false }
 hpke = { version = "0.14.0", default-features = false }
 # AEAD
+aes = "0.9"
 aes-gcm = "0.11"
 aes-gcm-siv = "0.11"
 aes-kw = { version = "0.3.1", default-features = false }
@@ -104,7 +106,7 @@ chacha20poly1305 = "0.11"
 # Signatures / key agreement
 ed25519-dalek = "3"
 x25519-dalek = "3"
-p256 = "0.14"
+p256 = { version = "0.14", default-features = false }
 p384 = "0.14"
 p521 = "0.14"
 k256 = "0.14"
@@ -176,6 +178,7 @@ crypto-aes256-gcm = { package = "reallyme-crypto-aes256-gcm", version = "0.1.2",
 crypto-aes256-gcm-siv = { package = "reallyme-crypto-aes256-gcm-siv", version = "0.1.1", path = "crates/crypto/primitives/aes256-gcm-siv", optional = true, default-features = false }
 crypto-argon2id = { package = "reallyme-crypto-argon2id", version = "0.1.1", path = "crates/crypto/primitives/argon2id", optional = true, default-features = false }
 crypto-chacha20-poly1305 = { package = "reallyme-crypto-chacha20-poly1305", version = "0.1.1", path = "crates/crypto/primitives/chacha20-poly1305", optional = true, default-features = false }
+crypto-concat-kdf = { package = "reallyme-crypto-concat-kdf", version = "0.1.0", path = "crates/crypto/primitives/concat-kdf", optional = true, default-features = false }
 crypto-constant-time = { package = "reallyme-crypto-constant-time", version = "0.1.1", path = "crates/crypto/primitives/constant-time", optional = true, default-features = false }
 crypto-csprng = { package = "reallyme-crypto-csprng", version = "0.1.1", path = "crates/crypto/primitives/csprng", optional = true, default-features = false }
 crypto-ed25519 = { package = "reallyme-crypto-ed25519", version = "0.1.2", path = "crates/crypto/primitives/ed25519", optional = true, default-features = false }
@@ -219,6 +222,7 @@ default = [
     "aes-gcm-siv",
     "argon2id",
     "chacha20-poly1305",
+    "concat-kdf",
     "constant-time",
     "csprng",
     "dispatch",
@@ -259,6 +263,7 @@ native = [
     "crypto-aes256-gcm-siv?/native",
     "crypto-argon2id?/native",
     "crypto-chacha20-poly1305?/native",
+    "crypto-concat-kdf?/native",
     "crypto-constant-time?/native",
     "crypto-csprng?/native",
     "crypto-ed25519?/native",
@@ -295,6 +300,7 @@ wasm = [
     "crypto-aes256-gcm-siv?/wasm",
     "crypto-argon2id?/wasm",
     "crypto-chacha20-poly1305?/wasm",
+    "crypto-concat-kdf?/wasm",
     "crypto-constant-time?/wasm",
     "crypto-csprng?/wasm",
     "crypto-ed25519?/wasm",
@@ -327,6 +333,7 @@ aes-kw = ["dep:crypto-aes-kw"]
 aes-gcm-siv = ["dep:crypto-aes256-gcm-siv"]
 argon2id = ["dep:crypto-argon2id"]
 chacha20-poly1305 = ["dep:crypto-chacha20-poly1305"]
+concat-kdf = ["dep:crypto-concat-kdf"]
 constant-time = ["dep:crypto-constant-time"]
 csprng = ["dep:crypto-csprng"]
 dispatch = ["dep:crypto-dispatch", "codec-multikey"]

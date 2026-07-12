@@ -209,6 +209,8 @@ public nonisolated enum ReallyMeProtoKeyAgreementAlgorithm: SwiftProtobuf.Enum, 
   case unspecified // = 0
   case x25519 // = 1
   case p256Ecdh // = 2
+  case p384Ecdh // = 3
+  case p521Ecdh // = 4
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -220,6 +222,8 @@ public nonisolated enum ReallyMeProtoKeyAgreementAlgorithm: SwiftProtobuf.Enum, 
     case 0: self = .unspecified
     case 1: self = .x25519
     case 2: self = .p256Ecdh
+    case 3: self = .p384Ecdh
+    case 4: self = .p521Ecdh
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -229,6 +233,8 @@ public nonisolated enum ReallyMeProtoKeyAgreementAlgorithm: SwiftProtobuf.Enum, 
     case .unspecified: return 0
     case .x25519: return 1
     case .p256Ecdh: return 2
+    case .p384Ecdh: return 3
+    case .p521Ecdh: return 4
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -238,6 +244,8 @@ public nonisolated enum ReallyMeProtoKeyAgreementAlgorithm: SwiftProtobuf.Enum, 
     .unspecified,
     .x25519,
     .p256Ecdh,
+    .p384Ecdh,
+    .p521Ecdh,
   ]
 
 }
@@ -341,6 +349,8 @@ public nonisolated enum ReallyMeProtoAeadAlgorithm: SwiftProtobuf.Enum, Swift.Ca
   case aes256GcmSiv // = 2
   case chacha20Poly1305 // = 3
   case xchacha20Poly1305 // = 4
+  case aes128Gcm // = 5
+  case aes192Gcm // = 6
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -354,6 +364,8 @@ public nonisolated enum ReallyMeProtoAeadAlgorithm: SwiftProtobuf.Enum, Swift.Ca
     case 2: self = .aes256GcmSiv
     case 3: self = .chacha20Poly1305
     case 4: self = .xchacha20Poly1305
+    case 5: self = .aes128Gcm
+    case 6: self = .aes192Gcm
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -365,6 +377,8 @@ public nonisolated enum ReallyMeProtoAeadAlgorithm: SwiftProtobuf.Enum, Swift.Ca
     case .aes256GcmSiv: return 2
     case .chacha20Poly1305: return 3
     case .xchacha20Poly1305: return 4
+    case .aes128Gcm: return 5
+    case .aes192Gcm: return 6
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -376,6 +390,8 @@ public nonisolated enum ReallyMeProtoAeadAlgorithm: SwiftProtobuf.Enum, Swift.Ca
     .aes256GcmSiv,
     .chacha20Poly1305,
     .xchacha20Poly1305,
+    .aes128Gcm,
+    .aes192Gcm,
   ]
 
 }
@@ -487,6 +503,7 @@ public nonisolated enum ReallyMeProtoKdfAlgorithm: SwiftProtobuf.Enum, Swift.Cas
   case argon2ID // = 2
   case pbkdf2HmacSha256 // = 3
   case pbkdf2HmacSha512 // = 4
+  case jwaConcatKdfSha256 // = 5
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -500,6 +517,7 @@ public nonisolated enum ReallyMeProtoKdfAlgorithm: SwiftProtobuf.Enum, Swift.Cas
     case 2: self = .argon2ID
     case 3: self = .pbkdf2HmacSha256
     case 4: self = .pbkdf2HmacSha512
+    case 5: self = .jwaConcatKdfSha256
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -511,6 +529,7 @@ public nonisolated enum ReallyMeProtoKdfAlgorithm: SwiftProtobuf.Enum, Swift.Cas
     case .argon2ID: return 2
     case .pbkdf2HmacSha256: return 3
     case .pbkdf2HmacSha512: return 4
+    case .jwaConcatKdfSha256: return 5
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -522,6 +541,7 @@ public nonisolated enum ReallyMeProtoKdfAlgorithm: SwiftProtobuf.Enum, Swift.Cas
     .argon2ID,
     .pbkdf2HmacSha256,
     .pbkdf2HmacSha512,
+    .jwaConcatKdfSha256,
   ]
 
 }
@@ -857,7 +877,7 @@ nonisolated extension ReallyMeProtoSignatureAlgorithm: SwiftProtobuf._ProtoNameP
 }
 
 nonisolated extension ReallyMeProtoKeyAgreementAlgorithm: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0KEY_AGREEMENT_ALGORITHM_UNSPECIFIED\0\u{1}KEY_AGREEMENT_ALGORITHM_X25519\0\u{1}KEY_AGREEMENT_ALGORITHM_P256_ECDH\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0KEY_AGREEMENT_ALGORITHM_UNSPECIFIED\0\u{1}KEY_AGREEMENT_ALGORITHM_X25519\0\u{1}KEY_AGREEMENT_ALGORITHM_P256_ECDH\0\u{1}KEY_AGREEMENT_ALGORITHM_P384_ECDH\0\u{1}KEY_AGREEMENT_ALGORITHM_P521_ECDH\0")
 }
 
 nonisolated extension ReallyMeProtoKemAlgorithm: SwiftProtobuf._ProtoNameProviding {
@@ -869,7 +889,7 @@ nonisolated extension ReallyMeProtoHpkeSuite: SwiftProtobuf._ProtoNameProviding 
 }
 
 nonisolated extension ReallyMeProtoAeadAlgorithm: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0AEAD_ALGORITHM_UNSPECIFIED\0\u{1}AEAD_ALGORITHM_AES_256_GCM\0\u{1}AEAD_ALGORITHM_AES_256_GCM_SIV\0\u{1}AEAD_ALGORITHM_CHACHA20_POLY1305\0\u{1}AEAD_ALGORITHM_XCHACHA20_POLY1305\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0AEAD_ALGORITHM_UNSPECIFIED\0\u{1}AEAD_ALGORITHM_AES_256_GCM\0\u{1}AEAD_ALGORITHM_AES_256_GCM_SIV\0\u{1}AEAD_ALGORITHM_CHACHA20_POLY1305\0\u{1}AEAD_ALGORITHM_XCHACHA20_POLY1305\0\u{1}AEAD_ALGORITHM_AES_128_GCM\0\u{1}AEAD_ALGORITHM_AES_192_GCM\0")
 }
 
 nonisolated extension ReallyMeProtoHashAlgorithm: SwiftProtobuf._ProtoNameProviding {
@@ -881,7 +901,7 @@ nonisolated extension ReallyMeProtoMacAlgorithm: SwiftProtobuf._ProtoNameProvidi
 }
 
 nonisolated extension ReallyMeProtoKdfAlgorithm: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0KDF_ALGORITHM_UNSPECIFIED\0\u{1}KDF_ALGORITHM_HKDF_SHA256\0\u{1}KDF_ALGORITHM_ARGON2ID\0\u{1}KDF_ALGORITHM_PBKDF2_HMAC_SHA256\0\u{1}KDF_ALGORITHM_PBKDF2_HMAC_SHA512\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0KDF_ALGORITHM_UNSPECIFIED\0\u{1}KDF_ALGORITHM_HKDF_SHA256\0\u{1}KDF_ALGORITHM_ARGON2ID\0\u{1}KDF_ALGORITHM_PBKDF2_HMAC_SHA256\0\u{1}KDF_ALGORITHM_PBKDF2_HMAC_SHA512\0\u{1}KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256\0")
 }
 
 nonisolated extension ReallyMeProtoKeyWrapAlgorithm: SwiftProtobuf._ProtoNameProviding {

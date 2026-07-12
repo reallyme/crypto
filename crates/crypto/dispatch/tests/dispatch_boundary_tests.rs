@@ -80,7 +80,7 @@ fn dispatch_rejects_malformed_kem_key_and_ciphertext_lengths() {
 #[test]
 fn dispatch_rejects_malformed_aead_key_nonce_and_ciphertext_lengths() {
     for algorithm in AEAD_ALGORITHMS.iter().copied() {
-        let key = valid_aead_key();
+        let key = valid_aead_key_for(algorithm);
         let nonce = valid_aead_nonce(algorithm);
         let params = AeadParams {
             key: &key,
@@ -155,7 +155,12 @@ const SIGNATURE_ALGORITHMS: &[Algorithm] = &[
     Algorithm::MlDsa87,
 ];
 
-const KEY_AGREEMENT_ALGORITHMS: &[Algorithm] = &[Algorithm::P256, Algorithm::X25519];
+const KEY_AGREEMENT_ALGORITHMS: &[Algorithm] = &[
+    Algorithm::P256,
+    Algorithm::P384,
+    Algorithm::P521,
+    Algorithm::X25519,
+];
 
 const KEM_ALGORITHMS: &[Algorithm] = &[
     Algorithm::MlKem512,
@@ -166,6 +171,8 @@ const KEM_ALGORITHMS: &[Algorithm] = &[
 ];
 
 const AEAD_ALGORITHMS: &[AeadAlgorithm] = &[
+    AeadAlgorithm::Aes128Gcm,
+    AeadAlgorithm::Aes192Gcm,
     AeadAlgorithm::Aes256Gcm,
     AeadAlgorithm::Aes256GcmSiv,
     AeadAlgorithm::ChaCha20Poly1305,
@@ -174,13 +181,22 @@ const AEAD_ALGORITHMS: &[AeadAlgorithm] = &[
 
 const MAC_ALGORITHMS: &[MacAlgorithm] = &[MacAlgorithm::HmacSha256, MacAlgorithm::HmacSha512];
 
-fn valid_aead_key() -> [u8; 32] {
-    [0x42; 32]
+fn valid_aead_key_for(algorithm: AeadAlgorithm) -> Vec<u8> {
+    match algorithm {
+        AeadAlgorithm::Aes128Gcm => vec![0x42; 16],
+        AeadAlgorithm::Aes192Gcm => vec![0x42; 24],
+        AeadAlgorithm::Aes256Gcm
+        | AeadAlgorithm::Aes256GcmSiv
+        | AeadAlgorithm::ChaCha20Poly1305
+        | AeadAlgorithm::XChaCha20Poly1305 => vec![0x42; 32],
+    }
 }
 
 fn valid_aead_nonce(algorithm: AeadAlgorithm) -> Vec<u8> {
     match algorithm {
-        AeadAlgorithm::Aes256Gcm
+        AeadAlgorithm::Aes128Gcm
+        | AeadAlgorithm::Aes192Gcm
+        | AeadAlgorithm::Aes256Gcm
         | AeadAlgorithm::Aes256GcmSiv
         | AeadAlgorithm::ChaCha20Poly1305 => vec![0x24; 12],
         AeadAlgorithm::XChaCha20Poly1305 => vec![0x24; 24],

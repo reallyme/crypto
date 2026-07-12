@@ -13,29 +13,10 @@
 
 use crypto_core::CryptoError;
 use crypto_p256::*;
-use zeroize::Zeroizing;
-
-type TestKeypair = (Vec<u8>, Zeroizing<Vec<u8>>);
-
-trait IntoTestKeypairResult {
-    fn into_test_result(self) -> Result<TestKeypair, CryptoError>;
-}
-
-impl IntoTestKeypairResult for TestKeypair {
-    fn into_test_result(self) -> Result<TestKeypair, CryptoError> {
-        Ok(self)
-    }
-}
-
-impl IntoTestKeypairResult for Result<TestKeypair, CryptoError> {
-    fn into_test_result(self) -> Result<TestKeypair, CryptoError> {
-        self
-    }
-}
 
 #[test]
 fn key_sizes_are_correct() -> Result<(), CryptoError> {
-    let (pk, sk) = generate_p256_keypair().into_test_result()?;
+    let (pk, sk) = generate_p256_keypair()?;
     assert_eq!(sk.len(), 32);
     assert_eq!(pk.len(), 33); // compressed SEC1
     Ok(())
@@ -45,8 +26,8 @@ fn key_sizes_are_correct() -> Result<(), CryptoError> {
 fn secret_key_constructor_is_deterministic_and_rejects_zero() -> Result<(), CryptoError> {
     let mut secret = [0u8; 32];
     secret[31] = 1;
-    let (public_a, secret_a) = generate_p256_keypair_from_secret_key(&secret).into_test_result()?;
-    let (public_b, secret_b) = generate_p256_keypair_from_secret_key(&secret).into_test_result()?;
+    let (public_a, secret_a) = generate_p256_keypair_from_secret_key(&secret)?;
+    let (public_b, secret_b) = generate_p256_keypair_from_secret_key(&secret)?;
 
     assert_eq!(public_a, public_b);
     assert_eq!(secret_a, secret_b);
@@ -60,7 +41,7 @@ fn secret_key_constructor_is_deterministic_and_rejects_zero() -> Result<(), Cryp
 
 #[test]
 fn sign_and_verify_roundtrip() -> Result<(), CryptoError> {
-    let (pk, sk) = generate_p256_keypair().into_test_result()?;
+    let (pk, sk) = generate_p256_keypair()?;
     let msg = b"p256 test";
 
     let sig = sign_p256_der_prehash(&sk, msg)?;
@@ -70,7 +51,7 @@ fn sign_and_verify_roundtrip() -> Result<(), CryptoError> {
 
 #[test]
 fn verification_fails_on_modified_message() -> Result<(), CryptoError> {
-    let (pk, sk) = generate_p256_keypair().into_test_result()?;
+    let (pk, sk) = generate_p256_keypair()?;
     let sig = sign_p256_der_prehash(&sk, b"hello")?;
 
     assert!(verify_p256_der_prehash(&sig, b"hell0", &pk).is_err());
@@ -79,7 +60,7 @@ fn verification_fails_on_modified_message() -> Result<(), CryptoError> {
 
 #[test]
 fn signature_helper_fails_closed_on_modified_message() -> Result<(), CryptoError> {
-    let (pk, sk) = generate_p256_keypair().into_test_result()?;
+    let (pk, sk) = generate_p256_keypair()?;
     let sig = sign_p256_der_prehash(&sk, b"hello")?;
 
     verify_p256_der_prehash(&sig, b"hello", &pk)?;
@@ -89,7 +70,7 @@ fn signature_helper_fails_closed_on_modified_message() -> Result<(), CryptoError
 
 #[test]
 fn compression_roundtrip() -> Result<(), CryptoError> {
-    let (pk, _sk) = generate_p256_keypair().into_test_result()?;
+    let (pk, _sk) = generate_p256_keypair()?;
     let uncompressed = decompress_p256(&pk)?;
     let recompressed = compress_p256(&uncompressed)?;
     assert_eq!(pk, recompressed);
@@ -98,8 +79,8 @@ fn compression_roundtrip() -> Result<(), CryptoError> {
 
 #[test]
 fn ecdh_shared_secret_matches_for_both_participants() -> Result<(), CryptoError> {
-    let (alice_public, alice_secret) = generate_p256_keypair().into_test_result()?;
-    let (bob_public, bob_secret) = generate_p256_keypair().into_test_result()?;
+    let (alice_public, alice_secret) = generate_p256_keypair()?;
+    let (bob_public, bob_secret) = generate_p256_keypair()?;
 
     let alice_shared = derive_p256_shared_secret(&alice_secret, &bob_public)?;
     let bob_shared = derive_p256_shared_secret(&bob_secret, &alice_public)?;
@@ -112,8 +93,8 @@ fn ecdh_shared_secret_matches_for_both_participants() -> Result<(), CryptoError>
 
 #[test]
 fn ecdh_accepts_uncompressed_public_key() -> Result<(), CryptoError> {
-    let (alice_public, alice_secret) = generate_p256_keypair().into_test_result()?;
-    let (bob_public, bob_secret) = generate_p256_keypair().into_test_result()?;
+    let (alice_public, alice_secret) = generate_p256_keypair()?;
+    let (bob_public, bob_secret) = generate_p256_keypair()?;
     let bob_public_uncompressed = decompress_p256(&bob_public)?;
     let alice_shared = derive_p256_shared_secret(&alice_secret, &bob_public_uncompressed)?;
     let bob_shared = derive_p256_shared_secret(&bob_secret, &alice_public)?;
@@ -134,7 +115,7 @@ fn invalid_public_key_is_rejected() {
 
 #[test]
 fn ecdh_rejects_invalid_keys() -> Result<(), CryptoError> {
-    let (public, secret) = generate_p256_keypair().into_test_result()?;
+    let (public, secret) = generate_p256_keypair()?;
     let bad_secret = [0u8; 31];
     let bad_public = [0x04u8; 10];
 
@@ -145,7 +126,7 @@ fn ecdh_rejects_invalid_keys() -> Result<(), CryptoError> {
 
 #[test]
 fn invalid_der_signature_is_rejected() -> Result<(), CryptoError> {
-    let (pk, _sk) = generate_p256_keypair().into_test_result()?;
+    let (pk, _sk) = generate_p256_keypair()?;
     let msg = b"test message";
 
     // Not valid DER
@@ -157,7 +138,7 @@ fn invalid_der_signature_is_rejected() -> Result<(), CryptoError> {
 
 #[test]
 fn verification_fails_on_modified_signature() -> Result<(), CryptoError> {
-    let (pk, sk) = generate_p256_keypair().into_test_result()?;
+    let (pk, sk) = generate_p256_keypair()?;
     let msg = b"test message";
 
     let mut sig = sign_p256_der_prehash(&sk, msg)?;
@@ -168,8 +149,8 @@ fn verification_fails_on_modified_signature() -> Result<(), CryptoError> {
 
 #[test]
 fn signature_does_not_verify_under_different_key() -> Result<(), CryptoError> {
-    let (_pk1, sk1) = generate_p256_keypair().into_test_result()?;
-    let (pk2, _sk2) = generate_p256_keypair().into_test_result()?;
+    let (_pk1, sk1) = generate_p256_keypair()?;
+    let (pk2, _sk2) = generate_p256_keypair()?;
 
     let msg = b"test message";
     let sig = sign_p256_der_prehash(&sk1, msg)?;
@@ -180,7 +161,7 @@ fn signature_does_not_verify_under_different_key() -> Result<(), CryptoError> {
 
 #[test]
 fn verify_accepts_uncompressed_public_key() -> Result<(), CryptoError> {
-    let (pk_compressed, sk) = generate_p256_keypair().into_test_result()?;
+    let (pk_compressed, sk) = generate_p256_keypair()?;
     let pk_uncompressed = decompress_p256(&pk_compressed)?;
 
     let msg = b"p256 test";

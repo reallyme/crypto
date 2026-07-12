@@ -17,6 +17,8 @@ pub const P384_SECRET_KEY_LEN: usize = crypto_p384::P384_SECRET_KEY_LEN;
 pub const P384_PUBLIC_KEY_COMPRESSED_LEN: usize = crypto_p384::P384_PUBLIC_KEY_COMPRESSED_LEN;
 /// Length in bytes of a SEC1 uncompressed P-384 public key.
 pub const P384_PUBLIC_KEY_UNCOMPRESSED_LEN: usize = crypto_p384::P384_PUBLIC_KEY_UNCOMPRESSED_LEN;
+/// Length in bytes of a raw P-384 ECDH shared secret.
+pub const P384_SHARED_SECRET_LEN: usize = crypto_p384::P384_SHARED_SECRET_LEN;
 /// Maximum length in bytes of a DER-encoded P-384 ECDSA signature.
 pub const P384_SIGNATURE_DER_MAX_LEN: usize = crypto_p384::P384_SIGNATURE_DER_MAX_LEN;
 
@@ -157,6 +159,42 @@ pub unsafe extern "C" fn rm_crypto_p384_verify_der_prehash(
         match crypto_p384::verify_p384_der_prehash(signature, message, public_key) {
             Ok(()) => CRYPTO_OK,
             Err(_) => CRYPTO_INVALID_SIGNATURE,
+        }
+    })
+}
+
+/// Performs P-384 ECDH between `secret_key` and `public_key`, writing the raw
+/// 48-byte shared-secret x-coordinate to `shared_secret_out`.
+///
+/// # Safety
+///
+/// `secret_key` must be valid for `secret_key_len` bytes (must be 48) and
+/// `public_key` for `public_key_len` bytes (49 compressed or 97
+/// uncompressed); either pointer may be null only when its length is `0`.
+/// `shared_secret_out` must be non-null and point to at least
+/// `shared_secret_out_len` writable bytes (at least 48). The caller owns the
+/// secret copy in `shared_secret_out` and is responsible for zeroizing it.
+#[no_mangle]
+pub unsafe extern "C" fn rm_crypto_p384_derive_shared_secret(
+    secret_key: *const u8,
+    secret_key_len: usize,
+    public_key: *const u8,
+    public_key_len: usize,
+    shared_secret_out: *mut u8,
+    shared_secret_out_len: usize,
+) -> CryptoStatus {
+    ffi_guard(|| {
+        let secret_key = match unsafe { read_slice(secret_key, secret_key_len) } {
+            Ok(value) => value,
+            Err(status) => return status,
+        };
+        let public_key = match unsafe { read_slice(public_key, public_key_len) } {
+            Ok(value) => value,
+            Err(status) => return status,
+        };
+        match crypto_p384::derive_p384_shared_secret(secret_key, public_key) {
+            Ok(value) => unsafe { write_fixed(shared_secret_out, shared_secret_out_len, &value) },
+            Err(_) => CRYPTO_INVALID_KEY,
         }
     })
 }

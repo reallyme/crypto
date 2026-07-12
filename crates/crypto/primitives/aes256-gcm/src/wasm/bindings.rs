@@ -7,6 +7,38 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 extern "C" {
+    #[wasm_bindgen(catch, js_name = aes128GcmEncrypt)]
+    pub(super) fn js_aes128_gcm_encrypt(
+        key: Uint8Array,
+        nonce: Uint8Array,
+        aad: Uint8Array,
+        plaintext: Uint8Array,
+    ) -> Result<Uint8Array, JsValue>;
+
+    #[wasm_bindgen(catch, js_name = aes128GcmDecrypt)]
+    pub(super) fn js_aes128_gcm_decrypt(
+        key: Uint8Array,
+        nonce: Uint8Array,
+        aad: Uint8Array,
+        ciphertext: Uint8Array,
+    ) -> Result<Uint8Array, JsValue>;
+
+    #[wasm_bindgen(catch, js_name = aes192GcmEncrypt)]
+    pub(super) fn js_aes192_gcm_encrypt(
+        key: Uint8Array,
+        nonce: Uint8Array,
+        aad: Uint8Array,
+        plaintext: Uint8Array,
+    ) -> Result<Uint8Array, JsValue>;
+
+    #[wasm_bindgen(catch, js_name = aes192GcmDecrypt)]
+    pub(super) fn js_aes192_gcm_decrypt(
+        key: Uint8Array,
+        nonce: Uint8Array,
+        aad: Uint8Array,
+        ciphertext: Uint8Array,
+    ) -> Result<Uint8Array, JsValue>;
+
     #[wasm_bindgen(catch, js_name = aes256GcmEncrypt)]
     pub(super) fn js_aes256_gcm_encrypt(
         key: Uint8Array,

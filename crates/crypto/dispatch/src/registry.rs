@@ -26,7 +26,7 @@ use crate::algorithms::x25519::X25519Algo;
 use crate::algorithms::x_wing::{XWing1024Algo, XWing768Algo};
 
 // --- Symmetric adapters ---
-use crate::algorithms::aes256_gcm::Aes256GcmAlgo;
+use crate::algorithms::aes256_gcm::{Aes128GcmAlgo, Aes192GcmAlgo, Aes256GcmAlgo};
 use crate::algorithms::aes256_gcm_siv::Aes256GcmSivAlgo;
 use crate::algorithms::chacha20_poly1305::{ChaCha20Poly1305Algo, XChaCha20Poly1305Algo};
 
@@ -150,6 +150,8 @@ pub fn derive_shared_secret(
 ) -> Result<Zeroizing<Vec<u8>>, AlgorithmError> {
     match alg {
         Algorithm::P256 => P256Algo::derive_shared_secret(secret_key, public_key),
+        Algorithm::P384 => P384Algo::derive_shared_secret(secret_key, public_key),
+        Algorithm::P521 => P521Algo::derive_shared_secret(secret_key, public_key),
         Algorithm::X25519 => X25519Algo::derive_shared_secret(secret_key, public_key),
         _ => Err(AlgorithmError::UnsupportedAlgorithm(alg)),
     }
@@ -222,6 +224,8 @@ pub fn aead_encrypt(
     plaintext: &[u8],
 ) -> Result<Vec<u8>, AlgorithmError> {
     match alg {
+        AeadAlgorithm::Aes128Gcm => Aes128GcmAlgo::encrypt(params, plaintext),
+        AeadAlgorithm::Aes192Gcm => Aes192GcmAlgo::encrypt(params, plaintext),
         AeadAlgorithm::Aes256Gcm => Aes256GcmAlgo::encrypt(params, plaintext),
         AeadAlgorithm::Aes256GcmSiv => Aes256GcmSivAlgo::encrypt(params, plaintext),
         AeadAlgorithm::ChaCha20Poly1305 => ChaCha20Poly1305Algo::encrypt(params, plaintext),
@@ -258,6 +262,8 @@ pub fn aead_decrypt(
     ciphertext_with_tag: &[u8],
 ) -> Result<Zeroizing<Vec<u8>>, AlgorithmError> {
     match alg {
+        AeadAlgorithm::Aes128Gcm => Aes128GcmAlgo::decrypt(params, ciphertext_with_tag),
+        AeadAlgorithm::Aes192Gcm => Aes192GcmAlgo::decrypt(params, ciphertext_with_tag),
         AeadAlgorithm::Aes256Gcm => Aes256GcmAlgo::decrypt(params, ciphertext_with_tag),
         AeadAlgorithm::Aes256GcmSiv => Aes256GcmSivAlgo::decrypt(params, ciphertext_with_tag),
         AeadAlgorithm::ChaCha20Poly1305 => {

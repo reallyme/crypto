@@ -125,6 +125,8 @@ public object ReallyMeCryptoProtoAdapters {
 
     public fun fromProto(value: AeadAlgorithm): ReallyMeAeadAlgorithm =
         when (value) {
+            AeadAlgorithm.AEAD_ALGORITHM_AES_128_GCM -> ReallyMeAeadAlgorithm.AES_128_GCM
+            AeadAlgorithm.AEAD_ALGORITHM_AES_192_GCM -> ReallyMeAeadAlgorithm.AES_192_GCM
             AeadAlgorithm.AEAD_ALGORITHM_AES_256_GCM -> ReallyMeAeadAlgorithm.AES_256_GCM
             AeadAlgorithm.AEAD_ALGORITHM_AES_256_GCM_SIV -> ReallyMeAeadAlgorithm.AES_256_GCM_SIV
             AeadAlgorithm.AEAD_ALGORITHM_CHACHA20_POLY1305 ->
@@ -136,6 +138,8 @@ public object ReallyMeCryptoProtoAdapters {
 
     public fun toProto(value: ReallyMeAeadAlgorithm): AeadAlgorithm =
         when (value) {
+            ReallyMeAeadAlgorithm.AES_128_GCM -> AeadAlgorithm.AEAD_ALGORITHM_AES_128_GCM
+            ReallyMeAeadAlgorithm.AES_192_GCM -> AeadAlgorithm.AEAD_ALGORITHM_AES_192_GCM
             ReallyMeAeadAlgorithm.AES_256_GCM -> AeadAlgorithm.AEAD_ALGORITHM_AES_256_GCM
             ReallyMeAeadAlgorithm.AES_256_GCM_SIV -> AeadAlgorithm.AEAD_ALGORITHM_AES_256_GCM_SIV
             ReallyMeAeadAlgorithm.CHACHA20_POLY1305 -> AeadAlgorithm.AEAD_ALGORITHM_CHACHA20_POLY1305
@@ -167,6 +171,10 @@ public object ReallyMeCryptoProtoAdapters {
             KeyAgreementAlgorithm.KEY_AGREEMENT_ALGORITHM_X25519 -> ReallyMeKeyAgreementAlgorithm.X25519
             KeyAgreementAlgorithm.KEY_AGREEMENT_ALGORITHM_P256_ECDH ->
                 ReallyMeKeyAgreementAlgorithm.P256_ECDH
+            KeyAgreementAlgorithm.KEY_AGREEMENT_ALGORITHM_P384_ECDH ->
+                ReallyMeKeyAgreementAlgorithm.P384_ECDH
+            KeyAgreementAlgorithm.KEY_AGREEMENT_ALGORITHM_P521_ECDH ->
+                ReallyMeKeyAgreementAlgorithm.P521_ECDH
             else -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
         }
 
@@ -175,6 +183,10 @@ public object ReallyMeCryptoProtoAdapters {
             ReallyMeKeyAgreementAlgorithm.X25519 -> KeyAgreementAlgorithm.KEY_AGREEMENT_ALGORITHM_X25519
             ReallyMeKeyAgreementAlgorithm.P256_ECDH ->
                 KeyAgreementAlgorithm.KEY_AGREEMENT_ALGORITHM_P256_ECDH
+            ReallyMeKeyAgreementAlgorithm.P384_ECDH ->
+                KeyAgreementAlgorithm.KEY_AGREEMENT_ALGORITHM_P384_ECDH
+            ReallyMeKeyAgreementAlgorithm.P521_ECDH ->
+                KeyAgreementAlgorithm.KEY_AGREEMENT_ALGORITHM_P521_ECDH
         }
 
     public fun fromProto(value: MacAlgorithm): ReallyMeMacAlgorithm =
@@ -196,6 +208,8 @@ public object ReallyMeCryptoProtoAdapters {
             KdfAlgorithm.KDF_ALGORITHM_ARGON2ID -> ReallyMeKdfAlgorithm.ARGON2ID
             KdfAlgorithm.KDF_ALGORITHM_PBKDF2_HMAC_SHA256 -> ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256
             KdfAlgorithm.KDF_ALGORITHM_PBKDF2_HMAC_SHA512 -> ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA512
+            KdfAlgorithm.KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256 ->
+                ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256
             else -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
         }
 
@@ -205,6 +219,8 @@ public object ReallyMeCryptoProtoAdapters {
             ReallyMeKdfAlgorithm.ARGON2ID -> KdfAlgorithm.KDF_ALGORITHM_ARGON2ID
             ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256 -> KdfAlgorithm.KDF_ALGORITHM_PBKDF2_HMAC_SHA256
             ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA512 -> KdfAlgorithm.KDF_ALGORITHM_PBKDF2_HMAC_SHA512
+            ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256 ->
+                KdfAlgorithm.KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256
         }
 
     public fun fromProto(value: KeyWrapAlgorithm): ReallyMeKeyWrapAlgorithm =

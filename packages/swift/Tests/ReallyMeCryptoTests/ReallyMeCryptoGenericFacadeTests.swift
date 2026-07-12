@@ -6,12 +6,49 @@ import Foundation
 import ReallyMeCrypto
 import XCTest
 
+private struct AesGcmVector: Decodable {
+    let alg: String
+    let key: String
+    let nonce: String
+    let aad: String
+    let plaintext: String
+    let ciphertextWithTag: String
+
+    private enum CodingKeys: String, CodingKey {
+        case alg
+        case key
+        case nonce
+        case aad
+        case plaintext
+        case ciphertextWithTag = "ciphertext_with_tag"
+    }
+}
+
+private struct ConcatKdfVector: Decodable {
+    let sharedSecret: String
+    let algorithmId: String
+    let partyUInfo: String
+    let partyVInfo: String
+    let outputLen: Int
+    let derivedKey: String
+
+    private enum CodingKeys: String, CodingKey {
+        case sharedSecret = "shared_secret"
+        case algorithmId = "algorithm_id"
+        case partyUInfo = "party_u_info"
+        case partyVInfo = "party_v_info"
+        case outputLen = "output_len"
+        case derivedKey = "derived_key"
+    }
+}
+
 extension ReallyMeCryptoTests {
     func testProviderCatalogIsExplicit() {
         XCTAssertEqual(
             ReallyMeCryptoProviderCatalog.compiledProviders,
             [
                 .cryptoKit,
+                .secureEnclaveKeychain,
                 .cSecp256k1,
                 .digest,
                 .rustCAbi,
@@ -168,6 +205,122 @@ extension ReallyMeCryptoTests {
             try ReallyMeCrypto.seal(
                 .aes256Gcm,
                 key: [0x00],
+                nonce: nonce,
+                aad: aad,
+                plaintext: plaintext
+            )
+        ) { error in
+            XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+        }
+    }
+
+    func testGenericFacadeAes128GcmKnownAnswerAndTampering() throws {
+        let data = try Data(contentsOf: reallyMeVectorURL("aes128gcm.json"))
+        let vector = try JSONDecoder().decode(AesGcmVector.self, from: data)
+        XCTAssertEqual(vector.alg, "AES-128-GCM")
+
+        let key = try Self.base64UrlBytes(vector.key)
+        let nonce = try Self.base64UrlBytes(vector.nonce)
+        let aad = try Self.base64UrlBytes(vector.aad)
+        let plaintext = try Self.base64UrlBytes(vector.plaintext)
+        let ciphertext = try Self.base64UrlBytes(vector.ciphertextWithTag)
+
+        XCTAssertEqual(
+            try ReallyMeCrypto.seal(
+                .aes128Gcm,
+                key: key,
+                nonce: nonce,
+                aad: aad,
+                plaintext: plaintext
+            ),
+            ciphertext
+        )
+        XCTAssertEqual(
+            try ReallyMeCrypto.open(
+                .aes128Gcm,
+                key: key,
+                nonce: nonce,
+                aad: aad,
+                ciphertextWithTag: ciphertext
+            ),
+            plaintext
+        )
+
+        var tampered = ciphertext
+        tampered[0] ^= 0x01
+        XCTAssertThrowsError(
+            try ReallyMeCrypto.open(
+                .aes128Gcm,
+                key: key,
+                nonce: nonce,
+                aad: aad,
+                ciphertextWithTag: tampered
+            )
+        ) { error in
+            XCTAssertEqual(error as? ReallyMeCryptoError, .authenticationFailed)
+        }
+        XCTAssertThrowsError(
+            try ReallyMeCrypto.seal(
+                .aes128Gcm,
+                key: [UInt8](repeating: 0, count: ReallyMeAesGcm.aes256KeyLength),
+                nonce: nonce,
+                aad: aad,
+                plaintext: plaintext
+            )
+        ) { error in
+            XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+        }
+    }
+
+    func testGenericFacadeAes192GcmKnownAnswerAndTampering() throws {
+        let data = try Data(contentsOf: reallyMeVectorURL("aes192gcm.json"))
+        let vector = try JSONDecoder().decode(AesGcmVector.self, from: data)
+        XCTAssertEqual(vector.alg, "AES-192-GCM")
+
+        let key = try Self.base64UrlBytes(vector.key)
+        let nonce = try Self.base64UrlBytes(vector.nonce)
+        let aad = try Self.base64UrlBytes(vector.aad)
+        let plaintext = try Self.base64UrlBytes(vector.plaintext)
+        let ciphertext = try Self.base64UrlBytes(vector.ciphertextWithTag)
+
+        XCTAssertEqual(
+            try ReallyMeCrypto.seal(
+                .aes192Gcm,
+                key: key,
+                nonce: nonce,
+                aad: aad,
+                plaintext: plaintext
+            ),
+            ciphertext
+        )
+        XCTAssertEqual(
+            try ReallyMeCrypto.open(
+                .aes192Gcm,
+                key: key,
+                nonce: nonce,
+                aad: aad,
+                ciphertextWithTag: ciphertext
+            ),
+            plaintext
+        )
+
+        var tampered = ciphertext
+        tampered[0] ^= 0x01
+        XCTAssertThrowsError(
+            try ReallyMeCrypto.open(
+                .aes192Gcm,
+                key: key,
+                nonce: nonce,
+                aad: aad,
+                ciphertextWithTag: tampered
+            )
+        ) { error in
+            XCTAssertEqual(error as? ReallyMeCryptoError, .authenticationFailed)
+        }
+        XCTAssertThrowsError(
+            try ReallyMeCrypto.seal(
+                .aes192Gcm,
+                key: [UInt8](repeating: 0, count: ReallyMeAesGcm.aes128KeyLength),
                 nonce: nonce,
                 aad: aad,
                 plaintext: plaintext
@@ -368,6 +521,96 @@ extension ReallyMeCryptoTests {
         }
     }
 
+    func testGenericFacadeJwaConcatKdfMatchesSharedVector() throws {
+        let data = try Data(contentsOf: reallyMeVectorURL("concat_kdf.json"))
+        let vector = try JSONDecoder().decode(ConcatKdfVector.self, from: data)
+        let sharedSecret = try Self.base64UrlBytes(vector.sharedSecret)
+        let algorithmId = try Self.base64UrlBytes(vector.algorithmId)
+        let partyUInfo = try Self.base64UrlBytes(vector.partyUInfo)
+        let partyVInfo = try Self.base64UrlBytes(vector.partyVInfo)
+        let derivedKey = try Self.base64UrlBytes(vector.derivedKey)
+
+        XCTAssertEqual(
+            try ReallyMeJwaConcatKdf.deriveSha256(
+                sharedSecret: sharedSecret,
+                algorithmId: algorithmId,
+                partyUInfo: partyUInfo,
+                partyVInfo: partyVInfo,
+                outputLength: vector.outputLen
+            ),
+            derivedKey
+        )
+        XCTAssertEqual(
+            try ReallyMeCrypto.deriveJwaConcatKdfSha256(
+                .jwaConcatKdfSha256,
+                sharedSecret: sharedSecret,
+                algorithmId: algorithmId,
+                partyUInfo: partyUInfo,
+                partyVInfo: partyVInfo,
+                outputLength: vector.outputLen
+            ),
+            derivedKey
+        )
+    }
+
+    func testGenericFacadeJwaConcatKdfRejectsInvalidInputsAndUnsupportedKdf() throws {
+        let data = try Data(contentsOf: reallyMeVectorURL("concat_kdf.json"))
+        let vector = try JSONDecoder().decode(ConcatKdfVector.self, from: data)
+        let sharedSecret = try Self.base64UrlBytes(vector.sharedSecret)
+        let algorithmId = try Self.base64UrlBytes(vector.algorithmId)
+        let partyUInfo = try Self.base64UrlBytes(vector.partyUInfo)
+        let partyVInfo = try Self.base64UrlBytes(vector.partyVInfo)
+
+        XCTAssertThrowsError(
+            try ReallyMeCrypto.deriveJwaConcatKdfSha256(
+                .jwaConcatKdfSha256,
+                sharedSecret: [],
+                algorithmId: algorithmId,
+                partyUInfo: partyUInfo,
+                partyVInfo: partyVInfo,
+                outputLength: vector.outputLen
+            )
+        ) { error in
+            XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+        }
+        XCTAssertThrowsError(
+            try ReallyMeCrypto.deriveJwaConcatKdfSha256(
+                .jwaConcatKdfSha256,
+                sharedSecret: sharedSecret,
+                algorithmId: [],
+                partyUInfo: partyUInfo,
+                partyVInfo: partyVInfo,
+                outputLength: vector.outputLen
+            )
+        ) { error in
+            XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+        }
+        XCTAssertThrowsError(
+            try ReallyMeCrypto.deriveJwaConcatKdfSha256(
+                .jwaConcatKdfSha256,
+                sharedSecret: sharedSecret,
+                algorithmId: algorithmId,
+                partyUInfo: partyUInfo,
+                partyVInfo: partyVInfo,
+                outputLength: 0
+            )
+        ) { error in
+            XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+        }
+        XCTAssertThrowsError(
+            try ReallyMeCrypto.deriveJwaConcatKdfSha256(
+                .hkdfSha256,
+                sharedSecret: sharedSecret,
+                algorithmId: algorithmId,
+                partyUInfo: partyUInfo,
+                partyVInfo: partyVInfo,
+                outputLength: vector.outputLen
+            )
+        ) { error in
+            XCTAssertEqual(error as? ReallyMeCryptoError, .unsupportedAlgorithm)
+        }
+    }
+
     func testGenericFacadeRemainingFamiliesReturnTypedUnsupportedAlgorithm() {
         let empty = [UInt8]()
 
@@ -403,7 +646,10 @@ extension ReallyMeCryptoTests {
             [.sha2_256, .sha2_384, .sha2_512, .sha3_224, .sha3_256, .sha3_384, .sha3_512]
         )
         XCTAssertEqual(Set(ReallyMeMacAlgorithm.allCases), [.hmacSha256, .hmacSha512])
-        XCTAssertEqual(Set(ReallyMeKeyAgreementAlgorithm.allCases), [.x25519, .p256Ecdh])
+        XCTAssertEqual(
+            Set(ReallyMeKeyAgreementAlgorithm.allCases),
+            [.x25519, .p256Ecdh, .p384Ecdh, .p521Ecdh]
+        )
     }
 
     func testGenericFacadeUnsupportedSignaturesAreExhaustive() {
@@ -514,6 +760,7 @@ extension ReallyMeCryptoTests {
         let empty = [UInt8]()
         let deriveKeySupported: Set<ReallyMeKdfAlgorithm> = [.pbkdf2HmacSha256, .pbkdf2HmacSha512]
         let deriveHkdfSupported: Set<ReallyMeKdfAlgorithm> = [.hkdfSha256]
+        let deriveJwaConcatSupported: Set<ReallyMeKdfAlgorithm> = [.jwaConcatKdfSha256]
 
         for algorithm in ReallyMeKdfAlgorithm.allCases where !deriveKeySupported.contains(algorithm) {
             XCTAssertThrowsError(
@@ -537,6 +784,22 @@ extension ReallyMeCryptoTests {
                     inputKeyMaterial: empty,
                     salt: empty,
                     info: empty,
+                    outputLength: 1
+                ),
+                algorithm.rawValue
+            ) { error in
+                XCTAssertEqual(error as? ReallyMeCryptoError, .unsupportedAlgorithm)
+            }
+        }
+
+        for algorithm in ReallyMeKdfAlgorithm.allCases where !deriveJwaConcatSupported.contains(algorithm) {
+            XCTAssertThrowsError(
+                try ReallyMeCrypto.deriveJwaConcatKdfSha256(
+                    algorithm,
+                    sharedSecret: empty,
+                    algorithmId: empty,
+                    partyUInfo: empty,
+                    partyVInfo: empty,
                     outputLength: 1
                 ),
                 algorithm.rawValue

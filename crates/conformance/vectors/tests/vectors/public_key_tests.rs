@@ -12,8 +12,8 @@ use crypto_ml_kem_768::ml_kem_768_decapsulate;
 use crypto_p256::{
     decompress_p256, derive_p256_shared_secret, sign_p256_der_prehash, verify_p256_der_prehash,
 };
-use crypto_p384::{decompress_p384, verify_p384_der_prehash};
-use crypto_p521::{decompress_p521, verify_p521_der_prehash};
+use crypto_p384::{decompress_p384, derive_p384_shared_secret, verify_p384_der_prehash};
+use crypto_p521::{decompress_p521, derive_p521_shared_secret, verify_p521_der_prehash};
 use crypto_rsa::{
     verify_rsa_pkcs1v15, verify_rsa_pss, RsaHash, RsaPssParams, RsaPublicKeyDerEncoding,
 };
@@ -89,39 +89,68 @@ fn p256_vector_invariants() -> Result<(), VectorTestError> {
     Ok(())
 }
 
-fn verify_sec1_ecdsa_vector<Decompress, Verify>(
-    vector_name: &str,
+type SharedSecretDeriver =
+    fn(&[u8], &[u8]) -> Result<zeroize::Zeroizing<Vec<u8>>, crypto_core::CryptoError>;
+
+struct Sec1EcdsaVectorCase<Decompress, Verify> {
+    vector_name: &'static str,
     secret_key_len: usize,
     compressed_len: usize,
     uncompressed_len: usize,
+    shared_secret_len: usize,
     decompress: Decompress,
+    derive_shared_secret: SharedSecretDeriver,
     verify: Verify,
+}
+
+fn verify_sec1_ecdsa_vector<Decompress, Verify>(
+    case: Sec1EcdsaVectorCase<Decompress, Verify>,
 ) -> Result<(), VectorTestError>
 where
     Decompress: Fn(&[u8]) -> Result<Vec<u8>, crypto_core::CryptoError>,
     Verify: Fn(&[u8], &[u8], &[u8]) -> Result<(), crypto_core::CryptoError>,
 {
-    let v = load(vector_name)?;
+    let v = load(case.vector_name)?;
     let sk = b64u_to_bytes(field_string(&v, "secret_key")?)?;
     let pk_c = b64u_to_bytes(field_string(&v, "public_key_compressed")?)?;
     let pk_u = b64u_to_bytes(field_string(&v, "public_key_uncompressed")?)?;
+    let peer_sk = b64u_to_bytes(field_string(&v, "peer_secret_key")?)?;
+    let peer_pk_c = b64u_to_bytes(field_string(&v, "peer_public_key_compressed")?)?;
+    let peer_pk_u = b64u_to_bytes(field_string(&v, "peer_public_key_uncompressed")?)?;
+    let shared_secret = b64u_to_bytes(field_string(&v, "shared_secret")?)?;
     let message = b64u_to_bytes(field_string(&v, "message")?)?;
     let signature = b64u_to_bytes(field_string(&v, "signature_der")?)?;
 
-    assert_eq!(sk.len(), secret_key_len);
-    assert_eq!(pk_c.len(), compressed_len);
+    assert_eq!(sk.len(), case.secret_key_len);
+    assert_eq!(pk_c.len(), case.compressed_len);
     assert!(pk_c[0] == 0x02 || pk_c[0] == 0x03);
-    assert_eq!(pk_u.len(), uncompressed_len);
+    assert_eq!(pk_u.len(), case.uncompressed_len);
     assert_eq!(pk_u[0], 0x04);
+    assert_eq!(peer_sk.len(), case.secret_key_len);
+    assert_eq!(peer_pk_c.len(), case.compressed_len);
+    assert!(peer_pk_c[0] == 0x02 || peer_pk_c[0] == 0x03);
+    assert_eq!(peer_pk_u.len(), case.uncompressed_len);
+    assert_eq!(peer_pk_u[0], 0x04);
+    assert_eq!(shared_secret.len(), case.shared_secret_len);
 
-    let recomputed = decompress(&pk_c).map_err(|_| VectorTestError::Sec1Decompress)?;
+    let recomputed = (case.decompress)(&pk_c).map_err(|_| VectorTestError::Sec1Decompress)?;
     assert_eq!(recomputed, pk_u);
+    let recomputed_peer =
+        (case.decompress)(&peer_pk_c).map_err(|_| VectorTestError::Sec1Decompress)?;
+    assert_eq!(recomputed_peer, peer_pk_u);
 
-    verify(&signature, &message, &pk_c).map_err(|_| VectorTestError::EcdsaVerify)?;
+    let derived =
+        (case.derive_shared_secret)(&sk, &peer_pk_c).map_err(|_| VectorTestError::P256Ecdh)?;
+    let peer_derived =
+        (case.derive_shared_secret)(&peer_sk, &pk_c).map_err(|_| VectorTestError::P256Ecdh)?;
+    assert_eq!(derived.as_slice(), shared_secret.as_slice());
+    assert_eq!(peer_derived.as_slice(), shared_secret.as_slice());
+
+    (case.verify)(&signature, &message, &pk_c).map_err(|_| VectorTestError::EcdsaVerify)?;
 
     let mut tampered = signature;
     tampered[0] ^= 0x01;
-    if verify(&tampered, &message, &pk_c).is_ok() {
+    if (case.verify)(&tampered, &message, &pk_c).is_ok() {
         return Err(VectorTestError::EcdsaVerify);
     }
     Ok(())
@@ -129,26 +158,30 @@ where
 
 #[test]
 fn p384_vector_invariants() -> Result<(), VectorTestError> {
-    verify_sec1_ecdsa_vector(
-        "p384.json",
-        48,
-        49,
-        97,
-        decompress_p384,
-        verify_p384_der_prehash,
-    )
+    verify_sec1_ecdsa_vector(Sec1EcdsaVectorCase {
+        vector_name: "p384.json",
+        secret_key_len: 48,
+        compressed_len: 49,
+        uncompressed_len: 97,
+        shared_secret_len: 48,
+        decompress: decompress_p384,
+        derive_shared_secret: derive_p384_shared_secret,
+        verify: verify_p384_der_prehash,
+    })
 }
 
 #[test]
 fn p521_vector_invariants() -> Result<(), VectorTestError> {
-    verify_sec1_ecdsa_vector(
-        "p521.json",
-        66,
-        67,
-        133,
-        decompress_p521,
-        verify_p521_der_prehash,
-    )
+    verify_sec1_ecdsa_vector(Sec1EcdsaVectorCase {
+        vector_name: "p521.json",
+        secret_key_len: 66,
+        compressed_len: 67,
+        uncompressed_len: 133,
+        shared_secret_len: 66,
+        decompress: decompress_p521,
+        derive_shared_secret: derive_p521_shared_secret,
+        verify: verify_p521_der_prehash,
+    })
 }
 
 #[test]

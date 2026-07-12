@@ -158,6 +158,10 @@ fn header_declares_every_exported_ffi_symbol() {
         "rm_crypto_sha3_256_digest",
         "rm_crypto_sha3_384_digest",
         "rm_crypto_sha3_512_digest",
+        "rm_crypto_aes128_gcm_encrypt",
+        "rm_crypto_aes128_gcm_decrypt",
+        "rm_crypto_aes192_gcm_encrypt",
+        "rm_crypto_aes192_gcm_decrypt",
         "rm_crypto_aes256_gcm_encrypt",
         "rm_crypto_aes256_gcm_decrypt",
         "rm_crypto_aes256_kw_wrap_key",
@@ -194,12 +198,14 @@ fn header_declares_every_exported_ffi_symbol() {
         "rm_crypto_p384_generate_keypair_from_secret_key",
         "rm_crypto_p384_sign_der_prehash",
         "rm_crypto_p384_verify_der_prehash",
+        "rm_crypto_p384_derive_shared_secret",
         "rm_crypto_p384_compress_public_key",
         "rm_crypto_p384_decompress_public_key",
         "rm_crypto_p521_generate_keypair",
         "rm_crypto_p521_generate_keypair_from_secret_key",
         "rm_crypto_p521_sign_der_prehash",
         "rm_crypto_p521_verify_der_prehash",
+        "rm_crypto_p521_derive_shared_secret",
         "rm_crypto_p521_compress_public_key",
         "rm_crypto_p521_decompress_public_key",
         "rm_crypto_rsa_verify_pkcs1v15",
@@ -876,17 +882,48 @@ fn digest_ffis_hash_messages() {
     assert_eq!(sha3_512_out.len(), sha3::SHA3_512_DIGEST_LEN);
 }
 
-#[test]
-fn aes256_gcm_ffi_encrypts_decrypts_and_rejects_tampering() {
-    let key = [7u8; aes256_gcm::AES256_GCM_KEY_LEN];
-    let nonce = [9u8; aes256_gcm::AES256_GCM_NONCE_LEN];
+type AesGcmEncryptFn = unsafe extern "C" fn(
+    *const u8,
+    usize,
+    *const u8,
+    usize,
+    *const u8,
+    usize,
+    *const u8,
+    usize,
+    *mut u8,
+    usize,
+    *mut usize,
+) -> status::CryptoStatus;
+
+type AesGcmDecryptFn = unsafe extern "C" fn(
+    *const u8,
+    usize,
+    *const u8,
+    usize,
+    *const u8,
+    usize,
+    *const u8,
+    usize,
+    *mut u8,
+    usize,
+    *mut usize,
+) -> status::CryptoStatus;
+
+fn assert_aes_gcm_ffi_roundtrip_and_tamper(
+    encrypt: AesGcmEncryptFn,
+    decrypt: AesGcmDecryptFn,
+    key: &[u8],
+    nonce: &[u8],
+    tag_len: usize,
+) {
     let aad = b"aad";
     let plaintext = b"ffi plaintext";
     let mut ciphertext = [0u8; 64];
     let mut ciphertext_len = 0usize;
 
     let encrypt_status = unsafe {
-        aes256_gcm::rm_crypto_aes256_gcm_encrypt(
+        encrypt(
             key.as_ptr(),
             key.len(),
             nonce.as_ptr(),
@@ -902,15 +939,12 @@ fn aes256_gcm_ffi_encrypts_decrypts_and_rejects_tampering() {
     };
 
     assert_eq!(encrypt_status, status::CRYPTO_OK);
-    assert_eq!(
-        ciphertext_len,
-        plaintext.len() + aes256_gcm::AES256_GCM_TAG_LEN
-    );
+    assert_eq!(ciphertext_len, plaintext.len() + tag_len);
 
     let mut decrypted = [0u8; 64];
     let mut decrypted_len = 0usize;
     let decrypt_status = unsafe {
-        aes256_gcm::rm_crypto_aes256_gcm_decrypt(
+        decrypt(
             key.as_ptr(),
             key.len(),
             nonce.as_ptr(),
@@ -931,7 +965,7 @@ fn aes256_gcm_ffi_encrypts_decrypts_and_rejects_tampering() {
 
     ciphertext[0] ^= 0x01;
     let tamper_status = unsafe {
-        aes256_gcm::rm_crypto_aes256_gcm_decrypt(
+        decrypt(
             key.as_ptr(),
             key.len(),
             nonce.as_ptr(),
@@ -946,6 +980,45 @@ fn aes256_gcm_ffi_encrypts_decrypts_and_rejects_tampering() {
         )
     };
     assert_eq!(tamper_status, status::CRYPTO_AUTHENTICATION_FAILED);
+}
+
+#[test]
+fn aes128_gcm_ffi_encrypts_decrypts_and_rejects_tampering() {
+    let key = [7u8; aes256_gcm::AES128_GCM_KEY_LEN];
+    let nonce = [9u8; aes256_gcm::AES128_GCM_NONCE_LEN];
+    assert_aes_gcm_ffi_roundtrip_and_tamper(
+        aes256_gcm::rm_crypto_aes128_gcm_encrypt,
+        aes256_gcm::rm_crypto_aes128_gcm_decrypt,
+        &key,
+        &nonce,
+        aes256_gcm::AES128_GCM_TAG_LEN,
+    );
+}
+
+#[test]
+fn aes192_gcm_ffi_encrypts_decrypts_and_rejects_tampering() {
+    let key = [7u8; aes256_gcm::AES192_GCM_KEY_LEN];
+    let nonce = [9u8; aes256_gcm::AES192_GCM_NONCE_LEN];
+    assert_aes_gcm_ffi_roundtrip_and_tamper(
+        aes256_gcm::rm_crypto_aes192_gcm_encrypt,
+        aes256_gcm::rm_crypto_aes192_gcm_decrypt,
+        &key,
+        &nonce,
+        aes256_gcm::AES192_GCM_TAG_LEN,
+    );
+}
+
+#[test]
+fn aes256_gcm_ffi_encrypts_decrypts_and_rejects_tampering() {
+    let key = [7u8; aes256_gcm::AES256_GCM_KEY_LEN];
+    let nonce = [9u8; aes256_gcm::AES256_GCM_NONCE_LEN];
+    assert_aes_gcm_ffi_roundtrip_and_tamper(
+        aes256_gcm::rm_crypto_aes256_gcm_encrypt,
+        aes256_gcm::rm_crypto_aes256_gcm_decrypt,
+        &key,
+        &nonce,
+        aes256_gcm::AES256_GCM_TAG_LEN,
+    );
 }
 
 #[test]
@@ -1528,6 +1601,8 @@ fn p384_ffi_covers_keygen_sign_verify_and_sec1_encoding() {
     let message = b"p384 ffi";
     let mut public = [0u8; p384::P384_PUBLIC_KEY_COMPRESSED_LEN];
     let mut secret = [0u8; p384::P384_SECRET_KEY_LEN];
+    let mut peer_public = [0u8; p384::P384_PUBLIC_KEY_COMPRESSED_LEN];
+    let mut peer_secret = [0u8; p384::P384_SECRET_KEY_LEN];
     let key_status = unsafe {
         p384::rm_crypto_p384_generate_keypair(
             public.as_mut_ptr(),
@@ -1537,6 +1612,16 @@ fn p384_ffi_covers_keygen_sign_verify_and_sec1_encoding() {
         )
     };
     assert_eq!(key_status, status::CRYPTO_OK);
+
+    let peer_key_status = unsafe {
+        p384::rm_crypto_p384_generate_keypair(
+            peer_public.as_mut_ptr(),
+            peer_public.len(),
+            peer_secret.as_mut_ptr(),
+            peer_secret.len(),
+        )
+    };
+    assert_eq!(peer_key_status, status::CRYPTO_OK);
 
     let mut signature = [0u8; p384::P384_SIGNATURE_DER_MAX_LEN];
     let mut signature_len = 0usize;
@@ -1564,6 +1649,33 @@ fn p384_ffi_covers_keygen_sign_verify_and_sec1_encoding() {
         )
     };
     assert_eq!(verify_status, status::CRYPTO_OK);
+
+    let mut shared_one = [0u8; p384::P384_SHARED_SECRET_LEN];
+    let mut shared_two = [0u8; p384::P384_SHARED_SECRET_LEN];
+    let derive_one_status = unsafe {
+        p384::rm_crypto_p384_derive_shared_secret(
+            secret.as_ptr(),
+            secret.len(),
+            peer_public.as_ptr(),
+            peer_public.len(),
+            shared_one.as_mut_ptr(),
+            shared_one.len(),
+        )
+    };
+    let derive_two_status = unsafe {
+        p384::rm_crypto_p384_derive_shared_secret(
+            peer_secret.as_ptr(),
+            peer_secret.len(),
+            public.as_ptr(),
+            public.len(),
+            shared_two.as_mut_ptr(),
+            shared_two.len(),
+        )
+    };
+    assert_eq!(derive_one_status, status::CRYPTO_OK);
+    assert_eq!(derive_two_status, status::CRYPTO_OK);
+    assert_eq!(shared_one, shared_two);
+    assert_ne!(shared_one, [0u8; p384::P384_SHARED_SECRET_LEN]);
 
     let mut uncompressed = [0u8; p384::P384_PUBLIC_KEY_UNCOMPRESSED_LEN];
     let decompress_status = unsafe {
@@ -1594,6 +1706,8 @@ fn p521_ffi_covers_keygen_sign_verify_and_sec1_encoding() {
     let message = b"p521 ffi";
     let mut public = [0u8; p521::P521_PUBLIC_KEY_COMPRESSED_LEN];
     let mut secret = [0u8; p521::P521_SECRET_KEY_LEN];
+    let mut peer_public = [0u8; p521::P521_PUBLIC_KEY_COMPRESSED_LEN];
+    let mut peer_secret = [0u8; p521::P521_SECRET_KEY_LEN];
     let key_status = unsafe {
         p521::rm_crypto_p521_generate_keypair(
             public.as_mut_ptr(),
@@ -1603,6 +1717,16 @@ fn p521_ffi_covers_keygen_sign_verify_and_sec1_encoding() {
         )
     };
     assert_eq!(key_status, status::CRYPTO_OK);
+
+    let peer_key_status = unsafe {
+        p521::rm_crypto_p521_generate_keypair(
+            peer_public.as_mut_ptr(),
+            peer_public.len(),
+            peer_secret.as_mut_ptr(),
+            peer_secret.len(),
+        )
+    };
+    assert_eq!(peer_key_status, status::CRYPTO_OK);
 
     let mut signature = [0u8; p521::P521_SIGNATURE_DER_MAX_LEN];
     let mut signature_len = 0usize;
@@ -1630,6 +1754,33 @@ fn p521_ffi_covers_keygen_sign_verify_and_sec1_encoding() {
         )
     };
     assert_eq!(verify_status, status::CRYPTO_OK);
+
+    let mut shared_one = [0u8; p521::P521_SHARED_SECRET_LEN];
+    let mut shared_two = [0u8; p521::P521_SHARED_SECRET_LEN];
+    let derive_one_status = unsafe {
+        p521::rm_crypto_p521_derive_shared_secret(
+            secret.as_ptr(),
+            secret.len(),
+            peer_public.as_ptr(),
+            peer_public.len(),
+            shared_one.as_mut_ptr(),
+            shared_one.len(),
+        )
+    };
+    let derive_two_status = unsafe {
+        p521::rm_crypto_p521_derive_shared_secret(
+            peer_secret.as_ptr(),
+            peer_secret.len(),
+            public.as_ptr(),
+            public.len(),
+            shared_two.as_mut_ptr(),
+            shared_two.len(),
+        )
+    };
+    assert_eq!(derive_one_status, status::CRYPTO_OK);
+    assert_eq!(derive_two_status, status::CRYPTO_OK);
+    assert_eq!(shared_one, shared_two);
+    assert_ne!(shared_one, [0u8; p521::P521_SHARED_SECRET_LEN]);
 
     let mut uncompressed = [0u8; p521::P521_PUBLIC_KEY_UNCOMPRESSED_LEN];
     let decompress_status = unsafe {

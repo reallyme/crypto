@@ -1,6 +1,6 @@
 {
   "name": "@reallyme/crypto",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "ReallyMe crypto SDK for TypeScript/JavaScript with an explicit, pinned provider set.",
   "license": "Apache-2.0",
   "type": "module",
@@ -28,7 +28,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "npm run build:wasm && tsc",
+    "build": "node scripts/clean-dist.mjs && npm run build:wasm && tsc",
     "build:ts": "tsc",
     "build:wasm": "node scripts/build-wasm.mjs",
     "typecheck": "tsc --noEmit",

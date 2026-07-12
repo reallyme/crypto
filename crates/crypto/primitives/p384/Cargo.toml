@@ -24,7 +24,7 @@ wasm = ["native"]
 crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "../../core" }
 zeroize = { workspace = true }
 
-p384 = { workspace = true, features = ["ecdsa"], optional = true }
+p384 = { workspace = true, features = ["ecdh", "ecdsa"], optional = true }
 ecdsa = { workspace = true, features = ["der"], optional = true }
 sha2 = { workspace = true, optional = true }
 

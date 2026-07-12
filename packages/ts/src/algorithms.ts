@@ -39,6 +39,8 @@ export const REALLYME_HASH_ALGORITHMS = [
 export type ReallyMeHashAlgorithm = (typeof REALLYME_HASH_ALGORITHMS)[number];
 
 export const REALLYME_AEAD_ALGORITHMS = [
+  "AES-128-GCM",
+  "AES-192-GCM",
   "AES-256-GCM",
   "AES-256-GCM-SIV",
   "ChaCha20-Poly1305",
@@ -60,6 +62,8 @@ export type ReallyMeKemAlgorithm = (typeof REALLYME_KEM_ALGORITHMS)[number];
 export const REALLYME_KEY_AGREEMENT_ALGORITHMS = [
   "X25519",
   "P-256-ECDH",
+  "P-384-ECDH",
+  "P-521-ECDH",
 ] as const;
 
 export type ReallyMeKeyAgreementAlgorithm =
@@ -77,6 +81,7 @@ export const REALLYME_KDF_ALGORITHMS = [
   "Argon2id",
   "PBKDF2-HMAC-SHA-256",
   "PBKDF2-HMAC-SHA-512",
+  "JWA-CONCAT-KDF-SHA256",
 ] as const;
 
 export type ReallyMeKdfAlgorithm = (typeof REALLYME_KDF_ALGORITHMS)[number];

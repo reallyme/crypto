@@ -35,6 +35,14 @@ public enum AeadAlgorithm
    * <code>AEAD_ALGORITHM_XCHACHA20_POLY1305 = 4;</code>
    */
   AEAD_ALGORITHM_XCHACHA20_POLY1305(4),
+  /**
+   * <code>AEAD_ALGORITHM_AES_128_GCM = 5;</code>
+   */
+  AEAD_ALGORITHM_AES_128_GCM(5),
+  /**
+   * <code>AEAD_ALGORITHM_AES_192_GCM = 6;</code>
+   */
+  AEAD_ALGORITHM_AES_192_GCM(6),
   UNRECOGNIZED(-1),
   ;
 
@@ -58,6 +66,14 @@ public enum AeadAlgorithm
    * <code>AEAD_ALGORITHM_XCHACHA20_POLY1305 = 4;</code>
    */
   public static final int AEAD_ALGORITHM_XCHACHA20_POLY1305_VALUE = 4;
+  /**
+   * <code>AEAD_ALGORITHM_AES_128_GCM = 5;</code>
+   */
+  public static final int AEAD_ALGORITHM_AES_128_GCM_VALUE = 5;
+  /**
+   * <code>AEAD_ALGORITHM_AES_192_GCM = 6;</code>
+   */
+  public static final int AEAD_ALGORITHM_AES_192_GCM_VALUE = 6;
 
 
   @java.lang.Override
@@ -85,6 +101,8 @@ public enum AeadAlgorithm
       case 2: return AEAD_ALGORITHM_AES_256_GCM_SIV;
       case 3: return AEAD_ALGORITHM_CHACHA20_POLY1305;
       case 4: return AEAD_ALGORITHM_XCHACHA20_POLY1305;
+      case 5: return AEAD_ALGORITHM_AES_128_GCM;
+      case 6: return AEAD_ALGORITHM_AES_192_GCM;
       default: return null;
     }
   }

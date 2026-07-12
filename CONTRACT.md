@@ -77,11 +77,11 @@ wrap, and HPKE.
 
 ## TypeScript Sync Policy
 
-The TypeScript facade is synchronous for v0.1.1. That is a deliberate contract
+The TypeScript facade is synchronous for the 0.1 line. That is a deliberate contract
 decision:
 
 - providers are pinned `@noble/*` packages and ReallyMe WASM/Rust where needed;
-- WebCrypto is not part of the v0.1.1 facade because it would force async API
+- WebCrypto is not part of the 0.1 facade because it would force async API
   shapes across the package;
 - no third-party schema validator is used at the crypto boundary.
 
@@ -89,12 +89,20 @@ Validation remains hand-written and narrow: enum membership, byte lengths,
 buffer shape, and provider result shape. Avoid adding dependencies such as Zod;
 minimal dependency surface is part of the package security posture.
 
-## Kotlin Platform Policy
+## Platform Key Residency
 
 Kotlin/JVM and Kotlin/Android are separate provider environments. For `0.1.1`,
 the Kotlin package uses BouncyCastle-backed behavior for algorithms where JCA
-or Android provider behavior is inconsistent. Android Keystore residency is a
-separate key-handle contract; it is not implicit in the current Kotlin facade.
+or Android provider behavior is inconsistent.
+
+Swift exposes P-256 ECDH with Secure Enclave / Keychain residency through a
+separate handle-backed API. The handle represents a permanent platform key; it
+is not a serialized private key and it is not interchangeable with the raw-byte
+ECDH APIs.
+
+Android Keystore residency needs the same explicit key-handle treatment before
+the Kotlin facade can select it. It is not implicit in the current Kotlin byte
+API.
 
 ## Completion Criteria
 

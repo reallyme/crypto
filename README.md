@@ -53,10 +53,10 @@ of silently falling back to another implementation.
 
 | Category | Algorithms |
 |---|---|
-| AEAD and key wrap | AES-256-GCM, AES-256-GCM-SIV, AES-256-KW, ChaCha20-Poly1305, XChaCha20-Poly1305 |
-| Hash, MAC, and KDF | SHA-2, SHA-3, HMAC-SHA-256/512, HKDF-SHA256, PBKDF2-HMAC-SHA-256/512, Argon2id |
+| AEAD and key wrap | AES-128/192/256-GCM, AES-256-GCM-SIV, AES-256-KW, ChaCha20-Poly1305, XChaCha20-Poly1305 |
+| Hash, MAC, and KDF | SHA-2, SHA-3, HMAC-SHA-256/512, HKDF-SHA256, JWA Concat KDF (ECDH-ES), PBKDF2-HMAC-SHA-256/512, Argon2id |
 | Signatures | Ed25519, ECDSA P-256/P-384/P-521, secp256k1 ECDSA, BIP-340 Schnorr, RSA verification, ML-DSA-44/65/87, SLH-DSA-SHA2-128s |
-| Key agreement and KEM | X25519, P-256 ECDH, ML-KEM-512/768/1024, X-Wing-768/1024 |
+| Key agreement and KEM | X25519, P-256/P-384/P-521 ECDH, ML-KEM-512/768/1024, X-Wing-768/1024 |
 | Protocols | HPKE |
 | Formats and codecs | JWK, multikey, multicodec, multibase, DAG-CBOR, JCS, base64, base64url |
 
@@ -102,6 +102,18 @@ themselves, enable every primitive. Algorithm features such as `ed25519`,
 no-default consumers from pulling unused cryptography while still forwarding
 the selected backend into every enabled primitive crate.
 
+Some Rust helper APIs are intentionally lane-scoped. P-256 raw scalar import is
+available in both native and wasm lanes through
+`p256::generate_p256_keypair_from_secret_key`; it validates an existing private
+scalar and is not random key generation. P-384 and P-521 ECDH are native Rust
+APIs today; the Swift, Kotlin, and TypeScript package facades expose their own
+provider-backed P-384/P-521 ECDH surfaces.
+
+The Swift package also includes a P-256 ECDH Secure Enclave / Keychain API for
+applications that need non-exportable private-key residency, such as JOSE/JWE
+decryption with platform-held keys. That API uses explicit handles and is
+separate from raw private-key bytes.
+
 Codec-only consumers:
 
 ```sh
@@ -113,7 +125,7 @@ cargo add reallyme-codec
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.1.3"
+    from: "0.1.5"
 )
 ```
 
@@ -125,7 +137,7 @@ cargo add reallyme-codec
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.1.3")
+    implementation("me.really:crypto:0.1.5")
 }
 ```
 

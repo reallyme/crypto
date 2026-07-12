@@ -68,10 +68,10 @@ algorithm table after it is the precise, test-enforced contract.
 
 | Family | Swift | Kotlin/JVM/Android | TypeScript | Why |
 |---|---|---|---|---|
-| SHA-2 / SHA-3 / HMAC / HKDF / PBKDF2 | CryptoKit / Digest | JCA/JCE, BouncyCastle for SHA-3 | `@noble/hashes` | Old, standard, OS-supported; byte-stable everywhere. Platform-native. |
-| AES-256-GCM | CryptoKit | JCA/JCE → BouncyCastle | ReallyMe WASM/Rust | Boring AEAD with AES-NI benefit on native lanes; TS has no stable sync native AEAD, so Rust WASM. |
+| SHA-2 / SHA-3 / HMAC / HKDF / JWA Concat KDF / PBKDF2 | CryptoKit / Digest | JCA/JCE, BouncyCastle for SHA-3 | `@noble/hashes` | Old, standard, byte-stable primitives. Platform-native where exposed by package facades. |
+| AES-128/192/256-GCM | CryptoKit | JCA/JCE → BouncyCastle | ReallyMe WASM/Rust | Boring AEAD with AES-NI benefit on native lanes; TS has no stable sync native AEAD, so Rust WASM. |
 | AES-256-KW (RFC 3394) | ReallyMe Rust C ABI | JCA/JCE → BouncyCastle | ReallyMe WASM/Rust | Deterministic key-wrap; byte-identical regardless of provider. Native where mature, Rust where cleaner. |
-| P-256 ECDH / X25519 | CryptoKit | BouncyCastle / JCA | `@noble/curves` | Standard EC with stable provider behaviour; no determinism constraint on ECDH. Native. |
+| P-256/384/521 ECDH / X25519 | CryptoKit | BouncyCastle / JCA | `@noble/curves` | Standard EC with stable provider behaviour; no determinism constraint on ECDH. Native. |
 | P-256/384/521 ECDSA sign, Ed25519 sign | ReallyMe Rust C ABI | BouncyCastle deterministic ECDSA / Ed25519 | `@noble/curves` | Signing must be deterministic (RFC 6979 / RFC 8032) and byte-identical across lanes; platform signers use random k or vary, so Rust/BC deterministic signers are chosen for byte identity. |
 | secp256k1 ECDSA / BIP-340 Schnorr | `CSecp256k1` (Bitcoin Core libsecp256k1) | libsecp256k1 via `secp256k1-kmp` (JNI) | `@noble/curves` | The constant-time reference implementation is the same C library on native lanes; hand-rolled EC on secret scalars is a timing side-channel and is forbidden. |
 | RSA verify (PKCS1v15 / PSS) | ReallyMe Rust C ABI | JCA/JCE → BouncyCastle | ReallyMe WASM/Rust | Verification only; standard and boring on JVM, Rust on Swift/TS through shared backend lanes. |
@@ -105,13 +105,19 @@ Kotlin/Android provider order:
 
 1. The Android platform provider or Conscrypt, only when behavior is available
    on the package floor and byte-stable.
-2. BouncyCastle for v0.1.1 when JVM and Android providers would otherwise
+2. BouncyCastle for the 0.1 line when JVM and Android providers would otherwise
    diverge.
 3. ReallyMe Rust C ABI or JNI, only through explicit provider-aware APIs.
 4. Typed `unsupportedAlgorithm`.
 
-Android Keystore key residency is not part of this policy. It needs a separate
-key-handle contract before a facade can select it.
+Swift P-256 ECDH also exposes a separate Secure Enclave / Keychain handle API
+for applications that need non-exportable private-key residency. The raw-byte
+ECDH facade still uses CryptoKit and remains distinct from the handle-backed
+API.
+
+Android Keystore key residency is not part of this policy. It is also not part
+of the Kotlin byte API. It needs the same explicit key-handle contract before a
+facade can select it.
 
 TypeScript provider order:
 
@@ -122,7 +128,7 @@ TypeScript provider order:
 3. ReallyMe WASM/Rust, only through an explicit WASM provider wrapper.
 4. Typed `unsupportedAlgorithm`.
 
-WebCrypto is not part of v0.1.1 because it is async-only and would force an API
+WebCrypto is not part of the 0.1 line because it is async-only and would force an API
 shape change. The TypeScript package keeps hand-written validation for enum
 membership, byte lengths, buffer shape, and provider result shape.
 
@@ -149,7 +155,7 @@ membership, byte lengths, buffer shape, and provider result shape.
 | `ML-DSA-87` | ReallyMe Rust C ABI through provider-aware API | BouncyCastle | BouncyCastle | ReallyMe WASM/Rust |
 | `SLH-DSA-SHA2-128s` | ReallyMe Rust C ABI through provider-aware API | BouncyCastle | BouncyCastle | ReallyMe WASM/Rust |
 | `X25519` | CryptoKit | BouncyCastle | BouncyCastle | `@noble/curves` |
-| `P-256-ECDH` | CryptoKit | BouncyCastle | BouncyCastle | `@noble/curves` |
+| `P-256-ECDH` | CryptoKit; Secure Enclave / Keychain through handle-backed API | BouncyCastle | BouncyCastle | `@noble/curves` |
 | `ML-KEM-512` | ReallyMe Rust C ABI through provider-aware API | BouncyCastle | BouncyCastle | ReallyMe WASM/Rust |
 | `ML-KEM-768` | ReallyMe Rust C ABI through provider-aware API | BouncyCastle | BouncyCastle | ReallyMe WASM/Rust |
 | `ML-KEM-1024` | ReallyMe Rust C ABI through provider-aware API | BouncyCastle | BouncyCastle | ReallyMe WASM/Rust |
@@ -184,7 +190,7 @@ Provider policy is enforced in `crates/conformance/vectors/tests/vectors`:
 - every package algorithm identifier must appear in this policy;
 - Swift, Kotlin/JVM, Kotlin/Android, and TypeScript lane hierarchies must remain
   present;
-- TypeScript must remain sync-first and WebCrypto-free for v0.1.1;
+- TypeScript must remain sync-first and WebCrypto-free for the 0.1 line;
 - Kotlin/JVM and Kotlin/Android must remain separate policy lanes;
 - package catalogs must name explicit providers.
 
@@ -199,9 +205,9 @@ Swift, Kotlin/JVM, Kotlin/Android, and TypeScript/WASM are separate lanes. Each
 lane either names the provider it routes to or records typed
 unsupported-algorithm behavior. Silent fallback is not allowed.
 
-TypeScript remains sync-first for v0.1.1; WebCrypto is not a package provider
+TypeScript remains sync-first for the 0.1 line; WebCrypto is not a package provider
 because it would force async facade signatures. Kotlin/JVM and Kotlin/Android
-stay separate even when v0.1.1 routes both through the same BouncyCastle-backed
+stay separate even when the 0.1 line routes both through the same BouncyCastle-backed
 implementation.
 
 <!-- BEGIN GENERATED PROVIDER MATRIX -->
@@ -226,7 +232,9 @@ implementation.
 | `ML-DSA-87` | signature | Provider-aware<br>ReallyMeRustCAbiMlDsa<br>Providers: ReallyMe Rust C ABI<br>Rust: yes<br>Fallback: explicit provider required | Supported<br>ReallyMeCrypto ML-DSA keygen/sign/verify<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeCrypto ML-DSA keygen/sign/verify<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeMlDsa<br>Providers: ReallyMe Rust WASM<br>Rust: yes<br>Fallback: typed provider failure |
 | `SLH-DSA-SHA2-128s` | signature | Provider-aware<br>ReallyMeRustCAbiSlhDsa<br>Providers: ReallyMe Rust C ABI<br>Rust: yes<br>Fallback: explicit provider required | Supported<br>ReallyMeSlhDsa<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeSlhDsa<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeSlhDsa<br>Providers: ReallyMe Rust WASM<br>Rust: yes<br>Fallback: typed provider failure |
 | `X25519` | key_agreement | Supported<br>ReallyMeX25519<br>Providers: CryptoKit<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeX25519<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeX25519<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeX25519<br>Providers: @noble/curves<br>Rust: no<br>Fallback: typed provider failure |
-| `P-256-ECDH` | key_agreement | Supported<br>ReallyMeP256Ecdh<br>Providers: CryptoKit<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeP256Ecdh<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeP256Ecdh<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeP256Ecdh<br>Providers: @noble/curves<br>Rust: no<br>Fallback: typed provider failure |
+| `P-256-ECDH` | key_agreement | Supported<br>ReallyMeP256Ecdh and ReallyMeP256SecureEnclaveEcdh<br>Providers: CryptoKit + Secure Enclave/Keychain<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeP256Ecdh<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeP256Ecdh<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeP256Ecdh<br>Providers: @noble/curves<br>Rust: no<br>Fallback: typed provider failure |
+| `P-384-ECDH` | key_agreement | Supported<br>ReallyMeP384Ecdh<br>Providers: CryptoKit<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeP384Ecdh<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeP384Ecdh<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeP384Ecdh<br>Providers: @noble/curves<br>Rust: no<br>Fallback: typed provider failure |
+| `P-521-ECDH` | key_agreement | Supported<br>ReallyMeP521Ecdh<br>Providers: CryptoKit<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeP521Ecdh<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeP521Ecdh<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeP521Ecdh<br>Providers: @noble/curves<br>Rust: no<br>Fallback: typed provider failure |
 | `ML-KEM-512` | kem | Provider-aware<br>ReallyMeRustCAbiMlKem<br>Providers: ReallyMe Rust C ABI<br>Rust: yes<br>Fallback: explicit provider required | Supported<br>ReallyMeMlKem<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeMlKem<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeMlKem<br>Providers: ReallyMe Rust WASM<br>Rust: yes<br>Fallback: typed provider failure |
 | `ML-KEM-768` | kem | Provider-aware<br>ReallyMeRustCAbiMlKem<br>Providers: ReallyMe Rust C ABI<br>Rust: yes<br>Fallback: explicit provider required | Supported<br>ReallyMeMlKem<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeMlKem<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeMlKem<br>Providers: ReallyMe Rust WASM<br>Rust: yes<br>Fallback: typed provider failure |
 | `ML-KEM-1024` | kem | Provider-aware<br>ReallyMeRustCAbiMlKem<br>Providers: ReallyMe Rust C ABI<br>Rust: yes<br>Fallback: explicit provider required | Supported<br>ReallyMeMlKem<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeMlKem<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeMlKem<br>Providers: ReallyMe Rust WASM<br>Rust: yes<br>Fallback: typed provider failure |
@@ -234,6 +242,8 @@ implementation.
 | `X-Wing-1024` | kem | Provider-aware<br>ReallyMeRustCAbiXWing<br>Providers: ReallyMe Rust C ABI<br>Rust: yes<br>Fallback: explicit provider required | Supported<br>ReallyMeXWing<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeXWing<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeXWing<br>Providers: ReallyMe Rust WASM<br>Rust: yes<br>Fallback: typed provider failure |
 | `DHKEM-P256-HKDF-SHA256-HKDF-SHA256-AES-256-GCM` | hpke | Provider-aware<br>ReallyMeRustCAbiHpke<br>Providers: ReallyMe Rust C ABI<br>Rust: yes<br>Fallback: explicit provider required | Supported<br>ReallyMeHpke<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeHpke<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeHpke<br>Providers: ReallyMe Rust WASM<br>Rust: yes<br>Fallback: typed provider failure |
 | `DHKEM-X25519-HKDF-SHA256-HKDF-SHA256-CHACHA20-POLY1305` | hpke | Provider-aware<br>ReallyMeRustCAbiHpke<br>Providers: ReallyMe Rust C ABI<br>Rust: yes<br>Fallback: explicit provider required | Supported<br>ReallyMeHpke<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeHpke<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeHpke<br>Providers: ReallyMe Rust WASM<br>Rust: yes<br>Fallback: typed provider failure |
+| `AES-128-GCM` | aead | Supported<br>ReallyMeAesGcm<br>Providers: CryptoKit<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeAesGcm<br>Providers: JCA/JCE + BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeAesGcm<br>Providers: JCA/JCE + BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeAead<br>Providers: ReallyMe Rust WASM<br>Rust: yes<br>Fallback: typed provider failure |
+| `AES-192-GCM` | aead | Supported<br>ReallyMeAesGcm<br>Providers: CryptoKit<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeAesGcm<br>Providers: JCA/JCE + BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeAesGcm<br>Providers: JCA/JCE + BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeAead<br>Providers: ReallyMe Rust WASM<br>Rust: yes<br>Fallback: typed provider failure |
 | `AES-256-GCM` | aead | Supported<br>ReallyMeAesGcm<br>Providers: CryptoKit<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeAesGcm<br>Providers: JCA/JCE + BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeAesGcm<br>Providers: JCA/JCE + BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeAead<br>Providers: ReallyMe Rust WASM<br>Rust: yes<br>Fallback: typed provider failure |
 | `AES-256-GCM-SIV` | aead | Provider-aware<br>ReallyMeRustCAbiAead<br>Providers: ReallyMe Rust C ABI<br>Rust: yes<br>Fallback: explicit provider required | Provider-aware<br>ReallyMeRustNativeProvider + ReallyMeRustAead<br>Providers: ReallyMe Rust C ABI<br>Rust: yes<br>Fallback: explicit provider required | Provider-aware<br>ReallyMeRustNativeProvider + ReallyMeRustAead<br>Providers: ReallyMe Rust C ABI<br>Rust: yes<br>Fallback: explicit provider required | Supported<br>ReallyMeAead<br>Providers: ReallyMe Rust WASM<br>Rust: yes<br>Fallback: typed provider failure |
 | `ChaCha20-Poly1305` | aead | Supported<br>ReallyMeChaCha20Poly1305<br>Providers: CryptoKit<br>Rust: no<br>Fallback: typed provider failure | Provider-aware<br>ReallyMeRustNativeProvider + ReallyMeRustAead<br>Providers: ReallyMe Rust C ABI<br>Rust: yes<br>Fallback: explicit provider required | Provider-aware<br>ReallyMeRustNativeProvider + ReallyMeRustAead<br>Providers: ReallyMe Rust C ABI<br>Rust: yes<br>Fallback: explicit provider required | Supported<br>ReallyMeAead<br>Providers: ReallyMe Rust WASM<br>Rust: yes<br>Fallback: typed provider failure |
@@ -251,6 +261,7 @@ implementation.
 | `Argon2id` | kdf | Provider-aware<br>ReallyMeRustCAbiArgon2id<br>Providers: ReallyMe Rust C ABI<br>Rust: yes<br>Fallback: explicit provider required | Provider-aware<br>ReallyMeRustNativeProvider + ReallyMeArgon2id<br>Providers: ReallyMe Rust C ABI<br>Rust: yes<br>Fallback: explicit provider required | Provider-aware<br>ReallyMeRustNativeProvider + ReallyMeArgon2id<br>Providers: ReallyMe Rust C ABI<br>Rust: yes<br>Fallback: explicit provider required | Supported<br>ReallyMeArgon2id<br>Providers: ReallyMe Rust WASM<br>Rust: yes<br>Fallback: typed provider failure |
 | `PBKDF2-HMAC-SHA-256` | kdf | Supported<br>ReallyMePbkdf2.deriveHmacSha*<br>Providers: CryptoKit<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMePbkdf2.deriveHmacSha*<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMePbkdf2.deriveHmacSha*<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMePbkdf2.deriveHmacSha*<br>Providers: @noble/hashes<br>Rust: no<br>Fallback: typed provider failure |
 | `PBKDF2-HMAC-SHA-512` | kdf | Supported<br>ReallyMePbkdf2.deriveHmacSha*<br>Providers: CryptoKit<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMePbkdf2.deriveHmacSha*<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMePbkdf2.deriveHmacSha*<br>Providers: BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMePbkdf2.deriveHmacSha*<br>Providers: @noble/hashes<br>Rust: no<br>Fallback: typed provider failure |
+| `JWA-CONCAT-KDF-SHA256` | kdf | Supported<br>ReallyMeJwaConcatKdf<br>Providers: CryptoKit<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeJwaConcatKdf<br>Providers: JCA/JCE<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeJwaConcatKdf<br>Providers: JCA/JCE<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeJwaConcatKdf<br>Providers: @noble/hashes<br>Rust: no<br>Fallback: typed provider failure |
 | `AES-256-KW` | key_wrap | Provider-aware<br>ReallyMeRustCAbiAesKw<br>Providers: ReallyMe Rust C ABI<br>Rust: yes<br>Fallback: explicit provider required | Supported<br>ReallyMeAesKw<br>Providers: JCA/JCE + BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeAesKw<br>Providers: JCA/JCE + BouncyCastle<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeAesKw<br>Providers: ReallyMe Rust WASM<br>Rust: yes<br>Fallback: typed provider failure |
 | `Multicodec/multikey public-key codecs` | codec | Supported<br>ReallyMeMulticodec / ReallyMeMultikey<br>Providers: Digest<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeMulticodec / ReallyMeMultikey<br>Providers: Kotlin/JDK stdlib<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeMulticodec / ReallyMeMultikey<br>Providers: Kotlin/JDK stdlib<br>Rust: no<br>Fallback: typed provider failure | Supported<br>ReallyMeCodecs<br>Providers: ReallyMe Rust WASM<br>Rust: yes<br>Fallback: typed provider failure |
 <!-- END GENERATED PROVIDER MATRIX -->

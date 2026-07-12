@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-concat-kdf"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+publish = true
+description = "JWA ECDH-ES Concat KDF primitive for ReallyMe Crypto."
+license.workspace = true
+repository.workspace = true
+
+[lib]
+name = "crypto_concat_kdf"
+
+[features]
+default = []
+native = []
+wasm = []
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "../../core" }
+sha2 = { workspace = true }
+zeroize = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+hex = { workspace = true }
+
+[lints]
+workspace = true

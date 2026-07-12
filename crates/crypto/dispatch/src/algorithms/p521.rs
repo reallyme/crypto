@@ -57,3 +57,24 @@ impl SignatureAlgorithm for P521Algo {
         }
     }
 }
+
+impl P521Algo {
+    /// Derive the P-521 ECDH shared secret; the returned value zeroizes on
+    /// drop and must be passed through a protocol KDF before key use.
+    pub fn derive_shared_secret(
+        secret_key: &[u8],
+        public_key: &[u8],
+    ) -> Result<Zeroizing<Vec<u8>>, AlgorithmError> {
+        #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
+        {
+            return crypto_p521::derive_p521_shared_secret(secret_key, public_key)
+                .map_err(AlgorithmError::from);
+        }
+
+        #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
+        {
+            let _ = (secret_key, public_key);
+            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+        }
+    }
+}

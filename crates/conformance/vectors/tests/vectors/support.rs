@@ -45,13 +45,15 @@ pub(crate) enum VectorTestError {
     Bip340SchnorrMismatch,
     #[error("BIP-340 Schnorr accepted a tampered signature")]
     Bip340SchnorrTamperAccepted,
-    #[error("failed to construct AES-256-GCM key")]
+    #[error("failed to construct AES-GCM key")]
     AesKey,
-    #[error("failed to construct AES-256-GCM nonce")]
+    #[error("failed to construct AES-GCM nonce")]
     AesNonce,
-    #[error("failed to construct AES-256-GCM ciphertext")]
+    #[error("failed to construct AES-GCM ciphertext")]
     AesCiphertext,
-    #[error("failed to decrypt AES-256-GCM vector")]
+    #[error("failed to encrypt AES-GCM vector")]
+    AesEncrypt,
+    #[error("failed to decrypt AES-GCM vector")]
     AesDecrypt,
     #[error("failed to compute AES-256-KW vector")]
     AesKw,
@@ -77,6 +79,8 @@ pub(crate) enum VectorTestError {
     Pbkdf2,
     #[error("failed to compute HKDF vector")]
     Hkdf,
+    #[error("failed to compute JWA Concat KDF vector")]
+    ConcatKdf,
     #[error("failed to compute AES-256-GCM-SIV vector")]
     AesGcmSiv,
     #[error("failed to compute Argon2id vector")]
