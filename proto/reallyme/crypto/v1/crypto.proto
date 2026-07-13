@@ -10,6 +10,81 @@ option java_multiple_files = true;
 option java_package = "me.really.crypto.v1";
 option swift_prefix = "ReallyMeProto";
 
+// CryptoError is the public, non-PII error envelope for crypto boundary
+// failures. The oneof keeps primitive, provider, and backend failures distinct
+// while the shared CryptoErrorReason enum provides stable cross-language reason
+// codes.
+message CryptoError {
+  oneof error {
+    CryptoPrimitiveError primitive = 1;
+    CryptoProviderError provider = 2;
+    CryptoBackendError backend = 3;
+  }
+}
+
+// CryptoPrimitiveError describes failures owned by primitive input validation,
+// key handling, encryption, decryption, signing, verification, KEM, KDF, MAC,
+// and key-wrap operations.
+message CryptoPrimitiveError {
+  // Reason must be one of the CRYPTO_ERROR_REASON_PRIMITIVE_* values.
+  CryptoErrorReason reason = 1;
+}
+
+// CryptoProviderError describes provider selection and platform-provider
+// availability failures.
+message CryptoProviderError {
+  // Reason must be one of the CRYPTO_ERROR_REASON_PROVIDER_* values.
+  CryptoErrorReason reason = 1;
+}
+
+// CryptoBackendError describes dispatch, FFI, WASM, and internal backend
+// failures that are not safe to expose as backend exception text.
+message CryptoBackendError {
+  // Reason must be one of the CRYPTO_ERROR_REASON_BACKEND_* values.
+  CryptoErrorReason reason = 1;
+}
+
+// CryptoErrorReason is the component-owned reason-code enum for reallyme/crypto.
+// Values are stable public boundary codes; internal Rust, Swift, Kotlin, and
+// TypeScript errors must map into one of these before crossing RPC, SDK, FFI,
+// storage, audit, or telemetry boundaries. Numeric ranges are intentionally
+// split by crypto subpart:
+//   100-199: primitive operations and validation
+//   200-299: provider selection and availability
+//   300-399: backend dispatch and internal failures
+enum CryptoErrorReason {
+  CRYPTO_ERROR_REASON_UNSPECIFIED = 0;
+
+  // Primitive input, key material, and byte-format validation.
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PARAMETER = 100;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH = 101;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY = 102;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PUBLIC_KEY = 103;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PRIVATE_KEY = 104;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_NONCE = 105;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SALT = 106;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PASSWORD = 107;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_ENCODING = 108;
+
+  // Primitive operation failures.
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SIGNATURE = 120;
+  CRYPTO_ERROR_REASON_PRIMITIVE_VERIFICATION_FAILED = 121;
+  CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED = 122;
+  CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_CIPHERTEXT = 123;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_TAG = 124;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SHARED_SECRET = 125;
+
+  // Provider policy and availability.
+  CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_ALGORITHM = 200;
+  CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_BACKEND = 201;
+  CRYPTO_ERROR_REASON_PROVIDER_UNAVAILABLE = 202;
+  CRYPTO_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE = 203;
+
+  // Backend dispatch and internal state.
+  CRYPTO_ERROR_REASON_BACKEND_INVALID_STATE = 300;
+  CRYPTO_ERROR_REASON_BACKEND_INTERNAL = 301;
+}
+
 // CryptoAlgorithmFamily classifies an algorithm identifier without implying
 // that the identifier is valid for a specific operation.
 enum CryptoAlgorithmFamily {

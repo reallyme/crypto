@@ -4,13 +4,14 @@
 
 [package]
 name = "reallyme-crypto-proto"
-version = "0.1.2"
+version = "0.1.3"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 publish = true
 description = "ReallyMe crypto protobuf identifiers generated with Buffa."
+include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 
 [features]
 default = []

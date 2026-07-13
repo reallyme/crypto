@@ -32,11 +32,31 @@ pub mod __buffa {
     }
     /// Register this package's `Any` type entries and extension entries.
     pub fn register_types(reg: &mut ::buffa::type_registry::TypeRegistry) {
+        reg.register_json_any(super::__CRYPTO_ERROR_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_PRIMITIVE_ERROR_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_PROVIDER_ERROR_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_BACKEND_ERROR_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_ALGORITHM_IDENTIFIER_JSON_ANY);
         reg.register_json_any(super::__JSON_WEB_KEY_JSON_ANY);
         reg.register_json_any(super::__JSON_WEB_KEY_SET_JSON_ANY);
     }
 }
+#[doc(inline)]
+pub use self::__buffa::view::CryptoErrorView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoErrorOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoPrimitiveErrorView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoPrimitiveErrorOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoProviderErrorView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoProviderErrorOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoBackendErrorView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoBackendErrorOwnedView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoAlgorithmIdentifierView;
 #[doc(inline)]

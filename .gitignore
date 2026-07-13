@@ -46,6 +46,8 @@ proptest-regressions/
 **/src/generated/**
 !crates/proto/crypto/src/generated/
 !crates/proto/crypto/src/generated/**
+!crates/proto/codec/src/generated/
+!crates/proto/codec/src/generated/**
 !packages/ts/src/proto/generated/
 !packages/ts/src/proto/generated/**
 **/src/pb

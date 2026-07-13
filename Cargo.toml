@@ -55,6 +55,7 @@ members = [
     "crates/envelopes/jwk",
     "crates/envelopes/jwk-multikey",
     "crates/conformance/vectors",
+    "crates/proto/codec",
     "crates/proto/crypto",
 ]
 exclude = ["core", "fuzz"]
@@ -160,7 +161,7 @@ large_include_file = "deny"
 
 [package]
 name = "reallyme-crypto"
-version = "0.1.7"
+version = "0.1.8"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -210,7 +211,7 @@ crypto-slh-dsa = { package = "reallyme-crypto-slh-dsa", version = "0.1.2", path 
 crypto-x25519 = { package = "reallyme-crypto-x25519", version = "0.1.2", path = "crates/crypto/primitives/x25519", optional = true, default-features = false }
 crypto-x-wing = { package = "reallyme-crypto-x-wing", version = "0.1.1", path = "crates/crypto/primitives/x-wing", optional = true, default-features = false }
 crypto-hpke = { package = "reallyme-crypto-hpke", version = "0.1.1", path = "crates/crypto/protocols/hpke", optional = true, default-features = false }
-reallyme-codec = { version = "0.1.7", path = "crates/codec", optional = true, default-features = false }
+reallyme-codec = { version = "0.1.8", path = "crates/codec", optional = true, default-features = false }
 codec-base64 = { package = "reallyme-codec-base64", version = "0.1.1", path = "crates/codec/base64", optional = true }
 codec-base64url = { package = "reallyme-codec-base64url", version = "0.1.7", path = "crates/codec/base64url", optional = true }
 codec-cbor = { package = "reallyme-codec-cbor", version = "0.1.1", path = "crates/codec/cbor", optional = true }

@@ -1441,7 +1441,7 @@ checksum = "63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69"
 
 [[package]]
 name = "reallyme-codec"
-version = "0.1.7"
+version = "0.1.8"
 dependencies = [
  "reallyme-codec-base64",
  "reallyme-codec-base64url",
@@ -1531,8 +1531,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "reallyme-codec-proto"
+version = "0.1.0"
+dependencies = [
+ "buffa",
+ "serde",
+]
+
+[[package]]
 name = "reallyme-crypto"
-version = "0.1.7"
+version = "0.1.8"
 dependencies = [
  "reallyme-codec",
  "reallyme-codec-base64",
@@ -1901,7 +1909,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-proto"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "buffa",
  "reallyme-crypto-core",

@@ -160,6 +160,8 @@ import {
 } from "../dist/index.js";
 import {
   AeadAlgorithm,
+  CodecErrorReason,
+  CryptoErrorReason,
   HashAlgorithm,
   KdfAlgorithm,
   KeyAgreementAlgorithm,
@@ -305,6 +307,8 @@ test("proto adapters round-trip supported algorithms and reject reserved values"
     multicodecKeyAlgorithmFromProto(MulticodecKeyAlgorithm.ML_KEM_768_PUB),
     "mlkem-768-pub",
   );
+  assert.equal(CryptoErrorReason.PRIMITIVE_VERIFICATION_FAILED, 121);
+  assert.equal(CodecErrorReason.PEM_INVALID_BOUNDARY, 200);
   assertUnsupportedAlgorithm(() => hashAlgorithmFromProto(HashAlgorithm.UNSPECIFIED));
   assertUnsupportedAlgorithm(() =>
     multicodecKeyAlgorithmFromProto(MulticodecKeyAlgorithm.ED25519_PRIV),
