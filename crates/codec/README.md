@@ -20,7 +20,7 @@ Canonicalization Scheme helpers.
 
 ```toml
 [dependencies]
-reallyme-codec = "0.1.7"
+reallyme-codec = "0.1.8"
 ```
 
 The default feature set enables every codec family. Consumers that need a
@@ -28,7 +28,7 @@ smaller dependency surface can select only the families they use:
 
 ```toml
 [dependencies]
-reallyme-codec = { version = "0.1.7", default-features = false, features = ["base64url", "multikey"] }
+reallyme-codec = { version = "0.1.8", default-features = false, features = ["base64url", "multikey"] }
 ```
 
 ## Quick Start

@@ -9,9 +9,23 @@ plugins:
   - local: protoc-gen-buffa
     out: crates/proto/crypto/src/generated/buffa
     opt: [views=true, json=true]
+    types:
+      - reallyme.crypto.v1.**
   - local: protoc-gen-buffa-packaging
     out: crates/proto/crypto/src/generated/buffa
     strategy: all
+    types:
+      - reallyme.crypto.v1.**
+  - local: protoc-gen-buffa
+    out: crates/proto/codec/src/generated/buffa
+    opt: [views=true, json=true]
+    types:
+      - reallyme.codec.v1.**
+  - local: protoc-gen-buffa-packaging
+    out: crates/proto/codec/src/generated/buffa
+    strategy: all
+    types:
+      - reallyme.codec.v1.**
 
   # TypeScript
   - remote: buf.build/bufbuild/es

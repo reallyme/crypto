@@ -114,6 +114,20 @@ const PROTO_ENUM_VALUES: &[(&str, i32)] = &[
     ("MULTICODEC_KEY_ALGORITHM_ML_KEM_1024_PRIV", 25),
 ];
 
+const PROTO_ALGORITHM_ENUMS: &[&str] = &[
+    "CryptoAlgorithmFamily",
+    "SignatureAlgorithm",
+    "KeyAgreementAlgorithm",
+    "KemAlgorithm",
+    "HpkeSuite",
+    "AeadAlgorithm",
+    "HashAlgorithm",
+    "MacAlgorithm",
+    "KdfAlgorithm",
+    "KeyWrapAlgorithm",
+    "MulticodecKeyAlgorithm",
+];
+
 const VECTOR_ALG_STRINGS: &[&str] = &[
     "AES-128",
     "AES-128-GCM",
@@ -328,11 +342,27 @@ fn collect_alg_strings(value: &Value, out: &mut BTreeSet<String>) {
     }
 }
 
-fn parse_proto_enum_values(proto: &str) -> BTreeMap<String, i32> {
+fn parse_proto_enum_values(proto: &str, enum_names: &[&str]) -> BTreeMap<String, i32> {
     let mut values = BTreeMap::new();
+    let allowed_enums = enum_names.iter().copied().collect::<BTreeSet<_>>();
+    let mut include_current_enum = false;
 
     for line in proto.lines() {
         let trimmed = line.trim();
+        if let Some(enum_name) = trimmed
+            .strip_prefix("enum ")
+            .and_then(|rest| rest.strip_suffix(" {"))
+        {
+            include_current_enum = allowed_enums.contains(enum_name);
+            continue;
+        }
+        if trimmed == "}" {
+            include_current_enum = false;
+            continue;
+        }
+        if !include_current_enum {
+            continue;
+        }
         let Some((name, rest)) = trimmed.split_once(" = ") else {
             continue;
         };
@@ -356,7 +386,7 @@ fn parse_proto_enum_values(proto: &str) -> BTreeMap<String, i32> {
 #[test]
 fn protobuf_algorithm_enum_numbers_are_stable() -> Result<(), VectorTestError> {
     let proto = read_repo_file("proto/reallyme/crypto/v1/crypto.proto")?;
-    let actual = parse_proto_enum_values(&proto);
+    let actual = parse_proto_enum_values(&proto, PROTO_ALGORITHM_ENUMS);
     let expected = PROTO_ENUM_VALUES
         .iter()
         .map(|(name, value)| ((*name).to_owned(), *value))

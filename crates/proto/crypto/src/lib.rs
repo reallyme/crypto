@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-//! ReallyMe crypto protobuf identifiers and generated Buffa bindings.
+//! ReallyMe crypto protobuf identifiers with generated Buffa bindings.
 
 /// Generated protobuf boundary.
 pub mod generated;

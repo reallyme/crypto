@@ -29,6 +29,136 @@ fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobu
   typealias Version = _2
 }
 
+/// CryptoErrorReason is the component-owned reason-code enum for reallyme/crypto.
+/// Values are stable public boundary codes; internal Rust, Swift, Kotlin, and
+/// TypeScript errors must map into one of these before crossing RPC, SDK, FFI,
+/// storage, audit, or telemetry boundaries. Numeric ranges are intentionally
+/// split by crypto subpart:
+///   100-199: primitive operations and validation
+///   200-299: provider selection and availability
+///   300-399: backend dispatch and internal failures
+public nonisolated enum ReallyMeProtoCryptoErrorReason: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case unspecified // = 0
+
+  /// Primitive input, key material, and byte-format validation.
+  case primitiveInvalidParameter // = 100
+  case primitiveInvalidLength // = 101
+  case primitiveInvalidKey // = 102
+  case primitiveInvalidPublicKey // = 103
+  case primitiveInvalidPrivateKey // = 104
+  case primitiveInvalidNonce // = 105
+  case primitiveInvalidSalt // = 106
+  case primitiveInvalidPassword // = 107
+  case primitiveInvalidEncoding // = 108
+
+  /// Primitive operation failures.
+  case primitiveInvalidSignature // = 120
+  case primitiveVerificationFailed // = 121
+  case primitiveAuthenticationFailed // = 122
+  case primitiveMalformedCiphertext // = 123
+  case primitiveInvalidTag // = 124
+  case primitiveInvalidSharedSecret // = 125
+
+  /// Provider policy and availability.
+  case providerUnsupportedAlgorithm // = 200
+  case providerUnsupportedBackend // = 201
+  case providerUnavailable // = 202
+  case providerRandomnessUnavailable // = 203
+
+  /// Backend dispatch and internal state.
+  case backendInvalidState // = 300
+  case backendInternal // = 301
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 100: self = .primitiveInvalidParameter
+    case 101: self = .primitiveInvalidLength
+    case 102: self = .primitiveInvalidKey
+    case 103: self = .primitiveInvalidPublicKey
+    case 104: self = .primitiveInvalidPrivateKey
+    case 105: self = .primitiveInvalidNonce
+    case 106: self = .primitiveInvalidSalt
+    case 107: self = .primitiveInvalidPassword
+    case 108: self = .primitiveInvalidEncoding
+    case 120: self = .primitiveInvalidSignature
+    case 121: self = .primitiveVerificationFailed
+    case 122: self = .primitiveAuthenticationFailed
+    case 123: self = .primitiveMalformedCiphertext
+    case 124: self = .primitiveInvalidTag
+    case 125: self = .primitiveInvalidSharedSecret
+    case 200: self = .providerUnsupportedAlgorithm
+    case 201: self = .providerUnsupportedBackend
+    case 202: self = .providerUnavailable
+    case 203: self = .providerRandomnessUnavailable
+    case 300: self = .backendInvalidState
+    case 301: self = .backendInternal
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .primitiveInvalidParameter: return 100
+    case .primitiveInvalidLength: return 101
+    case .primitiveInvalidKey: return 102
+    case .primitiveInvalidPublicKey: return 103
+    case .primitiveInvalidPrivateKey: return 104
+    case .primitiveInvalidNonce: return 105
+    case .primitiveInvalidSalt: return 106
+    case .primitiveInvalidPassword: return 107
+    case .primitiveInvalidEncoding: return 108
+    case .primitiveInvalidSignature: return 120
+    case .primitiveVerificationFailed: return 121
+    case .primitiveAuthenticationFailed: return 122
+    case .primitiveMalformedCiphertext: return 123
+    case .primitiveInvalidTag: return 124
+    case .primitiveInvalidSharedSecret: return 125
+    case .providerUnsupportedAlgorithm: return 200
+    case .providerUnsupportedBackend: return 201
+    case .providerUnavailable: return 202
+    case .providerRandomnessUnavailable: return 203
+    case .backendInvalidState: return 300
+    case .backendInternal: return 301
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [ReallyMeProtoCryptoErrorReason] = [
+    .unspecified,
+    .primitiveInvalidParameter,
+    .primitiveInvalidLength,
+    .primitiveInvalidKey,
+    .primitiveInvalidPublicKey,
+    .primitiveInvalidPrivateKey,
+    .primitiveInvalidNonce,
+    .primitiveInvalidSalt,
+    .primitiveInvalidPassword,
+    .primitiveInvalidEncoding,
+    .primitiveInvalidSignature,
+    .primitiveVerificationFailed,
+    .primitiveAuthenticationFailed,
+    .primitiveMalformedCiphertext,
+    .primitiveInvalidTag,
+    .primitiveInvalidSharedSecret,
+    .providerUnsupportedAlgorithm,
+    .providerUnsupportedBackend,
+    .providerUnavailable,
+    .providerRandomnessUnavailable,
+    .backendInvalidState,
+    .backendInternal,
+  ]
+
+}
+
 /// CryptoAlgorithmFamily classifies an algorithm identifier without implying
 /// that the identifier is valid for a specific operation.
 public nonisolated enum ReallyMeProtoCryptoAlgorithmFamily: SwiftProtobuf.Enum, Swift.CaseIterable {
@@ -714,6 +844,99 @@ public nonisolated enum ReallyMeProtoMulticodecKeyAlgorithm: SwiftProtobuf.Enum,
 
 }
 
+/// CryptoError is the public, non-PII error envelope for crypto boundary
+/// failures. The oneof keeps primitive, provider, and backend failures distinct
+/// while the shared CryptoErrorReason enum provides stable cross-language reason
+/// codes.
+public nonisolated struct ReallyMeProtoCryptoError: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var error: ReallyMeProtoCryptoError.OneOf_Error? = nil
+
+  public var primitive: ReallyMeProtoCryptoPrimitiveError {
+    get {
+      if case .primitive(let v)? = error {return v}
+      return ReallyMeProtoCryptoPrimitiveError()
+    }
+    set {error = .primitive(newValue)}
+  }
+
+  public var provider: ReallyMeProtoCryptoProviderError {
+    get {
+      if case .provider(let v)? = error {return v}
+      return ReallyMeProtoCryptoProviderError()
+    }
+    set {error = .provider(newValue)}
+  }
+
+  public var backend: ReallyMeProtoCryptoBackendError {
+    get {
+      if case .backend(let v)? = error {return v}
+      return ReallyMeProtoCryptoBackendError()
+    }
+    set {error = .backend(newValue)}
+  }
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public nonisolated enum OneOf_Error: Equatable, Sendable {
+    case primitive(ReallyMeProtoCryptoPrimitiveError)
+    case provider(ReallyMeProtoCryptoProviderError)
+    case backend(ReallyMeProtoCryptoBackendError)
+
+  }
+
+  public init() {}
+}
+
+/// CryptoPrimitiveError describes failures owned by primitive input validation,
+/// key handling, encryption, decryption, signing, verification, KEM, KDF, MAC,
+/// and key-wrap operations.
+public nonisolated struct ReallyMeProtoCryptoPrimitiveError: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Reason must be one of the CRYPTO_ERROR_REASON_PRIMITIVE_* values.
+  public var reason: ReallyMeProtoCryptoErrorReason = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// CryptoProviderError describes provider selection and platform-provider
+/// availability failures.
+public nonisolated struct ReallyMeProtoCryptoProviderError: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Reason must be one of the CRYPTO_ERROR_REASON_PROVIDER_* values.
+  public var reason: ReallyMeProtoCryptoErrorReason = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// CryptoBackendError describes dispatch, FFI, WASM, and internal backend
+/// failures that are not safe to expose as backend exception text.
+public nonisolated struct ReallyMeProtoCryptoBackendError: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Reason must be one of the CRYPTO_ERROR_REASON_BACKEND_* values.
+  public var reason: ReallyMeProtoCryptoErrorReason = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
 /// CryptoAlgorithmIdentifier is a oneof wrapper for protocol messages that need
 /// to carry a typed algorithm choice without using free-form strings.
 public nonisolated struct ReallyMeProtoCryptoAlgorithmIdentifier: Sendable {
@@ -868,6 +1091,10 @@ public nonisolated struct ReallyMeProtoJsonWebKeySet: Sendable {
 
 fileprivate nonisolated let _protobuf_package = "reallyme.crypto.v1"
 
+nonisolated extension ReallyMeProtoCryptoErrorReason: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CRYPTO_ERROR_REASON_UNSPECIFIED\0\u{2}d\u{1}CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PARAMETER\0\u{1}CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH\0\u{1}CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY\0\u{1}CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PUBLIC_KEY\0\u{1}CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PRIVATE_KEY\0\u{1}CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_NONCE\0\u{1}CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SALT\0\u{1}CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PASSWORD\0\u{1}CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_ENCODING\0\u{2}\u{c}CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SIGNATURE\0\u{1}CRYPTO_ERROR_REASON_PRIMITIVE_VERIFICATION_FAILED\0\u{1}CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED\0\u{1}CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_CIPHERTEXT\0\u{1}CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_TAG\0\u{1}CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SHARED_SECRET\0\u{2}K\u{1}CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_ALGORITHM\0\u{1}CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_BACKEND\0\u{1}CRYPTO_ERROR_REASON_PROVIDER_UNAVAILABLE\0\u{1}CRYPTO_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE\0\u{2}a\u{1}CRYPTO_ERROR_REASON_BACKEND_INVALID_STATE\0\u{1}CRYPTO_ERROR_REASON_BACKEND_INTERNAL\0")
+}
+
 nonisolated extension ReallyMeProtoCryptoAlgorithmFamily: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CRYPTO_ALGORITHM_FAMILY_UNSPECIFIED\0\u{1}CRYPTO_ALGORITHM_FAMILY_SIGNATURE\0\u{1}CRYPTO_ALGORITHM_FAMILY_KEY_AGREEMENT\0\u{1}CRYPTO_ALGORITHM_FAMILY_KEM\0\u{1}CRYPTO_ALGORITHM_FAMILY_AEAD\0\u{1}CRYPTO_ALGORITHM_FAMILY_HASH\0\u{1}CRYPTO_ALGORITHM_FAMILY_MAC\0\u{1}CRYPTO_ALGORITHM_FAMILY_KDF\0\u{1}CRYPTO_ALGORITHM_FAMILY_KEY_WRAP\0\u{1}CRYPTO_ALGORITHM_FAMILY_HPKE\0")
 }
@@ -910,6 +1137,180 @@ nonisolated extension ReallyMeProtoKeyWrapAlgorithm: SwiftProtobuf._ProtoNamePro
 
 nonisolated extension ReallyMeProtoMulticodecKeyAlgorithm: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0MULTICODEC_KEY_ALGORITHM_UNSPECIFIED\0\u{1}MULTICODEC_KEY_ALGORITHM_ED25519_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_X25519_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_SECP256K1_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_P256_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_P384_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_P521_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_ED448_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_RSA_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_KEM_512_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_KEM_768_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_KEM_1024_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_DSA_44_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_DSA_65_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_DSA_87_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_ED25519_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_X25519_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_SECP256K1_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_P256_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_P384_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_P521_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_ED448_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_RSA_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_KEM_512_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_KEM_768_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_KEM_1024_PRIV\0")
+}
+
+nonisolated extension ReallyMeProtoCryptoError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoError"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}primitive\0\u{1}provider\0\u{1}backend\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try {
+        var v: ReallyMeProtoCryptoPrimitiveError?
+        var hadOneofValue = false
+        if let current = self.error {
+          hadOneofValue = true
+          if case .primitive(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.error = .primitive(v)
+        }
+      }()
+      case 2: try {
+        var v: ReallyMeProtoCryptoProviderError?
+        var hadOneofValue = false
+        if let current = self.error {
+          hadOneofValue = true
+          if case .provider(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.error = .provider(v)
+        }
+      }()
+      case 3: try {
+        var v: ReallyMeProtoCryptoBackendError?
+        var hadOneofValue = false
+        if let current = self.error {
+          hadOneofValue = true
+          if case .backend(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.error = .backend(v)
+        }
+      }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    switch self.error {
+    case .primitive?: try {
+      guard case .primitive(let v)? = self.error else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    }()
+    case .provider?: try {
+      guard case .provider(let v)? = self.error else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    }()
+    case .backend?: try {
+      guard case .backend(let v)? = self.error else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    }()
+    case nil: break
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoError, rhs: ReallyMeProtoCryptoError) -> Bool {
+    if lhs.error != rhs.error {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoPrimitiveError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoPrimitiveError"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}reason\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.reason) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.reason != .unspecified {
+      try visitor.visitSingularEnumField(value: self.reason, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoPrimitiveError, rhs: ReallyMeProtoCryptoPrimitiveError) -> Bool {
+    if lhs.reason != rhs.reason {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoProviderError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoProviderError"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}reason\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.reason) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.reason != .unspecified {
+      try visitor.visitSingularEnumField(value: self.reason, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoProviderError, rhs: ReallyMeProtoCryptoProviderError) -> Bool {
+    if lhs.reason != rhs.reason {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoBackendError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoBackendError"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}reason\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.reason) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.reason != .unspecified {
+      try visitor.visitSingularEnumField(value: self.reason, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoBackendError, rhs: ReallyMeProtoCryptoBackendError) -> Bool {
+    if lhs.reason != rhs.reason {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
 }
 
 nonisolated extension ReallyMeProtoCryptoAlgorithmIdentifier: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {

@@ -47,7 +47,7 @@ of silently falling back to another implementation.
 | Swift | `ReallyMeCrypto` | Swift Package at the repository root, with native Apple providers and Rust C ABI routes where needed. |
 | Kotlin | [`me.really:crypto`](https://central.sonatype.com/artifact/me.really/crypto) | JVM/Android package with explicit JCA/JCE, BouncyCastle, and Rust-backed routes. |
 | TypeScript | [`@reallyme/crypto`](https://www.npmjs.com/package/@reallyme/crypto) | npm package for Node, browsers, and WASM-backed primitives. |
-| Protobuf | `reallyme/crypto/v1/crypto.proto` | Importable algorithm identifiers for wire and configuration contracts. |
+| Protobuf | `reallyme/crypto/v1/crypto.proto`, `reallyme/codec/v1/codec.proto` | Importable identifiers and non-PII error envelopes for wire and configuration contracts. |
 
 ## Supported Algorithms
 
@@ -90,7 +90,7 @@ When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.1.7", default-features = false, features = [
+reallyme-crypto = { version = "0.1.8", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -104,7 +104,7 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.1.7", default-features = false, features = [
+reallyme-crypto = { version = "0.1.8", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }
@@ -116,7 +116,7 @@ HKDF, HMAC, ML-KEM-768, SHA-2, and X25519. It does not enable `dispatch` or
 through algorithm-by-identifier dispatch:
 
 ```toml
-reallyme-crypto = { version = "0.1.7", default-features = false, features = [
+reallyme-crypto = { version = "0.1.8", default-features = false, features = [
   "native",
   "messaging-dispatch",
 ] }
@@ -156,7 +156,7 @@ cargo add reallyme-codec
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.1.7"
+    from: "0.1.8"
 )
 ```
 
@@ -168,7 +168,7 @@ cargo add reallyme-codec
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.1.6")
+    implementation("me.really:crypto:0.1.8")
 }
 ```
 
@@ -227,17 +227,18 @@ rather than a boolean that can be accidentally ignored.
 ## Protobuf
 
 The importable wire/config contract lives at
-[`proto/reallyme/crypto/v1/crypto.proto`](proto/reallyme/crypto/v1/crypto.proto).
-Service, application, and storage protos can import it when they need stable
-crypto algorithm identifiers.
+[`proto/reallyme/crypto/v1/crypto.proto`](proto/reallyme/crypto/v1/crypto.proto)
+and [`proto/reallyme/codec/v1/codec.proto`](proto/reallyme/codec/v1/codec.proto).
+Service, application, and storage protos can import them when they need stable
+algorithm identifiers or non-secret error envelopes.
 
 The generated proto adapters are available through:
 
 | Language | Proto surface |
 |---|---|
-| Rust | `reallyme-crypto-proto` |
+| Rust | `reallyme-crypto-proto` and `reallyme-codec-proto` |
 | Swift | `ReallyMeCryptoProto` and `ReallyMeCryptoProtoAdapters` |
-| Kotlin | `me.really.crypto.v1` and `me.really.crypto.proto` |
+| Kotlin | `me.really.crypto.v1`, `me.really.codec.v1`, and `me.really.crypto.proto` |
 | TypeScript | `@reallyme/crypto/proto` |
 
 See [docs/protobuf.md](docs/protobuf.md) for the boundary rules and adapter
@@ -249,7 +250,8 @@ policy.
   selection for every algorithm and lane.
 - [CONTRACT.md](CONTRACT.md) — the public package and wire contract.
 - [docs/jwk.md](docs/jwk.md) — JWK and multikey encoding.
-- [docs/protobuf.md](docs/protobuf.md) — protobuf identifiers and boundary rules.
+- [docs/protobuf.md](docs/protobuf.md) — protobuf identifiers, error envelopes,
+  and boundary rules.
 - [docs/conformance.md](docs/conformance.md) — running the conformance vectors.
 - [docs/dependency-updates.md](docs/dependency-updates.md) — dependency update
   policy and Renovate review rules.

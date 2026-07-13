@@ -14,7 +14,114 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file reallyme/crypto/v1/crypto.proto.
  */
 export const file_reallyme_crypto_v1_crypto: GenFile = /*@__PURE__*/
-  fileDesc("Ch9yZWFsbHltZS9jcnlwdG8vdjEvY3J5cHRvLnByb3RvEhJyZWFsbHltZS5jcnlwdG8udjEi0QQKGUNyeXB0b0FsZ29yaXRobUlkZW50aWZpZXISOwoJc2lnbmF0dXJlGAEgASgOMiYucmVhbGx5bWUuY3J5cHRvLnYxLlNpZ25hdHVyZUFsZ29yaXRobUgAEkIKDWtleV9hZ3JlZW1lbnQYAiABKA4yKS5yZWFsbHltZS5jcnlwdG8udjEuS2V5QWdyZWVtZW50QWxnb3JpdGhtSAASLwoDa2VtGAMgASgOMiAucmVhbGx5bWUuY3J5cHRvLnYxLktlbUFsZ29yaXRobUgAEi0KBGhwa2UYBCABKA4yHS5yZWFsbHltZS5jcnlwdG8udjEuSHBrZVN1aXRlSAASMQoEYWVhZBgFIAEoDjIhLnJlYWxseW1lLmNyeXB0by52MS5BZWFkQWxnb3JpdGhtSAASMQoEaGFzaBgGIAEoDjIhLnJlYWxseW1lLmNyeXB0by52MS5IYXNoQWxnb3JpdGhtSAASLwoDbWFjGAcgASgOMiAucmVhbGx5bWUuY3J5cHRvLnYxLk1hY0FsZ29yaXRobUgAEi8KA2tkZhgIIAEoDjIgLnJlYWxseW1lLmNyeXB0by52MS5LZGZBbGdvcml0aG1IABI4CghrZXlfd3JhcBgJIAEoDjIkLnJlYWxseW1lLmNyeXB0by52MS5LZXlXcmFwQWxnb3JpdGhtSAASRAoObXVsdGljb2RlY19rZXkYCiABKA4yKi5yZWFsbHltZS5jcnlwdG8udjEuTXVsdGljb2RlY0tleUFsZ29yaXRobUgAQgsKCWFsZ29yaXRobSJ5CgpKc29uV2ViS2V5EkAKCWFsZ29yaXRobRgBIAEoCzItLnJlYWxseW1lLmNyeXB0by52MS5DcnlwdG9BbGdvcml0aG1JZGVudGlmaWVyEhIKCnB1YmxpY19rZXkYAiABKAwSFQoNY2Fub25pY2FsX2pjcxgDIAEoDCI9Cg1Kc29uV2ViS2V5U2V0EiwKBGtleXMYASADKAsyHi5yZWFsbHltZS5jcnlwdG8udjEuSnNvbldlYktleSqBAwoVQ3J5cHRvQWxnb3JpdGhtRmFtaWx5EicKI0NSWVBUT19BTEdPUklUSE1fRkFNSUxZX1VOU1BFQ0lGSUVEEAASJQohQ1JZUFRPX0FMR09SSVRITV9GQU1JTFlfU0lHTkFUVVJFEAESKQolQ1JZUFRPX0FMR09SSVRITV9GQU1JTFlfS0VZX0FHUkVFTUVOVBACEh8KG0NSWVBUT19BTEdPUklUSE1fRkFNSUxZX0tFTRADEiAKHENSWVBUT19BTEdPUklUSE1fRkFNSUxZX0FFQUQQBBIgChxDUllQVE9fQUxHT1JJVEhNX0ZBTUlMWV9IQVNIEAUSHwobQ1JZUFRPX0FMR09SSVRITV9GQU1JTFlfTUFDEAYSHwobQ1JZUFRPX0FMR09SSVRITV9GQU1JTFlfS0RGEAcSJAogQ1JZUFRPX0FMR09SSVRITV9GQU1JTFlfS0VZX1dSQVAQCBIgChxDUllQVE9fQUxHT1JJVEhNX0ZBTUlMWV9IUEtFEAkq1gYKElNpZ25hdHVyZUFsZ29yaXRobRIjCh9TSUdOQVRVUkVfQUxHT1JJVEhNX1VOU1BFQ0lGSUVEEAASHwobU0lHTkFUVVJFX0FMR09SSVRITV9FRDI1NTE5EAESKQolU0lHTkFUVVJFX0FMR09SSVRITV9FQ0RTQV9QMjU2X1NIQTI1NhACEikKJVNJR05BVFVSRV9BTEdPUklUSE1fRUNEU0FfUDM4NF9TSEEzODQQAxIpCiVTSUdOQVRVUkVfQUxHT1JJVEhNX0VDRFNBX1A1MjFfU0hBNTEyEAQSLgoqU0lHTkFUVVJFX0FMR09SSVRITV9FQ0RTQV9TRUNQMjU2SzFfU0hBMjU2EAUSNwozU0lHTkFUVVJFX0FMR09SSVRITV9CSVAzNDBfU0NITk9SUl9TRUNQMjU2SzFfU0hBMjU2EAYSKQolU0lHTkFUVVJFX0FMR09SSVRITV9SU0FfUEtDUzFWMTVfU0hBMRAHEisKJ1NJR05BVFVSRV9BTEdPUklUSE1fUlNBX1BLQ1MxVjE1X1NIQTI1NhAIEisKJ1NJR05BVFVSRV9BTEdPUklUSE1fUlNBX1BLQ1MxVjE1X1NIQTM4NBAJEisKJ1NJR05BVFVSRV9BTEdPUklUSE1fUlNBX1BLQ1MxVjE1X1NIQTUxMhAKEi4KKlNJR05BVFVSRV9BTEdPUklUSE1fUlNBX1BTU19TSEExX01HRjFfU0hBMRALEjIKLlNJR05BVFVSRV9BTEdPUklUSE1fUlNBX1BTU19TSEEyNTZfTUdGMV9TSEEyNTYQDBIyCi5TSUdOQVRVUkVfQUxHT1JJVEhNX1JTQV9QU1NfU0hBMzg0X01HRjFfU0hBMzg0EA0SMgouU0lHTkFUVVJFX0FMR09SSVRITV9SU0FfUFNTX1NIQTUxMl9NR0YxX1NIQTUxMhAOEiEKHVNJR05BVFVSRV9BTEdPUklUSE1fTUxfRFNBXzQ0EA8SIQodU0lHTkFUVVJFX0FMR09SSVRITV9NTF9EU0FfNjUQEBIhCh1TSUdOQVRVUkVfQUxHT1JJVEhNX01MX0RTQV84NxAREikKJVNJR05BVFVSRV9BTEdPUklUSE1fU0xIX0RTQV9TSEEyXzEyOFMQEirZAQoVS2V5QWdyZWVtZW50QWxnb3JpdGhtEicKI0tFWV9BR1JFRU1FTlRfQUxHT1JJVEhNX1VOU1BFQ0lGSUVEEAASIgoeS0VZX0FHUkVFTUVOVF9BTEdPUklUSE1fWDI1NTE5EAESJQohS0VZX0FHUkVFTUVOVF9BTEdPUklUSE1fUDI1Nl9FQ0RIEAISJQohS0VZX0FHUkVFTUVOVF9BTEdPUklUSE1fUDM4NF9FQ0RIEAMSJQohS0VZX0FHUkVFTUVOVF9BTEdPUklUSE1fUDUyMV9FQ0RIEAQqxQEKDEtlbUFsZ29yaXRobRIdChlLRU1fQUxHT1JJVEhNX1VOU1BFQ0lGSUVEEAASHAoYS0VNX0FMR09SSVRITV9NTF9LRU1fNTEyEAESHAoYS0VNX0FMR09SSVRITV9NTF9LRU1fNzY4EAISHQoZS0VNX0FMR09SSVRITV9NTF9LRU1fMTAyNBADEhwKGEtFTV9BTEdPUklUSE1fWF9XSU5HXzc2OBAEEh0KGUtFTV9BTEdPUklUSE1fWF9XSU5HXzEwMjQQBSqtAQoJSHBrZVN1aXRlEhoKFkhQS0VfU1VJVEVfVU5TUEVDSUZJRUQQABI9CjlIUEtFX1NVSVRFX0RIS0VNX1AyNTZfSEtERl9TSEEyNTZfSEtERl9TSEEyNTZfQUVTXzI1Nl9HQ00QARJFCkFIUEtFX1NVSVRFX0RIS0VNX1gyNTUxOV9IS0RGX1NIQTI1Nl9IS0RGX1NIQTI1Nl9DSEFDSEEyMF9QT0xZMTMwNRACKoACCg1BZWFkQWxnb3JpdGhtEh4KGkFFQURfQUxHT1JJVEhNX1VOU1BFQ0lGSUVEEAASHgoaQUVBRF9BTEdPUklUSE1fQUVTXzI1Nl9HQ00QARIiCh5BRUFEX0FMR09SSVRITV9BRVNfMjU2X0dDTV9TSVYQAhIkCiBBRUFEX0FMR09SSVRITV9DSEFDSEEyMF9QT0xZMTMwNRADEiUKIUFFQURfQUxHT1JJVEhNX1hDSEFDSEEyMF9QT0xZMTMwNRAEEh4KGkFFQURfQUxHT1JJVEhNX0FFU18xMjhfR0NNEAUSHgoaQUVBRF9BTEdPUklUSE1fQUVTXzE5Ml9HQ00QBir6AQoNSGFzaEFsZ29yaXRobRIeChpIQVNIX0FMR09SSVRITV9VTlNQRUNJRklFRBAAEhsKF0hBU0hfQUxHT1JJVEhNX1NIQTJfMjU2EAESGwoXSEFTSF9BTEdPUklUSE1fU0hBMl8zODQQAhIbChdIQVNIX0FMR09SSVRITV9TSEEyXzUxMhADEhsKF0hBU0hfQUxHT1JJVEhNX1NIQTNfMjI0EAQSGwoXSEFTSF9BTEdPUklUSE1fU0hBM18yNTYQBRIbChdIQVNIX0FMR09SSVRITV9TSEEzXzM4NBAGEhsKF0hBU0hfQUxHT1JJVEhNX1NIQTNfNTEyEAcqawoMTWFjQWxnb3JpdGhtEh0KGU1BQ19BTEdPUklUSE1fVU5TUEVDSUZJRUQQABIdChlNQUNfQUxHT1JJVEhNX0hNQUNfU0hBMjU2EAESHQoZTUFDX0FMR09SSVRITV9ITUFDX1NIQTUxMhACKt0BCgxLZGZBbGdvcml0aG0SHQoZS0RGX0FMR09SSVRITV9VTlNQRUNJRklFRBAAEh0KGUtERl9BTEdPUklUSE1fSEtERl9TSEEyNTYQARIaChZLREZfQUxHT1JJVEhNX0FSR09OMklEEAISJAogS0RGX0FMR09SSVRITV9QQktERjJfSE1BQ19TSEEyNTYQAxIkCiBLREZfQUxHT1JJVEhNX1BCS0RGMl9ITUFDX1NIQTUxMhAEEicKI0tERl9BTEdPUklUSE1fSldBX0NPTkNBVF9LREZfU0hBMjU2EAUqWQoQS2V5V3JhcEFsZ29yaXRobRIiCh5LRVlfV1JBUF9BTEdPUklUSE1fVU5TUEVDSUZJRUQQABIhCh1LRVlfV1JBUF9BTEdPUklUSE1fQUVTXzI1Nl9LVxABKuUIChZNdWx0aWNvZGVjS2V5QWxnb3JpdGhtEigKJE1VTFRJQ09ERUNfS0VZX0FMR09SSVRITV9VTlNQRUNJRklFRBAAEigKJE1VTFRJQ09ERUNfS0VZX0FMR09SSVRITV9FRDI1NTE5X1BVQhABEicKI01VTFRJQ09ERUNfS0VZX0FMR09SSVRITV9YMjU1MTlfUFVCEAISKgomTVVMVElDT0RFQ19LRVlfQUxHT1JJVEhNX1NFQ1AyNTZLMV9QVUIQAxIlCiFNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fUDI1Nl9QVUIQBBIlCiFNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fUDM4NF9QVUIQBRIlCiFNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fUDUyMV9QVUIQBhImCiJNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fRUQ0NDhfUFVCEAcSJAogTVVMVElDT0RFQ19LRVlfQUxHT1JJVEhNX1JTQV9QVUIQCBIrCidNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fTUxfS0VNXzUxMl9QVUIQCRIrCidNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fTUxfS0VNXzc2OF9QVUIQChIsCihNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fTUxfS0VNXzEwMjRfUFVCEAsSKgomTVVMVElDT0RFQ19LRVlfQUxHT1JJVEhNX01MX0RTQV80NF9QVUIQDBIqCiZNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fTUxfRFNBXzY1X1BVQhANEioKJk1VTFRJQ09ERUNfS0VZX0FMR09SSVRITV9NTF9EU0FfODdfUFVCEA4SKQolTVVMVElDT0RFQ19LRVlfQUxHT1JJVEhNX0VEMjU1MTlfUFJJVhAPEigKJE1VTFRJQ09ERUNfS0VZX0FMR09SSVRITV9YMjU1MTlfUFJJVhAQEisKJ01VTFRJQ09ERUNfS0VZX0FMR09SSVRITV9TRUNQMjU2SzFfUFJJVhAREiYKIk1VTFRJQ09ERUNfS0VZX0FMR09SSVRITV9QMjU2X1BSSVYQEhImCiJNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fUDM4NF9QUklWEBMSJgoiTVVMVElDT0RFQ19LRVlfQUxHT1JJVEhNX1A1MjFfUFJJVhAUEicKI01VTFRJQ09ERUNfS0VZX0FMR09SSVRITV9FRDQ0OF9QUklWEBUSJQohTVVMVElDT0RFQ19LRVlfQUxHT1JJVEhNX1JTQV9QUklWEBYSLAooTVVMVElDT0RFQ19LRVlfQUxHT1JJVEhNX01MX0tFTV81MTJfUFJJVhAXEiwKKE1VTFRJQ09ERUNfS0VZX0FMR09SSVRITV9NTF9LRU1fNzY4X1BSSVYQGBItCilNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fTUxfS0VNXzEwMjRfUFJJVhAZQicKE21lLnJlYWxseS5jcnlwdG8udjFQAboCDVJlYWxseU1lUHJvdG9iBnByb3RvMw");
+  fileDesc("Ch9yZWFsbHltZS9jcnlwdG8vdjEvY3J5cHRvLnByb3RvEhJyZWFsbHltZS5jcnlwdG8udjEizQEKC0NyeXB0b0Vycm9yEj0KCXByaW1pdGl2ZRgBIAEoCzIoLnJlYWxseW1lLmNyeXB0by52MS5DcnlwdG9QcmltaXRpdmVFcnJvckgAEjsKCHByb3ZpZGVyGAIgASgLMicucmVhbGx5bWUuY3J5cHRvLnYxLkNyeXB0b1Byb3ZpZGVyRXJyb3JIABI5CgdiYWNrZW5kGAMgASgLMiYucmVhbGx5bWUuY3J5cHRvLnYxLkNyeXB0b0JhY2tlbmRFcnJvckgAQgcKBWVycm9yIk0KFENyeXB0b1ByaW1pdGl2ZUVycm9yEjUKBnJlYXNvbhgBIAEoDjIlLnJlYWxseW1lLmNyeXB0by52MS5DcnlwdG9FcnJvclJlYXNvbiJMChNDcnlwdG9Qcm92aWRlckVycm9yEjUKBnJlYXNvbhgBIAEoDjIlLnJlYWxseW1lLmNyeXB0by52MS5DcnlwdG9FcnJvclJlYXNvbiJLChJDcnlwdG9CYWNrZW5kRXJyb3ISNQoGcmVhc29uGAEgASgOMiUucmVhbGx5bWUuY3J5cHRvLnYxLkNyeXB0b0Vycm9yUmVhc29uItEEChlDcnlwdG9BbGdvcml0aG1JZGVudGlmaWVyEjsKCXNpZ25hdHVyZRgBIAEoDjImLnJlYWxseW1lLmNyeXB0by52MS5TaWduYXR1cmVBbGdvcml0aG1IABJCCg1rZXlfYWdyZWVtZW50GAIgASgOMikucmVhbGx5bWUuY3J5cHRvLnYxLktleUFncmVlbWVudEFsZ29yaXRobUgAEi8KA2tlbRgDIAEoDjIgLnJlYWxseW1lLmNyeXB0by52MS5LZW1BbGdvcml0aG1IABItCgRocGtlGAQgASgOMh0ucmVhbGx5bWUuY3J5cHRvLnYxLkhwa2VTdWl0ZUgAEjEKBGFlYWQYBSABKA4yIS5yZWFsbHltZS5jcnlwdG8udjEuQWVhZEFsZ29yaXRobUgAEjEKBGhhc2gYBiABKA4yIS5yZWFsbHltZS5jcnlwdG8udjEuSGFzaEFsZ29yaXRobUgAEi8KA21hYxgHIAEoDjIgLnJlYWxseW1lLmNyeXB0by52MS5NYWNBbGdvcml0aG1IABIvCgNrZGYYCCABKA4yIC5yZWFsbHltZS5jcnlwdG8udjEuS2RmQWxnb3JpdGhtSAASOAoIa2V5X3dyYXAYCSABKA4yJC5yZWFsbHltZS5jcnlwdG8udjEuS2V5V3JhcEFsZ29yaXRobUgAEkQKDm11bHRpY29kZWNfa2V5GAogASgOMioucmVhbGx5bWUuY3J5cHRvLnYxLk11bHRpY29kZWNLZXlBbGdvcml0aG1IAEILCglhbGdvcml0aG0ieQoKSnNvbldlYktleRJACglhbGdvcml0aG0YASABKAsyLS5yZWFsbHltZS5jcnlwdG8udjEuQ3J5cHRvQWxnb3JpdGhtSWRlbnRpZmllchISCgpwdWJsaWNfa2V5GAIgASgMEhUKDWNhbm9uaWNhbF9qY3MYAyABKAwiPQoNSnNvbldlYktleVNldBIsCgRrZXlzGAEgAygLMh4ucmVhbGx5bWUuY3J5cHRvLnYxLkpzb25XZWJLZXkq/QgKEUNyeXB0b0Vycm9yUmVhc29uEiMKH0NSWVBUT19FUlJPUl9SRUFTT05fVU5TUEVDSUZJRUQQABIzCi9DUllQVE9fRVJST1JfUkVBU09OX1BSSU1JVElWRV9JTlZBTElEX1BBUkFNRVRFUhBkEjAKLENSWVBUT19FUlJPUl9SRUFTT05fUFJJTUlUSVZFX0lOVkFMSURfTEVOR1RIEGUSLQopQ1JZUFRPX0VSUk9SX1JFQVNPTl9QUklNSVRJVkVfSU5WQUxJRF9LRVkQZhI0CjBDUllQVE9fRVJST1JfUkVBU09OX1BSSU1JVElWRV9JTlZBTElEX1BVQkxJQ19LRVkQZxI1CjFDUllQVE9fRVJST1JfUkVBU09OX1BSSU1JVElWRV9JTlZBTElEX1BSSVZBVEVfS0VZEGgSLworQ1JZUFRPX0VSUk9SX1JFQVNPTl9QUklNSVRJVkVfSU5WQUxJRF9OT05DRRBpEi4KKkNSWVBUT19FUlJPUl9SRUFTT05fUFJJTUlUSVZFX0lOVkFMSURfU0FMVBBqEjIKLkNSWVBUT19FUlJPUl9SRUFTT05fUFJJTUlUSVZFX0lOVkFMSURfUEFTU1dPUkQQaxIyCi5DUllQVE9fRVJST1JfUkVBU09OX1BSSU1JVElWRV9JTlZBTElEX0VOQ09ESU5HEGwSMwovQ1JZUFRPX0VSUk9SX1JFQVNPTl9QUklNSVRJVkVfSU5WQUxJRF9TSUdOQVRVUkUQeBI1CjFDUllQVE9fRVJST1JfUkVBU09OX1BSSU1JVElWRV9WRVJJRklDQVRJT05fRkFJTEVEEHkSNwozQ1JZUFRPX0VSUk9SX1JFQVNPTl9QUklNSVRJVkVfQVVUSEVOVElDQVRJT05fRkFJTEVEEHoSNgoyQ1JZUFRPX0VSUk9SX1JFQVNPTl9QUklNSVRJVkVfTUFMRk9STUVEX0NJUEhFUlRFWFQQexItCilDUllQVE9fRVJST1JfUkVBU09OX1BSSU1JVElWRV9JTlZBTElEX1RBRxB8EjcKM0NSWVBUT19FUlJPUl9SRUFTT05fUFJJTUlUSVZFX0lOVkFMSURfU0hBUkVEX1NFQ1JFVBB9EjcKMkNSWVBUT19FUlJPUl9SRUFTT05fUFJPVklERVJfVU5TVVBQT1JURURfQUxHT1JJVEhNEMgBEjUKMENSWVBUT19FUlJPUl9SRUFTT05fUFJPVklERVJfVU5TVVBQT1JURURfQkFDS0VORBDJARItCihDUllQVE9fRVJST1JfUkVBU09OX1BST1ZJREVSX1VOQVZBSUxBQkxFEMoBEjgKM0NSWVBUT19FUlJPUl9SRUFTT05fUFJPVklERVJfUkFORE9NTkVTU19VTkFWQUlMQUJMRRDLARIuCilDUllQVE9fRVJST1JfUkVBU09OX0JBQ0tFTkRfSU5WQUxJRF9TVEFURRCsAhIpCiRDUllQVE9fRVJST1JfUkVBU09OX0JBQ0tFTkRfSU5URVJOQUwQrQIqgQMKFUNyeXB0b0FsZ29yaXRobUZhbWlseRInCiNDUllQVE9fQUxHT1JJVEhNX0ZBTUlMWV9VTlNQRUNJRklFRBAAEiUKIUNSWVBUT19BTEdPUklUSE1fRkFNSUxZX1NJR05BVFVSRRABEikKJUNSWVBUT19BTEdPUklUSE1fRkFNSUxZX0tFWV9BR1JFRU1FTlQQAhIfChtDUllQVE9fQUxHT1JJVEhNX0ZBTUlMWV9LRU0QAxIgChxDUllQVE9fQUxHT1JJVEhNX0ZBTUlMWV9BRUFEEAQSIAocQ1JZUFRPX0FMR09SSVRITV9GQU1JTFlfSEFTSBAFEh8KG0NSWVBUT19BTEdPUklUSE1fRkFNSUxZX01BQxAGEh8KG0NSWVBUT19BTEdPUklUSE1fRkFNSUxZX0tERhAHEiQKIENSWVBUT19BTEdPUklUSE1fRkFNSUxZX0tFWV9XUkFQEAgSIAocQ1JZUFRPX0FMR09SSVRITV9GQU1JTFlfSFBLRRAJKtYGChJTaWduYXR1cmVBbGdvcml0aG0SIwofU0lHTkFUVVJFX0FMR09SSVRITV9VTlNQRUNJRklFRBAAEh8KG1NJR05BVFVSRV9BTEdPUklUSE1fRUQyNTUxORABEikKJVNJR05BVFVSRV9BTEdPUklUSE1fRUNEU0FfUDI1Nl9TSEEyNTYQAhIpCiVTSUdOQVRVUkVfQUxHT1JJVEhNX0VDRFNBX1AzODRfU0hBMzg0EAMSKQolU0lHTkFUVVJFX0FMR09SSVRITV9FQ0RTQV9QNTIxX1NIQTUxMhAEEi4KKlNJR05BVFVSRV9BTEdPUklUSE1fRUNEU0FfU0VDUDI1NksxX1NIQTI1NhAFEjcKM1NJR05BVFVSRV9BTEdPUklUSE1fQklQMzQwX1NDSE5PUlJfU0VDUDI1NksxX1NIQTI1NhAGEikKJVNJR05BVFVSRV9BTEdPUklUSE1fUlNBX1BLQ1MxVjE1X1NIQTEQBxIrCidTSUdOQVRVUkVfQUxHT1JJVEhNX1JTQV9QS0NTMVYxNV9TSEEyNTYQCBIrCidTSUdOQVRVUkVfQUxHT1JJVEhNX1JTQV9QS0NTMVYxNV9TSEEzODQQCRIrCidTSUdOQVRVUkVfQUxHT1JJVEhNX1JTQV9QS0NTMVYxNV9TSEE1MTIQChIuCipTSUdOQVRVUkVfQUxHT1JJVEhNX1JTQV9QU1NfU0hBMV9NR0YxX1NIQTEQCxIyCi5TSUdOQVRVUkVfQUxHT1JJVEhNX1JTQV9QU1NfU0hBMjU2X01HRjFfU0hBMjU2EAwSMgouU0lHTkFUVVJFX0FMR09SSVRITV9SU0FfUFNTX1NIQTM4NF9NR0YxX1NIQTM4NBANEjIKLlNJR05BVFVSRV9BTEdPUklUSE1fUlNBX1BTU19TSEE1MTJfTUdGMV9TSEE1MTIQDhIhCh1TSUdOQVRVUkVfQUxHT1JJVEhNX01MX0RTQV80NBAPEiEKHVNJR05BVFVSRV9BTEdPUklUSE1fTUxfRFNBXzY1EBASIQodU0lHTkFUVVJFX0FMR09SSVRITV9NTF9EU0FfODcQERIpCiVTSUdOQVRVUkVfQUxHT1JJVEhNX1NMSF9EU0FfU0hBMl8xMjhTEBIq2QEKFUtleUFncmVlbWVudEFsZ29yaXRobRInCiNLRVlfQUdSRUVNRU5UX0FMR09SSVRITV9VTlNQRUNJRklFRBAAEiIKHktFWV9BR1JFRU1FTlRfQUxHT1JJVEhNX1gyNTUxORABEiUKIUtFWV9BR1JFRU1FTlRfQUxHT1JJVEhNX1AyNTZfRUNESBACEiUKIUtFWV9BR1JFRU1FTlRfQUxHT1JJVEhNX1AzODRfRUNESBADEiUKIUtFWV9BR1JFRU1FTlRfQUxHT1JJVEhNX1A1MjFfRUNESBAEKsUBCgxLZW1BbGdvcml0aG0SHQoZS0VNX0FMR09SSVRITV9VTlNQRUNJRklFRBAAEhwKGEtFTV9BTEdPUklUSE1fTUxfS0VNXzUxMhABEhwKGEtFTV9BTEdPUklUSE1fTUxfS0VNXzc2OBACEh0KGUtFTV9BTEdPUklUSE1fTUxfS0VNXzEwMjQQAxIcChhLRU1fQUxHT1JJVEhNX1hfV0lOR183NjgQBBIdChlLRU1fQUxHT1JJVEhNX1hfV0lOR18xMDI0EAUqrQEKCUhwa2VTdWl0ZRIaChZIUEtFX1NVSVRFX1VOU1BFQ0lGSUVEEAASPQo5SFBLRV9TVUlURV9ESEtFTV9QMjU2X0hLREZfU0hBMjU2X0hLREZfU0hBMjU2X0FFU18yNTZfR0NNEAESRQpBSFBLRV9TVUlURV9ESEtFTV9YMjU1MTlfSEtERl9TSEEyNTZfSEtERl9TSEEyNTZfQ0hBQ0hBMjBfUE9MWTEzMDUQAiqAAgoNQWVhZEFsZ29yaXRobRIeChpBRUFEX0FMR09SSVRITV9VTlNQRUNJRklFRBAAEh4KGkFFQURfQUxHT1JJVEhNX0FFU18yNTZfR0NNEAESIgoeQUVBRF9BTEdPUklUSE1fQUVTXzI1Nl9HQ01fU0lWEAISJAogQUVBRF9BTEdPUklUSE1fQ0hBQ0hBMjBfUE9MWTEzMDUQAxIlCiFBRUFEX0FMR09SSVRITV9YQ0hBQ0hBMjBfUE9MWTEzMDUQBBIeChpBRUFEX0FMR09SSVRITV9BRVNfMTI4X0dDTRAFEh4KGkFFQURfQUxHT1JJVEhNX0FFU18xOTJfR0NNEAYq+gEKDUhhc2hBbGdvcml0aG0SHgoaSEFTSF9BTEdPUklUSE1fVU5TUEVDSUZJRUQQABIbChdIQVNIX0FMR09SSVRITV9TSEEyXzI1NhABEhsKF0hBU0hfQUxHT1JJVEhNX1NIQTJfMzg0EAISGwoXSEFTSF9BTEdPUklUSE1fU0hBMl81MTIQAxIbChdIQVNIX0FMR09SSVRITV9TSEEzXzIyNBAEEhsKF0hBU0hfQUxHT1JJVEhNX1NIQTNfMjU2EAUSGwoXSEFTSF9BTEdPUklUSE1fU0hBM18zODQQBhIbChdIQVNIX0FMR09SSVRITV9TSEEzXzUxMhAHKmsKDE1hY0FsZ29yaXRobRIdChlNQUNfQUxHT1JJVEhNX1VOU1BFQ0lGSUVEEAASHQoZTUFDX0FMR09SSVRITV9ITUFDX1NIQTI1NhABEh0KGU1BQ19BTEdPUklUSE1fSE1BQ19TSEE1MTIQAirdAQoMS2RmQWxnb3JpdGhtEh0KGUtERl9BTEdPUklUSE1fVU5TUEVDSUZJRUQQABIdChlLREZfQUxHT1JJVEhNX0hLREZfU0hBMjU2EAESGgoWS0RGX0FMR09SSVRITV9BUkdPTjJJRBACEiQKIEtERl9BTEdPUklUSE1fUEJLREYyX0hNQUNfU0hBMjU2EAMSJAogS0RGX0FMR09SSVRITV9QQktERjJfSE1BQ19TSEE1MTIQBBInCiNLREZfQUxHT1JJVEhNX0pXQV9DT05DQVRfS0RGX1NIQTI1NhAFKlkKEEtleVdyYXBBbGdvcml0aG0SIgoeS0VZX1dSQVBfQUxHT1JJVEhNX1VOU1BFQ0lGSUVEEAASIQodS0VZX1dSQVBfQUxHT1JJVEhNX0FFU18yNTZfS1cQASrlCAoWTXVsdGljb2RlY0tleUFsZ29yaXRobRIoCiRNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fVU5TUEVDSUZJRUQQABIoCiRNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fRUQyNTUxOV9QVUIQARInCiNNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fWDI1NTE5X1BVQhACEioKJk1VTFRJQ09ERUNfS0VZX0FMR09SSVRITV9TRUNQMjU2SzFfUFVCEAMSJQohTVVMVElDT0RFQ19LRVlfQUxHT1JJVEhNX1AyNTZfUFVCEAQSJQohTVVMVElDT0RFQ19LRVlfQUxHT1JJVEhNX1AzODRfUFVCEAUSJQohTVVMVElDT0RFQ19LRVlfQUxHT1JJVEhNX1A1MjFfUFVCEAYSJgoiTVVMVElDT0RFQ19LRVlfQUxHT1JJVEhNX0VENDQ4X1BVQhAHEiQKIE1VTFRJQ09ERUNfS0VZX0FMR09SSVRITV9SU0FfUFVCEAgSKwonTVVMVElDT0RFQ19LRVlfQUxHT1JJVEhNX01MX0tFTV81MTJfUFVCEAkSKwonTVVMVElDT0RFQ19LRVlfQUxHT1JJVEhNX01MX0tFTV83NjhfUFVCEAoSLAooTVVMVElDT0RFQ19LRVlfQUxHT1JJVEhNX01MX0tFTV8xMDI0X1BVQhALEioKJk1VTFRJQ09ERUNfS0VZX0FMR09SSVRITV9NTF9EU0FfNDRfUFVCEAwSKgomTVVMVElDT0RFQ19LRVlfQUxHT1JJVEhNX01MX0RTQV82NV9QVUIQDRIqCiZNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fTUxfRFNBXzg3X1BVQhAOEikKJU1VTFRJQ09ERUNfS0VZX0FMR09SSVRITV9FRDI1NTE5X1BSSVYQDxIoCiRNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fWDI1NTE5X1BSSVYQEBIrCidNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fU0VDUDI1NksxX1BSSVYQERImCiJNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fUDI1Nl9QUklWEBISJgoiTVVMVElDT0RFQ19LRVlfQUxHT1JJVEhNX1AzODRfUFJJVhATEiYKIk1VTFRJQ09ERUNfS0VZX0FMR09SSVRITV9QNTIxX1BSSVYQFBInCiNNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fRUQ0NDhfUFJJVhAVEiUKIU1VTFRJQ09ERUNfS0VZX0FMR09SSVRITV9SU0FfUFJJVhAWEiwKKE1VTFRJQ09ERUNfS0VZX0FMR09SSVRITV9NTF9LRU1fNTEyX1BSSVYQFxIsCihNVUxUSUNPREVDX0tFWV9BTEdPUklUSE1fTUxfS0VNXzc2OF9QUklWEBgSLQopTVVMVElDT0RFQ19LRVlfQUxHT1JJVEhNX01MX0tFTV8xMDI0X1BSSVYQGUInChNtZS5yZWFsbHkuY3J5cHRvLnYxUAG6Ag1SZWFsbHlNZVByb3RvYgZwcm90bzM");
+
+/**
+ * CryptoError is the public, non-PII error envelope for crypto boundary
+ * failures. The oneof keeps primitive, provider, and backend failures distinct
+ * while the shared CryptoErrorReason enum provides stable cross-language reason
+ * codes.
+ *
+ * @generated from message reallyme.crypto.v1.CryptoError
+ */
+export type CryptoError = Message<"reallyme.crypto.v1.CryptoError"> & {
+  /**
+   * @generated from oneof reallyme.crypto.v1.CryptoError.error
+   */
+  error: {
+    /**
+     * @generated from field: reallyme.crypto.v1.CryptoPrimitiveError primitive = 1;
+     */
+    value: CryptoPrimitiveError;
+    case: "primitive";
+  } | {
+    /**
+     * @generated from field: reallyme.crypto.v1.CryptoProviderError provider = 2;
+     */
+    value: CryptoProviderError;
+    case: "provider";
+  } | {
+    /**
+     * @generated from field: reallyme.crypto.v1.CryptoBackendError backend = 3;
+     */
+    value: CryptoBackendError;
+    case: "backend";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * Describes the message reallyme.crypto.v1.CryptoError.
+ * Use `create(CryptoErrorSchema)` to create a new message.
+ */
+export const CryptoErrorSchema: GenMessage<CryptoError> = /*@__PURE__*/
+  messageDesc(file_reallyme_crypto_v1_crypto, 0);
+
+/**
+ * CryptoPrimitiveError describes failures owned by primitive input validation,
+ * key handling, encryption, decryption, signing, verification, KEM, KDF, MAC,
+ * and key-wrap operations.
+ *
+ * @generated from message reallyme.crypto.v1.CryptoPrimitiveError
+ */
+export type CryptoPrimitiveError = Message<"reallyme.crypto.v1.CryptoPrimitiveError"> & {
+  /**
+   * Reason must be one of the CRYPTO_ERROR_REASON_PRIMITIVE_* values.
+   *
+   * @generated from field: reallyme.crypto.v1.CryptoErrorReason reason = 1;
+   */
+  reason: CryptoErrorReason;
+};
+
+/**
+ * Describes the message reallyme.crypto.v1.CryptoPrimitiveError.
+ * Use `create(CryptoPrimitiveErrorSchema)` to create a new message.
+ */
+export const CryptoPrimitiveErrorSchema: GenMessage<CryptoPrimitiveError> = /*@__PURE__*/
+  messageDesc(file_reallyme_crypto_v1_crypto, 1);
+
+/**
+ * CryptoProviderError describes provider selection and platform-provider
+ * availability failures.
+ *
+ * @generated from message reallyme.crypto.v1.CryptoProviderError
+ */
+export type CryptoProviderError = Message<"reallyme.crypto.v1.CryptoProviderError"> & {
+  /**
+   * Reason must be one of the CRYPTO_ERROR_REASON_PROVIDER_* values.
+   *
+   * @generated from field: reallyme.crypto.v1.CryptoErrorReason reason = 1;
+   */
+  reason: CryptoErrorReason;
+};
+
+/**
+ * Describes the message reallyme.crypto.v1.CryptoProviderError.
+ * Use `create(CryptoProviderErrorSchema)` to create a new message.
+ */
+export const CryptoProviderErrorSchema: GenMessage<CryptoProviderError> = /*@__PURE__*/
+  messageDesc(file_reallyme_crypto_v1_crypto, 2);
+
+/**
+ * CryptoBackendError describes dispatch, FFI, WASM, and internal backend
+ * failures that are not safe to expose as backend exception text.
+ *
+ * @generated from message reallyme.crypto.v1.CryptoBackendError
+ */
+export type CryptoBackendError = Message<"reallyme.crypto.v1.CryptoBackendError"> & {
+  /**
+   * Reason must be one of the CRYPTO_ERROR_REASON_BACKEND_* values.
+   *
+   * @generated from field: reallyme.crypto.v1.CryptoErrorReason reason = 1;
+   */
+  reason: CryptoErrorReason;
+};
+
+/**
+ * Describes the message reallyme.crypto.v1.CryptoBackendError.
+ * Use `create(CryptoBackendErrorSchema)` to create a new message.
+ */
+export const CryptoBackendErrorSchema: GenMessage<CryptoBackendError> = /*@__PURE__*/
+  messageDesc(file_reallyme_crypto_v1_crypto, 3);
 
 /**
  * CryptoAlgorithmIdentifier is a oneof wrapper for protocol messages that need
@@ -94,7 +201,7 @@ export type CryptoAlgorithmIdentifier = Message<"reallyme.crypto.v1.CryptoAlgori
  * Use `create(CryptoAlgorithmIdentifierSchema)` to create a new message.
  */
 export const CryptoAlgorithmIdentifierSchema: GenMessage<CryptoAlgorithmIdentifier> = /*@__PURE__*/
-  messageDesc(file_reallyme_crypto_v1_crypto, 0);
+  messageDesc(file_reallyme_crypto_v1_crypto, 4);
 
 /**
  * JsonWebKey carries a public JWK document at API/storage boundaries. The JSON
@@ -125,7 +232,7 @@ export type JsonWebKey = Message<"reallyme.crypto.v1.JsonWebKey"> & {
  * Use `create(JsonWebKeySchema)` to create a new message.
  */
 export const JsonWebKeySchema: GenMessage<JsonWebKey> = /*@__PURE__*/
-  messageDesc(file_reallyme_crypto_v1_crypto, 1);
+  messageDesc(file_reallyme_crypto_v1_crypto, 5);
 
 /**
  * JsonWebKeySet is the protobuf boundary equivalent of the JSON { "keys": [] }
@@ -145,7 +252,145 @@ export type JsonWebKeySet = Message<"reallyme.crypto.v1.JsonWebKeySet"> & {
  * Use `create(JsonWebKeySetSchema)` to create a new message.
  */
 export const JsonWebKeySetSchema: GenMessage<JsonWebKeySet> = /*@__PURE__*/
-  messageDesc(file_reallyme_crypto_v1_crypto, 2);
+  messageDesc(file_reallyme_crypto_v1_crypto, 6);
+
+/**
+ * CryptoErrorReason is the component-owned reason-code enum for reallyme/crypto.
+ * Values are stable public boundary codes; internal Rust, Swift, Kotlin, and
+ * TypeScript errors must map into one of these before crossing RPC, SDK, FFI,
+ * storage, audit, or telemetry boundaries. Numeric ranges are intentionally
+ * split by crypto subpart:
+ *   100-199: primitive operations and validation
+ *   200-299: provider selection and availability
+ *   300-399: backend dispatch and internal failures
+ *
+ * @generated from enum reallyme.crypto.v1.CryptoErrorReason
+ */
+export enum CryptoErrorReason {
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * Primitive input, key material, and byte-format validation.
+   *
+   * @generated from enum value: CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PARAMETER = 100;
+   */
+  PRIMITIVE_INVALID_PARAMETER = 100,
+
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH = 101;
+   */
+  PRIMITIVE_INVALID_LENGTH = 101,
+
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY = 102;
+   */
+  PRIMITIVE_INVALID_KEY = 102,
+
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PUBLIC_KEY = 103;
+   */
+  PRIMITIVE_INVALID_PUBLIC_KEY = 103,
+
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PRIVATE_KEY = 104;
+   */
+  PRIMITIVE_INVALID_PRIVATE_KEY = 104,
+
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_NONCE = 105;
+   */
+  PRIMITIVE_INVALID_NONCE = 105,
+
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SALT = 106;
+   */
+  PRIMITIVE_INVALID_SALT = 106,
+
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PASSWORD = 107;
+   */
+  PRIMITIVE_INVALID_PASSWORD = 107,
+
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_ENCODING = 108;
+   */
+  PRIMITIVE_INVALID_ENCODING = 108,
+
+  /**
+   * Primitive operation failures.
+   *
+   * @generated from enum value: CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SIGNATURE = 120;
+   */
+  PRIMITIVE_INVALID_SIGNATURE = 120,
+
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_PRIMITIVE_VERIFICATION_FAILED = 121;
+   */
+  PRIMITIVE_VERIFICATION_FAILED = 121,
+
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED = 122;
+   */
+  PRIMITIVE_AUTHENTICATION_FAILED = 122,
+
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_CIPHERTEXT = 123;
+   */
+  PRIMITIVE_MALFORMED_CIPHERTEXT = 123,
+
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_TAG = 124;
+   */
+  PRIMITIVE_INVALID_TAG = 124,
+
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SHARED_SECRET = 125;
+   */
+  PRIMITIVE_INVALID_SHARED_SECRET = 125,
+
+  /**
+   * Provider policy and availability.
+   *
+   * @generated from enum value: CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_ALGORITHM = 200;
+   */
+  PROVIDER_UNSUPPORTED_ALGORITHM = 200,
+
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_BACKEND = 201;
+   */
+  PROVIDER_UNSUPPORTED_BACKEND = 201,
+
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_PROVIDER_UNAVAILABLE = 202;
+   */
+  PROVIDER_UNAVAILABLE = 202,
+
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE = 203;
+   */
+  PROVIDER_RANDOMNESS_UNAVAILABLE = 203,
+
+  /**
+   * Backend dispatch and internal state.
+   *
+   * @generated from enum value: CRYPTO_ERROR_REASON_BACKEND_INVALID_STATE = 300;
+   */
+  BACKEND_INVALID_STATE = 300,
+
+  /**
+   * @generated from enum value: CRYPTO_ERROR_REASON_BACKEND_INTERNAL = 301;
+   */
+  BACKEND_INTERNAL = 301,
+}
+
+/**
+ * Describes the enum reallyme.crypto.v1.CryptoErrorReason.
+ */
+export const CryptoErrorReasonSchema: GenEnum<CryptoErrorReason> = /*@__PURE__*/
+  enumDesc(file_reallyme_crypto_v1_crypto, 0);
 
 /**
  * CryptoAlgorithmFamily classifies an algorithm identifier without implying
@@ -209,7 +454,7 @@ export enum CryptoAlgorithmFamily {
  * Describes the enum reallyme.crypto.v1.CryptoAlgorithmFamily.
  */
 export const CryptoAlgorithmFamilySchema: GenEnum<CryptoAlgorithmFamily> = /*@__PURE__*/
-  enumDesc(file_reallyme_crypto_v1_crypto, 0);
+  enumDesc(file_reallyme_crypto_v1_crypto, 1);
 
 /**
  * SignatureAlgorithm identifies signature suites supported or reserved by the
@@ -319,7 +564,7 @@ export enum SignatureAlgorithm {
  * Describes the enum reallyme.crypto.v1.SignatureAlgorithm.
  */
 export const SignatureAlgorithmSchema: GenEnum<SignatureAlgorithm> = /*@__PURE__*/
-  enumDesc(file_reallyme_crypto_v1_crypto, 1);
+  enumDesc(file_reallyme_crypto_v1_crypto, 2);
 
 /**
  * KeyAgreementAlgorithm identifies direct shared-secret derivation suites.
@@ -358,7 +603,7 @@ export enum KeyAgreementAlgorithm {
  * Describes the enum reallyme.crypto.v1.KeyAgreementAlgorithm.
  */
 export const KeyAgreementAlgorithmSchema: GenEnum<KeyAgreementAlgorithm> = /*@__PURE__*/
-  enumDesc(file_reallyme_crypto_v1_crypto, 2);
+  enumDesc(file_reallyme_crypto_v1_crypto, 3);
 
 /**
  * KemAlgorithm identifies encapsulation suites. X-Wing values are ReallyMe's
@@ -402,7 +647,7 @@ export enum KemAlgorithm {
  * Describes the enum reallyme.crypto.v1.KemAlgorithm.
  */
 export const KemAlgorithmSchema: GenEnum<KemAlgorithm> = /*@__PURE__*/
-  enumDesc(file_reallyme_crypto_v1_crypto, 3);
+  enumDesc(file_reallyme_crypto_v1_crypto, 4);
 
 /**
  * HpkeSuite identifies supported RFC 9180 HPKE Base-mode ciphersuites.
@@ -430,7 +675,7 @@ export enum HpkeSuite {
  * Describes the enum reallyme.crypto.v1.HpkeSuite.
  */
 export const HpkeSuiteSchema: GenEnum<HpkeSuite> = /*@__PURE__*/
-  enumDesc(file_reallyme_crypto_v1_crypto, 4);
+  enumDesc(file_reallyme_crypto_v1_crypto, 5);
 
 /**
  * AeadAlgorithm identifies authenticated-encryption suites.
@@ -478,7 +723,7 @@ export enum AeadAlgorithm {
  * Describes the enum reallyme.crypto.v1.AeadAlgorithm.
  */
 export const AeadAlgorithmSchema: GenEnum<AeadAlgorithm> = /*@__PURE__*/
-  enumDesc(file_reallyme_crypto_v1_crypto, 5);
+  enumDesc(file_reallyme_crypto_v1_crypto, 6);
 
 /**
  * HashAlgorithm identifies digest algorithms exposed by the hash primitives.
@@ -531,7 +776,7 @@ export enum HashAlgorithm {
  * Describes the enum reallyme.crypto.v1.HashAlgorithm.
  */
 export const HashAlgorithmSchema: GenEnum<HashAlgorithm> = /*@__PURE__*/
-  enumDesc(file_reallyme_crypto_v1_crypto, 6);
+  enumDesc(file_reallyme_crypto_v1_crypto, 7);
 
 /**
  * MacAlgorithm identifies message-authentication-code suites.
@@ -559,7 +804,7 @@ export enum MacAlgorithm {
  * Describes the enum reallyme.crypto.v1.MacAlgorithm.
  */
 export const MacAlgorithmSchema: GenEnum<MacAlgorithm> = /*@__PURE__*/
-  enumDesc(file_reallyme_crypto_v1_crypto, 7);
+  enumDesc(file_reallyme_crypto_v1_crypto, 8);
 
 /**
  * KdfAlgorithm identifies key-derivation functions. PBKDF2 values are retained
@@ -603,7 +848,7 @@ export enum KdfAlgorithm {
  * Describes the enum reallyme.crypto.v1.KdfAlgorithm.
  */
 export const KdfAlgorithmSchema: GenEnum<KdfAlgorithm> = /*@__PURE__*/
-  enumDesc(file_reallyme_crypto_v1_crypto, 8);
+  enumDesc(file_reallyme_crypto_v1_crypto, 9);
 
 /**
  * KeyWrapAlgorithm identifies key-wrapping algorithms.
@@ -626,7 +871,7 @@ export enum KeyWrapAlgorithm {
  * Describes the enum reallyme.crypto.v1.KeyWrapAlgorithm.
  */
 export const KeyWrapAlgorithmSchema: GenEnum<KeyWrapAlgorithm> = /*@__PURE__*/
-  enumDesc(file_reallyme_crypto_v1_crypto, 9);
+  enumDesc(file_reallyme_crypto_v1_crypto, 10);
 
 /**
  * MulticodecKeyAlgorithm identifies table-backed key codecs that ReallyMe
@@ -771,5 +1016,5 @@ export enum MulticodecKeyAlgorithm {
  * Describes the enum reallyme.crypto.v1.MulticodecKeyAlgorithm.
  */
 export const MulticodecKeyAlgorithmSchema: GenEnum<MulticodecKeyAlgorithm> = /*@__PURE__*/
-  enumDesc(file_reallyme_crypto_v1_crypto, 10);
+  enumDesc(file_reallyme_crypto_v1_crypto, 11);
 

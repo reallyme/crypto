@@ -1,0 +1,95 @@
+// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package reallyme.codec.v1;
+
+option java_multiple_files = true;
+option java_package = "me.really.codec.v1";
+option swift_prefix = "ReallyMeProto";
+
+// CodecError is the public, non-PII error envelope for codec boundary failures.
+// The oneof keeps base encoding, PEM, multiformat, and canonicalization
+// failures distinct while the shared CodecErrorReason enum provides stable
+// cross-language reason codes.
+message CodecError {
+  oneof error {
+    CodecBaseEncodingError base_encoding = 1;
+    CodecPemError pem = 2;
+    CodecMultiformatError multiformat = 3;
+    CodecCanonicalizationError canonicalization = 4;
+  }
+}
+
+// CodecBaseEncodingError describes base64, base64url, hex, and generic byte
+// encoding failures.
+message CodecBaseEncodingError {
+  // Reason must be one of the CODEC_ERROR_REASON_BASE_* values.
+  CodecErrorReason reason = 1;
+}
+
+// CodecPemError describes RFC 7468-style PEM armor boundary and body failures.
+message CodecPemError {
+  // Reason must be one of the CODEC_ERROR_REASON_PEM_* values.
+  CodecErrorReason reason = 1;
+}
+
+// CodecMultiformatError describes multibase, multicodec, and multikey
+// envelope failures.
+message CodecMultiformatError {
+  // Reason must be one of the CODEC_ERROR_REASON_MULTIFORMAT_* values.
+  CodecErrorReason reason = 1;
+}
+
+// CodecCanonicalizationError describes CBOR, DAG-CBOR, JCS, and JSON
+// canonicalization failures.
+message CodecCanonicalizationError {
+  // Reason must be one of the CODEC_ERROR_REASON_CANONICAL_* values.
+  CodecErrorReason reason = 1;
+}
+
+// CodecErrorReason is the component-owned reason-code enum for reallyme/codec.
+// Values are stable public boundary codes; local parser errors must map into
+// one of these before crossing RPC, SDK, FFI, storage, audit, or telemetry
+// boundaries. Numeric ranges are intentionally split by codec subpart:
+//   100-199: base encodings
+//   200-299: PEM armor
+//   300-399: multiformats and key envelopes
+//   400-499: CBOR/JCS/JSON canonicalization
+enum CodecErrorReason {
+  CODEC_ERROR_REASON_UNSPECIFIED = 0;
+
+  // Base encodings and generic byte-envelope limits.
+  CODEC_ERROR_REASON_BASE_UNSUPPORTED_CODEC = 100;
+  CODEC_ERROR_REASON_BASE_INVALID_ENCODING = 101;
+  CODEC_ERROR_REASON_BASE_INVALID_LENGTH = 102;
+  CODEC_ERROR_REASON_BASE_INPUT_TOO_LARGE = 103;
+  CODEC_ERROR_REASON_BASE_OUTPUT_TOO_LARGE = 104;
+  CODEC_ERROR_REASON_BASE_INVALID_BASE64 = 110;
+  CODEC_ERROR_REASON_BASE_INVALID_BASE64URL = 111;
+  CODEC_ERROR_REASON_BASE_NON_CANONICAL_BASE64URL = 112;
+  CODEC_ERROR_REASON_BASE_INVALID_HEX = 120;
+  CODEC_ERROR_REASON_BASE_NON_CANONICAL_HEX = 121;
+
+  // PEM armor.
+  CODEC_ERROR_REASON_PEM_INVALID_BOUNDARY = 200;
+  CODEC_ERROR_REASON_PEM_LABEL_MISMATCH = 201;
+  CODEC_ERROR_REASON_PEM_UNSUPPORTED_LABEL = 202;
+  CODEC_ERROR_REASON_PEM_INVALID_BODY = 203;
+  CODEC_ERROR_REASON_PEM_DER_TOO_LARGE = 204;
+
+  // Multiformats and key envelopes.
+  CODEC_ERROR_REASON_MULTIFORMAT_INVALID_MULTIBASE_PREFIX = 300;
+  CODEC_ERROR_REASON_MULTIFORMAT_INVALID_MULTICODEC_PREFIX = 301;
+  CODEC_ERROR_REASON_MULTIFORMAT_UNKNOWN_MULTICODEC = 302;
+  CODEC_ERROR_REASON_MULTIFORMAT_INVALID_MULTIKEY = 303;
+
+  // CBOR, DAG-CBOR, JCS, and JSON canonicalization.
+  CODEC_ERROR_REASON_CANONICAL_INVALID_CBOR = 400;
+  CODEC_ERROR_REASON_CANONICAL_NON_CANONICAL_CBOR = 401;
+  CODEC_ERROR_REASON_CANONICAL_INVALID_JSON = 402;
+  CODEC_ERROR_REASON_CANONICAL_NON_CANONICAL_JSON = 403;
+  CODEC_ERROR_REASON_CANONICAL_INTERNAL = 404;
+}

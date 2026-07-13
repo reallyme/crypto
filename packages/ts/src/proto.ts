@@ -18,8 +18,14 @@ export {
   AeadAlgorithm,
   AeadAlgorithmSchema,
   CryptoAlgorithmFamily,
-  CryptoAlgorithmIdentifierSchema,
   CryptoAlgorithmFamilySchema,
+  CryptoAlgorithmIdentifierSchema,
+  CryptoBackendErrorSchema,
+  CryptoErrorSchema,
+  CryptoErrorReason,
+  CryptoErrorReasonSchema,
+  CryptoPrimitiveErrorSchema,
+  CryptoProviderErrorSchema,
   HashAlgorithm,
   HashAlgorithmSchema,
   HpkeSuite,
@@ -42,11 +48,32 @@ export {
   SignatureAlgorithmSchema,
   file_reallyme_crypto_v1_crypto,
 } from "./proto/generated/reallyme/crypto/v1/crypto_pb.js";
+export {
+  CodecBaseEncodingErrorSchema,
+  CodecCanonicalizationErrorSchema,
+  CodecErrorSchema,
+  CodecErrorReason,
+  CodecErrorReasonSchema,
+  CodecMultiformatErrorSchema,
+  CodecPemErrorSchema,
+  file_reallyme_codec_v1_codec,
+} from "./proto/generated/reallyme/codec/v1/codec_pb.js";
 export type {
   CryptoAlgorithmIdentifier,
+  CryptoBackendError,
+  CryptoError,
+  CryptoPrimitiveError,
+  CryptoProviderError,
   JsonWebKey,
   JsonWebKeySet,
 } from "./proto/generated/reallyme/crypto/v1/crypto_pb.js";
+export type {
+  CodecBaseEncodingError,
+  CodecCanonicalizationError,
+  CodecError,
+  CodecMultiformatError,
+  CodecPemError,
+} from "./proto/generated/reallyme/codec/v1/codec_pb.js";
 import {
   AeadAlgorithm,
   HashAlgorithm,
