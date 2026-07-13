@@ -43,7 +43,7 @@ of silently falling back to another implementation.
 | Language | Package | Notes |
 |---|---|---|
 | Rust | `reallyme-crypto` | Umbrella crate for cryptographic APIs. |
-| Rust | `reallyme-codec` | Smaller codec-only crate for multibase, multicodec, multikey, CBOR, JCS, and base encodings. |
+| Rust | `reallyme-codec` | Smaller codec-only crate for PEM armor, lowercase hex, multibase, multicodec, multikey, CBOR, JCS, and base encodings. |
 | Swift | `ReallyMeCrypto` | Swift Package at the repository root, with native Apple providers and Rust C ABI routes where needed. |
 | Kotlin | [`me.really:crypto`](https://central.sonatype.com/artifact/me.really/crypto) | JVM/Android package with explicit JCA/JCE, BouncyCastle, and Rust-backed routes. |
 | TypeScript | [`@reallyme/crypto`](https://www.npmjs.com/package/@reallyme/crypto) | npm package for Node, browsers, and WASM-backed primitives. |
@@ -58,7 +58,7 @@ of silently falling back to another implementation.
 | Signatures | Ed25519, ECDSA P-256/P-384/P-521, secp256k1 ECDSA, BIP-340 Schnorr, RSA verification, ML-DSA-44/65/87, SLH-DSA-SHA2-128s |
 | Key agreement and KEM | X25519, P-256/P-384/P-521 ECDH, ML-KEM-512/768/1024, X-Wing-768/1024 |
 | Protocols | HPKE |
-| Formats and codecs | JWK, multikey, multicodec, multibase, DAG-CBOR, JCS, base64, base64url |
+| Formats and codecs | JWK, PEM armor, multikey, multicodec, multibase, DAG-CBOR, JCS, base64, base64url, lowercase hex |
 
 X-Wing-768 follows the IETF CFRG Internet-Draft
 [`draft-connolly-cfrg-xwing-kem`](https://datatracker.ietf.org/doc/draft-connolly-cfrg-xwing-kem/),
@@ -90,7 +90,7 @@ When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.1.6", default-features = false, features = [
+reallyme-crypto = { version = "0.1.7", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -104,7 +104,7 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.1.6", default-features = false, features = [
+reallyme-crypto = { version = "0.1.7", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }
@@ -116,7 +116,7 @@ HKDF, HMAC, ML-KEM-768, SHA-2, and X25519. It does not enable `dispatch` or
 through algorithm-by-identifier dispatch:
 
 ```toml
-reallyme-crypto = { version = "0.1.6", default-features = false, features = [
+reallyme-crypto = { version = "0.1.7", default-features = false, features = [
   "native",
   "messaging-dispatch",
 ] }
@@ -156,7 +156,7 @@ cargo add reallyme-codec
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.1.6"
+    from: "0.1.7"
 )
 ```
 

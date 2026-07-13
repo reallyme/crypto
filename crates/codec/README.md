@@ -12,14 +12,15 @@ signature, AEAD, KEM, or password-hashing implementations.
 
 Use this crate when a resolver, service, or tool needs key and content
 encodings but does not need cryptographic operations. The supported surface is
-algorithm-agnostic: base64/base64url, multibase, multicodec, multikey,
-canonical CBOR/DAG-CBOR helpers, and JSON Canonicalization Scheme helpers.
+algorithm-agnostic: PEM armor, base64/base64url, lowercase hex, multibase,
+multicodec, multikey, canonical CBOR/DAG-CBOR helpers, and JSON
+Canonicalization Scheme helpers.
 
 ## Install
 
 ```toml
 [dependencies]
-reallyme-codec = "0.1"
+reallyme-codec = "0.1.7"
 ```
 
 The default feature set enables every codec family. Consumers that need a
@@ -27,7 +28,7 @@ smaller dependency surface can select only the families they use:
 
 ```toml
 [dependencies]
-reallyme-codec = { version = "0.1", default-features = false, features = ["base64url", "multikey"] }
+reallyme-codec = { version = "0.1.7", default-features = false, features = ["base64url", "multikey"] }
 ```
 
 ## Quick Start
@@ -47,15 +48,22 @@ Multikey support treats keys as opaque public bytes plus a multicodec prefix.
 Algorithm-aware key parsing, signing, verification, and JWK envelopes live in
 `reallyme-crypto`.
 
+DTOs that carry byte fields as unpadded base64url strings can enable the
+`serde` feature and use `reallyme_codec::base64url::serde_bytes` or
+`reallyme_codec::base64url::serde_option_bytes`.
+
 ## Features
 
 - `base64`
 - `base64url`
 - `cbor`
+- `hex`
 - `jcs`
 - `multibase`
 - `multicodec`
 - `multikey`
+- `pem`
+- `serde`
 
 ## Contract
 

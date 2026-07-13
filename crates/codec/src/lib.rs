@@ -5,7 +5,8 @@
 //! # reallyme-codec
 //!
 //! Codec-only utilities used by ReallyMe and DID tooling: base encodings,
-//! canonical JSON/CBOR serialization, multicodec lookup, and multikey handling.
+//! canonical JSON/CBOR serialization, multicodec lookup, multikey handling, and
+//! PEM text armor.
 //! This crate deliberately has no cryptographic primitive dependencies.
 
 #![forbid(unsafe_code)]
@@ -22,6 +23,9 @@ pub mod base64url {
     pub use codec_base64url::{
         base64url_bytes_to_bytes, base64url_to_bytes, bytes_to_base64url, Base64UrlError,
     };
+
+    #[cfg(feature = "serde")]
+    pub use codec_base64url::{serde_bytes, serde_option_bytes};
 }
 
 /// DAG-CBOR encode/decode and content-identifier helpers.
@@ -32,6 +36,12 @@ pub mod cbor {
         is_valid_cid_string, sha2_256_content_hash, try_parse_cid, verify_dag_cbor_cid, CborError,
         CborValue, ContentHash, DagCborMultihash, DAG_CBOR_CODEC,
     };
+}
+
+/// Canonical lowercase hexadecimal encode/decode helpers.
+#[cfg(feature = "hex")]
+pub mod hex {
+    pub use codec_hex::{bytes_to_lower_hex, lower_hex_to_bytes, write_lower_hex, HexError};
 }
 
 /// JSON Canonicalization Scheme (RFC 8785) serialization.
@@ -63,5 +73,14 @@ pub mod multikey {
     pub use codec_multikey::{
         binding_type_matches_codec, encode_multikey, parse_multikey, validate_key_binding,
         KeyBindingInput, MultikeyError, ParsedMultikey,
+    };
+}
+
+/// PEM text armor parsing and encoding.
+#[cfg(feature = "pem")]
+pub mod pem {
+    pub use codec_pem::{
+        decode_pem, encode_pem, PemDecodePolicy, PemDocument, PemEncodeOptions, PemError, PemLabel,
+        PemLineEnding,
     };
 }

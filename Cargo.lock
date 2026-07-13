@@ -1441,15 +1441,17 @@ checksum = "63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69"
 
 [[package]]
 name = "reallyme-codec"
-version = "0.1.1"
+version = "0.1.7"
 dependencies = [
  "reallyme-codec-base64",
  "reallyme-codec-base64url",
  "reallyme-codec-cbor",
+ "reallyme-codec-hex",
  "reallyme-codec-jcs",
  "reallyme-codec-multibase",
  "reallyme-codec-multicodec",
  "reallyme-codec-multikey",
+ "reallyme-codec-pem",
 ]
 
 [[package]]
@@ -1462,9 +1464,11 @@ dependencies = [
 
 [[package]]
 name = "reallyme-codec-base64url"
-version = "0.1.1"
+version = "0.1.7"
 dependencies = [
  "base64",
+ "serde",
+ "serde_json",
  "thiserror",
 ]
 
@@ -1476,6 +1480,13 @@ dependencies = [
  "multihash",
  "multihash-codetable",
  "sha2",
+ "thiserror",
+]
+
+[[package]]
+name = "reallyme-codec-hex"
+version = "0.1.7"
+dependencies = [
  "thiserror",
 ]
 
@@ -1511,17 +1522,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "reallyme-codec-pem"
+version = "0.1.7"
+dependencies = [
+ "base64",
+ "thiserror",
+ "zeroize",
+]
+
+[[package]]
 name = "reallyme-crypto"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "reallyme-codec",
  "reallyme-codec-base64",
  "reallyme-codec-base64url",
  "reallyme-codec-cbor",
+ "reallyme-codec-hex",
  "reallyme-codec-jcs",
  "reallyme-codec-multibase",
  "reallyme-codec-multicodec",
  "reallyme-codec-multikey",
+ "reallyme-codec-pem",
  "reallyme-crypto-aes-kw",
  "reallyme-crypto-aes256-gcm",
  "reallyme-crypto-aes256-gcm-siv",
@@ -1828,13 +1850,14 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-p256"
-version = "0.1.3"
+version = "0.1.7"
 dependencies = [
  "ecdsa",
  "hex",
  "hex-literal",
  "js-sys",
  "p256",
+ "reallyme-codec-pem",
  "reallyme-crypto-core",
  "sha2",
  "wasm-bindgen",
