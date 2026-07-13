@@ -52,6 +52,13 @@
 
 #![forbid(unsafe_code)]
 
+#[cfg(all(feature = "wasm", not(target_arch = "wasm32"), not(feature = "native")))]
+compile_error!(
+    "reallyme-crypto's `wasm` backend lane must be checked with \
+     `--target wasm32-unknown-unknown`. Host builds should use the `native` \
+     backend lane, or include `native` when running all-feature host checks."
+);
+
 pub use crypto_core as core;
 
 /// JSON Web Key envelope types and public-key conversion helpers.

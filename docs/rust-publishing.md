@@ -33,6 +33,9 @@ crate needs that same set through algorithm-by-identifier dispatch. `dispatch`
 and `signer` are also algorithm-feature gated; they should be paired with the
 specific algorithm features a consumer actually calls.
 
+The `wasm` lane is a `wasm32-unknown-unknown` lane. Host checks should use
+`native`; wasm checks should include `--target wasm32-unknown-unknown`.
+
 ## Order
 
 The dependency order matters. Core and codec leaves must exist on crates.io
