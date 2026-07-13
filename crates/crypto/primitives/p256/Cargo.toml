@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-p256"
-version = "0.1.3"
+version = "0.1.7"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -23,7 +23,9 @@ native = [
     "p256/ecdh",
     "p256/ecdsa",
     "p256/getrandom",
+    "p256/pkcs8",
     "p256/std",
+    "dep:codec-pem",
     "dep:ecdsa",
     "dep:sha2",
 ]
@@ -39,6 +41,7 @@ wasm = [
 
 [dependencies]
 crypto-core = { package = "reallyme-crypto-core", version = "0.1.1", path = "../../core" }
+codec-pem = { package = "reallyme-codec-pem", version = "0.1.7", path = "../../../codec/pem", optional = true }
 zeroize = { workspace = true }
 
 # -----------------------------

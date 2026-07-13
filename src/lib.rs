@@ -211,6 +211,13 @@ pub mod p256 {
         p256_ecdsa_jose_signature_to_der, sign_p256_der_prehash, verify_p256_der_prehash,
         P256_ECDSA_JOSE_SIGNATURE_LEN, SE_HANDLE_PREFIX,
     };
+
+    #[cfg(feature = "native")]
+    pub use crypto_p256::{
+        compressed_public_key_from_private_key, private_key_from_pem, private_key_from_pkcs8_der,
+        private_key_from_pkcs8_pem, private_key_from_sec1_der, private_key_from_sec1_pem,
+        public_key_from_spki_der, public_key_from_spki_pem,
+    };
 }
 
 /// NIST P-384 (secp384r1) ECDSA and ECDH, with public-key
@@ -454,8 +461,8 @@ pub mod sha3 {
     pub use crypto_sha3_256::{digest, Sha3_256Digest, SHA3_256_DIGEST_LENGTH};
 }
 
-/// Encoding and serialization codecs: base64, base64url, DAG-CBOR, JCS,
-/// multibase, multicodec, and multikey.
+/// Encoding and serialization codecs: base64, base64url, DAG-CBOR, JCS, hex,
+/// multibase, multicodec, multikey, and PEM.
 #[cfg(feature = "codec")]
 pub mod codec {
     /// Standard (RFC 4648) base64 encode/decode.
@@ -470,6 +477,9 @@ pub mod codec {
         pub use codec_base64url::{
             base64url_bytes_to_bytes, base64url_to_bytes, bytes_to_base64url, Base64UrlError,
         };
+
+        #[cfg(feature = "codec-base64url-serde")]
+        pub use codec_base64url::{serde_bytes, serde_option_bytes};
     }
 
     /// DAG-CBOR encode/decode and content-identifier (CID) computation and
@@ -481,6 +491,12 @@ pub mod codec {
             is_valid_cid_string, sha2_256_content_hash, try_parse_cid, verify_dag_cbor_cid,
             CborError, CborValue, ContentHash, DagCborMultihash, DAG_CBOR_CODEC,
         };
+    }
+
+    /// Canonical lowercase hexadecimal encode/decode helpers.
+    #[cfg(feature = "codec-hex")]
+    pub mod hex {
+        pub use codec_hex::{bytes_to_lower_hex, lower_hex_to_bytes, write_lower_hex, HexError};
     }
 
     /// JSON Canonicalization Scheme (RFC 8785) serialization.
@@ -512,6 +528,15 @@ pub mod codec {
         pub use codec_multikey::{
             binding_type_matches_codec, encode_multikey, parse_multikey, validate_key_binding,
             KeyBindingInput, MultikeyError, ParsedMultikey,
+        };
+    }
+
+    /// PEM text armor parsing and encoding.
+    #[cfg(feature = "codec-pem")]
+    pub mod pem {
+        pub use codec_pem::{
+            decode_pem, encode_pem, PemDecodePolicy, PemDocument, PemEncodeOptions, PemError,
+            PemLabel, PemLineEnding,
         };
     }
 }

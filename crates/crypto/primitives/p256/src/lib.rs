@@ -7,6 +7,9 @@
 mod jose_signature;
 mod secure_enclave_handle;
 
+#[cfg(feature = "native")]
+mod import_pem;
+
 #[cfg(any(
     feature = "native",
     all(feature = "wasm", target_arch = "wasm32", not(feature = "native"))
@@ -32,6 +35,13 @@ pub use native::{
     compress_p256, compress_public_key, decompress_p256, decompress_public_key,
     derive_p256_shared_secret, generate_p256_keypair, sign_p256_der_prehash,
     verify_p256_der_prehash,
+};
+
+#[cfg(feature = "native")]
+pub use import_pem::{
+    compressed_public_key_from_private_key, private_key_from_pem, private_key_from_pkcs8_der,
+    private_key_from_pkcs8_pem, private_key_from_sec1_der, private_key_from_sec1_pem,
+    public_key_from_spki_der, public_key_from_spki_pem,
 };
 
 #[cfg(all(feature = "wasm", target_arch = "wasm32", not(feature = "native")))]

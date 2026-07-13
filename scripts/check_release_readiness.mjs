@@ -8,7 +8,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
-const rustRootVersion = "0.1.6";
+const rustRootVersion = "0.1.7";
 const typescriptPackageVersion = "0.1.6";
 const kotlinPackageVersion = "0.1.6";
 const requiredLanes = ["swift", "kotlin_jvm", "kotlin_android", "typescript_wasm"];

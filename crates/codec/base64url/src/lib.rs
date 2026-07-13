@@ -7,6 +7,12 @@
 mod decode;
 mod encode;
 mod error;
+/// Serde adapter for required byte fields encoded as unpadded base64url strings.
+#[cfg(feature = "serde")]
+pub mod serde_bytes;
+/// Serde adapter for optional byte fields encoded as unpadded base64url strings.
+#[cfg(feature = "serde")]
+pub mod serde_option_bytes;
 
 pub use decode::{base64url_bytes_to_bytes, base64url_to_bytes};
 pub use encode::bytes_to_base64url;

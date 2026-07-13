@@ -27,6 +27,33 @@ fn decode_with_padding_is_rejected() {
 }
 
 #[test]
+fn decode_rejects_standard_base64_alphabet() {
+    assert!(base64url_to_bytes("aGVsbG8+").is_err());
+    assert!(base64url_to_bytes("aGVsbG8/").is_err());
+    assert!(base64url_bytes_to_bytes(b"aGVsbG8+").is_err());
+    assert!(base64url_bytes_to_bytes(b"aGVsbG8/").is_err());
+}
+
+#[test]
+fn decode_rejects_non_canonical_trailing_bits() {
+    // "AA" is the canonical encoding of one zero byte. "AB" carries non-zero
+    // trailing bits and must not decode to the same bytes.
+    assert_eq!(base64url_to_bytes("AA").unwrap(), vec![0x00]);
+    assert!(base64url_to_bytes("AB").is_err());
+
+    // "AAA" is the canonical encoding of two zero bytes. "AAB" has non-zero
+    // trailing bits in the final sextet.
+    assert_eq!(base64url_to_bytes("AAA").unwrap(), vec![0x00, 0x00]);
+    assert!(base64url_to_bytes("AAB").is_err());
+}
+
+#[test]
+fn decode_rejects_invalid_single_character_length() {
+    assert!(base64url_to_bytes("A").is_err());
+    assert!(base64url_bytes_to_bytes(b"A").is_err());
+}
+
+#[test]
 fn decode_without_padding() {
     let s = "aGVsbG8"; // "hello" without padding
     let out = base64url_to_bytes(s).unwrap();

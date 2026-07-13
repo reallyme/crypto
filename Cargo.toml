@@ -45,11 +45,13 @@ members = [
     "crates/codec/base64",
     "crates/codec/base64url",
     "crates/codec/cbor",
+    "crates/codec/hex",
     "crates/codec/jcs",
     "crates/codec",
     "crates/codec/multibase",
     "crates/codec/multicodec",
     "crates/codec/multikey",
+    "crates/codec/pem",
     "crates/envelopes/jwk",
     "crates/envelopes/jwk-multikey",
     "crates/conformance/vectors",
@@ -158,7 +160,7 @@ large_include_file = "deny"
 
 [package]
 name = "reallyme-crypto"
-version = "0.1.6"
+version = "0.1.7"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -194,7 +196,7 @@ crypto-ml-dsa-87 = { package = "reallyme-crypto-ml-dsa-87", version = "0.1.2", p
 crypto-ml-kem-512 = { package = "reallyme-crypto-ml-kem-512", version = "0.1.2", path = "crates/crypto/primitives/ml-kem-512", optional = true, default-features = false }
 crypto-ml-kem-1024 = { package = "reallyme-crypto-ml-kem-1024", version = "0.1.3", path = "crates/crypto/primitives/ml-kem-1024", optional = true, default-features = false }
 crypto-ml-kem-768 = { package = "reallyme-crypto-ml-kem-768", version = "0.1.3", path = "crates/crypto/primitives/ml-kem-768", optional = true, default-features = false }
-crypto-p256 = { package = "reallyme-crypto-p256", version = "0.1.3", path = "crates/crypto/primitives/p256", optional = true, default-features = false }
+crypto-p256 = { package = "reallyme-crypto-p256", version = "0.1.7", path = "crates/crypto/primitives/p256", optional = true, default-features = false }
 crypto-p384 = { package = "reallyme-crypto-p384", version = "0.1.3", path = "crates/crypto/primitives/p384", optional = true, default-features = false }
 crypto-p521 = { package = "reallyme-crypto-p521", version = "0.1.3", path = "crates/crypto/primitives/p521", optional = true, default-features = false }
 crypto-pbkdf2 = { package = "reallyme-crypto-pbkdf2", version = "0.1.2", path = "crates/crypto/primitives/pbkdf2", optional = true, default-features = false }
@@ -208,14 +210,16 @@ crypto-slh-dsa = { package = "reallyme-crypto-slh-dsa", version = "0.1.2", path 
 crypto-x25519 = { package = "reallyme-crypto-x25519", version = "0.1.2", path = "crates/crypto/primitives/x25519", optional = true, default-features = false }
 crypto-x-wing = { package = "reallyme-crypto-x-wing", version = "0.1.1", path = "crates/crypto/primitives/x-wing", optional = true, default-features = false }
 crypto-hpke = { package = "reallyme-crypto-hpke", version = "0.1.1", path = "crates/crypto/protocols/hpke", optional = true, default-features = false }
-reallyme-codec = { version = "0.1.1", path = "crates/codec", optional = true, default-features = false }
+reallyme-codec = { version = "0.1.7", path = "crates/codec", optional = true, default-features = false }
 codec-base64 = { package = "reallyme-codec-base64", version = "0.1.1", path = "crates/codec/base64", optional = true }
-codec-base64url = { package = "reallyme-codec-base64url", version = "0.1.1", path = "crates/codec/base64url", optional = true }
+codec-base64url = { package = "reallyme-codec-base64url", version = "0.1.7", path = "crates/codec/base64url", optional = true }
 codec-cbor = { package = "reallyme-codec-cbor", version = "0.1.1", path = "crates/codec/cbor", optional = true }
+codec-hex = { package = "reallyme-codec-hex", version = "0.1.7", path = "crates/codec/hex", optional = true }
 codec-jcs = { package = "reallyme-codec-jcs", version = "0.1.1", path = "crates/codec/jcs", optional = true }
 codec-multibase = { package = "reallyme-codec-multibase", version = "0.1.1", path = "crates/codec/multibase", optional = true }
 codec-multicodec = { package = "reallyme-codec-multicodec", version = "0.1.1", path = "crates/codec/multicodec", optional = true }
 codec-multikey = { package = "reallyme-codec-multikey", version = "0.1.1", path = "crates/codec/multikey", optional = true }
+codec-pem = { package = "reallyme-codec-pem", version = "0.1.7", path = "crates/codec/pem", optional = true }
 envelopes-jwk = { package = "reallyme-crypto-jwk", version = "0.1.2", path = "crates/envelopes/jwk", optional = true, default-features = false }
 envelopes-jwk-multikey = { package = "reallyme-crypto-jwk-multikey", version = "0.1.6", path = "crates/envelopes/jwk-multikey", optional = true, default-features = false }
 
@@ -378,18 +382,23 @@ codec = [
     "codec-base64",
     "codec-base64url",
     "codec-cbor",
+    "codec-hex",
     "codec-jcs",
     "codec-multibase",
     "codec-multicodec",
     "codec-multikey",
+    "codec-pem",
 ]
 codec-base64 = ["dep:codec-base64", "reallyme-codec?/base64"]
 codec-base64url = ["dep:codec-base64url", "reallyme-codec?/base64url"]
+codec-base64url-serde = ["codec-base64url", "codec-base64url/serde", "reallyme-codec?/serde"]
 codec-cbor = ["dep:codec-cbor", "reallyme-codec?/cbor"]
+codec-hex = ["dep:codec-hex", "reallyme-codec?/hex"]
 codec-jcs = ["dep:codec-jcs", "reallyme-codec?/jcs"]
 codec-multibase = ["dep:codec-multibase", "codec-base64url", "reallyme-codec?/multibase"]
 codec-multicodec = ["dep:codec-multicodec", "reallyme-codec?/multicodec"]
 codec-multikey = ["dep:codec-multikey", "codec-multibase", "codec-multicodec", "reallyme-codec?/multikey"]
+codec-pem = ["dep:codec-pem", "reallyme-codec?/pem"]
 envelopes = ["jwk", "jwk-multikey"]
 jwk = ["dep:envelopes-jwk"]
 jwk-multikey = ["dep:envelopes-jwk-multikey", "jwk", "codec-multikey"]
