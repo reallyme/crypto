@@ -116,9 +116,6 @@ jobs:
       - name: Check native lane
         run: cargo check --workspace --no-default-features --features native
 
-      - name: Check wasm lane
-        run: cargo check --workspace --no-default-features --features wasm
-
       - name: Check wasm32 lane
         run: cargo check --workspace --no-default-features --features wasm --target wasm32-unknown-unknown
 
