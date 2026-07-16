@@ -1,0 +1,10 @@
+{
+  "alg": "JWA-CONCAT-KDF-SHA256",
+  "profile": "ECDH-ES+A128GCM",
+  "shared_secret": "nlbZHYFxNdNyg0KDv4QmnPsxbqPagGpI9tqneYz-kMQ",
+  "algorithm_id": "QTEyOEdDTQ",
+  "party_u_info": "QWxpY2U",
+  "party_v_info": "Qm9i",
+  "output_len": 16,
+  "derived_key": "VqqN6vgjbSBcIijNcacQGg"
+}

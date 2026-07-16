@@ -1,0 +1,42 @@
+{
+  "originHash" : "843df4b46a26156fd700b3b22358c3849e342f1712f602fa37d54f34ebf69ffc",
+  "pins" : [
+    {
+      "identity" : "codec",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/reallyme/codec",
+      "state" : {
+        "revision" : "fded1ef41c052f7a06a770891340df3ab27d3b52",
+        "version" : "0.1.21"
+      }
+    },
+    {
+      "identity" : "csecp256k1",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/reallyme/CSecp256k1",
+      "state" : {
+        "revision" : "90c1cb68726d8b3e22ced1fc74a79eb68951ad2f",
+        "version" : "0.1.0"
+      }
+    },
+    {
+      "identity" : "digest",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/leif-ibsen/Digest",
+      "state" : {
+        "revision" : "95ba89b494aaff5f3cd2933c03b9a890323dbf2c",
+        "version" : "1.13.0"
+      }
+    },
+    {
+      "identity" : "swift-protobuf",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-protobuf.git",
+      "state" : {
+        "revision" : "55d7a1cc5666b85c13464aea1c4b4a90feccb4c8",
+        "version" : "1.38.1"
+      }
+    }
+  ],
+  "version" : 3
+}

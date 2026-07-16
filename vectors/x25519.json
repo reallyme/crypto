@@ -1,0 +1,9 @@
+{
+  "alg": "X25519",
+  "curve": "X25519",
+  "secret_key": "E7QOQ0MpyDlZIqZtb7jFDTs1Jj-OXAbKxiSoZSfTswQ",
+  "public_key": "y77BzmdEAIfQO_2FNuo_f6kiz1KavGZXi2Lzv1qyYUE",
+  "peer_secret_key": "c4BpObD56NKuTD1wpLclkzaH0oWMpdCJYKniVFDvUK4",
+  "peer_public_key": "RESov4Ctflb8KNvIJtn0T8Sb2UXzuiYmE495HXpVGAs",
+  "shared_secret": "4AxNYqi-7u3A19Csp45MlDlaBjU5qCBM6PwREg6NvBg"
+}

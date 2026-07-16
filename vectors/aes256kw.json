@@ -1,0 +1,6 @@
+{
+  "alg": "AES-256-KW",
+  "kek": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+  "key_data": "ABEiM0RVZneImaq7zN3u_wABAgMEBQYHCAkKCwwNDg8",
+  "wrapped_key": "KMn0BMS4EPTLzLNc-4f4Jj9XhuLYDtMmy8fw5xqZ9Dv7mIubegLdIQ"
+}

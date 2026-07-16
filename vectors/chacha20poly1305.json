@@ -1,0 +1,18 @@
+{
+  "chacha20_poly1305": {
+    "alg": "ChaCha20-Poly1305",
+    "key": "EBESExQVFhcYGRobHB0eHyAhIiMkJSYnKCkqKywtLi8",
+    "nonce": "oKGio6Slpqeoqaqr",
+    "aad": "cmVhbGx5bWUtY3J5cHRvLWNoYWNoYS12ZWN0b3ItYWFk",
+    "plaintext": "UmVhbGx5TWUgQ2hhQ2hhMjAtUG9seTEzMDUgY29uZm9ybWFuY2UgdmVjdG9y",
+    "ciphertext_with_tag": "Qjm7Nj2eiPvYGaooqr38rmuSA9awZt2Pvin_CzaZZG0nma6M1z9ITx4vTrjiBaAlakwqodWU2VostKbbVg"
+  },
+  "xchacha20_poly1305": {
+    "alg": "XChaCha20-Poly1305",
+    "key": "EBESExQVFhcYGRobHB0eHyAhIiMkJSYnKCkqKywtLi8",
+    "nonce": "sLGys7S1tre4ubq7vL2-v8DBwsPExcbH",
+    "aad": "cmVhbGx5bWUtY3J5cHRvLWNoYWNoYS12ZWN0b3ItYWFk",
+    "plaintext": "UmVhbGx5TWUgQ2hhQ2hhMjAtUG9seTEzMDUgY29uZm9ybWFuY2UgdmVjdG9y",
+    "ciphertext_with_tag": "PaGz1pCJhIoCzTRgbz_xBf2PIGFhWUpptCP_BgisAl_zRTk565yv62NWfuEFOpomXSETJ68qwZAH1Zjoxg"
+  }
+}
