@@ -1,0 +1,13 @@
+{
+  "alg": "ES256",
+  "curve": "P-256",
+  "secret_key": "IU-LbKKdMxCVR2YScoOv7g0ZQVt8ItQ5UYqwZS-Rw0Q",
+  "public_key_compressed": "Agf8y0NFCW-WIXJvxOQ3vgz4HEMQgfMo5VSWcjmsVSLu",
+  "public_key_uncompressed": "BAf8y0NFCW-WIXJvxOQ3vgz4HEMQgfMo5VSWcjmsVSLuDZcUdT7G939Veqc3FCadWs_rcpS-vc_8Z8FaZREVX4A",
+  "ecdsa_message": "UmVhbGx5TWUgc2lnbmF0dXJlIGNvbmZvcm1hbmNlIHZlY3Rvcg",
+  "ecdsa_signature_der": "MEUCIG4wOGZvBlWmgcFjbJGRUJInM1xhUn_yIEJoCaaV4H7XAiEAo3N3o0kIeiRG1YOcDbcFyvILnkLtxLgZiS5LvoZnVMY",
+  "peer_secret_key": "ahBF8jOegBKrdMYo3pEHW0nvMhiELbxgE6V3yQ5LJtE",
+  "peer_public_key_compressed": "Ali-yYlmw_dYNuAs1pru8ZlUqrQouhAoBlJ4W_zPnhEh",
+  "peer_public_key_uncompressed": "BFi-yYlmw_dYNuAs1pru8ZlUqrQouhAoBlJ4W_zPnhEhEQj5N59c_YItnc9okvfZ_R-KA3LHSL8KQ_xjE6RiqhQ",
+  "shared_secret": "iOVlde6amQQJ4-QGzYLITKXVKdLax4Hs46FesLh2_nE"
+}

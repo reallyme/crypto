@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-ml-dsa-44"
+version = "0.2.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = true
+description = "ML-DSA-44 signature primitive for ReallyMe Crypto."
+
+[lib]
+name = "crypto_ml_dsa_44"
+
+[features]
+default = [ ]
+
+native = [
+    "dep:ml-dsa",
+]
+
+# Platform backends
+wasm = [
+    "dep:wasm-bindgen",
+    "dep:js-sys",
+]
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.2.0", path = "../../core" }
+zeroize = { workspace = true }
+
+# -----------------------------
+# Native-only PQ crypto deps
+# -----------------------------
+ml-dsa = { workspace = true, features = ["getrandom", "zeroize"], optional = true }
+
+# -----------------------------
+# WASM-only deps (only if wasm/*.rs uses them)
+# -----------------------------
+wasm-bindgen = { workspace = true, optional = true }
+js-sys = { workspace = true, optional = true }
+
+[lints]
+workspace = true

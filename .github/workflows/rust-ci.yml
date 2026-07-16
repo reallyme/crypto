@@ -1,0 +1,228 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Code Checks
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - "formal/**"
+      - "!CONTRACT.md"
+      - "!PROVIDER_POLICY.md"
+      - "!RELEASE_BLOCKERS.md"
+      - "!RELEASE_NOTES.md"
+      - "!SECURITY_MEMORY_MODEL.md"
+      - "!docs/conformance.md"
+      - "!docs/protobuf.md"
+      - "!docs/rust-publishing.md"
+      - "LICENSE"
+      - "NOTICE"
+      - ".github/renovate.json"
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - "formal/**"
+      - "!CONTRACT.md"
+      - "!PROVIDER_POLICY.md"
+      - "!RELEASE_BLOCKERS.md"
+      - "!RELEASE_NOTES.md"
+      - "!SECURITY_MEMORY_MODEL.md"
+      - "!docs/conformance.md"
+      - "!docs/protobuf.md"
+      - "!docs/rust-publishing.md"
+      - "LICENSE"
+      - "NOTICE"
+      - ".github/renovate.json"
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    name: fmt, lint, test, wasm, package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: 1.96.0
+          components: rustfmt, clippy
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+
+      - name: Install nextest
+        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # nextest
+        with:
+          tool: nextest@0.9.140
+
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # cargo-deny
+        with:
+          tool: cargo-deny@0.20.2
+
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # cargo-audit
+        with:
+          tool: cargo-audit@0.22.2
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # wasm-pack
+        with:
+          tool: wasm-pack@0.15.0
+
+      - name: Install wasm-bindgen-cli
+        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # wasm-bindgen-cli
+        with:
+          tool: wasm-bindgen-cli@0.2.126
+
+      - name: Install Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: |
+            crates/conformance/vectors/package-lock.json
+            packages/ts/package-lock.json
+
+      - name: Format
+        run: cargo fmt --check
+
+      - name: Check all features
+        run: cargo check --workspace --all-features
+
+      - name: Check warnings as errors
+        run: RUSTFLAGS=-Dwarnings cargo check --workspace --all-features
+
+      - name: Check umbrella crate tarball
+        run: cargo package -p reallyme-crypto --list
+
+      - name: Check narrow Rust feature surfaces
+        run: |
+          cargo test -p reallyme-crypto-dispatch --test feature_lane_tests --no-default-features
+          cargo test -p reallyme-crypto-dispatch --test feature_lane_tests --no-default-features --features native,x25519,ml-kem-768,chacha20-poly1305,hmac,sha2
+          cargo test -p reallyme-crypto-signer --no-default-features
+          cargo test -p reallyme-crypto-signer --no-default-features --features native
+          cargo test -p reallyme-crypto-signer --no-default-features --features native,ed25519
+          cargo check -p reallyme-crypto --no-default-features --features native,messaging-dispatch
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+      - name: Test
+        run: cargo nextest run --workspace --no-default-features --features native
+
+      - name: Test (all features — runs feature-gated tests incl. the proto bridge)
+        run: cargo nextest run --workspace --all-features
+
+      - name: Doc build (enforces missing_docs)
+        run: cargo doc --workspace --no-deps --all-features
+        env:
+          RUSTDOCFLAGS: -D warnings
+
+      - name: Doctests
+        run: cargo test --workspace --all-features --doc
+
+      - name: Install TypeScript package dependencies
+        run: npm ci --prefix packages/ts
+
+      - name: Verify vectors against TypeScript-native noble oracles
+        run: |
+          npm ci --prefix crates/conformance/vectors
+          npm run --prefix crates/conformance/vectors verify:ts-native
+
+      - name: Verify post-quantum vectors against @noble/post-quantum oracle
+        run: npm run --prefix crates/conformance/vectors verify:noble-pq
+
+      - name: Test TypeScript package
+        run: npm --prefix packages/ts test
+
+      - name: Check generated provider matrix
+        run: node scripts/generate_provider_matrix.mjs --check
+
+      - name: Release readiness
+        run: node scripts/check_release_readiness.mjs
+
+      - name: Check native lane
+        run: cargo check --workspace --no-default-features --features native
+
+      - name: Check wasm32 lane
+        run: cargo check --workspace --no-default-features --features wasm --target wasm32-unknown-unknown
+
+      - name: Dependency policy
+        run: cargo deny check
+
+      - name: Security advisory audit
+        run: cargo audit
+
+  swift:
+    name: swift package + vector conformance
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      # The CSecp256k1 dependency's manifest is swift-tools 6.2, which needs
+      # Xcode 26.x (the runner default 16.4 ships Swift 6.1).
+      - name: Select Xcode 26.3
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.3.app
+          swift --version
+
+      # The shipped Rust-C-ABI wrapper KATs (ML-KEM/ML-DSA/SLH-DSA/RSA/…) load
+      # this dylib at runtime and skip without it. Build it and hand the path
+      # to `swift test` so those wrappers are actually exercised against the
+      # shared vectors in CI, not silently skipped.
+      - name: Build crypto-ffi dylib
+        run: cargo build -p crypto-ffi
+
+      - name: Test Swift package
+        run: swift test
+        env:
+          REALLYME_CRYPTO_FFI_LIBRARY_PATH: ${{ github.workspace }}/target/debug/libcrypto_ffi.dylib
+          REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI: "1"
+
+      - name: Test Swift vectors
+        run: swift test --package-path crates/conformance/vectors/platform/swift
+
+  kotlin:
+    name: kotlin package + vector conformance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Install Java
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: 1.96.0
+
+      - name: Build crypto-ffi dylib
+        run: cargo build -p crypto-ffi
+
+      - name: Test Kotlin package
+        working-directory: packages/kotlin
+        run: ./gradlew test
+        env:
+          REALLYME_CRYPTO_FFI_LIBRARY_PATH: ${{ github.workspace }}/target/debug/libcrypto_ffi.so
+
+      - name: Test Kotlin vectors
+        working-directory: crates/conformance/vectors/platform/kotlin
+        run: ./gradlew test

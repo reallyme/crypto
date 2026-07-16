@@ -1,0 +1,43 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-argon2id"
+version = "0.2.0"
+edition.workspace = true
+rust-version.workspace = true
+publish = true
+description = "Argon2id password hashing and key derivation primitive for ReallyMe Crypto."
+license.workspace = true
+repository.workspace = true
+
+[package.metadata.cargo-machete]
+ignored = [
+    # Enables getrandom's wasm entropy backend for the transitive password-hash stack.
+    "getrandom",
+    # The password-hash stack still uses getrandom 0.2 through rand_core 0.6.
+    # That line uses the older `js` wasm feature name.
+    "getrandom02",
+]
+
+[lib]
+name = "crypto_argon2id"
+
+[features]
+default = ["native"]
+native = []
+wasm = ["dep:getrandom", "dep:getrandom02"]
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.2.0", path = "../../core" }
+argon2 = { workspace = true, features = ["alloc", "zeroize"] }
+getrandom = { workspace = true, features = ["wasm_js"], optional = true }
+getrandom02 = { package = "getrandom", version = "0.2.17", features = ["js"], optional = true }
+zeroize = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+hex = { workspace = true }
+
+[lints]
+workspace = true

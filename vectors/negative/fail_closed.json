@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "description": "Shared fail-closed negative vector metadata. Each case references a committed positive vector and defines the deterministic mutation plus the typed failure contract every executable lane must assert.",
+  "cases": [
+    {
+      "id": "hpke-p256-short-encapsulated-key",
+      "algorithm": "DHKEM-P256-HKDF-SHA256-HKDF-SHA256-AES-256-GCM",
+      "operation": "hpke_open",
+      "positiveVector": "hpke.json",
+      "mutation": "truncate encapsulated_key by one byte before open",
+      "expected": {
+        "facadeError": "invalidInput",
+        "wireBranch": "primitive",
+        "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH"
+      },
+      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+    },
+    {
+      "id": "hpke-x25519-wrong-aad",
+      "algorithm": "DHKEM-X25519-HKDF-SHA256-HKDF-SHA256-CHACHA20-POLY1305",
+      "operation": "hpke_open",
+      "positiveVector": "hpke.json",
+      "mutation": "replace aad with a same-length wrong context before open",
+      "expected": {
+        "facadeError": "authenticationFailed",
+        "wireBranch": "primitive",
+        "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED"
+      },
+      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+    },
+    {
+      "id": "ml-kem-768-short-ciphertext",
+      "algorithm": "ML-KEM-768",
+      "operation": "kem_decapsulate",
+      "positiveVector": "mlkem768.json",
+      "mutation": "truncate ciphertext by one byte before decapsulation",
+      "expected": {
+        "facadeError": "invalidInput",
+        "wireBranch": "primitive",
+        "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH"
+      },
+      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+    },
+    {
+      "id": "ml-dsa-65-tampered-signature",
+      "algorithm": "ML-DSA-65",
+      "operation": "signature_verify",
+      "positiveVector": "ml_dsa_65.json",
+      "mutation": "flip the low bit of the final signature byte before verification",
+      "expected": {
+        "facadeError": "invalidSignature",
+        "wireBranch": "primitive",
+        "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SIGNATURE"
+      },
+      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+    },
+    {
+      "id": "slh-dsa-short-signature",
+      "algorithm": "SLH-DSA-SHA2-128s",
+      "operation": "signature_verify",
+      "positiveVector": "slh_dsa_sha2_128s.json",
+      "mutation": "truncate signature by one byte before verification",
+      "expected": {
+        "facadeError": "invalidInput",
+        "wireBranch": "primitive",
+        "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH"
+      },
+      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+    },
+    {
+      "id": "x-wing-768-short-ciphertext",
+      "algorithm": "X-Wing-768",
+      "operation": "kem_decapsulate",
+      "positiveVector": "x_wing.json",
+      "mutation": "truncate ciphertext by one byte before decapsulation",
+      "expected": {
+        "facadeError": "invalidInput",
+        "wireBranch": "primitive",
+        "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH"
+      },
+      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+    },
+    {
+      "id": "aes-256-gcm-tampered-tag",
+      "algorithm": "AES-256-GCM",
+      "operation": "aead_open",
+      "positiveVector": "aes256gcm.json",
+      "mutation": "flip the low bit of the final tag byte before open",
+      "expected": {
+        "facadeError": "authenticationFailed",
+        "wireBranch": "primitive",
+        "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED"
+      },
+      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+    }
+  ]
+}

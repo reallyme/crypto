@@ -1,0 +1,673 @@
+// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package reallyme.crypto.v1;
+
+option java_multiple_files = true;
+option java_package = "me.really.crypto.v1";
+option swift_prefix = "ReallyMeProto";
+
+// CryptoError is the public, non-PII error envelope for crypto boundary
+// failures. The oneof keeps primitive, provider, and backend failures distinct
+// while the shared CryptoErrorReason enum provides stable cross-language reason
+// codes.
+message CryptoError {
+  oneof error {
+    CryptoPrimitiveError primitive = 1;
+    CryptoProviderError provider = 2;
+    CryptoBackendError backend = 3;
+  }
+}
+
+// CryptoPrimitiveError describes failures owned by primitive input validation,
+// key handling, encryption, decryption, signing, verification, KEM, KDF, MAC,
+// and key-wrap operations.
+message CryptoPrimitiveError {
+  // Reason must be one of the CRYPTO_ERROR_REASON_PRIMITIVE_* values.
+  CryptoErrorReason reason = 1;
+}
+
+// CryptoProviderError describes provider selection and platform-provider
+// availability failures.
+message CryptoProviderError {
+  // Reason must be one of the CRYPTO_ERROR_REASON_PROVIDER_* values.
+  CryptoErrorReason reason = 1;
+}
+
+// CryptoBackendError describes dispatch, FFI, WASM, and internal backend
+// failures that are not safe to expose as backend exception text.
+message CryptoBackendError {
+  // Reason must be one of the CRYPTO_ERROR_REASON_BACKEND_* values.
+  CryptoErrorReason reason = 1;
+}
+
+// CryptoProtoResultStatus marks whether a result-envelope payload contains an
+// operation-specific result protobuf or a structured CryptoError protobuf.
+enum CryptoProtoResultStatus {
+  CRYPTO_PROTO_RESULT_STATUS_UNSPECIFIED = 0;
+  CRYPTO_PROTO_RESULT_STATUS_RESULT = 1;
+  CRYPTO_PROTO_RESULT_STATUS_CRYPTO_ERROR = 2;
+}
+
+// CryptoProtoResultEnvelope is the transport-neutral wrapper for protobuf
+// result lanes that need a single bytes object across FFI, RPC, storage, or
+// SDK boundaries. `payload` contains either a successful result message or a
+// CryptoError message according to `status`.
+message CryptoProtoResultEnvelope {
+  CryptoProtoResultStatus status = 1;
+  bytes payload = 2;
+}
+
+// CryptoOperation is the stable dispatch identifier used by protobuf, Connect,
+// FFI, and package adapters. Values are append-only and intentionally grouped
+// by primitive family so a numeric id has one meaning across every lane.
+enum CryptoOperation {
+  CRYPTO_OPERATION_UNSPECIFIED = 0;
+  CRYPTO_OPERATION_HASH = 1;
+  CRYPTO_OPERATION_AEAD_SEAL = 2;
+  CRYPTO_OPERATION_AEAD_OPEN = 3;
+  CRYPTO_OPERATION_MAC_AUTHENTICATE = 4;
+  CRYPTO_OPERATION_MAC_VERIFY = 5;
+  CRYPTO_OPERATION_SIGNATURE_GENERATE_KEY_PAIR = 10;
+  CRYPTO_OPERATION_SIGNATURE_DERIVE_KEY_PAIR = 11;
+  CRYPTO_OPERATION_SIGNATURE_SIGN = 12;
+  CRYPTO_OPERATION_SIGNATURE_VERIFY = 13;
+  CRYPTO_OPERATION_BIP340_SCHNORR_SIGN = 14;
+  CRYPTO_OPERATION_RSA_VERIFY = 15;
+  CRYPTO_OPERATION_KEY_AGREEMENT_DERIVE_SHARED_SECRET = 20;
+  CRYPTO_OPERATION_KEY_AGREEMENT_DERIVE_KEY_PAIR = 21;
+  CRYPTO_OPERATION_KEM_GENERATE_KEY_PAIR = 30;
+  CRYPTO_OPERATION_KEM_ENCAPSULATE = 31;
+  CRYPTO_OPERATION_KEM_DECAPSULATE = 32;
+  CRYPTO_OPERATION_HKDF_DERIVE = 40;
+  CRYPTO_OPERATION_KDF_DERIVE_KEY = 41;
+  CRYPTO_OPERATION_JWA_CONCAT_KDF_SHA256_DERIVE = 42;
+  CRYPTO_OPERATION_KEY_WRAP = 50;
+  CRYPTO_OPERATION_KEY_UNWRAP = 51;
+  CRYPTO_OPERATION_HPKE_SEAL = 60;
+  CRYPTO_OPERATION_HPKE_OPEN = 61;
+}
+
+// CryptoServiceProcessRequest carries one operation-specific protobuf request. The
+// selected operation determines the concrete message type in request_payload.
+message CryptoServiceProcessRequest {
+  CryptoOperation operation = 1;
+  bytes request_payload = 2;
+}
+
+// CryptoServiceProcessResponse retains the result/error envelope verbatim so Connect
+// transports do not reinterpret crypto failures as backend exception text.
+message CryptoServiceProcessResponse {
+  CryptoProtoResultEnvelope result = 1;
+}
+
+// CryptoService is the transport schema for Connect-compatible adapters.
+// Implementations must apply the same provider policy and size limits as the
+// local process-proto and FFI lanes; the service definition does not authorize
+// fallback to a different provider.
+service CryptoService {
+  rpc Process(CryptoServiceProcessRequest) returns (CryptoServiceProcessResponse);
+}
+
+// CryptoErrorReason is the component-owned reason-code enum for reallyme/crypto.
+// Values are stable public boundary codes; internal Rust, Swift, Kotlin, and
+// TypeScript errors must map into one of these before crossing RPC, SDK, FFI,
+// storage, audit, or telemetry boundaries. Numeric ranges are intentionally
+// split by crypto subpart:
+//   100-199: primitive operations and validation
+//   200-299: provider selection and availability
+//   300-399: backend dispatch and internal failures
+enum CryptoErrorReason {
+  CRYPTO_ERROR_REASON_UNSPECIFIED = 0;
+
+  // Primitive input, key material, and byte-format validation.
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PARAMETER = 100;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH = 101;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY = 102;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PUBLIC_KEY = 103;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PRIVATE_KEY = 104;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_NONCE = 105;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SALT = 106;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PASSWORD = 107;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_ENCODING = 108;
+
+  // Primitive operation failures.
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SIGNATURE = 120;
+  CRYPTO_ERROR_REASON_PRIMITIVE_VERIFICATION_FAILED = 121;
+  CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED = 122;
+  CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_CIPHERTEXT = 123;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_TAG = 124;
+  CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SHARED_SECRET = 125;
+
+  // Provider policy and availability.
+  CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_ALGORITHM = 200;
+  CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_BACKEND = 201;
+  CRYPTO_ERROR_REASON_PROVIDER_UNAVAILABLE = 202;
+  CRYPTO_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE = 203;
+
+  // Backend dispatch and internal state.
+  CRYPTO_ERROR_REASON_BACKEND_INVALID_STATE = 300;
+  CRYPTO_ERROR_REASON_BACKEND_INTERNAL = 301;
+  CRYPTO_ERROR_REASON_BACKEND_MALFORMED_PROTOBUF = 302;
+  CRYPTO_ERROR_REASON_BACKEND_MALFORMED_JSON = 303;
+  CRYPTO_ERROR_REASON_BACKEND_RESOURCE_LIMIT_EXCEEDED = 304;
+}
+
+// CryptoAlgorithmFamily classifies an algorithm identifier without implying
+// that the identifier is valid for a specific operation.
+enum CryptoAlgorithmFamily {
+  CRYPTO_ALGORITHM_FAMILY_UNSPECIFIED = 0;
+  CRYPTO_ALGORITHM_FAMILY_SIGNATURE = 1;
+  CRYPTO_ALGORITHM_FAMILY_KEY_AGREEMENT = 2;
+  CRYPTO_ALGORITHM_FAMILY_KEM = 3;
+  CRYPTO_ALGORITHM_FAMILY_AEAD = 4;
+  CRYPTO_ALGORITHM_FAMILY_HASH = 5;
+  CRYPTO_ALGORITHM_FAMILY_MAC = 6;
+  CRYPTO_ALGORITHM_FAMILY_KDF = 7;
+  CRYPTO_ALGORITHM_FAMILY_KEY_WRAP = 8;
+  CRYPTO_ALGORITHM_FAMILY_HPKE = 9;
+}
+
+// SignatureAlgorithm identifies signature suites supported or reserved by the
+// crypto repository. RSA values identify verification suites; RSA signing is
+// intentionally not exposed by this package today.
+enum SignatureAlgorithm {
+  SIGNATURE_ALGORITHM_UNSPECIFIED = 0;
+  SIGNATURE_ALGORITHM_ED25519 = 1;
+  SIGNATURE_ALGORITHM_ECDSA_P256_SHA256 = 2;
+  SIGNATURE_ALGORITHM_ECDSA_P384_SHA384 = 3;
+  SIGNATURE_ALGORITHM_ECDSA_P521_SHA512 = 4;
+  SIGNATURE_ALGORITHM_ECDSA_SECP256K1_SHA256 = 5;
+  SIGNATURE_ALGORITHM_BIP340_SCHNORR_SECP256K1_SHA256 = 6;
+  SIGNATURE_ALGORITHM_RSA_PKCS1V15_SHA1 = 7;
+  SIGNATURE_ALGORITHM_RSA_PKCS1V15_SHA256 = 8;
+  SIGNATURE_ALGORITHM_RSA_PKCS1V15_SHA384 = 9;
+  SIGNATURE_ALGORITHM_RSA_PKCS1V15_SHA512 = 10;
+  SIGNATURE_ALGORITHM_RSA_PSS_SHA1_MGF1_SHA1 = 11;
+  SIGNATURE_ALGORITHM_RSA_PSS_SHA256_MGF1_SHA256 = 12;
+  SIGNATURE_ALGORITHM_RSA_PSS_SHA384_MGF1_SHA384 = 13;
+  SIGNATURE_ALGORITHM_RSA_PSS_SHA512_MGF1_SHA512 = 14;
+  SIGNATURE_ALGORITHM_ML_DSA_44 = 15;
+  SIGNATURE_ALGORITHM_ML_DSA_65 = 16;
+  SIGNATURE_ALGORITHM_ML_DSA_87 = 17;
+  SIGNATURE_ALGORITHM_SLH_DSA_SHA2_128S = 18;
+}
+
+// KeyAgreementAlgorithm identifies direct shared-secret derivation suites.
+// Callers must still feed derived shared secrets through a protocol KDF.
+enum KeyAgreementAlgorithm {
+  KEY_AGREEMENT_ALGORITHM_UNSPECIFIED = 0;
+  KEY_AGREEMENT_ALGORITHM_X25519 = 1;
+  KEY_AGREEMENT_ALGORITHM_P256_ECDH = 2;
+  KEY_AGREEMENT_ALGORITHM_P384_ECDH = 3;
+  KEY_AGREEMENT_ALGORITHM_P521_ECDH = 4;
+}
+
+// KemAlgorithm identifies encapsulation suites. X-Wing values are ReallyMe's
+// supported hybrid KEM variants over X25519 and ML-KEM.
+enum KemAlgorithm {
+  KEM_ALGORITHM_UNSPECIFIED = 0;
+  KEM_ALGORITHM_ML_KEM_512 = 1;
+  KEM_ALGORITHM_ML_KEM_768 = 2;
+  KEM_ALGORITHM_ML_KEM_1024 = 3;
+  KEM_ALGORITHM_X_WING_768 = 4;
+  KEM_ALGORITHM_X_WING_1024 = 5;
+}
+
+// HpkeSuite identifies supported RFC 9180 HPKE Base-mode ciphersuites.
+enum HpkeSuite {
+  HPKE_SUITE_UNSPECIFIED = 0;
+  HPKE_SUITE_DHKEM_P256_HKDF_SHA256_HKDF_SHA256_AES_256_GCM = 1;
+  HPKE_SUITE_DHKEM_X25519_HKDF_SHA256_HKDF_SHA256_CHACHA20_POLY1305 = 2;
+}
+
+// AeadAlgorithm identifies authenticated-encryption suites.
+enum AeadAlgorithm {
+  AEAD_ALGORITHM_UNSPECIFIED = 0;
+  AEAD_ALGORITHM_AES_256_GCM = 1;
+  AEAD_ALGORITHM_AES_256_GCM_SIV = 2;
+  AEAD_ALGORITHM_CHACHA20_POLY1305 = 3;
+  AEAD_ALGORITHM_XCHACHA20_POLY1305 = 4;
+  AEAD_ALGORITHM_AES_128_GCM = 5;
+  AEAD_ALGORITHM_AES_192_GCM = 6;
+}
+
+// HashAlgorithm identifies digest algorithms exposed by the hash primitives.
+enum HashAlgorithm {
+  HASH_ALGORITHM_UNSPECIFIED = 0;
+  HASH_ALGORITHM_SHA2_256 = 1;
+  HASH_ALGORITHM_SHA2_384 = 2;
+  HASH_ALGORITHM_SHA2_512 = 3;
+  HASH_ALGORITHM_SHA3_224 = 4;
+  HASH_ALGORITHM_SHA3_256 = 5;
+  HASH_ALGORITHM_SHA3_384 = 6;
+  HASH_ALGORITHM_SHA3_512 = 7;
+}
+
+// MacAlgorithm identifies message-authentication-code suites.
+enum MacAlgorithm {
+  MAC_ALGORITHM_UNSPECIFIED = 0;
+  MAC_ALGORITHM_HMAC_SHA256 = 1;
+  MAC_ALGORITHM_HMAC_SHA512 = 2;
+}
+
+// KdfAlgorithm identifies key-derivation functions. PBKDF2 values are retained
+// for legacy interoperability; new password storage should prefer Argon2id.
+enum KdfAlgorithm {
+  KDF_ALGORITHM_UNSPECIFIED = 0;
+  KDF_ALGORITHM_HKDF_SHA256 = 1;
+  KDF_ALGORITHM_ARGON2ID = 2;
+  KDF_ALGORITHM_PBKDF2_HMAC_SHA256 = 3;
+  KDF_ALGORITHM_PBKDF2_HMAC_SHA512 = 4;
+  KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256 = 5;
+}
+
+// KeyWrapAlgorithm identifies key-wrapping algorithms.
+enum KeyWrapAlgorithm {
+  KEY_WRAP_ALGORITHM_UNSPECIFIED = 0;
+  KEY_WRAP_ALGORITHM_AES_256_KW = 1;
+}
+
+// MulticodecKeyAlgorithm identifies table-backed key codecs that ReallyMe
+// recognizes. These are codec identifiers, not permission to expose private key
+// material in protobuf payloads.
+enum MulticodecKeyAlgorithm {
+  MULTICODEC_KEY_ALGORITHM_UNSPECIFIED = 0;
+  MULTICODEC_KEY_ALGORITHM_ED25519_PUB = 1;
+  MULTICODEC_KEY_ALGORITHM_X25519_PUB = 2;
+  MULTICODEC_KEY_ALGORITHM_SECP256K1_PUB = 3;
+  MULTICODEC_KEY_ALGORITHM_P256_PUB = 4;
+  MULTICODEC_KEY_ALGORITHM_P384_PUB = 5;
+  MULTICODEC_KEY_ALGORITHM_P521_PUB = 6;
+  MULTICODEC_KEY_ALGORITHM_ED448_PUB = 7;
+  MULTICODEC_KEY_ALGORITHM_RSA_PUB = 8;
+  MULTICODEC_KEY_ALGORITHM_ML_KEM_512_PUB = 9;
+  MULTICODEC_KEY_ALGORITHM_ML_KEM_768_PUB = 10;
+  MULTICODEC_KEY_ALGORITHM_ML_KEM_1024_PUB = 11;
+  MULTICODEC_KEY_ALGORITHM_ML_DSA_44_PUB = 12;
+  MULTICODEC_KEY_ALGORITHM_ML_DSA_65_PUB = 13;
+  MULTICODEC_KEY_ALGORITHM_ML_DSA_87_PUB = 14;
+  MULTICODEC_KEY_ALGORITHM_ED25519_PRIV = 15;
+  MULTICODEC_KEY_ALGORITHM_X25519_PRIV = 16;
+  MULTICODEC_KEY_ALGORITHM_SECP256K1_PRIV = 17;
+  MULTICODEC_KEY_ALGORITHM_P256_PRIV = 18;
+  MULTICODEC_KEY_ALGORITHM_P384_PRIV = 19;
+  MULTICODEC_KEY_ALGORITHM_P521_PRIV = 20;
+  MULTICODEC_KEY_ALGORITHM_ED448_PRIV = 21;
+  MULTICODEC_KEY_ALGORITHM_RSA_PRIV = 22;
+  MULTICODEC_KEY_ALGORITHM_ML_KEM_512_PRIV = 23;
+  MULTICODEC_KEY_ALGORITHM_ML_KEM_768_PRIV = 24;
+  MULTICODEC_KEY_ALGORITHM_ML_KEM_1024_PRIV = 25;
+}
+
+// RsaPublicKeyDerEncoding identifies the accepted DER wrapper for RSA public
+// keys at verification boundaries.
+enum RsaPublicKeyDerEncoding {
+  RSA_PUBLIC_KEY_DER_ENCODING_UNSPECIFIED = 0;
+  RSA_PUBLIC_KEY_DER_ENCODING_PKCS1 = 1;
+  RSA_PUBLIC_KEY_DER_ENCODING_SPKI = 2;
+}
+
+// CryptoAlgorithmIdentifier is a oneof wrapper for protocol messages that need
+// to carry a typed algorithm choice without using free-form strings.
+message CryptoAlgorithmIdentifier {
+  oneof algorithm {
+    SignatureAlgorithm signature = 1;
+    KeyAgreementAlgorithm key_agreement = 2;
+    KemAlgorithm kem = 3;
+    HpkeSuite hpke = 4;
+    AeadAlgorithm aead = 5;
+    HashAlgorithm hash = 6;
+    MacAlgorithm mac = 7;
+    KdfAlgorithm kdf = 8;
+    KeyWrapAlgorithm key_wrap = 9;
+    MulticodecKeyAlgorithm multicodec_key = 10;
+  }
+}
+
+// The request and result envelopes below are protocol-boundary shapes for the
+// package facade. SDKs may still expose raw byte returns for primitive calls;
+// these messages make every input and output field explicit when the operation
+// crosses FFI, RPC, storage, audit, or cross-language conformance boundaries.
+
+message CryptoHashRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes input = 2;
+}
+
+message CryptoHashResult {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes digest = 2;
+}
+
+message CryptoAeadSealRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Secret-bearing AEAD key; callers must zeroize copies where platform
+  // semantics permit.
+  bytes key = 2;
+  bytes nonce = 3;
+  bytes aad = 4;
+  // Plaintext may contain secret or PII-bearing application data.
+  bytes plaintext = 5;
+}
+
+message CryptoAeadSealResult {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes ciphertext_with_tag = 2;
+}
+
+message CryptoAeadOpenRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Secret-bearing AEAD key; callers must zeroize copies where platform
+  // semantics permit.
+  bytes key = 2;
+  bytes nonce = 3;
+  bytes aad = 4;
+  bytes ciphertext_with_tag = 5;
+}
+
+message CryptoAeadOpenResult {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Decrypted plaintext may contain secret or PII-bearing application data.
+  bytes plaintext = 2;
+}
+
+message CryptoMacAuthenticateRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Secret-bearing MAC key.
+  bytes key = 2;
+  bytes message = 3;
+}
+
+message CryptoMacAuthenticateResult {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes tag = 2;
+}
+
+message CryptoMacVerifyRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes tag = 2;
+  // Secret-bearing MAC key.
+  bytes key = 3;
+  bytes message = 4;
+}
+
+message CryptoKdfDeriveKeyRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Secret-bearing password or input secret for the selected KDF.
+  bytes password = 2;
+  // Salt is commonly public but may be privacy-impacting in application
+  // contexts; treat it according to the protocol using this message.
+  bytes salt = 3;
+  uint32 iterations = 4;
+  uint32 output_length = 5;
+}
+
+message CryptoKdfDeriveKeyResult {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Secret-bearing derived key material.
+  bytes derived_key = 2;
+}
+
+message CryptoHkdfDeriveRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Secret-bearing input key material.
+  bytes input_key_material = 2;
+  // Salt is commonly public but can be privacy-impacting in some protocols.
+  bytes salt = 3;
+  bytes info = 4;
+  uint32 output_length = 5;
+}
+
+message CryptoHkdfDeriveResult {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Secret-bearing HKDF output key material.
+  bytes output_key_material = 2;
+}
+
+message CryptoJwaConcatKdfSha256DeriveRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Secret-bearing shared secret input.
+  bytes shared_secret = 2;
+  bytes algorithm_id = 3;
+  bytes party_u_info = 4;
+  bytes party_v_info = 5;
+  uint32 output_length = 6;
+}
+
+message CryptoJwaConcatKdfSha256DeriveResult {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Secret-bearing derived key material.
+  bytes derived_key = 2;
+}
+
+message CryptoKeyWrapRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Secret-bearing key-encryption key.
+  bytes wrapping_key = 2;
+  // Secret-bearing key material to wrap.
+  bytes key_to_wrap = 3;
+}
+
+message CryptoKeyWrapResult {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes wrapped_key = 2;
+}
+
+message CryptoKeyUnwrapRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Secret-bearing key-encryption key.
+  bytes wrapping_key = 2;
+  bytes wrapped_key = 3;
+}
+
+message CryptoKeyUnwrapResult {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Secret-bearing unwrapped key material.
+  bytes key = 2;
+}
+
+message CryptoSignatureGenerateKeyPairRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+}
+
+message CryptoSignatureDeriveKeyPairRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Secret-bearing seed or private key input, depending on the algorithm.
+  bytes secret_key = 2;
+}
+
+message CryptoSignatureSignRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes message = 2;
+  // Secret-bearing signing key material.
+  bytes secret_key = 3;
+}
+
+message CryptoSignatureSignResult {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes signature = 2;
+}
+
+message CryptoBip340SchnorrSignRequest {
+  bytes message32 = 1;
+  // Secret-bearing secp256k1 signing key material.
+  bytes secret_key = 2;
+  // Secret-bearing auxiliary randomness used for deterministic nonce hardening.
+  bytes aux_rand32 = 3;
+}
+
+message CryptoSignatureVerifyRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes signature = 2;
+  bytes message = 3;
+  bytes public_key = 4;
+}
+
+message CryptoRsaVerifyRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes signature = 2;
+  bytes message = 3;
+  bytes public_key_der = 4;
+  RsaPublicKeyDerEncoding public_key_encoding = 5;
+}
+
+message CryptoKeyAgreementDeriveSharedSecretRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes public_key = 2;
+  // Secret-bearing private key material.
+  bytes secret_key = 3;
+}
+
+message CryptoKeyAgreementDeriveSharedSecretResult {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Secret-bearing shared secret; callers must feed it into a protocol KDF.
+  bytes shared_secret = 2;
+}
+
+message CryptoKeyAgreementDeriveKeyPairRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Secret-bearing seed or private key input, depending on the algorithm.
+  bytes secret_key = 2;
+}
+
+message CryptoKemGenerateKeyPairRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+}
+
+message CryptoKemEncapsulateRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes public_key = 2;
+}
+
+message CryptoKemDecapsulateRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes ciphertext = 2;
+  // Secret-bearing KEM private key material.
+  bytes secret_key = 3;
+}
+
+message CryptoKemDecapsulateResult {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Secret-bearing KEM shared secret.
+  bytes shared_secret = 2;
+}
+
+message CryptoHpkeSealRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes recipient_public_key = 2;
+  bytes info = 3;
+  bytes aad = 4;
+  // Plaintext may contain secret or PII-bearing application data.
+  bytes plaintext = 5;
+}
+
+message CryptoHpkeOpenRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Secret-bearing HPKE recipient private key material.
+  bytes recipient_secret_key = 2;
+  bytes encapsulated_key = 3;
+  bytes info = 4;
+  bytes aad = 5;
+  bytes ciphertext = 6;
+}
+
+message CryptoHpkeOpenResult {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  // Decrypted plaintext may contain secret or PII-bearing application data.
+  bytes plaintext = 2;
+}
+
+// CryptoKeyPair is the protobuf boundary envelope for generated or derived
+// keypairs. Secret-key bytes are included only for APIs whose public facade
+// already returns exportable secret-key material; non-exportable platform keys
+// must use a separate handle-specific protocol.
+message CryptoKeyPair {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes public_key = 2;
+  // Secret-bearing exportable private key material.
+  bytes secret_key = 3;
+}
+
+// CryptoKemEncapsulation is the protobuf boundary envelope for KEM
+// encapsulation results. `shared_secret` is secret-bearing material; callers
+// must keep it in binary/protobuf channels and zeroize it when possible.
+message CryptoKemEncapsulation {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes ciphertext = 2;
+  // Secret-bearing KEM shared secret.
+  bytes shared_secret = 3;
+}
+
+// CryptoHpkeSealedMessage is the protobuf boundary envelope for HPKE Base-mode
+// sender output.
+message CryptoHpkeSealedMessage {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes encapsulated_key = 2;
+  bytes ciphertext = 3;
+}
+
+// CryptoVerificationStatus avoids using a bare bool in protocol results where
+// "unset" and "false" need to remain distinguishable.
+enum CryptoVerificationStatus {
+  CRYPTO_VERIFICATION_STATUS_UNSPECIFIED = 0;
+  CRYPTO_VERIFICATION_STATUS_VALID = 1;
+  // Well-formed verification input was processed, but the MAC, signature,
+  // proof, or comparison did not verify. Malformed input, unsupported
+  // algorithms, provider failures, and backend failures use ERROR plus the
+  // structured CryptoError field instead.
+  CRYPTO_VERIFICATION_STATUS_INVALID = 2;
+  CRYPTO_VERIFICATION_STATUS_ERROR = 3;
+}
+
+// CryptoVerificationResult is for protocol layers that need a stable,
+// serializable verification status. Ordinary facade calls should continue to
+// fail closed with typed errors.
+message CryptoVerificationResult {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  CryptoVerificationStatus status = 2;
+  CryptoError error = 3;
+}
+
+// CryptoProviderSupportStatus mirrors the release provider matrix at a stable
+// wire boundary without exposing backend exception text or dynamic logs.
+enum CryptoProviderSupportStatus {
+  CRYPTO_PROVIDER_SUPPORT_STATUS_UNSPECIFIED = 0;
+  CRYPTO_PROVIDER_SUPPORT_STATUS_SUPPORTED = 1;
+  CRYPTO_PROVIDER_SUPPORT_STATUS_PROVIDER_AWARE = 2;
+  CRYPTO_PROVIDER_SUPPORT_STATUS_PARTIAL = 3;
+  CRYPTO_PROVIDER_SUPPORT_STATUS_UNSUPPORTED = 4;
+}
+
+// CryptoProviderCapability describes the package/provider posture for one
+// algorithm in one published lane. Provider names are non-secret identifiers
+// such as "CryptoKit", "BouncyCastle", or "ReallyMe Rust WASM".
+message CryptoProviderCapability {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  CryptoAlgorithmFamily family = 2;
+  CryptoProviderSupportStatus status = 3;
+  repeated string provider_names = 4;
+  bool uses_rust = 5;
+}
+
+message CryptoProviderCapabilitySet {
+  repeated CryptoProviderCapability capabilities = 1;
+}
+
+// JsonWebKey carries a public JWK document at API/storage boundaries. The JSON
+// member is the canonical JCS form used by the package vectors; private key
+// material is intentionally out of scope for this message.
+message JsonWebKey {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes public_key = 2;
+  bytes canonical_jcs = 3;
+}
+
+// JsonWebKeySet is the protobuf boundary equivalent of the JSON { "keys": [] }
+// JWKS wrapper. It stores parsed public-key records rather than arbitrary JSON.
+message JsonWebKeySet {
+  repeated JsonWebKey keys = 1;
+}

@@ -1,0 +1,8 @@
+{
+  "alg": "AES-192-GCM",
+  "key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYX",
+  "nonce": "oKGio6Slpqeoqaqr",
+  "aad": "cmVhbGx5bWUtY3J5cHRvLXZlY3Rvci1hYWQ",
+  "plaintext": "UmVhbGx5TWUgQUVTLTE5Mi1HQ00gY29uZm9ybWFuY2UgdmVjdG9y",
+  "ciphertext_with_tag": "aQffDpUqVRbedPqSwuzNS7lQaF-9USG39ONYhhfc216rKKHPrAkv_uXxeZLW87GMHKjQT_9xNw"
+}

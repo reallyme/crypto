@@ -1,0 +1,8 @@
+{
+  "alg": "ES256K",
+  "curve": "secp256k1",
+  "secret_key": "TjkMcqXRXyCZY4EuN68EvOFWSJovcw2EUcY7CfUoYX0",
+  "public_key_compressed": "AuFRf5fhh39j_ucipofdrvw-x8zh0nNgruwCCR8E4Y3U",
+  "ecdsa_message": "UmVhbGx5TWUgc2lnbmF0dXJlIGNvbmZvcm1hbmNlIHZlY3Rvcg",
+  "ecdsa_signature_compact": "mnUuKkVvv213IPAL-ZpNlgMd34ohU9hXfU3SNo16Ky9NLZNUE2K4Avludk79EvuML5ZlifehHXjBUZcbV5xucQ"
+}

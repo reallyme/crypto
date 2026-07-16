@@ -1,0 +1,33 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-pbkdf2"
+version = "0.2.0"
+edition.workspace = true
+rust-version.workspace = true
+publish = true
+description = "PBKDF2-HMAC key derivation primitive for ReallyMe Crypto."
+license.workspace = true
+repository.workspace = true
+
+[lib]
+name = "crypto_pbkdf2"
+
+[features]
+default = []
+native = []
+wasm = []
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.2.0", path = "../../core" }
+pbkdf2 = { workspace = true }
+sha2 = { workspace = true }
+zeroize = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+hex-literal = { workspace = true }
+
+[lints]
+workspace = true

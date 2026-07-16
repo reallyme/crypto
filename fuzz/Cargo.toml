@@ -1,0 +1,65 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Coverage-guided fuzzing harnesses for the untrusted-input parsers.
+#
+# This crate is deliberately OUTSIDE the main workspace (see the empty
+# `[workspace]` table below) so it does not inherit the workspace lint denies
+# (`unsafe_code = deny` etc.). libFuzzer targets require `#![no_main]` and the
+# unsafe libfuzzer-sys runtime, which the strict workspace lints would reject.
+#
+# Run with a nightly toolchain and cargo-fuzz:
+#   cargo +nightly fuzz run proto_process
+# See README.md.
+
+[package]
+name = "crypto-fuzz"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+crypto-p256 = { package = "reallyme-crypto-p256", path = "../crates/crypto/primitives/p256", features = ["native"] }
+crypto-rsa = { package = "reallyme-crypto-rsa", path = "../crates/crypto/primitives/rsa", features = ["native"] }
+envelopes-jwk = { package = "reallyme-crypto-jwk", path = "../crates/envelopes/jwk", features = ["native"] }
+envelopes-jwk-multikey = { package = "reallyme-crypto-jwk-multikey", path = "../crates/envelopes/jwk-multikey", features = ["native"] }
+reallyme-crypto = { path = "..", default-features = false, features = ["native", "proto-process", "sha2", "sha3", "aes", "aes-kw", "aes-gcm-siv", "argon2id", "chacha20-poly1305", "concat-kdf", "hmac", "hkdf", "pbkdf2", "ed25519", "p256", "p384", "p521", "secp256k1", "x25519", "rsa", "ml-kem-512", "ml-kem-768", "ml-kem-1024", "ml-dsa-44", "ml-dsa-65", "ml-dsa-87", "slh-dsa", "x-wing", "hpke"] }
+serde_json = "1.0"
+
+[[bin]]
+name = "rsa_der"
+path = "fuzz_targets/rsa_der.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "p256_point"
+path = "fuzz_targets/p256_point.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "proto_process"
+path = "fuzz_targets/proto_process.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "jwk_multikey"
+path = "fuzz_targets/jwk_multikey.rs"
+test = false
+doc = false
+bench = false
+
+# Standalone workspace: keep this crate out of the parent workspace so the
+# parent's lint denies and toolchain pin do not apply to the fuzz targets.
+[workspace]

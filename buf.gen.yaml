@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+version: v2
+plugins:
+  # Rust Buffa message/view types. This mirrors the platform workspace
+  # contract-generation convention and intentionally avoids build.rs codegen.
+  - local: protoc-gen-buffa
+    out: crates/proto/crypto/src/generated/buffa
+    opt: [views=true]
+  - local: protoc-gen-buffa-packaging
+    out: crates/proto/crypto/src/generated/buffa
+    strategy: all
+  # TypeScript
+  - remote: buf.build/bufbuild/es:v2.12.1
+    out: gen/es
+    opt:
+      - target=ts
+  - remote: buf.build/bufbuild/es:v2.12.1
+    out: packages/ts/src/proto/generated
+    opt:
+      - target=ts
+
+  # JavaScript runtime
+  - remote: buf.build/bufbuild/es:v2.12.1
+    out: gen/es
+    opt:
+      - target=js
+
+  # Swift
+  - remote: buf.build/apple/swift:v1.38.1
+    out: gen/swift
+    opt:
+      - Visibility=Public
+
+  # Java core message classes used by Kotlin.
+  - remote: buf.build/protocolbuffers/java:v35.1
+    out: gen/java
+    opt:
+      - lite
+
+  # Kotlin DSL/extensions.
+  - remote: buf.build/protocolbuffers/kotlin:v35.1
+    out: gen/kotlin
+    opt:
+      - lite
