@@ -5,6 +5,7 @@
 import org.gradle.api.publish.maven.tasks.PublishToMavenLocal
 import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.external.javadoc.StandardJavadocDocletOptions
+import org.gradle.jvm.tasks.Jar
 import java.io.File
 import java.nio.file.Files
 import java.security.MessageDigest
@@ -250,9 +251,10 @@ tasks.named("processResources") {
     dependsOn(writeHostNativeManifest)
 }
 
-tasks.named("sourcesJar") {
-    dependsOn(stageHostNativeResource)
-    dependsOn(writeHostNativeManifest)
+tasks.named<Jar>("sourcesJar") {
+    // The runtime JAR intentionally carries native resources for JVM consumers,
+    // but the source artifact must stay source-only for Maven Central hygiene.
+    exclude("me/really/crypto/native/**")
 }
 
 val verifyBundledNativeResources = tasks.register("verifyBundledNativeResources") {

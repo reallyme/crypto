@@ -38,7 +38,8 @@ NATIVE_RESOURCE_ARTIFACT_PATTERN="${MAVEN_NATIVE_RESOURCE_ARTIFACT_PATTERN:-kotl
 NATIVE_RESOURCE_DOWNLOAD_DIR="${WORK_DIR}/kotlin-native-artifacts"
 NATIVE_RESOURCE_WORKFLOW_TIMEOUT_SECONDS="${MAVEN_NATIVE_RESOURCE_WORKFLOW_TIMEOUT_SECONDS:-3600}"
 NATIVE_RESOURCE_RUN_ID="${MAVEN_NATIVE_RESOURCE_RUN_ID:-}"
-NATIVE_RESOURCE_COMMIT_MARKER="${KOTLIN_NATIVE_RESOURCES_DIR}/.reallyme-crypto-source-commit"
+NATIVE_RESOURCE_COMMIT_MARKER="${KOTLIN_NATIVE_RESOURCES_DIR%/}.reallyme-crypto-source-commit"
+NATIVE_RESOURCE_LEGACY_COMMIT_MARKER="${KOTLIN_NATIVE_RESOURCES_DIR}/.reallyme-crypto-source-commit"
 
 fail() {
   printf 'maven central bundle failed: %s\n' "$1" >&2
@@ -90,6 +91,14 @@ require_zip_entry() {
   local entry="$2"
   if ! jar tf "$archive" | grep -Fx -- "$entry" >/dev/null; then
     fail "$archive is missing archive entry: $entry"
+  fi
+}
+
+reject_zip_entry_prefix() {
+  local archive="$1"
+  local prefix="$2"
+  if jar tf "$archive" | grep -F -- "$prefix" >/dev/null; then
+    fail "$archive contains forbidden archive entries with prefix: $prefix"
   fi
 }
 
@@ -206,7 +215,9 @@ native_resources_match_commit() {
 
 record_native_resource_commit() {
   local head_sha="$1"
+  mkdir -p "$(dirname "$NATIVE_RESOURCE_COMMIT_MARKER")"
   printf '%s\n' "$head_sha" >"$NATIVE_RESOURCE_COMMIT_MARKER"
+  rm -f "$NATIVE_RESOURCE_LEGACY_COMMIT_MARKER"
 }
 
 wait_for_native_resource_run_id() {
@@ -233,7 +244,7 @@ download_kotlin_native_resources_from_run() {
   local artifact_dir
 
   rm -rf "$NATIVE_RESOURCE_DOWNLOAD_DIR" "$(kotlin_native_resource_root)"
-  rm -f "$NATIVE_RESOURCE_COMMIT_MARKER"
+  rm -f "$NATIVE_RESOURCE_COMMIT_MARKER" "$NATIVE_RESOURCE_LEGACY_COMMIT_MARKER"
   mkdir -p "$NATIVE_RESOURCE_DOWNLOAD_DIR" "$KOTLIN_NATIVE_RESOURCES_DIR"
   info "Downloading JVM native resource artifacts from GitHub Actions run ${run_id}"
   gh run download "$run_id" \
@@ -274,15 +285,6 @@ ensure_kotlin_native_resources() {
     return
   fi
 
-  info "JVM native resources are absent or stale; staging the current host library"
-  rm -rf "$(kotlin_native_resource_root)"
-  rm -f "$NATIVE_RESOURCE_COMMIT_MARKER"
-  "${ROOT_DIR}/scripts/build_kotlin_native_resource.sh" "$KOTLIN_NATIVE_RESOURCES_DIR"
-  if kotlin_native_resources_are_complete; then
-    record_native_resource_commit "$head_sha"
-    return
-  fi
-
   require_tool gh
   git_ref="$(current_git_ref)"
   run_id="$(find_successful_native_resource_run "$head_sha")"
@@ -304,6 +306,14 @@ ensure_kotlin_native_resources() {
   fi
   if [ -z "$run_id" ]; then
     info "No successful or running ${NATIVE_RESOURCE_WORKFLOW} native-resource run found for ${head_sha}"
+    info "JVM native resources are absent or stale; staging the current host library while the cross-platform run is prepared"
+    rm -rf "$(kotlin_native_resource_root)"
+    rm -f "$NATIVE_RESOURCE_COMMIT_MARKER" "$NATIVE_RESOURCE_LEGACY_COMMIT_MARKER"
+    "${ROOT_DIR}/scripts/build_kotlin_native_resource.sh" "$KOTLIN_NATIVE_RESOURCES_DIR"
+    if kotlin_native_resources_are_complete; then
+      record_native_resource_commit "$head_sha"
+      return
+    fi
     info "Dispatching ${NATIVE_RESOURCE_WORKFLOW} on ${git_ref} to build cross-platform JVM native resources"
     gh workflow run "$NATIVE_RESOURCE_WORKFLOW" --ref "$git_ref"
     run_id="$(wait_for_native_resource_run_id "$head_sha" "$stale_run_id")"
@@ -411,6 +421,9 @@ validate_bundle_files() {
   require_zip_entry "$jvm_jar" "me/really/crypto/native/macos-aarch64/libcrypto_ffi.dylib"
   require_zip_entry "$jvm_jar" "me/really/crypto/native/windows-x86_64/crypto_ffi.dll"
   require_zip_entry "$jvm_jar" "me/really/crypto/native/native-manifest.json"
+  reject_zip_entry_prefix "${jvm_dir}/crypto-${version}-sources.jar" "me/really/crypto/native/"
+  reject_zip_entry_prefix "${android_dir}/crypto-android-${version}-sources.jar" "jni/"
+  reject_zip_entry_prefix "${android_dir}/crypto-android-${version}-sources.jar" "assets/reallyme-crypto/"
 
   local android_aar="${android_dir}/crypto-android-${version}.aar"
   require_zip_entry "$android_aar" "jni/arm64-v8a/libcrypto_ffi.so"
