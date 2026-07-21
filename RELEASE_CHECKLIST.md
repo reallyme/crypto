@@ -6,30 +6,29 @@ SPDX-License-Identifier: Apache-2.0
 
 # Release Checklist
 
-Every ReallyMe Crypto release is built and verified from one immutable Git
-commit. This checklist defines the package-specific gates for Swift Package
-Manager, Maven Central, npm, and crates.io. Automated readiness checks guard
-the files most likely to drift; package workflows build and test the published
-artifacts from the release commit.
+Every ReallyMe Crypto release is built and verified from one immutable,
+reviewed source commit. A Swift tag may add one deterministic manifest-only
+child commit that binds the attested XCFramework checksum; it never changes
+production source. This checklist defines the package-specific gates for Swift
+Package Manager, Maven Central, npm, and crates.io. Automated readiness checks
+guard the files most likely to drift, and package workflows build and test the
+published artifacts from the reviewed source commit.
 
 ## Swift Package Manager
 
 - Public SwiftPM releases ship `ReallyMeCryptoFFI` as a versioned
   `.xcframework` binary target.
-- The root `Package.swift` must be patched with the release version and SwiftPM
-  checksum in a reviewed commit before release CI is run.
-- After every source and version change is complete, run
-  `scripts/prepare_swift_release_candidate.sh <version>` before creating the
-  release commit. It builds the deterministic archive, writes the checksum,
-  and verifies the manifest in one step. Do not amend an already-pushed release
-  commit or move a reviewed tag merely to add the checksum.
-- The public release tag must point at the reviewed manifest commit containing
-  the non-placeholder checksum, never at a source-preparation commit that still
-  has the all-zero placeholder.
-- Release workflows never modify or push source. They verify that the checked-in
-  manifest checksum matches the artifact rebuilt for the exact release SHA and
-  reverify the downloaded release asset in the credentialed publication job
-  before tagging that already-tested SHA without creating a post-gate commit.
+- The Swift preflight builds the XCFramework once on the pinned GitHub macOS
+  runner, tests it, and retains that exact archive as the release candidate.
+- The Swift release downloads the successful preflight's artifact instead of
+  rebuilding it. It derives the manifest checksum from those exact bytes and
+  verifies the archive, sidecar, version, URL, and binary-target binding again.
+- If the reviewed source commit's `Package.swift` does not already contain the
+  runner-produced checksum, the release workflow creates a deterministic
+  manifest-only child commit and tags that commit. It never rewrites or
+  force-pushes `main`, and no production source differs from the attested SHA.
+- A partial release can be resumed only when an existing version tag targets
+  the same deterministic manifest commit. A conflicting tag fails closed.
 - Source-tree tests may use `REALLYME_CRYPTO_FFI_LIBRARY_PATH` for a freshly
   built local dylib, but release preflight must also test the linked
   `ReallyMeCryptoFFI.xcframework` path without that environment variable.
@@ -74,9 +73,7 @@ artifacts from the release commit.
 ## Release Commit
 
 Before publishing a cross-language release, finish all source and package
-version changes, select Xcode 26.6, run
-`scripts/prepare_swift_release_candidate.sh <version>`, review the resulting
-`Package.swift`, and create the release commit once. Push that commit to `main`.
+version changes and create the release commit once. Push that commit to `main`.
 Run the four versioned package preflights on that exact commit:
 
 - `crates-package-preflight.yml`;
@@ -88,10 +85,11 @@ Each preflight fails unless its resolved release commit matches both the
 current `origin/main` tip and the workflow run's recorded head SHA.
 
 After every preflight and the `Code Checks` push workflow succeeds, invoke the
-matching release workflow. `swift-package-release.yml` rebuilds the
-XCFramework, transfers the exact zip through GitHub Actions artifacts,
-recomputes its SwiftPM checksum in a separate job, and publishes that same zip
-on a tag targeting the reviewed commit. `kotlin-android-package-release.yml`
+matching release workflow. `swift-package-release.yml` retrieves the exact
+XCFramework retained by the successful Swift preflight, recomputes its SwiftPM
+checksum in a separate job, and publishes that same zip on a tag whose tree
+differs from the reviewed commit only when a generated `Package.swift` binding
+is required. `kotlin-android-package-release.yml`
 publishes the JVM jar and Android AAR. `crates-release.yml` and
 `npm-package-release.yml` publish their registries independently. Starting a
 release workflow is an authorization to publish; release workflows do not have

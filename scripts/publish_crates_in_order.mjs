@@ -328,7 +328,7 @@ function publishPackage(pkg) {
       onRetry(kind, delayMs) {
         if (kind === PublishRetryKind.RateLimit) {
           console.log(
-            `crates.io rate-limited new crate uploads; retrying ${pkg.name} in ${Math.ceil(delayMs / 1000)}s...`,
+            `crates.io rate-limited publish requests; retrying ${pkg.name} in ${Math.ceil(delayMs / 1000)}s...`,
           );
           return;
         }

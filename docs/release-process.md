@@ -30,18 +30,12 @@ When SDK packages are touched, also run Swift, Kotlin, Android where
 applicable, and TypeScript package tests.
 
 Before creating the release commit, finish every Rust and SDK source/version
-change and run:
-
-```sh
-scripts/prepare_swift_release_candidate.sh 0.3.2
-```
-
-The command builds the normalized XCFramework once from the final working
-tree, patches `Package.swift` with its SwiftPM checksum, and verifies the
-archive/manifest binding. Review and commit that result normally. Do not push a
-placeholder checksum and later amend or force-update the release commit. The
-Swift preflight and release workflows rebuild the deterministic artifact only
-as independent verification of the already-reviewed checksum.
+change. `scripts/prepare_swift_release_candidate.sh 0.3.2` remains available as
+an optional local packaging check, but its machine-specific checksum is not a
+release input. The Swift preflight produces the canonical archive on the pinned
+GitHub runner, tests it, and retains those exact bytes. The release workflow
+binds `Package.swift` to that retained archive mechanically, so operators do
+not amend or force-push a release commit to discover a checksum.
 
 ## Release Gates
 
@@ -54,7 +48,8 @@ Release workflows require:
 - Gradle dependency verification for Kotlin/JVM, Android, and conformance;
 - C ABI, JNI, Swift, Kotlin, TypeScript, and WASM package tests;
 - exact-SHA workflow-success evidence for `rust-ci` and the matching versioned
-  package preflight;
+  package preflight, including the Swift preflight run that owns the promoted
+  XCFramework artifact;
 - protected environments or equivalent approval gates before credentials;
 - immutable Swift release-asset behavior;
 - Maven credential preflight and signing evidence;
@@ -102,13 +97,14 @@ fail closed unless the newest `Code Checks` push run and newest matching
 preflight run both succeeded for that SHA and version. A newer failed,
 cancelled, queued, or in-progress run invalidates an older success.
 
-Run `swift-package-release.yml` to rebuild the deterministic XCFramework. The
-build job uploads the zip and checksum sidecar as a GitHub Actions artifact. A
-separate macOS job downloads those bytes, recomputes the SwiftPM checksum, and
-verifies that `Package.swift` binds both the version and checksum variables to
-the binary target. The protected release job downloads the same artifact,
-repeats that manifest-bound verification, and creates an immutable GitHub
-release targeting the reviewed SHA.
+Run `swift-package-release.yml` after the Swift preflight succeeds. The release
+resolves that attested preflight run and downloads its retained zip and checksum
+sidecar; it never recompiles the XCFramework. A separate macOS job recomputes
+the SwiftPM checksum and verifies the generated manifest binding. The protected
+release job repeats that verification and, when necessary, creates a
+deterministic `Package.swift`-only child of the reviewed source SHA before
+creating the immutable tag and GitHub release. `main` is never rewritten or
+force-pushed for a Swift checksum.
 
 Run `kotlin-android-package-release.yml` to publish `me.really:crypto` and
 `me.really:crypto-android`. The JVM matrix builds and tests each supported host

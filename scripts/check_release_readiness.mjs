@@ -1581,8 +1581,8 @@ assertContains("RELEASE_NOTES.md", "not a `reallyme.crypto.v1` wire break");
 assertContains("RELEASE_NOTES.md", "permanently retired in this repository");
 assertContains("RELEASE_CHECKLIST.md", "# Release Checklist");
 assertContains("RELEASE_CHECKLIST.md", "Public SwiftPM releases ship `ReallyMeCryptoFFI`");
-assertContains("RELEASE_CHECKLIST.md", "must point at the reviewed manifest commit");
-assertContains("RELEASE_CHECKLIST.md", "Release workflows never modify or push source");
+assertContains("RELEASE_CHECKLIST.md", "manifest-only child commit");
+assertContains("RELEASE_CHECKLIST.md", "force-pushes `main`");
 assertContains("RELEASE_CHECKLIST.md", "`me.really:crypto-android` as an AAR");
 assertContains("RELEASE_CHECKLIST.md", "`npm run pack:check`");
 assertContains(".github/workflows/rust-ci.yml", "workflow_dispatch:");
@@ -2681,7 +2681,10 @@ const assertReleaseWorkflowCredentialGates = () => {
   assertContains(".github/workflows/swift-package-release.yml", "verify_swift_release_artifact.mjs");
   assertContains(".github/workflows/swift-package-release.yml", "Download verified Swift artifact");
   assertContains(".github/workflows/swift-package-release.yml", "GitHub release v${RELEASE_VERSION} already exists");
-  assertContains(".github/workflows/swift-package-release.yml", "Git tag v${RELEASE_VERSION} already exists");
+  assertContains(
+    ".github/workflows/swift-package-release.yml",
+    "Git tag v${RELEASE_VERSION} already targets a different commit",
+  );
   assertNotContains(".github/workflows/swift-package-release.yml", "--clobber");
   assertNotContains(".github/workflows/swift-package-release.yml", "gh release edit");
 };
@@ -2721,6 +2724,7 @@ const assertReleaseWorkflowPermissions = () => {
     workflow: readOnlyWorkflow,
     jobs: {
       "verify-release-sha": { actions: "read", contents: "read" },
+      "swift-verify": { actions: "read", contents: "read" },
       "swift-release": { actions: "read", contents: "write" },
     },
   });
@@ -2907,7 +2911,7 @@ assertContains("scripts/build_swift_xcframework.sh", "Headers/module.modulemap")
 assertContains("scripts/prepare_swift_release_candidate.sh", "build_swift_xcframework.sh");
 assertContains("scripts/prepare_swift_release_candidate.sh", "prepare_swift_binary_manifest.mjs");
 assertContains("scripts/prepare_swift_release_candidate.sh", "verify_swift_release_artifact.mjs");
-assertContains("RELEASE_CHECKLIST.md", "prepare_swift_release_candidate.sh <version>");
+assertContains("RELEASE_CHECKLIST.md", "retains that exact archive as the release candidate");
 assertContains("docs/release-process.md", "prepare_swift_release_candidate.sh 0.3.2");
 assertContains(
   "packages/kotlin/src/main/kotlin/me/really/crypto/OperationResponse.kt",
@@ -2995,6 +2999,8 @@ const swiftPreflightWorkflow = ".github/workflows/swift-package-preflight.yml";
 assertContains(swiftPreflightWorkflow, "REALLYME_CRYPTO_FFI_LIBRARY_PATH");
 assertContains(swiftPreflightWorkflow, "REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI");
 assertContains(swiftPreflightWorkflow, "Build SwiftPM binary artifact");
+assertContains(swiftPreflightWorkflow, "Upload Swift release candidate");
+assertContains(swiftPreflightWorkflow, "Bind manifest to Swift release candidate");
 assertContains(swiftPreflightWorkflow, "Prepare local SwiftPM binary manifest");
 assertContains(swiftPreflightWorkflow, "--local-artifact-path build/swift/ReallyMeCryptoFFI.xcframework");
 assertContains(swiftPreflightWorkflow, "Test Swift package with linked binary target");
@@ -3002,13 +3008,18 @@ assertContains(swiftPreflightWorkflow, "node scripts/run_pinned_release_readines
 
 const swiftReleaseWorkflow = ".github/workflows/swift-package-release.yml";
 assertContains(swiftReleaseWorkflow, "ReallyMeCryptoFFI.xcframework.zip");
-assertContains(swiftReleaseWorkflow, "Upload Swift artifact");
-assertContains(swiftReleaseWorkflow, "Download Swift artifact");
+assertContains(swiftReleaseWorkflow, "Download attested Swift artifact");
+assertContains(swiftReleaseWorkflow, "preflight_run_id");
+assertContains(swiftReleaseWorkflow, "run-id: ${{ needs.verify-release-sha.outputs.preflight_run_id }}");
+assertContains(swiftReleaseWorkflow, "RELEASE_ATTESTATION_PREFLIGHT_RUN_ID");
+assertContains(swiftReleaseWorkflow, "Bind release manifest to verified Swift artifact");
 assertContains(swiftReleaseWorkflow, "Verify SwiftPM manifest and downloaded artifact");
 assertContains(swiftReleaseWorkflow, "Create immutable GitHub release with Swift artifact");
 assertContains(swiftReleaseWorkflow, "verify_swift_release_artifact.mjs");
 assertContains(swiftReleaseWorkflow, "verify_release_attestation.mjs");
 assertContains(swiftReleaseWorkflow, "gh release create");
+assertContains(swiftReleaseWorkflow, "--verify-tag");
+assertNotContains(swiftReleaseWorkflow, "scripts/build_swift_xcframework.sh");
 const swiftReleaseArtifactVerificationCount = readText(swiftReleaseWorkflow).match(
   /node scripts\/verify_swift_release_artifact[.]mjs/gu,
 )?.length;
