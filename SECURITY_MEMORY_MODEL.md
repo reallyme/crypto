@@ -8,16 +8,18 @@ SPDX-License-Identifier: Apache-2.0
 
 ## Scope
 
-This document defines the baseline memory-safety and secret-handling model for the ReallyMe crypto workspace.
+This document defines the memory-safety and secret-handling model for the
+ReallyMe Crypto workspace.
 
 Scope covers:
 
-- Primitive crates under `crates/crypto/primitives/`
-- Protocol crates under `crates/crypto/protocols/`
+- Cryptographic family crates under `crates/`
+- Protocol crates such as HPKE under `crates/hpke/`
 - Shared typed error and boundary types under `crates/crypto/core/`
 - Native Rust, WebAssembly, Swift, Kotlin/JVM, and Kotlin/Android runtime lanes
 - FFI adapters that move cryptographic material across platform boundaries
-- SDK packages under `packages/swift`, `packages/kotlin`, and `packages/ts`
+- SDK packages under `packages/swift`, `packages/kotlin`,
+  `packages/kotlin-android`, and `packages/ts`
 
 Protocol crates may impose stricter rules. They must not weaken this model.
 
@@ -118,11 +120,23 @@ Engineering rules that apply across primitives and protocols:
 - Current profiles:
   - `V1` (kdf_version=1): 256 MiB, t=3, p=1
   - `V2` (kdf_version=2): 512 MiB, t=3, p=1
+- The caller owns the complete Argon2 block matrix in a `Zeroizing<Vec<Block>>`;
+  password-derived working memory is wiped before the allocation is released on
+  success, typed failure, or unwind.
 - Platform caps are enforced before use:
   - `MobileModern`: mem <= 512 MiB, t <= 4, p <= 4
   - `DesktopModern`: mem <= 2 GiB, t <= 6, p <= 4
 - Argon2id is Rust on every lane (see `PROVIDER_POLICY.md`); it is never satisfied
   by a JCA/BouncyCastle or third-party native provider.
+
+### PBKDF2 Work-Factor Policy
+
+- Public PBKDF2 routes accept 100,000 through 10,000,000 iterations.
+- Both bounds are validated before native, WASM, Swift, Kotlin, or TypeScript
+  derivation so a compact untrusted request cannot select unbounded CPU work.
+- The generic KDF protobuf branch intentionally does not execute Argon2id: its
+  `iterations` field cannot represent the reviewed Argon2 `kdf_version`
+  profiles. Dedicated versioned Argon2id APIs remain the supported route.
 
 ### FFI Secret Handling
 
@@ -137,6 +151,18 @@ Engineering rules that apply across primitives and protocols:
   results to the platform lane. That cleanup does not erase platform-owned
   arrays, provider-internal copies, protobuf serialization buffers, or runtime
   copies made before the caller clears them.
+- Executable ProtoJSON accepts only request selectors without caller-provided
+  secret material. Secret-bearing selectors are rejected before serde value
+  deserialization and must use the binary protobuf boundary.
+- Generated protobuf `View` and `OwnedView` types that can retain sensitive or
+  privacy-bearing bytes fail serde `Serialize` with a fixed error. ProtoJSON is
+  produced only from owned messages at an explicit, policy-approved boundary;
+  callers must not serialize or log views as a substitute for that boundary.
+- Swift CryptoKit and Security.framework ECDH routes copy shared secrets through
+  provider-managed `Data` or opaque shared-secret storage before the package
+  creates caller-owned `[UInt8]` results. The Swift wrappers best-effort clear
+  those owned arrays on validation failure, but provider-managed intermediates
+  remain a managed-runtime residual risk.
 - Do not pass secret-bearing values as managed strings. Avoid JSON paths for
   private keys, plaintext, passwords, shared secrets, and derived keys.
 - New APIs that keep secret material alive beyond a single call should expose an
@@ -150,12 +176,13 @@ The SDKs expose narrow helpers for caller-owned arrays:
 - Kotlin/JVM and Kotlin/Android: `ReallyMeCryptoMemory.bestEffortClear(bytes)`
 - TypeScript: `bestEffortClear(bytes)`
 
-These helpers overwrite the supplied byte array view in place. They are useful
-for clearing keys, passwords, plaintext, shared secrets, salts, and derived keys
-as soon as application code no longer needs them. They do not and cannot clear
-copies already made by ARC, JVM or Android garbage collectors, JavaScript
-engines, WebAssembly marshalling, protobuf codecs, native providers, crash
-reporters, debugger snapshots, swap, hibernation, or application logs.
+These helpers overwrite the supplied byte array view in place. The Swift helper
+uses Darwin `memset_s` so the current-storage writes cannot be optimized away.
+They are useful for clearing keys, passwords, plaintext, shared secrets, salts,
+and derived keys as soon as application code no longer needs them. They do not
+and cannot clear copies already made by ARC, JVM or Android garbage collectors,
+JavaScript engines, WebAssembly marshalling, protobuf codecs, native providers,
+crash reporters, debugger snapshots, swap, hibernation, or application logs.
 
 ## Residual Risks
 

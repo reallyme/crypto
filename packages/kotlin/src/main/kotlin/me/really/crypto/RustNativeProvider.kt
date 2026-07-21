@@ -5,8 +5,15 @@
 package me.really.crypto
 
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
+import java.nio.ByteBuffer
+import java.nio.channels.FileChannel
+import java.nio.file.Files
+import java.nio.file.LinkOption
+import java.nio.file.Path
+import java.nio.file.StandardOpenOption
+import java.nio.file.attribute.PosixFileAttributeView
+import java.nio.file.attribute.PosixFilePermission
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.util.Locale
@@ -97,23 +104,64 @@ public object ReallyMeRustNativeProvider {
         if (!verifyNativeResource(resource, bytes)) {
             return ReallyMeNativeStatus.PROVIDER_UNAVAILABLE
         }
-        val extracted = try {
-            val target = File.createTempFile(
-                "reallyme-crypto-native-",
-                "-${resource.fileName}",
-            )
-            FileOutputStream(target).use { destination ->
-                destination.write(bytes)
-            }
-            target.deleteOnExit()
-            target
-        } catch (_: IOException) {
-            return ReallyMeNativeStatus.PROVIDER_UNAVAILABLE
-        } catch (_: SecurityException) {
+        val extracted = extractNativeResourceForLoad(resource, bytes)
+        if (extracted == null) {
             return ReallyMeNativeStatus.PROVIDER_UNAVAILABLE
         }
 
-        return loadExtractedLibraryStatus(extracted)
+        return loadExtractedLibraryStatus(resource, extracted)
+    }
+
+    internal fun extractNativeResourceForLoad(
+        resource: NativeResource,
+        bytes: ByteArray,
+        parentDirectory: Path? = null,
+    ): Path? {
+        if (!verifyNativeResource(resource, bytes)) {
+            return null
+        }
+        var extractionDirectory: Path? = null
+        var target: Path? = null
+        return try {
+            extractionDirectory = if (parentDirectory == null) {
+                Files.createTempDirectory("reallyme-crypto-native-")
+            } else {
+                Files.createTempDirectory(parentDirectory, "reallyme-crypto-native-")
+            }
+            if (!applyOwnerOnlyPermissions(extractionDirectory, OWNER_ONLY_DIRECTORY_PERMISSIONS)) {
+                cleanupExtractedLibrary(target, extractionDirectory)
+                return null
+            }
+            target = extractionDirectory.resolve(resource.fileName)
+            FileChannel.open(target, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE).use { channel ->
+                val buffer = ByteBuffer.wrap(bytes)
+                while (buffer.hasRemaining()) {
+                    channel.write(buffer)
+                }
+                channel.force(true)
+            }
+            if (!applyOwnerOnlyPermissions(target, OWNER_ONLY_FILE_PERMISSIONS)) {
+                cleanupExtractedLibrary(target, extractionDirectory)
+                return null
+            }
+            if (!verifyNativeResourceOnDisk(resource, target)) {
+                cleanupExtractedLibrary(target, extractionDirectory)
+                null
+            } else {
+                target.toFile().deleteOnExit()
+                extractionDirectory.toFile().deleteOnExit()
+                target
+            }
+        } catch (_: IOException) {
+            cleanupExtractedLibrary(target, extractionDirectory)
+            null
+        } catch (_: SecurityException) {
+            cleanupExtractedLibrary(target, extractionDirectory)
+            null
+        } catch (_: UnsupportedOperationException) {
+            cleanupExtractedLibrary(target, extractionDirectory)
+            null
+        }
     }
 
     private fun verifyNativeResource(resource: NativeResource, bytes: ByteArray): Boolean {
@@ -151,8 +199,42 @@ public object ReallyMeRustNativeProvider {
 
     private fun sha256Hex(bytes: ByteArray): String {
         val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
-        val out = StringBuilder(digest.size * 2)
-        for (byte in digest) {
+        return hexLower(digest)
+    }
+
+    internal fun verifyNativeResourceOnDisk(resource: NativeResource, path: Path): Boolean {
+        val entry = nativeManifestEntries().firstOrNull { it.path == resource.manifestPath }
+            ?: return false
+        return try {
+            if (Files.size(path) != entry.size.toLong()) {
+                return false
+            }
+            sha256Hex(path) == entry.sha256
+        } catch (_: IOException) {
+            false
+        } catch (_: SecurityException) {
+            false
+        } catch (_: NoSuchAlgorithmException) {
+            false
+        }
+    }
+
+    private fun sha256Hex(path: Path): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        Files.newInputStream(path).use { source ->
+            val buffer = ByteArray(FILE_HASH_BUFFER_BYTES)
+            var read = source.read(buffer)
+            while (read >= 0) {
+                digest.update(buffer, 0, read)
+                read = source.read(buffer)
+            }
+        }
+        return hexLower(digest.digest())
+    }
+
+    private fun hexLower(bytes: ByteArray): String {
+        val out = StringBuilder(bytes.size * 2)
+        for (byte in bytes) {
             val value = byte.toInt() and 0xff
             out.append(HEX_DIGITS[value ushr 4])
             out.append(HEX_DIGITS[value and 0x0f])
@@ -160,16 +242,101 @@ public object ReallyMeRustNativeProvider {
         return out.toString()
     }
 
-    private fun loadExtractedLibraryStatus(path: File): ReallyMeNativeStatus {
+    internal fun validateExtractedLibraryForLoad(resource: NativeResource, path: Path): Path? {
         return try {
-            System.load(path.absolutePath)
-            markLoadedAfterProbe(path.canonicalPath)
+            if (Files.isSymbolicLink(path)) {
+                return null
+            }
+            val loadedPath = path.toRealPath()
+            if (!Files.isRegularFile(loadedPath, LinkOption.NOFOLLOW_LINKS)) {
+                return null
+            }
+            val loadedParent = loadedPath.parent ?: return null
+            if (!hasExpectedOwnerOnlyPermissions(loadedParent, OWNER_ONLY_DIRECTORY_PERMISSIONS) ||
+                !hasExpectedOwnerOnlyPermissions(loadedPath, OWNER_ONLY_FILE_PERMISSIONS) ||
+                !verifyNativeResourceOnDisk(resource, loadedPath)
+            ) {
+                return null
+            }
+            loadedPath
+        } catch (_: IOException) {
+            null
+        } catch (_: SecurityException) {
+            null
+        } catch (_: UnsupportedOperationException) {
+            null
+        }
+    }
+
+    private fun loadExtractedLibraryStatus(
+        resource: NativeResource,
+        path: Path,
+    ): ReallyMeNativeStatus {
+        return try {
+            val loadedPath = validateExtractedLibraryForLoad(resource, path)
+                ?: return ReallyMeNativeStatus.PROVIDER_UNAVAILABLE
+            // Keep the final on-disk digest and permission verification directly
+            // adjacent to loading. Java cannot provide an fd-backed System.load,
+            // so minimizing this interval is the strongest portable contract.
+            System.load(loadedPath.toString())
+            markLoadedAfterProbe(loadedPath.toString())
         } catch (_: LinkageError) {
+            cleanupExtractedLibrary(path, path.parent)
             ReallyMeNativeStatus.PROVIDER_UNAVAILABLE
         } catch (_: SecurityException) {
+            cleanupExtractedLibrary(path, path.parent)
             ReallyMeNativeStatus.PROVIDER_UNAVAILABLE
         } catch (_: IOException) {
+            cleanupExtractedLibrary(path, path.parent)
             ReallyMeNativeStatus.PROVIDER_UNAVAILABLE
+        }
+    }
+
+    private fun applyOwnerOnlyPermissions(
+        path: Path,
+        expected: Set<PosixFilePermission>,
+    ): Boolean {
+        val view = Files.getFileAttributeView(path, PosixFileAttributeView::class.java)
+            ?: return true
+        return try {
+            view.setPermissions(expected)
+            view.readAttributes().permissions() == expected
+        } catch (_: UnsupportedOperationException) {
+            false
+        } catch (_: IOException) {
+            false
+        } catch (_: SecurityException) {
+            false
+        }
+    }
+
+    private fun hasExpectedOwnerOnlyPermissions(
+        path: Path,
+        expected: Set<PosixFilePermission>,
+    ): Boolean {
+        val view = Files.getFileAttributeView(path, PosixFileAttributeView::class.java)
+            ?: return true
+        return try {
+            view.readAttributes().permissions() == expected
+        } catch (_: UnsupportedOperationException) {
+            false
+        } catch (_: IOException) {
+            false
+        } catch (_: SecurityException) {
+            false
+        }
+    }
+
+    private fun cleanupExtractedLibrary(target: Path?, directory: Path?) {
+        try {
+            if (target != null) {
+                Files.deleteIfExists(target)
+            }
+            if (directory != null) {
+                Files.deleteIfExists(directory)
+            }
+        } catch (_: IOException) {
+        } catch (_: SecurityException) {
         }
     }
 
@@ -298,4 +465,14 @@ public object ReallyMeRustNativeProvider {
     private external fun probeNative(): Int
 
     private const val HEX_DIGITS: String = "0123456789abcdef"
+    private const val FILE_HASH_BUFFER_BYTES: Int = 8192
+    private val OWNER_ONLY_DIRECTORY_PERMISSIONS: Set<PosixFilePermission> = setOf(
+        PosixFilePermission.OWNER_READ,
+        PosixFilePermission.OWNER_WRITE,
+        PosixFilePermission.OWNER_EXECUTE,
+    )
+    private val OWNER_ONLY_FILE_PERMISSIONS: Set<PosixFilePermission> = setOf(
+        PosixFilePermission.OWNER_READ,
+        PosixFilePermission.OWNER_WRITE,
+    )
 }

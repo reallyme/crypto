@@ -5,6 +5,7 @@
 package me.really.crypto
 
 import org.bouncycastle.crypto.digests.SHA256Digest
+import org.bouncycastle.crypto.digests.SHA384Digest
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator
 import org.bouncycastle.crypto.params.HKDFParameters
 
@@ -22,6 +23,20 @@ public object ReallyMeHkdf {
     ): ByteArray {
         validate(inputKeyMaterial, salt, info, outputLength)
         val generator = HKDFBytesGenerator(SHA256Digest())
+        generator.init(HKDFParameters(inputKeyMaterial, salt, info))
+        val output = ByteArray(outputLength)
+        generator.generateBytes(output, 0, output.size)
+        return output
+    }
+
+    public fun deriveSha384(
+        inputKeyMaterial: ByteArray,
+        salt: ByteArray,
+        info: ByteArray,
+        outputLength: Int,
+    ): ByteArray {
+        validate(inputKeyMaterial, salt, info, outputLength)
+        val generator = HKDFBytesGenerator(SHA384Digest())
         generator.init(HKDFParameters(inputKeyMaterial, salt, info))
         val output = ByteArray(outputLength)
         generator.generateBytes(output, 0, output.size)

@@ -17,6 +17,7 @@ import org.bouncycastle.crypto.params.ECPrivateKeyParameters
 import org.bouncycastle.crypto.params.ECPublicKeyParameters
 import org.bouncycastle.crypto.signers.ECDSASigner
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator
+import org.bouncycastle.math.ec.FixedPointCombMultiplier
 
 /**
  * Deterministic P-521 ECDSA over SHA-512 backed by BouncyCastle.
@@ -51,7 +52,7 @@ public object ReallyMeP521Ecdsa {
 
     public fun derivePublicKey(secretKey: ByteArray): ByteArray {
         val scalar = validatedScalar(secretKey)
-        return domain.g.multiply(scalar).normalize().getEncoded(true)
+        return FixedPointCombMultiplier().multiply(domain.g, scalar).normalize().getEncoded(true)
     }
 
     public fun sign(message: ByteArray, secretKey: ByteArray): ByteArray {

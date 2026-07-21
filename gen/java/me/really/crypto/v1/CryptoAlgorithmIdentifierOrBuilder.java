@@ -59,22 +59,6 @@ public interface CryptoAlgorithmIdentifierOrBuilder extends
   me.really.crypto.v1.KemAlgorithm getKem();
 
   /**
-   * <code>.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];</code>
-   * @return Whether the hpke field is set.
-   */
-  boolean hasHpke();
-  /**
-   * <code>.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];</code>
-   * @return The enum numeric value on the wire for hpke.
-   */
-  int getHpkeValue();
-  /**
-   * <code>.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];</code>
-   * @return The hpke.
-   */
-  me.really.crypto.v1.HpkeSuite getHpke();
-
-  /**
    * <code>.reallyme.crypto.v1.AeadAlgorithm aead = 5 [json_name = "aead"];</code>
    * @return Whether the aead field is set.
    */
@@ -169,6 +153,17 @@ public interface CryptoAlgorithmIdentifierOrBuilder extends
    * @return The multicodecKey.
    */
   me.really.crypto.v1.MulticodecKeyAlgorithm getMulticodecKey();
+
+  /**
+   * <code>.reallyme.crypto.v1.HpkeSuiteIdentifier hpke_suite = 11 [json_name = "hpkeSuite"];</code>
+   * @return Whether the hpkeSuite field is set.
+   */
+  boolean hasHpkeSuite();
+  /**
+   * <code>.reallyme.crypto.v1.HpkeSuiteIdentifier hpke_suite = 11 [json_name = "hpkeSuite"];</code>
+   * @return The hpkeSuite.
+   */
+  me.really.crypto.v1.HpkeSuiteIdentifier getHpkeSuite();
 
   public me.really.crypto.v1.CryptoAlgorithmIdentifier.AlgorithmCase getAlgorithmCase();
 }

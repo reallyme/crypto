@@ -7,7 +7,6 @@ package me.really.crypto
 import fr.acinq.secp256k1.Secp256k1
 import fr.acinq.secp256k1.Secp256k1Exception
 import java.security.MessageDigest
-import java.security.SecureRandom
 
 /**
  * secp256k1 ECDSA backed by Bitcoin Core libsecp256k1 through ACINQ's JNI
@@ -31,16 +30,13 @@ public object ReallyMeSecp256k1 {
 
     /** Generates a random keypair: 33-byte compressed public, 32-byte secret. */
     public fun generateKeyPair(): Pair<ByteArray, ByteArray> {
-        val random = SecureRandom()
-        val secretKey = ByteArray(SECRET_KEY_LENGTH)
         val secp = provider()
-        repeat(1024) {
-            random.nextBytes(secretKey)
-            if (secp.secKeyVerify(secretKey)) {
-                return Pair(derivePublicKey(secretKey), secretKey.copyOf())
-            }
+        return withRandomSecretCandidate(
+            length = SECRET_KEY_LENGTH,
+            isValid = secp::secKeyVerify,
+        ) { secretKey ->
+            Pair(derivePublicKey(secretKey), secretKey.copyOf())
         }
-        throw ReallyMeCryptoException.ProviderFailure()
     }
 
     /** Derives a secp256k1 ECDSA keypair from a 32-byte secret scalar. */

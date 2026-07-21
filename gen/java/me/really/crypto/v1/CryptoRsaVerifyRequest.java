@@ -20,11 +20,6 @@ public  final class CryptoRsaVerifyRequest extends
     return "CryptoRsaVerifyRequest{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoRsaVerifyRequest() {
     signature_ = com.google.protobuf.ByteString.EMPTY;
     message_ = com.google.protobuf.ByteString.EMPTY;

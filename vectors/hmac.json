@@ -5,6 +5,12 @@
     "message": "SGkgVGhlcmU",
     "tag": "sDRMYdjbOFNcqK_OrwvxK4gdwgDJgz2nJuk3bC4yz_c"
   },
+  "hmac_sha384": {
+    "alg": "HMAC-SHA-384",
+    "key": "CwsLCwsLCwsLCwsLCwsLCwsLCws",
+    "message": "SGkgVGhlcmU",
+    "tag": "r9A5RNhIlWJrCCX0q0aQfxX52tvkEB7GgqoDTHzrxZz66p6pB27ef0rxUuiy-py2"
+  },
   "hmac_sha512": {
     "alg": "HMAC-SHA-512",
     "key": "CwsLCwsLCwsLCwsLCwsLCwsLCws",

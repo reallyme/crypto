@@ -57,12 +57,13 @@ public enum ReallyMeX25519 {
             let privateKey = try Curve25519.KeyAgreement.PrivateKey(rawRepresentation: Data(secretKey))
             let peerPublicKey = try Curve25519.KeyAgreement.PublicKey(rawRepresentation: Data(publicKey))
             let sharedSecret = try privateKey.sharedSecretFromKeyAgreement(with: peerPublicKey)
-            let bytes = sharedSecret.withUnsafeBytes { buffer in
+            var bytes = sharedSecret.withUnsafeBytes { buffer in
                 Array(buffer)
             }
             guard bytes.count == sharedSecretLength,
                   bytes.contains(where: { $0 != 0 })
             else {
+                ReallyMeCryptoMemory.bestEffortClear(&bytes)
                 throw ReallyMeCryptoError.invalidInput
             }
             return bytes

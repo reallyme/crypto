@@ -4,7 +4,13 @@
 
 import type { ReallyMeSignatureAlgorithm } from "./algorithms.js";
 import { ReallyMeCryptoError } from "./errors.js";
-import { ensureBytes, readByteArrayProperty } from "./validateBytes.js";
+import {
+  ensureByteArrayAtMost,
+  ensureBytes,
+  ensureIndependentByteArray,
+  MAX_CRYPTO_INPUT_LENGTH,
+  readIndependentByteArrayProperty,
+} from "./validateBytes.js";
 import { requireReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 
@@ -72,16 +78,41 @@ const mlDsaSuiteWithProvider = (
   }
 };
 
-const readKeyPair = (value: unknown, suite: MlDsaSuite): ReallyMeMlDsaKeyPair => ({
-  publicKey: readByteArrayProperty(value, "publicKey", suite.publicKeyLength),
-  secretKey: readByteArrayProperty(value, "secretKey", ML_DSA_SECRET_KEY_LENGTH),
-});
+const readKeyPair = (
+  value: unknown,
+  suite: MlDsaSuite,
+  inputs: ReadonlyArray<Uint8Array> = [],
+): ReallyMeMlDsaKeyPair => {
+  const publicKey = readIndependentByteArrayProperty(
+    value,
+    "publicKey",
+    suite.publicKeyLength,
+    inputs,
+  );
+  const secretKey = readIndependentByteArrayProperty(
+    value,
+    "secretKey",
+    ML_DSA_SECRET_KEY_LENGTH,
+    [...inputs, publicKey],
+  );
+  return { publicKey, secretKey };
+};
 
-const readSignature = (value: unknown, suite: MlDsaSuite): Uint8Array => {
+const readSignature = (
+  value: unknown,
+  suite: MlDsaSuite,
+  inputs: ReadonlyArray<Uint8Array>,
+): Uint8Array => {
   if (!(value instanceof Uint8Array)) {
     throw new ReallyMeCryptoError("provider-failure");
   }
-  ensureBytes(value, suite.signatureLength);
+  // Signature bytes are public, but their shape and ownership are provider
+  // postconditions. A malformed provider must never be reported as bad caller
+  // input, and an aliased result must not be mistaken for provider-owned data.
+  ensureIndependentByteArray(value, inputs);
+  if (value.length !== suite.signatureLength) {
+    throw new ReallyMeCryptoError("provider-failure");
+  }
   return value;
 };
 
@@ -113,7 +144,7 @@ export const ReallyMeMlDsa = {
     // feed passwords or other low-entropy material here.
     const suite = mlDsaSuite(algorithm);
     ensureBytes(secretKey, ML_DSA_SECRET_KEY_LENGTH);
-    return readKeyPair(suite.deriveKeyPair(secretKey), suite);
+    return readKeyPair(suite.deriveKeyPair(secretKey), suite, [secretKey]);
   },
 
   deriveKeyPairWithProvider(
@@ -123,7 +154,7 @@ export const ReallyMeMlDsa = {
   ): ReallyMeMlDsaKeyPair {
     const suite = mlDsaSuiteWithProvider(algorithm, provider);
     ensureBytes(secretKey, ML_DSA_SECRET_KEY_LENGTH);
-    return readKeyPair(suite.deriveKeyPair(secretKey), suite);
+    return readKeyPair(suite.deriveKeyPair(secretKey), suite, [secretKey]);
   },
 
   sign(
@@ -132,8 +163,13 @@ export const ReallyMeMlDsa = {
     secretKey: Uint8Array,
   ): Uint8Array {
     const suite = mlDsaSuite(algorithm);
+    ensureByteArrayAtMost(message, MAX_CRYPTO_INPUT_LENGTH);
     ensureBytes(secretKey, ML_DSA_SECRET_KEY_LENGTH);
-    return readSignature(suite.sign(secretKey, message), suite);
+    return readSignature(
+      suite.sign(secretKey, message),
+      suite,
+      [secretKey, message],
+    );
   },
 
   signWithProvider(
@@ -143,8 +179,13 @@ export const ReallyMeMlDsa = {
     secretKey: Uint8Array,
   ): Uint8Array {
     const suite = mlDsaSuiteWithProvider(algorithm, provider);
+    ensureByteArrayAtMost(message, MAX_CRYPTO_INPUT_LENGTH);
     ensureBytes(secretKey, ML_DSA_SECRET_KEY_LENGTH);
-    return readSignature(suite.sign(secretKey, message), suite);
+    return readSignature(
+      suite.sign(secretKey, message),
+      suite,
+      [secretKey, message],
+    );
   },
 
   verify(
@@ -154,6 +195,7 @@ export const ReallyMeMlDsa = {
     publicKey: Uint8Array,
   ): void {
     const suite = mlDsaSuite(algorithm);
+    ensureByteArrayAtMost(message, MAX_CRYPTO_INPUT_LENGTH);
     ensureBytes(publicKey, suite.publicKeyLength);
     ensureBytes(signature, suite.signatureLength);
     readVoid(suite.verify(publicKey, message, signature));
@@ -167,6 +209,7 @@ export const ReallyMeMlDsa = {
     publicKey: Uint8Array,
   ): void {
     const suite = mlDsaSuiteWithProvider(algorithm, provider);
+    ensureByteArrayAtMost(message, MAX_CRYPTO_INPUT_LENGTH);
     ensureBytes(publicKey, suite.publicKeyLength);
     ensureBytes(signature, suite.signatureLength);
     readVoid(suite.verify(publicKey, message, signature));

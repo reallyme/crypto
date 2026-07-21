@@ -49,7 +49,6 @@ public enum class ReallyMeKemAlgorithm(public val algorithmName: String) {
     ML_KEM_768("ML-KEM-768"),
     ML_KEM_1024("ML-KEM-1024"),
     X_WING_768("X-Wing-768"),
-    X_WING_1024("X-Wing-1024"),
 }
 
 public enum class ReallyMeKeyAgreementAlgorithm(public val algorithmName: String) {
@@ -61,18 +60,23 @@ public enum class ReallyMeKeyAgreementAlgorithm(public val algorithmName: String
 
 public enum class ReallyMeMacAlgorithm(public val algorithmName: String) {
     HMAC_SHA256("HMAC-SHA-256"),
+    HMAC_SHA384("HMAC-SHA-384"),
     HMAC_SHA512("HMAC-SHA-512"),
 }
 
 public enum class ReallyMeKdfAlgorithm(public val algorithmName: String) {
     HKDF_SHA256("HKDF-SHA256"),
+    HKDF_SHA384("HKDF-SHA384"),
     ARGON2ID("Argon2id"),
+    KMAC256("KMAC256"),
     PBKDF2_HMAC_SHA256("PBKDF2-HMAC-SHA-256"),
     PBKDF2_HMAC_SHA512("PBKDF2-HMAC-SHA-512"),
     JWA_CONCAT_KDF_SHA256("JWA-CONCAT-KDF-SHA256"),
 }
 
 public enum class ReallyMeKeyWrapAlgorithm(public val algorithmName: String) {
+    AES_128_KW("AES-128-KW"),
+    AES_192_KW("AES-192-KW"),
     AES_256_KW("AES-256-KW"),
 }
 

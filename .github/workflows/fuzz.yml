@@ -9,13 +9,23 @@ on:
     paths:
       - ".github/workflows/fuzz.yml"
       - "Cargo.toml"
-      - "src/proto_process.rs"
+      - "crates/crypto/src/operation_contract/**"
       - "proto/**"
-      - "crates/proto/crypto/**"
-      - "crates/crypto/primitives/p256/**"
-      - "crates/crypto/primitives/rsa/**"
-      - "crates/envelopes/jwk/**"
-      - "crates/envelopes/jwk-multikey/**"
+      - "crates/concat-kdf/**"
+      - "crates/proto/**"
+      - "crates/hkdf/**"
+      - "crates/hpke/**"
+      - "crates/p256/**"
+      - "crates/pbkdf2/**"
+      - "crates/p384/**"
+      - "crates/p521/**"
+      - "crates/ml-dsa-*/**"
+      - "crates/ml-kem-*/**"
+      - "crates/rsa/**"
+      - "crates/secp256k1/**"
+      - "crates/slh-dsa/**"
+      - "crates/jwk/**"
+      - "crates/jwk-multikey/**"
       - "fuzz/**"
   push:
     branches:
@@ -23,13 +33,23 @@ on:
     paths:
       - ".github/workflows/fuzz.yml"
       - "Cargo.toml"
-      - "src/proto_process.rs"
+      - "crates/crypto/src/operation_contract/**"
       - "proto/**"
-      - "crates/proto/crypto/**"
-      - "crates/crypto/primitives/p256/**"
-      - "crates/crypto/primitives/rsa/**"
-      - "crates/envelopes/jwk/**"
-      - "crates/envelopes/jwk-multikey/**"
+      - "crates/concat-kdf/**"
+      - "crates/proto/**"
+      - "crates/hkdf/**"
+      - "crates/hpke/**"
+      - "crates/p256/**"
+      - "crates/pbkdf2/**"
+      - "crates/p384/**"
+      - "crates/p521/**"
+      - "crates/ml-dsa-*/**"
+      - "crates/ml-kem-*/**"
+      - "crates/rsa/**"
+      - "crates/secp256k1/**"
+      - "crates/slh-dsa/**"
+      - "crates/jwk/**"
+      - "crates/jwk-multikey/**"
       - "fuzz/**"
   schedule:
     - cron: "37 3 * * 1"
@@ -66,8 +86,11 @@ jobs:
       matrix:
         target:
           - jwk_multikey
+          - key_encodings
+          - operation_family_boundaries
           - p256_point
-          - proto_process
+          - post_quantum_encodings
+          - operation_response
           - rsa_der
     steps:
       - name: Checkout

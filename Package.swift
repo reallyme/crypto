@@ -8,7 +8,7 @@
 // SwiftPM and Xcode only read a `Package.swift` at the repository root when a
 // package is consumed by URL, e.g.
 //
-//     .package(url: "https://github.com/reallyme/crypto", from: "0.2.0")
+//     .package(url: "https://github.com/reallyme/crypto", from: "0.3.0")
 //     .product(name: "ReallyMeCrypto", package: "crypto")
 //
 // The Swift sources live under `packages/swift/` to keep symmetry with the
@@ -18,17 +18,21 @@
 import PackageDescription
 import Foundation
 
-let ffiArtifactChecksumPlaceholder =
-    "0000000000000000000000000000000000000000000000000000000000000000"
-let ffiArtifactChecksum = "8232dfe83bc1f923305e6102ffa0754a4797f9aabbba447ed89482fd8ab64359"
-let ffiArtifactVersion = "0.2.0"
+let ffiArtifactChecksum = "026bd91fd4fca43cd7eb284ca42015759b58d339f97f7207f795f1141af59f04"
+let ffiArtifactVersion = "0.3.0"
 let ffiArtifactLocalPathOverride = ""
-let hasReleasedFfiArtifact = ffiArtifactChecksum != ffiArtifactChecksumPlaceholder
 // Source-tree CI explicitly exercises the runtime loader before testing the
 // linked release artifact. Public consumers do not set this development-only
-// override and therefore always receive the reviewed binary target.
-let useRuntimeFfiProvider =
+// override and therefore always receive the reviewed binary target. Require a
+// repo-local marker as a second gate so inherited environment does not silently
+// remove the release binary target.
+let packageRoot = URL(fileURLWithPath: #filePath).deletingLastPathComponent().path
+let runtimeFfiOverrideMarkerPath = "\(packageRoot)/.reallyme-crypto-runtime-ffi"
+let runtimeFfiOverrideRequested =
     ProcessInfo.processInfo.environment["REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI"] == "1"
+let useRuntimeFfiProvider =
+    runtimeFfiOverrideRequested &&
+    FileManager.default.fileExists(atPath: runtimeFfiOverrideMarkerPath)
 
 var cryptoTargetDependencies: [Target.Dependency] = [
     .product(name: "CSecp256k1", package: "CSecp256k1"),
@@ -39,7 +43,7 @@ var cryptoTargetDependencies: [Target.Dependency] = [
 var cryptoSwiftSettings: [SwiftSetting] = []
 var packageTargets: [Target] = []
 
-if hasReleasedFfiArtifact && !useRuntimeFfiProvider {
+if !useRuntimeFfiProvider {
     cryptoTargetDependencies.append("ReallyMeCryptoFFI")
     cryptoSwiftSettings.append(.define("REALLYME_CRYPTO_LINKED_FFI"))
     if ffiArtifactLocalPathOverride.isEmpty {
@@ -123,7 +127,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/reallyme/codec",
-            from: "0.1.21"
+            from: "0.2.0"
         ),
         .package(
             url: "https://github.com/reallyme/CSecp256k1",

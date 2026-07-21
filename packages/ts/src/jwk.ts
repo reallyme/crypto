@@ -24,8 +24,7 @@ export type ReallyMeJwkAlgorithm =
   | "ML-KEM-768"
   | "ML-KEM-1024"
   | "SLH-DSA-SHA2-128s"
-  | "X-Wing-768"
-  | "X-Wing-1024";
+  | "X-Wing-768";
 
 export type ReallyMeOkpJwk = Readonly<{
   alg: string;
@@ -75,6 +74,21 @@ type JwkSpec = Readonly<{
   use: "enc" | "sig";
 }>;
 
+// JSON and protobuf JWKS ingress routes share this limit so neither boundary
+// can amplify a small public-key record into unbounded curve validation work.
+export const MAX_JWKS_KEYS = 1_024;
+
+const withJwkBoundaryErrors = <T>(operation: () => T): T => {
+  try {
+    return operation();
+  } catch (error: unknown) {
+    if (error instanceof ReallyMeCryptoError) {
+      throw error;
+    }
+    throw new ReallyMeCryptoError("invalid-input");
+  }
+};
+
 const jwkSpec = (algorithm: ReallyMeJwkAlgorithm): JwkSpec => {
   switch (algorithm) {
     case "Ed25519":
@@ -101,8 +115,6 @@ const jwkSpec = (algorithm: ReallyMeJwkAlgorithm): JwkSpec => {
       return { alg: "SLH-DSA-SHA2-128s", kty: "AKP", publicKeyLength: 32, use: "sig" };
     case "X-Wing-768":
       return { alg: "X-Wing-768", kty: "AKP", publicKeyLength: 1_216, use: "enc" };
-    case "X-Wing-1024":
-      return { alg: "X-Wing-1024", kty: "AKP", publicKeyLength: 1_600, use: "enc" };
   }
 };
 
@@ -116,11 +128,29 @@ const readString = (value: unknown, name: string): string => {
   if (typeof value !== "object" || value === null) {
     throw new ReallyMeCryptoError("invalid-input");
   }
-  const property = Reflect.get(value, name);
-  if (typeof property !== "string") {
+  const descriptor = Object.getOwnPropertyDescriptor(value, name);
+  if (
+    descriptor === undefined ||
+    !("value" in descriptor) ||
+    typeof descriptor.value !== "string"
+  ) {
     throw new ReallyMeCryptoError("invalid-input");
   }
-  return property;
+  return descriptor.value;
+};
+
+const ensureExactMembers = (
+  value: unknown,
+  allowedNames: ReadonlyArray<string>,
+): void => {
+  if (typeof value !== "object" || value === null) {
+    throw new ReallyMeCryptoError("invalid-input");
+  }
+  for (const name of Reflect.ownKeys(value)) {
+    if (typeof name !== "string" || !allowedNames.includes(name)) {
+      throw new ReallyMeCryptoError("invalid-input");
+    }
+  }
 };
 
 const privateJwkMemberNames: ReadonlyArray<string> = [
@@ -156,8 +186,11 @@ const optionalStringMatches = (
   if (typeof value !== "object" || value === null) {
     throw new ReallyMeCryptoError("invalid-input");
   }
-  const property = Reflect.get(value, name);
-  if (property !== undefined && property !== expected) {
+  const descriptor = Object.getOwnPropertyDescriptor(value, name);
+  if (
+    descriptor !== undefined &&
+    (!("value" in descriptor) || descriptor.value !== expected)
+  ) {
     throw new ReallyMeCryptoError("invalid-input");
   }
 };
@@ -184,7 +217,6 @@ const specFromAlgorithm = (algorithm: string): JwkSpec => {
     case "ML-KEM-1024":
     case "SLH-DSA-SHA2-128s":
     case "X-Wing-768":
-    case "X-Wing-1024":
       return jwkSpec(algorithm);
     default:
       throw new ReallyMeCryptoError("unsupported-algorithm");
@@ -307,59 +339,72 @@ export const ReallyMeJwk = {
   },
 
   fromJwk(value: unknown): ReallyMeJwkKey {
-    rejectPrivateKeyMaterial(value);
-    const kty = readString(value, "kty");
-    const spec =
-      kty === "AKP"
-        ? specFromAlgorithm(readString(value, "alg"))
-        : specFromCurve(readString(value, "crv"));
-    if (kty !== spec.kty) {
-      throw new ReallyMeCryptoError("invalid-input");
-    }
-    optionalStringMatches(value, "alg", spec.alg);
-    optionalStringMatches(value, "use", spec.use);
-
-    if (spec.kty === "EC") {
-      const ecAlgorithm = spec.crv === "P-256" ? "P-256" : "secp256k1";
-      const x = codecBase64urlDecodeCanonical(readString(value, "x"));
-      const y = codecBase64urlDecodeCanonical(readString(value, "y"));
-      const publicKey = compressEc(ecAlgorithm, x, y);
-      ensureLength(publicKey, spec.publicKeyLength);
-      const jwk = ReallyMeJwk.toJwk(ecAlgorithm, publicKey);
-      return { algorithm: ecAlgorithm, publicKey, jwk };
-    }
-
-    if (spec.kty === "OKP") {
-      const crv = spec.crv;
-      if (crv !== "Ed25519" && crv !== "X25519") {
-        throw new ReallyMeCryptoError("unsupported-algorithm");
+    return withJwkBoundaryErrors(() => {
+      rejectPrivateKeyMaterial(value);
+      const kty = readString(value, "kty");
+      const spec =
+        kty === "AKP"
+          ? specFromAlgorithm(readString(value, "alg"))
+          : specFromCurve(readString(value, "crv"));
+      if (kty !== spec.kty) {
+        throw new ReallyMeCryptoError("invalid-input");
       }
-      const publicKey = codecBase64urlDecodeCanonical(readString(value, "x"));
-      ensureLength(publicKey, spec.publicKeyLength);
-      const jwk = ReallyMeJwk.toJwk(crv, publicKey);
-      return { algorithm: crv, publicKey, jwk };
-    }
 
-    const algorithm = readString(value, "alg");
-    const akpSpec = specFromAlgorithm(algorithm);
-    const publicKey = codecBase64urlDecodeCanonical(readString(value, "pub"));
-    ensureLength(publicKey, akpSpec.publicKeyLength);
-    switch (algorithm) {
-      case "ML-DSA-44":
-      case "ML-DSA-65":
-      case "ML-DSA-87":
-      case "ML-KEM-512":
-      case "ML-KEM-768":
-      case "ML-KEM-1024":
-      case "SLH-DSA-SHA2-128s":
-      case "X-Wing-768":
-      case "X-Wing-1024": {
-        const jwk = ReallyMeJwk.toJwk(algorithm, publicKey);
-        return { algorithm, publicKey, jwk };
+      if (spec.kty === "EC") {
+        ensureExactMembers(value, ["alg", "crv", "kty", "use", "x", "y"]);
+        if (
+          readString(value, "alg") !== spec.alg ||
+          readString(value, "use") !== spec.use
+        ) {
+          throw new ReallyMeCryptoError("invalid-input");
+        }
+        const ecAlgorithm = spec.crv === "P-256" ? "P-256" : "secp256k1";
+        const x = codecBase64urlDecodeCanonical(readString(value, "x"));
+        const y = codecBase64urlDecodeCanonical(readString(value, "y"));
+        const publicKey = compressEc(ecAlgorithm, x, y);
+        ensureLength(publicKey, spec.publicKeyLength);
+        const jwk = ReallyMeJwk.toJwk(ecAlgorithm, publicKey);
+        return { algorithm: ecAlgorithm, publicKey, jwk };
       }
-      default:
-        throw new ReallyMeCryptoError("unsupported-algorithm");
-    }
+
+      if (spec.kty === "OKP") {
+        ensureExactMembers(value, ["alg", "crv", "kty", "use", "x"]);
+        optionalStringMatches(value, "alg", spec.alg);
+        optionalStringMatches(value, "use", spec.use);
+        const crv = spec.crv;
+        if (crv !== "Ed25519" && crv !== "X25519") {
+          throw new ReallyMeCryptoError("unsupported-algorithm");
+        }
+        const publicKey = codecBase64urlDecodeCanonical(readString(value, "x"));
+        ensureLength(publicKey, spec.publicKeyLength);
+        const jwk = ReallyMeJwk.toJwk(crv, publicKey);
+        return { algorithm: crv, publicKey, jwk };
+      }
+
+      const algorithm = readString(value, "alg");
+      ensureExactMembers(value, ["alg", "kty", "pub", "use"]);
+      if (readString(value, "use") !== spec.use) {
+        throw new ReallyMeCryptoError("invalid-input");
+      }
+      const akpSpec = specFromAlgorithm(algorithm);
+      const publicKey = codecBase64urlDecodeCanonical(readString(value, "pub"));
+      ensureLength(publicKey, akpSpec.publicKeyLength);
+      switch (algorithm) {
+        case "ML-DSA-44":
+        case "ML-DSA-65":
+        case "ML-DSA-87":
+        case "ML-KEM-512":
+        case "ML-KEM-768":
+        case "ML-KEM-1024":
+        case "SLH-DSA-SHA2-128s":
+        case "X-Wing-768": {
+          const jwk = ReallyMeJwk.toJwk(algorithm, publicKey);
+          return { algorithm, publicKey, jwk };
+        }
+        default:
+          throw new ReallyMeCryptoError("unsupported-algorithm");
+      }
+    });
   },
 
   toJwks(keys: ReadonlyArray<ReallyMeJwk>): ReallyMeJwks {
@@ -367,14 +412,21 @@ export const ReallyMeJwk = {
   },
 
   fromJwks(value: unknown): ReallyMeJwksKeySet {
-    if (typeof value !== "object" || value === null) {
-      throw new ReallyMeCryptoError("invalid-input");
-    }
-    const keys = Reflect.get(value, "keys");
-    if (!Array.isArray(keys)) {
-      throw new ReallyMeCryptoError("invalid-input");
-    }
-    return { keys: keys.map((key: unknown) => ReallyMeJwk.fromJwk(key)) };
+    return withJwkBoundaryErrors(() => {
+      ensureExactMembers(value, ["keys"]);
+      if (typeof value !== "object" || value === null) {
+        throw new ReallyMeCryptoError("invalid-input");
+      }
+      const descriptor = Object.getOwnPropertyDescriptor(value, "keys");
+      const keys =
+        descriptor !== undefined && "value" in descriptor
+          ? descriptor.value
+          : undefined;
+      if (!Array.isArray(keys) || keys.length > MAX_JWKS_KEYS) {
+        throw new ReallyMeCryptoError("invalid-input");
+      }
+      return { keys: keys.map((key: unknown) => ReallyMeJwk.fromJwk(key)) };
+    });
   },
 
   publicKeyBytes(jwk: ReallyMeJwk): Uint8Array {

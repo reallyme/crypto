@@ -53,8 +53,9 @@ private typealias RsaVerifyPssFunction = @convention(c) (
 /// RSA signature verification backed by the ReallyMe Rust C ABI.
 ///
 /// The SDK exposes RSA only as verification. These routes exist for X.509,
-/// eMRTD passive authentication, and legacy interop; package code must not add
-/// RSA signing without a separate key-residency and padding policy review.
+/// eMRTD passive authentication, and historical document verification;
+/// package code must not add RSA signing without a separate key-residency and
+/// padding policy review.
 public struct ReallyMeRustCAbiRsa: Sendable {
     private let library: ReallyMeRustCAbiLibrary
     private let verifyPkcs1v15Function: RsaVerifyPkcs1v15Function

@@ -1,8 +1,21 @@
 {
   "name": "@reallyme/crypto",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "ReallyMe crypto SDK for TypeScript/JavaScript with an explicit, pinned provider set.",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reallyme/crypto.git",
+    "directory": "packages/ts"
+  },
+  "homepage": "https://github.com/reallyme/crypto#readme",
+  "bugs": {
+    "url": "https://github.com/reallyme/crypto/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -42,7 +55,7 @@
     "@bufbuild/protobuf": "2.12.1",
     "@noble/curves": "2.2.0",
     "@noble/hashes": "2.2.0",
-    "@reallyme/codec": "0.1.21"
+    "@reallyme/codec": "0.2.0"
   },
   "devDependencies": {
     "typescript": "5.8.3"

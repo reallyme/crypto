@@ -5,6 +5,8 @@
 import org.gradle.api.publish.maven.tasks.PublishToMavenLocal
 import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.external.javadoc.StandardJavadocDocletOptions
+import java.io.File
+import java.nio.file.Files
 import java.security.MessageDigest
 
 plugins {
@@ -15,7 +17,7 @@ plugins {
 }
 
 group = "me.really"
-version = "0.2.0"
+version = "0.3.0"
 
 val remoteMavenRepositoryUrl = providers.gradleProperty("reallyme.maven.repositoryUrl")
     .orElse(providers.environmentVariable("REALLYME_MAVEN_REPOSITORY_URL"))
@@ -56,6 +58,40 @@ val requiredNativeResources = listOf(
     "me/really/crypto/native/windows-x86_64/crypto_ffi.dll",
     "me/really/crypto/native/native-manifest.json",
 )
+val maxNativeResourceEntries = 64
+
+fun nativeResourcePaths(root: File): Set<String> {
+    if (!root.isDirectory || Files.isSymbolicLink(root.toPath())) {
+        throw GradleException("ReallyMe crypto native resource root is not a regular directory")
+    }
+    val paths = mutableSetOf<String>()
+    var entryCount = 0
+    root.walkTopDown().forEach { entry ->
+        if (entry == root) {
+            return@forEach
+        }
+        entryCount += 1
+        if (entryCount > maxNativeResourceEntries) {
+            throw GradleException("ReallyMe crypto native resource tree contains too many entries")
+        }
+        if (Files.isSymbolicLink(entry.toPath())) {
+            throw GradleException("ReallyMe crypto native resource tree contains a symbolic link")
+        }
+        if (entry.isFile) {
+            paths.add(entry.relativeTo(root).invariantSeparatorsPath)
+        } else if (!entry.isDirectory) {
+            throw GradleException("ReallyMe crypto native resource tree contains an unsupported entry")
+        }
+    }
+    return paths
+}
+
+fun verifyExactNativeResources(root: File, expectedPaths: Set<String>) {
+    if (nativeResourcePaths(root) != expectedPaths) {
+        throw GradleException("ReallyMe crypto native resources do not match the exact required file set")
+    }
+}
+
 val hostNativePlatform = when {
     System.getProperty("os.name").contains("Mac", ignoreCase = true) -> "macos"
     System.getProperty("os.name").contains("Linux", ignoreCase = true) -> "linux"
@@ -106,7 +142,18 @@ val buildHostNativeLibrary = tasks.register<Exec>("buildHostNativeLibrary") {
     description = "Builds the host Rust JNI library for local JVM tests."
     onlyIf { !configuredNativeResourcesDir.isPresent && hostNativeSupported }
     workingDir = layout.projectDirectory.dir("../..").asFile
-    commandLine("cargo", "build", "-p", "crypto-ffi", "--release")
+    // Match release packaging and prevent ambient codegen flags from silently
+    // disabling the native panic firewall during JVM integration tests.
+    environment("RUSTFLAGS", "")
+    environment("CARGO_ENCODED_RUSTFLAGS", "")
+    commandLine(
+        "cargo",
+        "build",
+        "-p",
+        "crypto-ffi",
+        "--profile",
+        "release-ffi",
+    )
 }
 
 val stageHostNativeResource = tasks.register<Copy>("stageHostNativeResource") {
@@ -114,7 +161,7 @@ val stageHostNativeResource = tasks.register<Copy>("stageHostNativeResource") {
     description = "Stages the host Rust JNI library as a JVM package resource for local tests."
     onlyIf { !configuredNativeResourcesDir.isPresent && hostNativeSupported }
     dependsOn(buildHostNativeLibrary)
-    from(layout.projectDirectory.file("../../target/release/$hostNativeLibraryName"))
+    from(layout.projectDirectory.file("../../target/release-ffi/$hostNativeLibraryName"))
     into(nativeResourcesDir.map {
         it.resolve("me/really/crypto/native/$hostNativePlatform-$hostNativeArch")
     })
@@ -160,6 +207,7 @@ val writeHostNativeManifest = tasks.register("writeHostNativeManifest") {
 }
 
 dependencies {
+    implementation("com.google.code.gson:gson:2.11.0")
     api("com.google.protobuf:protobuf-javalite:4.35.1")
     api("com.google.protobuf:protobuf-kotlin-lite:4.35.1")
     // Same pinned BouncyCastle the Kotlin conformance lane proves vectors
@@ -173,7 +221,7 @@ dependencies {
     // natives; an Android consumer swaps it for `secp256k1-kmp-jni-android`.
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jvm:0.23.0")
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.23.0")
-    implementation("me.really:codec:0.1.21")
+    implementation("me.really:codec:0.2.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
     testImplementation(kotlin("test"))
@@ -218,14 +266,7 @@ val verifyBundledNativeResources = tasks.register("verifyBundledNativeResources"
             throw GradleException("unsupported host platform for ReallyMe crypto JNI resources")
         }
         val root = nativeResourcesDir.get()
-        val missing = requiredNativeResources.filter { relativePath ->
-            !root.resolve(relativePath).isFile
-        }
-        if (missing.isNotEmpty()) {
-            throw GradleException(
-                "missing ReallyMe crypto native resources: ${missing.joinToString(", ")}"
-            )
-        }
+        verifyExactNativeResources(root, requiredNativeResources.toSet())
     }
 }
 
@@ -239,11 +280,15 @@ val verifyHostBundledNativeResource = tasks.register("verifyHostBundledNativeRes
         val hostResource = requiredHostNativeResource
             ?: throw GradleException("unsupported host platform for ReallyMe crypto JNI resources")
         val root = nativeResourcesDir.get()
-        if (!root.resolve(hostResource).isFile) {
-            throw GradleException(
-                "missing ReallyMe crypto host native resource: $hostResource"
-            )
+        val expectedResources = if (requireFullNativeResources.get()) {
+            requiredNativeResources.toSet()
+        } else {
+            setOf(hostResource, "me/really/crypto/native/native-manifest.json")
         }
+        verifyExactNativeResources(
+            root,
+            expectedResources,
+        )
     }
 }
 
@@ -260,8 +305,11 @@ tasks.withType<PublishToMavenRepository>().configureEach {
 
 val verifyRemoteMavenPublishingConfigured = tasks.register("verifyRemoteMavenPublishingConfigured") {
     group = "verification"
-    description = "Verifies that remote Maven publishing credentials are configured."
-    onlyIf { requireRemoteMavenPublishing.get() }
+    description = "Verifies that every requested remote Maven publication is authenticated and signed."
+    // A configured remote URL is itself authorization to create remote publish
+    // tasks. Never let omission of the CI-only requireRemote flag bypass the
+    // signing and credential gate for those tasks.
+    onlyIf { requireRemoteMavenPublishing.get() || remoteMavenRepositoryUrlValue != null }
     doLast {
         val missing = buildList {
             if (remoteMavenRepositoryUrlValue == null) {
@@ -304,7 +352,7 @@ publishing {
             pom {
                 name.set("ReallyMe Crypto")
                 description.set(
-                    "Cross-platform cryptography compatibility facade for Kotlin, JVM, and Android."
+                    "Cross-platform cryptography facade for Kotlin, JVM, and Android."
                 )
                 url.set("https://github.com/reallyme/crypto")
                 licenses {

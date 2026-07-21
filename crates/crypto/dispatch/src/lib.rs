@@ -6,9 +6,8 @@
 //!
 //! This crate is the runtime seam between an [`Algorithm`](crypto_core::Algorithm)
 //! selector and the concrete primitive that implements it. Given an
-//! algorithm value it routes keygen, sign/verify, key agreement, KEM
-//! encapsulate/decapsulate, AEAD, and hashing to the matching primitive
-//! adapter, and it binds public keys to their multicodec/multikey
+//! algorithm value it routes keygen, sign/verify, key agreement, and KEM
+//! encapsulate/decapsulate to the matching primitive adapter, and it binds public keys to their multicodec/multikey
 //! encodings.
 //!
 //! Two safety properties are enforced here rather than left to callers:
@@ -25,6 +24,8 @@
 //! signature comparison logic; it routes to the primitive verifier and maps
 //! the verifier's typed failure into this crate's fail-closed result.
 
+#![doc = include_str!("../README.md")]
+
 // Core modules
 /// Error type returned by dispatch operations.
 pub mod error;
@@ -34,36 +35,35 @@ pub mod traits;
 // Algorithm adapters
 /// Per-algorithm adapters wiring selectors to concrete primitives.
 pub mod algorithms;
-/// Hashing dispatch.
-pub mod hash;
-/// Message authentication code dispatch.
-pub mod mac;
-
 // Dispatch entry points
 /// Keypair generation with multikey-encoded public keys.
 pub mod keypair;
 /// Multicodec/multikey encoding of public keys.
 pub mod multikey;
-/// Runtime dispatch entry points for sign/verify, key agreement, KEM, and AEAD.
+/// Explicit provider selection, custody, lane, and fallback decisions.
+pub mod provider;
+/// Runtime dispatch entry points for sign/verify, key agreement, and KEM.
 pub mod registry;
 /// Structural validation of verification-method multikeys.
 pub mod validation;
 
 // Re-export error type
 pub use error::AlgorithmError;
-pub use traits::{AeadParams, MacParams};
-
 // Re-export public dispatch API
 
-pub use hash::hash_digest;
-pub use mac::{mac_authenticate, mac_verify};
 pub use registry::{
-    aead_decrypt, aead_encrypt, derive_shared_secret, generate_keypair, kem_decapsulate,
-    kem_encapsulate, sign, verify,
+    derive_keypair, derive_shared_secret, generate_keypair, kem_decapsulate, kem_encapsulate, sign,
+    verify,
 };
 
 pub use keypair::{generate_multikey_keypair, GeneratedKeypair};
 
 pub use multikey::public_key_to_multikey;
+
+pub use provider::{
+    provider_decision, FallbackPolicy, KeyCopyBoundary, KeyResidency, ProviderDecision,
+    ProviderDisposition, ProviderKind, ProviderLane, ProviderOperation, ProviderOutputPolicy,
+    ProviderPolicyReason,
+};
 
 pub use validation::validate_verification_method_multikey;

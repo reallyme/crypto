@@ -10,7 +10,7 @@
 # unsafe libfuzzer-sys runtime, which the strict workspace lints would reject.
 #
 # Run with a nightly toolchain and cargo-fuzz:
-#   cargo +nightly fuzz run proto_process
+#   cargo +nightly fuzz run operation_response
 # See README.md.
 
 [package]
@@ -25,11 +25,25 @@ cargo-fuzz = true
 [dependencies]
 libfuzzer-sys = "0.4"
 
-crypto-p256 = { package = "reallyme-crypto-p256", path = "../crates/crypto/primitives/p256", features = ["native"] }
-crypto-rsa = { package = "reallyme-crypto-rsa", path = "../crates/crypto/primitives/rsa", features = ["native"] }
-envelopes-jwk = { package = "reallyme-crypto-jwk", path = "../crates/envelopes/jwk", features = ["native"] }
-envelopes-jwk-multikey = { package = "reallyme-crypto-jwk-multikey", path = "../crates/envelopes/jwk-multikey", features = ["native"] }
-reallyme-crypto = { path = "..", default-features = false, features = ["native", "proto-process", "sha2", "sha3", "aes", "aes-kw", "aes-gcm-siv", "argon2id", "chacha20-poly1305", "concat-kdf", "hmac", "hkdf", "pbkdf2", "ed25519", "p256", "p384", "p521", "secp256k1", "x25519", "rsa", "ml-kem-512", "ml-kem-768", "ml-kem-1024", "ml-dsa-44", "ml-dsa-65", "ml-dsa-87", "slh-dsa", "x-wing", "hpke"] }
+crypto-p256 = { package = "reallyme-crypto-p256", path = "../crates/p256", features = ["native"] }
+crypto-rsa = { package = "reallyme-crypto-rsa", path = "../crates/rsa", features = ["native"] }
+crypto-proto = { package = "reallyme-crypto-proto", path = "../crates/proto", features = ["generated"] }
+crypto-concat-kdf = { package = "reallyme-crypto-concat-kdf", path = "../crates/concat-kdf", features = ["native"] }
+crypto-hkdf = { package = "reallyme-crypto-hkdf", path = "../crates/hkdf", features = ["native", "sha3"] }
+crypto-hpke = { package = "reallyme-crypto-hpke", path = "../crates/hpke", features = ["native"] }
+crypto-ml-dsa-44 = { package = "reallyme-crypto-ml-dsa-44", path = "../crates/ml-dsa-44", features = ["native"] }
+crypto-ml-dsa-65 = { package = "reallyme-crypto-ml-dsa-65", path = "../crates/ml-dsa-65", features = ["native"] }
+crypto-ml-dsa-87 = { package = "reallyme-crypto-ml-dsa-87", path = "../crates/ml-dsa-87", features = ["native"] }
+crypto-ml-kem-512 = { package = "reallyme-crypto-ml-kem-512", path = "../crates/ml-kem-512", features = ["native"] }
+crypto-ml-kem-768 = { package = "reallyme-crypto-ml-kem-768", path = "../crates/ml-kem-768", features = ["native"] }
+crypto-ml-kem-1024 = { package = "reallyme-crypto-ml-kem-1024", path = "../crates/ml-kem-1024", features = ["native"] }
+crypto-p384 = { package = "reallyme-crypto-p384", path = "../crates/p384", features = ["native"] }
+crypto-p521 = { package = "reallyme-crypto-p521", path = "../crates/p521", features = ["native"] }
+crypto-pbkdf2 = { package = "reallyme-crypto-pbkdf2", path = "../crates/pbkdf2", features = ["native"] }
+crypto-slh-dsa = { package = "reallyme-crypto-slh-dsa", path = "../crates/slh-dsa", features = ["native"] }
+envelopes-jwk = { package = "reallyme-crypto-jwk", path = "../crates/jwk", features = ["native"] }
+envelopes-jwk-multikey = { package = "reallyme-crypto-jwk-multikey", path = "../crates/jwk-multikey", features = ["native"] }
+reallyme-crypto = { path = "../crates/crypto", default-features = false, features = ["native", "operation-response", "sha2", "sha3", "aes", "aes-kw", "aes-gcm-siv", "argon2id", "chacha20-poly1305", "concat-kdf", "hmac", "hkdf", "pbkdf2", "ed25519", "p256", "p384", "p521", "secp256k1", "x25519", "rsa", "ml-kem-512", "ml-kem-768", "ml-kem-1024", "ml-dsa-44", "ml-dsa-65", "ml-dsa-87", "slh-dsa", "x-wing", "hpke"] }
 serde_json = "1.0"
 
 [[bin]]
@@ -47,15 +61,36 @@ doc = false
 bench = false
 
 [[bin]]
-name = "proto_process"
-path = "fuzz_targets/proto_process.rs"
+name = "jwk_multikey"
+path = "fuzz_targets/jwk_multikey.rs"
 test = false
 doc = false
 bench = false
 
 [[bin]]
-name = "jwk_multikey"
-path = "fuzz_targets/jwk_multikey.rs"
+name = "key_encodings"
+path = "fuzz_targets/key_encodings.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "post_quantum_encodings"
+path = "fuzz_targets/post_quantum_encodings.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "operation_response"
+path = "fuzz_targets/operation_response.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "operation_family_boundaries"
+path = "fuzz_targets/operation_family_boundaries.rs"
 test = false
 doc = false
 bench = false

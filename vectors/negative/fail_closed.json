@@ -92,6 +92,97 @@
         "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED"
       },
       "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+    },
+    {
+      "id": "aes-256-kw-short-wrapped-key",
+      "algorithm": "AES-256-KW",
+      "operation": "key_unwrap",
+      "positiveVector": "aes256kw.json",
+      "mutation": "truncate the wrapped key below the RFC 3394 minimum before unwrap",
+      "expected": {
+        "facadeError": "invalidInput",
+        "wireBranch": "primitive",
+        "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH"
+      },
+      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+    },
+    {
+      "id": "x25519-all-zero-peer-public-key",
+      "algorithm": "X25519",
+      "operation": "key_agreement_derive_shared_secret",
+      "positiveVector": "x25519.json",
+      "mutation": "replace peer public key with the all-zero low-order point",
+      "expected": {
+        "facadeError": "invalidInput",
+        "wireBranch": "primitive",
+        "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SHARED_SECRET"
+      },
+      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+    },
+    {
+      "id": "pbkdf2-hmac-sha256-below-public-minimum",
+      "algorithm": "PBKDF2-HMAC-SHA-256",
+      "operation": "kdf_derive",
+      "positiveVector": "pbkdf2.json",
+      "mutation": "set iterations below the modern public facade minimum",
+      "expected": {
+        "facadeError": "invalidInput",
+        "wireBranch": "primitive",
+        "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PARAMETER"
+      },
+      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+    },
+    {
+      "id": "rsa-pss-sha256-tampered-signature",
+      "algorithm": "RSA-PSS-SHA256-MGF1-SHA256",
+      "operation": "signature_verify",
+      "positiveVector": "rsa.json",
+      "mutation": "flip the low bit of the final signature byte before verification",
+      "expected": {
+        "facadeError": "invalidSignature",
+        "wireBranch": "primitive",
+        "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SIGNATURE"
+      },
+      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+    },
+    {
+      "id": "jwk-ec-mismatched-y-same-parity",
+      "algorithm": "P-256 and secp256k1",
+      "operation": "jwk_import",
+      "positiveVector": "jwk.json",
+      "mutation": "flip bit 1 of the first decoded y-coordinate byte, preserving y parity",
+      "expected": {
+        "facadeError": "invalidInput",
+        "wireBranch": "primitive",
+        "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PUBLIC_KEY"
+      },
+      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+    },
+    {
+      "id": "jwk-ec-mismatched-y-opposite-parity",
+      "algorithm": "P-256 and secp256k1",
+      "operation": "jwk_import",
+      "positiveVector": "jwk.json",
+      "mutation": "flip bit 0 of the final decoded y-coordinate byte, changing y parity",
+      "expected": {
+        "facadeError": "invalidInput",
+        "wireBranch": "primitive",
+        "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PUBLIC_KEY"
+      },
+      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+    },
+    {
+      "id": "platform-key-secure-enclave-duplicate-tag",
+      "algorithm": "P-256 platform key",
+      "operation": "platform_key_lifecycle",
+      "positiveVector": "platform_key_lifecycle.json",
+      "mutation": "reuse an existing Secure Enclave tag while overwriteExisting=false",
+      "expected": {
+        "facadeError": "invalidInput",
+        "wireBranch": "provider",
+        "reason": "CRYPTO_ERROR_REASON_PROVIDER_KEY_EXISTS"
+      },
+      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
     }
   ]
 }

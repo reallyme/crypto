@@ -20,11 +20,6 @@ public  final class CryptoKeyUnwrapResult extends
     return "CryptoKeyUnwrapResult{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoKeyUnwrapResult() {
     key_ = com.google.protobuf.ByteString.EMPTY;
   }

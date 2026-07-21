@@ -1,0 +1,240 @@
+{
+  "schemaVersion": 1,
+  "description": "Hardware-backed platform-key lifecycle conformance metadata. Cases bind nondeterministic hardware behavior to executable or skip-aware tests without claiming exportable private keys or deterministic Secure Enclave signatures.",
+  "cases": [
+    {
+      "id": "swift-secure-enclave-ecdh-handle-validation",
+      "provider": "Apple Keychain",
+      "securityLevel": "Secure Enclave",
+      "purpose": "key_agreement",
+      "algorithm": "P-256-ECDH",
+      "operation": "platform_key_handle_validation",
+      "handlePrefix": "SE:",
+      "tagLength": { "min": 1, "max": 256 },
+      "scenario": "round-trip a valid handle and reject empty, oversized, malformed, and wrong-algorithm inputs",
+      "expected": {
+        "outcome": "success",
+        "assertions": ["handle-round-trip", "invalid-input-fails-closed", "wrong-algorithm-is-unsupported"]
+      },
+      "evidence": {
+        "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoNativeKeyAgreementTests.swift",
+        "test": "testP256SecureEnclaveHandleEncodingAndValidation"
+      },
+      "lanes": {
+        "swift": "executable",
+        "kotlin_android": "unsupported",
+        "kotlin_jvm": "unsupported",
+        "typescript_wasm": "unsupported"
+      }
+    },
+    {
+      "id": "swift-secure-enclave-ecdh-round-trip",
+      "provider": "Apple Keychain",
+      "securityLevel": "Secure Enclave",
+      "purpose": "key_agreement",
+      "algorithm": "P-256-ECDH",
+      "operation": "platform_key_agreement",
+      "handlePrefix": "SE:",
+      "tagLength": { "min": 1, "max": 256 },
+      "scenario": "generate a resident key, derive its public key, and match the hardware ECDH secret against a raw peer",
+      "expected": {
+        "outcome": "success",
+        "assertions": ["compressed-public-key-length-33", "shared-secret-length-32", "peer-shared-secret-equality"]
+      },
+      "evidence": {
+        "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoNativeKeyAgreementTests.swift",
+        "test": "testP256SecureEnclaveEcdhRoundTripWhenAvailable"
+      },
+      "lanes": {
+        "swift": "hardware-skip-aware",
+        "kotlin_android": "unsupported",
+        "kotlin_jvm": "unsupported",
+        "typescript_wasm": "unsupported"
+      }
+    },
+    {
+      "id": "swift-secure-enclave-ecdh-duplicate-tag",
+      "provider": "Apple Keychain",
+      "securityLevel": "Secure Enclave",
+      "purpose": "key_agreement",
+      "algorithm": "P-256-ECDH",
+      "operation": "platform_key_generate",
+      "handlePrefix": "SE:",
+      "tagLength": { "min": 1, "max": 256 },
+      "scenario": "generate a permanent key twice with the same tag and overwriteExisting=false",
+      "expected": {
+        "outcome": "error",
+        "facadeError": "invalidInput",
+        "wireBranch": "provider",
+        "reason": "CRYPTO_ERROR_REASON_PROVIDER_KEY_EXISTS"
+      },
+      "evidence": {
+        "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoNativeKeyAgreementTests.swift",
+        "test": "testP256SecureEnclaveEcdhRejectsDuplicateTagWhenAvailable"
+      },
+      "lanes": {
+        "swift": "hardware-skip-aware",
+        "kotlin_android": "unsupported",
+        "kotlin_jvm": "unsupported",
+        "typescript_wasm": "unsupported"
+      }
+    },
+    {
+      "id": "swift-secure-enclave-ecdh-idempotent-delete",
+      "provider": "Apple Keychain",
+      "securityLevel": "Secure Enclave",
+      "purpose": "key_agreement",
+      "algorithm": "P-256-ECDH",
+      "operation": "platform_key_delete",
+      "handlePrefix": "SE:",
+      "tagLength": { "min": 1, "max": 256 },
+      "scenario": "delete twice and require public-key lookup after the first delete to fail closed",
+      "expected": {
+        "outcome": "success",
+        "assertions": ["delete-is-idempotent", "post-delete-lookup-fails-closed"]
+      },
+      "evidence": {
+        "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoNativeKeyAgreementTests.swift",
+        "test": "testP256SecureEnclaveEcdhDeleteIsIdempotentAndLookupFailsClosedWhenAvailable"
+      },
+      "lanes": {
+        "swift": "hardware-skip-aware",
+        "kotlin_android": "unsupported",
+        "kotlin_jvm": "unsupported",
+        "typescript_wasm": "unsupported"
+      }
+    },
+    {
+      "id": "swift-secure-enclave-signing-handle-validation",
+      "provider": "Apple Keychain",
+      "securityLevel": "Secure Enclave",
+      "purpose": "signing",
+      "algorithm": "ECDSA-P256-SHA256",
+      "operation": "platform_signature_handle_validation",
+      "handlePrefix": "SES:",
+      "tagLength": { "min": 1, "max": 256 },
+      "scenario": "round-trip a signing handle and reject empty, oversized, wrong-prefix, and wrong-algorithm inputs",
+      "expected": {
+        "outcome": "success",
+        "assertions": ["handle-round-trip", "wrong-prefix-fails-closed", "wrong-algorithm-is-unsupported"]
+      },
+      "evidence": {
+        "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoSecureEnclaveSigningTests.swift",
+        "test": "testP256SecureEnclaveSigningHandleEncodingAndValidation"
+      },
+      "lanes": {
+        "swift": "executable",
+        "kotlin_android": "unsupported",
+        "kotlin_jvm": "unsupported",
+        "typescript_wasm": "unsupported"
+      }
+    },
+    {
+      "id": "swift-secure-enclave-signing-verifier",
+      "provider": "Apple Keychain",
+      "securityLevel": "Secure Enclave",
+      "purpose": "signing",
+      "algorithm": "ECDSA-P256-SHA256",
+      "operation": "platform_signature_verify",
+      "handlePrefix": "SES:",
+      "tagLength": { "min": 1, "max": 256 },
+      "scenario": "verify a committed DER signature and reject tampering and unsupported algorithms",
+      "expected": {
+        "outcome": "success",
+        "assertions": ["der-signature-verifies", "tampered-signature-fails-closed", "wrong-algorithm-is-unsupported"]
+      },
+      "evidence": {
+        "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoSecureEnclaveSigningTests.swift",
+        "test": "testP256SecureEnclaveVerifierAcceptsDerSignatureVector"
+      },
+      "lanes": {
+        "swift": "executable",
+        "kotlin_android": "unsupported",
+        "kotlin_jvm": "unsupported",
+        "typescript_wasm": "unsupported"
+      }
+    },
+    {
+      "id": "swift-secure-enclave-signing-round-trip",
+      "provider": "Apple Keychain",
+      "securityLevel": "Secure Enclave",
+      "purpose": "signing",
+      "algorithm": "ECDSA-P256-SHA256",
+      "operation": "platform_signature_sign",
+      "handlePrefix": "SES:",
+      "tagLength": { "min": 1, "max": 256 },
+      "scenario": "generate a resident signing key, derive its public key, sign, and verify without asserting deterministic signature bytes",
+      "expected": {
+        "outcome": "success",
+        "assertions": ["compressed-public-key-length-33", "der-signature-shape", "signature-verifies"]
+      },
+      "evidence": {
+        "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoSecureEnclaveSigningTests.swift",
+        "test": "testP256SecureEnclaveSigningRoundTripWhenAvailable"
+      },
+      "lanes": {
+        "swift": "hardware-skip-aware",
+        "kotlin_android": "unsupported",
+        "kotlin_jvm": "unsupported",
+        "typescript_wasm": "unsupported"
+      }
+    },
+    {
+      "id": "swift-secure-enclave-signing-duplicate-tag",
+      "provider": "Apple Keychain",
+      "securityLevel": "Secure Enclave",
+      "purpose": "signing",
+      "algorithm": "ECDSA-P256-SHA256",
+      "operation": "platform_signature_key_generate",
+      "handlePrefix": "SES:",
+      "tagLength": { "min": 1, "max": 256 },
+      "scenario": "generate a permanent signing key twice with the same tag and overwriteExisting=false",
+      "expected": {
+        "outcome": "error",
+        "facadeError": "invalidInput",
+        "wireBranch": "provider",
+        "reason": "CRYPTO_ERROR_REASON_PROVIDER_KEY_EXISTS"
+      },
+      "evidence": {
+        "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoSecureEnclaveSigningTests.swift",
+        "test": "testP256SecureEnclaveSigningRejectsDuplicateTagWhenAvailable"
+      },
+      "lanes": {
+        "swift": "hardware-skip-aware",
+        "kotlin_android": "unsupported",
+        "kotlin_jvm": "unsupported",
+        "typescript_wasm": "unsupported"
+      }
+    },
+    {
+      "id": "android-strongbox-signing-round-trip",
+      "provider": "Android Keystore",
+      "securityLevel": "StrongBox",
+      "purpose": "signing",
+      "algorithm": "ECDSA-P256-SHA256",
+      "operation": "platform_signature_key_generate",
+      "handlePrefix": "RMAK",
+      "tagLength": { "min": 1, "max": 256 },
+      "scenario": "generate and use a purpose-bound non-exportable P-256 StrongBox signing key",
+      "expected": {
+        "outcome": "success",
+        "assertions": [
+          "actual security level is StrongBox",
+          "private key encoding is unavailable",
+          "signature verifies against the returned public key",
+          "raw-byte signing is never selected as a fallback"
+        ]
+      },
+      "evidence": {
+        "path": "packages/kotlin-android/src/androidTest/kotlin/me/really/crypto/ReallyMeCryptoAndroidInstrumentedTest.kt",
+        "test": "p256AndroidStrongBoxSigningWhenAdvertised"
+      },
+      "lanes": {
+        "swift": "unsupported",
+        "kotlin_android": "hardware-skip-aware",
+        "kotlin_jvm": "unsupported",
+        "typescript_wasm": "unsupported"
+      }
+    }
+  ]
+}

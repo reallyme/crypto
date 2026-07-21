@@ -23,6 +23,8 @@ pub enum Algorithm {
     MlDsa65,
     /// ML-DSA-87 post-quantum signature algorithm.
     MlDsa87,
+    /// SLH-DSA-SHA2-128s hash-based post-quantum signature algorithm.
+    SlhDsaSha2_128s,
     /// ML-KEM-512 post-quantum key encapsulation.
     MlKem512,
     /// ML-KEM-768 post-quantum key encapsulation.
@@ -31,8 +33,6 @@ pub enum Algorithm {
     MlKem1024,
     /// X-Wing hybrid KEM over X25519 and ML-KEM-768.
     XWing768,
-    /// X-Wing hybrid KEM over X25519 and ML-KEM-1024.
-    XWing1024,
 }
 
 impl Algorithm {
@@ -49,11 +49,11 @@ impl Algorithm {
             Algorithm::MlDsa44 => "ML-DSA-44",
             Algorithm::MlDsa65 => "ML-DSA-65",
             Algorithm::MlDsa87 => "ML-DSA-87",
+            Algorithm::SlhDsaSha2_128s => "SLH-DSA-SHA2-128s",
             Algorithm::MlKem512 => "ML-KEM-512",
             Algorithm::MlKem768 => "ML-KEM-768",
             Algorithm::MlKem1024 => "ML-KEM-1024",
             Algorithm::XWing768 => "X-Wing-768",
-            Algorithm::XWing1024 => "X-Wing-1024",
         }
     }
 
@@ -69,6 +69,7 @@ impl Algorithm {
                 | Algorithm::MlDsa44
                 | Algorithm::MlDsa65
                 | Algorithm::MlDsa87
+                | Algorithm::SlhDsaSha2_128s
         )
     }
 
@@ -84,7 +85,6 @@ impl Algorithm {
                 | Algorithm::MlKem768
                 | Algorithm::MlKem1024
                 | Algorithm::XWing768
-                | Algorithm::XWing1024
         )
     }
 }
@@ -177,6 +177,8 @@ impl core::fmt::Display for HashAlgorithm {
 pub enum MacAlgorithm {
     /// HMAC using SHA-256.
     HmacSha256,
+    /// HMAC using SHA-384.
+    HmacSha384,
     /// HMAC using SHA-512.
     HmacSha512,
 }
@@ -186,6 +188,7 @@ impl MacAlgorithm {
     pub fn as_str(self) -> &'static str {
         match self {
             MacAlgorithm::HmacSha256 => "HMAC-SHA-256",
+            MacAlgorithm::HmacSha384 => "HMAC-SHA-384",
             MacAlgorithm::HmacSha512 => "HMAC-SHA-512",
         }
     }

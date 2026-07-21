@@ -11,11 +11,12 @@ import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 /**
- * AES-GCM backed by the platform JCA/JCE provider, with the pinned
- * BouncyCastle provider as the explicit fallback for Android/JVM variance.
+ * AES-GCM backed by the bundled, pinned BouncyCastle provider.
  *
  * The package contract keeps the 96-bit nonce separate and returns
- * `ciphertext || tag`, matching the Rust, Swift, and TypeScript vectors.
+ * `ciphertext || tag`, matching the Rust, Swift, and TypeScript vectors. A
+ * single provider is selected deliberately so provider availability or order
+ * cannot silently change authentication behavior between JVM deployments.
  */
 public object ReallyMeAesGcm {
     public const val AES_128_KEY_LENGTH: Int = 16
@@ -80,7 +81,7 @@ public object ReallyMeAesGcm {
     ): ByteArray {
         validateKeyAndNonce(key, expectedKeyLength, nonce)
         return try {
-            val cipher = ReallyMeJceProviders.cipher(TRANSFORMATION)
+            val cipher = ReallyMeJceProviders.bouncyCastleCipher(TRANSFORMATION)
             cipher.init(
                 Cipher.ENCRYPT_MODE,
                 SecretKeySpec(key, KEY_ALGORITHM),
@@ -106,7 +107,7 @@ public object ReallyMeAesGcm {
         }
 
         return try {
-            val cipher = ReallyMeJceProviders.cipher(TRANSFORMATION)
+            val cipher = ReallyMeJceProviders.bouncyCastleCipher(TRANSFORMATION)
             cipher.init(
                 Cipher.DECRYPT_MODE,
                 SecretKeySpec(key, KEY_ALGORITHM),

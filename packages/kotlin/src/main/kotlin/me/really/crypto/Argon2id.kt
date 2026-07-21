@@ -15,6 +15,7 @@ public object ReallyMeArgon2id {
     public const val DERIVED_KEY_LENGTH: Int = 32
     public const val SALT_MIN_LENGTH: Int = 16
     public const val SALT_MAX_LENGTH: Int = 32
+    public const val SECRET_MAX_LENGTH: Int = 1_048_576
     public const val V1: UInt = 1u
     public const val V2: UInt = 2u
 
@@ -38,7 +39,7 @@ public object ReallyMeArgon2id {
     private fun validate(kdfVersion: UInt, secret: ByteArray, salt: ByteArray) {
         if (
             (kdfVersion != V1 && kdfVersion != V2) ||
-            secret.isEmpty() ||
+            secret.size !in 1..SECRET_MAX_LENGTH ||
             salt.size !in SALT_MIN_LENGTH..SALT_MAX_LENGTH
         ) {
             throw ReallyMeCryptoException.InvalidInput()

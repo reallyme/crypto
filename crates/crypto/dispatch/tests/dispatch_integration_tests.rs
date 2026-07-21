@@ -53,7 +53,6 @@ fn all_algorithms_can_generate_keypairs() {
         Algorithm::MlKem768,
         Algorithm::MlKem1024,
         Algorithm::XWing768,
-        Algorithm::XWing1024,
     ] {
         let (public, secret) = generate_keypair(alg).unwrap();
         assert!(!public.is_empty(), "{alg:?} public key empty");
@@ -96,7 +95,6 @@ fn signing_rejects_non_signing_algorithms() {
         Algorithm::MlKem768,
         Algorithm::MlKem1024,
         Algorithm::XWing768,
-        Algorithm::XWing1024,
     ] {
         let (_pk, sk) = generate_keypair(alg).unwrap();
         assert!(sign(alg, &sk, msg).is_err(), "{alg:?} should not sign");
@@ -150,7 +148,6 @@ fn ml_kem_encapsulation_roundtrip() {
         Algorithm::MlKem768,
         Algorithm::MlKem1024,
         Algorithm::XWing768,
-        Algorithm::XWing1024,
     ] {
         let (pk, sk) = generate_keypair(alg).unwrap();
 

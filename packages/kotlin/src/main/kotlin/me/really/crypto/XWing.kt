@@ -14,6 +14,7 @@ import org.bouncycastle.crypto.params.MLKEMPrivateKeyParameters
 import org.bouncycastle.crypto.params.MLKEMPublicKeyParameters
 import org.bouncycastle.crypto.params.X25519PrivateKeyParameters
 import org.bouncycastle.crypto.params.X25519PublicKeyParameters
+import org.bouncycastle.math.ec.rfc7748.X25519
 
 private data class XWingSuiteConfig(
     val parameters: MLKEMParameters,
@@ -27,8 +28,8 @@ private data class XWingSuiteConfig(
  * X-Wing hybrid KEM over X25519 and ML-KEM.
  *
  * BouncyCastle's convenience X-Wing classes currently model the draft
- * ML-KEM-768 suite. The package keeps the combiner explicit so the ReallyMe
- * ML-KEM-1024 variant follows the same seed and label contract as Rust.
+ * ML-KEM-768 suite. The package keeps the standard combiner explicit so its
+ * seed expansion and label contract remain byte-identical to Rust.
  */
 public object ReallyMeXWing {
     public const val SECRET_KEY_LENGTH: Int = 32
@@ -96,7 +97,7 @@ public object ReallyMeXWing {
             val privateKey = MLKEMPrivateKeyParameters(config.parameters, mlKemSeed)
             val mlKemSharedSecret = MLKEMExtractor(privateKey).extractSecret(mlKemCiphertext)
             try {
-                val x25519SharedSecret = x25519SharedSecret(x25519Secret, x25519Ciphertext)
+                val x25519SharedSecret = x25519DecapsulationSharedSecret(x25519Secret, x25519Ciphertext)
                 try {
                     val x25519PublicKey = X25519PrivateKeyParameters(x25519Secret, 0).generatePublicKey().encoded
                     combineSharedSecret(
@@ -113,6 +114,8 @@ public object ReallyMeXWing {
             }
         } catch (_: IllegalArgumentException) {
             throw ReallyMeCryptoException.InvalidInput()
+        } catch (_: IllegalStateException) {
+            throw ReallyMeCryptoException.ProviderFailure()
         } finally {
             mlKemSeed.fill(0)
             x25519Secret.fill(0)
@@ -141,7 +144,10 @@ public object ReallyMeXWing {
             mlKemEncapsulated.destroy()
             try {
                 val x25519Ciphertext = X25519PrivateKeyParameters(x25519EphemeralSecret, 0).generatePublicKey().encoded
-                val x25519SharedSecret = x25519SharedSecret(x25519EphemeralSecret, x25519PublicKey)
+                val x25519SharedSecret = x25519EncapsulationSharedSecret(
+                    x25519EphemeralSecret,
+                    x25519PublicKey,
+                )
                 try {
                     val sharedSecret = combineSharedSecret(
                         mlKemSharedSecret,
@@ -171,8 +177,6 @@ public object ReallyMeXWing {
         when (algorithm) {
             ReallyMeKemAlgorithm.X_WING_768 ->
                 XWingSuiteConfig(MLKEMParameters.ml_kem_768, 1_216, 1_120, 1_184, 1_088)
-            ReallyMeKemAlgorithm.X_WING_1024 ->
-                XWingSuiteConfig(MLKEMParameters.ml_kem_1024, 1_600, 1_600, 1_568, 1_568)
             ReallyMeKemAlgorithm.ML_KEM_512,
             ReallyMeKemAlgorithm.ML_KEM_768,
             ReallyMeKemAlgorithm.ML_KEM_1024,
@@ -224,20 +228,42 @@ public object ReallyMeXWing {
         return mlKemCiphertext + x25519Ciphertext
     }
 
-    private fun x25519SharedSecret(secretKey: ByteArray, publicKey: ByteArray): ByteArray {
+    private fun x25519EncapsulationSharedSecret(secretKey: ByteArray, publicKey: ByteArray): ByteArray {
         if (secretKey.size != X25519_KEY_LENGTH || publicKey.size != X25519_KEY_LENGTH) {
             throw ReallyMeCryptoException.InvalidInput()
         }
         val sharedSecret = ByteArray(X25519_KEY_LENGTH)
-        X25519PrivateKeyParameters(secretKey, 0).generateSecret(
-            X25519PublicKeyParameters(publicKey, 0),
-            sharedSecret,
-            0,
-        )
+        try {
+            X25519PrivateKeyParameters(secretKey, 0).generateSecret(
+                X25519PublicKeyParameters(publicKey, 0),
+                sharedSecret,
+                0,
+            )
+        } catch (_: IllegalArgumentException) {
+            throw ReallyMeCryptoException.InvalidInput()
+        } catch (_: IllegalStateException) {
+            // Bouncy Castle signals a non-contributory X25519 result with an
+            // IllegalStateException. Such recipient keys remain invalid for
+            // encapsulation, but the provider exception must not cross the SDK.
+            throw ReallyMeCryptoException.InvalidInput()
+        }
         if (sharedSecret.all { byte -> byte == 0.toByte() }) {
             sharedSecret.fill(0)
             throw ReallyMeCryptoException.InvalidInput()
         }
+        return sharedSecret
+    }
+
+    private fun x25519DecapsulationSharedSecret(secretKey: ByteArray, publicKey: ByteArray): ByteArray {
+        if (secretKey.size != X25519_KEY_LENGTH || publicKey.size != X25519_KEY_LENGTH) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
+        val sharedSecret = ByteArray(X25519_KEY_LENGTH)
+        // X-Wing deliberately folds an all-zero X25519 result into its SHA3
+        // combiner during decapsulation. Using the raw primitive preserves
+        // that CCA-safe, no-oracle behavior instead of BC's convenience API,
+        // which rejects low-order points before the combiner can run.
+        X25519.scalarMult(secretKey, 0, publicKey, 0, sharedSecret, 0)
         return sharedSecret
     }
 
@@ -271,7 +297,11 @@ private class FixedSecureRandom(private val seed: ByteArray) : SecureRandom() {
     private var offset: Int = 0
 
     override fun nextBytes(bytes: ByteArray) {
-        val nextOffset = offset + bytes.size
+        val nextOffset = if (offset > Int.MAX_VALUE - bytes.size) {
+            throw XWingDeterministicRandomExhaustedException()
+        } else {
+            offset + bytes.size
+        }
         if (nextOffset > seed.size) {
             throw XWingDeterministicRandomExhaustedException()
         }

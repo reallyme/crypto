@@ -4,8 +4,6 @@
 
 package me.really.crypto
 
-import me.really.codec.ReallyMeCodecRustNativeProvider
-import me.really.crypto.proto.ReallyMeCryptoProtoStatus
 import me.really.crypto.proto.ReallyMeCryptoProtoAdapters
 import me.really.crypto.proto.ReallyMeCryptoWireError
 import me.really.crypto.proto.ReallyMeCryptoWireErrorBranch
@@ -23,7 +21,6 @@ import me.really.crypto.v1.CryptoVerificationStatus
 import me.really.crypto.v1.HashAlgorithm
 import me.really.crypto.v1.MulticodecKeyAlgorithm
 import me.really.crypto.v1.SignatureAlgorithm
-import org.junit.jupiter.api.Assumptions.assumeTrue
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -95,8 +92,35 @@ class ProtoAdapterTest {
         assertTrue(
             ReallyMeCryptoProtoAdapters.fromProtoErrorBytes(
                 byteArrayOf(0xff.toByte()),
-            ) is ReallyMeCryptoException.ProviderFailure,
+            ) is ReallyMeCryptoException.InvalidInput,
         )
+    }
+
+    @Test
+    fun platformKeyErrorsPreserveExactProviderReasons() {
+        val cases = listOf(
+            ReallyMeCryptoException.UnsupportedPlatform() to
+                CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_BACKEND,
+            ReallyMeCryptoException.PlatformKeyAlreadyExists() to
+                CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_KEY_EXISTS,
+            ReallyMeCryptoException.PlatformKeyNotFound() to
+                CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_KEY_NOT_FOUND,
+            ReallyMeCryptoException.PlatformAuthenticationRequired() to
+                CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_USER_AUTHENTICATION_REQUIRED,
+            ReallyMeCryptoException.HardwareUnavailable() to
+                CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_HARDWARE_UNAVAILABLE,
+            ReallyMeCryptoException.HardwareRejectedKey() to
+                CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_HARDWARE_REJECTED_KEY,
+        )
+
+        for ((facadeError, expectedReason) in cases) {
+            val encoded = ReallyMeCryptoProtoAdapters.toProtoBytes(facadeError)
+            val wireError = CryptoError.parseFrom(encoded)
+            val decoded = ReallyMeCryptoProtoAdapters.fromProtoErrorBytes(encoded)
+
+            assertEquals(expectedReason, wireError.provider.reason)
+            assertEquals(facadeError::class, decoded::class)
+        }
     }
 
     @Test
@@ -107,19 +131,8 @@ class ProtoAdapterTest {
         ).let(::validatedWireError)
         val encoded = ReallyMeCryptoProtoAdapters.wireErrorToProtoBytes(wireError)
         val decoded = ReallyMeCryptoProtoAdapters.wireErrorFromProtoBytes(encoded)
-        val errorResult = ReallyMeCryptoProtoAdapters.protoErrorResult(wireError)
-        val successResult = ReallyMeCryptoProtoAdapters.protoResult(byteArrayOf(1, 2, 3))
 
         assertEquals(wireError, decoded)
-        assertEquals(ReallyMeCryptoProtoStatus.CRYPTO_ERROR, errorResult.status)
-        assertTrue(errorResult.isCryptoError)
-        assertEquals(
-            wireError,
-            ReallyMeCryptoProtoAdapters.wireErrorFromProtoBytes(errorResult.bytes),
-        )
-        assertEquals(ReallyMeCryptoProtoStatus.RESULT, successResult.status)
-        assertTrue(!successResult.isCryptoError)
-        assertContentEquals(byteArrayOf(1, 2, 3), successResult.bytes)
     }
 
     @Test
@@ -142,15 +155,7 @@ class ProtoAdapterTest {
     }
 
     @Test
-    fun protoResultAndGeneratedMessagesRedactAndClearBytes() {
-        val callerBytes = byteArrayOf(1, 2, 3)
-        val result = ReallyMeCryptoProtoAdapters.protoResult(callerBytes)
-        callerBytes.fill(0)
-        assertContentEquals(byteArrayOf(1, 2, 3), result.bytes)
-        assertTrue(result.toString().contains("<redacted>"))
-        result.bestEffortClear()
-        assertContentEquals(byteArrayOf(0, 0, 0), result.bytes)
-
+    fun generatedMessagesRedactRetainedBytes() {
         val first = CryptoSignatureDeriveKeyPairRequest.newBuilder()
             .setSecretKey(com.google.protobuf.ByteString.copyFrom(byteArrayOf(1, 2, 3)))
             .build()
@@ -158,7 +163,7 @@ class ProtoAdapterTest {
             .setSecretKey(com.google.protobuf.ByteString.copyFrom(byteArrayOf(4, 5, 6)))
             .build()
         assertTrue(first.toString().contains("<redacted>"))
-        assertEquals(first.hashCode(), second.hashCode())
+        assertTrue(second.toString().contains("<redacted>"))
     }
 
     @Test
@@ -178,7 +183,7 @@ class ProtoAdapterTest {
     }
 
     @Test
-    fun malformedCryptoErrorEnvelopesBecomeBackendFailures() {
+    fun malformedCryptoErrorEnvelopesBecomePrimitiveInvalidInputFailures() {
         val malformedBytes = byteArrayOf(0xff.toByte())
         val missingBranch = CryptoError.newBuilder().build().toByteArray()
         val unspecifiedReason = CryptoError.newBuilder()
@@ -198,11 +203,11 @@ class ProtoAdapterTest {
 
         for (bytes in listOf(malformedBytes, missingBranch, unspecifiedReason, mismatchedBranch)) {
             val wire = ReallyMeCryptoProtoAdapters.wireErrorFromProtoBytes(bytes)
-            assertEquals(ReallyMeCryptoWireErrorBranch.BACKEND, wire.branch)
-            assertEquals(CryptoErrorReason.CRYPTO_ERROR_REASON_BACKEND_MALFORMED_PROTOBUF, wire.reason)
+            assertEquals(ReallyMeCryptoWireErrorBranch.PRIMITIVE, wire.branch)
+            assertEquals(CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_PROTOBUF, wire.reason)
             assertTrue(
                 ReallyMeCryptoProtoAdapters.fromProtoErrorBytes(bytes) is
-                    ReallyMeCryptoException.ProviderFailure,
+                    ReallyMeCryptoException.InvalidInput,
             )
         }
     }
@@ -242,6 +247,21 @@ class ProtoAdapterTest {
                 ).let(::validatedWireError),
             ) is ReallyMeCryptoException.AuthenticationFailed,
         )
+        for (
+            reason in listOf(
+                CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_ACCESS_DENIED,
+                CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_USER_CANCELED,
+            )
+        ) {
+            assertTrue(
+                ReallyMeCryptoProtoAdapters.facadeErrorFromWireError(
+                    ReallyMeCryptoWireError.tryNew(
+                        ReallyMeCryptoWireErrorBranch.PROVIDER,
+                        reason,
+                    ).let(::validatedWireError),
+                ) is ReallyMeCryptoException.ProviderFailure,
+            )
+        }
     }
 
     private fun validatedWireError(
@@ -256,7 +276,6 @@ class ProtoAdapterTest {
 
     @Test
     fun protoJsonWebKeyBytesRoundTripThroughCodecPackage() {
-        loadCodecProviderForTest()
         val publicKey = ByteArray(32) { index -> index.toByte() }
         val jwk = ReallyMeJwk.toJwk(ReallyMeJwkAlgorithm.ED25519, publicKey)
         val key = ReallyMeJwkKey(ReallyMeJwkAlgorithm.ED25519, publicKey, jwk)
@@ -395,9 +414,4 @@ class ProtoAdapterTest {
         assertTrue(decodedCapabilities[0].usesRust)
     }
 
-    private fun loadCodecProviderForTest() {
-        val libraryPath = System.getProperty("reallyme.codec.ffiLibraryPath").orEmpty()
-        assumeTrue(libraryPath.isNotEmpty(), "set REALLYME_CODEC_FFI_LIBRARY_PATH to a built codec-ffi library")
-        ReallyMeCodecRustNativeProvider.loadLibrary(libraryPath)
-    }
 }

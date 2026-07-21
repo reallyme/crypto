@@ -7,7 +7,8 @@ package me.really.crypto.v1;
 
 /**
  * <pre>
- * KeyWrapAlgorithm identifies key-wrapping algorithms.
+ * KeyWrapAlgorithm identifies key-wrapping algorithms. Values 100-199 are
+ * AES-based key-wrapping suites.
  * </pre>
  *
  * Protobuf enum {@code reallyme.crypto.v1.KeyWrapAlgorithm}
@@ -20,9 +21,17 @@ public enum KeyWrapAlgorithm
    */
   KEY_WRAP_ALGORITHM_UNSPECIFIED(0),
   /**
-   * <code>KEY_WRAP_ALGORITHM_AES_256_KW = 1;</code>
+   * <code>KEY_WRAP_ALGORITHM_AES_128_KW = 100;</code>
    */
-  KEY_WRAP_ALGORITHM_AES_256_KW(1),
+  KEY_WRAP_ALGORITHM_AES_128_KW(100),
+  /**
+   * <code>KEY_WRAP_ALGORITHM_AES_192_KW = 110;</code>
+   */
+  KEY_WRAP_ALGORITHM_AES_192_KW(110),
+  /**
+   * <code>KEY_WRAP_ALGORITHM_AES_256_KW = 120;</code>
+   */
+  KEY_WRAP_ALGORITHM_AES_256_KW(120),
   UNRECOGNIZED(-1),
   ;
 
@@ -31,9 +40,17 @@ public enum KeyWrapAlgorithm
    */
   public static final int KEY_WRAP_ALGORITHM_UNSPECIFIED_VALUE = 0;
   /**
-   * <code>KEY_WRAP_ALGORITHM_AES_256_KW = 1;</code>
+   * <code>KEY_WRAP_ALGORITHM_AES_128_KW = 100;</code>
    */
-  public static final int KEY_WRAP_ALGORITHM_AES_256_KW_VALUE = 1;
+  public static final int KEY_WRAP_ALGORITHM_AES_128_KW_VALUE = 100;
+  /**
+   * <code>KEY_WRAP_ALGORITHM_AES_192_KW = 110;</code>
+   */
+  public static final int KEY_WRAP_ALGORITHM_AES_192_KW_VALUE = 110;
+  /**
+   * <code>KEY_WRAP_ALGORITHM_AES_256_KW = 120;</code>
+   */
+  public static final int KEY_WRAP_ALGORITHM_AES_256_KW_VALUE = 120;
 
 
   @java.lang.Override
@@ -57,7 +74,9 @@ public enum KeyWrapAlgorithm
   public static KeyWrapAlgorithm forNumber(int value) {
     switch (value) {
       case 0: return KEY_WRAP_ALGORITHM_UNSPECIFIED;
-      case 1: return KEY_WRAP_ALGORITHM_AES_256_KW;
+      case 100: return KEY_WRAP_ALGORITHM_AES_128_KW;
+      case 110: return KEY_WRAP_ALGORITHM_AES_192_KW;
+      case 120: return KEY_WRAP_ALGORITHM_AES_256_KW;
       default: return null;
     }
   }

@@ -13,26 +13,18 @@ SPDX-License-Identifier: Apache-2.0
 [![Security Policy](https://img.shields.io/badge/security-policy-0f766e)](SECURITY.md)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
-ReallyMe Crypto provides a platform-agnostic cryptography API for Rust, Swift,
-Kotlin, and TypeScript. Applications can implement cryptographic logic once
-and rely on identical algorithms, key formats, and verification behavior across
-servers, Apple platforms, Android, browsers, and WASM. Native platform providers
-are used where appropriate, while shared conformance vectors ensure byte-for-byte
-compatible behavior across every supported language.
+ReallyMe Crypto is a cross-platform cryptography workspace for Rust, Swift,
+Kotlin, Android, and TypeScript. It provides one typed operation contract,
+explicit provider routing, and shared conformance evidence across server,
+mobile, browser, and WASM environments.
 
-The canonical contract is not mechanically generated from one language API. It
-is the combination of protobuf/enums, package algorithm identifiers, typed error
-taxonomy, provider manifest, and shared conformance vectors. Rust is the
-reference implementation and the shared implementation for selected primitives;
-platform facades may use approved native providers only when the same input,
-output, error, and edge-case contract is proven by vectors and negative tests.
-
-> [!NOTE]
-> **Current release:** [`0.2.0`](https://github.com/reallyme/crypto/releases/tag/v0.2.0).
-> Public APIs and wire contracts are
-> documented in `CONTRACT.md` and evolve through explicit versioned releases.
-> Cross-language package release requirements are tracked in
-> `RELEASE_BLOCKERS.md` and enforced by release preflight checks.
+The protobuf schema is the source of truth for executable structured requests,
+responses, algorithm identifiers, and wire errors. Generated bindings feed a
+single Rust operation boundary; native SDK facades provide ergonomic APIs over
+the same semantics. `provider_manifest.json` fixes the provider selected for
+each SDK lane, and positive and negative vectors prove the byte and failure
+contract. Missing providers and unsupported algorithms fail closed.
+The canonical contract is not mechanically generated from one language API.
 
 ## Why
 
@@ -40,12 +32,11 @@ Modern cryptography APIs differ across platforms. Algorithms are exposed
 differently, key formats vary, providers have different capabilities, and error
 behavior is inconsistent.
 
-ReallyMe Crypto provides a consistent cryptography contract across all
-supported platforms. The same application logic can be shared between backend
-services, mobile applications, and browsers without maintaining separate
-cryptographic implementations. Provider selection is always explicit,
-verification fails closed, and unsupported algorithms return typed errors instead
-of silently falling back to another implementation.
+ReallyMe Crypto makes those differences explicit. Applications use consistent
+algorithm identifiers, encodings, errors, and verification semantics wherever
+a lane is supported. Provider selection is deterministic, verification fails
+closed, and an unavailable route returns a typed error instead of switching
+implementations.
 
 ## Packages
 
@@ -56,31 +47,51 @@ of silently falling back to another implementation.
 | Kotlin/JVM | [`me.really:crypto`](https://central.sonatype.com/artifact/me.really/crypto) | JVM package with explicit JCA/JCE, BouncyCastle, and Rust-backed routes. |
 | Android | `me.really:crypto-android` | Android AAR with `jniLibs` Rust provider packaging and the published `me.really:codec-android` dependency. |
 | TypeScript | [`@reallyme/crypto`](https://www.npmjs.com/package/@reallyme/crypto) | npm package for Node, browsers, and WASM-backed primitives. |
-| Protobuf | `reallyme/crypto/v1/crypto.proto` | Importable identifiers and non-PII error envelopes for wire and configuration contracts. |
+| Protobuf | `reallyme/crypto/v1/crypto.proto` | Canonical structured operation, algorithm identifier, and typed wire-error contract. |
 
-Encoding, serialization, and multiformat codec concepts now live in
+General-purpose encoding, serialization, and multiformat codec APIs live in
 [`github.com/reallyme/codec`](https://github.com/reallyme/codec).
 
 ## Supported Algorithms
 
 | Category | Algorithms |
 |---|---|
-| AEAD and key wrap | AES-128/192/256-GCM, AES-256-GCM-SIV, AES-256-KW, ChaCha20-Poly1305, XChaCha20-Poly1305 |
-| Hash, MAC, and KDF | SHA-2, SHA-3, HMAC-SHA-256/512, HKDF-SHA256, JWA Concat KDF (ECDH-ES), PBKDF2-HMAC-SHA-256/512, Argon2id |
+| AEAD and key wrap | AES-128/192/256-GCM, AES-256-GCM-SIV, AES-128/192/256-KW, ChaCha20-Poly1305, XChaCha20-Poly1305 |
+| Hash, MAC, and KDF | SHA-2, SHA-3, HMAC-SHA-256/384/512, HKDF-SHA256/384, KMAC256 KDF, JWA Concat KDF (ECDH-ES), PBKDF2-HMAC-SHA-256/512, Argon2id |
 | Signatures | Ed25519, ECDSA P-256/P-384/P-521, secp256k1 ECDSA, BIP-340 Schnorr, RSA verification, ML-DSA-44/65/87, SLH-DSA-SHA2-128s |
-| Key agreement and KEM | X25519, P-256/P-384/P-521 ECDH, ML-KEM-512/768/1024, X-Wing-768/1024 |
+| Key agreement and KEM | X25519, X448 (standalone Rust crate and HPKE component only), P-256/P-384/P-521/secp256k1 ECDH, ML-KEM-512/768/1024, X-Wing-768 |
 | Protocols | HPKE |
 | Key and wire envelopes | JWK and public-key multikey bindings used by the crypto facades |
 
 X-Wing-768 follows the IETF CFRG Internet-Draft
 [`draft-connolly-cfrg-xwing-kem`](https://datatracker.ietf.org/doc/draft-connolly-cfrg-xwing-kem/),
-which defines a hybrid KEM built from X25519 and ML-KEM-768. X-Wing-1024 uses
-the same combiner shape with ML-KEM-1024.
+which defines a hybrid KEM built from X25519 and ML-KEM-768.
 
-The exact per-language provider map lives in
+Availability varies by SDK lane. The exact provider and support map lives in
 [PROVIDER_POLICY.md](PROVIDER_POLICY.md). For each language lane,
 an algorithm is either handled by its declared provider
 or rejected with a typed unsupported-algorithm error.
+
+X448 is not an umbrella-crate or SDK-facade algorithm. It is available through
+the standalone `reallyme-crypto-x448` Rust crate and as an internal HPKE KEM
+component. It is therefore intentionally absent from the package provider
+manifest and exact cross-language support map.
+
+### HPKE Profiles
+
+The cross-platform SDK facade exposes two RFC 9180 Base-mode profiles:
+
+| Profile | KEM | KDF | AEAD | Swift | Kotlin/JVM and Android | TypeScript |
+|---|---|---|---|---|---|---|
+| `DHKEM-P256-HKDF-SHA256-HKDF-SHA256-AES-256-GCM` | DHKEM(P-256, HKDF-SHA256) | HKDF-SHA256 | AES-256-GCM | Rust C ABI provider | BouncyCastle | Rust WASM provider |
+| `DHKEM-X25519-HKDF-SHA256-HKDF-SHA256-CHACHA20-POLY1305` | DHKEM(X25519, HKDF-SHA256) | HKDF-SHA256 | ChaCha20-Poly1305 | Rust C ABI provider | BouncyCastle | Rust WASM provider |
+
+Swift requires an explicit Rust C ABI provider for these profiles. Missing or
+unavailable providers fail closed. The Rust native operation contract also
+supports reviewed classical, post-quantum, and hybrid HPKE components; see
+[docs/protobuf.md](docs/protobuf.md#hpke-support) for the executable component
+set and operation-level constraints.
+
 Every provider route must implement identical input validation and
 normalization, output encodings, typed failure semantics, and edge-case
 behavior. Security-sensitive composition, canonical serialization,
@@ -88,7 +99,7 @@ deterministic signatures, post-quantum primitives, memory-hard KDFs, and
 provider-ambiguous algorithms default to the ReallyMe Rust implementation
 through FFI, JNI, or WASM unless a native route is explicitly proven equivalent.
 
-RSA support is intentionally verification-only for X.509, eMRTD, and legacy
+RSA support is intentionally verification-only for historical X.509 and eMRTD
 PKI interoperability. The package does not generate RSA keys, sign with RSA
 private keys, or provide RSA encryption/decryption APIs.
 
@@ -108,7 +119,7 @@ When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.2.0", default-features = false, features = [
+reallyme-crypto = { version = "0.3.0", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -121,23 +132,16 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.2.0", default-features = false, features = [
+reallyme-crypto = { version = "0.3.0", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }
 ```
 
 `messaging-primitives` enables only ChaCha20-Poly1305/XChaCha20-Poly1305,
-HKDF, HMAC, ML-KEM-768, SHA-2, and X25519. It does not enable `dispatch` or
-`signer`. Use `messaging-dispatch` when a crate needs the same narrow set
-through algorithm-by-identifier dispatch:
-
-```toml
-reallyme-crypto = { version = "0.2.0", default-features = false, features = [
-  "native",
-  "messaging-dispatch",
-] }
-```
+HKDF, HMAC, ML-KEM-768, SHA-2, and X25519. The ML-KEM-768 and X25519 algorithm
+features require the typed router, so this bundle also enables `dispatch`; it
+does not enable `signer`.
 
 Dispatch and signer surfaces are feature-gated by algorithm, so enabling the
 router does not pull in unrelated primitives unless the matching algorithm
@@ -167,7 +171,7 @@ separate from raw private-key bytes.
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.2.0"
+    from: "0.3.0"
 )
 ```
 
@@ -179,7 +183,7 @@ separate from raw private-key bytes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.2.0")
+    implementation("me.really:crypto:0.3.0")
 }
 ```
 
@@ -198,7 +202,7 @@ across all language lanes.
 Rust:
 
 ```rust
-use reallyme_crypto::core::Algorithm;
+use reallyme_crypto::Algorithm;
 use reallyme_crypto::dispatch::{generate_keypair, sign, verify};
 
 let (public_key, secret_key) = generate_keypair(Algorithm::Ed25519)?;
@@ -237,22 +241,46 @@ rather than a boolean that can be accidentally ignored.
 
 ## Protobuf
 
-The importable wire/config contract lives at
-[`crates/proto/crypto/proto/reallyme/crypto/v1/crypto.proto`](crates/proto/crypto/proto/reallyme/crypto/v1/crypto.proto).
-Service, application, and storage protos can import them when they need stable
-algorithm identifiers or non-secret error envelopes.
+The canonical structured wire contract lives at
+[`crates/proto/proto/reallyme/crypto/v1/crypto.proto`](crates/proto/proto/reallyme/crypto/v1/crypto.proto).
+Service, application, and storage protos can import it when they need the
+structured operation boundary, stable algorithm identifiers, or typed errors.
 
 ReallyMe Crypto uses raw bytes for single primitive outputs, protobuf bytes for
-fixed multi-field boundary results, and JSON convenience shapes only for public
-metadata such as JWK/JWKS. Operation request/result envelopes and structured
-`CryptoError` bytes are intended for FFI, RPC, storage, and Connect-ready
-service wrappers.
+fixed multi-field boundary results, and strict proto-JSON for Connect JSON,
+CLI, browser-adapter, and conformance boundaries that require JSON. Proto-JSON
+is available for operation requests, but it is not a casual
+JSON crypto facade and is not the preferred representation for secret-bearing
+payloads. JSON convenience shapes remain limited to public metadata such as
+JWK/JWKS.
 
-Rust service adapters can enable the `proto-process` feature and call
-`reallyme_crypto::proto_process::process_proto(operation, request_bytes)` for a
-Codec-style executable protobuf lane: serialized request bytes in, result
-envelope bytes out, with structured `CryptoError` bytes on failure. Native
-Swift, Kotlin, TypeScript, and Rust SDK methods remain the primary ergonomic
+For example, a JSON-only client can express a SHA2-256 hash request as strict
+proto-JSON:
+
+```json
+{
+  "hash": {
+    "algorithm": {
+      "hash": "HASH_ALGORITHM_SHA2_256"
+    },
+    "input": "YWJj"
+  }
+}
+```
+
+See [docs/proto-json.md](docs/proto-json.md) for operation-family examples and
+the security notes for secret-bearing JSON payloads.
+
+Rust adapters can enable the `operation-response` feature and call
+`reallyme_crypto::operation_contract::process_operation_response(request_bytes)`
+with one encoded `CryptoOperationRequest`: serialized request bytes in, binary
+`CryptoOperationResponse` bytes out, with either a generated
+`CryptoOperationResult` or generated `CryptoError` outcome. The ProtoJSON
+entrypoint accepts the generated JSON representation of the same request and
+still returns binary protobuf. TypeScript exposes `processOperationResponse`
+and `processOperationResponseJson`; Swift and Kotlin expose the same method
+names on `ReallyMeCrypto`. Every structured adapter returns the generated
+operation response directly. Native SDK methods remain the primary ergonomic
 application API.
 
 The generated proto adapters are available through:
@@ -272,13 +300,20 @@ policy.
 - [PROVIDER_POLICY.md](PROVIDER_POLICY.md) — provider matrix and backend
   selection for every algorithm and lane.
 - [CONTRACT.md](CONTRACT.md) — the public package and wire contract.
+- [docs/architecture.md](docs/architecture.md) — workspace boundaries and
+  dependency direction.
 - [docs/jwk.md](docs/jwk.md) — JWK and multikey encoding.
-- [docs/protobuf.md](docs/protobuf.md) — protobuf identifiers, error envelopes,
-  and boundary rules.
+- [docs/protobuf.md](docs/protobuf.md) — structured operations, algorithm
+  identifiers, typed wire errors, and boundary rules.
+- [docs/proto-json.md](docs/proto-json.md) — strict proto-JSON request examples.
 - [docs/conformance.md](docs/conformance.md) — running the conformance vectors.
+- [docs/external-conformance-vectors.md](docs/external-conformance-vectors.md)
+  — External conformance vectors from NIST ACVP, CCTV, Wycheproof, BIP-340, and
+  RFC 8032, plus the optional audit workflow and formal-methods notes.
 - [docs/dependency-updates.md](docs/dependency-updates.md) — dependency update
   policy and Renovate review rules.
 - [docs/rust-publishing.md](docs/rust-publishing.md) — publishing the Rust crates.
+- [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) — cross-ecosystem release gates.
 - [SECURITY.md](SECURITY.md), [SECURITY_MEMORY_MODEL.md](SECURITY_MEMORY_MODEL.md)
   — reporting security issues and how secret material is handled.
 
@@ -296,7 +331,9 @@ This repository is security-sensitive code. The project policy is:
 ## Conformance
 
 Shared vectors live in [vectors](vectors). The generator and platform verifiers
-live in [crates/conformance/vectors](crates/conformance/vectors).
+live in [crates/conformance](crates/conformance). External third-party vector
+coverage is documented in
+[External conformance vectors](docs/external-conformance-vectors.md).
 
 The everyday all-feature Rust check is:
 

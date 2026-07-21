@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import Foundation
-import ReallyMeCodecProto
+import ReallyMeCodec
 
 public enum ReallyMeMultikey {
     public static func encode(
@@ -21,25 +21,31 @@ public enum ReallyMeMultikey {
 
     public static func parse(_ multikey: String) throws -> ReallyMeParsedMultikey {
         let codec = try ReallyMeCryptoCodecProvider.requireCodec()
-        let parsed: ReallyMeProtoCodecMultikeyParseResult
         do {
-            let protoBytes = try codec.multikeyParseProto(multikey)
-            parsed = try ReallyMeProtoCodecMultikeyParseResult(serializedBytes: protoBytes)
+            let parsed = try codec.multikeyParse(multikey)
+            guard let algorithm = ReallyMeMulticodecKeyAlgorithm(rawValue: parsed.codecName) else {
+                throw ReallyMeCryptoError.invalidInput
+            }
+            let expectedPublicKeyLength: Int?
+            if let codecExpectedLength = parsed.expectedPublicKeyLength {
+                guard let convertedLength = Int(exactly: codecExpectedLength) else {
+                    throw ReallyMeCryptoError.invalidInput
+                }
+                expectedPublicKeyLength = convertedLength
+            } else {
+                expectedPublicKeyLength = nil
+            }
+
+            return ReallyMeParsedMultikey(
+                algorithm: algorithm,
+                algorithmName: parsed.algorithmName,
+                publicKey: parsed.publicKey,
+                expectedPublicKeyLength: expectedPublicKeyLength
+            )
+        } catch let error as ReallyMeCryptoError {
+            throw error
         } catch {
             throw mapCodecError(error)
         }
-        guard let algorithm = ReallyMeMulticodecKeyAlgorithm(rawValue: parsed.codecName) else {
-            throw ReallyMeCryptoError.invalidInput
-        }
-        let expectedPublicKeyLength = parsed.variablePublicKeyLength
-            ? nil
-            : Int(parsed.expectedPublicKeyLength)
-
-        return ReallyMeParsedMultikey(
-            algorithm: algorithm,
-            algorithmName: parsed.algorithmName,
-            publicKey: Array(parsed.publicKey),
-            expectedPublicKeyLength: expectedPublicKeyLength
-        )
     }
 }

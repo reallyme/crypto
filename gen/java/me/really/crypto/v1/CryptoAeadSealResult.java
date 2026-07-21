@@ -20,11 +20,6 @@ public  final class CryptoAeadSealResult extends
     return "CryptoAeadSealResult{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoAeadSealResult() {
     ciphertextWithTag_ = com.google.protobuf.ByteString.EMPTY;
   }

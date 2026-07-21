@@ -10,6 +10,10 @@ export declare function initSync(module: {
   module: Uint8Array;
 }): ReallyMeWasmInitOutput;
 
+export declare function processOperationResponse(request: Uint8Array): Uint8Array;
+
+export declare function processOperationResponseJson(requestJson: Uint8Array): Uint8Array;
+
 export declare function aes128GcmOpen(
   key: Uint8Array,
   nonce: Uint8Array,
@@ -66,6 +70,26 @@ export declare function aes256GcmSivSeal(
   plaintext: Uint8Array,
 ): Uint8Array;
 
+export declare function aes128KwUnwrapKey(
+  wrappingKey: Uint8Array,
+  wrappedKey: Uint8Array,
+): Uint8Array;
+
+export declare function aes128KwWrapKey(
+  wrappingKey: Uint8Array,
+  keyToWrap: Uint8Array,
+): Uint8Array;
+
+export declare function aes192KwUnwrapKey(
+  wrappingKey: Uint8Array,
+  wrappedKey: Uint8Array,
+): Uint8Array;
+
+export declare function aes192KwWrapKey(
+  wrappingKey: Uint8Array,
+  keyToWrap: Uint8Array,
+): Uint8Array;
+
 export declare function aes256KwUnwrapKey(
   wrappingKey: Uint8Array,
   wrappedKey: Uint8Array,
@@ -80,6 +104,13 @@ export declare function argon2idDeriveKey(
   kdfVersion: number,
   secret: Uint8Array,
   salt: Uint8Array,
+): Uint8Array;
+
+export declare function kmac256Derive(
+  key: Uint8Array,
+  context: Uint8Array,
+  customization: Uint8Array,
+  outputLength: number,
 ): Uint8Array;
 
 export declare function hpkeOpenBase(
@@ -99,25 +130,11 @@ export declare function hpkeSealBase(
   plaintext: Uint8Array,
 ): unknown;
 
-export declare function hpkeSealBaseDerand(
-  suite: number,
-  recipientPublicKey: Uint8Array,
-  encapsulationRandomness: Uint8Array,
-  info: Uint8Array,
-  aad: Uint8Array,
-  plaintext: Uint8Array,
-): unknown;
-
 export declare function mlKem512GenerateKeypair(): unknown;
 
 export declare function mlKem512DeriveKeypair(secretKey: Uint8Array): unknown;
 
 export declare function mlKem512Encapsulate(publicKey: Uint8Array): unknown;
-
-export declare function mlKem512EncapsulateDerand(
-  publicKey: Uint8Array,
-  randomness: Uint8Array,
-): unknown;
 
 export declare function mlKem512Decapsulate(
   ciphertext: Uint8Array,
@@ -130,11 +147,6 @@ export declare function mlKem768DeriveKeypair(secretKey: Uint8Array): unknown;
 
 export declare function mlKem768Encapsulate(publicKey: Uint8Array): unknown;
 
-export declare function mlKem768EncapsulateDerand(
-  publicKey: Uint8Array,
-  randomness: Uint8Array,
-): unknown;
-
 export declare function mlKem768Decapsulate(
   ciphertext: Uint8Array,
   secretKey: Uint8Array,
@@ -145,11 +157,6 @@ export declare function mlKem1024GenerateKeypair(): unknown;
 export declare function mlKem1024DeriveKeypair(secretKey: Uint8Array): unknown;
 
 export declare function mlKem1024Encapsulate(publicKey: Uint8Array): unknown;
-
-export declare function mlKem1024EncapsulateDerand(
-  publicKey: Uint8Array,
-  randomness: Uint8Array,
-): unknown;
 
 export declare function mlKem1024Decapsulate(
   ciphertext: Uint8Array,
@@ -266,22 +273,6 @@ export declare function xchacha20Poly1305Seal(
   plaintext: Uint8Array,
 ): Uint8Array;
 
-export declare function xWing1024Decapsulate(
-  ciphertext: Uint8Array,
-  secretKey: Uint8Array,
-): Uint8Array;
-
-export declare function xWing1024DeriveKeypair(secretKey: Uint8Array): unknown;
-
-export declare function xWing1024Encapsulate(publicKey: Uint8Array): unknown;
-
-export declare function xWing1024EncapsulateDerand(
-  publicKey: Uint8Array,
-  seed: Uint8Array,
-): unknown;
-
-export declare function xWing1024GenerateKeypair(): unknown;
-
 export declare function xWing768Decapsulate(
   ciphertext: Uint8Array,
   secretKey: Uint8Array,
@@ -290,10 +281,5 @@ export declare function xWing768Decapsulate(
 export declare function xWing768DeriveKeypair(secretKey: Uint8Array): unknown;
 
 export declare function xWing768Encapsulate(publicKey: Uint8Array): unknown;
-
-export declare function xWing768EncapsulateDerand(
-  publicKey: Uint8Array,
-  seed: Uint8Array,
-): unknown;
 
 export declare function xWing768GenerateKeypair(): unknown;

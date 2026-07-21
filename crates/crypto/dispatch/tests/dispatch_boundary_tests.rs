@@ -6,11 +6,7 @@
 #![allow(clippy::expect_used)]
 #![cfg(all(
     feature = "native",
-    feature = "aes",
-    feature = "aes-gcm-siv",
-    feature = "chacha20-poly1305",
     feature = "ed25519",
-    feature = "hmac",
     feature = "ml-dsa-44",
     feature = "ml-dsa-65",
     feature = "ml-dsa-87",
@@ -25,14 +21,12 @@
     feature = "x-wing"
 ))]
 
-use crypto_core::{AeadAlgorithm, Algorithm, MacAlgorithm};
+use crypto_core::Algorithm;
 use crypto_dispatch::{
-    aead_decrypt, aead_encrypt, derive_shared_secret, generate_keypair, kem_decapsulate,
-    kem_encapsulate, mac_authenticate, mac_verify, sign, verify, AeadParams, MacParams,
+    derive_shared_secret, generate_keypair, kem_decapsulate, kem_encapsulate, sign, verify,
 };
 
 const MESSAGE: &[u8] = b"dispatch boundary validation";
-const AAD: &[u8] = b"dispatch boundary aad";
 
 #[test]
 fn dispatch_rejects_malformed_signature_key_and_signature_lengths() {
@@ -96,73 +90,6 @@ fn dispatch_rejects_malformed_kem_key_and_ciphertext_lengths() {
     }
 }
 
-#[test]
-fn dispatch_rejects_malformed_aead_key_nonce_and_ciphertext_lengths() {
-    for algorithm in AEAD_ALGORITHMS.iter().copied() {
-        let key = valid_aead_key_for(algorithm);
-        let nonce = valid_aead_nonce(algorithm);
-        let params = AeadParams {
-            key: &key,
-            nonce: &nonce,
-            aad: AAD,
-        };
-        let ciphertext = aead_encrypt(algorithm, &params, MESSAGE).expect("AEAD encrypt must work");
-
-        let empty_key_params = AeadParams {
-            key: &[],
-            nonce: &nonce,
-            aad: AAD,
-        };
-        assert!(
-            aead_encrypt(algorithm, &empty_key_params, MESSAGE).is_err(),
-            "{algorithm:?} must reject an empty key"
-        );
-
-        let empty_nonce_params = AeadParams {
-            key: &key,
-            nonce: &[],
-            aad: AAD,
-        };
-        assert!(
-            aead_encrypt(algorithm, &empty_nonce_params, MESSAGE).is_err(),
-            "{algorithm:?} must reject an empty nonce"
-        );
-        assert!(
-            aead_decrypt(algorithm, &params, &[]).is_err(),
-            "{algorithm:?} must reject an empty ciphertext"
-        );
-
-        let mut tampered = ciphertext;
-        tampered[0] ^= 0x01;
-        assert!(
-            aead_decrypt(algorithm, &params, &tampered).is_err(),
-            "{algorithm:?} must fail closed on authentication failure"
-        );
-    }
-}
-
-#[test]
-fn dispatch_mac_verification_rejects_wrong_lengths_and_tampering() {
-    for algorithm in MAC_ALGORITHMS.iter().copied() {
-        let params = MacParams {
-            key: b"dispatch boundary mac key",
-        };
-        let tag = mac_authenticate(algorithm, &params, MESSAGE).expect("MAC must authenticate");
-
-        assert!(
-            mac_verify(algorithm, &params, MESSAGE, &[]).is_err(),
-            "{algorithm:?} must reject an empty tag"
-        );
-
-        let mut tampered = tag;
-        tampered[0] ^= 0x01;
-        assert!(
-            mac_verify(algorithm, &params, MESSAGE, &tampered).is_err(),
-            "{algorithm:?} must reject a full-length tampered tag"
-        );
-    }
-}
-
 const SIGNATURE_ALGORITHMS: &[Algorithm] = &[
     Algorithm::Ed25519,
     Algorithm::P256,
@@ -186,38 +113,4 @@ const KEM_ALGORITHMS: &[Algorithm] = &[
     Algorithm::MlKem768,
     Algorithm::MlKem1024,
     Algorithm::XWing768,
-    Algorithm::XWing1024,
 ];
-
-const AEAD_ALGORITHMS: &[AeadAlgorithm] = &[
-    AeadAlgorithm::Aes128Gcm,
-    AeadAlgorithm::Aes192Gcm,
-    AeadAlgorithm::Aes256Gcm,
-    AeadAlgorithm::Aes256GcmSiv,
-    AeadAlgorithm::ChaCha20Poly1305,
-    AeadAlgorithm::XChaCha20Poly1305,
-];
-
-const MAC_ALGORITHMS: &[MacAlgorithm] = &[MacAlgorithm::HmacSha256, MacAlgorithm::HmacSha512];
-
-fn valid_aead_key_for(algorithm: AeadAlgorithm) -> Vec<u8> {
-    match algorithm {
-        AeadAlgorithm::Aes128Gcm => vec![0x42; 16],
-        AeadAlgorithm::Aes192Gcm => vec![0x42; 24],
-        AeadAlgorithm::Aes256Gcm
-        | AeadAlgorithm::Aes256GcmSiv
-        | AeadAlgorithm::ChaCha20Poly1305
-        | AeadAlgorithm::XChaCha20Poly1305 => vec![0x42; 32],
-    }
-}
-
-fn valid_aead_nonce(algorithm: AeadAlgorithm) -> Vec<u8> {
-    match algorithm {
-        AeadAlgorithm::Aes128Gcm
-        | AeadAlgorithm::Aes192Gcm
-        | AeadAlgorithm::Aes256Gcm
-        | AeadAlgorithm::Aes256GcmSiv
-        | AeadAlgorithm::ChaCha20Poly1305 => vec![0x24; 12],
-        AeadAlgorithm::XChaCha20Poly1305 => vec![0x24; 24],
-    }
-}

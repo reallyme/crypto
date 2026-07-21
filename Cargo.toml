@@ -4,48 +4,52 @@
 
 [workspace]
 resolver = "2"
+default-members = ["crates/crypto"]
 members = [
-    ".",
+    "crates/crypto",
     "crates/crypto/core",
     "crates/crypto/dispatch",
-    "crates/crypto/ffi",
+    "crates/ffi",
     "crates/crypto/signer",
-    "crates/crypto/wasm-package",
-    "crates/crypto/primitives/aes-kw",
-    "crates/crypto/primitives/aes256-gcm",
-    "crates/crypto/primitives/aes256-gcm-siv",
-    "crates/crypto/primitives/argon2id",
-    "crates/crypto/primitives/chacha20-poly1305",
-    "crates/crypto/primitives/concat-kdf",
-    "crates/crypto/primitives/constant-time",
-    "crates/crypto/primitives/csprng",
-    "crates/crypto/primitives/ed25519",
-    "crates/crypto/primitives/hmac",
-    "crates/crypto/primitives/hkdf",
-    "crates/crypto/primitives/ml-dsa-44",
-    "crates/crypto/primitives/ml-dsa-65",
-    "crates/crypto/primitives/ml-dsa-87",
-    "crates/crypto/primitives/ml-kem-512",
-    "crates/crypto/primitives/ml-kem-1024",
-    "crates/crypto/primitives/ml-kem-768",
-    "crates/crypto/primitives/p256",
-    "crates/crypto/primitives/p384",
-    "crates/crypto/primitives/p521",
-    "crates/crypto/primitives/pbkdf2",
-    "crates/crypto/primitives/rsa",
-    "crates/crypto/primitives/secp256k1",
-    "crates/crypto/primitives/sha2",
-    "crates/crypto/primitives/sha2-256",
-    "crates/crypto/primitives/sha3",
-    "crates/crypto/primitives/sha3-256",
-    "crates/crypto/primitives/slh-dsa",
-    "crates/crypto/primitives/x25519",
-    "crates/crypto/primitives/x-wing",
-    "crates/crypto/protocols/hpke",
-    "crates/envelopes/jwk",
-    "crates/envelopes/jwk-multikey",
-    "crates/conformance/vectors",
-    "crates/proto/crypto",
+    "crates/wasm",
+    "crates/aes-kw",
+    "crates/aes256-gcm",
+    "crates/aes256-gcm-siv",
+    "crates/argon2id",
+    "crates/chacha20-poly1305",
+    "crates/concat-kdf",
+    "crates/constant-time",
+    "crates/csprng",
+    "crates/ed25519",
+    "crates/hmac",
+    "crates/hkdf",
+    "crates/kmac",
+    "crates/ml-dsa-44",
+    "crates/ml-dsa-65",
+    "crates/ml-dsa-87",
+    "crates/ml-kem-512",
+    "crates/ml-kem-1024",
+    "crates/ml-kem-768",
+    "crates/p256",
+    "crates/p384",
+    "crates/p521",
+    "crates/pbkdf2",
+    "crates/rsa",
+    "crates/secp256k1",
+    "crates/sha2",
+    "crates/sha2-256",
+    "crates/sha3",
+    "crates/sha3-256",
+    "crates/slh-dsa",
+    "crates/x25519",
+    "crates/x448",
+    "crates/x-wing",
+    "crates/hpke",
+    "crates/jwk",
+    "crates/jwk-multikey",
+    "crates/conformance",
+    "crates/proto",
+    "tools/external-vector-audit",
 ]
 exclude = ["core", "fuzz"]
 
@@ -78,24 +82,26 @@ rand = "0.10"
 rand_chacha = "0.10"
 getrandom = "0.4"
 # Hashing / KDF
-sha2 = "0.11"
-sha3 = "0.12"
+sha2 = { version = "0.11", features = ["zeroize"] }
+sha3 = { version = "0.12", features = ["zeroize"] }
+sha3-kmac = { version = "0.3.0", default-features = false }
 shake = { version = "0.1", default-features = false, features = ["zeroize"] }
 sha1 = "0.11"
 hkdf = "0.13"
-hmac = "0.13"
+hmac = { version = "0.13", features = ["zeroize"] }
 pbkdf2 = "0.13"
 argon2 = { version = "0.5", default-features = false }
 hpke = { version = "0.14.0", default-features = false }
 # AEAD
 aes = "0.9"
-aes-gcm = "0.11"
+aes-gcm = { version = "0.11", features = ["zeroize"] }
 aes-gcm-siv = "0.11"
 aes-kw = { version = "0.3.1", default-features = false }
 chacha20poly1305 = "0.11"
 # Signatures / key agreement
 ed25519-dalek = "3"
 x25519-dalek = "3"
+x448 = { version = "=0.14.0-pre.12", default-features = false }
 p256 = { version = "0.14", default-features = false }
 p384 = "0.14"
 p521 = "0.14"
@@ -109,7 +115,7 @@ ml-dsa = { version = "0.1.1", default-features = false }
 ml-kem = "0.3.2"
 slh-dsa = "0.2.0-rc.5"
 # Encoding / serialization
-buffa = "0.8.1"
+buffa = "0.9.0"
 base64 = "0.22"
 serde = "1.0"
 serde_json = "1.0"
@@ -132,6 +138,13 @@ codegen-units = 1
 panic = "abort"
 overflow-checks = true
 
+# Native libraries cross C and JNI boundaries whose panic firewall requires
+# unwinding. Release packaging must select this profile explicitly; keeping the
+# policy in Cargo avoids relying on RUSTFLAGS/codegen-option precedence.
+[profile.release-ffi]
+inherits = "release"
+panic = "unwind"
+
 [workspace.lints.rust]
 unsafe_code = "deny"
 missing_docs = "warn"
@@ -148,220 +161,3 @@ print_stdout = "deny"
 print_stderr = "deny"
 wildcard_imports = "deny"
 large_include_file = "deny"
-
-[package]
-name = "reallyme-crypto"
-version = "0.2.0"
-edition.workspace = true
-rust-version.workspace = true
-license.workspace = true
-repository.workspace = true
-publish = true
-description = "Cross-platform cryptographic primitives, key formats, and conformance-tested provider bindings."
-include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
-
-[dependencies]
-buffa = { workspace = true, optional = true }
-crypto-core = { package = "reallyme-crypto-core", version = "0.2.0", path = "crates/crypto/core" }
-crypto-dispatch = { package = "reallyme-crypto-dispatch", version = "0.2.0", path = "crates/crypto/dispatch", optional = true, default-features = false }
-crypto-proto = { package = "reallyme-crypto-proto", version = "0.2.0", path = "crates/proto/crypto", optional = true, default-features = false, features = ["generated"] }
-crypto-signer = { package = "reallyme-crypto-signer", version = "0.2.0", path = "crates/crypto/signer", optional = true, default-features = false }
-crypto-aes-kw = { package = "reallyme-crypto-aes-kw", version = "0.2.0", path = "crates/crypto/primitives/aes-kw", optional = true, default-features = false }
-crypto-aes256-gcm = { package = "reallyme-crypto-aes256-gcm", version = "0.2.0", path = "crates/crypto/primitives/aes256-gcm", optional = true, default-features = false }
-crypto-aes256-gcm-siv = { package = "reallyme-crypto-aes256-gcm-siv", version = "0.2.0", path = "crates/crypto/primitives/aes256-gcm-siv", optional = true, default-features = false }
-crypto-argon2id = { package = "reallyme-crypto-argon2id", version = "0.2.0", path = "crates/crypto/primitives/argon2id", optional = true, default-features = false }
-crypto-chacha20-poly1305 = { package = "reallyme-crypto-chacha20-poly1305", version = "0.2.0", path = "crates/crypto/primitives/chacha20-poly1305", optional = true, default-features = false }
-crypto-concat-kdf = { package = "reallyme-crypto-concat-kdf", version = "0.2.0", path = "crates/crypto/primitives/concat-kdf", optional = true, default-features = false }
-crypto-constant-time = { package = "reallyme-crypto-constant-time", version = "0.2.0", path = "crates/crypto/primitives/constant-time", optional = true, default-features = false }
-crypto-csprng = { package = "reallyme-crypto-csprng", version = "0.2.0", path = "crates/crypto/primitives/csprng", optional = true, default-features = false }
-crypto-ed25519 = { package = "reallyme-crypto-ed25519", version = "0.2.0", path = "crates/crypto/primitives/ed25519", optional = true, default-features = false }
-crypto-hmac = { package = "reallyme-crypto-hmac", version = "0.2.0", path = "crates/crypto/primitives/hmac", optional = true, default-features = false }
-crypto-hkdf = { package = "reallyme-crypto-hkdf", version = "0.2.0", path = "crates/crypto/primitives/hkdf", optional = true, default-features = false }
-crypto-ml-dsa-44 = { package = "reallyme-crypto-ml-dsa-44", version = "0.2.0", path = "crates/crypto/primitives/ml-dsa-44", optional = true, default-features = false }
-crypto-ml-dsa-65 = { package = "reallyme-crypto-ml-dsa-65", version = "0.2.0", path = "crates/crypto/primitives/ml-dsa-65", optional = true, default-features = false }
-crypto-ml-dsa-87 = { package = "reallyme-crypto-ml-dsa-87", version = "0.2.0", path = "crates/crypto/primitives/ml-dsa-87", optional = true, default-features = false }
-crypto-ml-kem-512 = { package = "reallyme-crypto-ml-kem-512", version = "0.2.0", path = "crates/crypto/primitives/ml-kem-512", optional = true, default-features = false }
-crypto-ml-kem-1024 = { package = "reallyme-crypto-ml-kem-1024", version = "0.2.0", path = "crates/crypto/primitives/ml-kem-1024", optional = true, default-features = false }
-crypto-ml-kem-768 = { package = "reallyme-crypto-ml-kem-768", version = "0.2.0", path = "crates/crypto/primitives/ml-kem-768", optional = true, default-features = false }
-crypto-p256 = { package = "reallyme-crypto-p256", version = "0.2.0", path = "crates/crypto/primitives/p256", optional = true, default-features = false }
-crypto-p384 = { package = "reallyme-crypto-p384", version = "0.2.0", path = "crates/crypto/primitives/p384", optional = true, default-features = false }
-crypto-p521 = { package = "reallyme-crypto-p521", version = "0.2.0", path = "crates/crypto/primitives/p521", optional = true, default-features = false }
-crypto-pbkdf2 = { package = "reallyme-crypto-pbkdf2", version = "0.2.0", path = "crates/crypto/primitives/pbkdf2", optional = true, default-features = false }
-crypto-rsa = { package = "reallyme-crypto-rsa", version = "0.2.0", path = "crates/crypto/primitives/rsa", optional = true, default-features = false }
-crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "0.2.0", path = "crates/crypto/primitives/secp256k1", optional = true, default-features = false }
-crypto-sha2 = { package = "reallyme-crypto-sha2", version = "0.2.0", path = "crates/crypto/primitives/sha2", optional = true, default-features = false }
-crypto-sha2-256 = { package = "reallyme-crypto-sha2-256", version = "0.2.0", path = "crates/crypto/primitives/sha2-256", optional = true, default-features = false }
-crypto-sha3 = { package = "reallyme-crypto-sha3", version = "0.2.0", path = "crates/crypto/primitives/sha3", optional = true, default-features = false }
-crypto-sha3-256 = { package = "reallyme-crypto-sha3-256", version = "0.2.0", path = "crates/crypto/primitives/sha3-256", optional = true, default-features = false }
-crypto-slh-dsa = { package = "reallyme-crypto-slh-dsa", version = "0.2.0", path = "crates/crypto/primitives/slh-dsa", optional = true, default-features = false }
-crypto-x25519 = { package = "reallyme-crypto-x25519", version = "0.2.0", path = "crates/crypto/primitives/x25519", optional = true, default-features = false }
-crypto-x-wing = { package = "reallyme-crypto-x-wing", version = "0.2.0", path = "crates/crypto/primitives/x-wing", optional = true, default-features = false }
-crypto-hpke = { package = "reallyme-crypto-hpke", version = "0.2.0", path = "crates/crypto/protocols/hpke", optional = true, default-features = false }
-envelopes-jwk = { package = "reallyme-crypto-jwk", version = "0.2.0", path = "crates/envelopes/jwk", optional = true, default-features = false }
-envelopes-jwk-multikey = { package = "reallyme-crypto-jwk-multikey", version = "0.2.0", path = "crates/envelopes/jwk-multikey", optional = true, default-features = false }
-zeroize = { workspace = true, optional = true }
-
-[features]
-default = [
-    "native",
-    "aes",
-    "aes-gcm-siv",
-    "argon2id",
-    "chacha20-poly1305",
-    "concat-kdf",
-    "constant-time",
-    "csprng",
-    "dispatch",
-    "signer",
-    "aes-kw",
-    "ed25519",
-    "hmac",
-    "p256",
-    "p384",
-    "p521",
-    "pbkdf2",
-    "rsa",
-    "secp256k1",
-    "x25519",
-    "hkdf",
-    "ml-dsa-44",
-    "ml-dsa-65",
-    "ml-dsa-87",
-    "ml-kem-512",
-    "ml-kem-768",
-    "ml-kem-1024",
-    "sha2",
-    "sha3",
-    "slh-dsa",
-    "x-wing",
-    "hpke",
-    "envelopes",
-]
-
-messaging-primitives = [
-    "chacha20-poly1305",
-    "hkdf",
-    "hmac",
-    "ml-kem-768",
-    "sha2",
-    "x25519",
-]
-messaging-dispatch = ["dispatch", "messaging-primitives"]
-
-native = [
-    "envelopes-jwk?/native",
-    "envelopes-jwk-multikey?/native",
-    "crypto-dispatch?/native",
-    "crypto-signer?/native",
-    "crypto-aes-kw?/native",
-    "crypto-aes256-gcm?/native",
-    "crypto-aes256-gcm-siv?/native",
-    "crypto-argon2id?/native",
-    "crypto-chacha20-poly1305?/native",
-    "crypto-concat-kdf?/native",
-    "crypto-constant-time?/native",
-    "crypto-csprng?/native",
-    "crypto-ed25519?/native",
-    "crypto-hmac?/native",
-    "crypto-hkdf?/native",
-    "crypto-ml-dsa-44?/native",
-    "crypto-ml-dsa-65?/native",
-    "crypto-ml-dsa-87?/native",
-    "crypto-ml-kem-512?/native",
-    "crypto-ml-kem-1024?/native",
-    "crypto-ml-kem-768?/native",
-    "crypto-p256?/native",
-    "crypto-p384?/native",
-    "crypto-p521?/native",
-    "crypto-pbkdf2?/native",
-    "crypto-rsa?/native",
-    "crypto-secp256k1?/native",
-    "crypto-sha2?/native",
-    "crypto-sha2-256?/native",
-    "crypto-sha3?/native",
-    "crypto-sha3-256?/native",
-    "crypto-slh-dsa?/native",
-    "crypto-x25519?/native",
-    "crypto-x-wing?/native",
-    "crypto-hpke?/native",
-]
-wasm = [
-    "envelopes-jwk?/wasm",
-    "envelopes-jwk-multikey?/wasm",
-    "crypto-dispatch?/wasm",
-    "crypto-signer?/wasm",
-    "crypto-aes-kw?/wasm",
-    "crypto-aes256-gcm?/wasm",
-    "crypto-aes256-gcm-siv?/wasm",
-    "crypto-argon2id?/wasm",
-    "crypto-chacha20-poly1305?/wasm",
-    "crypto-concat-kdf?/wasm",
-    "crypto-constant-time?/wasm",
-    "crypto-csprng?/wasm",
-    "crypto-ed25519?/wasm",
-    "crypto-hmac?/wasm",
-    "crypto-hkdf?/wasm",
-    "crypto-ml-dsa-44?/wasm",
-    "crypto-ml-dsa-65?/wasm",
-    "crypto-ml-dsa-87?/wasm",
-    "crypto-ml-kem-512?/wasm",
-    "crypto-ml-kem-1024?/wasm",
-    "crypto-ml-kem-768?/wasm",
-    "crypto-p256?/wasm",
-    "crypto-p384?/wasm",
-    "crypto-p521?/wasm",
-    "crypto-pbkdf2?/wasm",
-    "crypto-rsa?/wasm",
-    "crypto-secp256k1?/wasm",
-    "crypto-sha2?/wasm",
-    "crypto-sha2-256?/wasm",
-    "crypto-sha3?/wasm",
-    "crypto-sha3-256?/wasm",
-    "crypto-slh-dsa?/wasm",
-    "crypto-x25519?/wasm",
-    "crypto-x-wing?/wasm",
-    "crypto-hpke?/wasm",
-]
-
-aes = ["dep:crypto-aes256-gcm", "crypto-dispatch?/aes"]
-aes-kw = ["dep:crypto-aes-kw"]
-aes-gcm-siv = ["dep:crypto-aes256-gcm-siv", "crypto-dispatch?/aes-gcm-siv"]
-argon2id = ["dep:crypto-argon2id"]
-chacha20-poly1305 = ["dep:crypto-chacha20-poly1305", "crypto-dispatch?/chacha20-poly1305"]
-concat-kdf = ["dep:crypto-concat-kdf"]
-constant-time = ["dep:crypto-constant-time"]
-csprng = ["dep:crypto-csprng"]
-dispatch = ["dep:crypto-dispatch"]
-proto-process = ["dep:buffa", "dep:crypto-proto", "dep:zeroize", "dispatch"]
-signer = ["dep:crypto-signer", "dispatch"]
-ed25519 = ["dep:crypto-ed25519", "crypto-dispatch?/ed25519", "crypto-signer?/ed25519"]
-hmac = ["dep:crypto-hmac", "crypto-dispatch?/hmac"]
-hkdf = ["dep:crypto-hkdf"]
-p256 = ["dep:crypto-p256", "crypto-dispatch?/p256", "crypto-signer?/p256"]
-p384 = ["dep:crypto-p384", "crypto-dispatch?/p384", "crypto-signer?/p384"]
-p521 = ["dep:crypto-p521", "crypto-dispatch?/p521", "crypto-signer?/p521"]
-pbkdf2 = ["dep:crypto-pbkdf2"]
-rsa = ["dep:crypto-rsa"]
-secp256k1 = ["dep:crypto-secp256k1", "crypto-dispatch?/secp256k1", "crypto-signer?/secp256k1"]
-x25519 = ["dep:crypto-x25519", "crypto-dispatch?/x25519"]
-x-wing = ["dep:crypto-x-wing", "crypto-dispatch?/x-wing"]
-hpke = ["dep:crypto-hpke"]
-ml-dsa-44 = ["dep:crypto-ml-dsa-44", "crypto-dispatch?/ml-dsa-44", "crypto-signer?/ml-dsa-44"]
-ml-dsa-65 = ["dep:crypto-ml-dsa-65", "crypto-dispatch?/ml-dsa-65", "crypto-signer?/ml-dsa-65"]
-ml-dsa-87 = ["dep:crypto-ml-dsa-87", "crypto-dispatch?/ml-dsa-87", "crypto-signer?/ml-dsa-87"]
-ml-kem-512 = ["dep:crypto-ml-kem-512", "crypto-dispatch?/ml-kem-512"]
-ml-kem-768 = ["dep:crypto-ml-kem-768", "crypto-dispatch?/ml-kem-768"]
-ml-kem-1024 = ["dep:crypto-ml-kem-1024", "crypto-dispatch?/ml-kem-1024"]
-sha2 = ["dep:crypto-sha2-256", "dep:crypto-sha2", "crypto-dispatch?/sha2"]
-sha3 = ["dep:crypto-sha3-256", "dep:crypto-sha3", "crypto-dispatch?/sha3", "crypto-hkdf?/sha3"]
-slh-dsa = ["dep:crypto-slh-dsa"]
-envelopes = ["jwk", "jwk-multikey"]
-jwk = ["dep:envelopes-jwk"]
-jwk-multikey = ["dep:envelopes-jwk-multikey", "jwk"]
-
-[dev-dependencies]
-serde = { workspace = true, features = ["derive"] }
-serde_json = { workspace = true }
-
-[lints]
-workspace = true

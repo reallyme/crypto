@@ -43,7 +43,10 @@ import me.really.crypto.v1.CryptoProviderSupportStatus
 import me.really.crypto.v1.CryptoVerificationResult
 import me.really.crypto.v1.CryptoVerificationStatus
 import me.really.crypto.v1.HashAlgorithm
-import me.really.crypto.v1.HpkeSuite
+import me.really.crypto.v1.HpkeAeadId
+import me.really.crypto.v1.HpkeKdfId
+import me.really.crypto.v1.HpkeKemId
+import me.really.crypto.v1.HpkeSuiteIdentifier
 import me.really.crypto.v1.JsonWebKey
 import me.really.crypto.v1.JsonWebKeySet
 import me.really.crypto.v1.KdfAlgorithm
@@ -194,33 +197,6 @@ public sealed interface ReallyMeCryptoWireErrorValidationResult {
         ReallyMeCryptoWireErrorValidationResult
 }
 
-public enum class ReallyMeCryptoProtoStatus {
-    RESULT,
-    CRYPTO_ERROR,
-}
-
-public class ReallyMeCryptoProtoResult(
-    public val status: ReallyMeCryptoProtoStatus,
-    bytes: ByteArray,
-) {
-    private val storage: ByteArray = bytes.copyOf()
-
-    /** Returns a managed copy that callers should clear after use. */
-    public val bytes: ByteArray
-        get() = storage.copyOf()
-
-    public val isCryptoError: Boolean
-        get() = status == ReallyMeCryptoProtoStatus.CRYPTO_ERROR
-
-    /** Best-effort overwrite of this result owner's managed byte storage. */
-    public fun bestEffortClear() {
-        storage.fill(0)
-    }
-
-    override fun toString(): String =
-        "ReallyMeCryptoProtoResult(status=$status, bytes=<redacted>)"
-}
-
 public object ReallyMeCryptoProtoAdapters {
     public fun wireErrorFromProto(value: CryptoError): ReallyMeCryptoWireError =
         when (value.errorCase) {
@@ -255,21 +231,6 @@ public object ReallyMeCryptoProtoAdapters {
 
     public fun wireErrorToProtoBytes(value: ReallyMeCryptoWireError): ByteArray =
         wireErrorToProto(value).toByteArray()
-
-    public fun protoResult(bytes: ByteArray): ReallyMeCryptoProtoResult =
-        ReallyMeCryptoProtoResult(ReallyMeCryptoProtoStatus.RESULT, bytes)
-
-    public fun protoErrorResult(value: ReallyMeCryptoWireError): ReallyMeCryptoProtoResult =
-        ReallyMeCryptoProtoResult(
-            ReallyMeCryptoProtoStatus.CRYPTO_ERROR,
-            wireErrorToProtoBytes(value),
-        )
-
-    public fun protoErrorResult(value: ReallyMeCryptoException): ReallyMeCryptoProtoResult =
-        ReallyMeCryptoProtoResult(
-            ReallyMeCryptoProtoStatus.CRYPTO_ERROR,
-            toProtoBytes(value),
-        )
 
     public fun facadeErrorFromWireError(value: ReallyMeCryptoWireError): ReallyMeCryptoException =
         value.knownReason?.let(::fromProto) ?: ReallyMeCryptoException.ProviderFailure()
@@ -346,6 +307,50 @@ public object ReallyMeCryptoProtoAdapters {
                         ),
                 )
                 .build()
+            is ReallyMeCryptoException.UnsupportedPlatform -> CryptoError.newBuilder()
+                .setProvider(
+                    CryptoProviderError.newBuilder()
+                        .setReason(
+                            CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_BACKEND,
+                        ),
+                )
+                .build()
+            is ReallyMeCryptoException.PlatformKeyAlreadyExists -> CryptoError.newBuilder()
+                .setProvider(
+                    CryptoProviderError.newBuilder()
+                        .setReason(CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_KEY_EXISTS),
+                )
+                .build()
+            is ReallyMeCryptoException.PlatformKeyNotFound -> CryptoError.newBuilder()
+                .setProvider(
+                    CryptoProviderError.newBuilder()
+                        .setReason(CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_KEY_NOT_FOUND),
+                )
+                .build()
+            is ReallyMeCryptoException.PlatformAuthenticationRequired -> CryptoError.newBuilder()
+                .setProvider(
+                    CryptoProviderError.newBuilder()
+                        .setReason(
+                            CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_USER_AUTHENTICATION_REQUIRED,
+                        ),
+                )
+                .build()
+            is ReallyMeCryptoException.HardwareUnavailable -> CryptoError.newBuilder()
+                .setProvider(
+                    CryptoProviderError.newBuilder()
+                        .setReason(
+                            CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_HARDWARE_UNAVAILABLE,
+                        ),
+                )
+                .build()
+            is ReallyMeCryptoException.HardwareRejectedKey -> CryptoError.newBuilder()
+                .setProvider(
+                    CryptoProviderError.newBuilder()
+                        .setReason(
+                            CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_HARDWARE_REJECTED_KEY,
+                        ),
+                )
+                .build()
             is ReallyMeCryptoException.ProviderFailure -> CryptoError.newBuilder()
                 .setBackend(
                     CryptoBackendError.newBuilder()
@@ -365,15 +370,25 @@ public object ReallyMeCryptoProtoAdapters {
             CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED,
             -> ReallyMeCryptoException.AuthenticationFailed()
             CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_ALGORITHM,
-            CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_BACKEND,
             -> ReallyMeCryptoException.UnsupportedAlgorithm()
+            CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_BACKEND,
+            -> ReallyMeCryptoException.UnsupportedPlatform()
+            CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_KEY_EXISTS,
+            -> ReallyMeCryptoException.PlatformKeyAlreadyExists()
+            CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_KEY_NOT_FOUND,
+            -> ReallyMeCryptoException.PlatformKeyNotFound()
+            CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_USER_AUTHENTICATION_REQUIRED,
+            -> ReallyMeCryptoException.PlatformAuthenticationRequired()
+            CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_HARDWARE_UNAVAILABLE,
+            -> ReallyMeCryptoException.HardwareUnavailable()
+            CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_HARDWARE_REJECTED_KEY,
+            -> ReallyMeCryptoException.HardwareRejectedKey()
             CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_UNAVAILABLE,
             CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE,
+            CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_ACCESS_DENIED,
+            CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_USER_CANCELED,
             CryptoErrorReason.CRYPTO_ERROR_REASON_BACKEND_INVALID_STATE,
             CryptoErrorReason.CRYPTO_ERROR_REASON_BACKEND_INTERNAL,
-            CryptoErrorReason.CRYPTO_ERROR_REASON_BACKEND_MALFORMED_PROTOBUF,
-            CryptoErrorReason.CRYPTO_ERROR_REASON_BACKEND_MALFORMED_JSON,
-            CryptoErrorReason.CRYPTO_ERROR_REASON_BACKEND_RESOURCE_LIMIT_EXCEEDED,
             -> ReallyMeCryptoException.ProviderFailure()
             CryptoErrorReason.CRYPTO_ERROR_REASON_UNSPECIFIED,
             CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PARAMETER,
@@ -388,6 +403,10 @@ public object ReallyMeCryptoProtoAdapters {
             CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_CIPHERTEXT,
             CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_TAG,
             CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SHARED_SECRET,
+            CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_PROTOBUF,
+            CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_JSON,
+            CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
+            CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_MISSING_OPERATION,
             CryptoErrorReason.UNRECOGNIZED,
             -> ReallyMeCryptoException.InvalidInput()
         }
@@ -404,8 +423,8 @@ public object ReallyMeCryptoProtoAdapters {
 
     private fun malformedCryptoErrorEnvelope(): ReallyMeCryptoWireError =
         ReallyMeCryptoWireError.unchecked(
-            ReallyMeCryptoWireErrorBranch.BACKEND,
-            CryptoErrorReason.CRYPTO_ERROR_REASON_BACKEND_MALFORMED_PROTOBUF,
+            ReallyMeCryptoWireErrorBranch.PRIMITIVE,
+            CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_PROTOBUF,
         )
 
     internal fun reasonMatchesBranch(
@@ -444,6 +463,10 @@ public object ReallyMeCryptoProtoAdapters {
         CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_CIPHERTEXT,
         CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_TAG,
         CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SHARED_SECRET,
+        CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_PROTOBUF,
+        CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_JSON,
+        CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
+        CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_MISSING_OPERATION,
     )
 
     private val providerCryptoErrorReasons: Set<CryptoErrorReason> = setOf(
@@ -451,14 +474,18 @@ public object ReallyMeCryptoProtoAdapters {
         CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_BACKEND,
         CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_UNAVAILABLE,
         CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE,
+        CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_KEY_EXISTS,
+        CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_KEY_NOT_FOUND,
+        CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_ACCESS_DENIED,
+        CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_USER_AUTHENTICATION_REQUIRED,
+        CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_USER_CANCELED,
+        CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_HARDWARE_UNAVAILABLE,
+        CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_HARDWARE_REJECTED_KEY,
     )
 
     private val backendCryptoErrorReasons: Set<CryptoErrorReason> = setOf(
         CryptoErrorReason.CRYPTO_ERROR_REASON_BACKEND_INVALID_STATE,
         CryptoErrorReason.CRYPTO_ERROR_REASON_BACKEND_INTERNAL,
-        CryptoErrorReason.CRYPTO_ERROR_REASON_BACKEND_MALFORMED_PROTOBUF,
-        CryptoErrorReason.CRYPTO_ERROR_REASON_BACKEND_MALFORMED_JSON,
-        CryptoErrorReason.CRYPTO_ERROR_REASON_BACKEND_RESOURCE_LIMIT_EXCEEDED,
     )
 
     public fun fromProto(value: JsonWebKey): ReallyMeJwkKey {
@@ -906,7 +933,6 @@ public object ReallyMeCryptoProtoAdapters {
             KemAlgorithm.KEM_ALGORITHM_ML_KEM_768 -> ReallyMeKemAlgorithm.ML_KEM_768
             KemAlgorithm.KEM_ALGORITHM_ML_KEM_1024 -> ReallyMeKemAlgorithm.ML_KEM_1024
             KemAlgorithm.KEM_ALGORITHM_X_WING_768 -> ReallyMeKemAlgorithm.X_WING_768
-            KemAlgorithm.KEM_ALGORITHM_X_WING_1024 -> ReallyMeKemAlgorithm.X_WING_1024
             else -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
         }
 
@@ -916,7 +942,6 @@ public object ReallyMeCryptoProtoAdapters {
             ReallyMeKemAlgorithm.ML_KEM_768 -> KemAlgorithm.KEM_ALGORITHM_ML_KEM_768
             ReallyMeKemAlgorithm.ML_KEM_1024 -> KemAlgorithm.KEM_ALGORITHM_ML_KEM_1024
             ReallyMeKemAlgorithm.X_WING_768 -> KemAlgorithm.KEM_ALGORITHM_X_WING_768
-            ReallyMeKemAlgorithm.X_WING_1024 -> KemAlgorithm.KEM_ALGORITHM_X_WING_1024
         }
 
     public fun fromProto(value: KeyAgreementAlgorithm): ReallyMeKeyAgreementAlgorithm =
@@ -945,6 +970,7 @@ public object ReallyMeCryptoProtoAdapters {
     public fun fromProto(value: MacAlgorithm): ReallyMeMacAlgorithm =
         when (value) {
             MacAlgorithm.MAC_ALGORITHM_HMAC_SHA256 -> ReallyMeMacAlgorithm.HMAC_SHA256
+            MacAlgorithm.MAC_ALGORITHM_HMAC_SHA384 -> ReallyMeMacAlgorithm.HMAC_SHA384
             MacAlgorithm.MAC_ALGORITHM_HMAC_SHA512 -> ReallyMeMacAlgorithm.HMAC_SHA512
             else -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
         }
@@ -952,13 +978,16 @@ public object ReallyMeCryptoProtoAdapters {
     public fun toProto(value: ReallyMeMacAlgorithm): MacAlgorithm =
         when (value) {
             ReallyMeMacAlgorithm.HMAC_SHA256 -> MacAlgorithm.MAC_ALGORITHM_HMAC_SHA256
+            ReallyMeMacAlgorithm.HMAC_SHA384 -> MacAlgorithm.MAC_ALGORITHM_HMAC_SHA384
             ReallyMeMacAlgorithm.HMAC_SHA512 -> MacAlgorithm.MAC_ALGORITHM_HMAC_SHA512
         }
 
     public fun fromProto(value: KdfAlgorithm): ReallyMeKdfAlgorithm =
         when (value) {
             KdfAlgorithm.KDF_ALGORITHM_HKDF_SHA256 -> ReallyMeKdfAlgorithm.HKDF_SHA256
+            KdfAlgorithm.KDF_ALGORITHM_HKDF_SHA384 -> ReallyMeKdfAlgorithm.HKDF_SHA384
             KdfAlgorithm.KDF_ALGORITHM_ARGON2ID -> ReallyMeKdfAlgorithm.ARGON2ID
+            KdfAlgorithm.KDF_ALGORITHM_KMAC_256 -> ReallyMeKdfAlgorithm.KMAC256
             KdfAlgorithm.KDF_ALGORITHM_PBKDF2_HMAC_SHA256 -> ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256
             KdfAlgorithm.KDF_ALGORITHM_PBKDF2_HMAC_SHA512 -> ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA512
             KdfAlgorithm.KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256 ->
@@ -969,7 +998,9 @@ public object ReallyMeCryptoProtoAdapters {
     public fun toProto(value: ReallyMeKdfAlgorithm): KdfAlgorithm =
         when (value) {
             ReallyMeKdfAlgorithm.HKDF_SHA256 -> KdfAlgorithm.KDF_ALGORITHM_HKDF_SHA256
+            ReallyMeKdfAlgorithm.HKDF_SHA384 -> KdfAlgorithm.KDF_ALGORITHM_HKDF_SHA384
             ReallyMeKdfAlgorithm.ARGON2ID -> KdfAlgorithm.KDF_ALGORITHM_ARGON2ID
+            ReallyMeKdfAlgorithm.KMAC256 -> KdfAlgorithm.KDF_ALGORITHM_KMAC_256
             ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256 -> KdfAlgorithm.KDF_ALGORITHM_PBKDF2_HMAC_SHA256
             ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA512 -> KdfAlgorithm.KDF_ALGORITHM_PBKDF2_HMAC_SHA512
             ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256 ->
@@ -978,31 +1009,48 @@ public object ReallyMeCryptoProtoAdapters {
 
     public fun fromProto(value: KeyWrapAlgorithm): ReallyMeKeyWrapAlgorithm =
         when (value) {
+            KeyWrapAlgorithm.KEY_WRAP_ALGORITHM_AES_128_KW -> ReallyMeKeyWrapAlgorithm.AES_128_KW
+            KeyWrapAlgorithm.KEY_WRAP_ALGORITHM_AES_192_KW -> ReallyMeKeyWrapAlgorithm.AES_192_KW
             KeyWrapAlgorithm.KEY_WRAP_ALGORITHM_AES_256_KW -> ReallyMeKeyWrapAlgorithm.AES_256_KW
             else -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
         }
 
     public fun toProto(value: ReallyMeKeyWrapAlgorithm): KeyWrapAlgorithm =
         when (value) {
+            ReallyMeKeyWrapAlgorithm.AES_128_KW -> KeyWrapAlgorithm.KEY_WRAP_ALGORITHM_AES_128_KW
+            ReallyMeKeyWrapAlgorithm.AES_192_KW -> KeyWrapAlgorithm.KEY_WRAP_ALGORITHM_AES_192_KW
             ReallyMeKeyWrapAlgorithm.AES_256_KW -> KeyWrapAlgorithm.KEY_WRAP_ALGORITHM_AES_256_KW
         }
 
-    public fun fromProto(value: HpkeSuite): ReallyMeHpkeSuite =
-        when (value) {
-            HpkeSuite.HPKE_SUITE_DHKEM_P256_HKDF_SHA256_HKDF_SHA256_AES_256_GCM ->
+    public fun fromProto(value: HpkeSuiteIdentifier): ReallyMeHpkeSuite =
+        when {
+            value.kem == HpkeKemId.HPKE_KEM_ID_DHKEM_P256_HKDF_SHA256 &&
+                value.kdf == HpkeKdfId.HPKE_KDF_ID_HKDF_SHA256 &&
+                value.aead == HpkeAeadId.HPKE_AEAD_ID_AES_256_GCM ->
                 ReallyMeHpkeSuite.DHKEM_P256_HKDF_SHA256_HKDF_SHA256_AES_256_GCM
-            HpkeSuite.HPKE_SUITE_DHKEM_X25519_HKDF_SHA256_HKDF_SHA256_CHACHA20_POLY1305 ->
+            value.kem == HpkeKemId.HPKE_KEM_ID_DHKEM_X25519_HKDF_SHA256 &&
+                value.kdf == HpkeKdfId.HPKE_KDF_ID_HKDF_SHA256 &&
+                value.aead == HpkeAeadId.HPKE_AEAD_ID_CHACHA20_POLY1305 ->
                 ReallyMeHpkeSuite.DHKEM_X25519_HKDF_SHA256_HKDF_SHA256_CHACHA20_POLY1305
             else -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
         }
 
-    public fun toProto(value: ReallyMeHpkeSuite): HpkeSuite =
-        when (value) {
+    public fun toProto(value: ReallyMeHpkeSuite): HpkeSuiteIdentifier {
+        val builder = HpkeSuiteIdentifier.newBuilder()
+            .setKdf(HpkeKdfId.HPKE_KDF_ID_HKDF_SHA256)
+        return when (value) {
             ReallyMeHpkeSuite.DHKEM_P256_HKDF_SHA256_HKDF_SHA256_AES_256_GCM ->
-                HpkeSuite.HPKE_SUITE_DHKEM_P256_HKDF_SHA256_HKDF_SHA256_AES_256_GCM
+                builder
+                    .setKem(HpkeKemId.HPKE_KEM_ID_DHKEM_P256_HKDF_SHA256)
+                    .setAead(HpkeAeadId.HPKE_AEAD_ID_AES_256_GCM)
+                    .build()
             ReallyMeHpkeSuite.DHKEM_X25519_HKDF_SHA256_HKDF_SHA256_CHACHA20_POLY1305 ->
-                HpkeSuite.HPKE_SUITE_DHKEM_X25519_HKDF_SHA256_HKDF_SHA256_CHACHA20_POLY1305
+                builder
+                    .setKem(HpkeKemId.HPKE_KEM_ID_DHKEM_X25519_HKDF_SHA256)
+                    .setAead(HpkeAeadId.HPKE_AEAD_ID_CHACHA20_POLY1305)
+                    .build()
         }
+    }
 
     public fun fromProto(value: MulticodecKeyAlgorithm): ReallyMeMulticodecKeyAlgorithm =
         when (value) {
@@ -1109,9 +1157,6 @@ public object ReallyMeCryptoProtoAdapters {
             ReallyMeJwkAlgorithm.X_WING_768 -> CryptoAlgorithmIdentifier.newBuilder()
                 .setKem(KemAlgorithm.KEM_ALGORITHM_X_WING_768)
                 .build()
-            ReallyMeJwkAlgorithm.X_WING_1024 -> CryptoAlgorithmIdentifier.newBuilder()
-                .setKem(KemAlgorithm.KEM_ALGORITHM_X_WING_1024)
-                .build()
         }
 
     private fun jwkAlgorithmFromProto(
@@ -1147,7 +1192,6 @@ public object ReallyMeCryptoProtoAdapters {
                 KemAlgorithm.KEM_ALGORITHM_ML_KEM_768 -> ReallyMeJwkAlgorithm.ML_KEM_768
                 KemAlgorithm.KEM_ALGORITHM_ML_KEM_1024 -> ReallyMeJwkAlgorithm.ML_KEM_1024
                 KemAlgorithm.KEM_ALGORITHM_X_WING_768 -> ReallyMeJwkAlgorithm.X_WING_768
-                KemAlgorithm.KEM_ALGORITHM_X_WING_1024 -> ReallyMeJwkAlgorithm.X_WING_1024
                 else -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
             }
             CryptoAlgorithmIdentifier.AlgorithmCase.ALGORITHM_NOT_SET ->
@@ -1191,7 +1235,7 @@ public object ReallyMeCryptoProtoAdapters {
         value: ReallyMeHpkeSuite,
     ): CryptoAlgorithmIdentifier =
         CryptoAlgorithmIdentifier.newBuilder()
-            .setHpke(toProto(value))
+            .setHpkeSuite(toProto(value))
             .build()
 
     private fun signatureAlgorithmFromIdentifier(
@@ -1228,9 +1272,9 @@ public object ReallyMeCryptoProtoAdapters {
         value: CryptoAlgorithmIdentifier,
         isPresent: Boolean,
     ): ReallyMeHpkeSuite {
-        if (!isPresent || value.algorithmCase != CryptoAlgorithmIdentifier.AlgorithmCase.HPKE) {
+        if (!isPresent || value.algorithmCase != CryptoAlgorithmIdentifier.AlgorithmCase.HPKE_SUITE) {
             throw ReallyMeCryptoException.InvalidInput()
         }
-        return fromProto(value.hpke)
+        return fromProto(value.hpkeSuite)
     }
 }

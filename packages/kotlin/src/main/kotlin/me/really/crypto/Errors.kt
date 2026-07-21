@@ -23,4 +23,22 @@ public sealed class ReallyMeCryptoException(message: String) : Exception(message
 
     /** The package facade does not expose the requested algorithm yet. */
     public class UnsupportedAlgorithm : ReallyMeCryptoException("unsupported algorithm")
+
+    /** The requested operation is unavailable on this runtime or API level. */
+    public class UnsupportedPlatform : ReallyMeCryptoException("unsupported platform")
+
+    /** A persistent platform key already exists for the requested identifier. */
+    public class PlatformKeyAlreadyExists : ReallyMeCryptoException("platform key already exists")
+
+    /** The requested persistent platform key does not exist. */
+    public class PlatformKeyNotFound : ReallyMeCryptoException("platform key not found")
+
+    /** The platform requires user authentication before the key can be used. */
+    public class PlatformAuthenticationRequired : ReallyMeCryptoException("platform authentication required")
+
+    /** The requested hardware-backed security level is unavailable. */
+    public class HardwareUnavailable : ReallyMeCryptoException("hardware unavailable")
+
+    /** The hardware provider rejected or permanently invalidated the key. */
+    public class HardwareRejectedKey : ReallyMeCryptoException("hardware rejected key")
 }

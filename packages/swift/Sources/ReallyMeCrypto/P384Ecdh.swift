@@ -52,10 +52,11 @@ public enum ReallyMeP384Ecdh {
             let privateKey = try P384.KeyAgreement.PrivateKey(rawRepresentation: Data(secretKey))
             let peerPublicKey = try P384.KeyAgreement.PublicKey(compressedRepresentation: Data(publicKey))
             let sharedSecret = try privateKey.sharedSecretFromKeyAgreement(with: peerPublicKey)
-            let bytes = sharedSecret.withUnsafeBytes { buffer in
+            var bytes = sharedSecret.withUnsafeBytes { buffer in
                 Array(buffer)
             }
             guard bytes.count == sharedSecretLength else {
+                ReallyMeCryptoMemory.bestEffortClear(&bytes)
                 throw ReallyMeCryptoError.providerFailure
             }
             return bytes

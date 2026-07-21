@@ -282,6 +282,9 @@ pub fn public_key_to_multikey(alg: Algorithm, public_key: &[u8]) -> Result<Strin
                 return Err(AlgorithmError::UnsupportedAlgorithm(alg));
             }
         }
+        Algorithm::SlhDsaSha2_128s => {
+            return Err(AlgorithmError::UnsupportedAlgorithm(alg));
+        }
         Algorithm::MlKem512 => {
             #[cfg(feature = "ml-kem-512")]
             {
@@ -312,7 +315,7 @@ pub fn public_key_to_multikey(alg: Algorithm, public_key: &[u8]) -> Result<Strin
                 return Err(AlgorithmError::UnsupportedAlgorithm(alg));
             }
         }
-        Algorithm::XWing768 | Algorithm::XWing1024 => {
+        Algorithm::XWing768 => {
             return Err(AlgorithmError::UnsupportedAlgorithm(alg));
         }
 

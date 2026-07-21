@@ -20,11 +20,6 @@ public  final class CryptoKdfDeriveKeyResult extends
     return "CryptoKdfDeriveKeyResult{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoKdfDeriveKeyResult() {
     derivedKey_ = com.google.protobuf.ByteString.EMPTY;
   }

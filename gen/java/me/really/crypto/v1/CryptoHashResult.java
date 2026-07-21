@@ -20,11 +20,6 @@ public  final class CryptoHashResult extends
     return "CryptoHashResult{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoHashResult() {
     digest_ = com.google.protobuf.ByteString.EMPTY;
   }

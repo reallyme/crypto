@@ -22,3 +22,7 @@
 -keep class me.really.crypto.ReallyMeRustNativeProvider { *; }
 -keep class me.really.crypto.ReallyMeRustAead { *; }
 -keep class me.really.crypto.ReallyMeArgon2id { *; }
+
+# JNI constructs this typed failure by its binary class name if no Java
+# exception is already pending. Keep the class and no-argument constructor.
+-keep class me.really.crypto.ReallyMeCryptoException$ProviderFailure { *; }

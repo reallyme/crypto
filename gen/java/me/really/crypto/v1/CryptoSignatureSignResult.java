@@ -20,11 +20,6 @@ public  final class CryptoSignatureSignResult extends
     return "CryptoSignatureSignResult{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoSignatureSignResult() {
     signature_ = com.google.protobuf.ByteString.EMPTY;
   }

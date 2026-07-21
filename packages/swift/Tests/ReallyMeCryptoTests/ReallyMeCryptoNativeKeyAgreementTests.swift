@@ -186,6 +186,13 @@ extension ReallyMeCryptoTests {
             XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
         }
         XCTAssertThrowsError(
+            try ReallyMeP256SecureEnclaveEcdh.encodePrivateKeyHandle(
+                tag: [UInt8](repeating: 0x41, count: ReallyMeP256SecureEnclaveEcdh.maxTagLength + 1)
+            )
+        ) { error in
+            XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+        }
+        XCTAssertThrowsError(
             try ReallyMeP256SecureEnclaveEcdh.decodePrivateKeyHandle(Array("not-a-handle".utf8))
         ) { error in
             XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
@@ -243,6 +250,88 @@ extension ReallyMeCryptoTests {
         XCTAssertEqual(enclaveKeyPair.publicKey.count, ReallyMeP256Ecdh.compressedPublicKeyLength)
         XCTAssertEqual(enclaveSecret.count, ReallyMeP256Ecdh.sharedSecretLength)
         XCTAssertEqual(enclaveSecret, peerSecret)
+    }
+
+    func testP256SecureEnclaveEcdhRejectsDuplicateTagWhenAvailable() throws {
+        let tag = Array("me.really.crypto.tests.p256.duplicate.\(UUID().uuidString)".utf8)
+        let firstKeyPair: ReallyMeKeyAgreementHandleKeyPair
+        do {
+            firstKeyPair = try ReallyMeCrypto.generateSecureEnclaveKeyAgreementKeyPair(
+                .p256Ecdh,
+                tag: tag,
+                overwriteExisting: true
+            )
+        } catch ReallyMeCryptoError.unsupportedPlatform {
+            throw XCTSkip("Secure Enclave is not available on this test platform")
+        } catch ReallyMeCryptoError.providerFailure {
+            throw XCTSkip("Secure Enclave is not available to this test process")
+        }
+        defer {
+            try? ReallyMeCrypto.deleteSecureEnclaveKeyAgreementKey(
+                .p256Ecdh,
+                privateKeyHandle: firstKeyPair.privateKeyHandle
+            )
+        }
+
+        XCTAssertThrowsError(
+            try ReallyMeCrypto.generateSecureEnclaveKeyAgreementKeyPair(
+                .p256Ecdh,
+                tag: tag,
+                overwriteExisting: false
+            )
+        ) { error in
+            XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+        }
+
+        let replacement = try ReallyMeCrypto.generateSecureEnclaveKeyAgreementKeyPair(
+            .p256Ecdh,
+            tag: tag,
+            overwriteExisting: true
+        )
+        XCTAssertEqual(replacement.publicKey.count, ReallyMeP256Ecdh.compressedPublicKeyLength)
+        XCTAssertEqual(try ReallyMeP256SecureEnclaveEcdh.decodePrivateKeyHandle(
+            replacement.privateKeyHandle
+        ), tag)
+    }
+
+    func testP256SecureEnclaveEcdhDeleteIsIdempotentAndLookupFailsClosedWhenAvailable() throws {
+        let tag = Array("me.really.crypto.tests.p256.delete.\(UUID().uuidString)".utf8)
+        let keyPair: ReallyMeKeyAgreementHandleKeyPair
+        do {
+            keyPair = try ReallyMeCrypto.generateSecureEnclaveKeyAgreementKeyPair(
+                .p256Ecdh,
+                tag: tag,
+                overwriteExisting: true
+            )
+        } catch ReallyMeCryptoError.unsupportedPlatform {
+            throw XCTSkip("Secure Enclave is not available on this test platform")
+        } catch ReallyMeCryptoError.providerFailure {
+            throw XCTSkip("Secure Enclave is not available to this test process")
+        }
+        defer {
+            try? ReallyMeCrypto.deleteSecureEnclaveKeyAgreementKey(
+                .p256Ecdh,
+                privateKeyHandle: keyPair.privateKeyHandle
+            )
+        }
+
+        try ReallyMeCrypto.deleteSecureEnclaveKeyAgreementKey(
+            .p256Ecdh,
+            privateKeyHandle: keyPair.privateKeyHandle
+        )
+        XCTAssertThrowsError(
+            try ReallyMeP256SecureEnclaveEcdh.derivePublicKey(
+                privateKeyHandle: keyPair.privateKeyHandle
+            )
+        ) { error in
+            XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+        }
+        XCTAssertNoThrow(
+            try ReallyMeCrypto.deleteSecureEnclaveKeyAgreementKey(
+                .p256Ecdh,
+                privateKeyHandle: keyPair.privateKeyHandle
+            )
+        )
     }
 
     // MARK: - P-384 ECDH (CryptoKit)

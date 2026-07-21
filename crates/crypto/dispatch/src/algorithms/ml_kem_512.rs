@@ -33,6 +33,25 @@ impl MlKem512Algo {
         }
     }
 
+    /// Reconstruct an ML-KEM-512 keypair from a 64-byte FIPS 203 seed.
+    pub fn derive_keypair(secret: &[u8]) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), AlgorithmError> {
+        #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
+        {
+            let seed = <&[u8; crypto_ml_kem_512::ML_KEM_512_SECRET_KEY_LEN]>::try_from(secret)
+                .map_err(|_| AlgorithmError::InvalidKey(Self::ALG))?;
+            return crate::algorithms::KeypairResultExt::into_algorithm_keypair(
+                crypto_ml_kem_512::generate_ml_kem_512_keypair_from_seed(seed),
+                Self::ALG,
+            );
+        }
+
+        #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
+        {
+            let _ = secret;
+            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+        }
+    }
+
     /// Encapsulate using the public key.
     ///
     /// Returns (shared_secret, ciphertext); the shared secret zeroizes on

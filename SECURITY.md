@@ -24,8 +24,8 @@ Report privately through either channel:
 
 Please include, to the extent you can:
 
-- the affected crate, function, and lane (`native` / `wasm` / `swift` /
-  `kotlin`);
+- the affected crate, function, and lane (`native`, `wasm`, `swift`,
+  `kotlin`, `android`, or `typescript`);
 - the commit or version you tested;
 - a minimal reproduction (input bytes, steps, or a failing test);
 - your assessment of impact (e.g. key recovery, forgery, panic/DoS,
@@ -74,11 +74,16 @@ Security fixes are released on the active package line.
 
 | Version | Status |
 | --- | --- |
-| `0.1.x` | Supported |
-| earlier commits | Unsupported |
+| `0.3.x` | Supported |
+| `0.2.x` and earlier | Unsupported |
 
 For source-based consumption, pin a release tag or exact commit and watch
 GitHub releases and security advisories.
+
+Version install examples describe published releases. Before publication, the
+corresponding tag is intentionally absent. The Swift package release workflow
+creates the immutable `v<version>` GitHub release and tag only after the release
+commit and XCFramework artifact have passed their verification gates.
 
 ## Cryptography And Assurance
 
@@ -90,9 +95,10 @@ GitHub releases and security advisories.
 - Cross-implementation conformance vectors pin our Rust output against an
   independent oracle (`@noble/*`), including deterministic ML-KEM
   encapsulation, implicit rejection, and deterministic ML-DSA signatures.
-- The untrusted-input parsers (multibase, multicodec, multikey, base64url,
-  DAG-CBOR, RSA/ECDSA DER) have coverage-guided fuzz harnesses in `fuzz/` that
-  assert they never panic or read out of bounds on arbitrary input.
+- Coverage-guided fuzz harnesses exercise the operation protobuf/ProtoJSON,
+  JWK/multikey, RSA DER, and P-256 SEC1/ECDSA DER boundaries. The complete
+  current coverage and gap inventory is in `fuzz/README.md`; we do not claim
+  that every parser and platform decoder is fuzzed yet.
 - The HPKE Base composition has a machine-checked Tamarin model in `formal/`
   proving plaintext confidentiality against a network adversary.
 - Provider choice is part of the security contract. The generated backend

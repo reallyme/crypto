@@ -27,7 +27,11 @@ import type {
   ReallyMeJwkKey,
   ReallyMeJwksKeySet,
 } from "./jwk.js";
-import { ReallyMeJwk } from "./jwk.js";
+import { MAX_JWKS_KEYS, ReallyMeJwk } from "./jwk.js";
+import {
+  ensureByteArrayAtMost,
+  MAX_CRYPTO_INPUT_LENGTH,
+} from "./validateBytes.js";
 export {
   AeadAlgorithm,
   AeadAlgorithmSchema,
@@ -59,6 +63,7 @@ export {
   CryptoKemDecapsulateRequestSchema,
   CryptoKemDecapsulateResultSchema,
   CryptoKemEncapsulateRequestSchema,
+  CryptoKemDeriveKeyPairRequestSchema,
   CryptoKemGenerateKeyPairRequestSchema,
   CryptoKeyAgreementDeriveKeyPairRequestSchema,
   CryptoKeyAgreementDeriveSharedSecretRequestSchema,
@@ -71,6 +76,9 @@ export {
   CryptoMacAuthenticateRequestSchema,
   CryptoMacAuthenticateResultSchema,
   CryptoMacVerifyRequestSchema,
+  CryptoOperationRequestSchema,
+  CryptoOperationResponseSchema,
+  CryptoOperationResultSchema,
   CryptoPrimitiveErrorSchema,
   CryptoProviderErrorSchema,
   CryptoProviderCapabilitySchema,
@@ -88,8 +96,13 @@ export {
   CryptoVerificationStatusSchema,
   HashAlgorithm,
   HashAlgorithmSchema,
-  HpkeSuite,
-  HpkeSuiteSchema,
+  HpkeAeadId,
+  HpkeAeadIdSchema,
+  HpkeKdfId,
+  HpkeKdfIdSchema,
+  HpkeKemId,
+  HpkeKemIdSchema,
+  HpkeSuiteIdentifierSchema,
   JsonWebKeySchema,
   JsonWebKeySetSchema,
   KdfAlgorithm,
@@ -133,6 +146,7 @@ export type {
   CryptoKemDecapsulateRequest,
   CryptoKemDecapsulateResult,
   CryptoKemEncapsulateRequest,
+  CryptoKemDeriveKeyPairRequest,
   CryptoKemGenerateKeyPairRequest,
   CryptoKeyAgreementDeriveKeyPairRequest,
   CryptoKeyAgreementDeriveSharedSecretRequest,
@@ -145,6 +159,9 @@ export type {
   CryptoMacAuthenticateRequest,
   CryptoMacAuthenticateResult,
   CryptoMacVerifyRequest,
+  CryptoOperationRequest,
+  CryptoOperationResponse,
+  CryptoOperationResult,
   CryptoPrimitiveError,
   CryptoProviderCapability,
   CryptoProviderCapabilitySet,
@@ -156,13 +173,16 @@ export type {
   CryptoSignatureSignResult,
   CryptoSignatureVerifyRequest,
   CryptoVerificationResult,
+  HpkeSuiteIdentifier,
   JsonWebKey,
   JsonWebKeySet,
 } from "./proto/generated/reallyme/crypto/v1/crypto_pb.js";
 import {
   AeadAlgorithm,
   HashAlgorithm,
-  HpkeSuite,
+  HpkeAeadId,
+  HpkeKdfId,
+  HpkeKemId,
   KdfAlgorithm,
   KemAlgorithm,
   KeyAgreementAlgorithm,
@@ -176,6 +196,7 @@ import {
   CryptoErrorReason,
   CryptoErrorSchema,
   CryptoHpkeSealedMessageSchema,
+  HpkeSuiteIdentifierSchema,
   CryptoKemEncapsulationSchema,
   CryptoKeyPairSchema,
   CryptoPrimitiveErrorSchema,
@@ -197,6 +218,7 @@ import type {
   CryptoProviderCapability,
   CryptoProviderCapabilitySet,
   CryptoVerificationResult,
+  HpkeSuiteIdentifier,
   JsonWebKey,
   JsonWebKeySet,
 } from "./proto/generated/reallyme/crypto/v1/crypto_pb.js";
@@ -217,38 +239,6 @@ export type ReallyMeCryptoWireErrorValidationCode =
 export type ReallyMeCryptoWireErrorValidationResult =
   | Readonly<{ ok: true; value: ReallyMeCryptoWireError }>
   | Readonly<{ ok: false; error: ReallyMeCryptoWireErrorValidationCode }>;
-
-export type ReallyMeCryptoProtoStatus = "result" | "crypto-error";
-
-export class ReallyMeCryptoProtoResult {
-  readonly #bytes: Uint8Array;
-  public readonly status: ReallyMeCryptoProtoStatus;
-
-  public constructor(status: ReallyMeCryptoProtoStatus, bytes: Uint8Array) {
-    this.status = status;
-    this.#bytes = bytes.slice();
-  }
-
-  public get bytes(): Uint8Array {
-    return this.#bytes.slice();
-  }
-
-  public get isCryptoError(): boolean {
-    return this.status === "crypto-error";
-  }
-
-  public bestEffortClear(): void {
-    this.#bytes.fill(0);
-  }
-
-  public toString(): string {
-    return `ReallyMeCryptoProtoResult(status=${this.status}, bytes=<redacted>)`;
-  }
-
-  public toJSON(): Readonly<{ status: ReallyMeCryptoProtoStatus; bytes: "<redacted>" }> {
-    return { status: this.status, bytes: "<redacted>" };
-  }
-}
 
 export type ReallyMeMulticodecKeyAlgorithm =
   | "ed25519-pub"
@@ -483,8 +473,6 @@ export const kemAlgorithmFromProto = (value: KemAlgorithm): ReallyMeKemAlgorithm
       return "ML-KEM-1024";
     case KemAlgorithm.X_WING_768:
       return "X-Wing-768";
-    case KemAlgorithm.X_WING_1024:
-      return "X-Wing-1024";
     default:
       throw new ReallyMeCryptoError("unsupported-algorithm");
   }
@@ -500,8 +488,6 @@ export const kemAlgorithmToProto = (value: ReallyMeKemAlgorithm): KemAlgorithm =
       return KemAlgorithm.ML_KEM_1024;
     case "X-Wing-768":
       return KemAlgorithm.X_WING_768;
-    case "X-Wing-1024":
-      return KemAlgorithm.X_WING_1024;
   }
 };
 
@@ -541,6 +527,8 @@ export const macAlgorithmFromProto = (value: MacAlgorithm): ReallyMeMacAlgorithm
   switch (value) {
     case MacAlgorithm.HMAC_SHA256:
       return "HMAC-SHA-256";
+    case MacAlgorithm.HMAC_SHA384:
+      return "HMAC-SHA-384";
     case MacAlgorithm.HMAC_SHA512:
       return "HMAC-SHA-512";
     default:
@@ -552,6 +540,8 @@ export const macAlgorithmToProto = (value: ReallyMeMacAlgorithm): MacAlgorithm =
   switch (value) {
     case "HMAC-SHA-256":
       return MacAlgorithm.HMAC_SHA256;
+    case "HMAC-SHA-384":
+      return MacAlgorithm.HMAC_SHA384;
     case "HMAC-SHA-512":
       return MacAlgorithm.HMAC_SHA512;
   }
@@ -561,6 +551,10 @@ export const kdfAlgorithmFromProto = (value: KdfAlgorithm): ReallyMeKdfAlgorithm
   switch (value) {
     case KdfAlgorithm.HKDF_SHA256:
       return "HKDF-SHA256";
+    case KdfAlgorithm.HKDF_SHA384:
+      return "HKDF-SHA384";
+    case KdfAlgorithm.KMAC_256:
+      return "KMAC256";
     case KdfAlgorithm.ARGON2ID:
       return "Argon2id";
     case KdfAlgorithm.PBKDF2_HMAC_SHA256:
@@ -578,6 +572,10 @@ export const kdfAlgorithmToProto = (value: ReallyMeKdfAlgorithm): KdfAlgorithm =
   switch (value) {
     case "HKDF-SHA256":
       return KdfAlgorithm.HKDF_SHA256;
+    case "HKDF-SHA384":
+      return KdfAlgorithm.HKDF_SHA384;
+    case "KMAC256":
+      return KdfAlgorithm.KMAC_256;
     case "Argon2id":
       return KdfAlgorithm.ARGON2ID;
     case "PBKDF2-HMAC-SHA-256":
@@ -593,6 +591,10 @@ export const keyWrapAlgorithmFromProto = (
   value: KeyWrapAlgorithm,
 ): ReallyMeKeyWrapAlgorithm => {
   switch (value) {
+    case KeyWrapAlgorithm.AES_128_KW:
+      return "AES-128-KW";
+    case KeyWrapAlgorithm.AES_192_KW:
+      return "AES-192-KW";
     case KeyWrapAlgorithm.AES_256_KW:
       return "AES-256-KW";
     default:
@@ -604,28 +606,51 @@ export const keyWrapAlgorithmToProto = (
   value: ReallyMeKeyWrapAlgorithm,
 ): KeyWrapAlgorithm => {
   switch (value) {
+    case "AES-128-KW":
+      return KeyWrapAlgorithm.AES_128_KW;
+    case "AES-192-KW":
+      return KeyWrapAlgorithm.AES_192_KW;
     case "AES-256-KW":
       return KeyWrapAlgorithm.AES_256_KW;
   }
 };
 
-export const hpkeSuiteFromProto = (value: HpkeSuite): ReallyMeHpkeSuite => {
-  switch (value) {
-    case HpkeSuite.DHKEM_P256_HKDF_SHA256_HKDF_SHA256_AES_256_GCM:
-      return "DHKEM-P256-HKDF-SHA256-HKDF-SHA256-AES-256-GCM";
-    case HpkeSuite.DHKEM_X25519_HKDF_SHA256_HKDF_SHA256_CHACHA20_POLY1305:
-      return "DHKEM-X25519-HKDF-SHA256-HKDF-SHA256-CHACHA20-POLY1305";
-    default:
-      throw new ReallyMeCryptoError("unsupported-algorithm");
+export const hpkeSuiteFromProto = (
+  value: HpkeSuiteIdentifier,
+): ReallyMeHpkeSuite => {
+  if (
+    value.kem === HpkeKemId.DHKEM_P256_HKDF_SHA256 &&
+    value.kdf === HpkeKdfId.HKDF_SHA256 &&
+    value.aead === HpkeAeadId.AES_256_GCM
+  ) {
+    return "DHKEM-P256-HKDF-SHA256-HKDF-SHA256-AES-256-GCM";
   }
+  if (
+    value.kem === HpkeKemId.DHKEM_X25519_HKDF_SHA256 &&
+    value.kdf === HpkeKdfId.HKDF_SHA256 &&
+    value.aead === HpkeAeadId.CHACHA20_POLY1305
+  ) {
+    return "DHKEM-X25519-HKDF-SHA256-HKDF-SHA256-CHACHA20-POLY1305";
+  }
+  throw new ReallyMeCryptoError("unsupported-algorithm");
 };
 
-export const hpkeSuiteToProto = (value: ReallyMeHpkeSuite): HpkeSuite => {
+export const hpkeSuiteToProto = (
+  value: ReallyMeHpkeSuite,
+): HpkeSuiteIdentifier => {
   switch (value) {
     case "DHKEM-P256-HKDF-SHA256-HKDF-SHA256-AES-256-GCM":
-      return HpkeSuite.DHKEM_P256_HKDF_SHA256_HKDF_SHA256_AES_256_GCM;
+      return create(HpkeSuiteIdentifierSchema, {
+        kem: HpkeKemId.DHKEM_P256_HKDF_SHA256,
+        kdf: HpkeKdfId.HKDF_SHA256,
+        aead: HpkeAeadId.AES_256_GCM,
+      });
     case "DHKEM-X25519-HKDF-SHA256-HKDF-SHA256-CHACHA20-POLY1305":
-      return HpkeSuite.DHKEM_X25519_HKDF_SHA256_HKDF_SHA256_CHACHA20_POLY1305;
+      return create(HpkeSuiteIdentifierSchema, {
+        kem: HpkeKemId.DHKEM_X25519_HKDF_SHA256,
+        kdf: HpkeKdfId.HKDF_SHA256,
+        aead: HpkeAeadId.CHACHA20_POLY1305,
+      });
   }
 };
 
@@ -654,7 +679,7 @@ const hpkeSuiteIdentifierToProto = (
   value: ReallyMeHpkeSuite,
 ): CryptoAlgorithmIdentifier =>
   create(CryptoAlgorithmIdentifierSchema, {
-    algorithm: { case: "hpke", value: hpkeSuiteToProto(value) },
+    algorithm: { case: "hpkeSuite", value: hpkeSuiteToProto(value) },
   });
 
 const signatureAlgorithmFromIdentifier = (
@@ -687,7 +712,7 @@ const kemAlgorithmFromIdentifier = (
 const hpkeSuiteFromIdentifier = (
   value: CryptoAlgorithmIdentifier | undefined,
 ): ReallyMeHpkeSuite => {
-  if (value?.algorithm.case !== "hpke") {
+  if (value?.algorithm.case !== "hpkeSuite") {
     throw new ReallyMeCryptoError("invalid-input");
   }
   return hpkeSuiteFromProto(value.algorithm.value);
@@ -765,7 +790,15 @@ export const multicodecKeyAlgorithmToProto = (
   }
 };
 
+// The largest supported canonical JWK is below 4 KiB. Keeping a full factor of
+// two for future public-key encodings prevents attacker-controlled allocations
+// and guarantees conversion never depends on an engine's argument-count limit.
+const MAX_JWK_CANONICAL_JCS_LENGTH = 8_192;
+
 const asciiToBytes = (value: string): Uint8Array => {
+  if (value.length > MAX_JWK_CANONICAL_JCS_LENGTH) {
+    throw new ReallyMeCryptoError("invalid-input");
+  }
   const bytes = new Uint8Array(value.length);
   for (let index = 0; index < value.length; index += 1) {
     const codeUnit = value.charCodeAt(index);
@@ -778,14 +811,26 @@ const asciiToBytes = (value: string): Uint8Array => {
 };
 
 const asciiFromBytes = (value: Uint8Array): string => {
-  const codeUnits: number[] = [];
+  ensureByteArrayAtMost(value, MAX_JWK_CANONICAL_JCS_LENGTH);
+  const characters: string[] = [];
   for (const byte of value) {
     if (byte > 0x7f) {
       throw new ReallyMeCryptoError("invalid-input");
     }
-    codeUnits.push(byte);
+    characters.push(String.fromCharCode(byte));
   }
-  return String.fromCharCode(...codeUnits);
+  return characters.join("");
+};
+
+const withJwkProtoBoundaryErrors = <T>(operation: () => T): T => {
+  try {
+    return operation();
+  } catch (error: unknown) {
+    if (error instanceof ReallyMeCryptoError) {
+      throw error;
+    }
+    throw new ReallyMeCryptoError("invalid-input");
+  }
 };
 
 const cryptoErrorReasonToFacadeError = (
@@ -800,11 +845,15 @@ const cryptoErrorReasonToFacadeError = (
       return new ReallyMeCryptoError("unsupported-algorithm");
     case CryptoErrorReason.PROVIDER_UNAVAILABLE:
     case CryptoErrorReason.PROVIDER_RANDOMNESS_UNAVAILABLE:
+    case CryptoErrorReason.PROVIDER_KEY_EXISTS:
+    case CryptoErrorReason.PROVIDER_KEY_NOT_FOUND:
+    case CryptoErrorReason.PROVIDER_ACCESS_DENIED:
+    case CryptoErrorReason.PROVIDER_USER_AUTHENTICATION_REQUIRED:
+    case CryptoErrorReason.PROVIDER_USER_CANCELED:
+    case CryptoErrorReason.PROVIDER_HARDWARE_UNAVAILABLE:
+    case CryptoErrorReason.PROVIDER_HARDWARE_REJECTED_KEY:
     case CryptoErrorReason.BACKEND_INVALID_STATE:
     case CryptoErrorReason.BACKEND_INTERNAL:
-    case CryptoErrorReason.BACKEND_MALFORMED_PROTOBUF:
-    case CryptoErrorReason.BACKEND_MALFORMED_JSON:
-    case CryptoErrorReason.BACKEND_RESOURCE_LIMIT_EXCEEDED:
       return new ReallyMeCryptoError("provider-failure");
     case CryptoErrorReason.PRIMITIVE_INVALID_PARAMETER:
     case CryptoErrorReason.PRIMITIVE_INVALID_LENGTH:
@@ -818,6 +867,10 @@ const cryptoErrorReasonToFacadeError = (
     case CryptoErrorReason.PRIMITIVE_INVALID_SHARED_SECRET:
     case CryptoErrorReason.PRIMITIVE_MALFORMED_CIPHERTEXT:
     case CryptoErrorReason.PRIMITIVE_INVALID_TAG:
+    case CryptoErrorReason.PRIMITIVE_MALFORMED_PROTOBUF:
+    case CryptoErrorReason.PRIMITIVE_MALFORMED_JSON:
+    case CryptoErrorReason.PRIMITIVE_RESOURCE_LIMIT_EXCEEDED:
+    case CryptoErrorReason.PRIMITIVE_MISSING_OPERATION:
       return new ReallyMeCryptoError("invalid-input");
     case CryptoErrorReason.PRIMITIVE_AUTHENTICATION_FAILED:
       return new ReallyMeCryptoError("authentication-failed");
@@ -839,6 +892,10 @@ const invalidInputReasons = new Set<CryptoErrorReason>([
   CryptoErrorReason.PRIMITIVE_INVALID_SHARED_SECRET,
   CryptoErrorReason.PRIMITIVE_MALFORMED_CIPHERTEXT,
   CryptoErrorReason.PRIMITIVE_INVALID_TAG,
+  CryptoErrorReason.PRIMITIVE_MALFORMED_PROTOBUF,
+  CryptoErrorReason.PRIMITIVE_MALFORMED_JSON,
+  CryptoErrorReason.PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
+  CryptoErrorReason.PRIMITIVE_MISSING_OPERATION,
 ]);
 
 export const cryptoWireErrorToProto = (
@@ -929,9 +986,9 @@ export const cryptoWireErrorTryNew = (
 };
 
 const malformedCryptoErrorEnvelope = (): ReallyMeCryptoWireError => ({
-  branch: "backend",
-  reason: CryptoErrorReason.BACKEND_MALFORMED_PROTOBUF,
-  reasonCode: CryptoErrorReason.BACKEND_MALFORMED_PROTOBUF,
+  branch: "primitive",
+  reason: CryptoErrorReason.PRIMITIVE_MALFORMED_PROTOBUF,
+  reasonCode: CryptoErrorReason.PRIMITIVE_MALFORMED_PROTOBUF,
 });
 
 const cryptoErrorReasonCodeMatchesBranch = (
@@ -978,6 +1035,10 @@ const primitiveCryptoErrorReasons = new Set<CryptoErrorReason>([
   CryptoErrorReason.PRIMITIVE_MALFORMED_CIPHERTEXT,
   CryptoErrorReason.PRIMITIVE_INVALID_TAG,
   CryptoErrorReason.PRIMITIVE_INVALID_SHARED_SECRET,
+  CryptoErrorReason.PRIMITIVE_MALFORMED_PROTOBUF,
+  CryptoErrorReason.PRIMITIVE_MALFORMED_JSON,
+  CryptoErrorReason.PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
+  CryptoErrorReason.PRIMITIVE_MISSING_OPERATION,
 ]);
 
 const providerCryptoErrorReasons = new Set<CryptoErrorReason>([
@@ -985,14 +1046,18 @@ const providerCryptoErrorReasons = new Set<CryptoErrorReason>([
   CryptoErrorReason.PROVIDER_UNSUPPORTED_BACKEND,
   CryptoErrorReason.PROVIDER_UNAVAILABLE,
   CryptoErrorReason.PROVIDER_RANDOMNESS_UNAVAILABLE,
+  CryptoErrorReason.PROVIDER_KEY_EXISTS,
+  CryptoErrorReason.PROVIDER_KEY_NOT_FOUND,
+  CryptoErrorReason.PROVIDER_ACCESS_DENIED,
+  CryptoErrorReason.PROVIDER_USER_AUTHENTICATION_REQUIRED,
+  CryptoErrorReason.PROVIDER_USER_CANCELED,
+  CryptoErrorReason.PROVIDER_HARDWARE_UNAVAILABLE,
+  CryptoErrorReason.PROVIDER_HARDWARE_REJECTED_KEY,
 ]);
 
 const backendCryptoErrorReasons = new Set<CryptoErrorReason>([
   CryptoErrorReason.BACKEND_INVALID_STATE,
   CryptoErrorReason.BACKEND_INTERNAL,
-  CryptoErrorReason.BACKEND_MALFORMED_PROTOBUF,
-  CryptoErrorReason.BACKEND_MALFORMED_JSON,
-  CryptoErrorReason.BACKEND_RESOURCE_LIMIT_EXCEEDED,
 ]);
 
 const knownCryptoErrorReasons = new Set<CryptoErrorReason>([
@@ -1018,20 +1083,6 @@ export const cryptoWireErrorToFacadeError = (
     case "backend":
       return new ReallyMeCryptoError("provider-failure");
   }
-};
-
-export const cryptoProtoResult = (bytes: Uint8Array): ReallyMeCryptoProtoResult =>
-  new ReallyMeCryptoProtoResult("result", bytes);
-
-export const cryptoProtoErrorResult = (
-  error: CryptoError | ReallyMeCryptoWireError | ReallyMeCryptoError,
-): ReallyMeCryptoProtoResult => {
-  const bytes = error instanceof ReallyMeCryptoError
-    ? cryptoErrorToProtoBytes(error)
-    : "branch" in error
-      ? cryptoWireErrorToProtoBytes(error)
-      : toBinary(CryptoErrorSchema, error);
-  return new ReallyMeCryptoProtoResult("crypto-error", bytes);
 };
 
 export const cryptoErrorToProto = (error: ReallyMeCryptoError): CryptoError => {
@@ -1157,13 +1208,6 @@ const jwkAlgorithmToProto = (
           value: KemAlgorithm.X_WING_768,
         },
       });
-    case "X-Wing-1024":
-      return create(CryptoAlgorithmIdentifierSchema, {
-        algorithm: {
-          case: "kem",
-          value: KemAlgorithm.X_WING_1024,
-        },
-      });
     default:
       return create(CryptoAlgorithmIdentifierSchema, {
         algorithm: {
@@ -1218,8 +1262,6 @@ const jwkAlgorithmFromProto = (
           return "ML-KEM-1024";
         case KemAlgorithm.X_WING_768:
           return "X-Wing-768";
-        case KemAlgorithm.X_WING_1024:
-          return "X-Wing-1024";
         default:
           throw new ReallyMeCryptoError("unsupported-algorithm");
       }
@@ -1238,33 +1280,35 @@ export const jsonWebKeyToProto = (key: ReallyMeJwkKey): JsonWebKey =>
 export const jsonWebKeyToProtoBytes = (key: ReallyMeJwkKey): Uint8Array =>
   toBinary(JsonWebKeySchema, jsonWebKeyToProto(key));
 
-export const jsonWebKeyFromProto = (value: JsonWebKey): ReallyMeJwkKey => {
-  const algorithm = value.algorithm === undefined
-    ? undefined
-    : jwkAlgorithmFromProto(value.algorithm);
-  if (algorithm === undefined) {
-    throw new ReallyMeCryptoError("invalid-input");
-  }
-  const jwk = ReallyMeJwk.toJwk(algorithm, value.publicKey);
-  if (value.canonicalJcs.length > 0) {
-    const expected = ReallyMeJwk.toJcs(jwk);
-    if (asciiFromBytes(value.canonicalJcs) !== expected) {
+export const jsonWebKeyFromProto = (value: JsonWebKey): ReallyMeJwkKey =>
+  withJwkProtoBoundaryErrors(() => {
+    // Read each field once so a hostile message proxy cannot change values
+    // between validation and construction.
+    const algorithmValue = value.algorithm;
+    const publicKey = value.publicKey;
+    const canonicalJcs = value.canonicalJcs;
+    const algorithm = algorithmValue === undefined
+      ? undefined
+      : jwkAlgorithmFromProto(algorithmValue);
+    if (algorithm === undefined) {
       throw new ReallyMeCryptoError("invalid-input");
     }
-  }
-  return { algorithm, publicKey: value.publicKey, jwk };
-};
-
-export const jsonWebKeyFromProtoBytes = (bytes: Uint8Array): ReallyMeJwkKey => {
-  try {
-    return jsonWebKeyFromProto(fromBinary(JsonWebKeySchema, bytes));
-  } catch (error) {
-    if (error instanceof ReallyMeCryptoError) {
-      throw error;
+    ensureByteArrayAtMost(publicKey, MAX_CRYPTO_INPUT_LENGTH);
+    const jwk = ReallyMeJwk.toJwk(algorithm, publicKey);
+    if (canonicalJcs.length > 0) {
+      const expected = ReallyMeJwk.toJcs(jwk);
+      if (asciiFromBytes(canonicalJcs) !== expected) {
+        throw new ReallyMeCryptoError("invalid-input");
+      }
     }
-    throw new ReallyMeCryptoError("invalid-input");
-  }
-};
+    return { algorithm, publicKey, jwk };
+  });
+
+export const jsonWebKeyFromProtoBytes = (bytes: Uint8Array): ReallyMeJwkKey =>
+  withJwkProtoBoundaryErrors(() => {
+    ensureByteArrayAtMost(bytes, MAX_CRYPTO_INPUT_LENGTH);
+    return jsonWebKeyFromProto(fromBinary(JsonWebKeySchema, bytes));
+  });
 
 export const jsonWebKeySetToProto = (
   keySet: ReallyMeJwksKeySet,
@@ -1279,22 +1323,22 @@ export const jsonWebKeySetToProtoBytes = (
 
 export const jsonWebKeySetFromProto = (
   value: JsonWebKeySet,
-): ReallyMeJwksKeySet => ({
-  keys: value.keys.map((key) => jsonWebKeyFromProto(key)),
-});
+): ReallyMeJwksKeySet =>
+  withJwkProtoBoundaryErrors(() => {
+    const keys = value.keys;
+    if (!Array.isArray(keys) || keys.length > MAX_JWKS_KEYS) {
+      throw new ReallyMeCryptoError("invalid-input");
+    }
+    return { keys: keys.map((key) => jsonWebKeyFromProto(key)) };
+  });
 
 export const jsonWebKeySetFromProtoBytes = (
   bytes: Uint8Array,
-): ReallyMeJwksKeySet => {
-  try {
+): ReallyMeJwksKeySet =>
+  withJwkProtoBoundaryErrors(() => {
+    ensureByteArrayAtMost(bytes, MAX_CRYPTO_INPUT_LENGTH);
     return jsonWebKeySetFromProto(fromBinary(JsonWebKeySetSchema, bytes));
-  } catch (error) {
-    if (error instanceof ReallyMeCryptoError) {
-      throw error;
-    }
-    throw new ReallyMeCryptoError("invalid-input");
-  }
-};
+  });
 
 const keyPairToProto = (
   algorithm: CryptoAlgorithmIdentifier,

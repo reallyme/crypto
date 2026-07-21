@@ -20,11 +20,6 @@ public  final class CryptoHpkeOpenRequest extends
     return "CryptoHpkeOpenRequest{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoHpkeOpenRequest() {
     recipientSecretKey_ = com.google.protobuf.ByteString.EMPTY;
     encapsulatedKey_ = com.google.protobuf.ByteString.EMPTY;

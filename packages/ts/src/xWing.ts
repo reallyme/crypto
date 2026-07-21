@@ -4,17 +4,18 @@
 
 import type { ReallyMeKemAlgorithm } from "./algorithms.js";
 import { ReallyMeCryptoError } from "./errors.js";
-import { ensureBytes, readByteArrayProperty } from "./validateBytes.js";
+import {
+  ensureBytes,
+  readIndependentByteArrayProperty,
+  readIndependentProviderBytes,
+} from "./validateBytes.js";
 import { requireReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 
 export const X_WING_SECRET_KEY_LENGTH = 32;
-export const X_WING_ENCAPSULATION_SEED_LENGTH = 64;
 export const X_WING_SHARED_SECRET_LENGTH = 32;
 export const X_WING_768_PUBLIC_KEY_LENGTH = 1_216;
 export const X_WING_768_CIPHERTEXT_LENGTH = 1_120;
-export const X_WING_1024_PUBLIC_KEY_LENGTH = 1_600;
-export const X_WING_1024_CIPHERTEXT_LENGTH = 1_600;
 
 export type ReallyMeXWingKeyPair = Readonly<{
   publicKey: Uint8Array;
@@ -32,7 +33,6 @@ type XWingSuite = Readonly<{
   generateKeypair: () => unknown;
   deriveKeypair: (secretKey: Uint8Array) => unknown;
   encapsulate: (publicKey: Uint8Array) => unknown;
-  encapsulateDerand: (publicKey: Uint8Array, seed: Uint8Array) => unknown;
   decapsulate: (ciphertext: Uint8Array, secretKey: Uint8Array) => unknown;
 }>;
 
@@ -56,36 +56,58 @@ const xWingSuiteWithProvider = (
         generateKeypair: provider.xWing768GenerateKeypair,
         deriveKeypair: provider.xWing768DeriveKeypair,
         encapsulate: provider.xWing768Encapsulate,
-        encapsulateDerand: provider.xWing768EncapsulateDerand,
         decapsulate: provider.xWing768Decapsulate,
-      };
-    }
-    case "X-Wing-1024": {
-      return {
-        publicKeyLength: X_WING_1024_PUBLIC_KEY_LENGTH,
-        ciphertextLength: X_WING_1024_CIPHERTEXT_LENGTH,
-        generateKeypair: provider.xWing1024GenerateKeypair,
-        deriveKeypair: provider.xWing1024DeriveKeypair,
-        encapsulate: provider.xWing1024Encapsulate,
-        encapsulateDerand: provider.xWing1024EncapsulateDerand,
-        decapsulate: provider.xWing1024Decapsulate,
       };
     }
   }
 };
 
-const readKeyPair = (value: unknown, suite: XWingSuite): ReallyMeXWingKeyPair => ({
-  publicKey: readByteArrayProperty(value, "publicKey", suite.publicKeyLength),
-  secretKey: readByteArrayProperty(value, "secretKey", X_WING_SECRET_KEY_LENGTH),
-});
+const readKeyPair = (
+  value: unknown,
+  suite: XWingSuite,
+  inputs: ReadonlyArray<Uint8Array> = [],
+): ReallyMeXWingKeyPair => {
+  const publicKey = readIndependentByteArrayProperty(
+    value,
+    "publicKey",
+    suite.publicKeyLength,
+    inputs,
+  );
+  const secretKey = readIndependentByteArrayProperty(
+    value,
+    "secretKey",
+    X_WING_SECRET_KEY_LENGTH,
+    [...inputs, publicKey],
+  );
+  return { publicKey, secretKey };
+};
 
 const readEncapsulation = (
   value: unknown,
   suite: XWingSuite,
-): ReallyMeXWingEncapsulation => ({
-  ciphertext: readByteArrayProperty(value, "ciphertext", suite.ciphertextLength),
-  sharedSecret: readByteArrayProperty(value, "sharedSecret", X_WING_SHARED_SECRET_LENGTH),
-});
+  inputs: ReadonlyArray<Uint8Array>,
+): ReallyMeXWingEncapsulation => {
+  const ciphertext = readIndependentByteArrayProperty(
+    value,
+    "ciphertext",
+    suite.ciphertextLength,
+    inputs,
+  );
+  const sharedSecret = readIndependentByteArrayProperty(
+    value,
+    "sharedSecret",
+    X_WING_SHARED_SECRET_LENGTH,
+    [...inputs, ciphertext],
+  );
+  return { ciphertext, sharedSecret };
+};
+
+const readSharedSecret = (
+  value: unknown,
+  inputs: ReadonlyArray<Uint8Array>,
+): Uint8Array => {
+  return readIndependentProviderBytes(value, X_WING_SHARED_SECRET_LENGTH, inputs);
+};
 
 export const ReallyMeXWing = {
   generateKeyPair(algorithm: ReallyMeKemAlgorithm): ReallyMeXWingKeyPair {
@@ -107,7 +129,7 @@ export const ReallyMeXWing = {
   ): ReallyMeXWingKeyPair {
     ensureBytes(secretKey, X_WING_SECRET_KEY_LENGTH);
     const suite = xWingSuite(algorithm);
-    return readKeyPair(suite.deriveKeypair(secretKey), suite);
+    return readKeyPair(suite.deriveKeypair(secretKey), suite, [secretKey]);
   },
 
   deriveKeyPairWithProvider(
@@ -117,7 +139,7 @@ export const ReallyMeXWing = {
   ): ReallyMeXWingKeyPair {
     ensureBytes(secretKey, X_WING_SECRET_KEY_LENGTH);
     const suite = xWingSuiteWithProvider(algorithm, provider);
-    return readKeyPair(suite.deriveKeypair(secretKey), suite);
+    return readKeyPair(suite.deriveKeypair(secretKey), suite, [secretKey]);
   },
 
   encapsulate(
@@ -126,7 +148,7 @@ export const ReallyMeXWing = {
   ): ReallyMeXWingEncapsulation {
     const suite = xWingSuite(algorithm);
     ensureBytes(publicKey, suite.publicKeyLength);
-    return readEncapsulation(suite.encapsulate(publicKey), suite);
+    return readEncapsulation(suite.encapsulate(publicKey), suite, [publicKey]);
   },
 
   encapsulateWithProvider(
@@ -136,7 +158,7 @@ export const ReallyMeXWing = {
   ): ReallyMeXWingEncapsulation {
     const suite = xWingSuiteWithProvider(algorithm, provider);
     ensureBytes(publicKey, suite.publicKeyLength);
-    return readEncapsulation(suite.encapsulate(publicKey), suite);
+    return readEncapsulation(suite.encapsulate(publicKey), suite, [publicKey]);
   },
 
   decapsulate(
@@ -147,12 +169,10 @@ export const ReallyMeXWing = {
     const suite = xWingSuite(algorithm);
     ensureBytes(ciphertext, suite.ciphertextLength);
     ensureBytes(secretKey, X_WING_SECRET_KEY_LENGTH);
-    const sharedSecret = suite.decapsulate(ciphertext, secretKey);
-    if (!(sharedSecret instanceof Uint8Array)) {
-      throw new ReallyMeCryptoError("provider-failure");
-    }
-    ensureBytes(sharedSecret, X_WING_SHARED_SECRET_LENGTH);
-    return sharedSecret;
+    return readSharedSecret(
+      suite.decapsulate(ciphertext, secretKey),
+      [ciphertext, secretKey],
+    );
   },
 
   decapsulateWithProvider(
@@ -164,35 +184,9 @@ export const ReallyMeXWing = {
     const suite = xWingSuiteWithProvider(algorithm, provider);
     ensureBytes(ciphertext, suite.ciphertextLength);
     ensureBytes(secretKey, X_WING_SECRET_KEY_LENGTH);
-    const sharedSecret = suite.decapsulate(ciphertext, secretKey);
-    if (!(sharedSecret instanceof Uint8Array)) {
-      throw new ReallyMeCryptoError("provider-failure");
-    }
-    ensureBytes(sharedSecret, X_WING_SHARED_SECRET_LENGTH);
-    return sharedSecret;
+    return readSharedSecret(
+      suite.decapsulate(ciphertext, secretKey),
+      [ciphertext, secretKey],
+    );
   },
-
 } as const;
-
-export const encapsulateXWingDeterministicallyForTest = (
-  algorithm: ReallyMeKemAlgorithm,
-  publicKey: Uint8Array,
-  seed: Uint8Array,
-): ReallyMeXWingEncapsulation => {
-  const suite = xWingSuite(algorithm);
-  ensureBytes(publicKey, suite.publicKeyLength);
-  ensureBytes(seed, X_WING_ENCAPSULATION_SEED_LENGTH);
-  return readEncapsulation(suite.encapsulateDerand(publicKey, seed), suite);
-};
-
-export const encapsulateXWingDeterministicallyWithProviderForTest = (
-  provider: ReallyMeWasmProvider,
-  algorithm: ReallyMeKemAlgorithm,
-  publicKey: Uint8Array,
-  seed: Uint8Array,
-): ReallyMeXWingEncapsulation => {
-  const suite = xWingSuiteWithProvider(algorithm, provider);
-  ensureBytes(publicKey, suite.publicKeyLength);
-  ensureBytes(seed, X_WING_ENCAPSULATION_SEED_LENGTH);
-  return readEncapsulation(suite.encapsulateDerand(publicKey, seed), suite);
-};

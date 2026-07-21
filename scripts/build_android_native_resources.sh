@@ -6,6 +6,9 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Cargo gives encoded flags precedence over the controlled Android linker
+# RUSTFLAGS below. Remove inherited encoded flags before building any ABI.
+unset CARGO_ENCODED_RUSTFLAGS
 JNI_LIBS_ROOT="${1:-${ROOT_DIR}/packages/kotlin-android/src/main/jniLibs}"
 ANDROID_API="${ANDROID_API:-26}"
 
@@ -39,16 +42,32 @@ build_android_target() {
   local clang_prefix="$3"
   local linker_var="$4"
   local ar_var="$5"
+  # Keep only the platform linker requirement below. Ambient codegen flags
+  # must not override the audited panic strategy selected by the profile.
+  local rustflags=""
+
+  if [[ "${abi}" == "arm64-v8a" || "${abi}" == "x86_64" ]]; then
+    rustflags="-C link-arg=-Wl,-z,max-page-size=16384"
+  fi
+
+  printf 'Building Android JNI library for %s with NDK %s and profile release-ffi\n' \
+    "${abi}" "${ANDROID_NDK_HOME}"
 
   rustup target add "${rust_target}"
   export "${linker_var}=${TOOLCHAIN_BIN}/${clang_prefix}${ANDROID_API}-clang"
   export "${ar_var}=${TOOLCHAIN_BIN}/llvm-ar"
-  RUSTFLAGS="${RUSTFLAGS:-} -C panic=unwind" \
-    cargo build -p crypto-ffi --release --target "${rust_target}"
+  RUSTFLAGS="${rustflags}" \
+    cargo build --locked -p crypto-ffi \
+      --profile release-ffi \
+      --target "${rust_target}"
 
   mkdir -p "${JNI_LIBS_ROOT}/${abi}"
-  cp "${ROOT_DIR}/target/${rust_target}/release/libcrypto_ffi.so" \
-    "${JNI_LIBS_ROOT}/${abi}/libcrypto_ffi.so"
+  local staged_library="${JNI_LIBS_ROOT}/${abi}/libcrypto_ffi.so"
+  cp "${ROOT_DIR}/target/${rust_target}/release-ffi/libcrypto_ffi.so" \
+    "${staged_library}"
+  # Strip before hashing and packaging so the manifest attests to the exact
+  # release bytes and AGP never needs to mutate an already-attested library.
+  "${TOOLCHAIN_BIN}/llvm-strip" --strip-debug "${staged_library}"
 }
 
 build_android_target \

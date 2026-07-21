@@ -27,11 +27,6 @@ public  final class CryptoKeyPair extends
     return "CryptoKeyPair{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoKeyPair() {
     publicKey_ = com.google.protobuf.ByteString.EMPTY;
     secretKey_ = com.google.protobuf.ByteString.EMPTY;

@@ -8,13 +8,20 @@ import type { ReallyMeCryptoErrorCode } from "./errors.js";
 type GenerateKeypairFn = () => unknown;
 type GenerateKeypairFromSeedFn = (seed: Uint8Array) => unknown;
 type Argon2idFn = (kdfVersion: number, secret: Uint8Array, salt: Uint8Array) => unknown;
+type KmacFn = (
+  key: Uint8Array,
+  context: Uint8Array,
+  customization: Uint8Array,
+  outputLength: number,
+) => unknown;
 type AeadFn = (
   key: Uint8Array,
   nonce: Uint8Array,
   aad: Uint8Array,
   text: Uint8Array,
 ) => unknown;
-type KeyWrapFn = (wrappingKey: Uint8Array, keyMaterial: Uint8Array) => unknown;
+type TwoByteArraysFn = (first: Uint8Array, second: Uint8Array) => unknown;
+type KeyWrapFn = TwoByteArraysFn;
 type SignatureSignFn = (secretKey: Uint8Array, message: Uint8Array) => unknown;
 type SignatureVerifyFn = (
   publicKey: Uint8Array,
@@ -52,14 +59,6 @@ type HpkeSealFn = (
   aad: Uint8Array,
   plaintext: Uint8Array,
 ) => unknown;
-type HpkeSealDerandFn = (
-  suite: number,
-  recipientPublicKey: Uint8Array,
-  encapsulationRandomness: Uint8Array,
-  info: Uint8Array,
-  aad: Uint8Array,
-  plaintext: Uint8Array,
-) => unknown;
 type DeriveKeypairFn = (secretKey: Uint8Array) => unknown;
 type SlhDsaDeriveKeypairFn = (
   skSeed: Uint8Array,
@@ -67,12 +66,22 @@ type SlhDsaDeriveKeypairFn = (
   pkSeed: Uint8Array,
 ) => unknown;
 type EncapsulateFn = (publicKey: Uint8Array) => unknown;
-type EncapsulateDerandFn = (publicKey: Uint8Array, seed: Uint8Array) => unknown;
 type DecapsulateFn = (ciphertext: Uint8Array, secretKey: Uint8Array) => unknown;
+type BytesToBytesFn = (bytes: Uint8Array) => unknown;
 type WasmArgument = Uint8Array | number | string;
 type WasmCallable = (...args: ReadonlyArray<WasmArgument>) => unknown;
 
+const enum WasmErrorCode {
+  InvalidInput = 1,
+  InvalidSignature = 2,
+  AuthenticationFailed = 3,
+  ProviderFailure = 4,
+  UnsupportedAlgorithm = 5,
+}
+
 export type ReallyMeWasmProvider = Readonly<{
+  processOperationResponse: BytesToBytesFn;
+  processOperationResponseJson: BytesToBytesFn;
   aes128GcmSeal: AeadFn;
   aes128GcmOpen: AeadFn;
   aes192GcmSeal: AeadFn;
@@ -85,11 +94,15 @@ export type ReallyMeWasmProvider = Readonly<{
   chacha20Poly1305Open: AeadFn;
   xchacha20Poly1305Seal: AeadFn;
   xchacha20Poly1305Open: AeadFn;
+  aes128KwWrapKey: KeyWrapFn;
+  aes128KwUnwrapKey: KeyWrapFn;
+  aes192KwWrapKey: KeyWrapFn;
+  aes192KwUnwrapKey: KeyWrapFn;
   aes256KwWrapKey: KeyWrapFn;
   aes256KwUnwrapKey: KeyWrapFn;
   argon2idDeriveKey: Argon2idFn;
+  kmac256Derive: KmacFn;
   hpkeSealBase: HpkeSealFn;
-  hpkeSealBaseDerand: HpkeSealDerandFn;
   hpkeOpenBase: HpkeOpenFn;
   mlDsa44GenerateKeypair: GenerateKeypairFn;
   mlDsa44DeriveKeypair: GenerateKeypairFromSeedFn;
@@ -106,17 +119,14 @@ export type ReallyMeWasmProvider = Readonly<{
   mlKem512GenerateKeypair: GenerateKeypairFn;
   mlKem512DeriveKeypair: GenerateKeypairFromSeedFn;
   mlKem512Encapsulate: EncapsulateFn;
-  mlKem512EncapsulateDerand: EncapsulateDerandFn;
   mlKem512Decapsulate: DecapsulateFn;
   mlKem768GenerateKeypair: GenerateKeypairFn;
   mlKem768DeriveKeypair: GenerateKeypairFromSeedFn;
   mlKem768Encapsulate: EncapsulateFn;
-  mlKem768EncapsulateDerand: EncapsulateDerandFn;
   mlKem768Decapsulate: DecapsulateFn;
   mlKem1024GenerateKeypair: GenerateKeypairFn;
   mlKem1024DeriveKeypair: GenerateKeypairFromSeedFn;
   mlKem1024Encapsulate: EncapsulateFn;
-  mlKem1024EncapsulateDerand: EncapsulateDerandFn;
   mlKem1024Decapsulate: DecapsulateFn;
   slhDsaSha2128sGenerateKeypair: GenerateKeypairFn;
   slhDsaSha2128sDeriveKeypair: SlhDsaDeriveKeypairFn;
@@ -127,13 +137,7 @@ export type ReallyMeWasmProvider = Readonly<{
   xWing768GenerateKeypair: GenerateKeypairFn;
   xWing768DeriveKeypair: DeriveKeypairFn;
   xWing768Encapsulate: EncapsulateFn;
-  xWing768EncapsulateDerand: EncapsulateDerandFn;
   xWing768Decapsulate: DecapsulateFn;
-  xWing1024GenerateKeypair: GenerateKeypairFn;
-  xWing1024DeriveKeypair: DeriveKeypairFn;
-  xWing1024Encapsulate: EncapsulateFn;
-  xWing1024EncapsulateDerand: EncapsulateDerandFn;
-  xWing1024Decapsulate: DecapsulateFn;
 }>;
 
 let installedProvider: ReallyMeWasmProvider | undefined;
@@ -161,15 +165,15 @@ const requireFunction = (module: object, name: string): WasmCallable => {
 
 const wasmErrorCode = (error: unknown): ReallyMeCryptoErrorCode => {
   switch (error) {
-    case "invalid-input":
+    case WasmErrorCode.InvalidInput:
       return "invalid-input";
-    case "invalid-signature":
+    case WasmErrorCode.InvalidSignature:
       return "invalid-signature";
-    case "authentication-failed":
+    case WasmErrorCode.AuthenticationFailed:
       return "authentication-failed";
-    case "unsupported-algorithm":
+    case WasmErrorCode.UnsupportedAlgorithm:
       return "unsupported-algorithm";
-    case "provider-failure":
+    case WasmErrorCode.ProviderFailure:
     default:
       return "provider-failure";
   }
@@ -185,7 +189,7 @@ const function1 = (module: object, name: string): DeriveKeypairFn => {
   return (first: Uint8Array): unknown => callable(first);
 };
 
-const function2 = (module: object, name: string): EncapsulateDerandFn => {
+const function2 = (module: object, name: string): TwoByteArraysFn => {
   const callable = requireFunction(module, name);
   return (first: Uint8Array, second: Uint8Array): unknown => callable(first, second);
 };
@@ -221,6 +225,16 @@ const argon2idFunction = (module: object, name: string): Argon2idFn => {
     callable(kdfVersion, secret, salt);
 };
 
+const kmacFunction = (module: object, name: string): KmacFn => {
+  const callable = requireFunction(module, name);
+  return (
+    key: Uint8Array,
+    context: Uint8Array,
+    customization: Uint8Array,
+    outputLength: number,
+  ): unknown => callable(key, context, customization, outputLength);
+};
+
 const hpkeSealFunction = (module: object, name: string): HpkeSealFn => {
   const callable = requireFunction(module, name);
   return (
@@ -230,19 +244,6 @@ const hpkeSealFunction = (module: object, name: string): HpkeSealFn => {
     aad: Uint8Array,
     plaintext: Uint8Array,
   ): unknown => callable(suite, recipientPublicKey, info, aad, plaintext);
-};
-
-const hpkeSealDerandFunction = (module: object, name: string): HpkeSealDerandFn => {
-  const callable = requireFunction(module, name);
-  return (
-    suite: number,
-    recipientPublicKey: Uint8Array,
-    encapsulationRandomness: Uint8Array,
-    info: Uint8Array,
-    aad: Uint8Array,
-    plaintext: Uint8Array,
-  ): unknown =>
-    callable(suite, recipientPublicKey, encapsulationRandomness, info, aad, plaintext);
 };
 
 const hpkeOpenFunction = (module: object, name: string): HpkeOpenFn => {
@@ -296,6 +297,8 @@ const rsaPssVerifyFunction = (module: object, name: string): RsaPssVerifyFn => {
 export const createReallyMeWasmProvider = (module: unknown): ReallyMeWasmProvider => {
   const providerModule = requireObject(module);
   return {
+    processOperationResponse: function1(providerModule, "processOperationResponse"),
+    processOperationResponseJson: function1(providerModule, "processOperationResponseJson"),
     aes128GcmSeal: function4(providerModule, "aes128GcmSeal"),
     aes128GcmOpen: function4(providerModule, "aes128GcmOpen"),
     aes192GcmSeal: function4(providerModule, "aes192GcmSeal"),
@@ -308,11 +311,15 @@ export const createReallyMeWasmProvider = (module: unknown): ReallyMeWasmProvide
     chacha20Poly1305Open: function4(providerModule, "chacha20Poly1305Open"),
     xchacha20Poly1305Seal: function4(providerModule, "xchacha20Poly1305Seal"),
     xchacha20Poly1305Open: function4(providerModule, "xchacha20Poly1305Open"),
+    aes128KwWrapKey: function2(providerModule, "aes128KwWrapKey"),
+    aes128KwUnwrapKey: function2(providerModule, "aes128KwUnwrapKey"),
+    aes192KwWrapKey: function2(providerModule, "aes192KwWrapKey"),
+    aes192KwUnwrapKey: function2(providerModule, "aes192KwUnwrapKey"),
     aes256KwWrapKey: function2(providerModule, "aes256KwWrapKey"),
     aes256KwUnwrapKey: function2(providerModule, "aes256KwUnwrapKey"),
     argon2idDeriveKey: argon2idFunction(providerModule, "argon2idDeriveKey"),
+    kmac256Derive: kmacFunction(providerModule, "kmac256Derive"),
     hpkeSealBase: hpkeSealFunction(providerModule, "hpkeSealBase"),
-    hpkeSealBaseDerand: hpkeSealDerandFunction(providerModule, "hpkeSealBaseDerand"),
     hpkeOpenBase: hpkeOpenFunction(providerModule, "hpkeOpenBase"),
     mlDsa44GenerateKeypair: function0(providerModule, "mlDsa44GenerateKeypair"),
     mlDsa44DeriveKeypair: function1(providerModule, "mlDsa44DeriveKeypair"),
@@ -329,17 +336,14 @@ export const createReallyMeWasmProvider = (module: unknown): ReallyMeWasmProvide
     mlKem512GenerateKeypair: function0(providerModule, "mlKem512GenerateKeypair"),
     mlKem512DeriveKeypair: function1(providerModule, "mlKem512DeriveKeypair"),
     mlKem512Encapsulate: function1(providerModule, "mlKem512Encapsulate"),
-    mlKem512EncapsulateDerand: function2(providerModule, "mlKem512EncapsulateDerand"),
     mlKem512Decapsulate: function2(providerModule, "mlKem512Decapsulate"),
     mlKem768GenerateKeypair: function0(providerModule, "mlKem768GenerateKeypair"),
     mlKem768DeriveKeypair: function1(providerModule, "mlKem768DeriveKeypair"),
     mlKem768Encapsulate: function1(providerModule, "mlKem768Encapsulate"),
-    mlKem768EncapsulateDerand: function2(providerModule, "mlKem768EncapsulateDerand"),
     mlKem768Decapsulate: function2(providerModule, "mlKem768Decapsulate"),
     mlKem1024GenerateKeypair: function0(providerModule, "mlKem1024GenerateKeypair"),
     mlKem1024DeriveKeypair: function1(providerModule, "mlKem1024DeriveKeypair"),
     mlKem1024Encapsulate: function1(providerModule, "mlKem1024Encapsulate"),
-    mlKem1024EncapsulateDerand: function2(providerModule, "mlKem1024EncapsulateDerand"),
     mlKem1024Decapsulate: function2(providerModule, "mlKem1024Decapsulate"),
     slhDsaSha2128sGenerateKeypair: function0(
       providerModule,
@@ -359,13 +363,7 @@ export const createReallyMeWasmProvider = (module: unknown): ReallyMeWasmProvide
     xWing768GenerateKeypair: function0(providerModule, "xWing768GenerateKeypair"),
     xWing768DeriveKeypair: function1(providerModule, "xWing768DeriveKeypair"),
     xWing768Encapsulate: function1(providerModule, "xWing768Encapsulate"),
-    xWing768EncapsulateDerand: function2(providerModule, "xWing768EncapsulateDerand"),
     xWing768Decapsulate: function2(providerModule, "xWing768Decapsulate"),
-    xWing1024GenerateKeypair: function0(providerModule, "xWing1024GenerateKeypair"),
-    xWing1024DeriveKeypair: function1(providerModule, "xWing1024DeriveKeypair"),
-    xWing1024Encapsulate: function1(providerModule, "xWing1024Encapsulate"),
-    xWing1024EncapsulateDerand: function2(providerModule, "xWing1024EncapsulateDerand"),
-    xWing1024Decapsulate: function2(providerModule, "xWing1024Decapsulate"),
   };
 };
 

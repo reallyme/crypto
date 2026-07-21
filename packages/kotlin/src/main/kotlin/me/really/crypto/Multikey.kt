@@ -4,10 +4,8 @@
 
 package me.really.crypto
 
-import com.google.protobuf.InvalidProtocolBufferException
 import me.really.codec.ReallyMeCodec
 import me.really.codec.ReallyMeCodecException
-import me.really.codec.v1.CodecMultikeyParseResult
 
 public class ReallyMeParsedMultikey(
     public val algorithm: ReallyMeMulticodecKeyAlgorithm,
@@ -41,27 +39,26 @@ public object ReallyMeMultikey {
 
     public fun parse(multikey: String): ReallyMeParsedMultikey {
         val parsed = codecOperation {
-            try {
-                CodecMultikeyParseResult.parseFrom(ReallyMeCodec.multikeyParseProto(multikey))
-            } catch (_: InvalidProtocolBufferException) {
-                throw ReallyMeCryptoException.ProviderFailure()
-            }
+            ReallyMeCodec.multikeyParse(multikey)
         }
         val algorithm = try {
             ReallyMeMulticodec.algorithmForCodecName(parsed.codecName)
         } catch (_: ReallyMeCryptoException.UnsupportedAlgorithm) {
             throw ReallyMeCryptoException.InvalidInput()
         }
-        val expectedPublicKeyLength = if (parsed.variablePublicKeyLength) {
-            null
-        } else {
-            parsed.expectedPublicKeyLength
+        val expectedPublicKeyLength = parsed.expectedPublicKeyLength?.let { length ->
+            if (length < 0 || length > Int.MAX_VALUE.toLong()) {
+                throw ReallyMeCryptoException.ProviderFailure()
+            }
+            // The explicit range check above makes the SDK-width conversion
+            // deterministic and prevents a future codec value from wrapping.
+            length.toInt()
         }
 
         return ReallyMeParsedMultikey(
             algorithm = algorithm,
             algorithmName = parsed.algorithmName,
-            publicKey = parsed.publicKey.toByteArray(),
+            publicKey = parsed.publicKey(),
             expectedPublicKeyLength = expectedPublicKeyLength,
         )
     }

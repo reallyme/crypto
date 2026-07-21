@@ -13,7 +13,7 @@ on:
       - "formal/**"
       - "!CONTRACT.md"
       - "!PROVIDER_POLICY.md"
-      - "!RELEASE_BLOCKERS.md"
+      - "!RELEASE_CHECKLIST.md"
       - "!RELEASE_NOTES.md"
       - "!SECURITY_MEMORY_MODEL.md"
       - "!docs/conformance.md"
@@ -31,7 +31,7 @@ on:
       - "formal/**"
       - "!CONTRACT.md"
       - "!PROVIDER_POLICY.md"
-      - "!RELEASE_BLOCKERS.md"
+      - "!RELEASE_CHECKLIST.md"
       - "!RELEASE_NOTES.md"
       - "!SECURITY_MEMORY_MODEL.md"
       - "!docs/conformance.md"
@@ -93,57 +93,81 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: |
-            crates/conformance/vectors/package-lock.json
+            crates/conformance/package-lock.json
             packages/ts/package-lock.json
+
+      - name: Verify locked dependency graph
+        run: cargo metadata --locked --format-version 1 --no-deps
 
       - name: Format
         run: cargo fmt --check
 
       - name: Check all features
-        run: cargo check --workspace --all-features
+        run: cargo check --locked --workspace --all-features
+
+      - name: Check unwind-capable FFI release profile
+        run: cargo check --locked -p crypto-ffi --profile release-ffi
+
+      - name: Verify production FFI release symbol surface
+        run: |
+          cargo build --locked -p crypto-ffi --profile release-ffi
+          if nm -D --defined-only target/release-ffi/libcrypto_ffi.so | rg 'rm_crypto_(ml_kem_(512|768|1024)|x_wing_768)_encapsulate_derand$'; then
+            echo "Conformance-only deterministic encapsulation symbols leaked into the production FFI artifact" >&2
+            exit 1
+          fi
+
+      - name: Check conformance-only FFI release profile
+        run: cargo check --locked -p crypto-ffi --profile release-ffi --features test-vectors
+
+      - name: Reject abort-mode FFI release builds
+        run: |
+          if cargo check --locked -p crypto-ffi --release; then
+            echo "crypto-ffi unexpectedly compiled with the abort-mode release profile" >&2
+            exit 1
+          fi
 
       - name: Check warnings as errors
-        run: RUSTFLAGS=-Dwarnings cargo check --workspace --all-features
+        run: RUSTFLAGS=-Dwarnings cargo check --locked --workspace --all-features
 
       - name: Check umbrella crate tarball
-        run: cargo package -p reallyme-crypto --list
+        run: cargo package --locked -p reallyme-crypto --list
 
       - name: Check narrow Rust feature surfaces
         run: |
-          cargo test -p reallyme-crypto-dispatch --test feature_lane_tests --no-default-features
-          cargo test -p reallyme-crypto-dispatch --test feature_lane_tests --no-default-features --features native,x25519,ml-kem-768,chacha20-poly1305,hmac,sha2
-          cargo test -p reallyme-crypto-signer --no-default-features
-          cargo test -p reallyme-crypto-signer --no-default-features --features native
-          cargo test -p reallyme-crypto-signer --no-default-features --features native,ed25519
-          cargo check -p reallyme-crypto --no-default-features --features native,messaging-dispatch
+          cargo test --locked -p reallyme-crypto-dispatch --test feature_lane_tests --no-default-features
+          cargo test --locked -p reallyme-crypto-dispatch --test feature_lane_tests --no-default-features --features native,x25519,ml-kem-768
+          cargo test --locked -p reallyme-crypto-signer --no-default-features
+          cargo test --locked -p reallyme-crypto-signer --no-default-features --features native
+          cargo test --locked -p reallyme-crypto-signer --no-default-features --features native,ed25519
+          cargo check --locked -p reallyme-crypto --no-default-features --features native,messaging-primitives
 
       - name: Clippy
-        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+        run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
 
       - name: Test
-        run: cargo nextest run --workspace --no-default-features --features native
+        run: cargo nextest run --locked --workspace --no-default-features --features native
 
       - name: Test (all features — runs feature-gated tests incl. the proto bridge)
-        run: cargo nextest run --workspace --all-features
+        run: cargo nextest run --locked --workspace --all-features
 
       - name: Doc build (enforces missing_docs)
-        run: cargo doc --workspace --no-deps --all-features
+        run: cargo doc --locked --workspace --no-deps --all-features
         env:
           RUSTDOCFLAGS: -D warnings
 
       - name: Doctests
-        run: cargo test --workspace --all-features --doc
+        run: cargo test --locked --workspace --all-features --doc
 
       - name: Install TypeScript package dependencies
         run: npm ci --prefix packages/ts
 
       - name: Verify vectors against TypeScript-native noble oracles
         run: |
-          npm ci --prefix crates/conformance/vectors
-          npm run --prefix crates/conformance/vectors verify:ts-native
+          npm ci --prefix crates/conformance
+          npm run --prefix crates/conformance verify:ts-native
 
       - name: Verify post-quantum vectors against @noble/post-quantum oracle
-        run: npm run --prefix crates/conformance/vectors verify:noble-pq
+        run: npm run --prefix crates/conformance verify:noble-pq
 
       - name: Test TypeScript package
         run: npm --prefix packages/ts test
@@ -151,14 +175,21 @@ jobs:
       - name: Check generated provider matrix
         run: node scripts/generate_provider_matrix.mjs --check
 
+      - name: Checkout release-readiness runner
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          repository: reallyme/release-readiness
+          ref: f27973caf9d3a12847cac4032c361f5f553c97e9
+          path: .release-readiness
+
       - name: Release readiness
-        run: node scripts/check_release_readiness.mjs
+        run: node .release-readiness/scripts/run-consumer-check.mjs
 
       - name: Check native lane
-        run: cargo check --workspace --no-default-features --features native
+        run: cargo check --locked --workspace --no-default-features --features native
 
       - name: Check wasm32 lane
-        run: cargo check --workspace --no-default-features --features wasm --target wasm32-unknown-unknown
+        run: cargo check --locked --workspace --no-default-features --features wasm --target wasm32-unknown-unknown
 
       - name: Dependency policy
         run: cargo deny check
@@ -168,16 +199,16 @@ jobs:
 
   swift:
     name: swift package + vector conformance
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
-      # The CSecp256k1 dependency's manifest is swift-tools 6.2, which needs
-      # Xcode 26.x (the runner default 16.4 ships Swift 6.1).
-      - name: Select Xcode 26.3
+      # ReallyMe Codec 0.2.0 requires Swift tools 6.3. Pin the runner's newest
+      # stable Xcode so SwiftPM validates that manifest before compiling tests.
+      - name: Select Xcode 26.6
         run: |
-          sudo xcode-select -s /Applications/Xcode_26.3.app
+          sudo xcode-select -s /Applications/Xcode_26.6.app
           swift --version
 
       # The shipped Rust-C-ABI wrapper KATs (ML-KEM/ML-DSA/SLH-DSA/RSA/…) load
@@ -185,7 +216,10 @@ jobs:
       # to `swift test` so those wrappers are actually exercised against the
       # shared vectors in CI, not silently skipped.
       - name: Build crypto-ffi dylib
-        run: cargo build -p crypto-ffi
+        run: cargo build --locked -p crypto-ffi
+
+      - name: Enable source-tree Swift runtime FFI
+        run: touch .reallyme-crypto-runtime-ffi
 
       - name: Test Swift package
         run: swift test
@@ -194,7 +228,7 @@ jobs:
           REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI: "1"
 
       - name: Test Swift vectors
-        run: swift test --package-path crates/conformance/vectors/platform/swift
+        run: swift test --package-path crates/conformance/platform/swift
 
   kotlin:
     name: kotlin package + vector conformance
@@ -202,6 +236,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Validate Gradle wrappers
+        uses: gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
 
       - name: Install Java
         uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5
@@ -215,14 +252,14 @@ jobs:
           toolchain: 1.96.0
 
       - name: Build crypto-ffi dylib
-        run: cargo build -p crypto-ffi
+        run: cargo build --locked -p crypto-ffi
 
       - name: Test Kotlin package
         working-directory: packages/kotlin
-        run: ./gradlew test
+        run: ./gradlew --dependency-verification strict test
         env:
           REALLYME_CRYPTO_FFI_LIBRARY_PATH: ${{ github.workspace }}/target/debug/libcrypto_ffi.so
 
       - name: Test Kotlin vectors
-        working-directory: crates/conformance/vectors/platform/kotlin
-        run: ./gradlew test
+        working-directory: crates/conformance/platform/kotlin
+        run: ./gradlew --dependency-verification strict test

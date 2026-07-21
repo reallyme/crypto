@@ -18,12 +18,16 @@ export {
 export type {
   ReallyMeAeadAlgorithm,
   ReallyMeHashAlgorithm,
+  ReallyMeHkdfAlgorithm,
   ReallyMeHpkeSuite,
+  ReallyMeJwaConcatKdfAlgorithm,
   ReallyMeKdfAlgorithm,
   ReallyMeKemAlgorithm,
   ReallyMeKeyAgreementAlgorithm,
   ReallyMeKeyWrapAlgorithm,
+  ReallyMeKmacKdfAlgorithm,
   ReallyMeMacAlgorithm,
+  ReallyMePbkdf2Algorithm,
   ReallyMeSignatureAlgorithm,
 } from "./algorithms.js";
 export {
@@ -50,6 +54,7 @@ export {
   ARGON2ID_DERIVED_KEY_LENGTH,
   ARGON2ID_SALT_MAX_LENGTH,
   ARGON2ID_SALT_MIN_LENGTH,
+  ARGON2ID_SECRET_MAX_LENGTH,
   ARGON2ID_V1,
   ARGON2ID_V2,
   ReallyMeArgon2id,
@@ -64,6 +69,7 @@ export {
 } from "./bip340Schnorr.js";
 export {
   HPKE_AEAD_TAG_LENGTH,
+  HPKE_INFO_MAX_LENGTH,
   HPKE_P256_PRIVATE_KEY_LENGTH,
   HPKE_P256_PUBLIC_KEY_LENGTH,
   HPKE_X25519_PRIVATE_KEY_LENGTH,
@@ -89,7 +95,6 @@ export {
   ML_KEM_512_PUBLIC_KEY_LENGTH,
   ML_KEM_768_CIPHERTEXT_LENGTH,
   ML_KEM_768_PUBLIC_KEY_LENGTH,
-  ML_KEM_ENCAPSULATION_RANDOMNESS_LENGTH,
   ML_KEM_SECRET_KEY_LENGTH,
   ML_KEM_SHARED_SECRET_LENGTH,
   ReallyMeMlKem,
@@ -141,6 +146,15 @@ export {
   ReallyMeHkdf,
 } from "./hkdf.js";
 export {
+  KMAC256_MAX_CONTEXT_LENGTH,
+  KMAC256_MAX_CUSTOMIZATION_LENGTH,
+  KMAC256_MAX_KEY_LENGTH,
+  KMAC256_MAX_OUTPUT_LENGTH,
+  KMAC256_MIN_KEY_LENGTH,
+  KMAC256_MIN_OUTPUT_LENGTH,
+  ReallyMeKmac,
+} from "./kmac.js";
+export {
   JWA_CONCAT_KDF_MAX_INFO_LENGTH,
   JWA_CONCAT_KDF_MAX_OUTPUT_LENGTH,
   JWA_CONCAT_KDF_MAX_SHARED_SECRET_LENGTH,
@@ -150,8 +164,13 @@ export {
 } from "./jwaConcatKdf.js";
 export { bestEffortClear } from "./memory.js";
 export {
+  processOperationResponse,
+  processOperationResponseJson,
+} from "./operationResponse.js";
+export {
   HMAC_MAX_KEY_LENGTH,
   HMAC_SHA256_TAG_LENGTH,
+  HMAC_SHA384_TAG_LENGTH,
   HMAC_SHA512_TAG_LENGTH,
   ReallyMeHmac,
 } from "./hmac.js";
@@ -196,6 +215,7 @@ export {
 } from "./p521Ecdsa.js";
 export {
   PBKDF2_MAX_INPUT_LENGTH,
+  PBKDF2_MAX_ITERATIONS,
   PBKDF2_MAX_OUTPUT_LENGTH,
   PBKDF2_MIN_INPUT_LENGTH,
   PBKDF2_MIN_ITERATIONS,
@@ -226,11 +246,8 @@ export { createReallyMeWasmProvider, installReallyMeWasmProvider } from "./wasmP
 export type { ReallyMeWasmProvider } from "./wasmProvider.js";
 export {
   ReallyMeXWing,
-  X_WING_1024_CIPHERTEXT_LENGTH,
-  X_WING_1024_PUBLIC_KEY_LENGTH,
   X_WING_768_CIPHERTEXT_LENGTH,
   X_WING_768_PUBLIC_KEY_LENGTH,
-  X_WING_ENCAPSULATION_SEED_LENGTH,
   X_WING_SECRET_KEY_LENGTH,
   X_WING_SHARED_SECRET_LENGTH,
 } from "./xWing.js";

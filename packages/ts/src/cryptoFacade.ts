@@ -5,18 +5,21 @@
 import type {
   ReallyMeAeadAlgorithm,
   ReallyMeHashAlgorithm,
+  ReallyMeHkdfAlgorithm,
   ReallyMeHpkeSuite,
-  ReallyMeKdfAlgorithm,
+  ReallyMeJwaConcatKdfAlgorithm,
   ReallyMeKemAlgorithm,
   ReallyMeKeyAgreementAlgorithm,
   ReallyMeKeyWrapAlgorithm,
+  ReallyMeKmacKdfAlgorithm,
   ReallyMeMacAlgorithm,
+  ReallyMePbkdf2Algorithm,
   ReallyMeSignatureAlgorithm,
 } from "./algorithms.js";
 import type { ReallyMeRsaPublicKeyDerEncoding } from "./rsa.js";
 import { ReallyMeAead } from "./aead.js";
 import { ReallyMeAesKw } from "./aesKw.js";
-import { ARGON2ID_DERIVED_KEY_LENGTH, ReallyMeArgon2id } from "./argon2id.js";
+import { ReallyMeArgon2id } from "./argon2id.js";
 import { ReallyMeBip340Schnorr } from "./bip340Schnorr.js";
 import { ReallyMeDigest } from "./digest.js";
 import { ReallyMeEd25519 } from "./ed25519.js";
@@ -25,6 +28,7 @@ import { ReallyMeHkdf } from "./hkdf.js";
 import { ReallyMeHmac } from "./hmac.js";
 import { ReallyMeHpke } from "./hpke.js";
 import { ReallyMeJwaConcatKdf } from "./jwaConcatKdf.js";
+import { ReallyMeKmac } from "./kmac.js";
 import { ReallyMeMlDsa } from "./mlDsa.js";
 import { ReallyMeMlKem } from "./mlKem.js";
 import { ReallyMeP256Ecdsa } from "./p256Ecdsa.js";
@@ -39,6 +43,11 @@ import { ReallyMeSecp256k1 } from "./secp256k1.js";
 import { ReallyMeSlhDsa } from "./slhDsa.js";
 import { requireReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
+import {
+  processOperationResponseJsonWithProvider,
+  processOperationResponseWithProvider,
+} from "./operationResponse.js";
+import { ensureByteArray } from "./validateBytes.js";
 import { ReallyMeX25519 } from "./x25519.js";
 import { ReallyMeXWing } from "./xWing.js";
 
@@ -83,11 +92,34 @@ export type ReallyMeCryptoProviders = Readonly<{
 /**
  * Generic package facade. Algorithm-specific objects remain available for
  * callers that want direct provider access; this facade gives consumers a
- * stable typed route that fails closed for not-yet-exposed algorithms.
+ * stable typed route and rejects algorithm/operation combinations that the
+ * selected method does not define.
  */
 const createReallyMeCryptoFacade = (
   resolveWasmProvider: () => ReallyMeWasmProvider,
 ) => ({
+  /**
+   * Executes a generated binary request and returns a binary
+   * `CryptoOperationResponse`.
+   */
+  processOperationResponse(request: Uint8Array): Uint8Array {
+    ensureByteArray(request);
+    return processOperationResponseWithProvider(resolveWasmProvider(), request);
+  },
+
+  /**
+   * Executes a permitted non-secret generated ProtoJSON request and returns
+   * the same binary `CryptoOperationResponse`. Secret-bearing selectors fail
+   * before JSON value deserialization.
+   */
+  processOperationResponseJson(requestJson: Uint8Array): Uint8Array {
+    ensureByteArray(requestJson);
+    return processOperationResponseJsonWithProvider(
+      resolveWasmProvider(),
+      requestJson,
+    );
+  },
+
   hash(algorithm: ReallyMeHashAlgorithm, bytes: Uint8Array): Uint8Array {
     switch (algorithm) {
       case "SHA2-256":
@@ -171,6 +203,8 @@ const createReallyMeCryptoFacade = (
     switch (algorithm) {
       case "HMAC-SHA-256":
         return ReallyMeHmac.authenticateSha256(key, message);
+      case "HMAC-SHA-384":
+        return ReallyMeHmac.authenticateSha384(key, message);
       case "HMAC-SHA-512":
         return ReallyMeHmac.authenticateSha512(key, message);
       default:
@@ -187,6 +221,8 @@ const createReallyMeCryptoFacade = (
     switch (algorithm) {
       case "HMAC-SHA-256":
         return ReallyMeHmac.verifySha256(tag, key, message);
+      case "HMAC-SHA-384":
+        return ReallyMeHmac.verifySha384(tag, key, message);
       case "HMAC-SHA-512":
         return ReallyMeHmac.verifySha512(tag, key, message);
       default:
@@ -208,41 +244,24 @@ const createReallyMeCryptoFacade = (
   },
 
   deriveKey(
-    algorithm: ReallyMeKdfAlgorithm,
+    algorithm: ReallyMePbkdf2Algorithm,
     password: Uint8Array,
     salt: Uint8Array,
     iterations: number,
     outputLength: number,
   ): Uint8Array {
     switch (algorithm) {
-      case "Argon2id":
-        if (outputLength !== ARGON2ID_DERIVED_KEY_LENGTH) {
-          throw new ReallyMeCryptoError("invalid-input");
-        }
-        // Argon2id is governed by fixed ReallyMe profile versions, not by
-        // caller-selected iteration counts. This legacy generic KDF shape
-        // preserves the existing facade contract; new code should call
-        // deriveArgon2id(kdfVersion, secret, salt) so the profile selector is
-        // explicit at the API boundary.
-        return ReallyMeArgon2id.deriveKeyWithProvider(
-          resolveWasmProvider(),
-          iterations,
-          password,
-          salt,
-        );
       case "PBKDF2-HMAC-SHA-256":
         return ReallyMePbkdf2.deriveHmacSha256(password, salt, iterations, outputLength);
       case "PBKDF2-HMAC-SHA-512":
         return ReallyMePbkdf2.deriveHmacSha512(password, salt, iterations, outputLength);
-      case "HKDF-SHA256":
-        throw new ReallyMeCryptoError("unsupported-algorithm");
       default:
         throw new ReallyMeCryptoError("unsupported-algorithm");
     }
   },
 
   deriveHkdf(
-    algorithm: ReallyMeKdfAlgorithm,
+    algorithm: ReallyMeHkdfAlgorithm,
     inputKeyMaterial: Uint8Array,
     salt: Uint8Array,
     info: Uint8Array,
@@ -251,18 +270,15 @@ const createReallyMeCryptoFacade = (
     switch (algorithm) {
       case "HKDF-SHA256":
         return ReallyMeHkdf.deriveSha256(inputKeyMaterial, salt, info, outputLength);
-      case "Argon2id":
-      case "PBKDF2-HMAC-SHA-256":
-      case "PBKDF2-HMAC-SHA-512":
-      case "JWA-CONCAT-KDF-SHA256":
-        throw new ReallyMeCryptoError("unsupported-algorithm");
+      case "HKDF-SHA384":
+        return ReallyMeHkdf.deriveSha384(inputKeyMaterial, salt, info, outputLength);
       default:
         throw new ReallyMeCryptoError("unsupported-algorithm");
     }
   },
 
   deriveJwaConcatKdfSha256(
-    algorithm: ReallyMeKdfAlgorithm,
+    algorithm: ReallyMeJwaConcatKdfAlgorithm,
     sharedSecret: Uint8Array,
     algorithmId: Uint8Array,
     partyUInfo: Uint8Array,
@@ -278,11 +294,27 @@ const createReallyMeCryptoFacade = (
           partyVInfo,
           outputLength,
         );
-      case "Argon2id":
-      case "HKDF-SHA256":
-      case "PBKDF2-HMAC-SHA-256":
-      case "PBKDF2-HMAC-SHA-512":
+      default:
         throw new ReallyMeCryptoError("unsupported-algorithm");
+    }
+  },
+
+  deriveKmac256(
+    algorithm: ReallyMeKmacKdfAlgorithm,
+    key: Uint8Array,
+    context: Uint8Array,
+    customization: Uint8Array,
+    outputLength: number,
+  ): Uint8Array {
+    switch (algorithm) {
+      case "KMAC256":
+        return ReallyMeKmac.deriveKmac256WithProvider(
+          resolveWasmProvider(),
+          key,
+          context,
+          customization,
+          outputLength,
+        );
       default:
         throw new ReallyMeCryptoError("unsupported-algorithm");
     }
@@ -294,8 +326,11 @@ const createReallyMeCryptoFacade = (
     keyToWrap: Uint8Array,
   ): Uint8Array {
     switch (algorithm) {
+      case "AES-128-KW":
+      case "AES-192-KW":
       case "AES-256-KW":
         return ReallyMeAesKw.wrapKeyWithProvider(
+          algorithm,
           resolveWasmProvider(),
           wrappingKey,
           keyToWrap,
@@ -311,8 +346,11 @@ const createReallyMeCryptoFacade = (
     wrappedKey: Uint8Array,
   ): Uint8Array {
     switch (algorithm) {
+      case "AES-128-KW":
+      case "AES-192-KW":
       case "AES-256-KW":
         return ReallyMeAesKw.unwrapKeyWithProvider(
+          algorithm,
           resolveWasmProvider(),
           wrappingKey,
           wrappedKey,
@@ -559,7 +597,6 @@ const createReallyMeCryptoFacade = (
   generateKemKeyPair(algorithm: ReallyMeKemAlgorithm): ReallyMeKemKeyPair {
     switch (algorithm) {
       case "X-Wing-768":
-      case "X-Wing-1024":
         return ReallyMeXWing.generateKeyPairWithProvider(
           resolveWasmProvider(),
           algorithm,
@@ -582,7 +619,6 @@ const createReallyMeCryptoFacade = (
   ): ReallyMeKemKeyPair {
     switch (algorithm) {
       case "X-Wing-768":
-      case "X-Wing-1024":
         return ReallyMeXWing.deriveKeyPairWithProvider(
           resolveWasmProvider(),
           algorithm,
@@ -607,7 +643,6 @@ const createReallyMeCryptoFacade = (
   ): ReallyMeKemEncapsulation {
     switch (algorithm) {
       case "X-Wing-768":
-      case "X-Wing-1024":
         return ReallyMeXWing.encapsulateWithProvider(
           resolveWasmProvider(),
           algorithm,
@@ -633,7 +668,6 @@ const createReallyMeCryptoFacade = (
   ): Uint8Array {
     switch (algorithm) {
       case "X-Wing-768":
-      case "X-Wing-1024":
         return ReallyMeXWing.decapsulateWithProvider(
           resolveWasmProvider(),
           algorithm,

@@ -18,14 +18,29 @@ impl SignatureAlgorithm for Ed25519Algo {
     fn generate_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), AlgorithmError> {
         #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
         {
+            return crypto_ed25519::generate_ed25519_keypair().map_err(AlgorithmError::from);
+        }
+
+        #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
+        {
+            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+        }
+    }
+
+    fn derive_keypair(secret: &[u8]) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), AlgorithmError> {
+        #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
+        {
+            let seed =
+                <&[u8; 32]>::try_from(secret).map_err(|_| AlgorithmError::InvalidKey(Self::ALG))?;
             return crate::algorithms::KeypairResultExt::into_algorithm_keypair(
-                crypto_ed25519::generate_ed25519_keypair(),
+                crypto_ed25519::generate_ed25519_keypair_from_seed(seed),
                 Self::ALG,
             );
         }
 
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         {
+            let _ = secret;
             Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
         }
     }

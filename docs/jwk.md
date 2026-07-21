@@ -25,6 +25,26 @@ Classical keys use the registered JOSE shapes:
 | P-256 | `kty: "EC"` |
 | secp256k1 | `kty: "EC"` |
 
+OKP `alg` and `use` members are optional for public-byte JWKs, but they are
+enforced when present. Ed25519 accepts only `alg: "EdDSA"`
+and `use: "sig"`; X25519 accepts only `alg: "ECDH-ES"` and `use: "enc"`.
+Conflicting metadata is rejected instead of being treated as advisory.
+
+Deserialization dispatches on `kty` explicitly. Duplicate members, private-key
+members, mixed JWK shapes, and unknown non-extension members are rejected before
+key extraction. Public members are length-checked before base64url decoding so
+oversized values cannot trigger a second attacker-proportional allocation.
+
+EC JWK import treats both coordinates as identity-bearing input. The parser
+reconstructs the compressed SEC1 key, decompresses it through the reviewed curve
+primitive, and compares the recovered `x` and `y` coordinates byte-for-byte with
+the supplied JWK members. Mismatched coordinates are invalid even when their
+parity would otherwise identify a decomposable point.
+
+JWK-to-Multikey conversion consumes this same validated public-key boundary.
+It does not independently decode coordinates or bypass `alg`/`use`, key-length,
+or exact-coordinate policy.
+
 Post-quantum and hybrid keys use this package's asymmetric-key-pair profile:
 
 | Field | Meaning |
@@ -52,8 +72,8 @@ algorithm.
 ## Multikey Availability
 
 Some AKP keys intentionally have JWK vectors before they have multikey vectors.
-SLH-DSA-SHA2-128s and X-Wing-768/1024 are waiting on stable Multicodec public
-key identifiers, so their vector entries use:
+SLH-DSA-SHA2-128s and X-Wing-768 are waiting on stable Multicodec public key
+identifiers, so their vector entries use:
 
 ```json
 {

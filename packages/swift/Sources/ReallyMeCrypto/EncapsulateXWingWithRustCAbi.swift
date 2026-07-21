@@ -4,10 +4,7 @@
 
 private let rustCAbiXWing768PublicKeyLength = 1_216
 private let rustCAbiXWing768CiphertextLength = 1_120
-private let rustCAbiXWing1024PublicKeyLength = 1_600
-private let rustCAbiXWing1024CiphertextLength = 1_600
 private let rustCAbiXWingSecretKeyLength = 32
-private let rustCAbiXWingEncapsulationSeedLength = 64
 private let rustCAbiXWingSharedSecretLength = 32
 
 private typealias XWingGenerateKeyPairFunction = @convention(c) (
@@ -33,17 +30,6 @@ private typealias XWingEncapsulateFunction = @convention(c) (
     Int
 ) -> Int32
 
-private typealias XWingEncapsulateDerandFunction = @convention(c) (
-    UnsafePointer<UInt8>?,
-    Int,
-    UnsafePointer<UInt8>?,
-    Int,
-    UnsafeMutablePointer<UInt8>?,
-    Int,
-    UnsafeMutablePointer<UInt8>?,
-    Int
-) -> Int32
-
 private typealias XWingDecapsulateFunction = @convention(c) (
     UnsafePointer<UInt8>?,
     Int,
@@ -59,7 +45,6 @@ private struct RustCAbiXWingSuite {
     let generateKeyPairFunction: XWingGenerateKeyPairFunction
     let deriveKeyPairFunction: XWingDeriveKeyPairFunction
     let encapsulateFunction: XWingEncapsulateFunction
-    let encapsulateDerandFunction: XWingEncapsulateDerandFunction
     let decapsulateFunction: XWingDecapsulateFunction
 }
 
@@ -73,13 +58,7 @@ public struct ReallyMeRustCAbiXWing: Sendable {
     private let xWing768GenerateKeyPairFunction: XWingGenerateKeyPairFunction
     private let xWing768DeriveKeyPairFunction: XWingDeriveKeyPairFunction
     private let xWing768EncapsulateFunction: XWingEncapsulateFunction
-    private let xWing768EncapsulateDerandFunction: XWingEncapsulateDerandFunction
     private let xWing768DecapsulateFunction: XWingDecapsulateFunction
-    private let xWing1024GenerateKeyPairFunction: XWingGenerateKeyPairFunction
-    private let xWing1024DeriveKeyPairFunction: XWingDeriveKeyPairFunction
-    private let xWing1024EncapsulateFunction: XWingEncapsulateFunction
-    private let xWing1024EncapsulateDerandFunction: XWingEncapsulateDerandFunction
-    private let xWing1024DecapsulateFunction: XWingDecapsulateFunction
 
     public init(library: ReallyMeRustCAbiLibrary) throws {
         self.library = library
@@ -95,32 +74,8 @@ public struct ReallyMeRustCAbiXWing: Sendable {
             "rm_crypto_x_wing_768_encapsulate",
             as: XWingEncapsulateFunction.self
         )
-        xWing768EncapsulateDerandFunction = try library.loadFunction(
-            "rm_crypto_x_wing_768_encapsulate_derand",
-            as: XWingEncapsulateDerandFunction.self
-        )
         xWing768DecapsulateFunction = try library.loadFunction(
             "rm_crypto_x_wing_768_decapsulate",
-            as: XWingDecapsulateFunction.self
-        )
-        xWing1024GenerateKeyPairFunction = try library.loadFunction(
-            "rm_crypto_x_wing_1024_generate_keypair",
-            as: XWingGenerateKeyPairFunction.self
-        )
-        xWing1024DeriveKeyPairFunction = try library.loadFunction(
-            "rm_crypto_x_wing_1024_generate_keypair_derand",
-            as: XWingDeriveKeyPairFunction.self
-        )
-        xWing1024EncapsulateFunction = try library.loadFunction(
-            "rm_crypto_x_wing_1024_encapsulate",
-            as: XWingEncapsulateFunction.self
-        )
-        xWing1024EncapsulateDerandFunction = try library.loadFunction(
-            "rm_crypto_x_wing_1024_encapsulate_derand",
-            as: XWingEncapsulateDerandFunction.self
-        )
-        xWing1024DecapsulateFunction = try library.loadFunction(
-            "rm_crypto_x_wing_1024_decapsulate",
             as: XWingDecapsulateFunction.self
         )
     }
@@ -214,50 +169,6 @@ public struct ReallyMeRustCAbiXWing: Sendable {
         return ReallyMeKemEncapsulation(sharedSecret: sharedSecret, ciphertext: ciphertext)
     }
 
-    public func encapsulateDerand(
-        _ algorithm: ReallyMeKemAlgorithm,
-        publicKey: [UInt8],
-        seed: [UInt8]
-    ) throws -> ReallyMeKemEncapsulation {
-        let suite = try rustSuite(for: algorithm)
-        guard publicKey.count == suite.publicKeyLength,
-              seed.count == rustCAbiXWingEncapsulationSeedLength
-        else {
-            throw ReallyMeCryptoError.invalidInput
-        }
-
-        var ciphertext = [UInt8](repeating: 0, count: suite.ciphertextLength)
-        var sharedSecret = [UInt8](repeating: 0, count: rustCAbiXWingSharedSecretLength)
-        let ciphertextCapacity = ciphertext.count
-        let sharedSecretCapacity = sharedSecret.count
-        let status = publicKey.withUnsafeBufferPointer { publicBuffer in
-            seed.withUnsafeBufferPointer { seedBuffer in
-                ciphertext.withUnsafeMutableBufferPointer { ciphertextBuffer in
-                    sharedSecret.withUnsafeMutableBufferPointer { sharedSecretBuffer in
-                        suite.encapsulateDerandFunction(
-                            publicBuffer.baseAddress,
-                            publicKey.count,
-                            seedBuffer.baseAddress,
-                            seed.count,
-                            ciphertextBuffer.baseAddress,
-                            ciphertextCapacity,
-                            sharedSecretBuffer.baseAddress,
-                            sharedSecretCapacity
-                        )
-                    }
-                }
-            }
-        }
-
-        do {
-            try ReallyMeRustCAbiStatus.throwIfError(status)
-        } catch {
-            ReallyMeCryptoMemory.bestEffortClear(&sharedSecret)
-            throw error
-        }
-        return ReallyMeKemEncapsulation(sharedSecret: sharedSecret, ciphertext: ciphertext)
-    }
-
     public func decapsulate(
         _ algorithm: ReallyMeKemAlgorithm,
         ciphertext: [UInt8],
@@ -305,18 +216,7 @@ public struct ReallyMeRustCAbiXWing: Sendable {
                 generateKeyPairFunction: xWing768GenerateKeyPairFunction,
                 deriveKeyPairFunction: xWing768DeriveKeyPairFunction,
                 encapsulateFunction: xWing768EncapsulateFunction,
-                encapsulateDerandFunction: xWing768EncapsulateDerandFunction,
                 decapsulateFunction: xWing768DecapsulateFunction
-            )
-        case .xWing1024:
-            return RustCAbiXWingSuite(
-                publicKeyLength: rustCAbiXWing1024PublicKeyLength,
-                ciphertextLength: rustCAbiXWing1024CiphertextLength,
-                generateKeyPairFunction: xWing1024GenerateKeyPairFunction,
-                deriveKeyPairFunction: xWing1024DeriveKeyPairFunction,
-                encapsulateFunction: xWing1024EncapsulateFunction,
-                encapsulateDerandFunction: xWing1024EncapsulateDerandFunction,
-                decapsulateFunction: xWing1024DecapsulateFunction
             )
         case .mlKem512, .mlKem768, .mlKem1024:
             throw ReallyMeCryptoError.unsupportedAlgorithm
@@ -332,7 +232,7 @@ public extension ReallyMeCrypto {
         switch algorithm {
         case .mlKem512, .mlKem768, .mlKem1024:
             return try ReallyMeRustCAbiMlKem(library: rustCAbiLibrary).generateKeyPair(algorithm)
-        case .xWing768, .xWing1024:
+        case .xWing768:
             return try ReallyMeRustCAbiXWing(library: rustCAbiLibrary).generateKeyPair(algorithm)
         }
     }
@@ -364,25 +264,9 @@ public extension ReallyMeCrypto {
         case .mlKem512, .mlKem768, .mlKem1024:
             return try ReallyMeRustCAbiMlKem(library: rustCAbiLibrary)
                 .encapsulate(algorithm, publicKey: publicKey)
-        case .xWing768, .xWing1024:
+        case .xWing768:
             return try ReallyMeRustCAbiXWing(library: rustCAbiLibrary)
                 .encapsulate(algorithm, publicKey: publicKey)
-        }
-    }
-
-    static func encapsulate(
-        _ algorithm: ReallyMeKemAlgorithm,
-        publicKey: [UInt8],
-        seed: [UInt8],
-        rustCAbiLibrary: ReallyMeRustCAbiLibrary
-    ) throws -> ReallyMeKemEncapsulation {
-        switch algorithm {
-        case .mlKem512, .mlKem768, .mlKem1024:
-            return try ReallyMeRustCAbiMlKem(library: rustCAbiLibrary)
-                .encapsulateDerand(algorithm, publicKey: publicKey, randomness: seed)
-        case .xWing768, .xWing1024:
-            return try ReallyMeRustCAbiXWing(library: rustCAbiLibrary)
-                .encapsulateDerand(algorithm, publicKey: publicKey, seed: seed)
         }
     }
 
@@ -396,7 +280,7 @@ public extension ReallyMeCrypto {
         case .mlKem512, .mlKem768, .mlKem1024:
             return try ReallyMeRustCAbiMlKem(library: rustCAbiLibrary)
                 .decapsulate(algorithm, ciphertext: ciphertext, secretKey: secretKey)
-        case .xWing768, .xWing1024:
+        case .xWing768:
             return try ReallyMeRustCAbiXWing(library: rustCAbiLibrary)
                 .decapsulate(algorithm, ciphertext: ciphertext, secretKey: secretKey)
         }

@@ -1,0 +1,20 @@
+{
+  "name": "@reallyme/crypto-conformance-vectors",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "verify:noble-pq": "node scripts/verify-noble-pq-vectors.mjs",
+    "verify:ts-native": "npm run --prefix ../../packages/ts build:ts && node scripts/verify-ts-native-vectors.mjs",
+    "verify:all": "npm run verify:ts-native && npm run verify:noble-pq"
+  },
+  "dependencies": {
+    "@noble/ciphers": "2.2.0",
+    "@noble/curves": "2.2.0",
+    "@noble/hashes": "2.2.0",
+    "@noble/post-quantum": "0.6.1"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "license": "Apache-2.0"
+}

@@ -61,11 +61,6 @@ extension ReallyMeCryptoRustCAbiTests {
             vector: vectors.xWing768,
             library: library
         )
-        try Self.assertXWingVector(
-            algorithm: .xWing1024,
-            vector: vectors.xWing1024,
-            library: library
-        )
 
         let freshKeyPair = try ReallyMeCrypto.generateKemKeyPair(.xWing768, rustCAbiLibrary: library)
         let freshEncapsulation = try ReallyMeCrypto.encapsulate(

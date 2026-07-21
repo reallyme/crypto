@@ -19,7 +19,6 @@ public enum ReallyMeJwkAlgorithm: String, Sendable {
     case mlKem1024 = "ML-KEM-1024"
     case slhDsaSha2_128s = "SLH-DSA-SHA2-128s"
     case xWing768 = "X-Wing-768"
-    case xWing1024 = "X-Wing-1024"
 }
 
 public struct ReallyMeJwkDocument: Equatable, Sendable {
@@ -91,6 +90,8 @@ private struct ReallyMeJwkSpec {
 /// operations such as base64url and JCS are delegated to `reallyme-codec` so the
 /// package lanes do not drift from the Rust codec implementation.
 public enum ReallyMeJwk {
+    private static let maxJwkJsonBytes = 1_048_576
+    private static let maxJwksKeys = 1_024
     private static let privateMemberNames: Set<String> = [
         "d", "p", "q", "dp", "dq", "qi", "oth", "k", "priv", "privateKey", "secretKey",
     ]
@@ -142,31 +143,37 @@ public enum ReallyMeJwk {
     private static func jwkJson(_ jwk: ReallyMeJwkDocument) throws -> String {
         switch jwk.kty {
         case "EC":
-            guard let crv = jwk.crv, let x = jwk.x, let y = jwk.y else {
+            guard jwk.crv != nil, jwk.x != nil, jwk.y != nil else {
                 throw ReallyMeCryptoError.invalidInput
             }
-            return try #"{"alg":\#(jsonString(jwk.alg)),"crv":\#(jsonString(crv)),"kty":"EC","use":\#(jsonString(jwk.keyUse)),"x":\#(jsonString(x)),"y":\#(jsonString(y))}"#
         case "OKP":
-            guard let crv = jwk.crv, let x = jwk.x else {
+            guard jwk.crv != nil, jwk.x != nil else {
                 throw ReallyMeCryptoError.invalidInput
             }
-            return try #"{"alg":\#(jsonString(jwk.alg)),"crv":\#(jsonString(crv)),"kty":"OKP","use":\#(jsonString(jwk.keyUse)),"x":\#(jsonString(x))}"#
         case "AKP":
-            guard let publicKey = jwk.publicKey else {
+            guard jwk.publicKey != nil else {
                 throw ReallyMeCryptoError.invalidInput
             }
-            return try #"{"alg":\#(jsonString(jwk.alg)),"kty":"AKP","pub":\#(jsonString(publicKey)),"use":\#(jsonString(jwk.keyUse))}"#
         default:
             throw ReallyMeCryptoError.unsupportedAlgorithm
         }
+        let data: Data
+        do {
+            data = try JSONSerialization.data(
+                withJSONObject: object(from: jwk),
+                options: [.sortedKeys]
+            )
+        } catch {
+            throw ReallyMeCryptoError.invalidInput
+        }
+        guard let json = String(data: data, encoding: .utf8) else {
+            throw ReallyMeCryptoError.invalidInput
+        }
+        return json
     }
 
     public static func fromJwkJson(_ data: Data) throws -> ReallyMeJwkKey {
-        let decoded = try JSONSerialization.jsonObject(with: data)
-        guard let object = decoded as? [String: Any] else {
-            throw ReallyMeCryptoError.invalidInput
-        }
-        return try fromJwkObject(object)
+        try fromJwkObject(canonicalJsonObject(data))
     }
 
     public static func toJwks(_ keys: [ReallyMeJwkDocument]) -> ReallyMeJwks {
@@ -174,10 +181,11 @@ public enum ReallyMeJwk {
     }
 
     public static func fromJwksJson(_ data: Data) throws -> [ReallyMeJwkKey] {
-        let decoded = try JSONSerialization.jsonObject(with: data)
+        let object = try canonicalJsonObject(data)
         guard
-            let object = decoded as? [String: Any],
-            let keys = object["keys"] as? [[String: Any]]
+            Set(object.keys) == Set(["keys"]),
+            let keys = object["keys"] as? [[String: Any]],
+            keys.count <= maxJwksKeys
         else {
             throw ReallyMeCryptoError.invalidInput
         }
@@ -209,11 +217,32 @@ public enum ReallyMeJwk {
         }
 
         let spec = try spec(for: algorithmName)
+        let allowedMemberNames: Set<String>
+        switch spec.kty {
+        case "EC":
+            allowedMemberNames = ["alg", "crv", "kty", "use", "x", "y"]
+        case "OKP":
+            allowedMemberNames = ["alg", "crv", "kty", "use", "x"]
+        case "AKP":
+            allowedMemberNames = ["alg", "kty", "pub", "use"]
+        default:
+            throw ReallyMeCryptoError.unsupportedAlgorithm
+        }
+        guard Set(object.keys).isSubset(of: allowedMemberNames) else {
+            throw ReallyMeCryptoError.invalidInput
+        }
+        let metadataMatches: Bool
+        if spec.kty == "OKP" {
+            metadataMatches = optionalStringMemberMatches(object, name: "alg", expected: spec.alg)
+                && optionalStringMemberMatches(object, name: "use", expected: spec.keyUse)
+        } else {
+            metadataMatches = object["alg"] as? String == spec.alg
+                && object["use"] as? String == spec.keyUse
+        }
         guard
             let algorithm = ReallyMeJwkAlgorithm(rawValue: algorithmName),
             kty == spec.kty,
-            object["alg"] as? String == spec.alg,
-            object["use"] as? String == spec.keyUse
+            metadataMatches
         else {
             throw ReallyMeCryptoError.invalidInput
         }
@@ -271,6 +300,17 @@ public enum ReallyMeJwk {
         return object
     }
 
+    private static func optionalStringMemberMatches(
+        _ object: [String: Any],
+        name: String,
+        expected: String
+    ) -> Bool {
+        guard let value = object[name] else {
+            return true
+        }
+        return value as? String == expected
+    }
+
     private static func spec(for algorithmName: String) throws -> ReallyMeJwkSpec {
         switch algorithmName {
         case "Ed25519":
@@ -297,8 +337,6 @@ public enum ReallyMeJwk {
             return ReallyMeJwkSpec(alg: algorithmName, crv: nil, kty: "AKP", keyUse: "sig", publicKeyLength: 32)
         case "X-Wing-768":
             return ReallyMeJwkSpec(alg: algorithmName, crv: nil, kty: "AKP", keyUse: "enc", publicKeyLength: 1_216)
-        case "X-Wing-1024":
-            return ReallyMeJwkSpec(alg: algorithmName, crv: nil, kty: "AKP", keyUse: "enc", publicKeyLength: 1_600)
         default:
             throw ReallyMeCryptoError.unsupportedAlgorithm
         }
@@ -336,19 +374,39 @@ public enum ReallyMeJwk {
         }
         prefix = (last & 1) == 0 ? 0x02 : 0x03
         let compressed = [prefix] + x
-        _ = try decompressEcPublicKey(algorithm: algorithm, publicKey: compressed)
-        return compressed
-    }
-
-    private static func jsonString(_ value: String) throws -> String {
-        let data = try JSONSerialization.data(withJSONObject: [value])
+        let uncompressed = try decompressEcPublicKey(algorithm: algorithm, publicKey: compressed)
         guard
-            let encoded = String(data: data, encoding: .utf8),
-            encoded.count >= 2
+            uncompressed.count == 65,
+            Array(uncompressed[1..<33]) == x,
+            Array(uncompressed[33..<65]) == y
         else {
             throw ReallyMeCryptoError.invalidInput
         }
-        return String(encoded.dropFirst().dropLast())
+        return compressed
+    }
+
+    private static func canonicalJsonObject(_ data: Data) throws -> [String: Any] {
+        guard data.count <= maxJwkJsonBytes, let json = String(data: data, encoding: .utf8) else {
+            throw ReallyMeCryptoError.invalidInput
+        }
+        let canonical: String
+        do {
+            canonical = try ReallyMeCryptoCodecProvider.requireCodec().canonicalizeJson(json)
+        } catch {
+            throw mapCodecError(error)
+        }
+        let decoded: Any
+        do {
+            decoded = try JSONSerialization.jsonObject(with: Data(canonical.utf8))
+        } catch {
+            throw ReallyMeCryptoError.invalidInput
+        }
+        guard
+            let object = decoded as? [String: Any]
+        else {
+            throw ReallyMeCryptoError.invalidInput
+        }
+        return object
     }
 
     private static func codecBase64urlEncode(_ bytes: [UInt8]) throws -> String {

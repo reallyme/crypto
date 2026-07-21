@@ -54,7 +54,6 @@ export const REALLYME_KEM_ALGORITHMS = [
   "ML-KEM-768",
   "ML-KEM-1024",
   "X-Wing-768",
-  "X-Wing-1024",
 ] as const;
 
 export type ReallyMeKemAlgorithm = (typeof REALLYME_KEM_ALGORITHMS)[number];
@@ -71,6 +70,7 @@ export type ReallyMeKeyAgreementAlgorithm =
 
 export const REALLYME_MAC_ALGORITHMS = [
   "HMAC-SHA-256",
+  "HMAC-SHA-384",
   "HMAC-SHA-512",
 ] as const;
 
@@ -78,7 +78,9 @@ export type ReallyMeMacAlgorithm = (typeof REALLYME_MAC_ALGORITHMS)[number];
 
 export const REALLYME_KDF_ALGORITHMS = [
   "HKDF-SHA256",
+  "HKDF-SHA384",
   "Argon2id",
+  "KMAC256",
   "PBKDF2-HMAC-SHA-256",
   "PBKDF2-HMAC-SHA-512",
   "JWA-CONCAT-KDF-SHA256",
@@ -86,7 +88,32 @@ export const REALLYME_KDF_ALGORITHMS = [
 
 export type ReallyMeKdfAlgorithm = (typeof REALLYME_KDF_ALGORITHMS)[number];
 
-export const REALLYME_KEY_WRAP_ALGORITHMS = ["AES-256-KW"] as const;
+/** PBKDF2 selectors accepted by the password-based `deriveKey` facade. */
+export type ReallyMePbkdf2Algorithm = Extract<
+  ReallyMeKdfAlgorithm,
+  "PBKDF2-HMAC-SHA-256" | "PBKDF2-HMAC-SHA-512"
+>;
+
+/** HKDF selectors accepted by the `deriveHkdf` facade. */
+export type ReallyMeHkdfAlgorithm = Extract<
+  ReallyMeKdfAlgorithm,
+  "HKDF-SHA256" | "HKDF-SHA384"
+>;
+
+/** JWA Concat KDF selector accepted by its dedicated facade. */
+export type ReallyMeJwaConcatKdfAlgorithm = Extract<
+  ReallyMeKdfAlgorithm,
+  "JWA-CONCAT-KDF-SHA256"
+>;
+
+/** KMAC KDF selector accepted by its dedicated facade. */
+export type ReallyMeKmacKdfAlgorithm = Extract<ReallyMeKdfAlgorithm, "KMAC256">;
+
+export const REALLYME_KEY_WRAP_ALGORITHMS = [
+  "AES-128-KW",
+  "AES-192-KW",
+  "AES-256-KW",
+] as const;
 
 export type ReallyMeKeyWrapAlgorithm =
   (typeof REALLYME_KEY_WRAP_ALGORITHMS)[number];

@@ -8,7 +8,9 @@ package me.really.crypto.v1;
 /**
  * <pre>
  * KeyAgreementAlgorithm identifies direct shared-secret derivation suites.
- * Callers must still feed derived shared secrets through a protocol KDF.
+ * Values 100-199 are Montgomery-form curves and 200-299 are NIST prime
+ * curves. Callers must still feed derived shared secrets through a protocol
+ * KDF.
  * </pre>
  *
  * Protobuf enum {@code reallyme.crypto.v1.KeyAgreementAlgorithm}
@@ -21,21 +23,21 @@ public enum KeyAgreementAlgorithm
    */
   KEY_AGREEMENT_ALGORITHM_UNSPECIFIED(0),
   /**
-   * <code>KEY_AGREEMENT_ALGORITHM_X25519 = 1;</code>
+   * <code>KEY_AGREEMENT_ALGORITHM_X25519 = 100;</code>
    */
-  KEY_AGREEMENT_ALGORITHM_X25519(1),
+  KEY_AGREEMENT_ALGORITHM_X25519(100),
   /**
-   * <code>KEY_AGREEMENT_ALGORITHM_P256_ECDH = 2;</code>
+   * <code>KEY_AGREEMENT_ALGORITHM_P256_ECDH = 200;</code>
    */
-  KEY_AGREEMENT_ALGORITHM_P256_ECDH(2),
+  KEY_AGREEMENT_ALGORITHM_P256_ECDH(200),
   /**
-   * <code>KEY_AGREEMENT_ALGORITHM_P384_ECDH = 3;</code>
+   * <code>KEY_AGREEMENT_ALGORITHM_P384_ECDH = 210;</code>
    */
-  KEY_AGREEMENT_ALGORITHM_P384_ECDH(3),
+  KEY_AGREEMENT_ALGORITHM_P384_ECDH(210),
   /**
-   * <code>KEY_AGREEMENT_ALGORITHM_P521_ECDH = 4;</code>
+   * <code>KEY_AGREEMENT_ALGORITHM_P521_ECDH = 220;</code>
    */
-  KEY_AGREEMENT_ALGORITHM_P521_ECDH(4),
+  KEY_AGREEMENT_ALGORITHM_P521_ECDH(220),
   UNRECOGNIZED(-1),
   ;
 
@@ -44,21 +46,21 @@ public enum KeyAgreementAlgorithm
    */
   public static final int KEY_AGREEMENT_ALGORITHM_UNSPECIFIED_VALUE = 0;
   /**
-   * <code>KEY_AGREEMENT_ALGORITHM_X25519 = 1;</code>
+   * <code>KEY_AGREEMENT_ALGORITHM_X25519 = 100;</code>
    */
-  public static final int KEY_AGREEMENT_ALGORITHM_X25519_VALUE = 1;
+  public static final int KEY_AGREEMENT_ALGORITHM_X25519_VALUE = 100;
   /**
-   * <code>KEY_AGREEMENT_ALGORITHM_P256_ECDH = 2;</code>
+   * <code>KEY_AGREEMENT_ALGORITHM_P256_ECDH = 200;</code>
    */
-  public static final int KEY_AGREEMENT_ALGORITHM_P256_ECDH_VALUE = 2;
+  public static final int KEY_AGREEMENT_ALGORITHM_P256_ECDH_VALUE = 200;
   /**
-   * <code>KEY_AGREEMENT_ALGORITHM_P384_ECDH = 3;</code>
+   * <code>KEY_AGREEMENT_ALGORITHM_P384_ECDH = 210;</code>
    */
-  public static final int KEY_AGREEMENT_ALGORITHM_P384_ECDH_VALUE = 3;
+  public static final int KEY_AGREEMENT_ALGORITHM_P384_ECDH_VALUE = 210;
   /**
-   * <code>KEY_AGREEMENT_ALGORITHM_P521_ECDH = 4;</code>
+   * <code>KEY_AGREEMENT_ALGORITHM_P521_ECDH = 220;</code>
    */
-  public static final int KEY_AGREEMENT_ALGORITHM_P521_ECDH_VALUE = 4;
+  public static final int KEY_AGREEMENT_ALGORITHM_P521_ECDH_VALUE = 220;
 
 
   @java.lang.Override
@@ -82,10 +84,10 @@ public enum KeyAgreementAlgorithm
   public static KeyAgreementAlgorithm forNumber(int value) {
     switch (value) {
       case 0: return KEY_AGREEMENT_ALGORITHM_UNSPECIFIED;
-      case 1: return KEY_AGREEMENT_ALGORITHM_X25519;
-      case 2: return KEY_AGREEMENT_ALGORITHM_P256_ECDH;
-      case 3: return KEY_AGREEMENT_ALGORITHM_P384_ECDH;
-      case 4: return KEY_AGREEMENT_ALGORITHM_P521_ECDH;
+      case 100: return KEY_AGREEMENT_ALGORITHM_X25519;
+      case 200: return KEY_AGREEMENT_ALGORITHM_P256_ECDH;
+      case 210: return KEY_AGREEMENT_ALGORITHM_P384_ECDH;
+      case 220: return KEY_AGREEMENT_ALGORITHM_P521_ECDH;
       default: return null;
     }
   }

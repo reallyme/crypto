@@ -3,10 +3,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ReallyMeCryptoError } from "./errors.js";
-import { ensureBytes } from "./validateBytes.js";
+import {
+  ensureByteArray,
+  ensureBytes,
+  ensureIndependentByteArray,
+} from "./validateBytes.js";
 import { requireReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
+import type { ReallyMeKeyWrapAlgorithm } from "./algorithms.js";
 
+export const AES_128_KW_KEK_LENGTH = 16;
+export const AES_192_KW_KEK_LENGTH = 24;
 export const AES_256_KW_KEK_LENGTH = 32;
 export const AES_KW_BLOCK_LENGTH = 8;
 export const AES_KW_INTEGRITY_CHECK_LENGTH = 8;
@@ -36,47 +43,134 @@ const validateWrappedKeyLength = (length: number): void => {
   }
 };
 
-const requireBytesOutput = (value: unknown): Uint8Array => {
+const requireBytesOutput = (
+  value: unknown,
+  expectedLength: number,
+  inputs: ReadonlyArray<Uint8Array>,
+): Uint8Array => {
   if (!(value instanceof Uint8Array)) {
+    throw new ReallyMeCryptoError("provider-failure");
+  }
+  // Reject aliases before wiping malformed output. Otherwise a provider could
+  // return a caller-owned key/input view and make validation erase that input.
+  ensureIndependentByteArray(value, inputs);
+  if (value.length !== expectedLength) {
+    value.fill(0);
     throw new ReallyMeCryptoError("provider-failure");
   }
   return value;
 };
 
+const kekLengthForAlgorithm = (algorithm: ReallyMeKeyWrapAlgorithm): number => {
+  switch (algorithm) {
+    case "AES-128-KW":
+      return AES_128_KW_KEK_LENGTH;
+    case "AES-192-KW":
+      return AES_192_KW_KEK_LENGTH;
+    case "AES-256-KW":
+      return AES_256_KW_KEK_LENGTH;
+  }
+};
+
+const wrapFunctionForAlgorithm = (
+  provider: ReallyMeWasmProvider,
+  algorithm: ReallyMeKeyWrapAlgorithm,
+): ((wrappingKey: Uint8Array, keyToWrap: Uint8Array) => unknown) => {
+  switch (algorithm) {
+    case "AES-128-KW":
+      return provider.aes128KwWrapKey;
+    case "AES-192-KW":
+      return provider.aes192KwWrapKey;
+    case "AES-256-KW":
+      return provider.aes256KwWrapKey;
+  }
+};
+
+const unwrapFunctionForAlgorithm = (
+  provider: ReallyMeWasmProvider,
+  algorithm: ReallyMeKeyWrapAlgorithm,
+): ((wrappingKey: Uint8Array, wrappedKey: Uint8Array) => unknown) => {
+  switch (algorithm) {
+    case "AES-128-KW":
+      return provider.aes128KwUnwrapKey;
+    case "AES-192-KW":
+      return provider.aes192KwUnwrapKey;
+    case "AES-256-KW":
+      return provider.aes256KwUnwrapKey;
+  }
+};
+
+const wrapKey = (
+  algorithm: ReallyMeKeyWrapAlgorithm,
+  wrappingKey: Uint8Array,
+  keyToWrap: Uint8Array,
+): Uint8Array => {
+  ensureBytes(wrappingKey, kekLengthForAlgorithm(algorithm));
+  ensureByteArray(keyToWrap);
+  validateKeyDataLength(keyToWrap.length);
+  return requireBytesOutput(
+    wrapFunctionForAlgorithm(requireReallyMeWasmProvider(), algorithm)(
+      wrappingKey,
+      keyToWrap,
+    ),
+    keyToWrap.length + AES_KW_INTEGRITY_CHECK_LENGTH,
+    [wrappingKey, keyToWrap],
+  );
+};
+
+const wrapKeyWithProvider = (
+  algorithm: ReallyMeKeyWrapAlgorithm,
+  provider: ReallyMeWasmProvider,
+  wrappingKey: Uint8Array,
+  keyToWrap: Uint8Array,
+): Uint8Array => {
+  ensureBytes(wrappingKey, kekLengthForAlgorithm(algorithm));
+  ensureByteArray(keyToWrap);
+  validateKeyDataLength(keyToWrap.length);
+  return requireBytesOutput(
+    wrapFunctionForAlgorithm(provider, algorithm)(wrappingKey, keyToWrap),
+    keyToWrap.length + AES_KW_INTEGRITY_CHECK_LENGTH,
+    [wrappingKey, keyToWrap],
+  );
+};
+
+const unwrapKey = (
+  algorithm: ReallyMeKeyWrapAlgorithm,
+  wrappingKey: Uint8Array,
+  wrappedKey: Uint8Array,
+): Uint8Array => {
+  ensureBytes(wrappingKey, kekLengthForAlgorithm(algorithm));
+  ensureByteArray(wrappedKey);
+  validateWrappedKeyLength(wrappedKey.length);
+  return requireBytesOutput(
+    unwrapFunctionForAlgorithm(requireReallyMeWasmProvider(), algorithm)(
+      wrappingKey,
+      wrappedKey,
+    ),
+    wrappedKey.length - AES_KW_INTEGRITY_CHECK_LENGTH,
+    [wrappingKey, wrappedKey],
+  );
+};
+
+const unwrapKeyWithProvider = (
+  algorithm: ReallyMeKeyWrapAlgorithm,
+  provider: ReallyMeWasmProvider,
+  wrappingKey: Uint8Array,
+  wrappedKey: Uint8Array,
+): Uint8Array => {
+  ensureBytes(wrappingKey, kekLengthForAlgorithm(algorithm));
+  ensureByteArray(wrappedKey);
+  validateWrappedKeyLength(wrappedKey.length);
+  return requireBytesOutput(
+    unwrapFunctionForAlgorithm(provider, algorithm)(wrappingKey, wrappedKey),
+    wrappedKey.length - AES_KW_INTEGRITY_CHECK_LENGTH,
+    [wrappingKey, wrappedKey],
+  );
+};
+
 export const ReallyMeAesKw = {
-  wrapKey(wrappingKey: Uint8Array, keyToWrap: Uint8Array): Uint8Array {
-    ensureBytes(wrappingKey, AES_256_KW_KEK_LENGTH);
-    validateKeyDataLength(keyToWrap.length);
-    return requireBytesOutput(
-      requireReallyMeWasmProvider().aes256KwWrapKey(wrappingKey, keyToWrap),
-    );
-  },
-
-  wrapKeyWithProvider(
-    provider: ReallyMeWasmProvider,
-    wrappingKey: Uint8Array,
-    keyToWrap: Uint8Array,
-  ): Uint8Array {
-    ensureBytes(wrappingKey, AES_256_KW_KEK_LENGTH);
-    validateKeyDataLength(keyToWrap.length);
-    return requireBytesOutput(provider.aes256KwWrapKey(wrappingKey, keyToWrap));
-  },
-
-  unwrapKey(wrappingKey: Uint8Array, wrappedKey: Uint8Array): Uint8Array {
-    ensureBytes(wrappingKey, AES_256_KW_KEK_LENGTH);
-    validateWrappedKeyLength(wrappedKey.length);
-    return requireBytesOutput(
-      requireReallyMeWasmProvider().aes256KwUnwrapKey(wrappingKey, wrappedKey),
-    );
-  },
-
-  unwrapKeyWithProvider(
-    provider: ReallyMeWasmProvider,
-    wrappingKey: Uint8Array,
-    wrappedKey: Uint8Array,
-  ): Uint8Array {
-    ensureBytes(wrappingKey, AES_256_KW_KEK_LENGTH);
-    validateWrappedKeyLength(wrappedKey.length);
-    return requireBytesOutput(provider.aes256KwUnwrapKey(wrappingKey, wrappedKey));
-  },
+  wrapKey,
+  wrapKeyWithProvider,
+  unwrapKey,
+  unwrapKeyWithProvider,
 } as const;

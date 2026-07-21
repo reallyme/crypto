@@ -7,27 +7,27 @@ import ReallyMeCryptoProto
 import Foundation
 import SwiftProtobuf
 
-public struct ReallyMeSignatureKeyPairProtoValue: Equatable, Sendable {
+public struct ReallyMeSignatureKeyPairProtoValue: Sendable {
     public let algorithm: ReallyMeSignatureAlgorithm
     public let keyPair: ReallyMeSignatureKeyPair
 }
 
-public struct ReallyMeKeyAgreementKeyPairProtoValue: Equatable, Sendable {
+public struct ReallyMeKeyAgreementKeyPairProtoValue: Sendable {
     public let algorithm: ReallyMeKeyAgreementAlgorithm
     public let keyPair: ReallyMeKeyAgreementKeyPair
 }
 
-public struct ReallyMeKemKeyPairProtoValue: Equatable, Sendable {
+public struct ReallyMeKemKeyPairProtoValue: Sendable {
     public let algorithm: ReallyMeKemAlgorithm
     public let keyPair: ReallyMeKemKeyPair
 }
 
-public struct ReallyMeKemEncapsulationProtoValue: Equatable, Sendable {
+public struct ReallyMeKemEncapsulationProtoValue: Sendable {
     public let algorithm: ReallyMeKemAlgorithm
     public let encapsulation: ReallyMeKemEncapsulation
 }
 
-public struct ReallyMeHpkeSealedMessageProtoValue: Equatable, Sendable {
+public struct ReallyMeHpkeSealedMessageProtoValue: Sendable {
     public let sealedMessage: ReallyMeHpkeSealedMessage
     public let suite: ReallyMeHpkeSuite
 }
@@ -105,43 +105,6 @@ public struct ReallyMeCryptoWireError: Equatable, Sendable {
     }
 }
 
-public enum ReallyMeCryptoProtoStatus: Equatable, Sendable {
-    case result
-    case cryptoError
-}
-
-public struct ReallyMeCryptoProtoResult: Sendable, CustomDebugStringConvertible {
-    public let status: ReallyMeCryptoProtoStatus
-    private var storage: [UInt8]
-
-    /// Returns a managed copy. Clear the returned array after processing when
-    /// the operation may carry secret or PII-bearing bytes.
-    public var bytes: [UInt8] {
-        storage
-    }
-
-    public var isCryptoError: Bool {
-        status == .cryptoError
-    }
-
-    public init(status: ReallyMeCryptoProtoStatus, bytes: [UInt8]) {
-        self.status = status
-        self.storage = bytes
-    }
-
-    /// Best-effort overwrite of this value's managed byte storage.
-    public mutating func bestEffortClear() {
-        _ = storage.withUnsafeMutableBytes { rawBuffer in
-            rawBuffer.initializeMemory(as: UInt8.self, repeating: 0)
-        }
-        storage.removeAll(keepingCapacity: false)
-    }
-
-    public var debugDescription: String {
-        "ReallyMeCryptoProtoResult(status: \(status), bytes: <redacted>)"
-    }
-}
-
 public enum ReallyMeCryptoProtoAdapters {
     public static func wireError(
         fromProto value: ReallyMeCryptoProto.ReallyMeProtoCryptoError
@@ -196,25 +159,6 @@ public enum ReallyMeCryptoProtoAdapters {
         } catch {
             throw ReallyMeCryptoError.providerFailure
         }
-    }
-
-    public static func protoResult(bytes: [UInt8]) -> ReallyMeCryptoProtoResult {
-        ReallyMeCryptoProtoResult(status: .result, bytes: bytes)
-    }
-
-    public static func protoErrorResult(
-        _ value: ReallyMeCryptoWireError
-    ) throws -> ReallyMeCryptoProtoResult {
-        ReallyMeCryptoProtoResult(
-            status: .cryptoError,
-            bytes: try wireErrorToProtoBytes(value)
-        )
-    }
-
-    public static func protoErrorResult(
-        _ value: ReallyMeCryptoError
-    ) throws -> ReallyMeCryptoProtoResult {
-        ReallyMeCryptoProtoResult(status: .cryptoError, bytes: try toProtoBytes(value))
     }
 
     public static func facadeError(fromWireError value: ReallyMeCryptoWireError) -> ReallyMeCryptoError {
@@ -289,12 +233,17 @@ public enum ReallyMeCryptoProtoAdapters {
             return .unsupportedAlgorithm
         case .providerUnavailable,
              .providerRandomnessUnavailable,
+             .providerKeyExists,
+             .providerKeyNotFound,
+             .providerAccessDenied,
+             .providerUserAuthenticationRequired,
+             .providerUserCanceled,
+             .providerHardwareRejectedKey,
              .backendInvalidState,
-             .backendInternal,
-             .backendMalformedProtobuf,
-             .backendMalformedJson,
-             .backendResourceLimitExceeded:
+             .backendInternal:
             return .providerFailure
+        case .providerHardwareUnavailable:
+            return .unsupportedPlatform
         case .primitiveInvalidParameter,
              .primitiveInvalidLength,
              .primitiveInvalidKey,
@@ -307,6 +256,10 @@ public enum ReallyMeCryptoProtoAdapters {
              .primitiveMalformedCiphertext,
              .primitiveInvalidTag,
              .primitiveInvalidSharedSecret,
+             .primitiveMalformedProtobuf,
+             .primitiveMalformedJson,
+             .primitiveResourceLimitExceeded,
+             .primitiveMissingOperation,
              .unspecified,
              .UNRECOGNIZED:
             return .invalidInput
@@ -325,7 +278,7 @@ public enum ReallyMeCryptoProtoAdapters {
     }
 
     private static func malformedCryptoErrorEnvelope() -> ReallyMeCryptoWireError {
-        ReallyMeCryptoWireError(uncheckedBranch: .backend, reason: .backendMalformedProtobuf)
+        ReallyMeCryptoWireError(uncheckedBranch: .primitive, reason: .primitiveMalformedProtobuf)
     }
 
     fileprivate static func reasonMatchesBranch(
@@ -372,6 +325,10 @@ public enum ReallyMeCryptoProtoAdapters {
         .primitiveMalformedCiphertext,
         .primitiveInvalidTag,
         .primitiveInvalidSharedSecret,
+        .primitiveMalformedProtobuf,
+        .primitiveMalformedJson,
+        .primitiveResourceLimitExceeded,
+        .primitiveMissingOperation,
     ]
 
     private static let providerCryptoErrorReasons: Set<ReallyMeCryptoProto.ReallyMeProtoCryptoErrorReason> = [
@@ -379,14 +336,18 @@ public enum ReallyMeCryptoProtoAdapters {
         .providerUnsupportedBackend,
         .providerUnavailable,
         .providerRandomnessUnavailable,
+        .providerKeyExists,
+        .providerKeyNotFound,
+        .providerAccessDenied,
+        .providerUserAuthenticationRequired,
+        .providerUserCanceled,
+        .providerHardwareUnavailable,
+        .providerHardwareRejectedKey,
     ]
 
     private static let backendCryptoErrorReasons: Set<ReallyMeCryptoProto.ReallyMeProtoCryptoErrorReason> = [
         .backendInvalidState,
         .backendInternal,
-        .backendMalformedProtobuf,
-        .backendMalformedJson,
-        .backendResourceLimitExceeded,
     ]
 
     public static func fromProto(
@@ -931,8 +892,6 @@ public enum ReallyMeCryptoProtoAdapters {
             .mlKem1024
         case .xWing768:
             .xWing768
-        case .xWing1024:
-            .xWing1024
         default:
             throw ReallyMeCryptoError.unsupportedAlgorithm
         }
@@ -950,8 +909,6 @@ public enum ReallyMeCryptoProtoAdapters {
             .mlKem1024
         case .xWing768:
             .xWing768
-        case .xWing1024:
-            .xWing1024
         }
     }
 
@@ -993,6 +950,8 @@ public enum ReallyMeCryptoProtoAdapters {
         switch value {
         case .hmacSha256:
             .hmacSha256
+        case .hmacSha384:
+            .hmacSha384
         case .hmacSha512:
             .hmacSha512
         default:
@@ -1006,6 +965,8 @@ public enum ReallyMeCryptoProtoAdapters {
         switch value {
         case .hmacSha256:
             .hmacSha256
+        case .hmacSha384:
+            .hmacSha384
         case .hmacSha512:
             .hmacSha512
         }
@@ -1017,8 +978,12 @@ public enum ReallyMeCryptoProtoAdapters {
         switch value {
         case .hkdfSha256:
             .hkdfSha256
+        case .hkdfSha384:
+            .hkdfSha384
         case .argon2ID:
             .argon2id
+        case .kmac256:
+            .kmac256
         case .pbkdf2HmacSha256:
             .pbkdf2HmacSha256
         case .pbkdf2HmacSha512:
@@ -1036,8 +1001,12 @@ public enum ReallyMeCryptoProtoAdapters {
         switch value {
         case .hkdfSha256:
             .hkdfSha256
+        case .hkdfSha384:
+            .hkdfSha384
         case .argon2id:
             .argon2ID
+        case .kmac256:
+            .kmac256
         case .pbkdf2HmacSha256:
             .pbkdf2HmacSha256
         case .pbkdf2HmacSha512:
@@ -1051,6 +1020,10 @@ public enum ReallyMeCryptoProtoAdapters {
         _ value: ReallyMeCryptoProto.ReallyMeProtoKeyWrapAlgorithm
     ) throws -> ReallyMeKeyWrapAlgorithm {
         switch value {
+        case .aes128Kw:
+            .aes128Kw
+        case .aes192Kw:
+            .aes192Kw
         case .aes256Kw:
             .aes256Kw
         default:
@@ -1062,33 +1035,45 @@ public enum ReallyMeCryptoProtoAdapters {
         _ value: ReallyMeKeyWrapAlgorithm
     ) -> ReallyMeCryptoProto.ReallyMeProtoKeyWrapAlgorithm {
         switch value {
+        case .aes128Kw:
+            .aes128Kw
+        case .aes192Kw:
+            .aes192Kw
         case .aes256Kw:
             .aes256Kw
         }
     }
 
     public static func fromProto(
-        _ value: ReallyMeCryptoProto.ReallyMeProtoHpkeSuite
+        _ value: ReallyMeCryptoProto.ReallyMeProtoHpkeSuiteIdentifier
     ) throws -> ReallyMeHpkeSuite {
-        switch value {
-        case .dhkemP256HkdfSha256HkdfSha256Aes256Gcm:
-            .dhkemP256HkdfSha256HkdfSha256Aes256Gcm
-        case .dhkemX25519HkdfSha256HkdfSha256Chacha20Poly1305:
-            .dhkemX25519HkdfSha256HkdfSha256ChaCha20Poly1305
-        default:
-            throw ReallyMeCryptoError.unsupportedAlgorithm
+        if value.kem == .dhkemP256HkdfSha256,
+           value.kdf == .hkdfSha256,
+           value.aead == .aes256Gcm {
+            return .dhkemP256HkdfSha256HkdfSha256Aes256Gcm
         }
+        if value.kem == .dhkemX25519HkdfSha256,
+           value.kdf == .hkdfSha256,
+           value.aead == .chacha20Poly1305 {
+            return .dhkemX25519HkdfSha256HkdfSha256ChaCha20Poly1305
+        }
+        throw ReallyMeCryptoError.unsupportedAlgorithm
     }
 
     public static func toProto(
         _ value: ReallyMeHpkeSuite
-    ) -> ReallyMeCryptoProto.ReallyMeProtoHpkeSuite {
+    ) -> ReallyMeCryptoProto.ReallyMeProtoHpkeSuiteIdentifier {
+        var result = ReallyMeCryptoProto.ReallyMeProtoHpkeSuiteIdentifier()
+        result.kdf = .hkdfSha256
         switch value {
         case .dhkemP256HkdfSha256HkdfSha256Aes256Gcm:
-            .dhkemP256HkdfSha256HkdfSha256Aes256Gcm
+            result.kem = .dhkemP256HkdfSha256
+            result.aead = .aes256Gcm
         case .dhkemX25519HkdfSha256HkdfSha256ChaCha20Poly1305:
-            .dhkemX25519HkdfSha256HkdfSha256Chacha20Poly1305
+            result.kem = .dhkemX25519HkdfSha256
+            result.aead = .chacha20Poly1305
         }
+        return result
     }
 
     public static func fromProto(
@@ -1211,7 +1196,7 @@ public enum ReallyMeCryptoProtoAdapters {
         _ value: ReallyMeHpkeSuite
     ) -> ReallyMeCryptoProto.ReallyMeProtoCryptoAlgorithmIdentifier {
         var algorithm = ReallyMeCryptoProto.ReallyMeProtoCryptoAlgorithmIdentifier()
-        algorithm.hpke = toProto(value)
+        algorithm.hpkeSuite = toProto(value)
         return algorithm
     }
 
@@ -1261,7 +1246,7 @@ public enum ReallyMeCryptoProtoAdapters {
         guard isPresent else {
             throw ReallyMeCryptoError.invalidInput
         }
-        guard case .hpke(let hpke)? = value.algorithm else {
+        guard case .hpkeSuite(let hpke)? = value.algorithm else {
             throw ReallyMeCryptoError.invalidInput
         }
         return try fromProto(hpke)
@@ -1296,8 +1281,6 @@ public enum ReallyMeCryptoProtoAdapters {
             algorithm.signature = .slhDsaSha2128S
         case .xWing768:
             algorithm.kem = .xWing768
-        case .xWing1024:
-            algorithm.kem = .xWing1024
         }
         return algorithm
     }
@@ -1340,8 +1323,6 @@ public enum ReallyMeCryptoProtoAdapters {
                 return .mlKem1024
             case .xWing768:
                 return .xWing768
-            case .xWing1024:
-                return .xWing1024
             default:
                 throw ReallyMeCryptoError.unsupportedAlgorithm
             }

@@ -5,7 +5,10 @@
 public enum ReallyMePbkdf2 {
     public static let minInputLength = 1
     public static let maxInputLength = 4096
-    public static let minIterations: UInt32 = 1
+    /// Minimum work factor accepted by public PBKDF2 derivation routes.
+    public static let minIterations: UInt32 = 100_000
+    /// Maximum work factor accepted before CPU-expensive provider dispatch.
+    public static let maxIterations: UInt32 = 10_000_000
     public static let minOutputLength = 1
     public static let maxOutputLength = 4096
 
@@ -41,15 +44,19 @@ public enum ReallyMePbkdf2 {
         )
     }
 
-    private static func derive(
+    static func derive(
         password: [UInt8],
         salt: [UInt8],
         iterations: UInt32,
         outputLength: Int,
         hashLength: Int,
-        authenticate: (_ key: [UInt8], _ message: [UInt8]) throws -> [UInt8]
+        authenticate: (_ key: [UInt8], _ message: [UInt8]) throws -> [UInt8],
+        clear: (_ bytes: inout [UInt8]) -> Void = ReallyMeCryptoMemory.bestEffortClear
     ) throws -> [UInt8] {
         try validate(password: password, salt: salt, iterations: iterations, outputLength: outputLength)
+        guard hashLength > 0 else {
+            throw ReallyMeCryptoError.invalidInput
+        }
 
         let adjustedLength = outputLength.addingReportingOverflow(hashLength - 1)
         guard !adjustedLength.overflow else {
@@ -63,45 +70,60 @@ public enum ReallyMePbkdf2 {
         var derived = [UInt8]()
         derived.reserveCapacity(outputLength)
 
-        for blockIndex in 1...blockCount {
-            guard let blockIndex32 = UInt32(exactly: blockIndex) else {
-                throw ReallyMeCryptoError.invalidInput
-            }
-            var blockInput = salt
-            blockInput.append(UInt8((blockIndex32 >> 24) & 0xff))
-            blockInput.append(UInt8((blockIndex32 >> 16) & 0xff))
-            blockInput.append(UInt8((blockIndex32 >> 8) & 0xff))
-            blockInput.append(UInt8(blockIndex32 & 0xff))
-
-            do {
-                var previous = try authenticate(password, blockInput)
-                var block = previous
-                defer {
-                    ReallyMeCryptoMemory.bestEffortClear(&blockInput)
-                    ReallyMeCryptoMemory.bestEffortClear(&previous)
-                    ReallyMeCryptoMemory.bestEffortClear(&block)
+        do {
+            for blockIndex in 1...blockCount {
+                guard let blockIndex32 = UInt32(exactly: blockIndex) else {
+                    throw ReallyMeCryptoError.invalidInput
                 }
+                var blockInput = salt
+                blockInput.append(UInt8((blockIndex32 >> 24) & 0xff))
+                blockInput.append(UInt8((blockIndex32 >> 16) & 0xff))
+                blockInput.append(UInt8((blockIndex32 >> 8) & 0xff))
+                blockInput.append(UInt8(blockIndex32 & 0xff))
 
-                if iterations > 1 {
-                    for _ in 1..<iterations {
-                        let next = try authenticate(password, previous)
-                        ReallyMeCryptoMemory.bestEffortClear(&previous)
-                        previous = next
-                        for index in block.indices {
-                            block[index] ^= previous[index]
+                do {
+                    var previous = try authenticate(password, blockInput)
+                    guard previous.count == hashLength else {
+                        clear(&previous)
+                        throw ReallyMeCryptoError.providerFailure
+                    }
+                    var block = previous
+                    defer {
+                        clear(&blockInput)
+                        clear(&previous)
+                        clear(&block)
+                    }
+
+                    if iterations > 1 {
+                        for _ in 1..<iterations {
+                            var next = try authenticate(password, previous)
+                            guard next.count == hashLength else {
+                                clear(&next)
+                                throw ReallyMeCryptoError.providerFailure
+                            }
+                            clear(&previous)
+                            previous = next
+                            for index in block.indices {
+                                block[index] ^= previous[index]
+                            }
                         }
                     }
-                }
 
-                guard derived.count <= outputLength else {
-                    throw ReallyMeCryptoError.providerFailure
+                    guard derived.count <= outputLength else {
+                        throw ReallyMeCryptoError.providerFailure
+                    }
+                    let remaining = outputLength - derived.count
+                    derived.append(contentsOf: block.prefix(remaining))
+                } catch {
+                    clear(&blockInput)
+                    throw error
                 }
-                let remaining = outputLength - derived.count
-                derived.append(contentsOf: block.prefix(remaining))
-            } catch {
-                ReallyMeCryptoMemory.bestEffortClear(&blockInput)
-                throw error
             }
+        } catch {
+            // A provider failure after an earlier block must not leave the
+            // accumulated derived key to ordinary managed-memory reclamation.
+            clear(&derived)
+            throw error
         }
 
         return derived
@@ -115,7 +137,7 @@ public enum ReallyMePbkdf2 {
     ) throws {
         guard (minInputLength...maxInputLength).contains(password.count),
               (minInputLength...maxInputLength).contains(salt.count),
-              iterations >= minIterations,
+              (minIterations...maxIterations).contains(iterations),
               (minOutputLength...maxOutputLength).contains(outputLength)
         else {
             throw ReallyMeCryptoError.invalidInput

@@ -28,44 +28,107 @@ extension ReallyMeCryptoRustCAbiTests {
 
     func testRustCAbiAesKwKnownAnswerWhenLibraryConfigured() throws {
         let library = try Self.configuredRustCAbiLibrary()
-        let kek = Self.bytes(
-            "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
-        )
-        let keyData = Self.bytes(
-            "00112233445566778899aabbccddeeff000102030405060708090a0b0c0d0e0f"
-        )
-        let expectedWrapped = Self.bytes(
-            "28c9f404c4b810f4cbccb35cfb87f8263f5786e2d80ed326cbc7f0e71a99f43bfb988b9b7a02dd21"
-        )
-
-        let wrapped = try ReallyMeCrypto.wrapKey(
-            .aes256Kw,
-            wrappingKey: kek,
-            keyToWrap: keyData,
-            rustCAbiLibrary: library
-        )
-        XCTAssertEqual(wrapped, expectedWrapped)
-        XCTAssertEqual(
-            try ReallyMeCrypto.unwrapKey(
+        let vectors: [(ReallyMeKeyWrapAlgorithm, String, String)] = [
+            (
+                .aes128Kw,
+                "aes128kw.json",
+                "AES-128-KW"
+            ),
+            (
+                .aes192Kw,
+                "aes192kw.json",
+                "AES-192-KW"
+            ),
+            (
                 .aes256Kw,
+                "aes256kw.json",
+                "AES-256-KW"
+            ),
+        ]
+
+        for (algorithm, vectorName, expectedAlgorithm) in vectors {
+            let vector = try Self.loadAesKwVector(vectorName)
+            let kek = try Self.base64UrlBytes(vector.kek)
+            let keyData = try Self.base64UrlBytes(vector.keyData)
+            let expectedWrapped = try Self.base64UrlBytes(vector.wrappedKey)
+
+            XCTAssertEqual(vector.alg, expectedAlgorithm)
+            let wrapped = try ReallyMeCrypto.wrapKey(
+                algorithm,
+                wrappingKey: kek,
+                keyToWrap: keyData,
+                rustCAbiLibrary: library
+            )
+            XCTAssertEqual(wrapped.count, keyData.count + 8)
+            XCTAssertEqual(wrapped, expectedWrapped)
+            let unwrapped = try ReallyMeCrypto.unwrapKey(
+                algorithm,
                 wrappingKey: kek,
                 wrappedKey: wrapped,
                 rustCAbiLibrary: library
-            ),
-            keyData
-        )
+            )
+            XCTAssertEqual(unwrapped.count, wrapped.count - 8)
+            XCTAssertEqual(unwrapped, keyData)
 
-        var tampered = wrapped
-        tampered[0] ^= 0x01
+            var tampered = wrapped
+            tampered[0] ^= 0x01
+            XCTAssertThrowsError(
+                try ReallyMeCrypto.unwrapKey(
+                    algorithm,
+                    wrappingKey: kek,
+                    wrappedKey: tampered,
+                    rustCAbiLibrary: library
+                )
+            ) { error in
+                XCTAssertEqual(error as? ReallyMeCryptoError, .authenticationFailed)
+            }
+        }
+
+    }
+
+    func testRustCAbiKmac256KnownAnswerWhenLibraryConfigured() throws {
+        let library = try Self.configuredRustCAbiLibrary()
+        let vector = try Self.loadKmac256Vector()
+        let key = try Self.base64UrlBytes(vector.key)
+        let context = try Self.base64UrlBytes(vector.context)
+        let customization = try Self.base64UrlBytes(vector.customization)
+        let expected = try Self.base64UrlBytes(vector.derivedKey)
+
+        XCTAssertEqual(vector.alg, "KMAC256")
+        XCTAssertEqual(
+            try ReallyMeCrypto.deriveKmac256(
+                .kmac256,
+                key: key,
+                context: context,
+                customization: customization,
+                outputLength: vector.outputLength,
+                rustCAbiLibrary: library
+            ),
+            expected
+        )
         XCTAssertThrowsError(
-            try ReallyMeCrypto.unwrapKey(
-                .aes256Kw,
-                wrappingKey: kek,
-                wrappedKey: tampered,
+            try ReallyMeCrypto.deriveKmac256(
+                .kmac256,
+                key: Array(key.dropLast()),
+                context: context,
+                customization: customization,
+                outputLength: vector.outputLength,
                 rustCAbiLibrary: library
             )
         ) { error in
-            XCTAssertEqual(error as? ReallyMeCryptoError, .authenticationFailed)
+            XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+        }
+        XCTAssertThrowsError(
+            try ReallyMeCrypto.deriveKmac256(
+                .kmac256,
+                key: key,
+                context: [UInt8](repeating: 0, count: 65_537),
+                customization: customization,
+                outputLength: vector.outputLength,
+                rustCAbiLibrary: library
+            )
+        ) { error in
+            XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
         }
     }
 

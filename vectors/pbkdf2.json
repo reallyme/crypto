@@ -3,16 +3,16 @@
     "alg": "PBKDF2-HMAC-SHA-256",
     "password": "cGFzc3dvcmQ",
     "salt": "c2FsdA",
-    "iterations": 4096,
+    "iterations": 100000,
     "output_len": 32,
-    "derived_key": "xeR41ZKIyEGqUw22hFxMjZYok6ABzk4RpJY4c6qYE0o"
+    "derived_key": "A5Si7eMyyaE-uC6bJGMWBMMd-Xi04vD70sVJlE-deaU"
   },
   "pbkdf2_hmac_sha512": {
     "alg": "PBKDF2-HMAC-SHA-512",
     "password": "cGFzc3dvcmQ",
     "salt": "c2FsdA",
-    "iterations": 4096,
+    "iterations": 100000,
     "output_len": 64,
-    "derived_key": "0Zexsz2wFD4BixLz0dFHnmzevcyXxcD4f2kC4HL0V7UUPzBgJkGz1VzTNZiMs2uEN2Bg7NUy4Dm3QqI5Q0ry1Q"
+    "derived_key": "9dFwIslq9GwKHcSaWLvmVKKOmBBIg-SvTel0zaLHQSLdCC9BBak_yAaSyk6xp4TP7agb-qM_UZLMkUPYGL11gQ"
   }
 }

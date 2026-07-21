@@ -4,6 +4,11 @@
 
 import type { ReallyMeSignatureAlgorithm } from "./algorithms.js";
 import { ReallyMeCryptoError } from "./errors.js";
+import {
+  ensureByteArray,
+  ensureByteArrayAtMost,
+  MAX_CRYPTO_INPUT_LENGTH,
+} from "./validateBytes.js";
 import { requireReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 
@@ -30,6 +35,7 @@ type RsaPssSuite = Readonly<{
 }>;
 
 const validateBytes = (bytes: Uint8Array, maxLength: number): void => {
+  ensureByteArray(bytes);
   if (bytes.length === 0 || bytes.length > maxLength) {
     throw new ReallyMeCryptoError("invalid-input");
   }
@@ -110,6 +116,7 @@ const verifyWithProvider = (
 ): void => {
   validateBytes(publicKeyDer, RSA_PUBLIC_KEY_DER_MAX_LENGTH);
   validateBytes(signature, RSA_SIGNATURE_MAX_LENGTH);
+  ensureByteArrayAtMost(message, MAX_CRYPTO_INPUT_LENGTH);
   const encoding = encodingId(publicKeyEncoding);
   const pkcs1 = pkcs1v15Suite(algorithm);
   if (pkcs1 !== undefined) {
@@ -148,7 +155,8 @@ const verifyWithProvider = (
  * RSA signature verification through the ReallyMe Rust WASM provider.
  *
  * RSA is verification-only in this SDK. It exists for X.509, eMRTD passive
- * authentication, and legacy interoperability; no RSA signing API is exposed.
+ * authentication, and historical document interoperability; no RSA signing
+ * API is exposed.
  */
 export const ReallyMeRsa = {
   verify(

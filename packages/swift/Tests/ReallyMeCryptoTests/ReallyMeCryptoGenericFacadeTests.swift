@@ -56,6 +56,18 @@ extension ReallyMeCryptoTests {
         )
     }
 
+    func testDefaultProviderReportsBundledRustCAbiState() {
+        let providers = ReallyMeCryptoProviders.default
+
+        if ReallyMeRustCAbiLibrary.isBundledProviderAvailable {
+            XCTAssertNotNil(providers.rustCAbiLibrary)
+            XCTAssertNil(providers.rustCAbiDiagnostic)
+        } else {
+            XCTAssertNil(providers.rustCAbiLibrary)
+            XCTAssertEqual(providers.rustCAbiDiagnostic, .bundledProviderNotLinked)
+        }
+    }
+
     func testExplicitProviderContextFailsClosedWithoutRustProvider() {
         let crypto = ReallyMeCrypto(providers: ReallyMeCryptoProviders())
         let empty = [UInt8]()
@@ -73,7 +85,7 @@ extension ReallyMeCryptoTests {
         XCTAssertThrowsError(
             try crypto.deriveKey(.argon2id, password: empty, salt: empty, iterations: 1, outputLength: 32)
         ) { error in
-            XCTAssertEqual(error as? ReallyMeCryptoError, .providerFailure)
+            XCTAssertEqual(error as? ReallyMeCryptoError, .unsupportedAlgorithm)
         }
         XCTAssertThrowsError(
             try crypto.deriveArgon2idKey(kdfVersion: 1, secret: empty, salt: empty)
@@ -113,11 +125,6 @@ extension ReallyMeCryptoTests {
         }
         XCTAssertThrowsError(
             try crypto.deriveXWingKeyPair(.xWing768, secretKey: empty)
-        ) { error in
-            XCTAssertEqual(error as? ReallyMeCryptoError, .providerFailure)
-        }
-        XCTAssertThrowsError(
-            try crypto.encapsulate(.xWing768, publicKey: empty, seed: empty)
         ) { error in
             XCTAssertEqual(error as? ReallyMeCryptoError, .providerFailure)
         }
@@ -257,34 +264,95 @@ extension ReallyMeCryptoTests {
         let ed25519PublicKey = Self.bytes(
             "6ddffbec369caae216a5fb99080a6ce013799d8bea00d39804d7a90d73502d82"
         )
-        XCTAssertEqual(
-            try crypto.deriveKeyPair(.ed25519, secretKey: ed25519SecretKey),
-            ReallyMeSignatureKeyPair(publicKey: ed25519PublicKey, secretKey: ed25519SecretKey)
-        )
-        XCTAssertEqual(
-            try crypto.deriveKeyPair(
+        let ed25519KeyPair = try crypto.deriveKeyPair(.ed25519, secretKey: ed25519SecretKey)
+        XCTAssertEqual(ed25519KeyPair.publicKey, ed25519PublicKey)
+        XCTAssertEqual(ed25519KeyPair.secretKey, ed25519SecretKey)
+
+        let p384Vector = try ReallyMeCryptoRustCAbiTests.loadEcdsaCurveVector("p384.json")
+        let p521Vector = try ReallyMeCryptoRustCAbiTests.loadEcdsaCurveVector("p521.json")
+        let ecdsaCases: [(ReallyMeSignatureAlgorithm, [UInt8], [UInt8], [UInt8], [UInt8], Int, Int)] = [
+            (
                 .ecdsaP256Sha256,
-                secretKey: ReallyMeCryptoRustCAbiTests.p256EcdsaSecretKey
+                ReallyMeCryptoRustCAbiTests.p256EcdsaSecretKey,
+                ReallyMeCryptoRustCAbiTests.p256EcdsaPublicKey,
+                ReallyMeCryptoRustCAbiTests.p256EcdsaMessage,
+                ReallyMeCryptoRustCAbiTests.p256EcdsaSignatureDer,
+                33,
+                32
             ),
-            ReallyMeSignatureKeyPair(
-                publicKey: ReallyMeCryptoRustCAbiTests.p256EcdsaPublicKey,
-                secretKey: ReallyMeCryptoRustCAbiTests.p256EcdsaSecretKey
+            (
+                .ecdsaP384Sha384,
+                try Self.base64UrlBytes(p384Vector.secretKey),
+                try Self.base64UrlBytes(p384Vector.publicKeyCompressed),
+                try Self.base64UrlBytes(p384Vector.message),
+                try Self.base64UrlBytes(p384Vector.signatureDer),
+                49,
+                48
+            ),
+            (
+                .ecdsaP521Sha512,
+                try Self.base64UrlBytes(p521Vector.secretKey),
+                try Self.base64UrlBytes(p521Vector.publicKeyCompressed),
+                try Self.base64UrlBytes(p521Vector.message),
+                try Self.base64UrlBytes(p521Vector.signatureDer),
+                67,
+                66
+            ),
+        ]
+
+        for ecdsaCase in ecdsaCases {
+            let (algorithm, secretKey, publicKey, message, expectedSignature, publicKeyLength, secretKeyLength) =
+                ecdsaCase
+            let derivedKeyPair = try crypto.deriveKeyPair(algorithm, secretKey: secretKey)
+            XCTAssertEqual(derivedKeyPair.publicKey, publicKey, algorithm.rawValue)
+            XCTAssertEqual(derivedKeyPair.secretKey, secretKey, algorithm.rawValue)
+            let signature = try crypto.sign(algorithm, message: message, secretKey: secretKey)
+            XCTAssertEqual(signature, expectedSignature, algorithm.rawValue)
+            XCTAssertEqual(signature.first, UInt8(0x30), algorithm.rawValue)
+            try crypto.verify(algorithm, signature: signature, message: message, publicKey: publicKey)
+
+            let generatedKeyPair = try crypto.generateKeyPair(algorithm)
+            XCTAssertEqual(generatedKeyPair.publicKey.count, publicKeyLength, algorithm.rawValue)
+            XCTAssertEqual(generatedKeyPair.secretKey.count, secretKeyLength, algorithm.rawValue)
+            let generatedSignature = try crypto.sign(
+                algorithm,
+                message: message,
+                secretKey: generatedKeyPair.secretKey
             )
-        )
+            XCTAssertEqual(generatedSignature.first, UInt8(0x30), algorithm.rawValue)
+            try crypto.verify(
+                algorithm,
+                signature: generatedSignature,
+                message: message,
+                publicKey: generatedKeyPair.publicKey
+            )
+        }
 
         let xWingVector = try ReallyMeCryptoRustCAbiTests.loadXWingVectors().xWing768
         let xWingSecretKey = try Self.base64UrlBytes(xWingVector.secretKey)
         let xWingPublicKey = try Self.base64UrlBytes(xWingVector.publicKey)
-        let xWingSeed = try Self.base64UrlBytes(xWingVector.encapsSeed)
         let xWingCiphertext = try Self.base64UrlBytes(xWingVector.ciphertext)
         let xWingSharedSecret = try Self.base64UrlBytes(xWingVector.sharedSecret)
+        let xWingKeyPair = try crypto.deriveXWingKeyPair(.xWing768, secretKey: xWingSecretKey)
+        XCTAssertEqual(xWingKeyPair.publicKey, xWingPublicKey)
+        XCTAssertEqual(xWingKeyPair.secretKey, xWingSecretKey)
+
         XCTAssertEqual(
-            try crypto.deriveXWingKeyPair(.xWing768, secretKey: xWingSecretKey),
-            ReallyMeKemKeyPair(publicKey: xWingPublicKey, secretKey: xWingSecretKey)
+            try crypto.decapsulate(
+                .xWing768,
+                ciphertext: xWingCiphertext,
+                secretKey: xWingSecretKey
+            ),
+            xWingSharedSecret
         )
+        let xWingEncapsulation = try crypto.encapsulate(.xWing768, publicKey: xWingPublicKey)
         XCTAssertEqual(
-            try crypto.encapsulate(.xWing768, publicKey: xWingPublicKey, seed: xWingSeed),
-            ReallyMeKemEncapsulation(sharedSecret: xWingSharedSecret, ciphertext: xWingCiphertext)
+            try crypto.decapsulate(
+                .xWing768,
+                ciphertext: xWingEncapsulation.ciphertext,
+                secretKey: xWingSecretKey
+            ),
+            xWingEncapsulation.sharedSecret
         )
     }
 
@@ -346,12 +414,24 @@ extension ReallyMeCryptoTests {
             key: key,
             message: message
         )
+        let sha384Tag = try ReallyMeCrypto.authenticate(
+            .hmacSha384,
+            key: key,
+            message: message
+        )
         let sha512Tag = try ReallyMeCrypto.authenticate(
             .hmacSha512,
             key: key,
             message: message
         )
 
+        XCTAssertEqual(
+            sha384Tag,
+            Self.bytes(
+                "afd03944d84895626b0825f4ab46907f15f9dadbe4101ec682aa034c7cebc59c"
+                    + "faea9ea9076ede7f4af152e8b2fa9cb6"
+            )
+        )
         XCTAssertEqual(
             sha256Tag,
             Self.bytes("b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7")
@@ -362,6 +442,9 @@ extension ReallyMeCryptoTests {
                 "87aa7cdea5ef619d4ff0b4241a1d6cb02379f4e2ce4ec2787ad0b30545e17cd"
                     + "edaa833b7d6b8a702038b274eaea3f4e4be9d914eeb61f1702e696c203a126854"
             )
+        )
+        XCTAssertTrue(
+            try ReallyMeCrypto.verifyMac(.hmacSha384, tag: sha384Tag, key: key, message: message)
         )
         XCTAssertTrue(
             try ReallyMeCrypto.verifyMac(.hmacSha256, tag: sha256Tag, key: key, message: message)
@@ -636,22 +719,22 @@ extension ReallyMeCryptoTests {
                 .pbkdf2HmacSha256,
                 password: password,
                 salt: salt,
-                iterations: 4096,
+                iterations: 100_000,
                 outputLength: 32
             ),
-            Self.bytes("c5e478d59288c841aa530db6845c4c8d962893a001ce4e11a4963873aa98134a")
+            Self.bytes("0394a2ede332c9a13eb82e9b24631604c31df978b4e2f0fbd2c549944f9d79a5")
         )
         XCTAssertEqual(
             try ReallyMeCrypto.deriveKey(
                 .pbkdf2HmacSha512,
                 password: password,
                 salt: salt,
-                iterations: 4096,
+                iterations: 100_000,
                 outputLength: 64
             ),
             Self.bytes(
-                "d197b1b33db0143e018b12f3d1d1479e6cdebdcc97c5c0f87f6902e072f457b5"
-                    + "143f30602641b3d55cd335988cb36b84376060ecd532e039b742a239434af2d5"
+                "f5d17022c96af46c0a1dc49a58bbe654a28e98104883e4af4de974cda2c74122"
+                    + "dd082f4105a93fc80692ca4eb1a784cfeda81bfaa33f5192cc9143d818bd7581"
             )
         )
     }
@@ -663,7 +746,7 @@ extension ReallyMeCryptoTests {
                 .pbkdf2HmacSha256,
                 password: [],
                 salt: salt,
-                iterations: 4096,
+                iterations: 100_000,
                 outputLength: 32
             )
         ) { error in
@@ -674,7 +757,7 @@ extension ReallyMeCryptoTests {
                 .pbkdf2HmacSha256,
                 password: Array("password".utf8),
                 salt: [],
-                iterations: 4096,
+                iterations: 100_000,
                 outputLength: 32
             )
         ) { error in
@@ -721,6 +804,19 @@ extension ReallyMeCryptoTests {
                 "3cb25f25faacd57a90434f64d0362f2a"
                     + "2d2d0a90cf1a5a4c5db02d56ecc4c5bf"
                     + "34007208d5b887185865"
+            )
+        )
+        XCTAssertEqual(
+            try ReallyMeCrypto.deriveHkdf(
+                .hkdfSha384,
+                inputKeyMaterial: inputKeyMaterial,
+                salt: salt,
+                info: info,
+                outputLength: 42
+            ),
+            Self.bytes(
+                "9b5097a86038b805309076a44b3a9f38063e25b516dcbf369f394cfab43685f7"
+                    + "48b6457763e4f0204fc5"
             )
         )
     }
@@ -888,7 +984,10 @@ extension ReallyMeCryptoTests {
             Set(ReallyMeHashAlgorithm.allCases),
             [.sha2_256, .sha2_384, .sha2_512, .sha3_224, .sha3_256, .sha3_384, .sha3_512]
         )
-        XCTAssertEqual(Set(ReallyMeMacAlgorithm.allCases), [.hmacSha256, .hmacSha512])
+        XCTAssertEqual(
+            Set(ReallyMeMacAlgorithm.allCases),
+            [.hmacSha256, .hmacSha384, .hmacSha512]
+        )
         XCTAssertEqual(
             Set(ReallyMeKeyAgreementAlgorithm.allCases),
             [.x25519, .p256Ecdh, .p384Ecdh, .p521Ecdh]
@@ -1002,7 +1101,7 @@ extension ReallyMeCryptoTests {
     func testGenericFacadeUnsupportedKdfRoutesAreExhaustive() {
         let empty = [UInt8]()
         let deriveKeySupported: Set<ReallyMeKdfAlgorithm> = [.pbkdf2HmacSha256, .pbkdf2HmacSha512]
-        let deriveHkdfSupported: Set<ReallyMeKdfAlgorithm> = [.hkdfSha256]
+        let deriveHkdfSupported: Set<ReallyMeKdfAlgorithm> = [.hkdfSha256, .hkdfSha384]
         let deriveJwaConcatSupported: Set<ReallyMeKdfAlgorithm> = [.jwaConcatKdfSha256]
 
         for algorithm in ReallyMeKdfAlgorithm.allCases where !deriveKeySupported.contains(algorithm) {
@@ -1055,6 +1154,12 @@ extension ReallyMeCryptoTests {
     func testMissingRustAbiLibraryReturnsTypedError() {
         XCTAssertThrowsError(try ReallyMeRustCAbiLibrary(path: "/tmp/reallyme-crypto-missing.dylib")) { error in
             XCTAssertEqual(error as? ReallyMeCryptoError, .dynamicLibraryNotFound)
+        }
+    }
+
+    func testRustAbiLibraryRejectsRelativePath() {
+        XCTAssertThrowsError(try ReallyMeRustCAbiLibrary(path: "libcrypto_ffi.dylib")) { error in
+            XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
         }
     }
 }

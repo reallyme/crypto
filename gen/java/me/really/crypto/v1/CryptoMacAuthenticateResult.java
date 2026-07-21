@@ -20,11 +20,6 @@ public  final class CryptoMacAuthenticateResult extends
     return "CryptoMacAuthenticateResult{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoMacAuthenticateResult() {
     tag_ = com.google.protobuf.ByteString.EMPTY;
   }

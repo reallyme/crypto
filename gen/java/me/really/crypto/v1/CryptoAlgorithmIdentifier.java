@@ -28,13 +28,13 @@ public  final class CryptoAlgorithmIdentifier extends
     SIGNATURE(1),
     KEY_AGREEMENT(2),
     KEM(3),
-    HPKE(4),
     AEAD(5),
     HASH(6),
     MAC(7),
     KDF(8),
     KEY_WRAP(9),
     MULTICODEC_KEY(10),
+    HPKE_SUITE(11),
     ALGORITHM_NOT_SET(0);
     private final int value;
     private AlgorithmCase(int value) {
@@ -53,13 +53,13 @@ public  final class CryptoAlgorithmIdentifier extends
         case 1: return SIGNATURE;
         case 2: return KEY_AGREEMENT;
         case 3: return KEM;
-        case 4: return HPKE;
         case 5: return AEAD;
         case 6: return HASH;
         case 7: return MAC;
         case 8: return KDF;
         case 9: return KEY_WRAP;
         case 10: return MULTICODEC_KEY;
+        case 11: return HPKE_SUITE;
         case 0: return ALGORITHM_NOT_SET;
         default: return null;
       }
@@ -253,65 +253,6 @@ public  final class CryptoAlgorithmIdentifier extends
    */
   private void clearKem() {
     if (algorithmCase_ == 3) {
-      algorithmCase_ = 0;
-      algorithm_ = null;
-    }
-  }
-
-  public static final int HPKE_FIELD_NUMBER = 4;
-  /**
-   * <code>.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];</code>
-   * @return Whether the hpke field is set.
-   */
-  @java.lang.Override
-  public boolean hasHpke() {
-    return algorithmCase_ == 4;
-  }
-  /**
-   * <code>.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];</code>
-   * @return The enum numeric value on the wire for hpke.
-   */
-  @java.lang.Override
-  public int getHpkeValue() {
-    if (algorithmCase_ == 4) {
-      return (java.lang.Integer) algorithm_;
-    }
-    return 0;
-  }
-  /**
-   * <code>.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];</code>
-   * @return The hpke.
-   */
-  @java.lang.Override
-  public me.really.crypto.v1.HpkeSuite getHpke() {
-    if (algorithmCase_ == 4) {
-      me.really.crypto.v1.HpkeSuite result = me.really.crypto.v1.HpkeSuite.forNumber((java.lang.Integer) algorithm_);
-      return result == null ? me.really.crypto.v1.HpkeSuite.UNRECOGNIZED : result;
-    }
-    return me.really.crypto.v1.HpkeSuite.HPKE_SUITE_UNSPECIFIED;
-  }
-  /**
-   * <code>.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];</code>
-   * @param value The enum numeric value on the wire for hpke to set.
-   */
-  private void setHpkeValue(int value) {
-    algorithmCase_ = 4;
-    algorithm_ = value;
-  }
-  /**
-   * <code>.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];</code>
-   * @param value The hpke to set.
-   * @throws IllegalArgumentException if UNRECOGNIZED is provided.
-   */
-  private void setHpke(me.really.crypto.v1.HpkeSuite value) {
-    algorithm_ = value.getNumber();
-    algorithmCase_ = 4;
-  }
-  /**
-   * <code>.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];</code>
-   */
-  private void clearHpke() {
-    if (algorithmCase_ == 4) {
       algorithmCase_ = 0;
       algorithm_ = null;
     }
@@ -671,6 +612,58 @@ public  final class CryptoAlgorithmIdentifier extends
     }
   }
 
+  public static final int HPKE_SUITE_FIELD_NUMBER = 11;
+  /**
+   * <code>.reallyme.crypto.v1.HpkeSuiteIdentifier hpke_suite = 11 [json_name = "hpkeSuite"];</code>
+   */
+  @java.lang.Override
+  public boolean hasHpkeSuite() {
+    return algorithmCase_ == 11;
+  }
+  /**
+   * <code>.reallyme.crypto.v1.HpkeSuiteIdentifier hpke_suite = 11 [json_name = "hpkeSuite"];</code>
+   */
+  @java.lang.Override
+  public me.really.crypto.v1.HpkeSuiteIdentifier getHpkeSuite() {
+    if (algorithmCase_ == 11) {
+       return (me.really.crypto.v1.HpkeSuiteIdentifier) algorithm_;
+    }
+    return me.really.crypto.v1.HpkeSuiteIdentifier.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.crypto.v1.HpkeSuiteIdentifier hpke_suite = 11 [json_name = "hpkeSuite"];</code>
+   */
+  @java.lang.SuppressWarnings("ReturnValueIgnored")
+  private void setHpkeSuite(me.really.crypto.v1.HpkeSuiteIdentifier value) {
+    value.getClass();  // minimal bytecode null check
+    algorithm_ = value;
+    algorithmCase_ = 11;
+  }
+  /**
+   * <code>.reallyme.crypto.v1.HpkeSuiteIdentifier hpke_suite = 11 [json_name = "hpkeSuite"];</code>
+   */
+  @java.lang.SuppressWarnings("ReturnValueIgnored")
+  private void mergeHpkeSuite(me.really.crypto.v1.HpkeSuiteIdentifier value) {
+    value.getClass();  // minimal bytecode null check
+    if (algorithmCase_ == 11 &&
+        algorithm_ != me.really.crypto.v1.HpkeSuiteIdentifier.getDefaultInstance()) {
+      algorithm_ = me.really.crypto.v1.HpkeSuiteIdentifier.newBuilder((me.really.crypto.v1.HpkeSuiteIdentifier) algorithm_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      algorithm_ = value;
+    }
+    algorithmCase_ = 11;
+  }
+  /**
+   * <code>.reallyme.crypto.v1.HpkeSuiteIdentifier hpke_suite = 11 [json_name = "hpkeSuite"];</code>
+   */
+  private void clearHpkeSuite() {
+    if (algorithmCase_ == 11) {
+      algorithmCase_ = 0;
+      algorithm_ = null;
+    }
+  }
+
   public static me.really.crypto.v1.CryptoAlgorithmIdentifier parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
@@ -947,61 +940,6 @@ public  final class CryptoAlgorithmIdentifier extends
     public Builder clearKem() {
       copyOnWrite();
       instance.clearKem();
-      return this;
-    }
-
-    /**
-     * <code>.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];</code>
-     * @return Whether the hpke field is set.
-     */
-    @java.lang.Override
-    public boolean hasHpke() {
-      return instance.hasHpke();
-    }
-    /**
-     * <code>.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];</code>
-     * @return The enum numeric value on the wire for hpke.
-     */
-    @java.lang.Override
-    public int getHpkeValue() {
-      return instance.getHpkeValue();
-    }
-    /**
-     * <code>.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];</code>
-     * @param value The enum numeric value on the wire for hpke to set.
-     * @return This builder for chaining.
-     */
-    public Builder setHpkeValue(int value) {
-      copyOnWrite();
-      instance.setHpkeValue(value);
-      return this;
-    }
-    /**
-     * <code>.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];</code>
-     * @return The hpke.
-     */
-    @java.lang.Override
-    public me.really.crypto.v1.HpkeSuite getHpke() {
-      return instance.getHpke();
-    }
-    /**
-     * <code>.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];</code>
-     * @param value The hpke to set.
-     * @throws IllegalArgumentException if UNRECOGNIZED is provided.
-     * @return This builder for chaining.
-     */
-    public Builder setHpke(me.really.crypto.v1.HpkeSuite value) {
-      copyOnWrite();
-      instance.setHpke(value);
-      return this;
-    }
-    /**
-     * <code>.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearHpke() {
-      copyOnWrite();
-      instance.clearHpke();
       return this;
     }
 
@@ -1335,6 +1273,54 @@ public  final class CryptoAlgorithmIdentifier extends
       return this;
     }
 
+    /**
+     * <code>.reallyme.crypto.v1.HpkeSuiteIdentifier hpke_suite = 11 [json_name = "hpkeSuite"];</code>
+     */
+    @java.lang.Override
+    public boolean hasHpkeSuite() {
+      return instance.hasHpkeSuite();
+    }
+    /**
+     * <code>.reallyme.crypto.v1.HpkeSuiteIdentifier hpke_suite = 11 [json_name = "hpkeSuite"];</code>
+     */
+    @java.lang.Override
+    public me.really.crypto.v1.HpkeSuiteIdentifier getHpkeSuite() {
+      return instance.getHpkeSuite();
+    }
+    /**
+     * <code>.reallyme.crypto.v1.HpkeSuiteIdentifier hpke_suite = 11 [json_name = "hpkeSuite"];</code>
+     */
+    public Builder setHpkeSuite(me.really.crypto.v1.HpkeSuiteIdentifier value) {
+      copyOnWrite();
+      instance.setHpkeSuite(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.crypto.v1.HpkeSuiteIdentifier hpke_suite = 11 [json_name = "hpkeSuite"];</code>
+     */
+    public Builder setHpkeSuite(
+        me.really.crypto.v1.HpkeSuiteIdentifier.Builder builderForValue) {
+      copyOnWrite();
+      instance.setHpkeSuite(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.crypto.v1.HpkeSuiteIdentifier hpke_suite = 11 [json_name = "hpkeSuite"];</code>
+     */
+    public Builder mergeHpkeSuite(me.really.crypto.v1.HpkeSuiteIdentifier value) {
+      copyOnWrite();
+      instance.mergeHpkeSuite(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.crypto.v1.HpkeSuiteIdentifier hpke_suite = 11 [json_name = "hpkeSuite"];</code>
+     */
+    public Builder clearHpkeSuite() {
+      copyOnWrite();
+      instance.clearHpkeSuite();
+      return this;
+    }
+
     // @@protoc_insertion_point(builder_scope:reallyme.crypto.v1.CryptoAlgorithmIdentifier)
   }
   @java.lang.Override
@@ -1353,10 +1339,11 @@ public  final class CryptoAlgorithmIdentifier extends
           java.lang.Object[] objects = new java.lang.Object[] {
             "algorithm_",
             "algorithmCase_",
+            me.really.crypto.v1.HpkeSuiteIdentifier.class,
           };
           java.lang.String info =
-              "\u0000\n\u0001\u0000\u0001\n\n\u0000\u0000\u0000\u0001?\u0000\u0002?\u0000\u0003" +
-              "?\u0000\u0004?\u0000\u0005?\u0000\u0006?\u0000\u0007?\u0000\b?\u0000\t?\u0000\n?" +
+              "\u0000\n\u0001\u0000\u0001\u000b\n\u0000\u0000\u0000\u0001?\u0000\u0002?\u0000\u0003" +
+              "?\u0000\u0005?\u0000\u0006?\u0000\u0007?\u0000\b?\u0000\t?\u0000\n?\u0000\u000b<" +
               "\u0000";
           return newMessageInfo(DEFAULT_INSTANCE, info, objects);
       }

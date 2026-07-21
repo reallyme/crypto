@@ -6,19 +6,40 @@ SPDX-License-Identifier: Apache-2.0
 
 # Crypto Contract
 
-This file records the public package contract: names, formats, provider
-decisions, and API constraints that package work must preserve.
+This document defines the cross-package contract shared by every published
+ReallyMe Crypto package. It covers structured operations, algorithm identity,
+provider routing, errors, byte formats, and conformance requirements.
 
 ## Canonical Contract
 
-ReallyMe Crypto is not a set of mechanically generated Rust bindings. The
-canonical contract is the combination of:
+ReallyMe Crypto is proto-first. The schema at
+`crates/proto/proto/reallyme/crypto/v1/crypto.proto` is authoritative for:
 
-- protobuf enums and boundary messages in `proto/reallyme/crypto/v1/crypto.proto`;
-- package algorithm identifiers shared by the Rust, Swift, Kotlin, and
-  TypeScript facades;
-- the typed Rust error taxonomy and protobuf `CryptoError` reason codes;
-- `provider_manifest.json` and the generated matrix in `PROVIDER_POLICY.md`;
+- the executable `CryptoOperationRequest` and `CryptoOperationResponse`
+  boundary;
+- cross-language algorithm identifiers;
+- typed result branches and non-PII wire errors;
+- protobuf binary and generated ProtoJSON field names.
+
+Generated bindings implement the transport boundary. They do not own
+cryptographic semantics. All executable structured requests enter the same
+Rust operation layer, which dispatches to one semantic owner for each operation
+family.
+
+Three additional artifacts complete the contract without competing with the
+schema:
+
+- `provider_manifest.json` selects the permitted provider for each SDK lane;
+- `vectors/` fixes successful output and fail-closed behavior;
+- native SDK facade types provide ergonomic, language-specific APIs over the
+  same algorithms and errors.
+
+The following evidence is checked together; none is an independent source of
+competing wire semantics:
+
+- protobuf enums and boundary messages;
+- package algorithm identifiers;
+- typed Rust error taxonomy;
 - shared positive and negative conformance vectors.
 
 Rust remains the reference implementation and the shared implementation for
@@ -38,8 +59,8 @@ expose it through FFI, JNI, or WASM.
 
 ## Sources Of Truth
 
-- `proto/reallyme/crypto/v1/crypto.proto` is the cross-language algorithm,
-  serialization, and non-PII error boundary contract.
+- `crates/proto/proto/reallyme/crypto/v1/crypto.proto` is the canonical
+  executable structured-operation and wire-identity contract.
 - `vectors/` is the byte-level conformance contract for successful and
   rejected inputs.
 - `provider_manifest.json` is the machine-readable provider-routing source of
@@ -53,43 +74,64 @@ Do not regenerate vectors unless one of those contracts intentionally changes.
 If the contract changes, update the proto, generated code, vectors, provider
 policy, and contract tests in the same pass.
 
+The 0.3 schema treats assigned protobuf algorithm selectors as immutable. Every
+`packageApi` algorithm in `provider_manifest.json` must have
+exactly one typed protobuf selector, enforced by conformance tests. Family
+enums use documented sparse subfamily bands, including classical curves in the
+100-299 range, RSA in the 300-499 range, and post-quantum and hybrid algorithms
+at 1000 and above. Adjacent strength or size variants normally advance by ten.
+AES-GCM and AES-KW each independently assign their AES-128/192/256 variants
+`100`, `110`, and `120` inside their separate family enums. Equal values across
+different enums do not imply interchangeable semantics. These are ReallyMe
+wire identifiers, not IANA COSE, JOSE, JWA, HPKE, TLS, or multicodec registry
+values; adapters must translate by typed algorithm identity rather than pass
+numeric values through. New names may consume an unused value in the
+appropriate band, but an assigned number must never be renumbered or reused.
+If an assignment is removed, both its number and name must be declared
+`reserved` in the protobuf enum.
+
 ## Repository Shape
 
-The SDK package surfaces live in this repository next to the Rust
-implementations and shared vectors:
+The workspace keeps schema, semantics, providers, transports, SDKs, and
+evidence in separate directories:
 
 ```text
 reallyme/crypto
   crates/
+    proto/
+      proto/reallyme/crypto/v1/crypto.proto
     crypto/
-      primitives/
+      src/
+        operation_contract/
+        operations/
+        secret_material/
+      core/
       dispatch/
-      ffi/
-      protocols/
+      signer/
+    ffi/
+    wasm/
+    <primitive crates>/
   packages/
     swift/
-      Sources/ReallyMeCrypto/
-      Tests/
     kotlin/
-      src/main/kotlin/me/really/crypto/
-      src/test/
+    kotlin-android/
     ts/
-      src/
-      test/
-  proto/
-    reallyme/crypto/v1/crypto.proto
+  gen/
   vectors/
+  scripts/
 ```
 
-The Swift manifest intentionally lives at repository root (`Package.swift`) so
-SwiftPM consumers can import the package by URL while the source remains under
-`packages/swift`.
+`crates/proto` owns generated wire types and strict decoding. `crates/crypto`
+owns operation semantics. Primitive crates do not depend on SDK or transport
+layers. `crates/ffi` and `crates/wasm` are validated adapters. The Swift
+manifest remains at repository root so SwiftPM can import the package by URL;
+its source stays under `packages/swift` with the other SDKs.
 
 ## Package Facades
 
-The package facades in `packages/swift`, `packages/kotlin`, and `packages/ts`
-are first-class SDK surfaces. They must follow the existing
-`ReallyMeSecp256k1` pattern:
+The package facades in `packages/swift`, `packages/kotlin`,
+`packages/kotlin-android`, and `packages/ts` are first-class SDK surfaces. Each
+facade provides:
 
 - native-language ergonomic API;
 - ReallyMe typed errors with no secret or user-provided bytes;
@@ -106,11 +148,10 @@ wrap, and HPKE.
 
 ## TypeScript Sync Policy
 
-The TypeScript facade is synchronous for the 0.2 line. That is a deliberate
-contract decision:
+The TypeScript facade is synchronous. That is a deliberate contract decision:
 
 - providers are pinned `@noble/*` packages and ReallyMe WASM/Rust where needed;
-- WebCrypto is not part of the 0.2 facade because it would force async API
+- WebCrypto is not part of the facade because it would force async API
   shapes across the package;
 - no third-party schema validator is used at the crypto boundary.
 
@@ -120,20 +161,20 @@ minimal dependency surface is part of the package security posture.
 
 ## Platform Key Residency
 
-Kotlin/JVM and Kotlin/Android are separate provider environments. For `0.2.0`,
-the Kotlin package uses BouncyCastle-backed behavior for algorithms where JCA
-or Android provider behavior is inconsistent.
+Kotlin/JVM and Kotlin/Android are separate provider environments. The Kotlin
+package uses BouncyCastle-backed behavior for algorithms where JCA or Android
+provider behavior is inconsistent.
 
-Swift exposes P-256 ECDH with Secure Enclave / Keychain residency through a
-separate handle-backed API. The handle represents a permanent platform key; it
-is not a serialized private key and it is not interchangeable with the raw-byte
-ECDH APIs.
+Swift exposes P-256 ECDH and P-256 ECDSA signing with Secure Enclave /
+Keychain residency through separate handle-backed APIs. The handle represents a
+permanent platform key; it is not a serialized private key and it is not
+interchangeable with the raw-byte ECDH or deterministic ECDSA APIs.
 
-Android Keystore residency needs the same explicit key-handle treatment before
-the Kotlin facade can select it. It is not implicit in the current Kotlin byte
-API.
+The Android AAR exposes P-256 signing and ECDH through an explicit Android
+Keystore handle API. It verifies TEE or StrongBox residency and never treats
+that platform route as an implicit fallback from the Kotlin raw-byte APIs.
 
-## Completion Criteria
+## Conformance Criteria
 
 An algorithm family is complete for the SDK only when the actual consumers that
 need it can call it in every required lane and the repository has:

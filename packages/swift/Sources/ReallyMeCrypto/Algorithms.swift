@@ -51,7 +51,6 @@ public enum ReallyMeKemAlgorithm: String, CaseIterable, Sendable {
     case mlKem768 = "ML-KEM-768"
     case mlKem1024 = "ML-KEM-1024"
     case xWing768 = "X-Wing-768"
-    case xWing1024 = "X-Wing-1024"
 }
 
 /// Direct key-agreement identifiers reserved by the package facade.
@@ -65,13 +64,16 @@ public enum ReallyMeKeyAgreementAlgorithm: String, CaseIterable, Sendable {
 /// MAC algorithm identifiers reserved by the package facade.
 public enum ReallyMeMacAlgorithm: String, CaseIterable, Sendable {
     case hmacSha256 = "HMAC-SHA-256"
+    case hmacSha384 = "HMAC-SHA-384"
     case hmacSha512 = "HMAC-SHA-512"
 }
 
 /// KDF identifiers reserved by the package facade.
 public enum ReallyMeKdfAlgorithm: String, CaseIterable, Sendable {
     case hkdfSha256 = "HKDF-SHA256"
+    case hkdfSha384 = "HKDF-SHA384"
     case argon2id = "Argon2id"
+    case kmac256 = "KMAC256"
     case pbkdf2HmacSha256 = "PBKDF2-HMAC-SHA-256"
     case pbkdf2HmacSha512 = "PBKDF2-HMAC-SHA-512"
     case jwaConcatKdfSha256 = "JWA-CONCAT-KDF-SHA256"
@@ -79,6 +81,8 @@ public enum ReallyMeKdfAlgorithm: String, CaseIterable, Sendable {
 
 /// Key-wrap identifiers reserved by the package facade.
 public enum ReallyMeKeyWrapAlgorithm: String, CaseIterable, Sendable {
+    case aes128Kw = "AES-128-KW"
+    case aes192Kw = "AES-192-KW"
     case aes256Kw = "AES-256-KW"
 }
 

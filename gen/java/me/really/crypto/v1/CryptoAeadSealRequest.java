@@ -20,11 +20,6 @@ public  final class CryptoAeadSealRequest extends
     return "CryptoAeadSealRequest{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoAeadSealRequest() {
     key_ = com.google.protobuf.ByteString.EMPTY;
     nonce_ = com.google.protobuf.ByteString.EMPTY;

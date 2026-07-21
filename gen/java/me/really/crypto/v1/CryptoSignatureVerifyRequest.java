@@ -20,11 +20,6 @@ public  final class CryptoSignatureVerifyRequest extends
     return "CryptoSignatureVerifyRequest{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoSignatureVerifyRequest() {
     signature_ = com.google.protobuf.ByteString.EMPTY;
     message_ = com.google.protobuf.ByteString.EMPTY;

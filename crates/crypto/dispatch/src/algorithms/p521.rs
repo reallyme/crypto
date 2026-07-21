@@ -30,6 +30,22 @@ impl SignatureAlgorithm for P521Algo {
         }
     }
 
+    fn derive_keypair(secret: &[u8]) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), AlgorithmError> {
+        #[cfg(feature = "native")]
+        {
+            let secret_key =
+                <&[u8; 66]>::try_from(secret).map_err(|_| AlgorithmError::InvalidKey(Self::ALG))?;
+            return crypto_p521::generate_p521_keypair_from_secret_key(secret_key)
+                .map_err(AlgorithmError::from);
+        }
+
+        #[cfg(not(feature = "native"))]
+        {
+            let _ = secret;
+            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+        }
+    }
+
     fn sign(secret: &[u8], msg: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
         #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
         {

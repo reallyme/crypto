@@ -20,11 +20,6 @@ public  final class CryptoHkdfDeriveRequest extends
     return "CryptoHkdfDeriveRequest{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoHkdfDeriveRequest() {
     inputKeyMaterial_ = com.google.protobuf.ByteString.EMPTY;
     salt_ = com.google.protobuf.ByteString.EMPTY;

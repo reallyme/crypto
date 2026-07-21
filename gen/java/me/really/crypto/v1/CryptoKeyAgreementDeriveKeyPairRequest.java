@@ -20,11 +20,6 @@ public  final class CryptoKeyAgreementDeriveKeyPairRequest extends
     return "CryptoKeyAgreementDeriveKeyPairRequest{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoKeyAgreementDeriveKeyPairRequest() {
     secretKey_ = com.google.protobuf.ByteString.EMPTY;
   }

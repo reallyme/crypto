@@ -20,11 +20,6 @@ public  final class CryptoHpkeSealRequest extends
     return "CryptoHpkeSealRequest{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoHpkeSealRequest() {
     recipientPublicKey_ = com.google.protobuf.ByteString.EMPTY;
     info_ = com.google.protobuf.ByteString.EMPTY;

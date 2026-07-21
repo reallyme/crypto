@@ -1,0 +1,8 @@
+{
+  "alg": "KMAC256",
+  "key": "QEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaW1xdXl8",
+  "context": "AAECAw",
+  "customization": "TXkgVGFnZ2VkIEFwcGxpY2F0aW9u",
+  "output_length": 64,
+  "derived_key": "IMVwwxNG9wPJrDbGHAPLZMOXDQz8eH6beVmdJzpo0vf2nUzD3p0QSjUWifJ89vWVHwED8z9PJIcQJNnCd3Oo3Q"
+}

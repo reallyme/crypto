@@ -150,9 +150,7 @@ public object ReallyMeMlKem {
             ReallyMeKemAlgorithm.ML_KEM_512 -> MlKemSuite(MLKEMParameters.ml_kem_512, 800, 768)
             ReallyMeKemAlgorithm.ML_KEM_768 -> MlKemSuite(MLKEMParameters.ml_kem_768, 1_184, 1_088)
             ReallyMeKemAlgorithm.ML_KEM_1024 -> MlKemSuite(MLKEMParameters.ml_kem_1024, 1_568, 1_568)
-            ReallyMeKemAlgorithm.X_WING_768,
-            ReallyMeKemAlgorithm.X_WING_1024,
-            -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
+            ReallyMeKemAlgorithm.X_WING_768 -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
         }
 
     private fun validatePublicKey(suite: MlKemSuite, publicKey: ByteArray) {
