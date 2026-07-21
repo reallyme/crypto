@@ -61,6 +61,10 @@ SPDX-License-Identifier: Apache-2.0
   the current-storage overwrite. The development-only dynamic-library loader
   now requires an absolute path, and the non-interactive Secure Enclave ECDH
   access policy is explicit in the public documentation.
+- The npm registry record for `@reallyme/crypto@0.3.0` reports 84 packaged
+  files, an unpacked size of 3,724,373 bytes, shasum
+  `40b595f91620c7c118a5e0e9ecc48f6fee7e1719`, and integrity
+  `sha512-rbRI0tRUdoyFck8cBP6HSpvQN5bCOvpwJWTX0QHbrchQniIf8UGlF+Vy2ecBaR3RHDitWsfyQEaC6AejHG8pBA==`.
 
 ## 0.2.1
 
