@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-p521"
-version = "0.3.1"
+version = "0.3.2"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -28,7 +28,7 @@ native = ["dep:p521", "dep:ecdsa", "dep:sha2", "dep:getrandom"]
 wasm = ["native", "dep:getrandom"]
 
 [dependencies]
-crypto-core = { package = "reallyme-crypto-core", version = "0.3.1", path = "../crypto/core" }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.3.2", path = "../crypto/core" }
 zeroize = { workspace = true }
 
 p521 = { workspace = true, features = ["ecdh", "ecdsa"], optional = true }

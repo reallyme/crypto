@@ -14,7 +14,7 @@ pub mod constant_time;
 mod error;
 mod family;
 pub mod hash;
-#[cfg(feature = "hpke")]
+#[cfg(feature = "hpke-api")]
 pub mod hpke;
 #[cfg(any(
     feature = "argon2id",

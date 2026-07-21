@@ -4,7 +4,7 @@
 
 //! Feature-aware HPKE request routing.
 
-#[cfg(all(feature = "hpke", any(feature = "native", feature = "wasm")))]
+#[cfg(all(feature = "hpke-api", any(feature = "native", feature = "wasm")))]
 use crypto_proto::generated::proto::reallyme::crypto::v1::__buffa::oneof::crypto_operation_result::Result as CryptoOperationResultBranch;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoHpkeDeriveKeyPairRequest, CryptoHpkeGenerateKeyPairRequest, CryptoHpkeOpenRequest,
@@ -12,13 +12,13 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoHpkeSealRequest, CryptoHpkeSenderExportRequest, CryptoOperationResponse,
 };
 
-#[cfg(all(feature = "hpke", any(feature = "native", feature = "wasm")))]
+#[cfg(all(feature = "hpke-api", any(feature = "native", feature = "wasm")))]
 use super::request::process_request;
 
 macro_rules! hpke_request_handler {
     ($name:ident, $request:ty, $process:ident, $result:ident) => {
         pub(super) fn $name(request: $request) -> CryptoOperationResponse {
-            #[cfg(all(feature = "hpke", any(feature = "native", feature = "wasm")))]
+            #[cfg(all(feature = "hpke-api", any(feature = "native", feature = "wasm")))]
             {
                 process_request(
                     request,
@@ -26,7 +26,7 @@ macro_rules! hpke_request_handler {
                     CryptoOperationResultBranch::$result,
                 )
             }
-            #[cfg(not(all(feature = "hpke", any(feature = "native", feature = "wasm"))))]
+            #[cfg(not(all(feature = "hpke-api", any(feature = "native", feature = "wasm"))))]
             {
                 let _ = request;
                 super::request::unsupported_response()

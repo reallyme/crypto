@@ -2,20 +2,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-use hpke::aead::{Aead as HpkeAead, AesGcm128, AesGcm256, ChaCha20Poly1305, ExportOnlyAead};
-use hpke::kdf::{HkdfSha256, HkdfSha384, HkdfSha512, Kdf as HpkeKdf, KdfShake256};
-use hpke::kem::{
-    DhP256HkdfSha256, DhP384HkdfSha384, DhP521HkdfSha512, MlKem1024, MlKem1024P384, MlKem768,
-    MlKem768P256, X25519HkdfSha256, XWing,
-};
+use hpke::aead::Aead as HpkeAead;
+use hpke::kdf::Kdf as HpkeKdf;
 use hpke::{Deserializable, Kem as HpkeKem, OpModeS, Serializable};
 use zeroize::Zeroizing;
 
 use crate::error::HpkeError;
-use crate::identifiers::{HpkeAeadId, HpkeKdfId, HpkeKemId};
-use crate::mlkem512::MlKem512;
 use crate::random::FixedRandomness;
-use crate::secp256k1::DhKemSecp256k1HkdfSha256;
 #[cfg(feature = "test-vectors")]
 use crate::types::HpkeDerandSenderExportRequest;
 use crate::types::{HpkeSenderExportOutput, HpkeSenderExportRequest};
@@ -23,7 +16,6 @@ use crate::validation::{
     kem_parameters, require_export_suite, validate_export_length, validate_key_schedule_inputs,
     validate_public_key,
 };
-use crate::x448::DhKemX448HkdfSha512;
 
 /// Establishes a Base-mode sender context and exports a bound secret.
 pub fn sender_export(
@@ -63,37 +55,12 @@ fn sender_export_with_randomness(
         return Err(HpkeError::InvalidRandomness);
     }
 
-    match request.suite.kem {
-        HpkeKemId::DhKemP256HkdfSha256 => {
-            sender_export_for_kem::<DhP256HkdfSha256>(request, randomness)
-        }
-        HpkeKemId::DhKemP384HkdfSha384 => {
-            sender_export_for_kem::<DhP384HkdfSha384>(request, randomness)
-        }
-        HpkeKemId::DhKemP521HkdfSha512 => {
-            sender_export_for_kem::<DhP521HkdfSha512>(request, randomness)
-        }
-        HpkeKemId::DhKemSecp256k1HkdfSha256 => {
-            sender_export_for_kem::<DhKemSecp256k1HkdfSha256>(request, randomness)
-        }
-        HpkeKemId::DhKemX25519HkdfSha256 => {
-            sender_export_for_kem::<X25519HkdfSha256>(request, randomness)
-        }
-        HpkeKemId::DhKemX448HkdfSha512 => {
-            sender_export_for_kem::<DhKemX448HkdfSha512>(request, randomness)
-        }
-        HpkeKemId::MlKem512 => sender_export_for_kem::<MlKem512>(request, randomness),
-        HpkeKemId::MlKem768 => sender_export_for_kem::<MlKem768>(request, randomness),
-        HpkeKemId::MlKem1024 => sender_export_for_kem::<MlKem1024>(request, randomness),
-        HpkeKemId::MlKem768P256 => sender_export_for_kem::<MlKem768P256>(request, randomness),
-        HpkeKemId::MlKem1024P384 => sender_export_for_kem::<MlKem1024P384>(request, randomness),
-        HpkeKemId::XWing => sender_export_for_kem::<XWing>(request, randomness),
-        HpkeKemId::DhKemCp256HkdfSha256
-        | HpkeKemId::DhKemCp384HkdfSha384
-        | HpkeKemId::DhKemCp521HkdfSha512
-        | HpkeKemId::DhKemX25519ElligatorHkdfSha256
-        | HpkeKemId::X25519Kyber768Draft00 => Err(HpkeError::UnsupportedKem),
-    }
+    dispatch_kem!(
+        request.suite.kem,
+        sender_export_for_kem,
+        request,
+        randomness
+    )
 }
 
 fn sender_export_for_kem<Kem>(
@@ -103,15 +70,13 @@ fn sender_export_for_kem<Kem>(
 where
     Kem: HpkeKem,
 {
-    match request.suite.kdf {
-        HpkeKdfId::HkdfSha256 => sender_export_for_kdf::<Kem, HkdfSha256>(request, randomness),
-        HpkeKdfId::HkdfSha384 => sender_export_for_kdf::<Kem, HkdfSha384>(request, randomness),
-        HpkeKdfId::HkdfSha512 => sender_export_for_kdf::<Kem, HkdfSha512>(request, randomness),
-        HpkeKdfId::Shake256 => sender_export_for_kdf::<Kem, KdfShake256>(request, randomness),
-        HpkeKdfId::Shake128 | HpkeKdfId::TurboShake128 | HpkeKdfId::TurboShake256 => {
-            Err(HpkeError::UnsupportedKdf)
-        }
-    }
+    dispatch_kdf!(
+        request.suite.kdf,
+        sender_export_for_kdf,
+        Kem,
+        request,
+        randomness
+    )
 }
 
 fn sender_export_for_kdf<Kem, Kdf>(
@@ -122,16 +87,14 @@ where
     Kem: HpkeKem,
     Kdf: HpkeKdf,
 {
-    match request.suite.aead {
-        HpkeAeadId::Aes128Gcm => sender_export_for::<AesGcm128, Kdf, Kem>(request, randomness),
-        HpkeAeadId::Aes256Gcm => sender_export_for::<AesGcm256, Kdf, Kem>(request, randomness),
-        HpkeAeadId::ChaCha20Poly1305 => {
-            sender_export_for::<ChaCha20Poly1305, Kdf, Kem>(request, randomness)
-        }
-        HpkeAeadId::ExportOnly => {
-            sender_export_for::<ExportOnlyAead, Kdf, Kem>(request, randomness)
-        }
-    }
+    dispatch_export_aead!(
+        request.suite.aead,
+        sender_export_for,
+        Kdf,
+        Kem,
+        request,
+        randomness
+    )
 }
 
 fn sender_export_for<Aead, Kdf, Kem>(

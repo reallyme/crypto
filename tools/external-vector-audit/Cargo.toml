@@ -55,36 +55,36 @@ shake = { workspace = true }
 thiserror = { workspace = true }
 zeroize = { workspace = true }
 
-reallyme-crypto-aes-kw = { version = "0.3.1", path = "../../crates/aes-kw", default-features = false }
-reallyme-crypto-aes256-gcm = { version = "0.3.1", path = "../../crates/aes256-gcm", default-features = false }
-reallyme-crypto-aes256-gcm-siv = { version = "0.3.1", path = "../../crates/aes256-gcm-siv", default-features = false }
-reallyme-crypto-chacha20-poly1305 = { version = "0.3.1", path = "../../crates/chacha20-poly1305", default-features = false }
-reallyme-crypto-core = { version = "0.3.1", path = "../../crates/crypto/core" }
-reallyme-crypto-ed25519 = { version = "0.3.1", path = "../../crates/ed25519", default-features = false }
-reallyme-crypto-hkdf = { version = "0.3.1", path = "../../crates/hkdf", default-features = false }
-reallyme-crypto-hpke = { version = "0.3.1", path = "../../crates/hpke", default-features = false }
-reallyme-crypto-hmac = { version = "0.3.1", path = "../../crates/hmac", default-features = false }
-reallyme-crypto-kmac = { version = "0.3.1", path = "../../crates/kmac", default-features = false }
-reallyme-crypto-ml-dsa-44 = { version = "0.3.1", path = "../../crates/ml-dsa-44", default-features = false }
-reallyme-crypto-ml-dsa-65 = { version = "0.3.1", path = "../../crates/ml-dsa-65", default-features = false }
-reallyme-crypto-ml-dsa-87 = { version = "0.3.1", path = "../../crates/ml-dsa-87", default-features = false }
-reallyme-crypto-ml-kem-1024 = { version = "0.3.1", path = "../../crates/ml-kem-1024", default-features = false }
-reallyme-crypto-ml-kem-512 = { version = "0.3.1", path = "../../crates/ml-kem-512", default-features = false }
-reallyme-crypto-ml-kem-768 = { version = "0.3.1", path = "../../crates/ml-kem-768", default-features = false }
-reallyme-crypto-p256 = { version = "0.3.1", path = "../../crates/p256", default-features = false }
-reallyme-crypto-p384 = { version = "0.3.1", path = "../../crates/p384", default-features = false }
-reallyme-crypto-p521 = { version = "0.3.1", path = "../../crates/p521", default-features = false }
-reallyme-crypto-pbkdf2 = { version = "0.3.1", path = "../../crates/pbkdf2", default-features = false }
-reallyme-crypto-rsa = { version = "0.3.1", path = "../../crates/rsa", default-features = false }
-reallyme-crypto-secp256k1 = { version = "0.3.1", path = "../../crates/secp256k1", default-features = false }
-reallyme-crypto-sha2 = { version = "0.3.1", path = "../../crates/sha2", default-features = false }
-reallyme-crypto-sha2-256 = { version = "0.3.1", path = "../../crates/sha2-256", default-features = false }
-reallyme-crypto-sha3 = { version = "0.3.1", path = "../../crates/sha3", default-features = false }
-reallyme-crypto-sha3-256 = { version = "0.3.1", path = "../../crates/sha3-256", default-features = false }
-reallyme-crypto-slh-dsa = { version = "0.3.1", path = "../../crates/slh-dsa", default-features = false }
-reallyme-crypto-x25519 = { version = "0.3.1", path = "../../crates/x25519", default-features = false }
-reallyme-crypto-x448 = { version = "0.3.1", path = "../../crates/x448", default-features = false }
-reallyme-crypto-x-wing = { version = "0.3.1", path = "../../crates/x-wing", default-features = false }
+reallyme-crypto-aes-kw = { version = "=0.3.2", path = "../../crates/aes-kw", default-features = false }
+reallyme-crypto-aes256-gcm = { version = "=0.3.2", path = "../../crates/aes256-gcm", default-features = false }
+reallyme-crypto-aes256-gcm-siv = { version = "=0.3.2", path = "../../crates/aes256-gcm-siv", default-features = false }
+reallyme-crypto-chacha20-poly1305 = { version = "=0.3.2", path = "../../crates/chacha20-poly1305", default-features = false }
+reallyme-crypto-core = { version = "=0.3.2", path = "../../crates/crypto/core" }
+reallyme-crypto-ed25519 = { version = "=0.3.2", path = "../../crates/ed25519", default-features = false }
+reallyme-crypto-hkdf = { version = "=0.3.2", path = "../../crates/hkdf", default-features = false }
+reallyme-crypto-hpke = { version = "=0.3.2", path = "../../crates/hpke", default-features = false }
+reallyme-crypto-hmac = { version = "=0.3.2", path = "../../crates/hmac", default-features = false }
+reallyme-crypto-kmac = { version = "=0.3.2", path = "../../crates/kmac", default-features = false }
+reallyme-crypto-ml-dsa-44 = { version = "=0.3.2", path = "../../crates/ml-dsa-44", default-features = false }
+reallyme-crypto-ml-dsa-65 = { version = "=0.3.2", path = "../../crates/ml-dsa-65", default-features = false }
+reallyme-crypto-ml-dsa-87 = { version = "=0.3.2", path = "../../crates/ml-dsa-87", default-features = false }
+reallyme-crypto-ml-kem-1024 = { version = "=0.3.2", path = "../../crates/ml-kem-1024", default-features = false }
+reallyme-crypto-ml-kem-512 = { version = "=0.3.2", path = "../../crates/ml-kem-512", default-features = false }
+reallyme-crypto-ml-kem-768 = { version = "=0.3.2", path = "../../crates/ml-kem-768", default-features = false }
+reallyme-crypto-p256 = { version = "=0.3.2", path = "../../crates/p256", default-features = false }
+reallyme-crypto-p384 = { version = "=0.3.2", path = "../../crates/p384", default-features = false }
+reallyme-crypto-p521 = { version = "=0.3.2", path = "../../crates/p521", default-features = false }
+reallyme-crypto-pbkdf2 = { version = "=0.3.2", path = "../../crates/pbkdf2", default-features = false }
+reallyme-crypto-rsa = { version = "=0.3.2", path = "../../crates/rsa", default-features = false }
+reallyme-crypto-secp256k1 = { version = "=0.3.2", path = "../../crates/secp256k1", default-features = false }
+reallyme-crypto-sha2 = { version = "=0.3.2", path = "../../crates/sha2", default-features = false }
+reallyme-crypto-sha2-256 = { version = "=0.3.2", path = "../../crates/sha2-256", default-features = false }
+reallyme-crypto-sha3 = { version = "=0.3.2", path = "../../crates/sha3", default-features = false }
+reallyme-crypto-sha3-256 = { version = "=0.3.2", path = "../../crates/sha3-256", default-features = false }
+reallyme-crypto-slh-dsa = { version = "=0.3.2", path = "../../crates/slh-dsa", default-features = false }
+reallyme-crypto-x25519 = { version = "=0.3.2", path = "../../crates/x25519", default-features = false }
+reallyme-crypto-x448 = { version = "=0.3.2", path = "../../crates/x448", default-features = false }
+reallyme-crypto-x-wing = { version = "=0.3.2", path = "../../crates/x-wing", default-features = false }
 
 [lints]
 workspace = true

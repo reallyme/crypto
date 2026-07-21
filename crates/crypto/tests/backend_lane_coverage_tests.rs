@@ -55,7 +55,6 @@ const ROOT_BACKEND_FORWARD_DEPS: &[&str] = &[
     "crypto-ed25519",
     "crypto-hkdf",
     "crypto-hmac",
-    "crypto-hpke",
     "crypto-ml-dsa-44",
     "crypto-ml-dsa-65",
     "crypto-ml-dsa-87",
@@ -126,6 +125,21 @@ fn root_backend_lanes_forward_to_enabled_backend_dependencies() {
             );
         }
     }
+
+    // HPKE is intentionally different from ordinary primitive crates. The
+    // root backend lanes install only its implementation machinery; `hpke`
+    // and `hpke-openmls` select the full or narrow algorithm sets separately.
+    // Weak-forwarding `native` or `wasm` here would silently restore every
+    // HPKE component whenever an otherwise narrow consumer selects a backend.
+    assert_eq!(
+        manifest.matches("\"crypto-hpke?/backend-native\"").count(),
+        REQUIRED_BACKEND_LANES.len(),
+        "root native and wasm features must weak-forward only the HPKE backend machinery"
+    );
+    assert!(!manifest.contains("\"crypto-hpke?/native\""));
+    assert!(!manifest.contains("\"crypto-hpke?/wasm\""));
+    assert!(manifest.contains("hpke = [\"hpke-api\", \"crypto-hpke/native\"]"));
+    assert!(manifest.contains("hpke-openmls = [\"hpke-api\", \"crypto-hpke/openmls\"]"));
 }
 
 #[test]

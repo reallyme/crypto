@@ -175,7 +175,7 @@ pub struct HpkeSenderExportOutput {
 }
 
 impl HpkeSenderExportOutput {
-    #[cfg(feature = "native")]
+    #[cfg(feature = "backend-native")]
     pub(crate) fn new(encapsulated_key: Vec<u8>, exporter_secret: Zeroizing<Vec<u8>>) -> Self {
         Self {
             encapsulated_key,
@@ -201,7 +201,7 @@ pub struct HpkeExporterSecret {
 }
 
 impl HpkeExporterSecret {
-    #[cfg(feature = "native")]
+    #[cfg(feature = "backend-native")]
     pub(crate) fn new(mut bytes: Zeroizing<Vec<u8>>) -> Self {
         Self {
             bytes: core::mem::take(&mut *bytes),
@@ -222,7 +222,7 @@ pub struct HpkeKeyPair {
 }
 
 impl HpkeKeyPair {
-    #[cfg(feature = "native")]
+    #[cfg(feature = "backend-native")]
     pub(crate) fn new(public_key: Vec<u8>, private_key: HpkePrivateKeyBytes) -> Self {
         Self {
             public_key,

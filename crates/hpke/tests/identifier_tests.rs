@@ -149,9 +149,26 @@ fn iana_registry_matrix_is_complete_and_fail_closed() {
         assert_eq!(HpkeAeadId::try_from(aead as u16), Ok(aead));
     }
 
-    let executable_kem_count = if cfg!(feature = "native") { 12 } else { 0 };
-    let executable_kdf_count = if cfg!(feature = "native") { 4 } else { 0 };
-    let executable_aead_count = if cfg!(feature = "native") { 4 } else { 0 };
+    let executable_kem_count = usize::from(cfg!(feature = "kem-dh-p256"))
+        + usize::from(cfg!(feature = "kem-dh-p384"))
+        + usize::from(cfg!(feature = "kem-dh-p521"))
+        + usize::from(cfg!(feature = "kem-secp256k1"))
+        + usize::from(cfg!(feature = "kem-x25519"))
+        + usize::from(cfg!(feature = "kem-x448"))
+        + usize::from(cfg!(feature = "kem-ml-kem-512"))
+        + usize::from(cfg!(feature = "kem-ml-kem-768"))
+        + usize::from(cfg!(feature = "kem-ml-kem-1024"))
+        + usize::from(cfg!(feature = "kem-ml-kem-768-p256"))
+        + usize::from(cfg!(feature = "kem-ml-kem-1024-p384"))
+        + usize::from(cfg!(feature = "kem-x-wing"));
+    let executable_kdf_count = usize::from(cfg!(feature = "kdf-hkdf-sha256"))
+        + usize::from(cfg!(feature = "kdf-hkdf-sha384"))
+        + usize::from(cfg!(feature = "kdf-hkdf-sha512"))
+        + usize::from(cfg!(feature = "kdf-shake256"));
+    let executable_aead_count = usize::from(cfg!(feature = "aead-aes128-gcm"))
+        + usize::from(cfg!(feature = "aead-aes256-gcm"))
+        + usize::from(cfg!(feature = "aead-chacha20-poly1305"))
+        + usize::from(cfg!(feature = "aead-export-only"));
     assert_eq!(
         HPKE_REGISTERED_KEMS
             .iter()

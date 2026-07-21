@@ -6,29 +6,34 @@
 #![forbid(unsafe_code)]
 
 mod constants;
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
+#[macro_use]
+mod dispatch;
+#[cfg(any(feature = "kem-secp256k1", feature = "kem-x448"))]
 mod dhkem;
 mod error;
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 mod export;
 mod identifiers;
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 mod keypair;
-#[cfg(feature = "native")]
+#[cfg(feature = "kem-ml-kem-1024-p384")]
+mod mlkem1024p384;
+#[cfg(feature = "kem-ml-kem-512")]
 mod mlkem512;
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 mod random;
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 mod seal;
-#[cfg(feature = "native")]
+#[cfg(feature = "kem-secp256k1")]
 mod secp256k1;
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 mod setup_receiver;
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 mod setup_sender;
 mod types;
 mod validation;
-#[cfg(feature = "native")]
+#[cfg(feature = "kem-x448")]
 mod x448;
 
 pub use constants::{
@@ -50,9 +55,9 @@ pub use constants::{
     HPKE_X448_PUBLIC_KEY_LEN,
 };
 pub use error::HpkeError;
-#[cfg(all(feature = "native", feature = "test-vectors"))]
+#[cfg(all(feature = "backend-native", feature = "test-vectors"))]
 pub use export::sender_export_derand;
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 pub use export::{receiver_export, sender_export};
 pub use identifiers::{
     HpkeAeadId, HpkeComponentSupport, HpkeKdfId, HpkeKemId, HpkeSuite,
@@ -66,20 +71,20 @@ pub use identifiers::{
     MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384, MLS_192_MLKEM1024_AES256GCM_SHA384_P384,
     MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87,
 };
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 pub use keypair::{derive_keypair, derive_keypair_from_ikm, keygen};
-#[cfg(all(feature = "native", feature = "test-vectors"))]
+#[cfg(all(feature = "backend-native", feature = "test-vectors"))]
 pub use seal::seal_base_derand;
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 pub use seal::{open_base, open_psk, seal_base, seal_psk};
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 pub use setup_receiver::{setup_receiver_psk, HpkePskReceiverSetupRequest, HpkeReceiverContext};
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 pub use setup_sender::{
     setup_sender_psk, HpkePskSenderContext, HpkePskSenderSetupOutput, HpkePskSenderSetupRequest,
     HpkeSenderContext,
 };
-#[cfg(all(feature = "native", feature = "test-vectors"))]
+#[cfg(all(feature = "backend-native", feature = "test-vectors"))]
 pub use setup_sender::{setup_sender_psk_derand, HpkeDerandPskSenderSetupRequest};
 #[cfg(feature = "test-vectors")]
 pub use types::{HpkeDerandSealRequest, HpkeDerandSenderExportRequest};

@@ -28,7 +28,7 @@ pub(super) fn unsupported_algorithm() -> CryptoWireError {
         feature = "hkdf",
         feature = "pbkdf2",
         feature = "concat-kdf",
-        feature = "hpke",
+        feature = "hpke-api",
         feature = "ed25519",
         feature = "p256",
         feature = "p384",

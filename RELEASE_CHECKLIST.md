@@ -18,6 +18,11 @@ artifacts from the release commit.
   `.xcframework` binary target.
 - The root `Package.swift` must be patched with the release version and SwiftPM
   checksum in a reviewed commit before release CI is run.
+- After every source and version change is complete, run
+  `scripts/prepare_swift_release_candidate.sh <version>` before creating the
+  release commit. It builds the deterministic archive, writes the checksum,
+  and verifies the manifest in one step. Do not amend an already-pushed release
+  commit or move a reviewed tag merely to add the checksum.
 - The public release tag must point at the reviewed manifest commit containing
   the non-placeholder checksum, never at a source-preparation commit that still
   has the all-zero placeholder.
@@ -68,9 +73,10 @@ artifacts from the release commit.
 
 ## Release Commit
 
-Before publishing a cross-language release, build the Swift artifact with Xcode
-26.4, patch and review `Package.swift` with
-`scripts/prepare_swift_binary_manifest.mjs`, and push that commit to `main`.
+Before publishing a cross-language release, finish all source and package
+version changes, select Xcode 26.6, run
+`scripts/prepare_swift_release_candidate.sh <version>`, review the resulting
+`Package.swift`, and create the release commit once. Push that commit to `main`.
 Run the four versioned package preflights on that exact commit:
 
 - `crates-package-preflight.yml`;

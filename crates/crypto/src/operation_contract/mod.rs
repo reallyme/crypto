@@ -24,13 +24,13 @@
         feature = "argon2id",
         feature = "pbkdf2",
         feature = "concat-kdf",
-        feature = "hpke"
+        feature = "hpke-api"
     )
 ))]
 mod algorithms;
 mod boundary;
 mod error;
-#[cfg(all(feature = "hpke", any(feature = "native", feature = "wasm")))]
+#[cfg(all(feature = "hpke-api", any(feature = "native", feature = "wasm")))]
 mod hpke;
 #[cfg(all(
     any(feature = "native", feature = "wasm"),
@@ -47,7 +47,7 @@ mod hpke;
         feature = "argon2id",
         feature = "pbkdf2",
         feature = "concat-kdf",
-        feature = "hpke",
+        feature = "hpke-api",
         feature = "ed25519",
         feature = "p256",
         feature = "p384",
@@ -112,7 +112,7 @@ mod key_agreement_algorithms;
         feature = "argon2id",
         feature = "pbkdf2",
         feature = "concat-kdf",
-        feature = "hpke",
+        feature = "hpke-api",
         feature = "ed25519",
         feature = "p256",
         feature = "p384",
@@ -146,7 +146,7 @@ mod operation_error;
         feature = "argon2id",
         feature = "pbkdf2",
         feature = "concat-kdf",
-        feature = "hpke",
+        feature = "hpke-api",
         feature = "p256",
         feature = "p384",
         feature = "p521",
@@ -178,7 +178,7 @@ mod request_symmetric;
         feature = "argon2id",
         feature = "pbkdf2",
         feature = "concat-kdf",
-        feature = "hpke",
+        feature = "hpke-api",
         feature = "ed25519",
         feature = "p256",
         feature = "p384",

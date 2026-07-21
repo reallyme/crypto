@@ -68,11 +68,43 @@ pub enum HpkeKemId {
 impl HpkeKemId {
     /// Reports whether this registered KEM has a reviewed implementation.
     pub const fn support(self) -> HpkeComponentSupport {
-        if !cfg!(feature = "native") {
-            return HpkeComponentSupport::RegisteredUnavailable;
-        }
         match self {
-            Self::DhKemP256HkdfSha256
+            Self::DhKemP256HkdfSha256 if cfg!(feature = "kem-dh-p256") => {
+                HpkeComponentSupport::Executable
+            }
+            Self::DhKemP384HkdfSha384 if cfg!(feature = "kem-dh-p384") => {
+                HpkeComponentSupport::Executable
+            }
+            Self::DhKemP521HkdfSha512 if cfg!(feature = "kem-dh-p521") => {
+                HpkeComponentSupport::Executable
+            }
+            Self::DhKemSecp256k1HkdfSha256 if cfg!(feature = "kem-secp256k1") => {
+                HpkeComponentSupport::Executable
+            }
+            Self::DhKemX25519HkdfSha256 if cfg!(feature = "kem-x25519") => {
+                HpkeComponentSupport::Executable
+            }
+            Self::DhKemX448HkdfSha512 if cfg!(feature = "kem-x448") => {
+                HpkeComponentSupport::Executable
+            }
+            Self::MlKem512 if cfg!(feature = "kem-ml-kem-512") => HpkeComponentSupport::Executable,
+            Self::MlKem768 if cfg!(feature = "kem-ml-kem-768") => HpkeComponentSupport::Executable,
+            Self::MlKem1024 if cfg!(feature = "kem-ml-kem-1024") => {
+                HpkeComponentSupport::Executable
+            }
+            Self::MlKem768P256 if cfg!(feature = "kem-ml-kem-768-p256") => {
+                HpkeComponentSupport::Executable
+            }
+            Self::MlKem1024P384 if cfg!(feature = "kem-ml-kem-1024-p384") => {
+                HpkeComponentSupport::Executable
+            }
+            Self::XWing if cfg!(feature = "kem-x-wing") => HpkeComponentSupport::Executable,
+            Self::DhKemCp256HkdfSha256
+            | Self::DhKemCp384HkdfSha384
+            | Self::DhKemCp521HkdfSha512
+            | Self::DhKemX25519ElligatorHkdfSha256
+            | Self::X25519Kyber768Draft00
+            | Self::DhKemP256HkdfSha256
             | Self::DhKemP384HkdfSha384
             | Self::DhKemP521HkdfSha512
             | Self::DhKemSecp256k1HkdfSha256
@@ -83,12 +115,7 @@ impl HpkeKemId {
             | Self::MlKem1024
             | Self::MlKem768P256
             | Self::MlKem1024P384
-            | Self::XWing => HpkeComponentSupport::Executable,
-            Self::DhKemCp256HkdfSha256
-            | Self::DhKemCp384HkdfSha384
-            | Self::DhKemCp521HkdfSha512
-            | Self::DhKemX25519ElligatorHkdfSha256
-            | Self::X25519Kyber768Draft00 => HpkeComponentSupport::RegisteredUnavailable,
+            | Self::XWing => HpkeComponentSupport::RegisteredUnavailable,
         }
     }
 }
@@ -143,16 +170,24 @@ pub enum HpkeKdfId {
 impl HpkeKdfId {
     /// Reports whether this registered KDF has a reviewed implementation.
     pub const fn support(self) -> HpkeComponentSupport {
-        if !cfg!(feature = "native") {
-            return HpkeComponentSupport::RegisteredUnavailable;
-        }
         match self {
-            Self::HkdfSha256 | Self::HkdfSha384 | Self::HkdfSha512 | Self::Shake256 => {
+            Self::HkdfSha256 if cfg!(feature = "kdf-hkdf-sha256") => {
                 HpkeComponentSupport::Executable
             }
-            Self::Shake128 | Self::TurboShake128 | Self::TurboShake256 => {
-                HpkeComponentSupport::RegisteredUnavailable
+            Self::HkdfSha384 if cfg!(feature = "kdf-hkdf-sha384") => {
+                HpkeComponentSupport::Executable
             }
+            Self::HkdfSha512 if cfg!(feature = "kdf-hkdf-sha512") => {
+                HpkeComponentSupport::Executable
+            }
+            Self::Shake256 if cfg!(feature = "kdf-shake256") => HpkeComponentSupport::Executable,
+            Self::HkdfSha256
+            | Self::HkdfSha384
+            | Self::HkdfSha512
+            | Self::Shake128
+            | Self::Shake256
+            | Self::TurboShake128
+            | Self::TurboShake256 => HpkeComponentSupport::RegisteredUnavailable,
         }
     }
 }
@@ -191,18 +226,27 @@ pub enum HpkeAeadId {
 impl HpkeAeadId {
     /// Reports whether this registered AEAD has a reviewed implementation.
     pub const fn support(self) -> HpkeComponentSupport {
-        if !cfg!(feature = "native") {
-            return HpkeComponentSupport::RegisteredUnavailable;
-        }
         match self {
-            Self::Aes128Gcm | Self::Aes256Gcm | Self::ChaCha20Poly1305 | Self::ExportOnly => {
+            Self::Aes128Gcm if cfg!(feature = "aead-aes128-gcm") => {
                 HpkeComponentSupport::Executable
+            }
+            Self::Aes256Gcm if cfg!(feature = "aead-aes256-gcm") => {
+                HpkeComponentSupport::Executable
+            }
+            Self::ChaCha20Poly1305 if cfg!(feature = "aead-chacha20-poly1305") => {
+                HpkeComponentSupport::Executable
+            }
+            Self::ExportOnly if cfg!(feature = "aead-export-only") => {
+                HpkeComponentSupport::Executable
+            }
+            Self::Aes128Gcm | Self::Aes256Gcm | Self::ChaCha20Poly1305 | Self::ExportOnly => {
+                HpkeComponentSupport::RegisteredUnavailable
             }
         }
     }
 }
 
-/// Complete IANA HPKE KEM registry snapshot supported by the `0.3.0` contract.
+/// Complete IANA HPKE KEM registry snapshot supported by the `0.3.2` contract.
 pub const HPKE_REGISTERED_KEMS: [HpkeKemId; 17] = [
     HpkeKemId::DhKemP256HkdfSha256,
     HpkeKemId::DhKemP384HkdfSha384,
@@ -223,7 +267,7 @@ pub const HPKE_REGISTERED_KEMS: [HpkeKemId; 17] = [
     HpkeKemId::XWing,
 ];
 
-/// Complete IANA HPKE KDF registry snapshot supported by the `0.3.0` contract.
+/// Complete IANA HPKE KDF registry snapshot supported by the `0.3.2` contract.
 pub const HPKE_REGISTERED_KDFS: [HpkeKdfId; 7] = [
     HpkeKdfId::HkdfSha256,
     HpkeKdfId::HkdfSha384,
@@ -234,7 +278,7 @@ pub const HPKE_REGISTERED_KDFS: [HpkeKdfId; 7] = [
     HpkeKdfId::TurboShake256,
 ];
 
-/// Complete IANA HPKE AEAD registry snapshot supported by the `0.3.0` contract.
+/// Complete IANA HPKE AEAD registry snapshot supported by the `0.3.2` contract.
 pub const HPKE_REGISTERED_AEADS: [HpkeAeadId; 4] = [
     HpkeAeadId::Aes128Gcm,
     HpkeAeadId::Aes256Gcm,
