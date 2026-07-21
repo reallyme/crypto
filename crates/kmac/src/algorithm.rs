@@ -5,6 +5,7 @@
 //! KMAC256 implementation and typed secret-material owners.
 
 use crypto_core::{CryptoError, KdfAlgorithm, KdfFailureKind, KdfProfile};
+#[cfg(any(feature = "native", feature = "wasm"))]
 use sha3_kmac::Kmac256;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
