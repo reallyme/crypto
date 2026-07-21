@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-hpke"
-version = "0.3.0"
+version = "0.3.1"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -19,6 +19,8 @@ name = "crypto_hpke"
 [features]
 default = []
 native = [
+    "dep:aes-gcm",
+    "dep:chacha20poly1305",
     "dep:crypto-secp256k1",
     "dep:crypto-x448",
     "dep:getrandom",
@@ -43,8 +45,10 @@ wasm = ["native"]
 test-vectors = ["native"]
 
 [dependencies]
-crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "0.3.0", path = "../secp256k1", default-features = false, features = ["native"], optional = true }
-crypto-x448 = { package = "reallyme-crypto-x448", version = "0.3.0", path = "../x448", default-features = false, features = ["native"], optional = true }
+aes-gcm = { workspace = true, optional = true }
+chacha20poly1305 = { workspace = true, optional = true, features = ["zeroize"] }
+crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "0.3.1", path = "../secp256k1", default-features = false, features = ["native"], optional = true }
+crypto-x448 = { package = "reallyme-crypto-x448", version = "0.3.1", path = "../x448", default-features = false, features = ["native"], optional = true }
 getrandom = { workspace = true, optional = true, features = ["wasm_js"] }
 # Keep the HKDF/HMAC working state covered by the digest zeroization feature.
 hmac = { workspace = true, optional = true }

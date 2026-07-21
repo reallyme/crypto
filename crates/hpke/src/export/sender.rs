@@ -16,6 +16,8 @@ use crate::identifiers::{HpkeAeadId, HpkeKdfId, HpkeKemId};
 use crate::mlkem512::MlKem512;
 use crate::random::FixedRandomness;
 use crate::secp256k1::DhKemSecp256k1HkdfSha256;
+#[cfg(feature = "test-vectors")]
+use crate::types::HpkeDerandSenderExportRequest;
 use crate::types::{HpkeSenderExportOutput, HpkeSenderExportRequest};
 use crate::validation::{
     kem_parameters, require_export_suite, validate_export_length, validate_key_schedule_inputs,
@@ -27,44 +29,65 @@ use crate::x448::DhKemX448HkdfSha512;
 pub fn sender_export(
     request: &HpkeSenderExportRequest<'_>,
 ) -> Result<HpkeSenderExportOutput, HpkeError> {
+    let randomness_length = request.suite.encapsulation_randomness_len()?;
+    let mut randomness = Zeroizing::new(vec![0_u8; randomness_length]);
+    getrandom::fill(randomness.as_mut_slice()).map_err(|_| HpkeError::RandomnessUnavailable)?;
+    sender_export_with_randomness(request, randomness.as_slice())
+}
+
+/// Establishes a Base-mode sender context with deterministic KEM randomness
+/// and exports a bound secret for conformance vectors.
+#[cfg(feature = "test-vectors")]
+pub fn sender_export_derand(
+    request: &HpkeDerandSenderExportRequest<'_>,
+) -> Result<HpkeSenderExportOutput, HpkeError> {
+    let export_request = HpkeSenderExportRequest {
+        suite: request.suite,
+        recipient_public_key: request.recipient_public_key,
+        info: request.info,
+        exporter_context: request.exporter_context,
+        output_length: request.output_length,
+    };
+    sender_export_with_randomness(&export_request, request.encapsulation_randomness)
+}
+
+fn sender_export_with_randomness(
+    request: &HpkeSenderExportRequest<'_>,
+    randomness: &[u8],
+) -> Result<HpkeSenderExportOutput, HpkeError> {
     require_export_suite(request.suite)?;
     validate_public_key(request.suite, request.recipient_public_key)?;
     validate_key_schedule_inputs(request.info, &[])?;
     validate_export_length(request.suite, request.output_length)?;
-
-    let randomness_length = request.suite.encapsulation_randomness_len()?;
-    let mut randomness = Zeroizing::new(vec![0_u8; randomness_length]);
-    getrandom::fill(randomness.as_mut_slice()).map_err(|_| HpkeError::RandomnessUnavailable)?;
+    if randomness.len() != request.suite.encapsulation_randomness_len()? {
+        return Err(HpkeError::InvalidRandomness);
+    }
 
     match request.suite.kem {
         HpkeKemId::DhKemP256HkdfSha256 => {
-            sender_export_for_kem::<DhP256HkdfSha256>(request, randomness.as_slice())
+            sender_export_for_kem::<DhP256HkdfSha256>(request, randomness)
         }
         HpkeKemId::DhKemP384HkdfSha384 => {
-            sender_export_for_kem::<DhP384HkdfSha384>(request, randomness.as_slice())
+            sender_export_for_kem::<DhP384HkdfSha384>(request, randomness)
         }
         HpkeKemId::DhKemP521HkdfSha512 => {
-            sender_export_for_kem::<DhP521HkdfSha512>(request, randomness.as_slice())
+            sender_export_for_kem::<DhP521HkdfSha512>(request, randomness)
         }
         HpkeKemId::DhKemSecp256k1HkdfSha256 => {
-            sender_export_for_kem::<DhKemSecp256k1HkdfSha256>(request, randomness.as_slice())
+            sender_export_for_kem::<DhKemSecp256k1HkdfSha256>(request, randomness)
         }
         HpkeKemId::DhKemX25519HkdfSha256 => {
-            sender_export_for_kem::<X25519HkdfSha256>(request, randomness.as_slice())
+            sender_export_for_kem::<X25519HkdfSha256>(request, randomness)
         }
         HpkeKemId::DhKemX448HkdfSha512 => {
-            sender_export_for_kem::<DhKemX448HkdfSha512>(request, randomness.as_slice())
+            sender_export_for_kem::<DhKemX448HkdfSha512>(request, randomness)
         }
-        HpkeKemId::MlKem512 => sender_export_for_kem::<MlKem512>(request, randomness.as_slice()),
-        HpkeKemId::MlKem768 => sender_export_for_kem::<MlKem768>(request, randomness.as_slice()),
-        HpkeKemId::MlKem1024 => sender_export_for_kem::<MlKem1024>(request, randomness.as_slice()),
-        HpkeKemId::MlKem768P256 => {
-            sender_export_for_kem::<MlKem768P256>(request, randomness.as_slice())
-        }
-        HpkeKemId::MlKem1024P384 => {
-            sender_export_for_kem::<MlKem1024P384>(request, randomness.as_slice())
-        }
-        HpkeKemId::XWing => sender_export_for_kem::<XWing>(request, randomness.as_slice()),
+        HpkeKemId::MlKem512 => sender_export_for_kem::<MlKem512>(request, randomness),
+        HpkeKemId::MlKem768 => sender_export_for_kem::<MlKem768>(request, randomness),
+        HpkeKemId::MlKem1024 => sender_export_for_kem::<MlKem1024>(request, randomness),
+        HpkeKemId::MlKem768P256 => sender_export_for_kem::<MlKem768P256>(request, randomness),
+        HpkeKemId::MlKem1024P384 => sender_export_for_kem::<MlKem1024P384>(request, randomness),
+        HpkeKemId::XWing => sender_export_for_kem::<XWing>(request, randomness),
         HpkeKemId::DhKemCp256HkdfSha256
         | HpkeKemId::DhKemCp384HkdfSha384
         | HpkeKemId::DhKemCp521HkdfSha512

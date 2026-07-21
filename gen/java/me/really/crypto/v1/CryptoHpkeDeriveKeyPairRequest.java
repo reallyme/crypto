@@ -76,8 +76,10 @@ public  final class CryptoHpkeDeriveKeyPairRequest extends
   private com.google.protobuf.ByteString inputKeyMaterial_;
   /**
    * <pre>
-   * Secret-bearing input keying material. The selected KEM defines its exact
-   * accepted length; callers must supply high-entropy bytes.
+   * Secret-bearing arbitrary-length input keying material of at least 32
+   * bytes. The selected KEM applies its registered HPKE DeriveKeyPair
+   * procedure; callers must supply high-entropy bytes and must not normalize
+   * the input to a suite-specific seed length outside the protocol owner.
    * </pre>
    *
    * <code>bytes input_key_material = 2 [json_name = "inputKeyMaterial"];</code>
@@ -89,8 +91,10 @@ public  final class CryptoHpkeDeriveKeyPairRequest extends
   }
   /**
    * <pre>
-   * Secret-bearing input keying material. The selected KEM defines its exact
-   * accepted length; callers must supply high-entropy bytes.
+   * Secret-bearing arbitrary-length input keying material of at least 32
+   * bytes. The selected KEM applies its registered HPKE DeriveKeyPair
+   * procedure; callers must supply high-entropy bytes and must not normalize
+   * the input to a suite-specific seed length outside the protocol owner.
    * </pre>
    *
    * <code>bytes input_key_material = 2 [json_name = "inputKeyMaterial"];</code>
@@ -103,8 +107,10 @@ public  final class CryptoHpkeDeriveKeyPairRequest extends
   }
   /**
    * <pre>
-   * Secret-bearing input keying material. The selected KEM defines its exact
-   * accepted length; callers must supply high-entropy bytes.
+   * Secret-bearing arbitrary-length input keying material of at least 32
+   * bytes. The selected KEM applies its registered HPKE DeriveKeyPair
+   * procedure; callers must supply high-entropy bytes and must not normalize
+   * the input to a suite-specific seed length outside the protocol owner.
    * </pre>
    *
    * <code>bytes input_key_material = 2 [json_name = "inputKeyMaterial"];</code>
@@ -260,8 +266,10 @@ public  final class CryptoHpkeDeriveKeyPairRequest extends
 
     /**
      * <pre>
-     * Secret-bearing input keying material. The selected KEM defines its exact
-     * accepted length; callers must supply high-entropy bytes.
+     * Secret-bearing arbitrary-length input keying material of at least 32
+     * bytes. The selected KEM applies its registered HPKE DeriveKeyPair
+     * procedure; callers must supply high-entropy bytes and must not normalize
+     * the input to a suite-specific seed length outside the protocol owner.
      * </pre>
      *
      * <code>bytes input_key_material = 2 [json_name = "inputKeyMaterial"];</code>
@@ -273,8 +281,10 @@ public  final class CryptoHpkeDeriveKeyPairRequest extends
     }
     /**
      * <pre>
-     * Secret-bearing input keying material. The selected KEM defines its exact
-     * accepted length; callers must supply high-entropy bytes.
+     * Secret-bearing arbitrary-length input keying material of at least 32
+     * bytes. The selected KEM applies its registered HPKE DeriveKeyPair
+     * procedure; callers must supply high-entropy bytes and must not normalize
+     * the input to a suite-specific seed length outside the protocol owner.
      * </pre>
      *
      * <code>bytes input_key_material = 2 [json_name = "inputKeyMaterial"];</code>
@@ -288,8 +298,10 @@ public  final class CryptoHpkeDeriveKeyPairRequest extends
     }
     /**
      * <pre>
-     * Secret-bearing input keying material. The selected KEM defines its exact
-     * accepted length; callers must supply high-entropy bytes.
+     * Secret-bearing arbitrary-length input keying material of at least 32
+     * bytes. The selected KEM applies its registered HPKE DeriveKeyPair
+     * procedure; callers must supply high-entropy bytes and must not normalize
+     * the input to a suite-specific seed length outside the protocol owner.
      * </pre>
      *
      * <code>bytes input_key_material = 2 [json_name = "inputKeyMaterial"];</code>

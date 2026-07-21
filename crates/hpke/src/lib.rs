@@ -22,6 +22,10 @@ mod random;
 mod seal;
 #[cfg(feature = "native")]
 mod secp256k1;
+#[cfg(feature = "native")]
+mod setup_receiver;
+#[cfg(feature = "native")]
+mod setup_sender;
 mod types;
 mod validation;
 #[cfg(feature = "native")]
@@ -46,6 +50,8 @@ pub use constants::{
     HPKE_X448_PUBLIC_KEY_LEN,
 };
 pub use error::HpkeError;
+#[cfg(all(feature = "native", feature = "test-vectors"))]
+pub use export::sender_export_derand;
 #[cfg(feature = "native")]
 pub use export::{receiver_export, sender_export};
 pub use identifiers::{
@@ -57,18 +63,28 @@ pub use identifiers::{
     HPKE_MLKEM512_HKDF_SHA256_AES128GCM, HPKE_MLKEM768P256_SHAKE256_AES256GCM,
     HPKE_MLKEM768_SHAKE256_AES256GCM, HPKE_REGISTERED_AEADS, HPKE_REGISTERED_KDFS,
     HPKE_REGISTERED_KEMS, HPKE_XWING_HKDF_SHA256_CHACHA20POLY1305,
-    MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384,
+    MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384, MLS_192_MLKEM1024_AES256GCM_SHA384_P384,
+    MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87,
 };
 #[cfg(feature = "native")]
-pub use keypair::{derive_keypair, keygen};
+pub use keypair::{derive_keypair, derive_keypair_from_ikm, keygen};
 #[cfg(all(feature = "native", feature = "test-vectors"))]
 pub use seal::seal_base_derand;
 #[cfg(feature = "native")]
 pub use seal::{open_base, open_psk, seal_base, seal_psk};
+#[cfg(feature = "native")]
+pub use setup_receiver::{setup_receiver_psk, HpkePskReceiverSetupRequest, HpkeReceiverContext};
+#[cfg(feature = "native")]
+pub use setup_sender::{
+    setup_sender_psk, HpkePskSenderContext, HpkePskSenderSetupOutput, HpkePskSenderSetupRequest,
+    HpkeSenderContext,
+};
+#[cfg(all(feature = "native", feature = "test-vectors"))]
+pub use setup_sender::{setup_sender_psk_derand, HpkeDerandPskSenderSetupRequest};
 #[cfg(feature = "test-vectors")]
-pub use types::HpkeDerandSealRequest;
+pub use types::{HpkeDerandSealRequest, HpkeDerandSenderExportRequest};
 pub use types::{
     HpkeExporterSecret, HpkeKeyPair, HpkeOpenOutput, HpkeOpenRequest, HpkePrivateKeyBytes,
-    HpkePskOpenRequest, HpkePskSealRequest, HpkeReceiverExportRequest, HpkeSealOutput,
-    HpkeSealRequest, HpkeSenderExportOutput, HpkeSenderExportRequest,
+    HpkePskIdRef, HpkePskOpenRequest, HpkePskRef, HpkePskSealRequest, HpkeReceiverExportRequest,
+    HpkeSealOutput, HpkeSealRequest, HpkeSenderExportOutput, HpkeSenderExportRequest,
 };

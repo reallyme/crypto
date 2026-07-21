@@ -8,7 +8,7 @@ use hpke::kem::{
     DhP256HkdfSha256, DhP384HkdfSha384, DhP521HkdfSha512, MlKem1024, MlKem1024P384, MlKem768,
     MlKem768P256, X25519HkdfSha256, XWing,
 };
-use hpke::{Deserializable, Kem as HpkeKem, OpModeR, OpModeS, PskBundle, Serializable};
+use hpke::{Deserializable, Kem as HpkeKem, OpModeR, OpModeS, Serializable};
 use zeroize::Zeroizing;
 
 use crate::error::HpkeError;
@@ -16,78 +16,63 @@ use crate::identifiers::{HpkeAeadId, HpkeKdfId, HpkeKemId};
 use crate::mlkem512::MlKem512;
 use crate::random::FixedRandomness;
 use crate::secp256k1::DhKemSecp256k1HkdfSha256;
+use crate::setup_receiver::{setup_receiver_psk, HpkePskReceiverSetupRequest};
+use crate::setup_sender::{setup_sender_psk, HpkePskSenderSetupRequest};
 #[cfg(feature = "test-vectors")]
 use crate::types::HpkeDerandSealRequest;
 use crate::types::{
-    HpkeOpenOutput, HpkeOpenRequest, HpkePskOpenRequest, HpkePskSealRequest, HpkeSealOutput,
-    HpkeSealRequest,
+    HpkeOpenOutput, HpkeOpenRequest, HpkePskIdRef, HpkePskOpenRequest, HpkePskRef,
+    HpkePskSealRequest, HpkeSealOutput, HpkeSealRequest,
 };
 use crate::validation::{
     kem_parameters, require_sealing_suite, validate_ciphertext, validate_encapsulated_key,
-    validate_key_schedule_inputs, validate_private_key, validate_psk, validate_public_key,
+    validate_key_schedule_inputs, validate_private_key, validate_public_key,
 };
 use crate::x448::DhKemX448HkdfSha512;
-
-#[derive(Clone, Copy)]
-enum PskMode<'a> {
-    Base,
-    Psk { psk: &'a [u8], psk_id: &'a [u8] },
-}
 
 /// Encrypts one message with RFC 9180 HPKE Base mode.
 pub fn seal_base(request: &HpkeSealRequest<'_>) -> Result<HpkeSealOutput, HpkeError> {
     let randomness_length = request.suite.encapsulation_randomness_len()?;
     let mut randomness = Zeroizing::new(vec![0_u8; randomness_length]);
     getrandom::fill(randomness.as_mut_slice()).map_err(|_| HpkeError::RandomnessUnavailable)?;
-    seal_with_randomness(request, PskMode::Base, randomness.as_slice())
+    seal_with_randomness(request, randomness.as_slice())
 }
 
 /// Decrypts one message with RFC 9180 HPKE Base mode.
 pub fn open_base(request: &HpkeOpenRequest<'_>) -> Result<HpkeOpenOutput, HpkeError> {
-    open_with_mode(request, PskMode::Base)
+    open_base_inner(request)
 }
 
 /// Encrypts one message with RFC 9180 HPKE PSK mode.
 pub fn seal_psk(request: &HpkePskSealRequest<'_>) -> Result<HpkeSealOutput, HpkeError> {
-    validate_psk(request.psk, request.psk_id)?;
-    let randomness_length = request.suite.encapsulation_randomness_len()?;
-    let mut randomness = Zeroizing::new(vec![0_u8; randomness_length]);
-    getrandom::fill(randomness.as_mut_slice()).map_err(|_| HpkeError::RandomnessUnavailable)?;
-    let base_request = HpkeSealRequest {
+    let mut setup = setup_sender_psk(&HpkePskSenderSetupRequest {
         suite: request.suite,
         recipient_public_key: request.recipient_public_key,
         info: request.info,
-        aad: request.aad,
-        plaintext: request.plaintext,
-    };
-    seal_with_randomness(
-        &base_request,
-        PskMode::Psk {
-            psk: request.psk,
-            psk_id: request.psk_id,
-        },
-        randomness.as_slice(),
-    )
+        psk: HpkePskRef::new(request.psk)?,
+        psk_id: HpkePskIdRef::new(request.psk_id)?,
+    })?;
+    let ciphertext = setup.context.seal(request.aad, request.plaintext)?;
+    Ok(HpkeSealOutput {
+        encapsulated_key: setup.encapsulated_key,
+        ciphertext,
+    })
 }
 
 /// Decrypts one message with RFC 9180 HPKE PSK mode.
 pub fn open_psk(request: &HpkePskOpenRequest<'_>) -> Result<HpkeOpenOutput, HpkeError> {
-    validate_psk(request.psk, request.psk_id)?;
-    let base_request = HpkeOpenRequest {
+    // Reject structurally impossible ciphertext before the comparatively
+    // expensive receiver KEM setup, especially for post-quantum suites.
+    validate_ciphertext(request.suite, request.ciphertext)?;
+    let mut context = setup_receiver_psk(&HpkePskReceiverSetupRequest {
         suite: request.suite,
         encapsulated_key: request.encapsulated_key,
         recipient_private_key: request.recipient_private_key,
         info: request.info,
-        aad: request.aad,
-        ciphertext: request.ciphertext,
-    };
-    open_with_mode(
-        &base_request,
-        PskMode::Psk {
-            psk: request.psk,
-            psk_id: request.psk_id,
-        },
-    )
+        psk: HpkePskRef::new(request.psk)?,
+        psk_id: HpkePskIdRef::new(request.psk_id)?,
+    })?;
+    context.open(request.aad, request.ciphertext)
 }
 
 /// Encrypts one Base-mode message with deterministic KEM randomness.
@@ -103,50 +88,35 @@ pub fn seal_base_derand(request: &HpkeDerandSealRequest<'_>) -> Result<HpkeSealO
         aad: request.aad,
         plaintext: request.plaintext,
     };
-    seal_with_randomness(
-        &seal_request,
-        PskMode::Base,
-        request.encapsulation_randomness,
-    )
+    seal_with_randomness(&seal_request, request.encapsulation_randomness)
 }
 
 fn seal_with_randomness(
     request: &HpkeSealRequest<'_>,
-    mode: PskMode<'_>,
     randomness: &[u8],
 ) -> Result<HpkeSealOutput, HpkeError> {
     require_sealing_suite(request.suite)?;
     validate_public_key(request.suite, request.recipient_public_key)?;
-    validate_key_schedule_inputs(request.info, psk_id(mode))?;
+    validate_key_schedule_inputs(request.info, &[])?;
     if randomness.len() != kem_parameters(request.suite.kem)?.encapsulation_randomness_len {
         return Err(HpkeError::InvalidRandomness);
     }
 
     match request.suite.kem {
-        HpkeKemId::DhKemP256HkdfSha256 => {
-            seal_for_kem::<DhP256HkdfSha256>(request, mode, randomness)
-        }
-        HpkeKemId::DhKemP384HkdfSha384 => {
-            seal_for_kem::<DhP384HkdfSha384>(request, mode, randomness)
-        }
-        HpkeKemId::DhKemP521HkdfSha512 => {
-            seal_for_kem::<DhP521HkdfSha512>(request, mode, randomness)
-        }
+        HpkeKemId::DhKemP256HkdfSha256 => seal_for_kem::<DhP256HkdfSha256>(request, randomness),
+        HpkeKemId::DhKemP384HkdfSha384 => seal_for_kem::<DhP384HkdfSha384>(request, randomness),
+        HpkeKemId::DhKemP521HkdfSha512 => seal_for_kem::<DhP521HkdfSha512>(request, randomness),
         HpkeKemId::DhKemSecp256k1HkdfSha256 => {
-            seal_for_kem::<DhKemSecp256k1HkdfSha256>(request, mode, randomness)
+            seal_for_kem::<DhKemSecp256k1HkdfSha256>(request, randomness)
         }
-        HpkeKemId::DhKemX25519HkdfSha256 => {
-            seal_for_kem::<X25519HkdfSha256>(request, mode, randomness)
-        }
-        HpkeKemId::DhKemX448HkdfSha512 => {
-            seal_for_kem::<DhKemX448HkdfSha512>(request, mode, randomness)
-        }
-        HpkeKemId::MlKem512 => seal_for_kem::<MlKem512>(request, mode, randomness),
-        HpkeKemId::MlKem768 => seal_for_kem::<MlKem768>(request, mode, randomness),
-        HpkeKemId::MlKem1024 => seal_for_kem::<MlKem1024>(request, mode, randomness),
-        HpkeKemId::MlKem768P256 => seal_for_kem::<MlKem768P256>(request, mode, randomness),
-        HpkeKemId::MlKem1024P384 => seal_for_kem::<MlKem1024P384>(request, mode, randomness),
-        HpkeKemId::XWing => seal_for_kem::<XWing>(request, mode, randomness),
+        HpkeKemId::DhKemX25519HkdfSha256 => seal_for_kem::<X25519HkdfSha256>(request, randomness),
+        HpkeKemId::DhKemX448HkdfSha512 => seal_for_kem::<DhKemX448HkdfSha512>(request, randomness),
+        HpkeKemId::MlKem512 => seal_for_kem::<MlKem512>(request, randomness),
+        HpkeKemId::MlKem768 => seal_for_kem::<MlKem768>(request, randomness),
+        HpkeKemId::MlKem1024 => seal_for_kem::<MlKem1024>(request, randomness),
+        HpkeKemId::MlKem768P256 => seal_for_kem::<MlKem768P256>(request, randomness),
+        HpkeKemId::MlKem1024P384 => seal_for_kem::<MlKem1024P384>(request, randomness),
+        HpkeKemId::XWing => seal_for_kem::<XWing>(request, randomness),
         HpkeKemId::DhKemCp256HkdfSha256
         | HpkeKemId::DhKemCp384HkdfSha384
         | HpkeKemId::DhKemCp521HkdfSha512
@@ -157,17 +127,16 @@ fn seal_with_randomness(
 
 fn seal_for_kem<Kem>(
     request: &HpkeSealRequest<'_>,
-    mode: PskMode<'_>,
     randomness: &[u8],
 ) -> Result<HpkeSealOutput, HpkeError>
 where
     Kem: HpkeKem,
 {
     match request.suite.kdf {
-        HpkeKdfId::HkdfSha256 => seal_for_kdf::<Kem, HkdfSha256>(request, mode, randomness),
-        HpkeKdfId::HkdfSha384 => seal_for_kdf::<Kem, HkdfSha384>(request, mode, randomness),
-        HpkeKdfId::HkdfSha512 => seal_for_kdf::<Kem, HkdfSha512>(request, mode, randomness),
-        HpkeKdfId::Shake256 => seal_for_kdf::<Kem, KdfShake256>(request, mode, randomness),
+        HpkeKdfId::HkdfSha256 => seal_for_kdf::<Kem, HkdfSha256>(request, randomness),
+        HpkeKdfId::HkdfSha384 => seal_for_kdf::<Kem, HkdfSha384>(request, randomness),
+        HpkeKdfId::HkdfSha512 => seal_for_kdf::<Kem, HkdfSha512>(request, randomness),
+        HpkeKdfId::Shake256 => seal_for_kdf::<Kem, KdfShake256>(request, randomness),
         HpkeKdfId::Shake128 | HpkeKdfId::TurboShake128 | HpkeKdfId::TurboShake256 => {
             Err(HpkeError::UnsupportedKdf)
         }
@@ -176,7 +145,6 @@ where
 
 fn seal_for_kdf<Kem, Kdf>(
     request: &HpkeSealRequest<'_>,
-    mode: PskMode<'_>,
     randomness: &[u8],
 ) -> Result<HpkeSealOutput, HpkeError>
 where
@@ -184,18 +152,15 @@ where
     Kdf: HpkeKdf,
 {
     match request.suite.aead {
-        HpkeAeadId::Aes128Gcm => seal_for::<AesGcm128, Kdf, Kem>(request, mode, randomness),
-        HpkeAeadId::Aes256Gcm => seal_for::<AesGcm256, Kdf, Kem>(request, mode, randomness),
-        HpkeAeadId::ChaCha20Poly1305 => {
-            seal_for::<ChaCha20Poly1305, Kdf, Kem>(request, mode, randomness)
-        }
+        HpkeAeadId::Aes128Gcm => seal_for::<AesGcm128, Kdf, Kem>(request, randomness),
+        HpkeAeadId::Aes256Gcm => seal_for::<AesGcm256, Kdf, Kem>(request, randomness),
+        HpkeAeadId::ChaCha20Poly1305 => seal_for::<ChaCha20Poly1305, Kdf, Kem>(request, randomness),
         HpkeAeadId::ExportOnly => Err(HpkeError::UnsupportedSuite),
     }
 }
 
 fn seal_for<Aead, Kdf, Kem>(
     request: &HpkeSealRequest<'_>,
-    mode: PskMode<'_>,
     randomness: &[u8],
 ) -> Result<HpkeSealOutput, HpkeError>
 where
@@ -211,14 +176,9 @@ where
     let recipient_public_key =
         <Kem::PublicKey as Deserializable>::from_bytes(request.recipient_public_key)
             .map_err(|_| HpkeError::InvalidPublicKey)?;
-    let psk_bundle = psk_bundle(mode)?;
-    let operation_mode = match psk_bundle {
-        Some(bundle) => OpModeS::Psk(bundle),
-        None => OpModeS::Base,
-    };
     let mut rng = FixedRandomness::new(randomness);
     let (encapsulated_key, ciphertext) = hpke::single_shot_seal_with_rng::<Aead, Kdf, Kem>(
-        &operation_mode,
+        &OpModeS::Base,
         &recipient_public_key,
         request.info,
         request.plaintext,
@@ -243,31 +203,26 @@ where
     })
 }
 
-fn open_with_mode(
-    request: &HpkeOpenRequest<'_>,
-    mode: PskMode<'_>,
-) -> Result<HpkeOpenOutput, HpkeError> {
+fn open_base_inner(request: &HpkeOpenRequest<'_>) -> Result<HpkeOpenOutput, HpkeError> {
     require_sealing_suite(request.suite)?;
     validate_encapsulated_key(request.suite, request.encapsulated_key)?;
     validate_private_key(request.suite, request.recipient_private_key)?;
     validate_ciphertext(request.suite, request.ciphertext)?;
-    validate_key_schedule_inputs(request.info, psk_id(mode))?;
+    validate_key_schedule_inputs(request.info, &[])?;
 
     match request.suite.kem {
-        HpkeKemId::DhKemP256HkdfSha256 => open_for_kem::<DhP256HkdfSha256>(request, mode),
-        HpkeKemId::DhKemP384HkdfSha384 => open_for_kem::<DhP384HkdfSha384>(request, mode),
-        HpkeKemId::DhKemP521HkdfSha512 => open_for_kem::<DhP521HkdfSha512>(request, mode),
-        HpkeKemId::DhKemSecp256k1HkdfSha256 => {
-            open_for_kem::<DhKemSecp256k1HkdfSha256>(request, mode)
-        }
-        HpkeKemId::DhKemX25519HkdfSha256 => open_for_kem::<X25519HkdfSha256>(request, mode),
-        HpkeKemId::DhKemX448HkdfSha512 => open_for_kem::<DhKemX448HkdfSha512>(request, mode),
-        HpkeKemId::MlKem512 => open_for_kem::<MlKem512>(request, mode),
-        HpkeKemId::MlKem768 => open_for_kem::<MlKem768>(request, mode),
-        HpkeKemId::MlKem1024 => open_for_kem::<MlKem1024>(request, mode),
-        HpkeKemId::MlKem768P256 => open_for_kem::<MlKem768P256>(request, mode),
-        HpkeKemId::MlKem1024P384 => open_for_kem::<MlKem1024P384>(request, mode),
-        HpkeKemId::XWing => open_for_kem::<XWing>(request, mode),
+        HpkeKemId::DhKemP256HkdfSha256 => open_for_kem::<DhP256HkdfSha256>(request),
+        HpkeKemId::DhKemP384HkdfSha384 => open_for_kem::<DhP384HkdfSha384>(request),
+        HpkeKemId::DhKemP521HkdfSha512 => open_for_kem::<DhP521HkdfSha512>(request),
+        HpkeKemId::DhKemSecp256k1HkdfSha256 => open_for_kem::<DhKemSecp256k1HkdfSha256>(request),
+        HpkeKemId::DhKemX25519HkdfSha256 => open_for_kem::<X25519HkdfSha256>(request),
+        HpkeKemId::DhKemX448HkdfSha512 => open_for_kem::<DhKemX448HkdfSha512>(request),
+        HpkeKemId::MlKem512 => open_for_kem::<MlKem512>(request),
+        HpkeKemId::MlKem768 => open_for_kem::<MlKem768>(request),
+        HpkeKemId::MlKem1024 => open_for_kem::<MlKem1024>(request),
+        HpkeKemId::MlKem768P256 => open_for_kem::<MlKem768P256>(request),
+        HpkeKemId::MlKem1024P384 => open_for_kem::<MlKem1024P384>(request),
+        HpkeKemId::XWing => open_for_kem::<XWing>(request),
         HpkeKemId::DhKemCp256HkdfSha256
         | HpkeKemId::DhKemCp384HkdfSha384
         | HpkeKemId::DhKemCp521HkdfSha512
@@ -276,44 +231,35 @@ fn open_with_mode(
     }
 }
 
-fn open_for_kem<Kem>(
-    request: &HpkeOpenRequest<'_>,
-    mode: PskMode<'_>,
-) -> Result<HpkeOpenOutput, HpkeError>
+fn open_for_kem<Kem>(request: &HpkeOpenRequest<'_>) -> Result<HpkeOpenOutput, HpkeError>
 where
     Kem: HpkeKem,
 {
     match request.suite.kdf {
-        HpkeKdfId::HkdfSha256 => open_for_kdf::<Kem, HkdfSha256>(request, mode),
-        HpkeKdfId::HkdfSha384 => open_for_kdf::<Kem, HkdfSha384>(request, mode),
-        HpkeKdfId::HkdfSha512 => open_for_kdf::<Kem, HkdfSha512>(request, mode),
-        HpkeKdfId::Shake256 => open_for_kdf::<Kem, KdfShake256>(request, mode),
+        HpkeKdfId::HkdfSha256 => open_for_kdf::<Kem, HkdfSha256>(request),
+        HpkeKdfId::HkdfSha384 => open_for_kdf::<Kem, HkdfSha384>(request),
+        HpkeKdfId::HkdfSha512 => open_for_kdf::<Kem, HkdfSha512>(request),
+        HpkeKdfId::Shake256 => open_for_kdf::<Kem, KdfShake256>(request),
         HpkeKdfId::Shake128 | HpkeKdfId::TurboShake128 | HpkeKdfId::TurboShake256 => {
             Err(HpkeError::UnsupportedKdf)
         }
     }
 }
 
-fn open_for_kdf<Kem, Kdf>(
-    request: &HpkeOpenRequest<'_>,
-    mode: PskMode<'_>,
-) -> Result<HpkeOpenOutput, HpkeError>
+fn open_for_kdf<Kem, Kdf>(request: &HpkeOpenRequest<'_>) -> Result<HpkeOpenOutput, HpkeError>
 where
     Kem: HpkeKem,
     Kdf: HpkeKdf,
 {
     match request.suite.aead {
-        HpkeAeadId::Aes128Gcm => open_for::<AesGcm128, Kdf, Kem>(request, mode),
-        HpkeAeadId::Aes256Gcm => open_for::<AesGcm256, Kdf, Kem>(request, mode),
-        HpkeAeadId::ChaCha20Poly1305 => open_for::<ChaCha20Poly1305, Kdf, Kem>(request, mode),
+        HpkeAeadId::Aes128Gcm => open_for::<AesGcm128, Kdf, Kem>(request),
+        HpkeAeadId::Aes256Gcm => open_for::<AesGcm256, Kdf, Kem>(request),
+        HpkeAeadId::ChaCha20Poly1305 => open_for::<ChaCha20Poly1305, Kdf, Kem>(request),
         HpkeAeadId::ExportOnly => Err(HpkeError::UnsupportedSuite),
     }
 }
 
-fn open_for<Aead, Kdf, Kem>(
-    request: &HpkeOpenRequest<'_>,
-    mode: PskMode<'_>,
-) -> Result<HpkeOpenOutput, HpkeError>
+fn open_for<Aead, Kdf, Kem>(request: &HpkeOpenRequest<'_>) -> Result<HpkeOpenOutput, HpkeError>
 where
     Aead: HpkeAead,
     Kdf: HpkeKdf,
@@ -325,13 +271,8 @@ where
     let encapsulated_key =
         <Kem::EncappedKey as Deserializable>::from_bytes(request.encapsulated_key)
             .map_err(|_| HpkeError::InvalidEncapsulatedKey)?;
-    let psk_bundle = psk_bundle(mode)?;
-    let operation_mode = match psk_bundle {
-        Some(bundle) => OpModeR::Psk(bundle),
-        None => OpModeR::Base,
-    };
     let plaintext = hpke::single_shot_open::<Aead, Kdf, Kem>(
-        &operation_mode,
+        &OpModeR::Base,
         &recipient_private_key,
         &encapsulated_key,
         request.info,
@@ -343,22 +284,6 @@ where
     Ok(HpkeOpenOutput {
         plaintext: Zeroizing::new(plaintext),
     })
-}
-
-fn psk_id(mode: PskMode<'_>) -> &[u8] {
-    match mode {
-        PskMode::Base => &[],
-        PskMode::Psk { psk_id, .. } => psk_id,
-    }
-}
-
-fn psk_bundle(mode: PskMode<'_>) -> Result<Option<PskBundle<'_>>, HpkeError> {
-    match mode {
-        PskMode::Base => Ok(None),
-        PskMode::Psk { psk, psk_id } => PskBundle::new(psk, psk_id)
-            .map(Some)
-            .map_err(|_| HpkeError::InvalidPsk),
-    }
 }
 
 fn map_seal_error(error: hpke::HpkeError) -> HpkeError {

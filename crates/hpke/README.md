@@ -15,6 +15,24 @@ Private keys, plaintext outputs, and exporter outputs have zeroizing owners.
 Callers remain responsible for protecting public-key authenticity, generating
 high-entropy PSKs, and binding application context through `info` and AAD.
 
+OpenMLS integrations can establish PSK mode with suite-generic live contexts.
+`setup_sender_psk` returns the encapsulated key and an opaque
+`HpkeSenderContext`, allowing the caller to bind the encapsulated key into
+targeted-message AAD before calling `seal`. `setup_receiver_psk` consumes that
+encapsulated key and returns the matching `HpkeReceiverContext` for `open`.
+Both contexts are neither cloneable nor serializable and zeroize traffic state
+on drop. Their setup requests require validated `HpkePskRef` and
+`HpkePskIdRef` values so secret material and its public identifier cannot be
+swapped accidentally. The single-shot PSK APIs remain source-compatible.
+They delegate to these same live context paths and do not maintain a parallel
+PSK key schedule.
+
+`derive_keypair_from_ikm` accepts non-empty arbitrary-length MLS input keying
+material and delegates normalization to the selected KEM's registered HPKE
+`DeriveKeyPair` procedure. The stricter `derive_keypair` entry point
+continues to require suite-sized input for callers whose protocol already owns
+that contract.
+
 HPKE derives the AEAD key and 12-byte nonce inside the sender and receiver
 contexts. `HpkeSealRequest` therefore has no nonce field, and callers cannot
 inject a random or externally selected nonce. A fresh Base-mode seal obtains
@@ -56,6 +74,23 @@ fn main() -> Result<(), crypto_hpke::HpkeError> {
 #[cfg(not(feature = "native"))]
 fn main() {}
 ```
+
+The Rust API also names the draft MLS profiles directly:
+
+- `MLS_192_MLKEM1024_AES256GCM_SHA384_P384`
+- `MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87`
+- `MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384`
+
+`SHA384` identifies the MLS transcript hash, not the HPKE KDF, and the final
+suffix identifies the MLS signature profile. All three aliases use HPKE
+SHAKE256 (`0x0011`); the first two therefore resolve to the same ML-KEM-1024,
+SHAKE256, AES-256-GCM HPKE triple.
+
+The `test-vectors` feature exposes deterministic Base-mode seal, Base-mode
+sender export, and PSK sender setup for reproducible conformance data. The root
+facade supplies matching operation-layer wrappers so vectors exercise the same
+secret-material policy and `OperationError` mapping as production operations.
+Published production integrations must use the randomized setup functions.
 
 ## IANA registry and runtime support
 

@@ -89,6 +89,24 @@ post-quantum, and hybrid HPKE components. See the
 [protobuf contract](https://github.com/reallyme/crypto/blob/main/docs/protobuf.md#hpke-support)
 for the executable component set and operation-level constraints.
 
+For OpenMLS adapters, the Rust HPKE API additionally exposes suite-generic PSK
+sender and receiver contexts, typed PSK references, arbitrary-length IKM key
+derivation through the selected KEM's `DeriveKeyPair` construction, and exact
+aliases for the MLS 192/256-bit ML-KEM-1024 and MLKEM1024-P384 draft profiles.
+Live contexts are deliberately non-exportable and remain outside serialized
+SDK transports. Deterministic Base seal and sender export have operation-layer
+entry points behind `test-vectors`; caller-controlled randomness is never part
+of the production protobuf contract. The operation facade requires at least 32
+bytes of high-entropy IKM; the explicit raw HPKE alias retains the KEM-defined
+non-empty input contract.
+
+The root `reallyme_crypto::hpke` facade makes its error boundary explicit.
+Established unsuffixed functions and their `*_operation` aliases return the
+workspace-wide `OperationError`; matching `*_raw` aliases return `HpkeError`
+directly for protocol adapters that need HPKE-specific failure handling. Raw
+split sender outputs use the `RawHpkePskSenderSetupOutput` and
+`RawHpkePskSenderContext` names so traffic-state ownership is unambiguous.
+
 Every provider route must implement identical input validation and
 normalization, output encodings, typed failure semantics, and edge-case
 behavior. Security-sensitive composition, canonical serialization,
@@ -116,7 +134,7 @@ When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.3.0", default-features = false, features = [
+reallyme-crypto = { version = "0.3.1", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -129,7 +147,7 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.3.0", default-features = false, features = [
+reallyme-crypto = { version = "0.3.1", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }
@@ -168,7 +186,7 @@ separate from raw private-key bytes.
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.3.0"
+    from: "0.3.1"
 )
 ```
 
@@ -180,7 +198,7 @@ separate from raw private-key bytes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.3.0")
+    implementation("me.really:crypto:0.3.1")
 }
 ```
 

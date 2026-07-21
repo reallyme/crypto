@@ -18,7 +18,7 @@ plugins {
 }
 
 group = "me.really"
-version = "0.3.0"
+version = "0.3.1"
 
 val remoteMavenRepositoryUrl = providers.gradleProperty("reallyme.maven.repositoryUrl")
     .orElse(providers.environmentVariable("REALLYME_MAVEN_REPOSITORY_URL"))

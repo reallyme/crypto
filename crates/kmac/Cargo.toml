@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-kmac"
-version = "0.3.0"
+version = "0.3.1"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -28,7 +28,7 @@ native = []
 wasm = []
 
 [dependencies]
-crypto-core = { package = "reallyme-crypto-core", version = "0.3.0", path = "../crypto/core" }
+crypto-core = { package = "reallyme-crypto-core", version = "0.3.1", path = "../crypto/core" }
 sha3-kmac = { workspace = true }
 # `sha3-kmac` does not forward SHA-3's zeroization feature. This direct,
 # version-matched dependency enables drop-time wiping of the keyed sponge state

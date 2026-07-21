@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-core"
-version = "0.3.0"
+version = "0.3.1"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true

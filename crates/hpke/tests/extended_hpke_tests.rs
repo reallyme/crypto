@@ -8,11 +8,12 @@
 
 use crypto_hpke::{
     derive_keypair, keygen, open_base, open_psk, receiver_export, seal_base, seal_psk,
-    sender_export, HpkeAeadId, HpkeError, HpkeKdfId, HpkeOpenRequest, HpkePskOpenRequest,
-    HpkePskSealRequest, HpkeReceiverExportRequest, HpkeSealRequest, HpkeSenderExportRequest,
-    HpkeSuite, HPKE_MLKEM1024P384_SHAKE256_AES256GCM, HPKE_MLKEM1024_SHAKE256_AES256GCM,
-    HPKE_MLKEM512_HKDF_SHA256_AES128GCM, HPKE_MLKEM768_SHAKE256_AES256GCM,
-    HPKE_XWING_HKDF_SHA256_CHACHA20POLY1305,
+    sender_export, setup_receiver_psk, setup_sender_psk, HpkeAeadId, HpkeError, HpkeKdfId,
+    HpkeOpenRequest, HpkePskIdRef, HpkePskOpenRequest, HpkePskReceiverSetupRequest, HpkePskRef,
+    HpkePskSealRequest, HpkePskSenderSetupRequest, HpkeReceiverExportRequest, HpkeSealRequest,
+    HpkeSenderExportRequest, HpkeSuite, HPKE_MLKEM1024P384_SHAKE256_AES256GCM,
+    HPKE_MLKEM1024_SHAKE256_AES256GCM, HPKE_MLKEM512_HKDF_SHA256_AES128GCM,
+    HPKE_MLKEM768_SHAKE256_AES256GCM, HPKE_XWING_HKDF_SHA256_CHACHA20POLY1305,
 };
 
 const INFO: &[u8] = b"reallyme-hpke-v0.3";
@@ -23,7 +24,7 @@ const PSK: [u8; 32] = [0x5a; 32];
 const PSK_ID: &[u8] = b"deployment-key-2026";
 
 #[test]
-fn every_executable_kem_roundtrips_through_a_reviewed_suite() {
+fn every_executable_kem_supports_single_shot_and_split_context_roundtrips() {
     for suite in [
         HpkeSuite::new(
             crypto_hpke::HpkeKemId::DhKemP256HkdfSha256,
@@ -364,6 +365,34 @@ fn assert_base_roundtrip(suite: HpkeSuite) {
         ciphertext: &sealed.ciphertext,
     })
     .expect("opening succeeds");
+    assert_eq!(opened.plaintext.as_slice(), PLAINTEXT);
+
+    let mut sender = setup_sender_psk(&HpkePskSenderSetupRequest {
+        suite,
+        recipient_public_key: &keypair.public_key,
+        info: INFO,
+        psk: HpkePskRef::new(&PSK).expect("PSK is valid"),
+        psk_id: HpkePskIdRef::new(PSK_ID).expect("PSK identifier is valid"),
+    })
+    .expect("split sender setup succeeds");
+    let mut targeted_aad = AAD.to_vec();
+    targeted_aad.extend_from_slice(&sender.encapsulated_key);
+    let ciphertext = sender
+        .context
+        .seal(&targeted_aad, PLAINTEXT)
+        .expect("sender context seals");
+    let mut receiver = setup_receiver_psk(&HpkePskReceiverSetupRequest {
+        suite,
+        encapsulated_key: &sender.encapsulated_key,
+        recipient_private_key: keypair.private_key(),
+        info: INFO,
+        psk: HpkePskRef::new(&PSK).expect("PSK is valid"),
+        psk_id: HpkePskIdRef::new(PSK_ID).expect("PSK identifier is valid"),
+    })
+    .expect("split receiver setup succeeds");
+    let opened = receiver
+        .open(&targeted_aad, &ciphertext)
+        .expect("receiver context opens");
     assert_eq!(opened.plaintext.as_slice(), PLAINTEXT);
 }
 

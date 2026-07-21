@@ -6,6 +6,51 @@ SPDX-License-Identifier: Apache-2.0
 
 # Release Notes
 
+## 0.3.1
+
+### Compatibility notice
+
+`0.3.0` already exported
+`MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384`, but incorrectly assigned
+HPKE HKDF-SHA384 to it. `0.3.1` corrects that existing constant to the draft's
+HPKE SHAKE256 KDF (`0x0011`). This changes derived HPKE traffic state and
+ciphertext compatibility for callers that used the `0.3.0` constant. Such
+deployments must coordinate the upgrade; historical data can be opened by
+constructing the former explicit `(MLKEM1024-P384, HKDF-SHA384, AES-256-GCM)`
+triple. The other two MLS profile aliases listed below are new in `0.3.1`.
+
+- Adds a split HPKE PSK sender setup for OpenMLS targeted messages. Sender
+  setup returns the encapsulated key and an opaque, non-exportable context so
+  callers can bind the KEM output into AAD before sealing; single-shot PSK seal
+  and open now use the same sender and receiver context implementation paths.
+- Adds deterministic HPKE keypair derivation from non-empty arbitrary-length
+  IKM by delegating to each KEM's registered `DeriveKeyPair` procedure,
+  removing adapter-owned MLS secret normalization. A fixed
+  OpenMLS/libcrux X-Wing draft-06 compatibility vector locks the deployed
+  arbitrary-IKM private key and complete public-key fingerprint. Raw Rust
+  callers retain the KEM-defined non-empty input contract; operation and
+  serialized boundaries require at least 32 bytes of high-entropy IKM.
+- Adds exact MLS draft-profile aliases for the 192-bit ML-KEM-1024/P-384,
+  256-bit ML-KEM-1024/ML-DSA-87, and 192-bit MLKEM1024-P384/P-384 profiles.
+  `SHA384` in these names is the MLS transcript hash; each alias selects the
+  registered HPKE SHAKE256 KDF (`0x0011`), not HPKE HKDF-SHA384.
+  Deterministic Base seal and split PSK setup coverage for all three profiles
+  is available only through the `test-vectors` feature.
+- Makes the root Rust HPKE error boundary explicit with `*_operation` aliases
+  returning `OperationError` and `*_raw` aliases returning `HpkeError` directly
+  for protocol adapters.
+- Adds operation-layer deterministic Base seal and sender-export APIs behind
+  `test-vectors`, preserving secret-material policy binding and typed operation
+  errors while producing stable OpenMLS conformance data.
+- Adds suite-generic PSK receiver setup and live receiver contexts alongside
+  sender contexts. New setup APIs require validated `HpkePskRef` and
+  `HpkePskIdRef` values; published single-shot request structs remain
+  source-compatible for the patch release.
+- Routes protobuf HPKE key derivation through arbitrary-length IKM semantics and
+  regenerates hardened Rust, Swift, Kotlin/Java, and TypeScript bindings.
+  Serialized operation-contract and C ABI tests now cover the ML-KEM-1024,
+  MLKEM1024-P384, and X-Wing HPKE suites, including negative boundaries.
+
 ## 0.3.0
 
 - Establishes the protobuf schema as the source of truth for executable
