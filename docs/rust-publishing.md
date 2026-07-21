@@ -34,6 +34,13 @@ because ML-KEM-768 and X25519 are algorithm-selected routes. `dispatch` and
 `signer` are algorithm-feature gated; they should be paired with the specific
 algorithm features a consumer actually calls.
 
+HPKE follows the same rule. The root `hpke` feature is the complete
+compatibility aggregate, while `hpke-openmls` selects only ML-KEM-1024,
+ML-KEM-1024/P-384, X-Wing, and their profile KDF/AEAD implementations. The
+focused HPKE crate also exposes granular `kem-*`, `kdf-*`, and `aead-*`
+features for protocol-specific dependency graphs. CI rejects unrelated P-256,
+P-521, secp256k1/K-256, and X448 packages in the OpenMLS graph.
+
 The `wasm` lane is a `wasm32-unknown-unknown` lane. Host checks should use
 `native`; wasm checks should include `--target wasm32-unknown-unknown`.
 

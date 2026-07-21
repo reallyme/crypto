@@ -92,6 +92,20 @@ facade supplies matching operation-layer wrappers so vectors exercise the same
 secret-material policy and `OperationError` mapping as production operations.
 Published production integrations must use the randomized setup functions.
 
+## Feature selection
+
+`native` remains the compatibility aggregate for the complete reviewed HPKE
+implementation. Protocol adapters can instead select the individual `kem-*`,
+`kdf-*`, and `aead-*` features they execute. Each component feature includes
+the internal native backend automatically; registered components that were not
+selected remain recognizable but fail closed as unavailable.
+
+The `openmls` aggregate enables only ML-KEM-1024, ML-KEM-1024/P-384, X-Wing,
+HKDF-SHA256, SHAKE256, AES-256-GCM, and ChaCha20-Poly1305. It deliberately does
+not enable P-256, P-521, secp256k1, X448, or unrelated KDF and AEAD
+implementations. Consumers needing another reviewed component can compose its
+individual feature explicitly.
+
 ## IANA registry and runtime support
 
 The identifier enums cover the complete assigned IANA HPKE registry snapshot
@@ -101,7 +115,7 @@ unavailable component fails before backend setup with `UnsupportedKem` or
 `UnsupportedKdf`. Registry-only entries are parser metadata, not deferred
 implementation commitments or advertised package algorithms.
 
-| KEM ID | KEM | `native`/`wasm` runtime |
+| KEM ID | KEM | `native` compatibility aggregate |
 |---:|---|---|
 | `0x0010` | DHKEM(P-256, HKDF-SHA256) | Executable |
 | `0x0011` | DHKEM(P-384, HKDF-SHA384) | Executable |
@@ -121,7 +135,7 @@ implementation commitments or advertised package algorithms.
 | `0x0051` | MLKEM1024-P384 | Executable |
 | `0x647a` | X-Wing | Executable |
 
-| KDF ID | KDF | `native`/`wasm` runtime |
+| KDF ID | KDF | `native` compatibility aggregate |
 |---:|---|---|
 | `0x0001` | HKDF-SHA256 | Executable |
 | `0x0002` | HKDF-SHA384 | Executable |

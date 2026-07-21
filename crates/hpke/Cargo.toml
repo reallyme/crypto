@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-hpke"
-version = "0.3.1"
+version = "0.3.2"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -18,28 +18,116 @@ name = "crypto_hpke"
 
 [features]
 default = []
-native = [
-    "dep:aes-gcm",
-    "dep:chacha20poly1305",
-    "dep:crypto-secp256k1",
-    "dep:crypto-x448",
+backend-native = [
     "dep:getrandom",
+    "dep:hpke",
+    "hpke/alloc",
+]
+
+kem-dh-p256 = ["backend-native", "hpke/nistp"]
+kem-dh-p384 = ["backend-native", "hpke/nistp"]
+kem-dh-p521 = ["backend-native", "hpke/nistp"]
+# The upstream engine requires at least one of its built-in KEM families at
+# compile time. Package-owned secp256k1 and X448 adapters use X25519 only as
+# that internal type-system anchor; runtime dispatch still exposes X25519 only
+# when `kem-x25519` is selected explicitly.
+kem-secp256k1 = [
+    "backend-native",
+    "dep:crypto-secp256k1",
     "dep:hmac",
     "dep:hkdf",
-    "dep:hpke",
     "dep:k256",
-    "dep:ml-kem",
-    "dep:shake",
     "dep:sha2",
     "dep:subtle",
-    "hpke/alloc",
-    "hpke/aes",
-    "hpke/chacha",
     "hpke/hkdfsha2",
-    "hpke/mlkem",
-    "hpke/nistp",
-    "hpke/shake",
     "hpke/x25519",
+]
+kem-x25519 = ["backend-native", "hpke/x25519"]
+kem-x448 = [
+    "backend-native",
+    "dep:crypto-x448",
+    "dep:hmac",
+    "dep:hkdf",
+    "dep:sha2",
+    "dep:subtle",
+    "hpke/hkdfsha2",
+    "hpke/x25519",
+]
+kem-ml-kem-512 = [
+    "backend-native",
+    "dep:ml-kem",
+    "dep:shake",
+    "dep:subtle",
+    "hpke/mlkem",
+]
+kem-ml-kem-768 = ["backend-native", "hpke/mlkem"]
+kem-ml-kem-1024 = ["backend-native", "hpke/mlkem"]
+kem-ml-kem-768-p256 = ["backend-native", "hpke/mlkem", "hpke/nistp"]
+kem-ml-kem-1024-p384 = [
+    "backend-native",
+    "dep:ml-kem",
+    "dep:p384",
+    "dep:sha3",
+    "dep:shake",
+    "dep:subtle",
+    "hpke/mlkem",
+]
+kem-x-wing = ["backend-native", "hpke/mlkem", "hpke/x25519"]
+
+kdf-hkdf-sha256 = ["backend-native", "hpke/hkdfsha2"]
+kdf-hkdf-sha384 = ["backend-native", "hpke/hkdfsha2"]
+kdf-hkdf-sha512 = ["backend-native", "hpke/hkdfsha2"]
+kdf-shake256 = ["backend-native", "hpke/shake"]
+
+aead-aes128-gcm = ["backend-native", "dep:aes-gcm", "hpke/aes"]
+aead-aes256-gcm = ["backend-native", "dep:aes-gcm", "hpke/aes"]
+aead-chacha20-poly1305 = [
+    "backend-native",
+    "dep:chacha20poly1305",
+    "hpke/chacha",
+]
+# The upstream HPKE engine requires one encrypting AEAD at compile time even
+# when only its exporter state machine is used. Dispatch still reports AES-128
+# as unavailable unless `aead-aes128-gcm` is selected explicitly.
+aead-export-only = ["backend-native", "hpke/aes"]
+
+# Compatibility aggregate for consumers that intentionally execute the full
+# reviewed HPKE surface. Narrow consumers should select component features or
+# the OpenMLS profile below.
+native = [
+    "kem-dh-p256",
+    "kem-dh-p384",
+    "kem-dh-p521",
+    "kem-secp256k1",
+    "kem-x25519",
+    "kem-x448",
+    "kem-ml-kem-512",
+    "kem-ml-kem-768",
+    "kem-ml-kem-1024",
+    "kem-ml-kem-768-p256",
+    "kem-ml-kem-1024-p384",
+    "kem-x-wing",
+    "kdf-hkdf-sha256",
+    "kdf-hkdf-sha384",
+    "kdf-hkdf-sha512",
+    "kdf-shake256",
+    "aead-aes128-gcm",
+    "aead-aes256-gcm",
+    "aead-chacha20-poly1305",
+    "aead-export-only",
+]
+
+# Draft MLS PQ profiles plus the deployed X-Wing profile. SHA-384 in the MLS
+# ciphersuite names is the MLS transcript hash; these HPKE profiles use
+# SHAKE256, while X-Wing uses HKDF-SHA256.
+openmls = [
+    "kem-ml-kem-1024",
+    "kem-ml-kem-1024-p384",
+    "kem-x-wing",
+    "kdf-hkdf-sha256",
+    "kdf-shake256",
+    "aead-aes256-gcm",
+    "aead-chacha20-poly1305",
 ]
 wasm = ["native"]
 test-vectors = ["native"]
@@ -47,8 +135,8 @@ test-vectors = ["native"]
 [dependencies]
 aes-gcm = { workspace = true, optional = true }
 chacha20poly1305 = { workspace = true, optional = true, features = ["zeroize"] }
-crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "0.3.1", path = "../secp256k1", default-features = false, features = ["native"], optional = true }
-crypto-x448 = { package = "reallyme-crypto-x448", version = "0.3.1", path = "../x448", default-features = false, features = ["native"], optional = true }
+crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "=0.3.2", path = "../secp256k1", default-features = false, features = ["native"], optional = true }
+crypto-x448 = { package = "reallyme-crypto-x448", version = "=0.3.2", path = "../x448", default-features = false, features = ["native"], optional = true }
 getrandom = { workspace = true, optional = true, features = ["wasm_js"] }
 # Keep the HKDF/HMAC working state covered by the digest zeroization feature.
 hmac = { workspace = true, optional = true }
@@ -56,8 +144,10 @@ hkdf = { workspace = true, optional = true }
 hpke = { workspace = true, optional = true }
 k256 = { workspace = true, features = ["arithmetic"], optional = true }
 ml-kem = { workspace = true, features = ["zeroize"], optional = true }
+p384 = { workspace = true, features = ["ecdh"], optional = true }
 shake = { workspace = true, optional = true }
 sha2 = { workspace = true, optional = true }
+sha3 = { workspace = true, optional = true }
 subtle = { workspace = true, optional = true }
 thiserror = { workspace = true }
 zeroize = { workspace = true, features = ["derive"] }

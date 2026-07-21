@@ -6,6 +6,28 @@ SPDX-License-Identifier: Apache-2.0
 
 # Release Notes
 
+## 0.3.2
+
+- Splits the HPKE native backend into independently selectable KEM, KDF, and
+  AEAD features while retaining `native` as the backward-compatible full-suite
+  aggregate. The root `hpke-openmls` profile enables only ML-KEM-1024,
+  ML-KEM-1024/P-384, X-Wing, HPKE SHAKE256, HKDF-SHA256, AES-256-GCM, and
+  ChaCha20-Poly1305.
+- Adds a package-owned ML-KEM-1024/P-384 HPKE KEM adapter so the OpenMLS graph
+  does not inherit the upstream HPKE crate's monolithic NIST-curve feature.
+  P-256, P-521, secp256k1/K-256, and X448 are absent from the narrow production
+  graph, while registered but disabled identifiers continue to fail closed.
+- Exact-pins coordinated ReallyMe Crypto crate dependencies to `=0.3.2`,
+  preventing independently resolved patch versions from crossing internal
+  facade, dispatch, signer, primitive, HPKE, protobuf, FFI, and tooling
+  boundaries.
+- Stages the Rust crates, npm package, Swift binary package, Kotlin/JVM package,
+  and Android AAR package at version `0.3.2` for coordinated release.
+- Adds one-command Swift release-candidate preparation that builds the
+  deterministic XCFramework, patches `Package.swift`, and verifies the
+  checksum before the release commit. Release commits no longer need to be
+  amended or force-updated merely to record the SwiftPM checksum.
+
 ## 0.3.1
 
 ### Compatibility notice

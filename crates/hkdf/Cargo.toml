@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-hkdf"
-version = "0.3.1"
+version = "0.3.2"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -29,7 +29,7 @@ wasm = ["dep:getrandom"]
 sha3 = ["dep:sha3"]
 
 [dependencies]
-crypto-core = { package = "reallyme-crypto-core", version = "0.3.1", path = "../crypto/core" }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.3.2", path = "../crypto/core" }
 getrandom = { workspace = true, features = ["wasm_js"], optional = true }
 hkdf = { workspace = true }
 sha2 = { workspace = true }

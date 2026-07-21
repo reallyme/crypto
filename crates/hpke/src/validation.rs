@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 use crate::constants::{
     HPKE_KEY_SCHEDULE_LABEL_OVERHEAD, HPKE_LABELED_CONTEXT_LIMIT, HPKE_MIN_PSK_LEN,
 };
 use crate::error::HpkeError;
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 use crate::identifiers::HpkeKdfId;
 use crate::identifiers::{HpkeAeadId, HpkeComponentSupport, HpkeKemId, HpkeSuite};
 use crate::{
@@ -32,15 +32,14 @@ pub(crate) fn require_executable_suite(suite: HpkeSuite) -> Result<(), HpkeError
         return Err(HpkeError::UnsupportedKdf);
     }
 
-    match suite.aead {
-        HpkeAeadId::Aes128Gcm
-        | HpkeAeadId::Aes256Gcm
-        | HpkeAeadId::ChaCha20Poly1305
-        | HpkeAeadId::ExportOnly => Ok(()),
+    if suite.aead.support() != HpkeComponentSupport::Executable {
+        return Err(HpkeError::UnsupportedAead);
     }
+
+    Ok(())
 }
 
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 pub(crate) fn require_sealing_suite(suite: HpkeSuite) -> Result<(), HpkeError> {
     require_executable_suite(suite)?;
     if suite.aead == HpkeAeadId::ExportOnly {
@@ -49,7 +48,7 @@ pub(crate) fn require_sealing_suite(suite: HpkeSuite) -> Result<(), HpkeError> {
     Ok(())
 }
 
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 pub(crate) fn require_export_suite(suite: HpkeSuite) -> Result<(), HpkeError> {
     require_executable_suite(suite)?;
     // hpke 0.14's one-stage key schedule uses a fixed internal buffer that is
@@ -144,7 +143,7 @@ pub(crate) fn kem_parameters(kem: HpkeKemId) -> Result<KemParameters, HpkeError>
     }
 }
 
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 pub(crate) fn validate_public_key(suite: HpkeSuite, public_key: &[u8]) -> Result<(), HpkeError> {
     require_executable_suite(suite)?;
     if public_key.len() != kem_parameters(suite.kem)?.public_key_len {
@@ -153,7 +152,7 @@ pub(crate) fn validate_public_key(suite: HpkeSuite, public_key: &[u8]) -> Result
     Ok(())
 }
 
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 pub(crate) fn validate_private_key(suite: HpkeSuite, private_key: &[u8]) -> Result<(), HpkeError> {
     require_executable_suite(suite)?;
     if private_key.len() != kem_parameters(suite.kem)?.private_key_len {
@@ -162,7 +161,7 @@ pub(crate) fn validate_private_key(suite: HpkeSuite, private_key: &[u8]) -> Resu
     Ok(())
 }
 
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 pub(crate) fn validate_encapsulated_key(
     suite: HpkeSuite,
     encapsulated_key: &[u8],
@@ -174,7 +173,7 @@ pub(crate) fn validate_encapsulated_key(
     Ok(())
 }
 
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 pub(crate) fn validate_ciphertext(suite: HpkeSuite, ciphertext: &[u8]) -> Result<(), HpkeError> {
     require_sealing_suite(suite)?;
     if ciphertext.len() < suite.tag_len() {
@@ -183,7 +182,7 @@ pub(crate) fn validate_ciphertext(suite: HpkeSuite, ciphertext: &[u8]) -> Result
     Ok(())
 }
 
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 pub(crate) fn validate_key_schedule_inputs(info: &[u8], psk_id: &[u8]) -> Result<(), HpkeError> {
     let encoded_len = info
         .len()
@@ -196,7 +195,7 @@ pub(crate) fn validate_key_schedule_inputs(info: &[u8], psk_id: &[u8]) -> Result
     Ok(())
 }
 
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 pub(crate) fn validate_psk(psk: &[u8], psk_id: &[u8]) -> Result<(), HpkeError> {
     if psk.len() < HPKE_MIN_PSK_LEN {
         return Err(HpkeError::InvalidPsk);
@@ -207,7 +206,7 @@ pub(crate) fn validate_psk(psk: &[u8], psk_id: &[u8]) -> Result<(), HpkeError> {
     validate_key_schedule_inputs(&[], psk_id)
 }
 
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 pub(crate) fn validate_export_length(
     suite: HpkeSuite,
     output_length: usize,

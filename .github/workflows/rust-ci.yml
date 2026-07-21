@@ -93,6 +93,14 @@ jobs:
       - name: Verify locked dependency graph
         run: cargo metadata --locked --format-version 1 --no-deps
 
+      - name: Verify OpenMLS HPKE dependency isolation
+        run: |
+          openmls_tree="$(cargo tree --locked -p reallyme-crypto --no-default-features --features native,hpke-openmls -e normal,build)"
+          if printf '%s\n' "${openmls_tree}" | rg '\b(p256|p521|k256|x448|reallyme-crypto-secp256k1|reallyme-crypto-x448)\s+v'; then
+            echo "OpenMLS HPKE feature graph contains an unrelated elliptic-curve dependency" >&2
+            exit 1
+          fi
+
       - name: Format
         run: cargo fmt --check
 
@@ -137,6 +145,8 @@ jobs:
           cargo test --locked -p reallyme-crypto-signer --no-default-features --features native
           cargo test --locked -p reallyme-crypto-signer --no-default-features --features native,ed25519
           cargo check --locked -p reallyme-crypto --no-default-features --features native,messaging-primitives
+          cargo test --locked -p reallyme-crypto-hpke --no-default-features --features openmls
+          cargo check --locked -p reallyme-crypto --no-default-features --features native,hpke-openmls
 
       - name: Clippy
         run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings

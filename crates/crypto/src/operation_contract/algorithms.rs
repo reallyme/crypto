@@ -55,7 +55,7 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::AeadAlgorithm as Proto
     any(feature = "native", feature = "wasm")
 ))]
 use crypto_proto::generated::proto::reallyme::crypto::v1::HashAlgorithm as ProtoHash;
-#[cfg(all(feature = "hpke", any(feature = "native", feature = "wasm")))]
+#[cfg(all(feature = "hpke-api", any(feature = "native", feature = "wasm")))]
 use crypto_proto::generated::proto::reallyme::crypto::v1::HpkeSuiteIdentifier;
 #[cfg(all(
     any(
@@ -94,13 +94,13 @@ use super::wire_error::invalid_parameter;
         feature = "argon2id",
         feature = "pbkdf2",
         feature = "concat-kdf",
-        feature = "hpke"
+        feature = "hpke-api"
     ),
     any(feature = "native", feature = "wasm")
 ))]
 use super::wire_error::unsupported_algorithm;
 
-#[cfg(all(feature = "hpke", any(feature = "native", feature = "wasm")))]
+#[cfg(all(feature = "hpke-api", any(feature = "native", feature = "wasm")))]
 pub(super) fn hpke_suite(
     identifier: &MessageField<CryptoAlgorithmIdentifier, impl ProtoBox<CryptoAlgorithmIdentifier>>,
 ) -> Result<crate::hpke::HpkeSuite, CryptoWireError> {
@@ -110,7 +110,7 @@ pub(super) fn hpke_suite(
     }
 }
 
-#[cfg(all(feature = "hpke", any(feature = "native", feature = "wasm")))]
+#[cfg(all(feature = "hpke-api", any(feature = "native", feature = "wasm")))]
 fn hpke_suite_components(
     suite: &HpkeSuiteIdentifier,
 ) -> Result<crate::hpke::HpkeSuite, CryptoWireError> {

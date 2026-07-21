@@ -2,26 +2,35 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-use hpke::aead::{Aead as HpkeAead, AeadCtxS, AesGcm128, AesGcm256, ChaCha20Poly1305};
-use hpke::kdf::{HkdfSha256, HkdfSha384, HkdfSha512, Kdf as HpkeKdf, KdfShake256};
-use hpke::kem::{
-    DhP256HkdfSha256, DhP384HkdfSha384, DhP521HkdfSha512, MlKem1024, MlKem1024P384, MlKem768,
-    MlKem768P256, X25519HkdfSha256, XWing,
-};
-use hpke::{Deserializable, Kem as HpkeKem, OpModeS, PskBundle, Serializable};
+#[cfg(any(
+    feature = "aead-aes128-gcm",
+    feature = "aead-aes256-gcm",
+    feature = "aead-chacha20-poly1305"
+))]
+use hpke::aead::{Aead as HpkeAead, AeadCtxS};
+use hpke::kdf::Kdf as HpkeKdf;
+use hpke::Kem as HpkeKem;
+#[cfg(any(
+    feature = "aead-aes128-gcm",
+    feature = "aead-aes256-gcm",
+    feature = "aead-chacha20-poly1305"
+))]
+use hpke::{Deserializable, OpModeS, PskBundle, Serializable};
 use zeroize::{ZeroizeOnDrop, Zeroizing};
 
 use crate::error::HpkeError;
-use crate::identifiers::{HpkeAeadId, HpkeKdfId, HpkeKemId, HpkeSuite};
-use crate::mlkem512::MlKem512;
+use crate::identifiers::HpkeSuite;
+#[cfg(any(
+    feature = "aead-aes128-gcm",
+    feature = "aead-aes256-gcm",
+    feature = "aead-chacha20-poly1305"
+))]
 use crate::random::FixedRandomness;
-use crate::secp256k1::DhKemSecp256k1HkdfSha256;
 use crate::types::{HpkePskIdRef, HpkePskRef};
 use crate::validation::{
     kem_parameters, require_sealing_suite, validate_key_schedule_inputs, validate_psk,
     validate_public_key,
 };
-use crate::x448::DhKemX448HkdfSha512;
 
 /// Inputs required to establish an RFC 9180 PSK-mode sender context.
 pub struct HpkePskSenderSetupRequest<'a> {
@@ -66,6 +75,11 @@ trait SenderContextBackend {
     fn seal(&mut self, aad: &[u8], plaintext: &[u8]) -> Result<Vec<u8>, hpke::HpkeError>;
 }
 
+#[cfg(any(
+    feature = "aead-aes128-gcm",
+    feature = "aead-aes256-gcm",
+    feature = "aead-chacha20-poly1305"
+))]
 struct TypedSenderContext<Aead, Kdf, Kem>
 where
     Aead: HpkeAead,
@@ -75,6 +89,11 @@ where
     inner: AeadCtxS<Aead, Kdf, Kem>,
 }
 
+#[cfg(any(
+    feature = "aead-aes128-gcm",
+    feature = "aead-aes256-gcm",
+    feature = "aead-chacha20-poly1305"
+))]
 impl<Aead, Kdf, Kem> SenderContextBackend for TypedSenderContext<Aead, Kdf, Kem>
 where
     Aead: HpkeAead,
@@ -163,27 +182,7 @@ pub(crate) fn setup_sender_psk_with_randomness(
         return Err(HpkeError::InvalidRandomness);
     }
 
-    match request.suite.kem {
-        HpkeKemId::DhKemP256HkdfSha256 => setup_for_kem::<DhP256HkdfSha256>(request, randomness),
-        HpkeKemId::DhKemP384HkdfSha384 => setup_for_kem::<DhP384HkdfSha384>(request, randomness),
-        HpkeKemId::DhKemP521HkdfSha512 => setup_for_kem::<DhP521HkdfSha512>(request, randomness),
-        HpkeKemId::DhKemSecp256k1HkdfSha256 => {
-            setup_for_kem::<DhKemSecp256k1HkdfSha256>(request, randomness)
-        }
-        HpkeKemId::DhKemX25519HkdfSha256 => setup_for_kem::<X25519HkdfSha256>(request, randomness),
-        HpkeKemId::DhKemX448HkdfSha512 => setup_for_kem::<DhKemX448HkdfSha512>(request, randomness),
-        HpkeKemId::MlKem512 => setup_for_kem::<MlKem512>(request, randomness),
-        HpkeKemId::MlKem768 => setup_for_kem::<MlKem768>(request, randomness),
-        HpkeKemId::MlKem1024 => setup_for_kem::<MlKem1024>(request, randomness),
-        HpkeKemId::MlKem768P256 => setup_for_kem::<MlKem768P256>(request, randomness),
-        HpkeKemId::MlKem1024P384 => setup_for_kem::<MlKem1024P384>(request, randomness),
-        HpkeKemId::XWing => setup_for_kem::<XWing>(request, randomness),
-        HpkeKemId::DhKemCp256HkdfSha256
-        | HpkeKemId::DhKemCp384HkdfSha384
-        | HpkeKemId::DhKemCp521HkdfSha512
-        | HpkeKemId::DhKemX25519ElligatorHkdfSha256
-        | HpkeKemId::X25519Kyber768Draft00 => Err(HpkeError::UnsupportedKem),
-    }
+    dispatch_kem!(request.suite.kem, setup_for_kem, request, randomness)
 }
 
 fn setup_for_kem<Kem>(
@@ -193,35 +192,32 @@ fn setup_for_kem<Kem>(
 where
     Kem: HpkeKem + 'static,
 {
-    match request.suite.kdf {
-        HpkeKdfId::HkdfSha256 => setup_for_kdf::<Kem, HkdfSha256>(request, randomness),
-        HpkeKdfId::HkdfSha384 => setup_for_kdf::<Kem, HkdfSha384>(request, randomness),
-        HpkeKdfId::HkdfSha512 => setup_for_kdf::<Kem, HkdfSha512>(request, randomness),
-        HpkeKdfId::Shake256 => setup_for_kdf::<Kem, KdfShake256>(request, randomness),
-        HpkeKdfId::Shake128 | HpkeKdfId::TurboShake128 | HpkeKdfId::TurboShake256 => {
-            Err(HpkeError::UnsupportedKdf)
-        }
-    }
+    dispatch_kdf!(request.suite.kdf, setup_for_kdf, Kem, request, randomness)
 }
 
 fn setup_for_kdf<Kem, Kdf>(
     request: &HpkePskSenderSetupRequest<'_>,
-    randomness: &[u8],
+    _randomness: &[u8],
 ) -> Result<HpkePskSenderSetupOutput, HpkeError>
 where
     Kem: HpkeKem + 'static,
     Kdf: HpkeKdf + 'static,
 {
-    match request.suite.aead {
-        HpkeAeadId::Aes128Gcm => setup_for::<AesGcm128, Kdf, Kem>(request, randomness),
-        HpkeAeadId::Aes256Gcm => setup_for::<AesGcm256, Kdf, Kem>(request, randomness),
-        HpkeAeadId::ChaCha20Poly1305 => {
-            setup_for::<ChaCha20Poly1305, Kdf, Kem>(request, randomness)
-        }
-        HpkeAeadId::ExportOnly => Err(HpkeError::UnsupportedSuite),
-    }
+    dispatch_sealing_aead!(
+        request.suite.aead,
+        setup_for,
+        Kdf,
+        Kem,
+        request,
+        _randomness
+    )
 }
 
+#[cfg(any(
+    feature = "aead-aes128-gcm",
+    feature = "aead-aes256-gcm",
+    feature = "aead-chacha20-poly1305"
+))]
 fn setup_for<Aead, Kdf, Kem>(
     request: &HpkePskSenderSetupRequest<'_>,
     randomness: &[u8],
@@ -263,6 +259,11 @@ where
     })
 }
 
+#[cfg(any(
+    feature = "aead-aes128-gcm",
+    feature = "aead-aes256-gcm",
+    feature = "aead-chacha20-poly1305"
+))]
 fn map_setup_error(error: hpke::HpkeError) -> HpkeError {
     match error {
         hpke::HpkeError::ValidationError | hpke::HpkeError::IncorrectInputLength(_, _) => {

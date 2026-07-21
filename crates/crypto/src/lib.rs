@@ -189,7 +189,7 @@ pub mod x25519;
 pub mod x_wing;
 
 /// RFC 9180 HPKE Base-mode encryption over supported DHKEM/HKDF/AEAD suites.
-#[cfg(feature = "hpke")]
+#[cfg(feature = "hpke-api")]
 pub mod hpke;
 
 /// HKDF (RFC 5869) extract-and-expand key derivation over the SHA-2/SHA-3 suites,

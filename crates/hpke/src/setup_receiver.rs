@@ -2,25 +2,29 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-use hpke::aead::{Aead as HpkeAead, AeadCtxR, AesGcm128, AesGcm256, ChaCha20Poly1305};
-use hpke::kdf::{HkdfSha256, HkdfSha384, HkdfSha512, Kdf as HpkeKdf, KdfShake256};
-use hpke::kem::{
-    DhP256HkdfSha256, DhP384HkdfSha384, DhP521HkdfSha512, MlKem1024, MlKem1024P384, MlKem768,
-    MlKem768P256, X25519HkdfSha256, XWing,
-};
-use hpke::{Deserializable, Kem as HpkeKem, OpModeR, PskBundle};
+#[cfg(any(
+    feature = "aead-aes128-gcm",
+    feature = "aead-aes256-gcm",
+    feature = "aead-chacha20-poly1305"
+))]
+use hpke::aead::{Aead as HpkeAead, AeadCtxR};
+use hpke::kdf::Kdf as HpkeKdf;
+use hpke::Kem as HpkeKem;
+#[cfg(any(
+    feature = "aead-aes128-gcm",
+    feature = "aead-aes256-gcm",
+    feature = "aead-chacha20-poly1305"
+))]
+use hpke::{Deserializable, OpModeR, PskBundle};
 use zeroize::{ZeroizeOnDrop, Zeroizing};
 
 use crate::error::HpkeError;
-use crate::identifiers::{HpkeAeadId, HpkeKdfId, HpkeKemId, HpkeSuite};
-use crate::mlkem512::MlKem512;
-use crate::secp256k1::DhKemSecp256k1HkdfSha256;
+use crate::identifiers::HpkeSuite;
 use crate::types::{HpkeOpenOutput, HpkePskIdRef, HpkePskRef};
 use crate::validation::{
     require_sealing_suite, validate_encapsulated_key, validate_key_schedule_inputs,
     validate_private_key, validate_psk,
 };
-use crate::x448::DhKemX448HkdfSha512;
 
 /// Inputs required to establish an RFC 9180 PSK-mode receiver context.
 pub struct HpkePskReceiverSetupRequest<'a> {
@@ -42,6 +46,11 @@ trait ReceiverContextBackend {
     fn open(&mut self, aad: &[u8], ciphertext: &[u8]) -> Result<Vec<u8>, hpke::HpkeError>;
 }
 
+#[cfg(any(
+    feature = "aead-aes128-gcm",
+    feature = "aead-aes256-gcm",
+    feature = "aead-chacha20-poly1305"
+))]
 struct TypedReceiverContext<Aead, Kdf, Kem>
 where
     Aead: HpkeAead,
@@ -51,6 +60,11 @@ where
     inner: AeadCtxR<Aead, Kdf, Kem>,
 }
 
+#[cfg(any(
+    feature = "aead-aes128-gcm",
+    feature = "aead-aes256-gcm",
+    feature = "aead-chacha20-poly1305"
+))]
 impl<Aead, Kdf, Kem> ReceiverContextBackend for TypedReceiverContext<Aead, Kdf, Kem>
 where
     Aead: HpkeAead,
@@ -107,25 +121,7 @@ pub fn setup_receiver_psk(
     validate_psk(request.psk.as_slice(), request.psk_id.as_slice())?;
     validate_key_schedule_inputs(request.info, request.psk_id.as_slice())?;
 
-    match request.suite.kem {
-        HpkeKemId::DhKemP256HkdfSha256 => setup_for_kem::<DhP256HkdfSha256>(request),
-        HpkeKemId::DhKemP384HkdfSha384 => setup_for_kem::<DhP384HkdfSha384>(request),
-        HpkeKemId::DhKemP521HkdfSha512 => setup_for_kem::<DhP521HkdfSha512>(request),
-        HpkeKemId::DhKemSecp256k1HkdfSha256 => setup_for_kem::<DhKemSecp256k1HkdfSha256>(request),
-        HpkeKemId::DhKemX25519HkdfSha256 => setup_for_kem::<X25519HkdfSha256>(request),
-        HpkeKemId::DhKemX448HkdfSha512 => setup_for_kem::<DhKemX448HkdfSha512>(request),
-        HpkeKemId::MlKem512 => setup_for_kem::<MlKem512>(request),
-        HpkeKemId::MlKem768 => setup_for_kem::<MlKem768>(request),
-        HpkeKemId::MlKem1024 => setup_for_kem::<MlKem1024>(request),
-        HpkeKemId::MlKem768P256 => setup_for_kem::<MlKem768P256>(request),
-        HpkeKemId::MlKem1024P384 => setup_for_kem::<MlKem1024P384>(request),
-        HpkeKemId::XWing => setup_for_kem::<XWing>(request),
-        HpkeKemId::DhKemCp256HkdfSha256
-        | HpkeKemId::DhKemCp384HkdfSha384
-        | HpkeKemId::DhKemCp521HkdfSha512
-        | HpkeKemId::DhKemX25519ElligatorHkdfSha256
-        | HpkeKemId::X25519Kyber768Draft00 => Err(HpkeError::UnsupportedKem),
-    }
+    dispatch_kem!(request.suite.kem, setup_for_kem, request)
 }
 
 fn setup_for_kem<Kem>(
@@ -134,15 +130,7 @@ fn setup_for_kem<Kem>(
 where
     Kem: HpkeKem + 'static,
 {
-    match request.suite.kdf {
-        HpkeKdfId::HkdfSha256 => setup_for_kdf::<Kem, HkdfSha256>(request),
-        HpkeKdfId::HkdfSha384 => setup_for_kdf::<Kem, HkdfSha384>(request),
-        HpkeKdfId::HkdfSha512 => setup_for_kdf::<Kem, HkdfSha512>(request),
-        HpkeKdfId::Shake256 => setup_for_kdf::<Kem, KdfShake256>(request),
-        HpkeKdfId::Shake128 | HpkeKdfId::TurboShake128 | HpkeKdfId::TurboShake256 => {
-            Err(HpkeError::UnsupportedKdf)
-        }
-    }
+    dispatch_kdf!(request.suite.kdf, setup_for_kdf, Kem, request)
 }
 
 fn setup_for_kdf<Kem, Kdf>(
@@ -152,14 +140,14 @@ where
     Kem: HpkeKem + 'static,
     Kdf: HpkeKdf + 'static,
 {
-    match request.suite.aead {
-        HpkeAeadId::Aes128Gcm => setup_for::<AesGcm128, Kdf, Kem>(request),
-        HpkeAeadId::Aes256Gcm => setup_for::<AesGcm256, Kdf, Kem>(request),
-        HpkeAeadId::ChaCha20Poly1305 => setup_for::<ChaCha20Poly1305, Kdf, Kem>(request),
-        HpkeAeadId::ExportOnly => Err(HpkeError::UnsupportedSuite),
-    }
+    dispatch_sealing_aead!(request.suite.aead, setup_for, Kdf, Kem, request)
 }
 
+#[cfg(any(
+    feature = "aead-aes128-gcm",
+    feature = "aead-aes256-gcm",
+    feature = "aead-chacha20-poly1305"
+))]
 fn setup_for<Aead, Kdf, Kem>(
     request: &HpkePskReceiverSetupRequest<'_>,
 ) -> Result<HpkeReceiverContext, HpkeError>
@@ -190,6 +178,11 @@ where
     })
 }
 
+#[cfg(any(
+    feature = "aead-aes128-gcm",
+    feature = "aead-aes256-gcm",
+    feature = "aead-chacha20-poly1305"
+))]
 fn map_setup_error(error: hpke::HpkeError) -> HpkeError {
     match error {
         hpke::HpkeError::ValidationError

@@ -68,10 +68,10 @@ pub const HPKE_AEAD_NONCE_LEN: usize = 12;
 /// Minimum entropy-bearing PSK byte length required by RFC 9180.
 pub const HPKE_MIN_PSK_LEN: usize = 32;
 /// Maximum combined `info`, PSK identifier, and fixed-label length.
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 pub const HPKE_LABELED_CONTEXT_LIMIT: usize = 1 << 16;
 /// Fixed label bytes included in the key-schedule context length check.
-#[cfg(feature = "native")]
+#[cfg(feature = "backend-native")]
 pub const HPKE_KEY_SCHEDULE_LABEL_OVERHEAD: usize = 5;
 /// Maximum registered encapsulated-key length exposed by this package.
 pub const HPKE_ENCAPSULATED_KEY_MAX_LEN: usize = 1_665;

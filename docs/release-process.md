@@ -29,6 +29,20 @@ cargo deny check
 When SDK packages are touched, also run Swift, Kotlin, Android where
 applicable, and TypeScript package tests.
 
+Before creating the release commit, finish every Rust and SDK source/version
+change and run:
+
+```sh
+scripts/prepare_swift_release_candidate.sh 0.3.2
+```
+
+The command builds the normalized XCFramework once from the final working
+tree, patches `Package.swift` with its SwiftPM checksum, and verifies the
+archive/manifest binding. Review and commit that result normally. Do not push a
+placeholder checksum and later amend or force-update the release commit. The
+Swift preflight and release workflows rebuild the deterministic artifact only
+as independent verification of the already-reviewed checksum.
+
 ## Release Gates
 
 Release workflows require:

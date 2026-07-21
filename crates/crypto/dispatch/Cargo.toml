@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-dispatch"
-version = "0.3.1"
+version = "0.3.2"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -69,25 +69,25 @@ x-wing = ["dep:crypto-x-wing"]
 thiserror = { workspace = true }
 
 # --- Core definitions (no behavior) ---
-crypto-core = { package = "reallyme-crypto-core", version = "0.3.1", path = "../core" }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.3.2", path = "../core" }
 
 # --- Codec bindings ---
 codec-multikey = { package = "reallyme-codec-multikey", version = "0.2.0" }
 
 # --- Algorithm primitives (ALL mandatory, gated by features) ---
-crypto-ed25519 = { package = "reallyme-crypto-ed25519", version = "0.3.1", path = "../../ed25519", optional = true, default-features = false }
-crypto-p256 = { package = "reallyme-crypto-p256", version = "0.3.1", path = "../../p256", optional = true, default-features = false }
-crypto-p384 = { package = "reallyme-crypto-p384", version = "0.3.1", path = "../../p384", optional = true, default-features = false }
-crypto-p521 = { package = "reallyme-crypto-p521", version = "0.3.1", path = "../../p521", optional = true, default-features = false }
-crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "0.3.1", path = "../../secp256k1", optional = true, default-features = false }
-crypto-x25519 = { package = "reallyme-crypto-x25519", version = "0.3.1", path = "../../x25519", optional = true, default-features = false }
-crypto-ml-dsa-44 = { package = "reallyme-crypto-ml-dsa-44", version = "0.3.1", path = "../../ml-dsa-44", optional = true, default-features = false }
-crypto-ml-dsa-65 = { package = "reallyme-crypto-ml-dsa-65", version = "0.3.1", path = "../../ml-dsa-65", optional = true, default-features = false }
-crypto-ml-dsa-87 = { package = "reallyme-crypto-ml-dsa-87", version = "0.3.1", path = "../../ml-dsa-87", optional = true, default-features = false }
-crypto-ml-kem-512 = { package = "reallyme-crypto-ml-kem-512", version = "0.3.1", path = "../../ml-kem-512", optional = true, default-features = false }
-crypto-ml-kem-768 = { package = "reallyme-crypto-ml-kem-768", version = "0.3.1", path = "../../ml-kem-768", optional = true, default-features = false }
-crypto-ml-kem-1024 = { package = "reallyme-crypto-ml-kem-1024", version = "0.3.1", path = "../../ml-kem-1024", optional = true, default-features = false }
-crypto-x-wing = { package = "reallyme-crypto-x-wing", version = "0.3.1", path = "../../x-wing", optional = true, default-features = false }
+crypto-ed25519 = { package = "reallyme-crypto-ed25519", version = "=0.3.2", path = "../../ed25519", optional = true, default-features = false }
+crypto-p256 = { package = "reallyme-crypto-p256", version = "=0.3.2", path = "../../p256", optional = true, default-features = false }
+crypto-p384 = { package = "reallyme-crypto-p384", version = "=0.3.2", path = "../../p384", optional = true, default-features = false }
+crypto-p521 = { package = "reallyme-crypto-p521", version = "=0.3.2", path = "../../p521", optional = true, default-features = false }
+crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "=0.3.2", path = "../../secp256k1", optional = true, default-features = false }
+crypto-x25519 = { package = "reallyme-crypto-x25519", version = "=0.3.2", path = "../../x25519", optional = true, default-features = false }
+crypto-ml-dsa-44 = { package = "reallyme-crypto-ml-dsa-44", version = "=0.3.2", path = "../../ml-dsa-44", optional = true, default-features = false }
+crypto-ml-dsa-65 = { package = "reallyme-crypto-ml-dsa-65", version = "=0.3.2", path = "../../ml-dsa-65", optional = true, default-features = false }
+crypto-ml-dsa-87 = { package = "reallyme-crypto-ml-dsa-87", version = "=0.3.2", path = "../../ml-dsa-87", optional = true, default-features = false }
+crypto-ml-kem-512 = { package = "reallyme-crypto-ml-kem-512", version = "=0.3.2", path = "../../ml-kem-512", optional = true, default-features = false }
+crypto-ml-kem-768 = { package = "reallyme-crypto-ml-kem-768", version = "=0.3.2", path = "../../ml-kem-768", optional = true, default-features = false }
+crypto-ml-kem-1024 = { package = "reallyme-crypto-ml-kem-1024", version = "=0.3.2", path = "../../ml-kem-1024", optional = true, default-features = false }
+crypto-x-wing = { package = "reallyme-crypto-x-wing", version = "=0.3.2", path = "../../x-wing", optional = true, default-features = false }
 zeroize = { workspace = true }
 
 [dev-dependencies]
