@@ -49,13 +49,13 @@ test("package preflight attestation is bound to the requested version", () => {
 });
 
 test("latest successful workflow attempt authorizes release", () => {
-  assert.doesNotThrow(() => {
-    requireLatestSuccessfulRun(
-      [workflowRun({ attempt: 1 }), workflowRun({ attempt: 2 })],
-      releaseSha,
-      "rust-ci.yml",
-    );
-  });
+  const latest = requireLatestSuccessfulRun(
+    [workflowRun({ attempt: 1 }), workflowRun({ attempt: 2 })],
+    releaseSha,
+    "rust-ci.yml",
+  );
+  assert.equal(latest.databaseId, 100);
+  assert.equal(latest.attempt, 2);
 });
 
 test("newer failed or in-progress runs invalidate an older success", () => {
