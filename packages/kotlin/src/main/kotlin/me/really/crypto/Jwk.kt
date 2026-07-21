@@ -4,6 +4,11 @@
 
 package me.really.crypto
 
+import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.google.gson.JsonParseException
+import com.google.gson.JsonParser
 import me.really.codec.ReallyMeCodec
 import me.really.codec.ReallyMeCodecException
 import org.bouncycastle.asn1.sec.SECNamedCurves
@@ -21,7 +26,6 @@ public enum class ReallyMeJwkAlgorithm(public val algorithmName: String) {
     ML_KEM_1024("ML-KEM-1024"),
     SLH_DSA_SHA2_128S("SLH-DSA-SHA2-128s"),
     X_WING_768("X-Wing-768"),
-    X_WING_1024("X-Wing-1024"),
 }
 
 public data class ReallyMeJwkDocument(
@@ -74,6 +78,9 @@ private data class ReallyMeJwkSpec(
  * package lanes do not drift from the Rust codec implementation.
  */
 public object ReallyMeJwk {
+    private const val MAX_JWK_JSON_CHARACTERS: Int = 1_048_576
+    private const val MAX_JWKS_KEYS: Int = 1_024
+    private val gson: Gson = Gson()
     private val privateMemberNames: Set<String> =
         setOf("d", "p", "q", "dp", "dq", "qi", "oth", "k", "priv", "privateKey", "secretKey")
 
@@ -117,27 +124,52 @@ public object ReallyMeJwk {
         ReallyMeCodec.canonicalizeJson(jwkJson(jwk))
     }
 
-    private fun jwkJson(jwk: ReallyMeJwkDocument): String = when (jwk.kty) {
-        "EC" -> {
-            val crv = jwk.crv ?: throw ReallyMeCryptoException.InvalidInput()
-            val x = jwk.x ?: throw ReallyMeCryptoException.InvalidInput()
-            val y = jwk.y ?: throw ReallyMeCryptoException.InvalidInput()
-            """{"alg":${jsonString(jwk.alg)},"crv":${jsonString(crv)},"kty":"EC","use":${jsonString(jwk.keyUse)},"x":${jsonString(x)},"y":${jsonString(y)}}"""
-        }
-        "OKP" -> {
-            val crv = jwk.crv ?: throw ReallyMeCryptoException.InvalidInput()
-            val x = jwk.x ?: throw ReallyMeCryptoException.InvalidInput()
-            """{"alg":${jsonString(jwk.alg)},"crv":${jsonString(crv)},"kty":"OKP","use":${jsonString(jwk.keyUse)},"x":${jsonString(x)}}"""
-        }
-        "AKP" -> {
-            val publicKey = jwk.publicKey ?: throw ReallyMeCryptoException.InvalidInput()
-            """{"alg":${jsonString(jwk.alg)},"kty":"AKP","pub":${jsonString(publicKey)},"use":${jsonString(jwk.keyUse)}}"""
-        }
-        else -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
-    }
+    private fun jwkJson(jwk: ReallyMeJwkDocument): String =
+        gson.toJson(
+            when (jwk.kty) {
+                "EC" -> {
+                    val crv = jwk.crv ?: throw ReallyMeCryptoException.InvalidInput()
+                    val x = jwk.x ?: throw ReallyMeCryptoException.InvalidInput()
+                    val y = jwk.y ?: throw ReallyMeCryptoException.InvalidInput()
+                    jsonObject(
+                        "alg" to jwk.alg,
+                        "crv" to crv,
+                        "kty" to "EC",
+                        "use" to jwk.keyUse,
+                        "x" to x,
+                        "y" to y,
+                    )
+                }
+                "OKP" -> {
+                    val crv = jwk.crv ?: throw ReallyMeCryptoException.InvalidInput()
+                    val x = jwk.x ?: throw ReallyMeCryptoException.InvalidInput()
+                    jsonObject(
+                        "alg" to jwk.alg,
+                        "crv" to crv,
+                        "kty" to "OKP",
+                        "use" to jwk.keyUse,
+                        "x" to x,
+                    )
+                }
+                "AKP" -> {
+                    val publicKey = jwk.publicKey ?: throw ReallyMeCryptoException.InvalidInput()
+                    jsonObject(
+                        "alg" to jwk.alg,
+                        "kty" to "AKP",
+                        "pub" to publicKey,
+                        "use" to jwk.keyUse,
+                    )
+                }
+                else -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
+            },
+        )
 
     public fun fromJwkJson(json: String): ReallyMeJwkKey {
-        val objectMap = parseFlatStringObject(json)
+        val objectMap = stringMembers(parseJsonObject(json))
+        return fromJwkObject(objectMap)
+    }
+
+    private fun fromJwkObject(objectMap: Map<String, String>): ReallyMeJwkKey {
         if (objectMap.keys.any(privateMemberNames::contains)) {
             throw ReallyMeCryptoException.InvalidInput()
         }
@@ -149,10 +181,24 @@ public object ReallyMeJwk {
         }
         val spec = spec(algorithmName)
         val algorithm = algorithm(algorithmName)
+        val allowedMembers = when (spec.kty) {
+            "EC" -> setOf("alg", "crv", "kty", "use", "x", "y")
+            "OKP" -> setOf("alg", "crv", "kty", "use", "x")
+            "AKP" -> setOf("alg", "kty", "pub", "use")
+            else -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
+        }
+        if (!allowedMembers.containsAll(objectMap.keys)) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
+        val metadataMatches = if (spec.kty == "OKP") {
+            (objectMap["alg"] == null || objectMap["alg"] == spec.alg) &&
+                (objectMap["use"] == null || objectMap["use"] == spec.keyUse)
+        } else {
+            objectMap["alg"] == spec.alg && objectMap["use"] == spec.keyUse
+        }
         if (
             kty != spec.kty ||
-            objectMap["alg"] != spec.alg ||
-            objectMap["use"] != spec.keyUse
+            !metadataMatches
         ) {
             throw ReallyMeCryptoException.InvalidInput()
         }
@@ -178,8 +224,22 @@ public object ReallyMeJwk {
     public fun toJwks(keys: List<ReallyMeJwkDocument>): ReallyMeJwks =
         ReallyMeJwks(keys.toList())
 
-    public fun fromJwksJson(json: String): List<ReallyMeJwkKey> =
-        FlatJwksJsonParser(json).parse().map { fromJwkJson(it) }
+    public fun fromJwksJson(json: String): List<ReallyMeJwkKey> {
+        val root = parseJsonObject(json)
+        if (root.entrySet().map { it.key }.toSet() != setOf("keys")) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
+        val keys = root.get("keys")
+        if (keys == null || !keys.isJsonArray || keys.asJsonArray.size() > MAX_JWKS_KEYS) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
+        return keys.asJsonArray.map { element ->
+            if (!element.isJsonObject) {
+                throw ReallyMeCryptoException.InvalidInput()
+            }
+            fromJwkObject(stringMembers(element.asJsonObject))
+        }
+    }
 
     public fun publicKeyBytes(jwk: ReallyMeJwkDocument): ByteArray =
         fromJwkJson(toJcs(jwk)).publicKey
@@ -197,7 +257,6 @@ public object ReallyMeJwk {
         "ML-KEM-1024" -> ReallyMeJwkSpec(algorithmName, null, "AKP", "enc", 1_568)
         "SLH-DSA-SHA2-128s" -> ReallyMeJwkSpec(algorithmName, null, "AKP", "sig", 32)
         "X-Wing-768" -> ReallyMeJwkSpec(algorithmName, null, "AKP", "enc", 1_216)
-        "X-Wing-1024" -> ReallyMeJwkSpec(algorithmName, null, "AKP", "enc", 1_600)
         else -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
     }
 
@@ -236,38 +295,47 @@ public object ReallyMeJwk {
         val compressed = ByteArray(33)
         compressed[0] = if ((y.last().toInt() and 1) == 0) 0x02 else 0x03
         x.copyInto(compressed, destinationOffset = 1)
-        decompressEcPublicKey(algorithm, compressed)
+        val uncompressed = decompressEcPublicKey(algorithm, compressed)
+        if (
+            uncompressed.size != 65 ||
+            !uncompressed.copyOfRange(1, 33).contentEquals(x) ||
+            !uncompressed.copyOfRange(33, 65).contentEquals(y)
+        ) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
         return compressed
     }
 
-    private fun jsonString(value: String): String {
-        val out = StringBuilder()
-        out.append('"')
-        for (char in value) {
-            when (char) {
-                '"' -> out.append("\\\"")
-                '\\' -> out.append("\\\\")
-                '\b' -> out.append("\\b")
-                '\u000C' -> out.append("\\f")
-                '\n' -> out.append("\\n")
-                '\r' -> out.append("\\r")
-                '\t' -> out.append("\\t")
-                else -> {
-                    if (char.code < 0x20) {
-                        throw ReallyMeCryptoException.InvalidInput()
-                    }
-                    out.append(char)
-                }
-            }
+    private fun jsonObject(vararg members: Pair<String, String>): JsonObject =
+        JsonObject().apply {
+            members.forEach { (name, value) -> addProperty(name, value) }
         }
-        out.append('"')
-        return out.toString()
+
+    private fun parseJsonObject(json: String): JsonObject {
+        if (json.length > MAX_JWK_JSON_CHARACTERS) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
+        val canonical = codecOperation { ReallyMeCodec.canonicalizeJson(json) }
+        val element: JsonElement = try {
+            JsonParser.parseString(canonical)
+        } catch (_: JsonParseException) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
+        if (!element.isJsonObject) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
+        return element.asJsonObject
     }
 
-    private fun parseFlatStringObject(json: String): Map<String, String> {
-        val parser = FlatJwkJsonParser(json)
-        return parser.parse()
-    }
+    private fun stringMembers(jsonObject: JsonObject): Map<String, String> =
+        buildMap {
+            jsonObject.entrySet().forEach { (name, value) ->
+                if (!value.isJsonPrimitive || !value.asJsonPrimitive.isString) {
+                    throw ReallyMeCryptoException.InvalidInput()
+                }
+                put(name, value.asString)
+            }
+        }
 
     private fun codecBase64urlEncode(bytes: ByteArray): String =
         codecOperation { ReallyMeCodec.base64urlEncode(bytes) }
@@ -281,219 +349,5 @@ public object ReallyMeJwk {
         throw ReallyMeCryptoException.InvalidInput()
     } catch (_: ReallyMeCodecException.ProviderFailure) {
         throw ReallyMeCryptoException.ProviderFailure()
-    }
-}
-
-private class FlatJwksJsonParser(private val json: String) {
-    private var index: Int = 0
-
-    fun parse(): List<String> {
-        skipWhitespace()
-        consume('{')
-        skipWhitespace()
-        if (parseString() != "keys") {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        skipWhitespace()
-        consume(':')
-        skipWhitespace()
-        consume('[')
-        skipWhitespace()
-        val keys = mutableListOf<String>()
-        if (peek() == ']') {
-            consume(']')
-            finish()
-            return keys
-        }
-        while (true) {
-            keys += parseObjectJson()
-            skipWhitespace()
-            when (peek()) {
-                ',' -> {
-                    consume(',')
-                    skipWhitespace()
-                }
-                ']' -> {
-                    consume(']')
-                    finish()
-                    return keys
-                }
-                else -> throw ReallyMeCryptoException.InvalidInput()
-            }
-        }
-    }
-
-    private fun finish() {
-        skipWhitespace()
-        consume('}')
-        skipWhitespace()
-        if (index != json.length) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-    }
-
-    private fun parseObjectJson(): String {
-        val start = index
-        consume('{')
-        var inString = false
-        var escaped = false
-        var depth = 1
-        while (index < json.length) {
-            val char = json[index]
-            index += 1
-            if (inString) {
-                if (escaped) {
-                    escaped = false
-                } else if (char == '\\') {
-                    escaped = true
-                } else if (char == '"') {
-                    inString = false
-                }
-            } else {
-                when (char) {
-                    '"' -> inString = true
-                    '{' -> depth += 1
-                    '}' -> {
-                        depth -= 1
-                        if (depth == 0) {
-                            return json.substring(start, index)
-                        }
-                    }
-                }
-            }
-        }
-        throw ReallyMeCryptoException.InvalidInput()
-    }
-
-    private fun parseString(): String {
-        consume('"')
-        val start = index
-        while (index < json.length && json[index] != '"') {
-            if (json[index] == '\\' || json[index].code < 0x20) {
-                throw ReallyMeCryptoException.InvalidInput()
-            }
-            index += 1
-        }
-        val value = json.substring(start, index)
-        consume('"')
-        return value
-    }
-
-    private fun skipWhitespace() {
-        while (index < json.length && json[index].isWhitespace()) {
-            index += 1
-        }
-    }
-
-    private fun consume(expected: Char) {
-        if (peek() != expected) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        index += 1
-    }
-
-    private fun peek(): Char {
-        if (index >= json.length) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        return json[index]
-    }
-}
-
-private class FlatJwkJsonParser(private val json: String) {
-    private var index: Int = 0
-
-    fun parse(): Map<String, String> {
-        val fields = mutableMapOf<String, String>()
-        skipWhitespace()
-        consume('{')
-        skipWhitespace()
-        if (peek() == '}') {
-            consume('}')
-            return fields
-        }
-        while (true) {
-            val key = parseString()
-            skipWhitespace()
-            consume(':')
-            skipWhitespace()
-            val value = parseString()
-            if (fields.put(key, value) != null) {
-                throw ReallyMeCryptoException.InvalidInput()
-            }
-            skipWhitespace()
-            when (peek()) {
-                ',' -> {
-                    consume(',')
-                    skipWhitespace()
-                }
-                '}' -> {
-                    consume('}')
-                    skipWhitespace()
-                    if (index != json.length) {
-                        throw ReallyMeCryptoException.InvalidInput()
-                    }
-                    return fields
-                }
-                else -> throw ReallyMeCryptoException.InvalidInput()
-            }
-        }
-    }
-
-    private fun parseString(): String {
-        consume('"')
-        val out = StringBuilder()
-        while (index < json.length) {
-            val char = json[index]
-            index += 1
-            when (char) {
-                '"' -> return out.toString()
-                '\\' -> out.append(parseEscape())
-                else -> {
-                    if (char.code < 0x20) {
-                        throw ReallyMeCryptoException.InvalidInput()
-                    }
-                    out.append(char)
-                }
-            }
-        }
-        throw ReallyMeCryptoException.InvalidInput()
-    }
-
-    private fun parseEscape(): Char {
-        if (index >= json.length) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        val escaped = json[index]
-        index += 1
-        return when (escaped) {
-            '"', '\\', '/' -> escaped
-            'b' -> '\b'
-            'f' -> '\u000C'
-            'n' -> '\n'
-            'r' -> '\r'
-            't' -> '\t'
-            else -> throw ReallyMeCryptoException.InvalidInput()
-        }
-    }
-
-    private fun skipWhitespace() {
-        while (index < json.length && json[index].isWhitespace()) {
-            index += 1
-        }
-    }
-
-    private fun consume(expected: Char) {
-        if (peek() != expected) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        index += 1
-    }
-
-    private fun peek(): Char {
-        if (index >= json.length) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        return json[index]
     }
 }

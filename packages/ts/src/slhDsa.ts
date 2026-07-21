@@ -4,7 +4,13 @@
 
 import type { ReallyMeSignatureAlgorithm } from "./algorithms.js";
 import { ReallyMeCryptoError } from "./errors.js";
-import { ensureBytes, readByteArrayProperty } from "./validateBytes.js";
+import {
+  ensureByteArrayAtMost,
+  ensureBytes,
+  ensureIndependentByteArray,
+  MAX_CRYPTO_INPUT_LENGTH,
+  readIndependentByteArrayProperty,
+} from "./validateBytes.js";
 import { requireReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 
@@ -24,24 +30,38 @@ const assertSlhDsa = (algorithm: ReallyMeSignatureAlgorithm): void => {
   }
 };
 
-const readKeyPair = (value: unknown): ReallyMeSlhDsaKeyPair => ({
-  publicKey: readByteArrayProperty(
+const readKeyPair = (
+  value: unknown,
+  inputs: ReadonlyArray<Uint8Array> = [],
+): ReallyMeSlhDsaKeyPair => {
+  const publicKey = readIndependentByteArrayProperty(
     value,
     "publicKey",
     SLH_DSA_SHA2_128S_PUBLIC_KEY_LENGTH,
-  ),
-  secretKey: readByteArrayProperty(
+    inputs,
+  );
+  const secretKey = readIndependentByteArrayProperty(
     value,
     "secretKey",
     SLH_DSA_SHA2_128S_SECRET_KEY_LENGTH,
-  ),
-});
+    [...inputs, publicKey],
+  );
+  return { publicKey, secretKey };
+};
 
-const readSignature = (value: unknown): Uint8Array => {
+const readSignature = (
+  value: unknown,
+  inputs: ReadonlyArray<Uint8Array>,
+): Uint8Array => {
   if (!(value instanceof Uint8Array)) {
     throw new ReallyMeCryptoError("provider-failure");
   }
-  ensureBytes(value, SLH_DSA_SHA2_128S_SIGNATURE_LENGTH);
+  // Signature bytes are public, but their shape and ownership are provider
+  // postconditions rather than caller validation failures.
+  ensureIndependentByteArray(value, inputs);
+  if (value.length !== SLH_DSA_SHA2_128S_SIGNATURE_LENGTH) {
+    throw new ReallyMeCryptoError("provider-failure");
+  }
   return value;
 };
 
@@ -71,9 +91,11 @@ export const ReallyMeSlhDsa = {
     secretKey: Uint8Array,
   ): Uint8Array {
     assertSlhDsa(algorithm);
+    ensureByteArrayAtMost(message, MAX_CRYPTO_INPUT_LENGTH);
     ensureBytes(secretKey, SLH_DSA_SHA2_128S_SECRET_KEY_LENGTH);
     return readSignature(
       requireReallyMeWasmProvider().slhDsaSha2128sSign(secretKey, message),
+      [secretKey, message],
     );
   },
 
@@ -84,8 +106,12 @@ export const ReallyMeSlhDsa = {
     secretKey: Uint8Array,
   ): Uint8Array {
     assertSlhDsa(algorithm);
+    ensureByteArrayAtMost(message, MAX_CRYPTO_INPUT_LENGTH);
     ensureBytes(secretKey, SLH_DSA_SHA2_128S_SECRET_KEY_LENGTH);
-    return readSignature(provider.slhDsaSha2128sSign(secretKey, message));
+    return readSignature(
+      provider.slhDsaSha2128sSign(secretKey, message),
+      [secretKey, message],
+    );
   },
 
   verify(
@@ -95,6 +121,7 @@ export const ReallyMeSlhDsa = {
     publicKey: Uint8Array,
   ): void {
     assertSlhDsa(algorithm);
+    ensureByteArrayAtMost(message, MAX_CRYPTO_INPUT_LENGTH);
     ensureBytes(publicKey, SLH_DSA_SHA2_128S_PUBLIC_KEY_LENGTH);
     ensureBytes(signature, SLH_DSA_SHA2_128S_SIGNATURE_LENGTH);
     readVoid(
@@ -114,6 +141,7 @@ export const ReallyMeSlhDsa = {
     publicKey: Uint8Array,
   ): void {
     assertSlhDsa(algorithm);
+    ensureByteArrayAtMost(message, MAX_CRYPTO_INPUT_LENGTH);
     ensureBytes(publicKey, SLH_DSA_SHA2_128S_PUBLIC_KEY_LENGTH);
     ensureBytes(signature, SLH_DSA_SHA2_128S_SIGNATURE_LENGTH);
     readVoid(provider.slhDsaSha2128sVerify(publicKey, message, signature));
@@ -134,6 +162,7 @@ export const deriveSlhDsaSha2128sKeypairForTest = (
       skPrf,
       pkSeed,
     ),
+    [skSeed, skPrf, pkSeed],
   );
 };
 
@@ -146,5 +175,8 @@ export const deriveSlhDsaSha2128sKeypairWithProviderForTest = (
   ensureBytes(skSeed, SLH_DSA_SHA2_128S_KEYGEN_SEED_LENGTH);
   ensureBytes(skPrf, SLH_DSA_SHA2_128S_KEYGEN_SEED_LENGTH);
   ensureBytes(pkSeed, SLH_DSA_SHA2_128S_KEYGEN_SEED_LENGTH);
-  return readKeyPair(provider.slhDsaSha2128sDeriveKeypair(skSeed, skPrf, pkSeed));
+  return readKeyPair(
+    provider.slhDsaSha2128sDeriveKeypair(skSeed, skPrf, pkSeed),
+    [skSeed, skPrf, pkSeed],
+  );
 };

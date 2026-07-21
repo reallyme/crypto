@@ -7,8 +7,15 @@ package me.really.crypto.v1;
 
 /**
  * <pre>
- * KdfAlgorithm identifies key-derivation functions. PBKDF2 values are retained
- * for legacy interoperability; new password storage should prefer Argon2id.
+ * KdfAlgorithm identifies key-derivation functions. PBKDF2 values remain for
+ * standards and password-record interoperability; new password storage should
+ * prefer Argon2id.
+ * Values are grouped by construction:
+ * 100-199: extract-and-expand KDFs
+ * 200-299: memory-hard password KDFs
+ * 300-399: password-record KDFs
+ * 400-499: concatenation KDFs
+ * 500-599: XOF/MAC-based KDFs
  * </pre>
  *
  * Protobuf enum {@code reallyme.crypto.v1.KdfAlgorithm}
@@ -21,25 +28,33 @@ public enum KdfAlgorithm
    */
   KDF_ALGORITHM_UNSPECIFIED(0),
   /**
-   * <code>KDF_ALGORITHM_HKDF_SHA256 = 1;</code>
+   * <code>KDF_ALGORITHM_HKDF_SHA256 = 100;</code>
    */
-  KDF_ALGORITHM_HKDF_SHA256(1),
+  KDF_ALGORITHM_HKDF_SHA256(100),
   /**
-   * <code>KDF_ALGORITHM_ARGON2ID = 2;</code>
+   * <code>KDF_ALGORITHM_HKDF_SHA384 = 110;</code>
    */
-  KDF_ALGORITHM_ARGON2ID(2),
+  KDF_ALGORITHM_HKDF_SHA384(110),
   /**
-   * <code>KDF_ALGORITHM_PBKDF2_HMAC_SHA256 = 3;</code>
+   * <code>KDF_ALGORITHM_ARGON2ID = 200;</code>
    */
-  KDF_ALGORITHM_PBKDF2_HMAC_SHA256(3),
+  KDF_ALGORITHM_ARGON2ID(200),
   /**
-   * <code>KDF_ALGORITHM_PBKDF2_HMAC_SHA512 = 4;</code>
+   * <code>KDF_ALGORITHM_PBKDF2_HMAC_SHA256 = 300;</code>
    */
-  KDF_ALGORITHM_PBKDF2_HMAC_SHA512(4),
+  KDF_ALGORITHM_PBKDF2_HMAC_SHA256(300),
   /**
-   * <code>KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256 = 5;</code>
+   * <code>KDF_ALGORITHM_PBKDF2_HMAC_SHA512 = 310;</code>
    */
-  KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256(5),
+  KDF_ALGORITHM_PBKDF2_HMAC_SHA512(310),
+  /**
+   * <code>KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256 = 400;</code>
+   */
+  KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256(400),
+  /**
+   * <code>KDF_ALGORITHM_KMAC_256 = 500;</code>
+   */
+  KDF_ALGORITHM_KMAC_256(500),
   UNRECOGNIZED(-1),
   ;
 
@@ -48,25 +63,33 @@ public enum KdfAlgorithm
    */
   public static final int KDF_ALGORITHM_UNSPECIFIED_VALUE = 0;
   /**
-   * <code>KDF_ALGORITHM_HKDF_SHA256 = 1;</code>
+   * <code>KDF_ALGORITHM_HKDF_SHA256 = 100;</code>
    */
-  public static final int KDF_ALGORITHM_HKDF_SHA256_VALUE = 1;
+  public static final int KDF_ALGORITHM_HKDF_SHA256_VALUE = 100;
   /**
-   * <code>KDF_ALGORITHM_ARGON2ID = 2;</code>
+   * <code>KDF_ALGORITHM_HKDF_SHA384 = 110;</code>
    */
-  public static final int KDF_ALGORITHM_ARGON2ID_VALUE = 2;
+  public static final int KDF_ALGORITHM_HKDF_SHA384_VALUE = 110;
   /**
-   * <code>KDF_ALGORITHM_PBKDF2_HMAC_SHA256 = 3;</code>
+   * <code>KDF_ALGORITHM_ARGON2ID = 200;</code>
    */
-  public static final int KDF_ALGORITHM_PBKDF2_HMAC_SHA256_VALUE = 3;
+  public static final int KDF_ALGORITHM_ARGON2ID_VALUE = 200;
   /**
-   * <code>KDF_ALGORITHM_PBKDF2_HMAC_SHA512 = 4;</code>
+   * <code>KDF_ALGORITHM_PBKDF2_HMAC_SHA256 = 300;</code>
    */
-  public static final int KDF_ALGORITHM_PBKDF2_HMAC_SHA512_VALUE = 4;
+  public static final int KDF_ALGORITHM_PBKDF2_HMAC_SHA256_VALUE = 300;
   /**
-   * <code>KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256 = 5;</code>
+   * <code>KDF_ALGORITHM_PBKDF2_HMAC_SHA512 = 310;</code>
    */
-  public static final int KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256_VALUE = 5;
+  public static final int KDF_ALGORITHM_PBKDF2_HMAC_SHA512_VALUE = 310;
+  /**
+   * <code>KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256 = 400;</code>
+   */
+  public static final int KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256_VALUE = 400;
+  /**
+   * <code>KDF_ALGORITHM_KMAC_256 = 500;</code>
+   */
+  public static final int KDF_ALGORITHM_KMAC_256_VALUE = 500;
 
 
   @java.lang.Override
@@ -90,11 +113,13 @@ public enum KdfAlgorithm
   public static KdfAlgorithm forNumber(int value) {
     switch (value) {
       case 0: return KDF_ALGORITHM_UNSPECIFIED;
-      case 1: return KDF_ALGORITHM_HKDF_SHA256;
-      case 2: return KDF_ALGORITHM_ARGON2ID;
-      case 3: return KDF_ALGORITHM_PBKDF2_HMAC_SHA256;
-      case 4: return KDF_ALGORITHM_PBKDF2_HMAC_SHA512;
-      case 5: return KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256;
+      case 100: return KDF_ALGORITHM_HKDF_SHA256;
+      case 110: return KDF_ALGORITHM_HKDF_SHA384;
+      case 200: return KDF_ALGORITHM_ARGON2ID;
+      case 300: return KDF_ALGORITHM_PBKDF2_HMAC_SHA256;
+      case 310: return KDF_ALGORITHM_PBKDF2_HMAC_SHA512;
+      case 400: return KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256;
+      case 500: return KDF_ALGORITHM_KMAC_256;
       default: return null;
     }
   }

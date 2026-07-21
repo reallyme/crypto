@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "request_protobuf": "CgkKAjBkEgNhYmM",
+  "request_json": "eyJoYXNoIjp7ImFsZ29yaXRobSI6eyJoYXNoIjoiSEFTSF9BTEdPUklUSE1fU0hBMl8yNTYifSwiaW5wdXQiOiJZV0pqIn19",
+  "operation_response": "CigKJgoCMGQSILp4Fr-PAc_qQUFA3l2uIiOwA2Gjlhd6nLQQ_2HyABWt",
+  "malformed_protobuf": "____",
+  "malformed_protobuf_response": "EgUKAwiCAQ",
+  "malformed_json": "eyJoYXNoIjp7ImFsZ29yaXRobSI6eyJoYXNoIjoiSEFTSF9BTEdPUklUSE1fU0hBMl8yNTYifSwiaW5wdXQiOiIqKioifX0",
+  "malformed_json_response": "EgUKAwiDAQ"
+}

@@ -22,23 +22,21 @@ public enum class ReallyMeNativeStatus(public val code: Int) {
     INVALID_SIGNATURE(6),
 }
 
-internal data class ReallyMeNativeResult(
+internal class ReallyMeNativeResult(
     val status: ReallyMeNativeStatus,
     val bytes: ByteArray,
 ) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is ReallyMeNativeResult) return false
-        return status == other.status && bytes.contentEquals(other.bytes)
-    }
-
-    override fun hashCode(): Int = 31 * status.hashCode() + bytes.contentHashCode()
+    override fun toString(): String = "ReallyMeNativeResult(status=$status, bytes=<redacted>)"
 }
 
 private const val NATIVE_STATUS_BYTES: Int = 4
 
 internal fun decodeRustNativeResult(encoded: ByteArray?): ReallyMeNativeResult {
-    if (encoded == null || encoded.size < NATIVE_STATUS_BYTES) {
+    if (encoded == null) {
+        return ReallyMeNativeResult(ReallyMeNativeStatus.BACKEND_INTERNAL, ByteArray(0))
+    }
+    if (encoded.size < NATIVE_STATUS_BYTES) {
+        encoded.fill(0)
         return ReallyMeNativeResult(ReallyMeNativeStatus.BACKEND_INTERNAL, ByteArray(0))
     }
     val statusCode =
@@ -48,7 +46,14 @@ internal fun decodeRustNativeResult(encoded: ByteArray?): ReallyMeNativeResult {
             (encoded[3].toInt() and 0xff)
     val status = ReallyMeNativeStatus.entries.firstOrNull { it.code == statusCode }
         ?: ReallyMeNativeStatus.BACKEND_INTERNAL
-    val payload = encoded.copyOfRange(NATIVE_STATUS_BYTES, encoded.size)
+    // Error payloads are forbidden by the native contract. Do not duplicate
+    // unexpected bytes from a malformed or compromised provider response.
+    val payload =
+        if (status == ReallyMeNativeStatus.OK) {
+            encoded.copyOfRange(NATIVE_STATUS_BYTES, encoded.size)
+        } else {
+            ByteArray(0)
+        }
     encoded.fill(0)
     return ReallyMeNativeResult(status, payload)
 }
@@ -56,6 +61,7 @@ internal fun decodeRustNativeResult(encoded: ByteArray?): ReallyMeNativeResult {
 internal fun requireRustNativeBytes(encoded: ByteArray?): ByteArray {
     val result = decodeRustNativeResult(encoded)
     if (result.status != ReallyMeNativeStatus.OK) {
+        result.bytes.fill(0)
         throw result.status.toFacadeError()
     }
     return result.bytes

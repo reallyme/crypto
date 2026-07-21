@@ -11,6 +11,9 @@ Application-specific document, token, and container formats are not part of this
 
 - `positive/`: inputs expected to validate or round-trip.
 - `negative/`: malformed, tampered, downgraded, unsupported, or wrong-context inputs expected to fail closed with typed errors.
+- `external/`: pinned third-party corpora used for optional belt-and-suspenders
+  conformance checks. Source URLs, commits, license status, and SHA-256 hashes
+  are recorded in `external/provenance.json`.
 
 ## Current Artifacts
 

@@ -4,7 +4,11 @@
 
 import type { ReallyMeKemAlgorithm } from "./algorithms.js";
 import { ReallyMeCryptoError } from "./errors.js";
-import { ensureBytes, readByteArrayProperty } from "./validateBytes.js";
+import {
+  ensureBytes,
+  readIndependentByteArrayProperty,
+  readIndependentProviderBytes,
+} from "./validateBytes.js";
 import { requireReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 
@@ -15,7 +19,6 @@ export const ML_KEM_768_CIPHERTEXT_LENGTH = 1_088;
 export const ML_KEM_1024_PUBLIC_KEY_LENGTH = 1_568;
 export const ML_KEM_1024_CIPHERTEXT_LENGTH = 1_568;
 export const ML_KEM_SECRET_KEY_LENGTH = 64;
-export const ML_KEM_ENCAPSULATION_RANDOMNESS_LENGTH = 32;
 export const ML_KEM_SHARED_SECRET_LENGTH = 32;
 
 export type ReallyMeMlKemKeyPair = Readonly<{
@@ -34,7 +37,6 @@ type MlKemSuite = Readonly<{
   generateKeyPair: () => unknown;
   deriveKeyPair: (secretKey: Uint8Array) => unknown;
   encapsulate: (publicKey: Uint8Array) => unknown;
-  encapsulateDerand: (publicKey: Uint8Array, randomness: Uint8Array) => unknown;
   decapsulate: (ciphertext: Uint8Array, secretKey: Uint8Array) => unknown;
 }>;
 
@@ -55,7 +57,6 @@ const mlKemSuiteWithProvider = (
         generateKeyPair: provider.mlKem512GenerateKeypair,
         deriveKeyPair: provider.mlKem512DeriveKeypair,
         encapsulate: provider.mlKem512Encapsulate,
-        encapsulateDerand: provider.mlKem512EncapsulateDerand,
         decapsulate: provider.mlKem512Decapsulate,
       };
     case "ML-KEM-768":
@@ -65,7 +66,6 @@ const mlKemSuiteWithProvider = (
         generateKeyPair: provider.mlKem768GenerateKeypair,
         deriveKeyPair: provider.mlKem768DeriveKeypair,
         encapsulate: provider.mlKem768Encapsulate,
-        encapsulateDerand: provider.mlKem768EncapsulateDerand,
         decapsulate: provider.mlKem768Decapsulate,
       };
     case "ML-KEM-1024":
@@ -75,7 +75,6 @@ const mlKemSuiteWithProvider = (
         generateKeyPair: provider.mlKem1024GenerateKeypair,
         deriveKeyPair: provider.mlKem1024DeriveKeypair,
         encapsulate: provider.mlKem1024Encapsulate,
-        encapsulateDerand: provider.mlKem1024EncapsulateDerand,
         decapsulate: provider.mlKem1024Decapsulate,
       };
     default:
@@ -83,25 +82,51 @@ const mlKemSuiteWithProvider = (
   }
 };
 
-const readKeyPair = (value: unknown, suite: MlKemSuite): ReallyMeMlKemKeyPair => ({
-  publicKey: readByteArrayProperty(value, "publicKey", suite.publicKeyLength),
-  secretKey: readByteArrayProperty(value, "secretKey", ML_KEM_SECRET_KEY_LENGTH),
-});
+const readKeyPair = (
+  value: unknown,
+  suite: MlKemSuite,
+  inputs: ReadonlyArray<Uint8Array> = [],
+): ReallyMeMlKemKeyPair => {
+  const publicKey = readIndependentByteArrayProperty(
+    value,
+    "publicKey",
+    suite.publicKeyLength,
+    inputs,
+  );
+  const secretKey = readIndependentByteArrayProperty(
+    value,
+    "secretKey",
+    ML_KEM_SECRET_KEY_LENGTH,
+    [...inputs, publicKey],
+  );
+  return { publicKey, secretKey };
+};
 
 const readEncapsulation = (
   value: unknown,
   suite: MlKemSuite,
-): ReallyMeMlKemEncapsulation => ({
-  ciphertext: readByteArrayProperty(value, "ciphertext", suite.ciphertextLength),
-  sharedSecret: readByteArrayProperty(value, "sharedSecret", ML_KEM_SHARED_SECRET_LENGTH),
-});
+  inputs: ReadonlyArray<Uint8Array>,
+): ReallyMeMlKemEncapsulation => {
+  const ciphertext = readIndependentByteArrayProperty(
+    value,
+    "ciphertext",
+    suite.ciphertextLength,
+    inputs,
+  );
+  const sharedSecret = readIndependentByteArrayProperty(
+    value,
+    "sharedSecret",
+    ML_KEM_SHARED_SECRET_LENGTH,
+    [...inputs, ciphertext],
+  );
+  return { ciphertext, sharedSecret };
+};
 
-const readSharedSecret = (value: unknown): Uint8Array => {
-  if (!(value instanceof Uint8Array)) {
-    throw new ReallyMeCryptoError("provider-failure");
-  }
-  ensureBytes(value, ML_KEM_SHARED_SECRET_LENGTH);
-  return value;
+const readSharedSecret = (
+  value: unknown,
+  inputs: ReadonlyArray<Uint8Array>,
+): Uint8Array => {
+  return readIndependentProviderBytes(value, ML_KEM_SHARED_SECRET_LENGTH, inputs);
 };
 
 export const ReallyMeMlKem = {
@@ -123,7 +148,7 @@ export const ReallyMeMlKem = {
     // key. Do not feed passwords or other low-entropy material here.
     const suite = mlKemSuite(algorithm);
     ensureBytes(secretKey, ML_KEM_SECRET_KEY_LENGTH);
-    return readKeyPair(suite.deriveKeyPair(secretKey), suite);
+    return readKeyPair(suite.deriveKeyPair(secretKey), suite, [secretKey]);
   },
 
   deriveKeyPairWithProvider(
@@ -133,7 +158,7 @@ export const ReallyMeMlKem = {
   ): ReallyMeMlKemKeyPair {
     const suite = mlKemSuiteWithProvider(algorithm, provider);
     ensureBytes(secretKey, ML_KEM_SECRET_KEY_LENGTH);
-    return readKeyPair(suite.deriveKeyPair(secretKey), suite);
+    return readKeyPair(suite.deriveKeyPair(secretKey), suite, [secretKey]);
   },
 
   encapsulate(
@@ -142,7 +167,7 @@ export const ReallyMeMlKem = {
   ): ReallyMeMlKemEncapsulation {
     const suite = mlKemSuite(algorithm);
     ensureBytes(publicKey, suite.publicKeyLength);
-    return readEncapsulation(suite.encapsulate(publicKey), suite);
+    return readEncapsulation(suite.encapsulate(publicKey), suite, [publicKey]);
   },
 
   encapsulateWithProvider(
@@ -152,30 +177,7 @@ export const ReallyMeMlKem = {
   ): ReallyMeMlKemEncapsulation {
     const suite = mlKemSuiteWithProvider(algorithm, provider);
     ensureBytes(publicKey, suite.publicKeyLength);
-    return readEncapsulation(suite.encapsulate(publicKey), suite);
-  },
-
-  encapsulateDeterministicallyForTest(
-    algorithm: ReallyMeKemAlgorithm,
-    publicKey: Uint8Array,
-    randomness: Uint8Array,
-  ): ReallyMeMlKemEncapsulation {
-    const suite = mlKemSuite(algorithm);
-    ensureBytes(publicKey, suite.publicKeyLength);
-    ensureBytes(randomness, ML_KEM_ENCAPSULATION_RANDOMNESS_LENGTH);
-    return readEncapsulation(suite.encapsulateDerand(publicKey, randomness), suite);
-  },
-
-  encapsulateDeterministicallyWithProviderForTest(
-    provider: ReallyMeWasmProvider,
-    algorithm: ReallyMeKemAlgorithm,
-    publicKey: Uint8Array,
-    randomness: Uint8Array,
-  ): ReallyMeMlKemEncapsulation {
-    const suite = mlKemSuiteWithProvider(algorithm, provider);
-    ensureBytes(publicKey, suite.publicKeyLength);
-    ensureBytes(randomness, ML_KEM_ENCAPSULATION_RANDOMNESS_LENGTH);
-    return readEncapsulation(suite.encapsulateDerand(publicKey, randomness), suite);
+    return readEncapsulation(suite.encapsulate(publicKey), suite, [publicKey]);
   },
 
   decapsulate(
@@ -186,7 +188,10 @@ export const ReallyMeMlKem = {
     const suite = mlKemSuite(algorithm);
     ensureBytes(ciphertext, suite.ciphertextLength);
     ensureBytes(secretKey, ML_KEM_SECRET_KEY_LENGTH);
-    return readSharedSecret(suite.decapsulate(ciphertext, secretKey));
+    return readSharedSecret(
+      suite.decapsulate(ciphertext, secretKey),
+      [ciphertext, secretKey],
+    );
   },
 
   decapsulateWithProvider(
@@ -198,6 +203,9 @@ export const ReallyMeMlKem = {
     const suite = mlKemSuiteWithProvider(algorithm, provider);
     ensureBytes(ciphertext, suite.ciphertextLength);
     ensureBytes(secretKey, ML_KEM_SECRET_KEY_LENGTH);
-    return readSharedSecret(suite.decapsulate(ciphertext, secretKey));
+    return readSharedSecret(
+      suite.decapsulate(ciphertext, secretKey),
+      [ciphertext, secretKey],
+    );
   },
 } as const;

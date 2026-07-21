@@ -33,6 +33,25 @@ impl X25519Algo {
         }
     }
 
+    /// Reconstruct an X25519 keypair from existing secret seed material.
+    pub fn derive_keypair(secret: &[u8]) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), AlgorithmError> {
+        #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
+        {
+            let seed =
+                <&[u8; 32]>::try_from(secret).map_err(|_| AlgorithmError::InvalidKey(Self::ALG))?;
+            return crate::algorithms::KeypairResultExt::into_algorithm_keypair(
+                crypto_x25519::generate_x25519_keypair_from_seed(seed),
+                Self::ALG,
+            );
+        }
+
+        #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
+        {
+            let _ = secret;
+            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+        }
+    }
+
     /// Derive the X25519 Diffie–Hellman shared secret; it zeroizes on drop.
     pub fn derive_shared_secret(
         secret_key: &[u8],

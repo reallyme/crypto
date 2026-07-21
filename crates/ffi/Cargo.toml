@@ -1,0 +1,38 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "crypto-ffi"
+version = "0.3.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+description = "ReallyMe native C ABI surface for audited cryptographic primitives."
+
+[lib]
+crate-type = ["rlib", "staticlib", "cdylib"]
+
+[features]
+default = []
+# Enables deterministic KEM entrypoints only for local conformance binaries.
+# Release libraries and XCFrameworks must be built without this feature.
+test-vectors = ["reallyme-crypto/test-vectors"]
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.3.0", path = "../crypto/core" }
+crypto-proto = { package = "reallyme-crypto-proto", version = "0.3.0", path = "../proto", default-features = false, features = ["generated"] }
+reallyme-crypto = { version = "0.3.0", path = "../crypto", default-features = false, features = ["operation-response", "native", "aes", "aes-kw", "aes-gcm-siv", "argon2id", "chacha20-poly1305", "concat-kdf", "constant-time", "csprng", "ed25519", "hkdf", "hmac", "hpke", "kmac", "p256", "p384", "p521", "pbkdf2", "rsa", "secp256k1", "x25519", "ml-dsa-44", "ml-dsa-65", "ml-dsa-87", "ml-kem-512", "ml-kem-768", "ml-kem-1024", "sha2", "sha3", "slh-dsa", "x-wing"] }
+jni = "0.22.4"
+serde_json = { workspace = true }
+zeroize = { workspace = true }
+
+[dev-dependencies]
+base64 = { workspace = true }
+buffa = { workspace = true }
+sha2 = { workspace = true }
+
+[lints]
+workspace = true

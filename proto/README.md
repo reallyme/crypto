@@ -4,19 +4,20 @@ SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 SPDX-License-Identifier: Apache-2.0
 -->
 
-# ReallyMe Protobuf
+# ReallyMe Crypto Protobuf
 
-The importable protobuf contract for ReallyMe crypto now lives inside the
-publishable proto crate at
-[`../crates/proto/crypto/proto/reallyme/crypto/v1/crypto.proto`](../crates/proto/crypto/proto/reallyme/crypto/v1/crypto.proto).
-Other service and application protos can import these enums when they need
-stable crypto configuration, storage, or Connect API fields.
+The importable protobuf contract for ReallyMe Crypto lives at
+[`../crates/proto/proto/reallyme/crypto/v1/crypto.proto`](../crates/proto/proto/reallyme/crypto/v1/crypto.proto).
+It is the source of truth for executable structured requests and responses,
+algorithm identifiers, typed results, and wire errors. Services and
+applications can import the same schema for RPC, storage, and message fields.
 
-The schema intentionally standardizes identifiers, safe descriptors, and
-non-secret error envelopes only. Raw private keys, plaintexts, ciphertexts,
-passwords, salts, recovery shares, and backend exception text stay out of this
-shared schema until an owning protocol defines its memory and authorization
-model.
+Some operation messages necessarily carry private keys, plaintext, passwords,
+salts, and derived material. Prefer protobuf binary for those operations, keep
+messages short-lived, enforce the shared size and recursion limits, and do not
+log or persist request payloads. Generated Rust messages redact byte-bearing
+debug output and zeroize owned sensitive fields on drop. Managed-language
+bindings require the package-specific best-effort clearing discipline.
 
 ## Generate
 
@@ -27,9 +28,8 @@ buf lint
 buf generate
 ```
 
-The generation config follows the workspace package convention for Rust: the
-protobuf source and Buffa message/view types are owned by
-`crates/proto/crypto`, behind the `reallyme-crypto-proto/generated` feature.
+The protobuf source and Buffa message/view types are owned by `crates/proto`,
+behind the `reallyme-crypto-proto/generated` feature.
 TypeScript, Swift, Java, and Kotlin outputs are emitted under `gen/` for
 package consumers.
 

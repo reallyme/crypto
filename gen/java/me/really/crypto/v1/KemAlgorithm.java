@@ -7,8 +7,9 @@ package me.really.crypto.v1;
 
 /**
  * <pre>
- * KemAlgorithm identifies encapsulation suites. X-Wing values are ReallyMe's
- * supported hybrid KEM variants over X25519 and ML-KEM.
+ * KemAlgorithm identifies encapsulation suites. X-Wing values are supported
+ * hybrid KEM variants over X25519 and ML-KEM. Values 1000-1099 are
+ * post-quantum KEMs and 1100-1199 are hybrid KEMs.
  * </pre>
  *
  * Protobuf enum {@code reallyme.crypto.v1.KemAlgorithm}
@@ -21,25 +22,21 @@ public enum KemAlgorithm
    */
   KEM_ALGORITHM_UNSPECIFIED(0),
   /**
-   * <code>KEM_ALGORITHM_ML_KEM_512 = 1;</code>
+   * <code>KEM_ALGORITHM_ML_KEM_512 = 1000;</code>
    */
-  KEM_ALGORITHM_ML_KEM_512(1),
+  KEM_ALGORITHM_ML_KEM_512(1000),
   /**
-   * <code>KEM_ALGORITHM_ML_KEM_768 = 2;</code>
+   * <code>KEM_ALGORITHM_ML_KEM_768 = 1010;</code>
    */
-  KEM_ALGORITHM_ML_KEM_768(2),
+  KEM_ALGORITHM_ML_KEM_768(1010),
   /**
-   * <code>KEM_ALGORITHM_ML_KEM_1024 = 3;</code>
+   * <code>KEM_ALGORITHM_ML_KEM_1024 = 1020;</code>
    */
-  KEM_ALGORITHM_ML_KEM_1024(3),
+  KEM_ALGORITHM_ML_KEM_1024(1020),
   /**
-   * <code>KEM_ALGORITHM_X_WING_768 = 4;</code>
+   * <code>KEM_ALGORITHM_X_WING_768 = 1100;</code>
    */
-  KEM_ALGORITHM_X_WING_768(4),
-  /**
-   * <code>KEM_ALGORITHM_X_WING_1024 = 5;</code>
-   */
-  KEM_ALGORITHM_X_WING_1024(5),
+  KEM_ALGORITHM_X_WING_768(1100),
   UNRECOGNIZED(-1),
   ;
 
@@ -48,25 +45,21 @@ public enum KemAlgorithm
    */
   public static final int KEM_ALGORITHM_UNSPECIFIED_VALUE = 0;
   /**
-   * <code>KEM_ALGORITHM_ML_KEM_512 = 1;</code>
+   * <code>KEM_ALGORITHM_ML_KEM_512 = 1000;</code>
    */
-  public static final int KEM_ALGORITHM_ML_KEM_512_VALUE = 1;
+  public static final int KEM_ALGORITHM_ML_KEM_512_VALUE = 1000;
   /**
-   * <code>KEM_ALGORITHM_ML_KEM_768 = 2;</code>
+   * <code>KEM_ALGORITHM_ML_KEM_768 = 1010;</code>
    */
-  public static final int KEM_ALGORITHM_ML_KEM_768_VALUE = 2;
+  public static final int KEM_ALGORITHM_ML_KEM_768_VALUE = 1010;
   /**
-   * <code>KEM_ALGORITHM_ML_KEM_1024 = 3;</code>
+   * <code>KEM_ALGORITHM_ML_KEM_1024 = 1020;</code>
    */
-  public static final int KEM_ALGORITHM_ML_KEM_1024_VALUE = 3;
+  public static final int KEM_ALGORITHM_ML_KEM_1024_VALUE = 1020;
   /**
-   * <code>KEM_ALGORITHM_X_WING_768 = 4;</code>
+   * <code>KEM_ALGORITHM_X_WING_768 = 1100;</code>
    */
-  public static final int KEM_ALGORITHM_X_WING_768_VALUE = 4;
-  /**
-   * <code>KEM_ALGORITHM_X_WING_1024 = 5;</code>
-   */
-  public static final int KEM_ALGORITHM_X_WING_1024_VALUE = 5;
+  public static final int KEM_ALGORITHM_X_WING_768_VALUE = 1100;
 
 
   @java.lang.Override
@@ -90,11 +83,10 @@ public enum KemAlgorithm
   public static KemAlgorithm forNumber(int value) {
     switch (value) {
       case 0: return KEM_ALGORITHM_UNSPECIFIED;
-      case 1: return KEM_ALGORITHM_ML_KEM_512;
-      case 2: return KEM_ALGORITHM_ML_KEM_768;
-      case 3: return KEM_ALGORITHM_ML_KEM_1024;
-      case 4: return KEM_ALGORITHM_X_WING_768;
-      case 5: return KEM_ALGORITHM_X_WING_1024;
+      case 1000: return KEM_ALGORITHM_ML_KEM_512;
+      case 1010: return KEM_ALGORITHM_ML_KEM_768;
+      case 1020: return KEM_ALGORITHM_ML_KEM_1024;
+      case 1100: return KEM_ALGORITHM_X_WING_768;
       default: return null;
     }
   }

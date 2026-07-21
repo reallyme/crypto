@@ -6,7 +6,6 @@ package me.really.crypto
 
 import java.math.BigInteger
 import java.security.MessageDigest
-import java.security.SecureRandom
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.DERSequence
@@ -17,6 +16,7 @@ import org.bouncycastle.crypto.params.ECPrivateKeyParameters
 import org.bouncycastle.crypto.params.ECPublicKeyParameters
 import org.bouncycastle.crypto.signers.ECDSASigner
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator
+import org.bouncycastle.math.ec.FixedPointCombMultiplier
 
 /**
  * Deterministic P-256 ECDSA over SHA-256 backed by BouncyCastle.
@@ -35,16 +35,15 @@ public object ReallyMeP256Ecdsa {
         ECDomainParameters(SECNamedCurves.getByName("secp256r1"))
 
     public fun generateKeyPair(): Pair<ByteArray, ByteArray> {
-        val random = SecureRandom()
-        val secretKey = ByteArray(SECRET_KEY_LENGTH)
-        repeat(1024) {
-            random.nextBytes(secretKey)
-            val scalar = BigInteger(1, secretKey)
-            if (scalar.signum() > 0 && scalar < domain.n) {
-                return Pair(derivePublicKey(secretKey), secretKey.copyOf())
-            }
+        return withRandomSecretCandidate(
+            length = SECRET_KEY_LENGTH,
+            isValid = { secretKey ->
+                val scalar = BigInteger(1, secretKey)
+                scalar.signum() > 0 && scalar < domain.n
+            },
+        ) { secretKey ->
+            Pair(derivePublicKey(secretKey), secretKey.copyOf())
         }
-        throw ReallyMeCryptoException.ProviderFailure()
     }
 
     public fun deriveKeyPair(secretKey: ByteArray): Pair<ByteArray, ByteArray> =
@@ -52,7 +51,7 @@ public object ReallyMeP256Ecdsa {
 
     public fun derivePublicKey(secretKey: ByteArray): ByteArray {
         val scalar = validatedScalar(secretKey)
-        return domain.g.multiply(scalar).normalize().getEncoded(true)
+        return FixedPointCombMultiplier().multiply(domain.g, scalar).normalize().getEncoded(true)
     }
 
     public fun sign(message: ByteArray, secretKey: ByteArray): ByteArray {

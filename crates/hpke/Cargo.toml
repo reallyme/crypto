@@ -1,0 +1,65 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-hpke"
+version = "0.3.0"
+include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = true
+description = "ReallyMe RFC 9180 HPKE protocol wrapper."
+
+[lib]
+name = "crypto_hpke"
+
+[features]
+default = []
+native = [
+    "dep:crypto-secp256k1",
+    "dep:crypto-x448",
+    "dep:getrandom",
+    "dep:hmac",
+    "dep:hkdf",
+    "dep:hpke",
+    "dep:k256",
+    "dep:ml-kem",
+    "dep:shake",
+    "dep:sha2",
+    "dep:subtle",
+    "hpke/alloc",
+    "hpke/aes",
+    "hpke/chacha",
+    "hpke/hkdfsha2",
+    "hpke/mlkem",
+    "hpke/nistp",
+    "hpke/shake",
+    "hpke/x25519",
+]
+wasm = ["native"]
+test-vectors = ["native"]
+
+[dependencies]
+crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "0.3.0", path = "../secp256k1", default-features = false, features = ["native"], optional = true }
+crypto-x448 = { package = "reallyme-crypto-x448", version = "0.3.0", path = "../x448", default-features = false, features = ["native"], optional = true }
+getrandom = { workspace = true, optional = true, features = ["wasm_js"] }
+# Keep the HKDF/HMAC working state covered by the digest zeroization feature.
+hmac = { workspace = true, optional = true }
+hkdf = { workspace = true, optional = true }
+hpke = { workspace = true, optional = true }
+k256 = { workspace = true, features = ["arithmetic"], optional = true }
+ml-kem = { workspace = true, features = ["zeroize"], optional = true }
+shake = { workspace = true, optional = true }
+sha2 = { workspace = true, optional = true }
+subtle = { workspace = true, optional = true }
+thiserror = { workspace = true }
+zeroize = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+hex = { workspace = true }
+
+[lints]
+workspace = true

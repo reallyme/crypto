@@ -20,11 +20,6 @@ public  final class CryptoKemDecapsulateRequest extends
     return "CryptoKemDecapsulateRequest{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoKemDecapsulateRequest() {
     ciphertext_ = com.google.protobuf.ByteString.EMPTY;
     secretKey_ = com.google.protobuf.ByteString.EMPTY;

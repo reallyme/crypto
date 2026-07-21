@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+import Darwin
+
 /// Managed-runtime memory hygiene helpers.
 public enum ReallyMeCryptoMemory {
     /// Overwrite a caller-owned Swift byte array in place on a best-effort basis.
@@ -11,8 +13,21 @@ public enum ReallyMeCryptoMemory {
     /// guarantee removal of historical copies or values already handed to
     /// CryptoKit, Security, protobuf, or Rust FFI.
     public static func bestEffortClear(_ bytes: inout [UInt8]) {
-        for index in bytes.indices {
-            bytes[index] = 0
+        bytes.withUnsafeMutableBytes { (buffer: UnsafeMutableRawBufferPointer) in
+            guard let baseAddress = buffer.baseAddress else {
+                return
+            }
+
+            // `memset_s` is specified to perform the writes even when the
+            // optimizer can prove that Swift will not read this storage again.
+            // The fallback preserves the public best-effort contract if the C
+            // runtime unexpectedly rejects inputs that satisfy its bounds.
+            let status = memset_s(baseAddress, buffer.count, 0, buffer.count)
+            if status != 0 {
+                for index in buffer.indices {
+                    buffer[index] = 0
+                }
+            }
         }
     }
 }

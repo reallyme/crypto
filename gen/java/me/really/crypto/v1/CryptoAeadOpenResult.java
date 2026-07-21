@@ -20,11 +20,6 @@ public  final class CryptoAeadOpenResult extends
     return "CryptoAeadOpenResult{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoAeadOpenResult() {
     plaintext_ = com.google.protobuf.ByteString.EMPTY;
   }

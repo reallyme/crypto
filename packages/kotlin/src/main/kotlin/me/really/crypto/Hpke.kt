@@ -83,6 +83,11 @@ public object ReallyMeHpke {
             }
         } catch (_: IllegalArgumentException) {
             throw ReallyMeCryptoException.InvalidInput()
+        } catch (_: IllegalStateException) {
+            // Bouncy Castle reports non-contributory X25519 encapsulated keys
+            // with this backend exception. It is malformed peer input, not an
+            // SDK/provider crash that may escape the typed boundary.
+            throw ReallyMeCryptoException.InvalidInput()
         } catch (_: InvalidCipherTextException) {
             throw ReallyMeCryptoException.AuthenticationFailed()
         }
@@ -104,6 +109,8 @@ public object ReallyMeHpke {
             hpke(suite).deriveKeyPair(encapsulationSeed)
         } catch (_: IllegalArgumentException) {
             throw ReallyMeCryptoException.InvalidInput()
+        } catch (_: IllegalStateException) {
+            throw ReallyMeCryptoException.ProviderFailure()
         }
         return sealWithOptionalEncapsulationKeyPair(
             suite,
@@ -137,6 +144,11 @@ public object ReallyMeHpke {
             }
             encodeSealedMessage(config, plaintext.size, sealed)
         } catch (_: IllegalArgumentException) {
+            throw ReallyMeCryptoException.InvalidInput()
+        } catch (_: IllegalStateException) {
+            // A non-contributory recipient public key is caller input on the
+            // seal path, so it maps to the same typed validation outcome as
+            // other malformed public keys.
             throw ReallyMeCryptoException.InvalidInput()
         } catch (_: InvalidCipherTextException) {
             throw ReallyMeCryptoException.ProviderFailure()

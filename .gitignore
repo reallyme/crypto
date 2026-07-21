@@ -30,6 +30,8 @@ target/
 
 # Local developer state
 /AGENTS.md
+/.reallyme-crypto-runtime-ffi
+/.release-readiness/
 /.claude/
 /.codex/
 
@@ -44,8 +46,8 @@ proptest-regressions/
 **/generated/**
 **/src/generated
 **/src/generated/**
-!crates/proto/crypto/src/generated/
-!crates/proto/crypto/src/generated/**
+!crates/proto/src/generated/
+!crates/proto/src/generated/**
 !packages/ts/src/proto/generated/
 !packages/ts/src/proto/generated/**
 **/src/pb

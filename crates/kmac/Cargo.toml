@@ -1,0 +1,40 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-kmac"
+version = "0.3.0"
+include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
+edition.workspace = true
+rust-version.workspace = true
+publish = true
+description = "KMAC256 key derivation primitive for ReallyMe Crypto."
+license.workspace = true
+repository.workspace = true
+
+[package.metadata.cargo-machete]
+# This dependency intentionally exists for Cargo feature unification. The
+# sha3-kmac crate does not expose a feature that enables zeroization in its
+# internal SHA-3 dependency.
+ignored = ["sha3-kmac-state"]
+
+[lib]
+name = "crypto_kmac"
+
+[features]
+default = []
+native = []
+wasm = []
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.3.0", path = "../crypto/core" }
+sha3-kmac = { workspace = true }
+# `sha3-kmac` does not forward SHA-3's zeroization feature. This direct,
+# version-matched dependency enables drop-time wiping of the keyed sponge state
+# through Cargo feature unification.
+sha3-kmac-state = { package = "sha3", version = "0.10.9", default-features = false, features = ["zeroize"] }
+zeroize = { workspace = true, features = ["derive"] }
+
+[lints]
+workspace = true

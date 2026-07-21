@@ -2,21 +2,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-/// AES-256-GCM AEAD adapter.
-#[cfg(feature = "aes")]
-pub mod aes256_gcm;
-/// AES-256-GCM-SIV AEAD adapter.
-#[cfg(feature = "aes-gcm-siv")]
-pub mod aes256_gcm_siv;
-/// ChaCha20-Poly1305 and XChaCha20-Poly1305 AEAD adapters.
-#[cfg(feature = "chacha20-poly1305")]
-pub mod chacha20_poly1305;
 /// Ed25519 signature adapter.
 #[cfg(feature = "ed25519")]
 pub mod ed25519;
-/// HMAC-SHA-256 and HMAC-SHA-512 adapters.
-#[cfg(feature = "hmac")]
-pub mod hmac;
 mod keypair_result;
 #[cfg(all(
     any(
@@ -62,18 +50,6 @@ pub mod p521;
 /// secp256k1 signature adapter.
 #[cfg(feature = "secp256k1")]
 pub mod secp256k1;
-/// SHA-384 and SHA-512 (SHA-2) hash adapters.
-#[cfg(feature = "sha2")]
-pub mod sha2;
-/// SHA-256 (SHA-2) hash adapter.
-#[cfg(feature = "sha2")]
-pub mod sha2_256;
-/// SHA3-224, SHA3-384, and SHA3-512 hash adapters.
-#[cfg(feature = "sha3")]
-pub mod sha3;
-/// SHA3-256 hash adapter.
-#[cfg(feature = "sha3")]
-pub mod sha3_256;
 /// X25519 Diffie–Hellman adapter.
 #[cfg(feature = "x25519")]
 pub mod x25519;

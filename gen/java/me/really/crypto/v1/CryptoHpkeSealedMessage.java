@@ -25,11 +25,6 @@ public  final class CryptoHpkeSealedMessage extends
     return "CryptoHpkeSealedMessage{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoHpkeSealedMessage() {
     encapsulatedKey_ = com.google.protobuf.ByteString.EMPTY;
     ciphertext_ = com.google.protobuf.ByteString.EMPTY;

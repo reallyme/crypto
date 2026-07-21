@@ -1,0 +1,45 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-aes256-gcm-siv"
+version = "0.3.0"
+include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
+edition.workspace = true
+rust-version.workspace = true
+publish = true
+description = "AES-256-GCM-SIV authenticated encryption primitive for ReallyMe Crypto."
+license.workspace = true
+repository.workspace = true
+
+[package.metadata.cargo-machete]
+ignored = [
+    # Enables AES round-key zeroization for standalone consumers of this crate.
+    "aes",
+    # Enables getrandom's wasm entropy backend for the transitive RustCrypto stack.
+    "getrandom",
+    # The RustCrypto 0.10 stack still uses getrandom 0.2, whose wasm feature is
+    # named `js`; keep it explicit so wasm32-unknown-unknown builds do not rely
+    # on an unrelated dependency enabling entropy support.
+    "getrandom02",
+]
+
+[lib]
+name = "crypto_aes256_gcm_siv"
+
+[features]
+default = []
+native = ["dep:aes", "dep:aes-gcm-siv"]
+wasm = ["dep:aes", "dep:aes-gcm-siv", "dep:getrandom", "dep:getrandom02"]
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.3.0", path = "../crypto/core" }
+zeroize = { workspace = true, features = ["derive"] }
+aes = { workspace = true, features = ["zeroize"], optional = true }
+aes-gcm-siv = { workspace = true, optional = true }
+getrandom = { workspace = true, features = ["wasm_js"], optional = true }
+getrandom02 = { package = "getrandom", version = "0.2.17", features = ["js"], optional = true }
+
+[lints]
+workspace = true

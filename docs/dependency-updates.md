@@ -18,6 +18,9 @@ The policy is simple:
 - Every crypto dependency update must pass the conformance wall before merge.
 - Provider behavior must remain explicit. No update may introduce silent
   fallback to another implementation.
+- KMAC256 dependency updates for `sha3-kmac`, `sha3-utils`, or their transitive
+  `sha3` implementation require a focused checksum, API, zeroization, and
+  conformance-vector review.
 
 Use [conformance.md](conformance.md) as the release gate. If an update changes
 cryptographic bytes, provider behavior, error behavior, or supported algorithms,

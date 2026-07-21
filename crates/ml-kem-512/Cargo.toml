@@ -1,0 +1,45 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-ml-kem-512"
+version = "0.3.0"
+include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = true
+description = "ML-KEM-512 key encapsulation primitive for ReallyMe Crypto."
+
+[lib]
+name = "crypto_ml_kem_512"
+
+[features]
+# Native Rust PQ crypto only
+default = [ ]
+
+native = [
+    "dep:ml-kem",
+]
+
+# Platform backends
+wasm = [
+    "dep:getrandom",
+    "dep:ml-kem",
+]
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.3.0", path = "../crypto/core" }
+zeroize = { workspace = true }
+getrandom = { workspace = true, features = ["wasm_js"], optional = true }
+
+# -----------------------------
+# Package-owned Rust implementation dependency for both backend lanes.
+# -----------------------------
+ml-kem = { workspace = true, features = ["getrandom", "zeroize"], optional = true }
+
+
+[lints]
+workspace = true

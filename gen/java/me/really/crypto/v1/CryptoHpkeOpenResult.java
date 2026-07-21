@@ -20,11 +20,6 @@ public  final class CryptoHpkeOpenResult extends
     return "CryptoHpkeOpenResult{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoHpkeOpenResult() {
     plaintext_ = com.google.protobuf.ByteString.EMPTY;
   }

@@ -4,7 +4,12 @@
 
 import type { ReallyMeAeadAlgorithm } from "./algorithms.js";
 import { ReallyMeCryptoError } from "./errors.js";
-import { ensureByteArray, ensureBytes } from "./validateBytes.js";
+import {
+  ensureByteArrayAtMost,
+  ensureBytes,
+  ensureIndependentByteArray,
+  MAX_CRYPTO_INPUT_LENGTH,
+} from "./validateBytes.js";
 import { requireReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 
@@ -94,9 +99,13 @@ const sealWithSuite = (
 ): Uint8Array => {
   ensureBytes(key, suite.keyLength);
   ensureBytes(nonce, suite.nonceLength);
-  ensureByteArray(aad);
-  ensureByteArray(plaintext);
-  return requireBytesOutput(suite.seal(key, nonce, aad, plaintext));
+  ensureByteArrayAtMost(aad, MAX_CRYPTO_INPUT_LENGTH);
+  ensureByteArrayAtMost(plaintext, MAX_CRYPTO_INPUT_LENGTH);
+  return requireBytesOutput(
+    suite.seal(key, nonce, aad, plaintext),
+    plaintext.length + AEAD_TAG_LENGTH,
+    [key, nonce, aad, plaintext],
+  );
 };
 
 const openWithSuite = (
@@ -108,16 +117,34 @@ const openWithSuite = (
 ): Uint8Array => {
   ensureBytes(key, suite.keyLength);
   ensureBytes(nonce, suite.nonceLength);
-  ensureByteArray(aad);
-  ensureByteArray(ciphertextWithTag);
+  ensureByteArrayAtMost(aad, MAX_CRYPTO_INPUT_LENGTH);
+  ensureByteArrayAtMost(
+    ciphertextWithTag,
+    MAX_CRYPTO_INPUT_LENGTH + AEAD_TAG_LENGTH,
+  );
   if (ciphertextWithTag.length < AEAD_TAG_LENGTH) {
     throw new ReallyMeCryptoError("invalid-input");
   }
-  return requireBytesOutput(suite.open(key, nonce, aad, ciphertextWithTag));
+  return requireBytesOutput(
+    suite.open(key, nonce, aad, ciphertextWithTag),
+    ciphertextWithTag.length - AEAD_TAG_LENGTH,
+    [key, nonce, aad, ciphertextWithTag],
+  );
 };
 
-const requireBytesOutput = (value: unknown): Uint8Array => {
+const requireBytesOutput = (
+  value: unknown,
+  expectedLength: number,
+  inputs: ReadonlyArray<Uint8Array>,
+): Uint8Array => {
   if (!(value instanceof Uint8Array)) {
+    throw new ReallyMeCryptoError("provider-failure");
+  }
+  // Validate ownership before clearing malformed provider output so an alias
+  // cannot turn error cleanup into mutation of caller-owned secret material.
+  ensureIndependentByteArray(value, inputs);
+  if (value.length !== expectedLength) {
+    value.fill(0);
     throw new ReallyMeCryptoError("provider-failure");
   }
   return value;

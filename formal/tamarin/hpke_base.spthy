@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 SPDX-License-Identifier: Apache-2.0
 
 Symbolic (Dolev-Yao) model of HPKE Base mode (RFC 9180) as composed by the
-ReallyMe crypto layer (crates/crypto/protocols/hpke): DHKEM encap/decap, the
+ReallyMe crypto layer (crates/hpke): DHKEM encap/decap, the
 HKDF key schedule, and a single-shot AEAD seal/open.
 
 Scope and abstractions (stated honestly — this is a symbolic model, not a

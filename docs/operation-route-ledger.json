@@ -1,0 +1,901 @@
+{
+  "spdx_filecopyrighttext": "Copyright \u00a9 2026 ReallyMe LLC. All rights reserved",
+  "spdx_license_identifier": "Apache-2.0",
+  "schema_version": 1,
+  "purpose": "Machine-readable map from exposed operation routes to their authoritative operation owner.",
+  "scope": {
+    "architecture": "docs/architecture.md",
+    "operation_protocol": "docs/protobuf.md",
+    "route_granularity": "Each listed callable symbol maps to exactly one owner. Route groups may use symbols_by_owner to keep nearby source symbols together while preserving one owner per symbol. Constants, pure data types, and generated schema descriptors are outside operation ownership unless they expose a callable boundary."
+  },
+  "owners": [
+    { "id": "operation.proto.process", "description": "Structured generated-protobuf operation request processing and its ProtoJSON request route." },
+    { "id": "operation.hash.digest", "semantic_owner_path": "crates/crypto/src/operations/hash.rs", "description": "Hash digest operations." },
+    { "id": "operation.constant_time.equal", "semantic_owner_path": "crates/crypto/src/operations/constant_time.rs", "description": "Constant-time equality and verification operations." },
+    { "id": "operation.random.generate", "semantic_owner_path": "crates/crypto/src/operations/random.rs", "description": "CSPRNG byte, nonce, and salt generation." },
+    { "id": "operation.mac.authenticate", "description": "MAC tag generation." },
+    { "id": "operation.mac.verify", "description": "MAC tag verification." },
+    { "id": "operation.aead.seal", "semantic_owner_path": "crates/crypto/src/operations/aead.rs", "description": "AEAD encryption/seal operations." },
+    { "id": "operation.aead.open", "semantic_owner_path": "crates/crypto/src/operations/aead.rs", "description": "AEAD decryption/open operations." },
+    { "id": "operation.key_wrap.wrap", "semantic_owner_path": "crates/crypto/src/operations/key_wrap.rs", "description": "AES-KW key wrapping." },
+    { "id": "operation.key_wrap.unwrap", "semantic_owner_path": "crates/crypto/src/operations/key_wrap.rs", "description": "AES-KW key unwrapping." },
+    { "id": "operation.kdf.derive", "semantic_owner_path": "crates/crypto/src/operations/kdf.rs", "description": "KDF output derivation across Argon2id, HKDF, PBKDF2, KMAC, and JWA Concat KDF." },
+    { "id": "operation.signature.generate_key_pair", "semantic_owner_path": "crates/crypto/src/operations/signature.rs", "description": "Signature keypair generation for raw-key algorithms; signature owns Ed25519 and NIST/secp256k1 ECDSA, BIP-340 adds BIP-340 x-only keypairs, and post-quantum signature adds ML-DSA and SLH-DSA." },
+    { "id": "operation.signature.derive_key_pair", "semantic_owner_path": "crates/crypto/src/operations/signature.rs", "description": "Signature keypair derivation/import from existing secret material; signature owns Ed25519 and NIST/secp256k1 ECDSA, BIP-340 adds BIP-340 x-only keypairs, and post-quantum signature adds ML-DSA and SLH-DSA." },
+    { "id": "operation.signature.derive_public_key", "description": "Signature public-key derivation from private key material or handle." },
+    { "id": "operation.signature.sign", "semantic_owner_path": "crates/crypto/src/operations/signature.rs", "description": "Signature creation for Ed25519, NIST/secp256k1 ECDSA, ML-DSA, and SLH-DSA raw-key routes; BIP-340 has its dedicated BIP-340 route." },
+    { "id": "operation.signature.verify", "semantic_owner_path": "crates/crypto/src/operations/signature.rs", "description": "Signature verification for Ed25519, NIST/secp256k1 ECDSA, ML-DSA, and SLH-DSA raw-key routes; BIP-340 has its dedicated BIP-340 route." },
+    { "id": "operation.signature.bip340.sign", "semantic_owner_path": "crates/crypto/src/operations/signature.rs", "description": "BIP-340 Schnorr signing over 32-byte messages with explicit auxiliary randomness." },
+    { "id": "operation.signature.bip340.verify", "semantic_owner_path": "crates/crypto/src/operations/signature.rs", "description": "BIP-340 Schnorr verification over 32-byte messages and x-only public keys." },
+    { "id": "operation.signature.rsa.verify", "semantic_owner_path": "crates/crypto/src/operations/signature.rs", "description": "RSA PKCS#1 v1.5 and RFC 8017 RSA-PSS verification, including emLen = k - 1 moduli, with explicit hash, MGF1, salt-length, and DER public-key wrapper selection." },
+    { "id": "operation.key_agreement.generate_key_pair", "semantic_owner_path": "crates/crypto/src/operations/key_agreement.rs", "description": "Key-agreement keypair generation for raw-key algorithms." },
+    { "id": "operation.key_agreement.derive_key_pair", "semantic_owner_path": "crates/crypto/src/operations/key_agreement.rs", "description": "Key-agreement keypair derivation/import from existing secret material." },
+    { "id": "operation.key_agreement.derive_public_key", "semantic_owner_path": "crates/crypto/src/operations/key_agreement.rs", "description": "Raw key-agreement public-key derivation from private key material through the derive-keypair owner; platform handles use the separate platform-key lifecycle route." },
+    { "id": "operation.key_agreement.derive_shared_secret", "semantic_owner_path": "crates/crypto/src/operations/key_agreement.rs", "description": "ECDH/X25519 shared-secret derivation." },
+    { "id": "operation.kem.generate_key_pair", "description": "KEM keypair generation." },
+    { "id": "operation.kem.derive_key_pair", "description": "KEM keypair derivation/import from existing secret material." },
+    { "id": "operation.kem.derive_public_key", "description": "KEM public-key derivation from private key material." },
+    { "id": "operation.kem.encapsulate", "description": "Randomized KEM encapsulation." },
+    { "id": "operation.kem.encapsulate_derand", "description": "Deterministic test-vector KEM encapsulation." },
+    { "id": "operation.kem.decapsulate", "description": "KEM decapsulation." },
+    { "id": "operation.hpke.generate_key_pair", "semantic_owner_path": "crates/crypto/src/operations/hpke.rs", "description": "HPKE KEM keypair generation." },
+    { "id": "operation.hpke.derive_key_pair", "semantic_owner_path": "crates/crypto/src/operations/hpke.rs", "description": "HPKE KEM deterministic keypair derivation." },
+    { "id": "operation.hpke.seal", "semantic_owner_path": "crates/crypto/src/operations/hpke.rs", "description": "HPKE Base-mode seal." },
+    { "id": "operation.hpke.open", "semantic_owner_path": "crates/crypto/src/operations/hpke.rs", "description": "HPKE Base-mode open." },
+    { "id": "operation.hpke.sender_export", "semantic_owner_path": "crates/crypto/src/operations/hpke.rs", "description": "HPKE sender exporter setup." },
+    { "id": "operation.hpke.receiver_export", "semantic_owner_path": "crates/crypto/src/operations/hpke.rs", "description": "HPKE receiver exporter setup." },
+    { "id": "operation.hpke.psk_seal", "semantic_owner_path": "crates/crypto/src/operations/hpke.rs", "description": "HPKE single-shot PSK-mode seal." },
+    { "id": "operation.hpke.psk_open", "semantic_owner_path": "crates/crypto/src/operations/hpke.rs", "description": "HPKE single-shot PSK-mode open." },
+    { "id": "operation.key_encoding.public_key", "semantic_owner_path": "crates/crypto/src/operations/key_encoding.rs", "description": "Public-key byte, multicodec, multikey, JWK, and DER/JOSE conversion helpers." },
+    { "id": "operation.key_encoding.private_key", "description": "Validated private-key import and encoding helpers for supported key formats." },
+    { "id": "operation.signature.encoding", "description": "ECDSA DER and JOSE signature conversion helpers." },
+    { "id": "operation.algorithm_dispatch.key_pair", "description": "Algorithm-selected public keypair and derive-keypair facade routes that dispatch to signature, key-agreement, or KEM semantic operations." },
+    { "id": "operation.platform_key.lifecycle", "description": "Provider-neutral platform-key handle encoding, key generation, public-key lookup, deletion, and explicit attestation evidence; Swift uses P-256 Secure Enclave handles and the Android AAR uses purpose-bound Android Keystore / StrongBox handles." },
+    { "id": "operation.platform_key.signature", "description": "Handle-backed platform signature creation and verification; Swift uses P-256 Secure Enclave signing keys and the Android AAR uses P-256 Android Keystore / StrongBox signing keys." },
+    { "id": "operation.platform_key.key_agreement", "semantic_owner_path": "packages/swift/Sources/ReallyMeCrypto/P256SecureEnclaveEcdh.swift", "description": "Handle-backed platform key agreement; Swift P-256 Secure Enclave ECDH and Android Keystore / StrongBox P-256 ECDH are supported provider-specific owners outside the raw-key Rust transport." },
+    { "id": "support.provider_catalog", "description": "Provider catalog, native loading, and package-provider support routes." },
+    { "id": "support.kdf_policy", "description": "Argon2id profile selection and platform-capability policy helpers." },
+    { "id": "support.memory_hygiene", "description": "Best-effort managed-runtime memory clearing helpers." },
+    { "id": "support.protobuf_adapter", "description": "Public SDK protobuf value conversion, wire-envelope, and result-wrapper helpers that do not invoke a cryptographic operation." },
+    { "id": "support.error_mapping", "description": "Typed error, status, and generated-protobuf adapter mapping." }
+  ],
+  "route_groups": [
+    {
+      "id": "rust.root.operation_contract",
+      "lane": "rust-root-facade",
+      "path": "crates/crypto/src/lib.rs; crates/crypto/src/operation_contract/mod.rs; crates/crypto/src/operation_contract/boundary.rs; crates/crypto/src/operation_contract/request.rs",
+      "symbols": ["operation_contract::process_operation_response", "operation_contract::process_operation_response_output", "operation_contract::process_operation_response_json", "operation_contract::process_operation_response_json_output"],
+      "owner": "operation.proto.process",
+      "current_status": "primary_structured_boundary"
+    },
+    {
+      "id": "rust.dispatch.exports",
+      "lane": "rust-dispatch-facade",
+      "path": "crates/crypto/dispatch/src/lib.rs",
+      "symbols_by_owner": {
+        "operation.algorithm_dispatch.key_pair": ["generate_keypair", "derive_keypair", "generate_multikey_keypair"],
+        "operation.signature.sign": ["sign"],
+        "operation.signature.verify": ["verify"],
+        "operation.key_agreement.derive_shared_secret": ["derive_shared_secret"],
+        "operation.kem.encapsulate": ["kem_encapsulate"],
+        "operation.kem.decapsulate": ["kem_decapsulate"],
+        "operation.key_encoding.public_key": ["public_key_to_multikey", "validate_verification_method_multikey"],
+        "support.provider_catalog": ["provider_decision"]
+      },
+      "current_status": "public_dispatch_authority"
+    },
+    {
+      "id": "rust.root.dispatch.exports",
+      "lane": "rust-root-facade",
+      "path": "crates/crypto/src/lib.rs; crates/crypto/src/dispatch.rs",
+      "symbols_by_owner": {
+        "operation.hash.digest": ["dispatch::hash_digest"],
+        "operation.mac.authenticate": ["dispatch::mac_authenticate"],
+        "operation.mac.verify": ["dispatch::mac_verify"],
+        "operation.aead.seal": ["dispatch::aead_encrypt"],
+        "operation.aead.open": ["dispatch::aead_decrypt"],
+        "operation.algorithm_dispatch.key_pair": ["dispatch::derive_keypair", "dispatch::generate_keypair", "dispatch::generate_multikey_keypair"],
+        "operation.signature.sign": ["dispatch::sign"],
+        "operation.signature.verify": ["dispatch::verify"],
+        "operation.key_agreement.derive_shared_secret": ["dispatch::derive_shared_secret"],
+        "operation.kem.encapsulate": ["dispatch::kem_encapsulate"],
+        "operation.kem.decapsulate": ["dispatch::kem_decapsulate"],
+        "operation.key_encoding.public_key": ["dispatch::public_key_to_multikey", "dispatch::validate_verification_method_multikey"],
+        "support.provider_catalog": ["dispatch::provider_decision"]
+      },
+      "intentionally_hidden_symbols": [],
+      "root_only_symbols": [
+        {
+          "symbol": "dispatch::hash_digest",
+          "owner": "operation.hash.digest",
+          "reason": "hash and constant-time moved hash selection into the main facade operation layer and removed the parallel published dispatch-crate hash selector."
+        },
+        {
+          "symbol": "dispatch::mac_authenticate",
+          "owner": "operation.mac.authenticate",
+          "reason": "MAC moved MAC selection into the main facade operation layer and removed the parallel published dispatch-crate MAC selector."
+        },
+        {
+          "symbol": "dispatch::mac_verify",
+          "owner": "operation.mac.verify",
+          "reason": "MAC moved MAC verification into the main facade operation layer and removed the parallel published dispatch-crate MAC selector."
+        },
+        {
+          "symbol": "dispatch::aead_encrypt",
+          "owner": "operation.aead.seal",
+          "reason": "AEAD moved AEAD seal selection into the main facade operation layer and removed the parallel published dispatch-crate AEAD selector."
+        },
+        {
+          "symbol": "dispatch::aead_decrypt",
+          "owner": "operation.aead.open",
+          "reason": "AEAD moved AEAD open selection into the main facade operation layer and removed the parallel published dispatch-crate AEAD selector."
+        }
+      ],
+      "current_status": "public_dispatch_authority"
+    },
+    {
+      "id": "rust.root.primitive.modules",
+      "lane": "rust-root-facade",
+      "path": "crates/crypto/src/lib.rs; crates/crypto/src/aes.rs; crates/crypto/src/aes_kw.rs; crates/crypto/src/aes_gcm_siv.rs; crates/crypto/src/chacha20_poly1305.rs; crates/crypto/src/concat_kdf.rs; crates/crypto/src/ed25519.rs; crates/crypto/src/hmac.rs; crates/crypto/src/hkdf.rs; crates/crypto/src/hpke.rs; crates/crypto/src/key_agreement_error.rs; crates/crypto/src/kmac.rs; crates/crypto/src/ml_dsa_44.rs; crates/crypto/src/ml_dsa_65.rs; crates/crypto/src/ml_dsa_87.rs; crates/crypto/src/p256.rs; crates/crypto/src/p384.rs; crates/crypto/src/p521.rs; crates/crypto/src/pbkdf2.rs; crates/crypto/src/secp256k1.rs; crates/crypto/src/sha2.rs; crates/crypto/src/sha3.rs; crates/crypto/src/signature_error.rs; crates/crypto/src/slh_dsa.rs; crates/crypto/src/x25519.rs; crates/crypto/src/operations/hpke.rs; crates/crypto/src/operations/key_agreement.rs; crates/crypto/src/operations/signature.rs",
+      "symbols_by_owner": {
+        "operation.random.generate": ["csprng::generate_bytes", "csprng::generate_aead_nonce_12", "csprng::generate_argon2_salt_16", "csprng::generate_argon2_salt_32"],
+        "operation.mac.authenticate": ["hmac::authenticate"],
+        "operation.mac.verify": ["hmac::verify"],
+        "operation.aead.seal": ["aes::encrypt", "aes::encrypt_aes128_gcm", "aes::encrypt_aes192_gcm", "aes_gcm_siv::encrypt", "chacha20_poly1305::encrypt", "chacha20_poly1305::encrypt_xchacha20_poly1305"],
+        "operation.aead.open": ["aes::decrypt", "aes::decrypt_aes128_gcm", "aes::decrypt_aes192_gcm", "aes_gcm_siv::decrypt", "chacha20_poly1305::decrypt", "chacha20_poly1305::decrypt_xchacha20_poly1305"],
+        "operation.key_wrap.wrap": ["aes_kw::wrap_key", "aes_kw::wrap_key_aes128", "aes_kw::wrap_key_aes192", "aes_kw::wrap_key_aes256"],
+        "operation.key_wrap.unwrap": ["aes_kw::unwrap_key", "aes_kw::unwrap_key_aes128", "aes_kw::unwrap_key_aes192", "aes_kw::unwrap_key_aes256"],
+        "operation.kdf.derive": ["argon2id::derive_key", "argon2id::derive_key_for_version", "hkdf::derive", "hkdf::derive_domain_key_32", "pbkdf2::derive_key", "kmac::derive_kmac256", "concat_kdf::derive_jwa_concat_kdf_sha256"],
+        "support.kdf_policy": ["argon2id::resolve_mobile_profile_for_unlock", "argon2id::resolve_profile_params_for_platform", "argon2id::resolve_profile_params_with_caps"],
+        "operation.signature.generate_key_pair": ["ed25519::generate_ed25519_keypair", "p256::generate_p256_keypair", "p384::generate_p384_keypair", "p521::generate_p521_keypair", "secp256k1::generate_secp256k1_keypair", "secp256k1::generate_bip340_schnorr_keypair", "ml_dsa_44::generate_ml_dsa_44_keypair", "ml_dsa_65::generate_ml_dsa_65_keypair", "ml_dsa_87::generate_ml_dsa_87_keypair", "slh_dsa::generate_slh_dsa_sha2_128s_keypair"],
+        "operation.signature.derive_key_pair": ["ed25519::generate_ed25519_keypair_from_seed", "p256::generate_p256_keypair_from_secret_key", "p384::generate_p384_keypair_from_secret_key", "p521::generate_p521_keypair_from_secret_key", "secp256k1::generate_secp256k1_keypair_from_secret_key", "secp256k1::generate_bip340_schnorr_keypair_from_secret_key", "ml_dsa_44::generate_ml_dsa_44_keypair_from_seed", "ml_dsa_65::generate_ml_dsa_65_keypair_from_seed", "ml_dsa_87::generate_ml_dsa_87_keypair_from_seed", "slh_dsa::derive_slh_dsa_sha2_128s_keypair"],
+        "operation.signature.derive_public_key": ["p256::compressed_public_key_from_private_key", "secp256k1::derive_bip340_schnorr_public_key"],
+        "operation.signature.sign": ["ed25519::sign_ed25519", "p256::sign_p256_der_prehash", "p384::sign_p384_der_prehash", "p521::sign_p521_der_prehash", "secp256k1::sign_secp256k1", "ml_dsa_44::sign_ml_dsa_44", "ml_dsa_65::sign_ml_dsa_65", "ml_dsa_87::sign_ml_dsa_87", "slh_dsa::sign_slh_dsa_sha2_128s"],
+        "operation.signature.verify": ["ed25519::verify_ed25519", "p256::verify_p256_der_prehash", "p384::verify_p384_der_prehash", "p521::verify_p521_der_prehash", "secp256k1::verify_secp256k1", "ml_dsa_44::verify_ml_dsa_44", "ml_dsa_65::verify_ml_dsa_65", "ml_dsa_87::verify_ml_dsa_87", "slh_dsa::verify_slh_dsa_sha2_128s"],
+        "operation.signature.bip340.sign": ["secp256k1::sign_bip340_schnorr"],
+        "operation.signature.bip340.verify": ["secp256k1::verify_bip340_schnorr"],
+        "operation.signature.rsa.verify": ["rsa::verify_rsa_pkcs1v15", "rsa::verify_rsa_pss"],
+        "operation.key_agreement.generate_key_pair": ["x25519::generate_x25519_keypair"],
+        "operation.key_agreement.derive_key_pair": ["x25519::generate_x25519_keypair_from_seed"],
+        "operation.key_agreement.derive_shared_secret": ["x25519::derive_x25519_shared_secret", "p256::derive_p256_shared_secret", "p384::derive_p384_shared_secret", "p521::derive_p521_shared_secret"],
+        "operation.kem.generate_key_pair": ["ml_kem_512::generate_ml_kem_512_keypair", "ml_kem_768::generate_ml_kem_768_keypair", "ml_kem_1024::generate_ml_kem_1024_keypair", "x_wing::generate_x_wing_768_keypair"],
+        "operation.kem.derive_key_pair": ["ml_kem_512::generate_ml_kem_512_keypair_from_seed", "ml_kem_768::generate_ml_kem_768_keypair_from_seed", "ml_kem_1024::generate_ml_kem_1024_keypair_from_seed", "x_wing::generate_x_wing_768_keypair_derand"],
+        "operation.kem.encapsulate": ["ml_kem_512::ml_kem_512_encapsulate", "ml_kem_768::ml_kem_768_encapsulate", "ml_kem_1024::ml_kem_1024_encapsulate", "x_wing::x_wing_768_encapsulate"],
+        "operation.kem.encapsulate_derand": ["ml_kem_512::ml_kem_512_encapsulate_derand", "ml_kem_768::ml_kem_768_encapsulate_derand", "ml_kem_1024::ml_kem_1024_encapsulate_derand", "x_wing::x_wing_768_encapsulate_derand"],
+        "operation.kem.decapsulate": ["ml_kem_512::ml_kem_512_decapsulate", "ml_kem_768::ml_kem_768_decapsulate", "ml_kem_1024::ml_kem_1024_decapsulate", "x_wing::x_wing_768_decapsulate"],
+        "operation.hpke.generate_key_pair": ["hpke::keygen"],
+        "operation.hpke.derive_key_pair": ["hpke::derive_keypair"],
+        "operation.hpke.seal": ["hpke::seal_base"],
+        "operation.hpke.open": ["hpke::open_base"],
+        "operation.hpke.sender_export": ["hpke::sender_export"],
+        "operation.hpke.receiver_export": ["hpke::receiver_export"],
+        "operation.hpke.psk_seal": ["hpke::seal_psk"],
+        "operation.hpke.psk_open": ["hpke::open_psk"],
+        "operation.hash.digest": ["sha2::digest", "sha2::digest_sha2_384", "sha2::digest_sha2_512", "sha3::digest", "sha3::digest_sha3_224", "sha3::digest_sha3_384", "sha3::digest_sha3_512"],
+        "operation.key_encoding.private_key": ["p256::private_key_from_pem", "p256::private_key_from_pkcs8_der", "p256::private_key_from_pkcs8_pem", "p256::private_key_from_sec1_der", "p256::private_key_from_sec1_pem"],
+        "operation.signature.encoding": ["p256::p256_ecdsa_der_to_jose_signature", "p256::p256_ecdsa_jose_signature_to_der", "secp256k1::secp256k1_ecdsa_der_to_jose_signature", "secp256k1::secp256k1_ecdsa_jose_signature_to_der"],
+        "operation.platform_key.lifecycle": ["p256::encode_se_handle", "p256::decode_se_handle"],
+        "operation.key_encoding.public_key": ["ed25519::assert_public_key", "ed25519::decode_public_key", "ed25519::encode_public_key", "p256::compress_public_key", "p256::decompress_public_key", "p256::public_key_from_spki_der", "p256::public_key_from_spki_pem", "p384::compress_p384", "p384::compress_public_key", "p384::decompress_p384", "p384::decompress_public_key", "p521::compress_p521", "p521::compress_public_key", "p521::decompress_p521", "p521::decompress_public_key", "secp256k1::decode_public_key", "secp256k1::decompress_public_key", "secp256k1::encode_public_key", "secp256k1::decode_bip340_schnorr_public_key", "secp256k1::encode_bip340_schnorr_public_key", "x25519::decode_public_key", "x25519::encode_public_key", "ml_dsa_44::decode_public_key", "ml_dsa_44::encode_public_key", "ml_dsa_65::decode_public_key", "ml_dsa_65::encode_public_key", "ml_dsa_87::decode_public_key", "ml_dsa_87::encode_public_key", "slh_dsa::decode_slh_dsa_sha2_128s_public_key", "slh_dsa::encode_slh_dsa_sha2_128s_public_key", "jwk::Jwks::public_key_bytes", "jwk::public_key_bytes_from_jwk", "jwk::ed25519_public_key_to_jwk", "jwk::ed25519_public_key_to_jwk_jcs", "jwk::mldsa87_public_key_to_jwk", "jwk::mldsa87_public_key_to_jwk_jcs", "jwk::mlkem1024_public_key_to_jwk", "jwk::mlkem1024_public_key_to_jwk_jcs", "jwk::p256_public_key_to_jwk", "jwk::p256_public_key_to_jwk_jcs", "jwk::mldsa44_public_key_to_jwk", "jwk::mldsa44_public_key_to_jwk_jcs", "jwk::mldsa65_public_key_to_jwk", "jwk::mldsa65_public_key_to_jwk_jcs", "jwk::mlkem512_public_key_to_jwk", "jwk::mlkem512_public_key_to_jwk_jcs", "jwk::mlkem768_public_key_to_jwk", "jwk::mlkem768_public_key_to_jwk_jcs", "jwk::slh_dsa_sha2_128s_public_key_to_jwk", "jwk::slh_dsa_sha2_128s_public_key_to_jwk_jcs", "jwk::x_wing_768_public_key_to_jwk", "jwk::x_wing_768_public_key_to_jwk_jcs", "jwk::secp256k1_public_key_to_jwk", "jwk::secp256k1_public_key_to_jwk_jcs", "jwk::x25519_public_key_to_jwk", "jwk::x25519_public_key_to_jwk_jcs", "jwk_multikey::jwk_to_multikey", "jwk_multikey::multikey_to_jwk"]
+      },
+      "current_status": "operation_facade_authority",
+      "notes": "The SHA-2, SHA-3, HMAC, AEAD, AES-KW, KDF, Ed25519, ECDSA, BIP-340, RSA, key-agreement, KEM, ML-DSA, SLH-DSA, and HPKE root modules are public facades over their operation-layer owners. JWK and JWK/Multikey conversion helpers are enumerated individually because they are callable public routes, not only data-model modules."
+    },
+    {
+      "id": "rust.root.signer_trait_routes",
+      "lane": "rust-root-facade",
+      "path": "crates/crypto/src/lib.rs; crates/crypto/signer/src",
+      "symbols_by_owner": {
+        "operation.signature.sign": ["signer::Signer::sign", "signer::DispatchSigner::sign"],
+        "operation.signature.verify": ["signer::Verifier::verify", "signer::DispatchVerifier::verify"]
+      },
+      "excluded_public_symbols": "Signer and verifier constructors, accessors, error predicates, and trait/type definitions establish or describe an adapter; they do not execute a cryptographic operation.",
+      "current_status": "dispatch_backed_signature_trait_routes"
+    },
+    {
+      "id": "protobuf.crypto_operation_request.oneof",
+      "lane": "protobuf-contract",
+      "path": "crates/proto/proto/reallyme/crypto/v1/crypto.proto",
+      "symbols_by_owner": {
+        "operation.hash.digest": ["CryptoOperationRequest.hash"],
+        "operation.aead.seal": ["CryptoOperationRequest.aead_seal"],
+        "operation.aead.open": ["CryptoOperationRequest.aead_open"],
+        "operation.mac.authenticate": ["CryptoOperationRequest.mac_authenticate"],
+        "operation.mac.verify": ["CryptoOperationRequest.mac_verify"],
+        "operation.signature.generate_key_pair": ["CryptoOperationRequest.signature_generate_key_pair"],
+        "operation.signature.derive_key_pair": ["CryptoOperationRequest.signature_derive_key_pair"],
+        "operation.signature.sign": ["CryptoOperationRequest.signature_sign"],
+        "operation.signature.verify": ["CryptoOperationRequest.signature_verify"],
+        "operation.signature.bip340.sign": ["CryptoOperationRequest.bip340_schnorr_sign"],
+        "operation.signature.rsa.verify": ["CryptoOperationRequest.rsa_verify"],
+        "operation.key_agreement.derive_shared_secret": ["CryptoOperationRequest.key_agreement_derive_shared_secret"],
+        "operation.key_agreement.derive_key_pair": ["CryptoOperationRequest.key_agreement_derive_key_pair"],
+        "operation.kem.generate_key_pair": ["CryptoOperationRequest.kem_generate_key_pair"],
+        "operation.kem.derive_key_pair": ["CryptoOperationRequest.kem_derive_key_pair"],
+        "operation.kem.encapsulate": ["CryptoOperationRequest.kem_encapsulate"],
+        "operation.kem.decapsulate": ["CryptoOperationRequest.kem_decapsulate"],
+        "operation.kdf.derive": ["CryptoOperationRequest.hkdf_derive", "CryptoOperationRequest.kdf_derive_key", "CryptoOperationRequest.jwa_concat_kdf_sha256_derive", "CryptoOperationRequest.kmac256_derive", "CryptoOperationRequest.argon2id_derive"],
+        "operation.key_wrap.wrap": ["CryptoOperationRequest.key_wrap"],
+        "operation.key_wrap.unwrap": ["CryptoOperationRequest.key_unwrap"],
+        "operation.hpke.generate_key_pair": ["CryptoOperationRequest.hpke_generate_key_pair"],
+        "operation.hpke.derive_key_pair": ["CryptoOperationRequest.hpke_derive_key_pair"],
+        "operation.hpke.seal": ["CryptoOperationRequest.hpke_seal"],
+        "operation.hpke.open": ["CryptoOperationRequest.hpke_open"],
+        "operation.hpke.sender_export": ["CryptoOperationRequest.hpke_sender_export"],
+        "operation.hpke.receiver_export": ["CryptoOperationRequest.hpke_receiver_export"],
+        "operation.hpke.psk_seal": ["CryptoOperationRequest.hpke_psk_seal"],
+        "operation.hpke.psk_open": ["CryptoOperationRequest.hpke_psk_open"]
+      },
+      "current_status": "declared_operation_contract"
+    },
+    {
+      "id": "rust.operation_response.branches",
+      "lane": "rust-protobuf-branch",
+      "path": "crates/crypto/src/operation_contract/request.rs; crates/crypto/src/operation_contract/request_signature.rs",
+      "symbols_by_owner": {
+        "operation.hash.digest": ["CryptoOperation::Hash => process_hash"],
+        "operation.aead.seal": ["CryptoOperation::AeadSeal => process_aead_seal"],
+        "operation.aead.open": ["CryptoOperation::AeadOpen => process_aead_open"],
+        "operation.mac.authenticate": ["CryptoOperation::MacAuthenticate => process_mac_authenticate"],
+        "operation.mac.verify": ["CryptoOperation::MacVerify => process_mac_verify"],
+        "operation.signature.generate_key_pair": ["CryptoOperation::SignatureGenerateKeyPair => process_signature_generate_key_pair"],
+        "operation.signature.derive_key_pair": ["CryptoOperation::SignatureDeriveKeyPair => process_signature_derive_key_pair"],
+        "operation.signature.sign": ["CryptoOperation::SignatureSign => process_signature_sign"],
+        "operation.signature.verify": ["CryptoOperation::SignatureVerify => process_signature_verify"],
+        "operation.key_agreement.derive_shared_secret": ["CryptoOperation::KeyAgreementDeriveSharedSecret => process_key_agreement_derive_shared_secret"],
+        "operation.key_agreement.derive_key_pair": ["CryptoOperation::KeyAgreementDeriveKeyPair => process_key_agreement_derive_key_pair"],
+        "operation.kem.generate_key_pair": ["CryptoOperation::KemGenerateKeyPair => process_kem_generate_key_pair"],
+        "operation.kem.derive_key_pair": ["CryptoOperation::KemDeriveKeyPair => process_kem_derive_key_pair"],
+        "operation.kem.encapsulate": ["CryptoOperation::KemEncapsulate => process_kem_encapsulate"],
+        "operation.kem.decapsulate": ["CryptoOperation::KemDecapsulate => process_kem_decapsulate"],
+        "operation.kdf.derive": ["CryptoOperation::Kmac256Derive => process_kmac256_derive", "CryptoOperation::HkdfDerive => process_hkdf_derive", "CryptoOperation::KdfDeriveKey => process_kdf_derive_key", "CryptoOperation::JwaConcatKdfSha256Derive => process_jwa_concat_kdf_sha256_derive", "CryptoOperation::Argon2idDerive => process_argon2id_derive"],
+        "operation.key_wrap.wrap": ["CryptoOperation::KeyWrap => process_key_wrap"],
+        "operation.key_wrap.unwrap": ["CryptoOperation::KeyUnwrap => process_key_unwrap"],
+        "operation.signature.bip340.sign": ["CryptoOperation::Bip340SchnorrSign => process_bip340_schnorr_sign"],
+        "operation.signature.rsa.verify": ["CryptoOperation::RsaVerify => process_rsa_verify"],
+        "operation.hpke.generate_key_pair": ["CryptoOperation::HpkeGenerateKeyPair => process_hpke_generate_key_pair"],
+        "operation.hpke.derive_key_pair": ["CryptoOperation::HpkeDeriveKeyPair => process_hpke_derive_key_pair"],
+        "operation.hpke.seal": ["CryptoOperation::HpkeSeal => process_hpke_seal"],
+        "operation.hpke.open": ["CryptoOperation::HpkeOpen => process_hpke_open"],
+        "operation.hpke.sender_export": ["CryptoOperation::HpkeSenderExport => process_hpke_sender_export"],
+        "operation.hpke.receiver_export": ["CryptoOperation::HpkeReceiverExport => process_hpke_receiver_export"],
+        "operation.hpke.psk_seal": ["CryptoOperation::HpkePskSeal => process_hpke_psk_seal"],
+        "operation.hpke.psk_open": ["CryptoOperation::HpkePskOpen => process_hpke_psk_open"]
+      },
+      "current_status": "operation_response_branch_authority"
+    },
+    {
+      "id": "c_abi.exports",
+      "lane": "c-abi",
+      "path": "crates/ffi/abi/reallyme_crypto_ffi.h",
+      "symbols_by_owner": {
+        "operation.proto.process": ["rm_crypto_process_operation_response", "rm_crypto_process_operation_response_json"],
+        "operation.hash.digest": ["rm_crypto_sha2_256_digest", "rm_crypto_sha2_384_digest", "rm_crypto_sha2_512_digest", "rm_crypto_sha3_224_digest", "rm_crypto_sha3_256_digest", "rm_crypto_sha3_384_digest", "rm_crypto_sha3_512_digest"],
+        "operation.aead.seal": ["rm_crypto_aes128_gcm_encrypt", "rm_crypto_aes192_gcm_encrypt", "rm_crypto_aes256_gcm_encrypt", "rm_crypto_aes256_gcm_siv_encrypt", "rm_crypto_chacha20_poly1305_encrypt", "rm_crypto_xchacha20_poly1305_encrypt"],
+        "operation.aead.open": ["rm_crypto_aes128_gcm_decrypt", "rm_crypto_aes192_gcm_decrypt", "rm_crypto_aes256_gcm_decrypt", "rm_crypto_aes256_gcm_siv_decrypt", "rm_crypto_chacha20_poly1305_decrypt", "rm_crypto_xchacha20_poly1305_decrypt"],
+        "operation.key_wrap.wrap": ["rm_crypto_aes128_kw_wrap_key", "rm_crypto_aes192_kw_wrap_key", "rm_crypto_aes256_kw_wrap_key"],
+        "operation.key_wrap.unwrap": ["rm_crypto_aes128_kw_unwrap_key", "rm_crypto_aes192_kw_unwrap_key", "rm_crypto_aes256_kw_unwrap_key"],
+        "operation.kdf.derive": ["rm_crypto_kmac256_derive", "rm_crypto_argon2id_derive_key", "rm_crypto_hkdf_derive", "rm_crypto_pbkdf2_hmac_sha256_derive_key", "rm_crypto_pbkdf2_hmac_sha512_derive_key"],
+        "operation.hpke.seal": ["rm_crypto_hpke_seal_base"],
+        "operation.hpke.open": ["rm_crypto_hpke_open_base"],
+        "operation.mac.authenticate": ["rm_crypto_hmac_authenticate"],
+        "operation.mac.verify": ["rm_crypto_hmac_verify"],
+        "operation.random.generate": ["rm_crypto_csprng_generate_bytes", "rm_crypto_csprng_generate_aead_nonce_12", "rm_crypto_csprng_generate_argon2_salt_16", "rm_crypto_csprng_generate_argon2_salt_32"],
+        "operation.constant_time.equal": ["rm_crypto_constant_time_equal"],
+        "operation.signature.generate_key_pair": ["rm_crypto_ed25519_generate_keypair", "rm_crypto_p256_generate_keypair", "rm_crypto_p384_generate_keypair", "rm_crypto_p521_generate_keypair", "rm_crypto_secp256k1_generate_keypair", "rm_crypto_ml_dsa_44_generate_keypair", "rm_crypto_ml_dsa_65_generate_keypair", "rm_crypto_ml_dsa_87_generate_keypair", "rm_crypto_slh_dsa_sha2_128s_generate_keypair"],
+        "operation.signature.derive_key_pair": ["rm_crypto_ed25519_generate_keypair_from_seed", "rm_crypto_p256_generate_keypair_from_secret_key", "rm_crypto_p384_generate_keypair_from_secret_key", "rm_crypto_p521_generate_keypair_from_secret_key", "rm_crypto_secp256k1_generate_keypair_from_secret_key", "rm_crypto_ml_dsa_44_generate_keypair_from_seed", "rm_crypto_ml_dsa_65_generate_keypair_from_seed", "rm_crypto_ml_dsa_87_generate_keypair_from_seed", "rm_crypto_slh_dsa_sha2_128s_derive_keypair"],
+        "operation.signature.derive_public_key": ["rm_crypto_bip340_schnorr_derive_public_key"],
+        "operation.signature.sign": ["rm_crypto_ed25519_sign", "rm_crypto_p256_sign_der_prehash", "rm_crypto_p384_sign_der_prehash", "rm_crypto_p521_sign_der_prehash", "rm_crypto_secp256k1_sign", "rm_crypto_ml_dsa_44_sign", "rm_crypto_ml_dsa_65_sign", "rm_crypto_ml_dsa_87_sign", "rm_crypto_slh_dsa_sha2_128s_sign"],
+        "operation.signature.verify": ["rm_crypto_ed25519_verify", "rm_crypto_p256_verify_der_prehash", "rm_crypto_p384_verify_der_prehash", "rm_crypto_p521_verify_der_prehash", "rm_crypto_secp256k1_verify", "rm_crypto_ml_dsa_44_verify", "rm_crypto_ml_dsa_65_verify", "rm_crypto_ml_dsa_87_verify", "rm_crypto_slh_dsa_sha2_128s_verify"],
+        "operation.signature.bip340.sign": ["rm_crypto_bip340_schnorr_sign"],
+        "operation.signature.bip340.verify": ["rm_crypto_bip340_schnorr_verify"],
+        "operation.signature.rsa.verify": ["rm_crypto_rsa_verify_pkcs1v15", "rm_crypto_rsa_verify_pss"],
+        "operation.key_agreement.generate_key_pair": ["rm_crypto_x25519_generate_keypair"],
+        "operation.key_agreement.derive_key_pair": ["rm_crypto_x25519_generate_keypair_from_seed"],
+        "operation.key_agreement.derive_shared_secret": ["rm_crypto_p256_derive_shared_secret", "rm_crypto_p384_derive_shared_secret", "rm_crypto_p521_derive_shared_secret", "rm_crypto_x25519_derive_shared_secret"],
+        "operation.kem.generate_key_pair": ["rm_crypto_ml_kem_512_generate_keypair", "rm_crypto_ml_kem_768_generate_keypair", "rm_crypto_ml_kem_1024_generate_keypair", "rm_crypto_x_wing_768_generate_keypair"],
+        "operation.kem.derive_key_pair": ["rm_crypto_ml_kem_512_generate_keypair_from_seed", "rm_crypto_ml_kem_768_generate_keypair_from_seed", "rm_crypto_ml_kem_1024_generate_keypair_from_seed", "rm_crypto_x_wing_768_generate_keypair_derand"],
+        "operation.kem.encapsulate": ["rm_crypto_ml_kem_512_encapsulate", "rm_crypto_ml_kem_768_encapsulate", "rm_crypto_ml_kem_1024_encapsulate", "rm_crypto_x_wing_768_encapsulate"],
+        "operation.kem.decapsulate": ["rm_crypto_ml_kem_512_decapsulate", "rm_crypto_ml_kem_768_decapsulate", "rm_crypto_ml_kem_1024_decapsulate", "rm_crypto_x_wing_768_decapsulate"],
+        "operation.key_encoding.public_key": ["rm_crypto_ed25519_encode_public_key", "rm_crypto_ed25519_decode_public_key", "rm_crypto_p256_compress_public_key", "rm_crypto_p256_decompress_public_key", "rm_crypto_p384_compress_public_key", "rm_crypto_p384_decompress_public_key", "rm_crypto_p521_compress_public_key", "rm_crypto_p521_decompress_public_key", "rm_crypto_secp256k1_encode_public_key", "rm_crypto_secp256k1_decode_public_key", "rm_crypto_secp256k1_decompress_public_key", "rm_crypto_bip340_schnorr_encode_public_key", "rm_crypto_bip340_schnorr_decode_public_key", "rm_crypto_x25519_encode_public_key", "rm_crypto_x25519_decode_public_key", "rm_crypto_ml_dsa_44_encode_public_key", "rm_crypto_ml_dsa_44_decode_public_key", "rm_crypto_ml_dsa_65_encode_public_key", "rm_crypto_ml_dsa_65_decode_public_key", "rm_crypto_ml_dsa_87_encode_public_key", "rm_crypto_ml_dsa_87_decode_public_key", "rm_crypto_slh_dsa_sha2_128s_encode_public_key", "rm_crypto_slh_dsa_sha2_128s_decode_public_key", "rm_crypto_ml_kem_512_encode_public_key", "rm_crypto_ml_kem_512_decode_public_key", "rm_crypto_ml_kem_768_encode_public_key", "rm_crypto_ml_kem_768_decode_public_key", "rm_crypto_ml_kem_1024_encode_public_key", "rm_crypto_ml_kem_1024_decode_public_key", "rm_crypto_x_wing_768_encode_public_key", "rm_crypto_x_wing_768_decode_public_key"]
+      },
+      "current_status": "operation_backed_c_abi_scalar_routes"
+    },
+    {
+      "id": "jni.exports",
+      "lane": "jni",
+      "path": "crates/ffi/src",
+      "symbols_by_owner": {
+        "support.provider_catalog": ["Java_me_really_crypto_ReallyMeRustNativeProvider_probeNative"],
+        "operation.proto.process": ["Java_me_really_crypto_ReallyMeCryptoOperationResponseNative_processOperationResponseNative", "Java_me_really_crypto_ReallyMeCryptoOperationResponseNative_processOperationResponseJsonNative"],
+        "operation.aead.seal": ["Java_me_really_crypto_ReallyMeRustAead_aes256GcmSivSealNative", "Java_me_really_crypto_ReallyMeRustAead_chacha20Poly1305SealNative", "Java_me_really_crypto_ReallyMeRustAead_xchacha20Poly1305SealNative"],
+        "operation.aead.open": ["Java_me_really_crypto_ReallyMeRustAead_aes256GcmSivOpenNative", "Java_me_really_crypto_ReallyMeRustAead_chacha20Poly1305OpenNative", "Java_me_really_crypto_ReallyMeRustAead_xchacha20Poly1305OpenNative"],
+        "operation.kdf.derive": ["Java_me_really_crypto_ReallyMeArgon2id_deriveKeyNative", "Java_me_really_crypto_ReallyMeKmac_deriveKmac256Native"]
+      },
+      "current_status": "validated_jni_exports"
+    },
+    {
+      "id": "wasm.exports",
+      "lane": "wasm-bindgen",
+      "path": "crates/wasm/src",
+      "symbols_by_owner": {
+        "operation.proto.process": ["processOperationResponse", "processOperationResponseJson"],
+        "operation.aead.seal": ["aes128GcmSeal", "aes192GcmSeal", "aes256GcmSeal", "aes256GcmSivSeal", "chacha20Poly1305Seal", "xchacha20Poly1305Seal"],
+        "operation.aead.open": ["aes128GcmOpen", "aes192GcmOpen", "aes256GcmOpen", "aes256GcmSivOpen", "chacha20Poly1305Open", "xchacha20Poly1305Open"],
+        "operation.key_wrap.wrap": ["aes128KwWrapKey", "aes192KwWrapKey", "aes256KwWrapKey"],
+        "operation.key_wrap.unwrap": ["aes128KwUnwrapKey", "aes192KwUnwrapKey", "aes256KwUnwrapKey"],
+        "operation.kdf.derive": ["argon2idDeriveKey", "kmac256Derive"],
+        "operation.hpke.seal": ["hpkeSealBase"],
+        "operation.hpke.open": ["hpkeOpenBase"],
+        "operation.signature.generate_key_pair": ["mlDsa44GenerateKeypair", "mlDsa65GenerateKeypair", "mlDsa87GenerateKeypair", "slhDsaSha2128sGenerateKeypair"],
+        "operation.signature.derive_key_pair": ["mlDsa44DeriveKeypair", "mlDsa65DeriveKeypair", "mlDsa87DeriveKeypair", "slhDsaSha2128sDeriveKeypair"],
+        "operation.signature.sign": ["mlDsa44Sign", "mlDsa65Sign", "mlDsa87Sign", "slhDsaSha2128sSign"],
+        "operation.signature.verify": ["mlDsa44Verify", "mlDsa65Verify", "mlDsa87Verify", "slhDsaSha2128sVerify"],
+        "operation.signature.rsa.verify": ["rsaVerifyPkcs1v15", "rsaVerifyPss"],
+        "operation.kem.generate_key_pair": ["mlKem512GenerateKeypair", "mlKem768GenerateKeypair", "mlKem1024GenerateKeypair", "xWing768GenerateKeypair"],
+        "operation.kem.derive_key_pair": ["mlKem512DeriveKeypair", "mlKem768DeriveKeypair", "mlKem1024DeriveKeypair", "xWing768DeriveKeypair"],
+        "operation.kem.encapsulate": ["mlKem512Encapsulate", "mlKem768Encapsulate", "mlKem1024Encapsulate", "xWing768Encapsulate"],
+        "operation.kem.decapsulate": ["mlKem512Decapsulate", "mlKem768Decapsulate", "mlKem1024Decapsulate", "xWing768Decapsulate"]
+      },
+      "source_symbol_note": "symbols_by_owner records the actual JavaScript export names declared by wasm_bindgen js_name; Rust snake_case function identifiers are source implementation details, not exported route names.",
+      "current_status": "validated_wasm_exports",
+      "notes": "AEAD exports route through the root AEAD facades and semantic operation owner while preserving the package's reviewed bundled RustCrypto provider selection. ML-DSA and SLH-DSA exports route through the root signature facades and semantic operation owner, validate fixed-size inputs before copying, and keep secret and message copies under zeroizing Rust ownership."
+    },
+    {
+      "id": "swift.facade.methods",
+      "lane": "swift-sdk",
+      "path": "packages/swift/Sources/ReallyMeCrypto",
+      "symbol_format": "Type.static|instance.method(argument-labels)",
+      "symbols_by_owner": {
+        "operation.aead.open": [
+          "ReallyMeCrypto.instance.open(_:key:nonce:aad:ciphertextWithTag:)",
+          "ReallyMeCrypto.static.open(_:key:nonce:aad:ciphertextWithTag:)",
+          "ReallyMeCrypto.static.open(_:key:nonce:aad:ciphertextWithTag:rustCAbiLibrary:)"
+        ],
+        "operation.aead.seal": [
+          "ReallyMeCrypto.instance.seal(_:key:nonce:aad:plaintext:)",
+          "ReallyMeCrypto.static.seal(_:key:nonce:aad:plaintext:)",
+          "ReallyMeCrypto.static.seal(_:key:nonce:aad:plaintext:rustCAbiLibrary:)"
+        ],
+        "operation.hash.digest": [
+          "ReallyMeCrypto.instance.hash(_:_:)",
+          "ReallyMeCrypto.static.hash(_:_:)"
+        ],
+        "operation.hpke.open": [
+          "ReallyMeCrypto.instance.openHpke(_:recipientSecretKey:encapsulatedKey:info:aad:ciphertext:)",
+          "ReallyMeCrypto.static.openHpke(_:recipientSecretKey:encapsulatedKey:info:aad:ciphertext:)",
+          "ReallyMeCrypto.static.openHpke(_:recipientSecretKey:encapsulatedKey:info:aad:ciphertext:rustCAbiLibrary:)"
+        ],
+        "operation.hpke.seal": [
+          "ReallyMeCrypto.instance.sealHpke(_:recipientPublicKey:info:aad:plaintext:)",
+          "ReallyMeCrypto.static.sealHpke(_:recipientPublicKey:info:aad:plaintext:)",
+          "ReallyMeCrypto.static.sealHpke(_:recipientPublicKey:info:aad:plaintext:rustCAbiLibrary:)"
+        ],
+        "operation.kdf.derive": [
+          "ReallyMeCrypto.instance.deriveArgon2idKey(kdfVersion:secret:salt:)",
+          "ReallyMeCrypto.instance.deriveHkdf(_:inputKeyMaterial:salt:info:outputLength:)",
+          "ReallyMeCrypto.instance.deriveJwaConcatKdfSha256(_:sharedSecret:algorithmId:partyUInfo:partyVInfo:outputLength:)",
+          "ReallyMeCrypto.instance.deriveKey(_:password:salt:iterations:outputLength:)",
+          "ReallyMeCrypto.instance.deriveKmac256(_:key:context:customization:outputLength:)",
+          "ReallyMeCrypto.static.deriveArgon2idKey(kdfVersion:secret:salt:rustCAbiLibrary:)",
+          "ReallyMeCrypto.static.deriveHkdf(_:inputKeyMaterial:salt:info:outputLength:)",
+          "ReallyMeCrypto.static.deriveJwaConcatKdfSha256(_:sharedSecret:algorithmId:partyUInfo:partyVInfo:outputLength:)",
+          "ReallyMeCrypto.static.deriveKey(_:password:salt:iterations:outputLength:)",
+          "ReallyMeCrypto.static.deriveKmac256(_:key:context:customization:outputLength:)",
+          "ReallyMeCrypto.static.deriveKmac256(_:key:context:customization:outputLength:rustCAbiLibrary:)"
+        ],
+        "operation.kem.decapsulate": [
+          "ReallyMeCrypto.instance.decapsulate(_:ciphertext:secretKey:)",
+          "ReallyMeCrypto.static.decapsulate(_:ciphertext:secretKey:)",
+          "ReallyMeCrypto.static.decapsulate(_:ciphertext:secretKey:rustCAbiLibrary:)"
+        ],
+        "operation.kem.derive_key_pair": [
+          "ReallyMeCrypto.instance.deriveMlKemKeyPair(_:secretKey:)",
+          "ReallyMeCrypto.instance.deriveXWingKeyPair(_:secretKey:)",
+          "ReallyMeCrypto.static.deriveMlKemKeyPair(_:secretKey:rustCAbiLibrary:)",
+          "ReallyMeCrypto.static.deriveXWingKeyPair(_:secretKey:rustCAbiLibrary:)"
+        ],
+        "operation.kem.encapsulate": [
+          "ReallyMeCrypto.instance.encapsulate(_:publicKey:)",
+          "ReallyMeCrypto.static.encapsulate(_:publicKey:)",
+          "ReallyMeCrypto.static.encapsulate(_:publicKey:rustCAbiLibrary:)"
+        ],
+        "operation.kem.encapsulate_derand": [
+          "ReallyMeCrypto.instance.encapsulate(_:publicKey:seed:)",
+          "ReallyMeCrypto.static.encapsulate(_:publicKey:seed:rustCAbiLibrary:)"
+        ],
+        "operation.kem.generate_key_pair": [
+          "ReallyMeCrypto.instance.generateKemKeyPair(_:)",
+          "ReallyMeCrypto.static.generateKemKeyPair(_:)",
+          "ReallyMeCrypto.static.generateKemKeyPair(_:rustCAbiLibrary:)"
+        ],
+        "operation.key_agreement.derive_key_pair": [
+          "ReallyMeCrypto.instance.deriveKeyAgreementKeyPair(_:secretKey:)",
+          "ReallyMeCrypto.static.deriveKeyAgreementKeyPair(_:secretKey:)"
+        ],
+        "operation.key_agreement.derive_shared_secret": [
+          "ReallyMeCrypto.instance.deriveSharedSecret(_:publicKey:secretKey:)",
+          "ReallyMeCrypto.static.deriveSharedSecret(_:publicKey:secretKey:)"
+        ],
+        "operation.key_wrap.unwrap": [
+          "ReallyMeCrypto.instance.unwrapKey(_:wrappingKey:wrappedKey:)",
+          "ReallyMeCrypto.static.unwrapKey(_:wrappingKey:wrappedKey:)",
+          "ReallyMeCrypto.static.unwrapKey(_:wrappingKey:wrappedKey:rustCAbiLibrary:)"
+        ],
+        "operation.key_wrap.wrap": [
+          "ReallyMeCrypto.instance.wrapKey(_:wrappingKey:keyToWrap:)",
+          "ReallyMeCrypto.static.wrapKey(_:wrappingKey:keyToWrap:)",
+          "ReallyMeCrypto.static.wrapKey(_:wrappingKey:keyToWrap:rustCAbiLibrary:)"
+        ],
+        "operation.mac.authenticate": [
+          "ReallyMeCrypto.instance.authenticate(_:key:message:)",
+          "ReallyMeCrypto.static.authenticate(_:key:message:)"
+        ],
+        "operation.mac.verify": [
+          "ReallyMeCrypto.instance.verifyMac(_:tag:key:message:)",
+          "ReallyMeCrypto.static.verifyMac(_:tag:key:message:)"
+        ],
+        "operation.platform_key.lifecycle": [
+          "ReallyMeCrypto.static.deleteSecureEnclaveKeyAgreementKey(_:privateKeyHandle:)",
+          "ReallyMeCrypto.static.deleteSecureEnclaveSigningKey(_:privateKeyHandle:)",
+          "ReallyMeCrypto.static.deriveSecureEnclaveSigningPublicKey(_:privateKeyHandle:)",
+          "ReallyMeCrypto.static.generateSecureEnclaveSigningKeyPair(_:tag:accessControl:overwriteExisting:)",
+          "ReallyMeCrypto.static.generateSecureEnclaveKeyAgreementKeyPair(_:tag:overwriteExisting:)"
+        ],
+        "operation.platform_key.key_agreement": [
+          "ReallyMeCrypto.static.deriveSharedSecretWithPrivateKeyHandle(_:publicKey:privateKeyHandle:)"
+        ],
+        "operation.platform_key.signature": [
+          "ReallyMeCrypto.static.signWithPrivateKeyHandle(_:message:privateKeyHandle:authenticationPrompt:)",
+          "ReallyMeCrypto.static.verifySecureEnclaveSignature(_:signature:message:publicKey:)"
+        ],
+        "operation.proto.process": [
+          "ReallyMeCrypto.instance.processOperationResponse(_:)",
+          "ReallyMeCrypto.instance.processOperationResponseJson(_:)"
+        ],
+        "operation.signature.bip340.sign": [
+          "ReallyMeCrypto.instance.sign(_:message32:secretKey:auxRand32:)",
+          "ReallyMeCrypto.static.sign(_:message32:secretKey:auxRand32:rustCAbiLibrary:)"
+        ],
+        "operation.signature.derive_key_pair": [
+          "ReallyMeCrypto.instance.deriveKeyPair(_:secretKey:)",
+          "ReallyMeCrypto.instance.deriveMlDsaKeyPair(_:secretKey:)",
+          "ReallyMeCrypto.instance.deriveSlhDsaSha2_128sKeyPair(skSeed:skPrf:pkSeed:)",
+          "ReallyMeCrypto.static.deriveKeyPair(_:secretKey:rustCAbiLibrary:)",
+          "ReallyMeCrypto.static.deriveMlDsaKeyPair(_:secretKey:rustCAbiLibrary:)",
+          "ReallyMeCrypto.static.deriveSlhDsaSha2_128sKeyPair(skSeed:skPrf:pkSeed:rustCAbiLibrary:)"
+        ],
+        "operation.signature.derive_public_key": [
+          "ReallyMeCrypto.instance.deriveBip340SchnorrPublicKey(secretKey:)",
+          "ReallyMeCrypto.static.deriveBip340SchnorrPublicKey(secretKey:rustCAbiLibrary:)"
+        ],
+        "operation.signature.generate_key_pair": [
+          "ReallyMeCrypto.instance.generateKeyPair(_:)",
+          "ReallyMeCrypto.static.generateKeyPair(_:)",
+          "ReallyMeCrypto.static.generateKeyPair(_:rustCAbiLibrary:)"
+        ],
+        "operation.signature.rsa.verify": [
+          "ReallyMeCrypto.instance.verify(_:signature:message:publicKeyDer:publicKeyEncoding:)",
+          "ReallyMeCrypto.static.verify(_:signature:message:publicKeyDer:publicKeyEncoding:rustCAbiLibrary:)"
+        ],
+        "operation.signature.sign": [
+          "ReallyMeCrypto.instance.sign(_:message:secretKey:)",
+          "ReallyMeCrypto.static.sign(_:message:secretKey:)",
+          "ReallyMeCrypto.static.sign(_:message:secretKey:rustCAbiLibrary:)"
+        ],
+        "operation.signature.verify": [
+          "ReallyMeCrypto.instance.verify(_:signature:message:publicKey:)",
+          "ReallyMeCrypto.static.verify(_:signature:message:publicKey:)",
+          "ReallyMeCrypto.static.verify(_:signature:message:publicKey:rustCAbiLibrary:)"
+        ]
+      },
+      "excluded_public_members": "Initializers, stored/computed properties, redacted descriptions, and pure data-model accessors do not execute an operation.",
+      "current_status": "exact_static_instance_and_overload_facade_routes"
+    },
+    {
+      "id": "swift.direct.methods",
+      "lane": "swift-sdk",
+      "path": "packages/swift/Sources/ReallyMeCrypto",
+      "symbol_format": "Type.static|instance.method(argument-labels)",
+      "symbols_by_owner": {
+        "operation.aead.open": [
+          "ReallyMeAesGcm.static.open(key:nonce:aad:ciphertextWithTag:)",
+          "ReallyMeAesGcm.static.openAes128Gcm(key:nonce:aad:ciphertextWithTag:)",
+          "ReallyMeAesGcm.static.openAes192Gcm(key:nonce:aad:ciphertextWithTag:)",
+          "ReallyMeChaCha20Poly1305.static.open(key:nonce:aad:ciphertextWithTag:)",
+          "ReallyMeRustCAbiAead.instance.openAes192Gcm(key:nonce:aad:ciphertextWithTag:)",
+          "ReallyMeRustCAbiAead.instance.openAes256GcmSiv(key:nonce:aad:ciphertextWithTag:)",
+          "ReallyMeRustCAbiAead.instance.openXChaCha20Poly1305(key:nonce:aad:ciphertextWithTag:)"
+        ],
+        "operation.aead.seal": [
+          "ReallyMeAesGcm.static.seal(key:nonce:aad:plaintext:)",
+          "ReallyMeAesGcm.static.sealAes128Gcm(key:nonce:aad:plaintext:)",
+          "ReallyMeAesGcm.static.sealAes192Gcm(key:nonce:aad:plaintext:)",
+          "ReallyMeChaCha20Poly1305.static.seal(key:nonce:aad:plaintext:)",
+          "ReallyMeRustCAbiAead.instance.sealAes192Gcm(key:nonce:aad:plaintext:)",
+          "ReallyMeRustCAbiAead.instance.sealAes256GcmSiv(key:nonce:aad:plaintext:)",
+          "ReallyMeRustCAbiAead.instance.sealXChaCha20Poly1305(key:nonce:aad:plaintext:)"
+        ],
+        "operation.hash.digest": [
+          "ReallyMeDigest.static.sha256(_:)",
+          "ReallyMeDigest.static.sha384(_:)",
+          "ReallyMeDigest.static.sha3_224(_:)",
+          "ReallyMeDigest.static.sha3_256(_:)",
+          "ReallyMeDigest.static.sha3_384(_:)",
+          "ReallyMeDigest.static.sha3_512(_:)",
+          "ReallyMeDigest.static.sha512(_:)"
+        ],
+        "operation.hpke.open": [
+          "ReallyMeRustCAbiHpke.instance.openBase(suite:recipientSecretKey:encapsulatedKey:info:aad:ciphertext:)"
+        ],
+        "operation.hpke.seal": [
+          "ReallyMeRustCAbiHpke.instance.sealBase(suite:recipientPublicKey:info:aad:plaintext:)"
+        ],
+        "operation.kdf.derive": [
+          "ReallyMeHkdf.static.deriveSha256(inputKeyMaterial:salt:info:outputLength:)",
+          "ReallyMeJwaConcatKdf.static.deriveSha256(sharedSecret:algorithmId:partyUInfo:partyVInfo:outputLength:)",
+          "ReallyMePbkdf2.static.deriveHmacSha256(password:salt:iterations:outputLength:)",
+          "ReallyMePbkdf2.static.deriveHmacSha512(password:salt:iterations:outputLength:)",
+          "ReallyMeRustCAbiArgon2id.instance.deriveKey(kdfVersion:secret:salt:)",
+          "ReallyMeRustCAbiKmac.instance.deriveKmac256(key:context:customization:outputLength:)"
+        ],
+        "operation.kem.decapsulate": [
+          "ReallyMeRustCAbiMlKem.instance.decapsulate(_:ciphertext:secretKey:)",
+          "ReallyMeRustCAbiXWing.instance.decapsulate(_:ciphertext:secretKey:)"
+        ],
+        "operation.kem.derive_key_pair": [
+          "ReallyMeRustCAbiMlKem.instance.deriveKeyPair(_:secretKey:)",
+          "ReallyMeRustCAbiXWing.instance.deriveKeyPair(_:secretKey:)"
+        ],
+        "operation.kem.encapsulate": [
+          "ReallyMeRustCAbiMlKem.instance.encapsulate(_:publicKey:)",
+          "ReallyMeRustCAbiXWing.instance.encapsulate(_:publicKey:)"
+        ],
+        "operation.kem.encapsulate_derand": [
+          "ReallyMeRustCAbiMlKem.instance.encapsulateDerand(_:publicKey:randomness:)",
+          "ReallyMeRustCAbiXWing.instance.encapsulateDerand(_:publicKey:seed:)"
+        ],
+        "operation.kem.generate_key_pair": [
+          "ReallyMeRustCAbiMlKem.instance.generateKeyPair(_:)",
+          "ReallyMeRustCAbiXWing.instance.generateKeyPair(_:)"
+        ],
+        "operation.key_agreement.derive_key_pair": [
+          "ReallyMeP256Ecdh.static.deriveKeyPair(secretKey:)",
+          "ReallyMeP384Ecdh.static.deriveKeyPair(secretKey:)",
+          "ReallyMeP521Ecdh.static.deriveKeyPair(secretKey:)",
+          "ReallyMeX25519.static.deriveKeyPair(secretKey:)"
+        ],
+        "operation.key_agreement.derive_public_key": [
+          "ReallyMeP256Ecdh.static.derivePublicKey(secretKey:)",
+          "ReallyMeP384Ecdh.static.derivePublicKey(secretKey:)",
+          "ReallyMeP521Ecdh.static.derivePublicKey(secretKey:)",
+          "ReallyMeX25519.static.derivePublicKey(secretKey:)"
+        ],
+        "operation.key_agreement.derive_shared_secret": [
+          "ReallyMeP256Ecdh.static.deriveSharedSecret(publicKey:secretKey:)",
+          "ReallyMeP384Ecdh.static.deriveSharedSecret(publicKey:secretKey:)",
+          "ReallyMeP521Ecdh.static.deriveSharedSecret(publicKey:secretKey:)",
+          "ReallyMeX25519.static.deriveSharedSecret(publicKey:secretKey:)"
+        ],
+        "operation.key_agreement.generate_key_pair": [
+          "ReallyMeP256Ecdh.static.generateKeyPair()",
+          "ReallyMeP384Ecdh.static.generateKeyPair()",
+          "ReallyMeP521Ecdh.static.generateKeyPair()",
+          "ReallyMeX25519.static.generateKeyPair()"
+        ],
+        "operation.key_encoding.public_key": [
+          "ReallyMeJwk.static.fromJwkJson(_:)",
+          "ReallyMeJwk.static.fromJwksJson(_:)",
+          "ReallyMeJwk.static.publicKeyBytes(from:)",
+          "ReallyMeJwk.static.toJcs(_:)",
+          "ReallyMeJwk.static.toJwk(algorithm:publicKey:)",
+          "ReallyMeJwk.static.toJwks(_:)",
+          "ReallyMeMulticodec.static.algorithmName(for:)",
+          "ReallyMeMulticodec.static.codecName(for:)",
+          "ReallyMeMulticodec.static.expectedPublicKeyLength(for:)",
+          "ReallyMeMulticodec.static.prefix(for:)",
+          "ReallyMeMultikey.static.encode(_:publicKey:)",
+          "ReallyMeMultikey.static.parse(_:)",
+          "ReallyMeSecp256k1.static.decompressPublicKey(publicKey:)"
+        ],
+        "operation.key_wrap.unwrap": [
+          "ReallyMeRustCAbiAesKw.instance.unwrapKey(_:wrappingKey:wrappedKey:)"
+        ],
+        "operation.key_wrap.wrap": [
+          "ReallyMeRustCAbiAesKw.instance.wrapKey(_:wrappingKey:keyToWrap:)"
+        ],
+        "operation.mac.authenticate": [
+          "ReallyMeHmac.static.authenticateSha256(key:message:)",
+          "ReallyMeHmac.static.authenticateSha512(key:message:)"
+        ],
+        "operation.mac.verify": [
+          "ReallyMeHmac.static.verifySha256(tag:key:message:)",
+          "ReallyMeHmac.static.verifySha512(tag:key:message:)"
+        ],
+        "operation.platform_key.lifecycle": [
+          "ReallyMeP256SecureEnclaveEcdh.static.decodePrivateKeyHandle(_:)",
+          "ReallyMeP256SecureEnclaveEcdh.static.deleteKey(privateKeyHandle:)",
+          "ReallyMeP256SecureEnclaveEcdh.static.derivePublicKey(privateKeyHandle:)",
+          "ReallyMeP256SecureEnclaveEcdh.static.encodePrivateKeyHandle(tag:)",
+          "ReallyMeP256SecureEnclaveEcdh.static.generateKeyPair(tag:overwriteExisting:)",
+          "ReallyMeP256SecureEnclaveEcdsa.static.decodePrivateKeyHandle(_:)",
+          "ReallyMeP256SecureEnclaveEcdsa.static.deleteKey(privateKeyHandle:)",
+          "ReallyMeP256SecureEnclaveEcdsa.static.derivePublicKey(privateKeyHandle:)",
+          "ReallyMeP256SecureEnclaveEcdsa.static.encodePrivateKeyHandle(tag:)",
+          "ReallyMeP256SecureEnclaveEcdsa.static.generateKeyPair(tag:accessControl:overwriteExisting:)"
+        ],
+        "operation.platform_key.key_agreement": [
+          "ReallyMeP256SecureEnclaveEcdh.static.deriveSharedSecret(publicKey:privateKeyHandle:)"
+        ],
+        "operation.platform_key.signature": [
+          "ReallyMeP256SecureEnclaveEcdsa.static.sign(message:privateKeyHandle:authenticationPrompt:)",
+          "ReallyMeP256SecureEnclaveEcdsa.static.verify(signature:message:publicKey:)"
+        ],
+        "operation.signature.bip340.sign": [
+          "ReallyMeRustCAbiBip340Schnorr.instance.sign(message32:secretKey:auxRand32:)"
+        ],
+        "operation.signature.bip340.verify": [
+          "ReallyMeRustCAbiBip340Schnorr.instance.verify(signature:message32:publicKeyXOnly:)"
+        ],
+        "operation.signature.derive_key_pair": [
+          "ReallyMeRustCAbiBip340Schnorr.instance.deriveKeyPair(secretKey:)",
+          "ReallyMeRustCAbiEd25519.instance.deriveKeyPair(secretKey:)",
+          "ReallyMeRustCAbiMlDsa.instance.deriveKeyPair(_:secretKey:)",
+          "ReallyMeRustCAbiP256Ecdsa.instance.deriveKeyPair(secretKey:)",
+          "ReallyMeRustCAbiP384Ecdsa.instance.deriveKeyPair(secretKey:)",
+          "ReallyMeRustCAbiP521Ecdsa.instance.deriveKeyPair(secretKey:)",
+          "ReallyMeRustCAbiSlhDsa.instance.deriveKeyPair(_:skSeed:skPrf:pkSeed:)",
+          "ReallyMeSecp256k1.static.deriveKeyPair(secretKey:)"
+        ],
+        "operation.signature.derive_public_key": [
+          "ReallyMeRustCAbiBip340Schnorr.instance.derivePublicKey(secretKey:)",
+          "ReallyMeSecp256k1.static.derivePublicKey(secretKey:)"
+        ],
+        "operation.signature.generate_key_pair": [
+          "ReallyMeRustCAbiEd25519.instance.generateKeyPair()",
+          "ReallyMeRustCAbiMlDsa.instance.generateKeyPair(_:)",
+          "ReallyMeRustCAbiP256Ecdsa.instance.generateKeyPair()",
+          "ReallyMeRustCAbiP384Ecdsa.instance.generateKeyPair()",
+          "ReallyMeRustCAbiP521Ecdsa.instance.generateKeyPair()",
+          "ReallyMeRustCAbiSlhDsa.instance.generateKeyPair(_:)",
+          "ReallyMeSecp256k1.static.generateKeyPair()"
+        ],
+        "operation.signature.rsa.verify": [
+          "ReallyMeRustCAbiRsa.instance.verify(algorithm:signature:message:publicKeyDer:publicKeyEncoding:)"
+        ],
+        "operation.signature.sign": [
+          "ReallyMeRustCAbiEd25519.instance.sign(message:secretKey:)",
+          "ReallyMeRustCAbiMlDsa.instance.sign(_:message:secretKey:)",
+          "ReallyMeRustCAbiP256Ecdsa.instance.sign(message:secretKey:)",
+          "ReallyMeRustCAbiP384Ecdsa.instance.sign(message:secretKey:)",
+          "ReallyMeRustCAbiP521Ecdsa.instance.sign(message:secretKey:)",
+          "ReallyMeRustCAbiSlhDsa.instance.sign(_:message:secretKey:)",
+          "ReallyMeSecp256k1.static.sign(message:secretKey:)"
+        ],
+        "operation.signature.verify": [
+          "ReallyMeRustCAbiEd25519.instance.verify(signature:message:publicKey:)",
+          "ReallyMeRustCAbiMlDsa.instance.verify(_:signature:message:publicKey:)",
+          "ReallyMeRustCAbiP256Ecdsa.instance.verify(signature:message:publicKey:)",
+          "ReallyMeRustCAbiP384Ecdsa.instance.verify(signature:message:publicKey:)",
+          "ReallyMeRustCAbiP521Ecdsa.instance.verify(signature:message:publicKey:)",
+          "ReallyMeRustCAbiSlhDsa.instance.verify(_:signature:message:publicKey:)",
+          "ReallyMeSecp256k1.static.verify(signature:message:publicKey:)"
+        ],
+        "support.error_mapping": [
+          "ReallyMeRustCAbiStatus.static.throwIfError(_:)"
+        ],
+        "support.memory_hygiene": [
+          "ReallyMeCryptoMemory.static.bestEffortClear(_:)"
+        ],
+        "support.provider_catalog": [
+          "ReallyMeCryptoCodecProvider.static.install(_:)",
+          "ReallyMeRustCAbiLibrary.instance.loadFunction(_:as:)",
+          "ReallyMeRustCAbiLibrary.static.bundledProvider()"
+        ]
+      },
+      "excluded_public_members": "Provider constructors, stored/computed properties, redacted descriptions, enum cases, and pure data-model accessors do not execute an operation.",
+      "current_status": "validated_swift_direct_routes"
+    },
+    {
+      "id": "kotlin.facade.methods",
+      "lane": "kotlin-jvm-sdk",
+      "path": "packages/kotlin/src/main/kotlin/me/really/crypto/CryptoFacade.kt",
+      "symbol_format": "Type.method or Type.method(parameter-labels) where an overload requires disambiguation",
+      "symbols_by_owner": {
+        "operation.proto.process": ["ReallyMeCrypto.processOperationResponse", "ReallyMeCrypto.processOperationResponseJson"],
+        "operation.hash.digest": ["ReallyMeCrypto.hash"],
+        "operation.aead.seal": ["ReallyMeCrypto.seal"],
+        "operation.aead.open": ["ReallyMeCrypto.open"],
+        "operation.mac.authenticate": ["ReallyMeCrypto.authenticate"],
+        "operation.mac.verify": ["ReallyMeCrypto.verifyMac"],
+        "operation.kdf.derive": ["ReallyMeCrypto.deriveArgon2id", "ReallyMeCrypto.deriveKey", "ReallyMeCrypto.deriveHkdf", "ReallyMeCrypto.deriveJwaConcatKdfSha256", "ReallyMeCrypto.deriveKmac256"],
+        "operation.key_wrap.wrap": ["ReallyMeCrypto.wrapKey"],
+        "operation.key_wrap.unwrap": ["ReallyMeCrypto.unwrapKey"],
+        "operation.signature.generate_key_pair": ["ReallyMeCrypto.generateKeyPair"],
+        "operation.signature.derive_key_pair": ["ReallyMeCrypto.deriveKeyPair", "ReallyMeCrypto.deriveMlDsaKeyPair"],
+        "operation.signature.sign": ["ReallyMeCrypto.sign"],
+        "operation.signature.verify": ["ReallyMeCrypto.verify(algorithm:signature:message:publicKey:)"],
+        "operation.signature.bip340.sign": ["ReallyMeCrypto.signBip340Schnorr"],
+        "operation.signature.rsa.verify": ["ReallyMeCrypto.verify(algorithm:signature:message:publicKeyDer:publicKeyEncoding:)"],
+        "operation.key_agreement.derive_shared_secret": ["ReallyMeCrypto.deriveSharedSecret"],
+        "operation.key_agreement.derive_key_pair": ["ReallyMeCrypto.deriveKeyAgreementKeyPair"],
+        "operation.kem.generate_key_pair": ["ReallyMeCrypto.generateKemKeyPair"],
+        "operation.kem.derive_key_pair": ["ReallyMeCrypto.deriveKemKeyPair"],
+        "operation.kem.encapsulate": ["ReallyMeCrypto.encapsulate"],
+        "operation.kem.encapsulate_derand": ["ReallyMeCrypto.encapsulateDeterministicForTest"],
+        "operation.kem.decapsulate": ["ReallyMeCrypto.decapsulate"],
+        "operation.hpke.seal": ["ReallyMeCrypto.sealHpke"],
+        "operation.hpke.open": ["ReallyMeCrypto.openHpke"]
+      },
+      "current_status": "jvm_package_facade"
+    },
+    {
+      "id": "kotlin.direct.methods",
+      "lane": "kotlin-jvm-sdk",
+      "path": "packages/kotlin/src/main/kotlin/me/really/crypto",
+      "symbols_by_owner": {
+        "operation.hash.digest": ["ReallyMeDigest.sha256", "ReallyMeDigest.sha384", "ReallyMeDigest.sha512", "ReallyMeDigest.sha3_224", "ReallyMeDigest.sha3_256", "ReallyMeDigest.sha3_384", "ReallyMeDigest.sha3_512"],
+        "operation.aead.seal": ["ReallyMeAesGcm.sealAes128Gcm", "ReallyMeAesGcm.seal", "ReallyMeAesGcm.sealAes192Gcm", "ReallyMeRustAead.sealAes256GcmSiv", "ReallyMeRustAead.sealChaCha20Poly1305", "ReallyMeRustAead.sealXChaCha20Poly1305"],
+        "operation.aead.open": ["ReallyMeAesGcm.openAes128Gcm", "ReallyMeAesGcm.open", "ReallyMeAesGcm.openAes192Gcm", "ReallyMeRustAead.openAes256GcmSiv", "ReallyMeRustAead.openChaCha20Poly1305", "ReallyMeRustAead.openXChaCha20Poly1305"],
+        "operation.key_wrap.wrap": ["ReallyMeAesKw.wrapKey"],
+        "operation.key_wrap.unwrap": ["ReallyMeAesKw.unwrapKey"],
+        "operation.mac.authenticate": ["ReallyMeHmac.authenticateSha256", "ReallyMeHmac.authenticateSha512"],
+        "operation.mac.verify": ["ReallyMeHmac.verifySha256", "ReallyMeHmac.verifySha512"],
+        "operation.kdf.derive": ["ReallyMeArgon2id.deriveKey", "ReallyMePbkdf2.deriveHmacSha256", "ReallyMePbkdf2.deriveHmacSha512", "ReallyMeHkdf.deriveSha256", "ReallyMeJwaConcatKdf.deriveSha256", "ReallyMeKmac.deriveKmac256"],
+        "operation.signature.generate_key_pair": ["ReallyMeEd25519.generateKeyPair", "ReallyMeP256Ecdsa.generateKeyPair", "ReallyMeP384Ecdsa.generateKeyPair", "ReallyMeP521Ecdsa.generateKeyPair", "ReallyMeSecp256k1.generateKeyPair", "ReallyMeBip340Schnorr.generateKeyPair", "ReallyMeMlDsa.generateKeyPair", "ReallyMeSlhDsa.generateKeyPair"],
+        "operation.signature.derive_key_pair": ["ReallyMeEd25519.deriveKeyPair", "ReallyMeP256Ecdsa.deriveKeyPair", "ReallyMeP384Ecdsa.deriveKeyPair", "ReallyMeP521Ecdsa.deriveKeyPair", "ReallyMeSecp256k1.deriveKeyPair", "ReallyMeBip340Schnorr.deriveKeyPair", "ReallyMeMlDsa.deriveKeyPair", "ReallyMeSlhDsa.deriveKeyPair"],
+        "operation.signature.derive_public_key": ["ReallyMeEd25519.derivePublicKey", "ReallyMeP256Ecdsa.derivePublicKey", "ReallyMeP384Ecdsa.derivePublicKey", "ReallyMeP521Ecdsa.derivePublicKey", "ReallyMeSecp256k1.derivePublicKey", "ReallyMeBip340Schnorr.derivePublicKey", "ReallyMeMlDsa.derivePublicKey"],
+        "operation.signature.sign": ["ReallyMeEd25519.sign", "ReallyMeP256Ecdsa.sign", "ReallyMeP384Ecdsa.sign", "ReallyMeP521Ecdsa.sign", "ReallyMeSecp256k1.sign", "ReallyMeMlDsa.sign", "ReallyMeSlhDsa.sign"],
+        "operation.signature.verify": ["ReallyMeEd25519.verify", "ReallyMeP256Ecdsa.verify", "ReallyMeP384Ecdsa.verify", "ReallyMeP521Ecdsa.verify", "ReallyMeSecp256k1.verify", "ReallyMeMlDsa.verify", "ReallyMeSlhDsa.verify"],
+        "operation.signature.bip340.sign": ["ReallyMeBip340Schnorr.sign"],
+        "operation.signature.bip340.verify": ["ReallyMeBip340Schnorr.verify"],
+        "operation.signature.rsa.verify": ["ReallyMeRsa.verify"],
+        "operation.key_agreement.generate_key_pair": ["ReallyMeP256Ecdh.generateKeyPair", "ReallyMeP384Ecdh.generateKeyPair", "ReallyMeP521Ecdh.generateKeyPair", "ReallyMeX25519.generateKeyPair"],
+        "operation.key_agreement.derive_key_pair": ["ReallyMeP256Ecdh.deriveKeyPair", "ReallyMeP384Ecdh.deriveKeyPair", "ReallyMeP521Ecdh.deriveKeyPair", "ReallyMeX25519.deriveKeyPair"],
+        "operation.key_agreement.derive_public_key": ["ReallyMeP256Ecdh.derivePublicKey", "ReallyMeP384Ecdh.derivePublicKey", "ReallyMeP521Ecdh.derivePublicKey", "ReallyMeX25519.derivePublicKey"],
+        "operation.key_agreement.derive_shared_secret": ["ReallyMeP256Ecdh.deriveSharedSecret", "ReallyMeP384Ecdh.deriveSharedSecret", "ReallyMeP521Ecdh.deriveSharedSecret", "ReallyMeX25519.deriveSharedSecret"],
+        "operation.kem.generate_key_pair": ["ReallyMeMlKem.generateKeyPair", "ReallyMeXWing.generateKeyPair"],
+        "operation.kem.derive_key_pair": ["ReallyMeMlKem.deriveKeyPair"],
+        "operation.kem.derive_public_key": ["ReallyMeMlKem.derivePublicKey", "ReallyMeXWing.derivePublicKey"],
+        "operation.kem.encapsulate": ["ReallyMeMlKem.encapsulate", "ReallyMeXWing.encapsulate"],
+        "operation.kem.encapsulate_derand": ["ReallyMeMlKem.encapsulateDeterministicForTest", "ReallyMeXWing.encapsulateDeterministicForTest"],
+        "operation.kem.decapsulate": ["ReallyMeMlKem.decapsulate", "ReallyMeXWing.decapsulate"],
+        "operation.hpke.seal": ["ReallyMeHpke.seal", "ReallyMeHpke.sealDeterministicForTest"],
+        "operation.hpke.open": ["ReallyMeHpke.open"],
+        "operation.key_encoding.public_key": ["ReallyMeMulticodecKeyAlgorithm.prefix", "ReallyMeMulticodec.codecName", "ReallyMeMulticodec.algorithmName", "ReallyMeMulticodec.prefix", "ReallyMeMulticodec.expectedPublicKeyLength", "ReallyMeMulticodec.algorithmForCodecName", "ReallyMeMultikey.encode", "ReallyMeMultikey.parse", "ReallyMeJwk.toJwk", "ReallyMeJwk.toJcs", "ReallyMeJwk.fromJwkJson", "ReallyMeJwk.toJwks", "ReallyMeJwk.fromJwksJson", "ReallyMeJwk.publicKeyBytes", "ReallyMeCryptoProtoAdapters.fromProto(JsonWebKey)", "ReallyMeCryptoProtoAdapters.fromProtoJsonWebKeyBytes", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeJwkKey)", "ReallyMeCryptoProtoAdapters.toProtoBytes(ReallyMeJwkKey)", "ReallyMeCryptoProtoAdapters.fromProto(JsonWebKeySet)", "ReallyMeCryptoProtoAdapters.fromProtoJsonWebKeySetBytes", "ReallyMeCryptoProtoAdapters.toProtoJsonWebKeySet", "ReallyMeCryptoProtoAdapters.toProtoJsonWebKeySetBytes", "ReallyMeCryptoProtoAdapters.fromProto(MulticodecKeyAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeMulticodecKeyAlgorithm)"],
+        "support.protobuf_adapter": ["ReallyMeCryptoProtoAdapters.fromProto(SignatureAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeSignatureAlgorithm)", "ReallyMeCryptoProtoAdapters.fromProto(HashAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeHashAlgorithm)", "ReallyMeCryptoProtoAdapters.fromProto(AeadAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeAeadAlgorithm)", "ReallyMeCryptoProtoAdapters.fromProto(KemAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeKemAlgorithm)", "ReallyMeCryptoProtoAdapters.fromProto(KeyAgreementAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeKeyAgreementAlgorithm)", "ReallyMeCryptoProtoAdapters.fromProto(MacAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeMacAlgorithm)", "ReallyMeCryptoProtoAdapters.fromProto(KdfAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeKdfAlgorithm)", "ReallyMeCryptoProtoAdapters.fromProto(KeyWrapAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeKeyWrapAlgorithm)", "ReallyMeCryptoProtoAdapters.fromProto(HpkeSuite)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeHpkeSuite)", "ReallyMeCryptoProtoAdapters.signatureKeyPairToProto", "ReallyMeCryptoProtoAdapters.signatureKeyPairToProtoBytes", "ReallyMeCryptoProtoAdapters.signatureKeyPairFromProto", "ReallyMeCryptoProtoAdapters.signatureKeyPairFromProtoBytes", "ReallyMeCryptoProtoAdapters.keyAgreementKeyPairToProto", "ReallyMeCryptoProtoAdapters.keyAgreementKeyPairToProtoBytes", "ReallyMeCryptoProtoAdapters.keyAgreementKeyPairFromProto", "ReallyMeCryptoProtoAdapters.keyAgreementKeyPairFromProtoBytes", "ReallyMeCryptoProtoAdapters.kemKeyPairToProto", "ReallyMeCryptoProtoAdapters.kemKeyPairToProtoBytes", "ReallyMeCryptoProtoAdapters.kemKeyPairFromProto", "ReallyMeCryptoProtoAdapters.kemKeyPairFromProtoBytes", "ReallyMeCryptoProtoAdapters.kemEncapsulationToProto", "ReallyMeCryptoProtoAdapters.kemEncapsulationToProtoBytes", "ReallyMeCryptoProtoAdapters.kemEncapsulationFromProto", "ReallyMeCryptoProtoAdapters.kemEncapsulationFromProtoBytes", "ReallyMeCryptoProtoAdapters.hpkeSealedMessageToProto", "ReallyMeCryptoProtoAdapters.hpkeSealedMessageToProtoBytes", "ReallyMeCryptoProtoAdapters.hpkeSealedMessageFromProto", "ReallyMeCryptoProtoAdapters.hpkeSealedMessageFromProtoBytes", "ReallyMeCryptoProtoAdapters.providerCapabilityToProto", "ReallyMeCryptoProtoAdapters.providerCapabilityFromProto", "ReallyMeCryptoProtoAdapters.providerCapabilitySetToProto", "ReallyMeCryptoProtoAdapters.providerCapabilitySetToProtoBytes", "ReallyMeCryptoProtoAdapters.providerCapabilitySetFromProto", "ReallyMeCryptoProtoAdapters.providerCapabilitySetFromProtoBytes"],
+        "operation.proto.process": ["ReallyMeCryptoOperationResponseNative.processOperationResponseNative", "ReallyMeCryptoOperationResponseNative.processOperationResponseJsonNative"],
+        "support.provider_catalog": ["ReallyMeRustNativeProvider.loadBundledLibrary", "ReallyMeRustNativeProvider.loadLibrary", "ReallyMeRustNativeProvider.loadBundledLibraryStatus", "ReallyMeRustNativeProvider.loadLibraryStatus"],
+        "support.memory_hygiene": ["ReallyMeCryptoMemory.bestEffortClear"],
+        "support.error_mapping": ["ReallyMeNativeStatus.toFacadeError", "ReallyMeCryptoWireError.tryNew", "ReallyMeCryptoWireError.tryFromReasonCode", "ReallyMeCryptoProtoAdapters.wireErrorFromProto", "ReallyMeCryptoProtoAdapters.wireErrorFromProtoBytes", "ReallyMeCryptoProtoAdapters.wireErrorToProto", "ReallyMeCryptoProtoAdapters.wireErrorToProtoBytes", "ReallyMeCryptoProtoAdapters.facadeErrorFromWireError", "ReallyMeCryptoProtoAdapters.wireErrorFromNativeStatus", "ReallyMeCryptoProtoAdapters.fromProto(CryptoError)", "ReallyMeCryptoProtoAdapters.fromProtoErrorBytes", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeCryptoException)", "ReallyMeCryptoProtoAdapters.toProtoBytes(ReallyMeCryptoException)", "ReallyMeCryptoProtoAdapters.verificationResultToProto", "ReallyMeCryptoProtoAdapters.verificationErrorToProto", "ReallyMeCryptoProtoAdapters.verificationResultToProtoBytes", "ReallyMeCryptoProtoAdapters.verificationResultFromProtoBytes"]
+      },
+      "excluded_public_members": "Provider-catalog properties, error and data types, constructors, enum cases, and pure data accessors do not execute an operation. Public overloads are represented by parameter type or label where the base method name is ambiguous.",
+      "current_status": "validated_kotlin_direct_routes"
+    },
+    {
+      "id": "android.package.routes",
+      "lane": "kotlin-android-sdk",
+      "path": "packages/kotlin-android",
+      "symbols": [],
+      "reused_route_groups": ["kotlin.facade.methods", "kotlin.direct.methods", "jni.exports"],
+      "package_controls": ["AndroidManifest package metadata", "jniLibs/native shared-library packaging", "ReallyMeRustNativeProvider Android runtime selection"],
+      "current_status": "android_package_has_no_android-owned_callable_route_and_reuses_kotlin_public_api"
+    },
+    {
+      "id": "typescript.protobuf_adapter.exports",
+      "lane": "typescript-sdk",
+      "path": "packages/ts/src/proto.ts",
+      "symbols_by_owner": {
+        "support.protobuf_adapter": [
+          "signatureAlgorithmFromProto", "signatureAlgorithmToProto",
+          "hashAlgorithmFromProto", "hashAlgorithmToProto",
+          "aeadAlgorithmFromProto", "aeadAlgorithmToProto",
+          "kemAlgorithmFromProto", "kemAlgorithmToProto",
+          "keyAgreementAlgorithmFromProto", "keyAgreementAlgorithmToProto",
+          "macAlgorithmFromProto", "macAlgorithmToProto",
+          "kdfAlgorithmFromProto", "kdfAlgorithmToProto",
+          "keyWrapAlgorithmFromProto", "keyWrapAlgorithmToProto",
+          "hpkeSuiteFromProto", "hpkeSuiteToProto",
+          "signatureKeyPairToProto", "signatureKeyPairToProtoBytes", "signatureKeyPairFromProto", "signatureKeyPairFromProtoBytes",
+          "keyAgreementKeyPairToProto", "keyAgreementKeyPairToProtoBytes", "keyAgreementKeyPairFromProto", "keyAgreementKeyPairFromProtoBytes",
+          "kemKeyPairToProto", "kemKeyPairToProtoBytes", "kemKeyPairFromProto", "kemKeyPairFromProtoBytes",
+          "kemEncapsulationToProto", "kemEncapsulationToProtoBytes", "kemEncapsulationFromProto", "kemEncapsulationFromProtoBytes",
+          "hpkeSealedMessageToProto", "hpkeSealedMessageToProtoBytes", "hpkeSealedMessageFromProto", "hpkeSealedMessageFromProtoBytes",
+          "providerCapabilityToProto", "providerCapabilityFromProto", "providerCapabilitySetToProto", "providerCapabilitySetToProtoBytes", "providerCapabilitySetFromProto", "providerCapabilitySetFromProtoBytes"
+        ],
+        "operation.key_encoding.public_key": [
+          "multicodecKeyAlgorithmFromProto", "multicodecKeyAlgorithmToProto",
+          "jsonWebKeyToProto", "jsonWebKeyToProtoBytes", "jsonWebKeyFromProto", "jsonWebKeyFromProtoBytes",
+          "jsonWebKeySetToProto", "jsonWebKeySetToProtoBytes", "jsonWebKeySetFromProto", "jsonWebKeySetFromProtoBytes"
+        ],
+        "support.error_mapping": [
+          "cryptoWireErrorToProto", "cryptoWireErrorFromProto",
+          "cryptoWireErrorToProtoBytes", "cryptoWireErrorFromProtoBytes", "cryptoWireErrorTryNew", "cryptoWireErrorToFacadeError",
+          "cryptoErrorToProto", "cryptoErrorToProtoBytes", "cryptoErrorFromProto", "cryptoErrorFromProtoBytes",
+          "verificationResultToProto", "verificationErrorToProto", "verificationResultToProtoBytes", "verificationResultFromProtoBytes"
+        ]
+      },
+      "excluded_public_reexports": "Generated schema descriptors, generated enum values, and TypeScript-only data types re-exported from this module are not callable operation routes under scope.route_granularity.",
+      "current_status": "public_protobuf_adapter_surface"
+    },
+    {
+      "id": "typescript.facade.methods",
+      "lane": "typescript-sdk",
+      "path": "packages/ts/src/cryptoFacade.ts",
+      "symbols_by_owner": {
+        "operation.proto.process": ["ReallyMeCrypto.processOperationResponse", "ReallyMeCrypto.processOperationResponseJson"],
+        "operation.hash.digest": ["ReallyMeCrypto.hash"],
+        "operation.aead.seal": ["ReallyMeCrypto.seal"],
+        "operation.aead.open": ["ReallyMeCrypto.open"],
+        "operation.mac.authenticate": ["ReallyMeCrypto.authenticate"],
+        "operation.mac.verify": ["ReallyMeCrypto.verifyMac"],
+        "operation.kdf.derive": ["ReallyMeCrypto.deriveArgon2id", "ReallyMeCrypto.deriveKey", "ReallyMeCrypto.deriveHkdf", "ReallyMeCrypto.deriveJwaConcatKdfSha256", "ReallyMeCrypto.deriveKmac256"],
+        "operation.key_wrap.wrap": ["ReallyMeCrypto.wrapKey"],
+        "operation.key_wrap.unwrap": ["ReallyMeCrypto.unwrapKey"],
+        "operation.signature.generate_key_pair": ["ReallyMeCrypto.generateKeyPair"],
+        "operation.signature.derive_key_pair": ["ReallyMeCrypto.deriveKeyPair"],
+        "operation.signature.sign": ["ReallyMeCrypto.sign"],
+        "operation.signature.verify": ["ReallyMeCrypto.verify"],
+        "operation.signature.bip340.sign": ["ReallyMeCrypto.signBip340Schnorr"],
+        "operation.signature.rsa.verify": ["ReallyMeCrypto.verifyRsa"],
+        "operation.key_agreement.derive_shared_secret": ["ReallyMeCrypto.deriveSharedSecret"],
+        "operation.key_agreement.derive_key_pair": ["ReallyMeCrypto.deriveKeyAgreementKeyPair"],
+        "operation.kem.generate_key_pair": ["ReallyMeCrypto.generateKemKeyPair"],
+        "operation.kem.derive_key_pair": ["ReallyMeCrypto.deriveKemKeyPair"],
+        "operation.kem.encapsulate": ["ReallyMeCrypto.encapsulate"],
+        "operation.kem.decapsulate": ["ReallyMeCrypto.decapsulate"],
+        "operation.hpke.seal": ["ReallyMeCrypto.sealHpke"],
+        "operation.hpke.open": ["ReallyMeCrypto.openHpke"]
+      },
+      "current_status": "typescript_generic_facade"
+    },
+    {
+      "id": "typescript.direct.exports",
+      "lane": "typescript-sdk",
+      "path": "packages/ts/src",
+      "symbols_by_owner": {
+        "operation.proto.process": ["processOperationResponse", "processOperationResponseWithProvider", "processOperationResponseJson", "processOperationResponseJsonWithProvider", "ReallyMeWasmProvider.processOperationResponse", "ReallyMeWasmProvider.processOperationResponseJson"],
+        "operation.hash.digest": ["ReallyMeDigest.sha256", "ReallyMeDigest.sha384", "ReallyMeDigest.sha512", "ReallyMeDigest.sha3_224", "ReallyMeDigest.sha3_256", "ReallyMeDigest.sha3_384", "ReallyMeDigest.sha3_512"],
+        "operation.aead.seal": ["ReallyMeAead.seal", "ReallyMeAead.sealWithProvider"],
+        "operation.aead.open": ["ReallyMeAead.open", "ReallyMeAead.openWithProvider"],
+        "operation.key_wrap.wrap": ["ReallyMeAesKw.wrapKey", "ReallyMeAesKw.wrapKeyWithProvider"],
+        "operation.key_wrap.unwrap": ["ReallyMeAesKw.unwrapKey", "ReallyMeAesKw.unwrapKeyWithProvider"],
+        "operation.mac.authenticate": ["ReallyMeHmac.authenticateSha256", "ReallyMeHmac.authenticateSha512"],
+        "operation.mac.verify": ["ReallyMeHmac.verifySha256", "ReallyMeHmac.verifySha512"],
+        "operation.kdf.derive": ["ReallyMeArgon2id.deriveKey", "ReallyMeArgon2id.deriveKeyWithProvider", "ReallyMePbkdf2.deriveHmacSha256", "ReallyMePbkdf2.deriveHmacSha512", "ReallyMeHkdf.deriveSha256", "ReallyMeJwaConcatKdf.deriveSha256", "ReallyMeKmac.deriveKmac256", "ReallyMeKmac.deriveKmac256WithProvider"],
+        "operation.signature.generate_key_pair": ["ReallyMeEd25519.generateKeyPair", "ReallyMeP256Ecdsa.generateKeyPair", "ReallyMeP384Ecdsa.generateKeyPair", "ReallyMeP521Ecdsa.generateKeyPair", "ReallyMeSecp256k1.generateKeyPair", "ReallyMeBip340Schnorr.generateKeyPair", "ReallyMeMlDsa.generateKeyPair", "ReallyMeMlDsa.generateKeyPairWithProvider", "ReallyMeSlhDsa.generateKeyPair", "ReallyMeSlhDsa.generateKeyPairWithProvider"],
+        "operation.signature.derive_key_pair": ["ReallyMeEd25519.deriveKeyPair", "ReallyMeP256Ecdsa.deriveKeyPair", "ReallyMeP384Ecdsa.deriveKeyPair", "ReallyMeP521Ecdsa.deriveKeyPair", "ReallyMeSecp256k1.deriveKeyPair", "ReallyMeBip340Schnorr.deriveKeyPair", "ReallyMeMlDsa.deriveKeyPair", "ReallyMeMlDsa.deriveKeyPairWithProvider", "deriveSlhDsaSha2128sKeypairForTest", "deriveSlhDsaSha2128sKeypairWithProviderForTest"],
+        "operation.signature.derive_public_key": ["ReallyMeEd25519.derivePublicKey", "ReallyMeP256Ecdsa.derivePublicKey", "ReallyMeP384Ecdsa.derivePublicKey", "ReallyMeP521Ecdsa.derivePublicKey", "ReallyMeSecp256k1.derivePublicKey", "ReallyMeBip340Schnorr.derivePublicKey"],
+        "operation.signature.sign": ["ReallyMeEd25519.sign", "ReallyMeP256Ecdsa.sign", "ReallyMeP384Ecdsa.sign", "ReallyMeP521Ecdsa.sign", "ReallyMeSecp256k1.sign", "ReallyMeMlDsa.sign", "ReallyMeMlDsa.signWithProvider", "ReallyMeSlhDsa.sign", "ReallyMeSlhDsa.signWithProvider"],
+        "operation.signature.verify": ["ReallyMeEd25519.verify", "ReallyMeP256Ecdsa.verify", "ReallyMeP384Ecdsa.verify", "ReallyMeP521Ecdsa.verify", "ReallyMeSecp256k1.verify", "ReallyMeMlDsa.verify", "ReallyMeMlDsa.verifyWithProvider", "ReallyMeSlhDsa.verify", "ReallyMeSlhDsa.verifyWithProvider"],
+        "operation.signature.bip340.sign": ["ReallyMeBip340Schnorr.sign"],
+        "operation.signature.bip340.verify": ["ReallyMeBip340Schnorr.verify"],
+        "operation.signature.rsa.verify": ["ReallyMeRsa.verify"],
+        "operation.key_agreement.generate_key_pair": ["ReallyMeX25519.generateKeyPair", "ReallyMeP256Ecdh.generateKeyPair", "ReallyMeP384Ecdh.generateKeyPair", "ReallyMeP521Ecdh.generateKeyPair"],
+        "operation.key_agreement.derive_key_pair": ["ReallyMeX25519.deriveKeyPair", "ReallyMeP256Ecdh.deriveKeyPair", "ReallyMeP384Ecdh.deriveKeyPair", "ReallyMeP521Ecdh.deriveKeyPair"],
+        "operation.key_agreement.derive_public_key": ["ReallyMeX25519.derivePublicKey", "ReallyMeP256Ecdh.derivePublicKey", "ReallyMeP384Ecdh.derivePublicKey", "ReallyMeP521Ecdh.derivePublicKey"],
+        "operation.key_agreement.derive_shared_secret": ["ReallyMeX25519.deriveSharedSecret", "ReallyMeP256Ecdh.deriveSharedSecret", "ReallyMeP384Ecdh.deriveSharedSecret", "ReallyMeP521Ecdh.deriveSharedSecret"],
+        "operation.kem.generate_key_pair": ["ReallyMeMlKem.generateKeyPair", "ReallyMeMlKem.generateKeyPairWithProvider", "ReallyMeXWing.generateKeyPair", "ReallyMeXWing.generateKeyPairWithProvider"],
+        "operation.kem.derive_key_pair": ["ReallyMeMlKem.deriveKeyPair", "ReallyMeMlKem.deriveKeyPairWithProvider", "ReallyMeXWing.deriveKeyPair", "ReallyMeXWing.deriveKeyPairWithProvider"],
+        "operation.kem.encapsulate": ["ReallyMeMlKem.encapsulate", "ReallyMeMlKem.encapsulateWithProvider", "ReallyMeXWing.encapsulate", "ReallyMeXWing.encapsulateWithProvider"],
+        "operation.kem.encapsulate_derand": ["ReallyMeMlKem.encapsulateDeterministicallyForTest", "ReallyMeMlKem.encapsulateDeterministicallyWithProviderForTest", "encapsulateXWingDeterministicallyForTest", "encapsulateXWingDeterministicallyWithProviderForTest"],
+        "operation.kem.decapsulate": ["ReallyMeMlKem.decapsulate", "ReallyMeMlKem.decapsulateWithProvider", "ReallyMeXWing.decapsulate", "ReallyMeXWing.decapsulateWithProvider"],
+        "operation.hpke.seal": ["ReallyMeHpke.sealBase", "ReallyMeHpke.sealBaseWithProvider", "sealHpkeBaseDeterministicallyForTest", "sealHpkeBaseDeterministicallyWithProviderForTest"],
+        "operation.hpke.open": ["ReallyMeHpke.openBase", "ReallyMeHpke.openBaseWithProvider"],
+        "operation.signature.encoding": ["encodeEcdsaDerSignature", "decodeEcdsaDerSignature"],
+        "operation.key_encoding.public_key": ["ReallyMeJwk.toJwk", "ReallyMeJwk.fromJwk", "ReallyMeJwk.toJwks", "ReallyMeJwk.fromJwks", "ReallyMeJwk.publicKeyBytes", "ReallyMeJwk.toJcs"],
+        "support.provider_catalog": ["createReallyMeCrypto", "createReallyMeWasmProvider", "installReallyMeWasmProvider", "requireReallyMeWasmProvider"],
+        "support.memory_hygiene": ["bestEffortClear"],
+        "support.error_mapping": ["ReallyMeCryptoError"]
+      },
+      "excluded_exported_helpers": "Provider-catalog constants and validateBytes.ts byte-shape, overlap, ownership, and property-reading helpers do not execute cryptographic or boundary-conversion operations. The validation helpers are package-internal composition exports rather than package exports; all are outside operation ownership under scope.route_granularity.",
+      "current_status": "validated_typescript_direct_routes"
+    }
+  ],
+  "completeness_rules": [
+    "Every callable operation route in this ledger maps to exactly one owner id.",
+    "No callable route may remain an unsupported implementation placeholder; invalid algorithm or provider combinations return typed errors.",
+    "Generated support surfaces may use wildcard ownership entries only when they cannot execute cryptographic operations.",
+    "Secure Enclave and Android Keystore / StrongBox signing and ECDH routes are platform-key lifecycle owners, not raw-key signature or key-agreement owners.",
+    "Android raw-key route groups point to the shared Kotlin owners; Android-only hardware-key lifecycle methods are owned under packages/kotlin-android and remain separate from those raw-key routes."
+  ]
+}

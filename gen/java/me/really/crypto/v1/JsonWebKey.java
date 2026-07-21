@@ -26,11 +26,6 @@ public  final class JsonWebKey extends
     return "JsonWebKey{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private JsonWebKey() {
     publicKey_ = com.google.protobuf.ByteString.EMPTY;
     canonicalJcs_ = com.google.protobuf.ByteString.EMPTY;

@@ -20,11 +20,6 @@ public  final class CryptoSignatureDeriveKeyPairRequest extends
     return "CryptoSignatureDeriveKeyPairRequest{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoSignatureDeriveKeyPairRequest() {
     secretKey_ = com.google.protobuf.ByteString.EMPTY;
   }

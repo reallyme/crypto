@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "external-vector-refenc-proof"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.89"
+license = "Apache-2.0"
+publish = false
+description = "Standalone Kani proofs for the external-vector reference DER encoder."
+
+[workspace]

@@ -8,6 +8,7 @@ package me.really.crypto.v1;
 /**
  * <pre>
  * HashAlgorithm identifies digest algorithms exposed by the hash primitives.
+ * Values 100-199 are SHA-2 and 200-299 are SHA-3.
  * </pre>
  *
  * Protobuf enum {@code reallyme.crypto.v1.HashAlgorithm}
@@ -20,33 +21,33 @@ public enum HashAlgorithm
    */
   HASH_ALGORITHM_UNSPECIFIED(0),
   /**
-   * <code>HASH_ALGORITHM_SHA2_256 = 1;</code>
+   * <code>HASH_ALGORITHM_SHA2_256 = 100;</code>
    */
-  HASH_ALGORITHM_SHA2_256(1),
+  HASH_ALGORITHM_SHA2_256(100),
   /**
-   * <code>HASH_ALGORITHM_SHA2_384 = 2;</code>
+   * <code>HASH_ALGORITHM_SHA2_384 = 110;</code>
    */
-  HASH_ALGORITHM_SHA2_384(2),
+  HASH_ALGORITHM_SHA2_384(110),
   /**
-   * <code>HASH_ALGORITHM_SHA2_512 = 3;</code>
+   * <code>HASH_ALGORITHM_SHA2_512 = 120;</code>
    */
-  HASH_ALGORITHM_SHA2_512(3),
+  HASH_ALGORITHM_SHA2_512(120),
   /**
-   * <code>HASH_ALGORITHM_SHA3_224 = 4;</code>
+   * <code>HASH_ALGORITHM_SHA3_224 = 200;</code>
    */
-  HASH_ALGORITHM_SHA3_224(4),
+  HASH_ALGORITHM_SHA3_224(200),
   /**
-   * <code>HASH_ALGORITHM_SHA3_256 = 5;</code>
+   * <code>HASH_ALGORITHM_SHA3_256 = 210;</code>
    */
-  HASH_ALGORITHM_SHA3_256(5),
+  HASH_ALGORITHM_SHA3_256(210),
   /**
-   * <code>HASH_ALGORITHM_SHA3_384 = 6;</code>
+   * <code>HASH_ALGORITHM_SHA3_384 = 220;</code>
    */
-  HASH_ALGORITHM_SHA3_384(6),
+  HASH_ALGORITHM_SHA3_384(220),
   /**
-   * <code>HASH_ALGORITHM_SHA3_512 = 7;</code>
+   * <code>HASH_ALGORITHM_SHA3_512 = 230;</code>
    */
-  HASH_ALGORITHM_SHA3_512(7),
+  HASH_ALGORITHM_SHA3_512(230),
   UNRECOGNIZED(-1),
   ;
 
@@ -55,33 +56,33 @@ public enum HashAlgorithm
    */
   public static final int HASH_ALGORITHM_UNSPECIFIED_VALUE = 0;
   /**
-   * <code>HASH_ALGORITHM_SHA2_256 = 1;</code>
+   * <code>HASH_ALGORITHM_SHA2_256 = 100;</code>
    */
-  public static final int HASH_ALGORITHM_SHA2_256_VALUE = 1;
+  public static final int HASH_ALGORITHM_SHA2_256_VALUE = 100;
   /**
-   * <code>HASH_ALGORITHM_SHA2_384 = 2;</code>
+   * <code>HASH_ALGORITHM_SHA2_384 = 110;</code>
    */
-  public static final int HASH_ALGORITHM_SHA2_384_VALUE = 2;
+  public static final int HASH_ALGORITHM_SHA2_384_VALUE = 110;
   /**
-   * <code>HASH_ALGORITHM_SHA2_512 = 3;</code>
+   * <code>HASH_ALGORITHM_SHA2_512 = 120;</code>
    */
-  public static final int HASH_ALGORITHM_SHA2_512_VALUE = 3;
+  public static final int HASH_ALGORITHM_SHA2_512_VALUE = 120;
   /**
-   * <code>HASH_ALGORITHM_SHA3_224 = 4;</code>
+   * <code>HASH_ALGORITHM_SHA3_224 = 200;</code>
    */
-  public static final int HASH_ALGORITHM_SHA3_224_VALUE = 4;
+  public static final int HASH_ALGORITHM_SHA3_224_VALUE = 200;
   /**
-   * <code>HASH_ALGORITHM_SHA3_256 = 5;</code>
+   * <code>HASH_ALGORITHM_SHA3_256 = 210;</code>
    */
-  public static final int HASH_ALGORITHM_SHA3_256_VALUE = 5;
+  public static final int HASH_ALGORITHM_SHA3_256_VALUE = 210;
   /**
-   * <code>HASH_ALGORITHM_SHA3_384 = 6;</code>
+   * <code>HASH_ALGORITHM_SHA3_384 = 220;</code>
    */
-  public static final int HASH_ALGORITHM_SHA3_384_VALUE = 6;
+  public static final int HASH_ALGORITHM_SHA3_384_VALUE = 220;
   /**
-   * <code>HASH_ALGORITHM_SHA3_512 = 7;</code>
+   * <code>HASH_ALGORITHM_SHA3_512 = 230;</code>
    */
-  public static final int HASH_ALGORITHM_SHA3_512_VALUE = 7;
+  public static final int HASH_ALGORITHM_SHA3_512_VALUE = 230;
 
 
   @java.lang.Override
@@ -105,13 +106,13 @@ public enum HashAlgorithm
   public static HashAlgorithm forNumber(int value) {
     switch (value) {
       case 0: return HASH_ALGORITHM_UNSPECIFIED;
-      case 1: return HASH_ALGORITHM_SHA2_256;
-      case 2: return HASH_ALGORITHM_SHA2_384;
-      case 3: return HASH_ALGORITHM_SHA2_512;
-      case 4: return HASH_ALGORITHM_SHA3_224;
-      case 5: return HASH_ALGORITHM_SHA3_256;
-      case 6: return HASH_ALGORITHM_SHA3_384;
-      case 7: return HASH_ALGORITHM_SHA3_512;
+      case 100: return HASH_ALGORITHM_SHA2_256;
+      case 110: return HASH_ALGORITHM_SHA2_384;
+      case 120: return HASH_ALGORITHM_SHA2_512;
+      case 200: return HASH_ALGORITHM_SHA3_224;
+      case 210: return HASH_ALGORITHM_SHA3_256;
+      case 220: return HASH_ALGORITHM_SHA3_384;
+      case 230: return HASH_ALGORITHM_SHA3_512;
       default: return null;
     }
   }

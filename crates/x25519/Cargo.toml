@@ -1,0 +1,50 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-x25519"
+version = "0.3.0"
+include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = true
+description = "X25519 key agreement primitive for ReallyMe Crypto."
+
+[lib]
+name = "crypto_x25519"
+
+[features]
+default = []
+
+# -----------------------------
+# Native Rust backend
+# -----------------------------
+native = [
+    "dep:x25519-dalek",
+]
+
+wasm = [
+    "dep:getrandom",
+    "dep:x25519-dalek",
+]
+
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.3.0", path = "../crypto/core" }
+zeroize = { workspace = true }
+
+# -----------------------------
+# Native-only crypto deps
+# -----------------------------
+x25519-dalek = { workspace = true, features = ["getrandom", "static_secrets", "zeroize"], optional = true }
+getrandom = { workspace = true, features = ["wasm_js"], optional = true }
+
+[dev-dependencies]
+hex = { workspace = true }
+wasm-bindgen-test = { workspace = true }
+
+[lints]
+workspace = true

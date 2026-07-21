@@ -66,6 +66,18 @@ final class ReallyMeCryptoRustCAbiTests: XCTestCase {
         return try JSONDecoder().decode(EcdsaCurveVector.self, from: data)
     }
 
+    static func loadAesKwVector(_ fileName: String) throws -> AesKwVector {
+        let vectorUrl = try reallyMeVectorURL(fileName)
+        let data = try Data(contentsOf: vectorUrl)
+        return try JSONDecoder().decode(AesKwVector.self, from: data)
+    }
+
+    static func loadKmac256Vector() throws -> Kmac256Vector {
+        let vectorUrl = try reallyMeVectorURL("kmac256.json")
+        let data = try Data(contentsOf: vectorUrl)
+        return try JSONDecoder().decode(Kmac256Vector.self, from: data)
+    }
+
     static func loadMlDsaVector(_ fileName: String) throws -> MlDsaVector {
         let vectorUrl = try reallyMeVectorURL(fileName)
         let data = try Data(contentsOf: vectorUrl)
@@ -348,16 +360,6 @@ final class ReallyMeCryptoRustCAbiTests: XCTestCase {
         ) { error in
             XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
         }
-        XCTAssertThrowsError(
-            try ReallyMeCrypto.encapsulate(
-                algorithm,
-                publicKey: publicKey,
-                seed: [0x00],
-                rustCAbiLibrary: library
-            )
-        ) { error in
-            XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
-        }
     }
 
     static func assertXWingVector(
@@ -367,29 +369,19 @@ final class ReallyMeCryptoRustCAbiTests: XCTestCase {
     ) throws {
         let secretKey = try base64UrlBytes(vector.secretKey)
         let publicKey = try base64UrlBytes(vector.publicKey)
-        let seed = try base64UrlBytes(vector.encapsSeed)
         let ciphertext = try base64UrlBytes(vector.ciphertext)
         let sharedSecret = try base64UrlBytes(vector.sharedSecret)
 
         XCTAssertEqual(publicKey.count, vector.publicKeyLength)
         XCTAssertEqual(ciphertext.count, vector.ciphertextLength)
-        XCTAssertEqual(
-            try ReallyMeCrypto.deriveXWingKeyPair(
-                algorithm,
-                secretKey: secretKey,
-                rustCAbiLibrary: library
-            ),
-            ReallyMeKemKeyPair(publicKey: publicKey, secretKey: secretKey)
-        )
-
-        let encapsulation = try ReallyMeCrypto.encapsulate(
+        let derivedKeyPair = try ReallyMeCrypto.deriveXWingKeyPair(
             algorithm,
-            publicKey: publicKey,
-            seed: seed,
+            secretKey: secretKey,
             rustCAbiLibrary: library
         )
-        XCTAssertEqual(encapsulation.ciphertext, ciphertext)
-        XCTAssertEqual(encapsulation.sharedSecret, sharedSecret)
+        XCTAssertEqual(derivedKeyPair.publicKey, publicKey)
+        XCTAssertEqual(derivedKeyPair.secretKey, secretKey)
+
         XCTAssertEqual(
             try ReallyMeCrypto.decapsulate(
                 algorithm,
@@ -398,6 +390,21 @@ final class ReallyMeCryptoRustCAbiTests: XCTestCase {
                 rustCAbiLibrary: library
             ),
             sharedSecret
+        )
+
+        let encapsulation = try ReallyMeCrypto.encapsulate(
+            algorithm,
+            publicKey: publicKey,
+            rustCAbiLibrary: library
+        )
+        XCTAssertEqual(
+            try ReallyMeCrypto.decapsulate(
+                algorithm,
+                ciphertext: encapsulation.ciphertext,
+                secretKey: secretKey,
+                rustCAbiLibrary: library
+            ),
+            encapsulation.sharedSecret
         )
 
         var tampered = ciphertext
@@ -562,13 +569,43 @@ final class ReallyMeCryptoRustCAbiTests: XCTestCase {
         "_7nNfmP5CviOGjZoJGBZvbFUg3_5bi-7G4V4eZfrQhK1kVmCZM04DpFUnJawDAk8-QQ"
 }
 
+struct AesKwVector: Decodable {
+    let alg: String
+    let kek: String
+    let keyData: String
+    let wrappedKey: String
+
+    enum CodingKeys: String, CodingKey {
+        case alg
+        case kek
+        case keyData = "key_data"
+        case wrappedKey = "wrapped_key"
+    }
+}
+
+struct Kmac256Vector: Decodable {
+    let alg: String
+    let key: String
+    let context: String
+    let customization: String
+    let outputLength: Int
+    let derivedKey: String
+
+    enum CodingKeys: String, CodingKey {
+        case alg
+        case key
+        case context
+        case customization
+        case outputLength = "output_length"
+        case derivedKey = "derived_key"
+    }
+}
+
 struct XWingVectors: Decodable {
     let xWing768: XWingVector
-    let xWing1024: XWingVector
 
     private enum CodingKeys: String, CodingKey {
         case xWing768 = "x_wing_768"
-        case xWing1024 = "x_wing_1024"
     }
 }
 

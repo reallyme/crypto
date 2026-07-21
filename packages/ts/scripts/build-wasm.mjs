@@ -15,7 +15,7 @@ const WASM_BINDGEN_COMMAND = "wasm-bindgen";
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const packageDirectory = resolve(scriptDirectory, "..");
 const repositoryDirectory = resolve(packageDirectory, "..", "..");
-const wasmCrateDirectory = resolve(repositoryDirectory, "crates", "crypto", "wasm-package");
+const wasmCrateDirectory = resolve(repositoryDirectory, "crates", "wasm");
 const outputDirectory = resolve(packageDirectory, "dist", "wasm");
 
 function fail(message) {
@@ -87,10 +87,14 @@ const result = spawnSync(
     wasmCrateDirectory,
     "--target",
     "web",
+    "--release",
     "--out-dir",
     outputDirectory,
     "--out-name",
     "reallyme_crypto_wasm",
+    // wasm-pack treats the first unrecognized option and every argument after
+    // it as Cargo options, so lock enforcement must remain last.
+    "--locked",
   ],
   {
     cwd: packageDirectory,

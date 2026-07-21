@@ -1,0 +1,221 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: External Vector Audit
+
+# Optional, mostly-manual audit of the vendored third-party conformance corpora.
+#
+#   integrity   cheap SHA-256 + marker sweep. Runs on dispatch, weekly, and on
+#               PRs that touch the external vectors or harness, so vendored-file
+#               drift is caught continuously without loading the main PR wall.
+#   deep-audit  the enormous ignored ACVP/CCTV sweeps run on dispatch/schedule.
+#               Supplementary adapters run only on a deliberate dispatch with
+#               their reviewed, already-committed source refs.
+#   kani        bounded formal proofs of the reference DER encoder. Dispatch or
+#               schedule only.
+on:
+  workflow_dispatch:
+    inputs:
+      wycheproof_ref:
+        description: "Reviewed Wycheproof commit SHA to vendor and execute (blank to skip)"
+        required: false
+        default: ""
+      bip340_ref:
+        description: "Reviewed bitcoin/bips commit SHA for BIP-340 vectors (blank to skip)"
+        required: false
+        default: ""
+      rfc8032_ref:
+        description: "Reviewed golang/go commit SHA for the Ed25519 sign.input corpus (blank to skip)"
+        required: false
+        default: ""
+      xwing_ref:
+        description: "Reviewed X-Wing draft commit SHA (blank to skip)"
+        required: false
+        default: ""
+      hpke_ref:
+        description: "Reviewed CFRG HPKE draft commit SHA for RFC 9180 vectors (blank to skip)"
+        required: false
+        default: ""
+      brycx_ref:
+        description: "Reviewed brycx Test-Vector-Generation commit SHA for PBKDF2 vectors (blank to skip)"
+        required: false
+        default: ""
+  schedule:
+    - cron: "23 4 * * 1"
+  pull_request:
+    paths:
+      - "vectors/external/**"
+      - "tools/external-vector-audit/**"
+      - "scripts/vendor_external_vectors.mjs"
+      - "scripts/run_external_cctv_deep_audit.mjs"
+      - "crates/conformance/tests/vectors/external_vector_tests/**"
+      - ".github/workflows/external-vectors-audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  integrity:
+    name: vendored-vector integrity
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: 1.96.0
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+
+      - name: Install Node
+        if: github.event_name == 'schedule'
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+
+      - name: Re-derive supplementary corpora from pinned upstream commits
+        if: github.event_name == 'schedule'
+        run: node scripts/vendor_external_vectors.mjs --check
+
+      - name: Verify vendored external-vector SHA-256 hashes
+        run: >-
+          cargo test --locked -p crypto-conformance-vectors --test vectors_tests --all-features
+          external_vector_tests::provenance::external_vector_files_match_pinned_sha256 -- --ignored
+
+      - name: Verify every vendored corpus file is provenance-listed
+        run: >-
+          cargo test --locked -p crypto-conformance-vectors --test vectors_tests --all-features
+          external_vector_tests::provenance::every_external_corpus_file_has_provenance
+
+      - name: Verify vendored CCTV file markers
+        run: >-
+          cargo test --locked -p crypto-conformance-vectors --test vectors_tests --all-features
+          external_vector_tests::cctv::all_vendored_cctv_files_have_expected_markers -- --ignored
+
+  deep-audit:
+    name: deep external-vector audit
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: 1.96.0
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+
+      - name: Install Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+
+      - name: Vendor supplementary corpora
+        env:
+          WYCHEPROOF_REF: ${{ github.event.inputs.wycheproof_ref }}
+          BIP340_REF: ${{ github.event.inputs.bip340_ref }}
+          RFC8032_REF: ${{ github.event.inputs.rfc8032_ref }}
+          XWING_REF: ${{ github.event.inputs.xwing_ref }}
+          HPKE_REF: ${{ github.event.inputs.hpke_ref }}
+          BRYCX_REF: ${{ github.event.inputs.brycx_ref }}
+        run: |
+          sources=()
+          [ -n "${WYCHEPROOF_REF}" ] && sources+=(wycheproof)
+          [ -n "${BIP340_REF}" ] && sources+=(bip340)
+          [ -n "${RFC8032_REF}" ] && sources+=(rfc8032)
+          [ -n "${XWING_REF}" ] && sources+=(xwing)
+          [ -n "${HPKE_REF}" ] && sources+=(hpke)
+          [ -n "${BRYCX_REF}" ] && sources+=(brycx)
+          if [ "${#sources[@]}" -eq 0 ]; then
+            echo "No supplementary refs supplied; skipping vendoring."
+          else
+            node scripts/vendor_external_vectors.mjs "${sources[@]}"
+          fi
+
+      - name: Require reviewed supplementary corpus bytes
+        if: ${{ github.event.inputs.wycheproof_ref != '' || github.event.inputs.bip340_ref != '' || github.event.inputs.rfc8032_ref != '' || github.event.inputs.xwing_ref != '' || github.event.inputs.hpke_ref != '' || github.event.inputs.brycx_ref != '' }}
+        run: git diff --exit-code -- vectors/external
+
+      - name: Run existing deep CCTV/ACVP audit
+        run: node scripts/run_external_cctv_deep_audit.mjs
+
+      - name: Execute Wycheproof adapters
+        if: ${{ github.event.inputs.wycheproof_ref != '' }}
+        run: >-
+          cargo test --locked -p external-vector-audit --no-default-features --features native
+          --test wycheproof_chacha20_poly1305
+          --test wycheproof_ecdsa_secp256k1
+          --test wycheproof_xdh_x25519
+          --test wycheproof_xdh_x448
+          --test wycheproof_ecdh_pcurves -- --ignored
+
+      - name: Execute BIP-340 adapter
+        if: ${{ github.event.inputs.bip340_ref != '' }}
+        run: >-
+          cargo test --locked -p external-vector-audit --no-default-features --features native
+          --test bip340_schnorr -- --ignored
+
+      - name: Execute RFC 8032 Ed25519 sigGen adapter
+        if: ${{ github.event.inputs.rfc8032_ref != '' }}
+        run: >-
+          cargo test --locked -p external-vector-audit --no-default-features --features native
+          --test rfc8032_ed25519_siggen -- --ignored
+
+      - name: Execute X-Wing-768 adapter
+        if: ${{ github.event.inputs.xwing_ref != '' }}
+        run: >-
+          cargo test --locked -p external-vector-audit --no-default-features --features native
+          --test xwing768_kat -- --ignored
+
+      - name: Execute HPKE RFC 9180 adapter
+        if: ${{ github.event.inputs.hpke_ref != '' }}
+        run: >-
+          cargo test --locked -p external-vector-audit --no-default-features --features native
+          --test rfc9180_hpke -- --ignored
+
+      - name: Execute PBKDF2 adapter
+        if: ${{ github.event.inputs.brycx_ref != '' }}
+        run: >-
+          cargo test --locked -p external-vector-audit --no-default-features --features native
+          --test pbkdf2_rfc6070 -- --ignored
+
+      - name: Re-verify provenance hashes after vendoring
+        if: ${{ github.event.inputs.wycheproof_ref != '' || github.event.inputs.bip340_ref != '' || github.event.inputs.rfc8032_ref != '' || github.event.inputs.xwing_ref != '' || github.event.inputs.hpke_ref != '' || github.event.inputs.brycx_ref != '' }}
+        run: >-
+          cargo test --locked -p crypto-conformance-vectors --test vectors_tests --all-features
+          external_vector_tests::provenance::external_vector_files_match_pinned_sha256 -- --ignored
+
+  kani:
+    name: kani proofs (reference encoder)
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: 1.96.0
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+
+      # Kani manages its own verification toolchain via `cargo kani setup`.
+      # Pin the verifier version deliberately; the proof crate is standalone
+      # because Kani 0.67 still bundles a compiler below the release workspace
+      # Rust floor.
+      - name: Install Kani
+        run: |
+          cargo install --locked kani-verifier@0.67.0
+          cargo kani setup
+
+      - name: Run Kani proofs
+        run: cargo kani --manifest-path tools/external-vector-audit/refenc-proof/Cargo.toml

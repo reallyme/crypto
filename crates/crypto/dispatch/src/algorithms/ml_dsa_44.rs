@@ -29,6 +29,24 @@ impl SignatureAlgorithm for MlDsa44Algo {
         }
     }
 
+    fn derive_keypair(secret: &[u8]) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), AlgorithmError> {
+        #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
+        {
+            let seed =
+                <&[u8; 32]>::try_from(secret).map_err(|_| AlgorithmError::InvalidKey(Self::ALG))?;
+            return crate::algorithms::KeypairResultExt::into_algorithm_keypair(
+                crypto_ml_dsa_44::generate_ml_dsa_44_keypair_from_seed(seed),
+                Self::ALG,
+            );
+        }
+
+        #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
+        {
+            let _ = secret;
+            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+        }
+    }
+
     fn sign(secret: &[u8], msg: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
         #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
         {

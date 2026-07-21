@@ -34,6 +34,29 @@ public enum ReallyMeHkdf {
         }
     }
 
+    public static func deriveSha384(
+        inputKeyMaterial: [UInt8],
+        salt: [UInt8],
+        info: [UInt8],
+        outputLength: Int
+    ) throws -> [UInt8] {
+        try validate(
+            inputKeyMaterial: inputKeyMaterial,
+            salt: salt,
+            info: info,
+            outputLength: outputLength
+        )
+        let key = HKDF<SHA384>.deriveKey(
+            inputKeyMaterial: SymmetricKey(data: Data(inputKeyMaterial)),
+            salt: Data(salt),
+            info: Data(info),
+            outputByteCount: outputLength
+        )
+        return key.withUnsafeBytes { bytes in
+            Array(bytes)
+        }
+    }
+
     private static func validate(
         inputKeyMaterial: [UInt8],
         salt: [UInt8],

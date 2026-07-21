@@ -26,9 +26,9 @@
       "family": "signature",
       "packageApi": true,
       "lanes": {
-        "swift": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustCAbiP256Ecdsa", "fallback": "explicit_provider_required"},
+        "swift": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI", "Secure Enclave/Keychain"], "usesRust": true, "api": "ReallyMeRustCAbiP256Ecdsa and ReallyMeP256SecureEnclaveEcdsa", "fallback": "explicit_provider_required"},
         "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeP256Ecdsa", "fallback": "typed_provider_failure"},
-        "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeP256Ecdsa", "fallback": "typed_provider_failure"},
+        "kotlin_android": {"status": "supported", "providers": ["BouncyCastle", "Android Keystore", "StrongBox"], "usesRust": false, "api": "ReallyMeP256Ecdsa and ReallyMeAndroidPlatformKeys", "fallback": "typed_provider_failure"},
         "typescript_wasm": {"status": "supported", "providers": ["@noble/curves", "@noble/hashes"], "usesRust": false, "api": "ReallyMeP256Ecdsa", "fallback": "typed_provider_failure"}
       }
     },
@@ -82,8 +82,8 @@
       "packageApi": true,
       "lanes": {
         "swift": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustCAbiRsa verify", "fallback": "explicit_provider_required"},
-        "kotlin_jvm": {"status": "supported", "providers": ["JCA/JCE", "BouncyCastle"], "usesRust": false, "api": "ReallyMeRsa verify", "fallback": "typed_provider_failure"},
-        "kotlin_android": {"status": "supported", "providers": ["JCA/JCE", "BouncyCastle"], "usesRust": false, "api": "ReallyMeRsa verify", "fallback": "typed_provider_failure"},
+        "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeRsa verify", "fallback": "typed_provider_failure"},
+        "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeRsa verify", "fallback": "typed_provider_failure"},
         "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeRsa verify", "fallback": "typed_provider_failure"}
       }
     },
@@ -181,7 +181,7 @@
       "lanes": {
         "swift": {"status": "supported", "providers": ["CryptoKit", "Secure Enclave/Keychain"], "usesRust": false, "api": "ReallyMeP256Ecdh and ReallyMeP256SecureEnclaveEcdh", "fallback": "typed_provider_failure"},
         "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeP256Ecdh", "fallback": "typed_provider_failure"},
-        "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeP256Ecdh", "fallback": "typed_provider_failure"},
+        "kotlin_android": {"status": "supported", "providers": ["BouncyCastle", "Android Keystore", "StrongBox"], "usesRust": false, "api": "ReallyMeP256Ecdh and ReallyMeAndroidPlatformKeys", "fallback": "typed_provider_failure"},
         "typescript_wasm": {"status": "supported", "providers": ["@noble/curves"], "usesRust": false, "api": "ReallyMeP256Ecdh", "fallback": "typed_provider_failure"}
       }
     },
@@ -242,12 +242,6 @@
       }
     },
     {
-      "id": "X-Wing-1024",
-      "family": "kem",
-      "packageApi": true,
-      "sameAs": "X-Wing-768"
-    },
-    {
       "id": "DHKEM-P256-HKDF-SHA256-HKDF-SHA256-AES-256-GCM",
       "family": "hpke",
       "packageApi": true,
@@ -270,8 +264,8 @@
       "packageApi": true,
       "lanes": {
         "swift": {"status": "supported", "providers": ["CryptoKit"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
-        "kotlin_jvm": {"status": "supported", "providers": ["JCA/JCE", "BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
-        "kotlin_android": {"status": "supported", "providers": ["JCA/JCE", "BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
+        "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
+        "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
         "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAead", "fallback": "typed_provider_failure"}
       }
     },
@@ -281,8 +275,8 @@
       "packageApi": true,
       "lanes": {
         "swift": {"status": "supported", "providers": ["CryptoKit"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
-        "kotlin_jvm": {"status": "supported", "providers": ["JCA/JCE", "BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
-        "kotlin_android": {"status": "supported", "providers": ["JCA/JCE", "BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
+        "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
+        "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
         "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAead", "fallback": "typed_provider_failure"}
       }
     },
@@ -292,8 +286,8 @@
       "packageApi": true,
       "lanes": {
         "swift": {"status": "supported", "providers": ["CryptoKit"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
-        "kotlin_jvm": {"status": "supported", "providers": ["JCA/JCE", "BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
-        "kotlin_android": {"status": "supported", "providers": ["JCA/JCE", "BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
+        "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
+        "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
         "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAead", "fallback": "typed_provider_failure"}
       }
     },
@@ -394,6 +388,12 @@
       }
     },
     {
+      "id": "HMAC-SHA-384",
+      "family": "mac",
+      "packageApi": true,
+      "sameAs": "HMAC-SHA-256"
+    },
+    {
       "id": "HMAC-SHA-512",
       "family": "mac",
       "packageApi": true,
@@ -408,6 +408,17 @@
         "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeHkdf.deriveSha256", "fallback": "typed_provider_failure"},
         "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeHkdf.deriveSha256", "fallback": "typed_provider_failure"},
         "typescript_wasm": {"status": "supported", "providers": ["@noble/hashes"], "usesRust": false, "api": "ReallyMeHkdf.deriveSha256", "fallback": "typed_provider_failure"}
+      }
+    },
+    {
+      "id": "HKDF-SHA384",
+      "family": "kdf",
+      "packageApi": true,
+      "lanes": {
+        "swift": {"status": "supported", "providers": ["CryptoKit"], "usesRust": false, "api": "ReallyMeHkdf.deriveSha384", "fallback": "typed_provider_failure"},
+        "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeHkdf.deriveSha384", "fallback": "typed_provider_failure"},
+        "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeHkdf.deriveSha384", "fallback": "typed_provider_failure"},
+        "typescript_wasm": {"status": "supported", "providers": ["@noble/hashes"], "usesRust": false, "api": "ReallyMeHkdf.deriveSha384", "fallback": "typed_provider_failure"}
       }
     },
     {
@@ -450,7 +461,18 @@
       }
     },
     {
-      "id": "AES-256-KW",
+      "id": "KMAC256",
+      "family": "kdf",
+      "packageApi": true,
+      "lanes": {
+        "swift": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustCAbiKmac", "fallback": "explicit_provider_required"},
+        "kotlin_jvm": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustNativeProvider + ReallyMeKmac", "fallback": "explicit_provider_required"},
+        "kotlin_android": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustNativeProvider + ReallyMeKmac", "fallback": "explicit_provider_required"},
+        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeKmac", "fallback": "typed_provider_failure"}
+      }
+    },
+    {
+      "id": "AES-128-KW",
       "family": "key_wrap",
       "packageApi": true,
       "lanes": {
@@ -459,6 +481,18 @@
         "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeAesKw", "fallback": "typed_provider_failure"},
         "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAesKw", "fallback": "typed_provider_failure"}
       }
+    },
+    {
+      "id": "AES-192-KW",
+      "family": "key_wrap",
+      "packageApi": true,
+      "sameAs": "AES-128-KW"
+    },
+    {
+      "id": "AES-256-KW",
+      "family": "key_wrap",
+      "packageApi": true,
+      "sameAs": "AES-128-KW"
     }
   ]
 }

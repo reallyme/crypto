@@ -5,7 +5,7 @@
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { resolve } from "node:path";
+import { relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
@@ -19,10 +19,13 @@ const allowedFallbacks = new Set([
 ]);
 
 const laneCatalogPaths = {
-  swift: "packages/swift/Sources/ReallyMeCrypto/ProviderCatalog.swift",
-  kotlin_jvm: "packages/kotlin/src/main/kotlin/me/really/crypto/ProviderCatalog.kt",
-  kotlin_android: "packages/kotlin/src/main/kotlin/me/really/crypto/ProviderCatalog.kt",
-  typescript_wasm: "packages/ts/src/providerCatalog.ts",
+  swift: ["packages/swift/Sources/ReallyMeCrypto/ProviderCatalog.swift"],
+  kotlin_jvm: ["packages/kotlin/src/main/kotlin/me/really/crypto/ProviderCatalog.kt"],
+  kotlin_android: [
+    "packages/kotlin/src/main/kotlin/me/really/crypto/ProviderCatalog.kt",
+    "packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidProviderCatalog.kt",
+  ],
+  typescript_wasm: ["packages/ts/src/providerCatalog.ts"],
 };
 
 const laneAlgorithmPaths = {
@@ -39,23 +42,29 @@ const swiftSourcePaths = [
 
 const kotlinSourcePaths = ["packages/kotlin/src/main/kotlin/me/really/crypto"];
 
+const kotlinAndroidSourcePaths = [
+  ...kotlinSourcePaths,
+  "packages/kotlin-android/src/main/kotlin/me/really/crypto",
+];
+
 const typescriptSourcePaths = ["packages/ts/src"];
 
 const rustRoutePaths = [
   "crates/crypto/core/src/algorithm.rs",
   "crates/crypto/dispatch/src",
-  "crates/crypto/ffi/src",
-  "crates/crypto/wasm-package/src",
-  "crates/crypto/protocols/hpke/src",
+  "crates/ffi/src",
+  "crates/wasm/src",
+  "crates/hpke/src",
 ];
 
 const routingTestPaths = [
   "packages/swift/Tests",
   "packages/kotlin/src/test",
+  "packages/kotlin-android/src/androidTest",
   "packages/ts/test",
   "crates/crypto/dispatch/tests",
-  "crates/crypto/ffi/tests",
-  "tests",
+  "crates/ffi/tests",
+  "crates/crypto/tests",
 ];
 
 // Kotlin's catalog names one runtime dependency used by provider plumbing but
@@ -80,6 +89,12 @@ const fail = (message) => {
 const assertContains = (label, text, needle) => {
   if (!text.includes(needle)) {
     fail(`${label} is missing required routing marker ${needle}`);
+  }
+};
+
+const assertNotContains = (label, text, needle) => {
+  if (text.includes(needle)) {
+    fail(`${label} contains forbidden routing marker ${needle}`);
   }
 };
 
@@ -148,6 +163,37 @@ const sourceFromTree = (path) => {
   };
   walk(absolute);
   return files.map((file) => readFileSync(file, "utf8")).join("\n");
+};
+
+const sourceFilesFromTrees = (paths) => {
+  const files = [];
+  const walk = (directory) => {
+    for (const entry of readdirSync(directory)) {
+      const child = resolve(directory, entry);
+      const stat = statSync(child);
+      if (stat.isDirectory()) {
+        walk(child);
+      } else if (/\.(swift|kt|ts)$/.test(entry)) {
+        files.push({
+          path: relative(root, child),
+          source: readFileSync(child, "utf8"),
+        });
+      }
+    }
+  };
+  for (const path of paths) {
+    const absolute = resolve(root, path);
+    const stat = statSync(absolute);
+    if (stat.isDirectory()) {
+      walk(absolute);
+    } else {
+      files.push({
+        path: relative(root, absolute),
+        source: readFileSync(absolute, "utf8"),
+      });
+    }
+  }
+  return files;
 };
 
 const manifest = readJson("provider_manifest.json");
@@ -274,14 +320,25 @@ for (const laneName of requiredLanes) {
     }
   }
   const approvedExtras = approvedCatalogOnlyProviders[laneName];
-  const catalogProviders = quotedStrings(readText(laneCatalogPaths[laneName]));
+  const catalogProviders = quotedStrings(
+    laneCatalogPaths[laneName].map((path) => readText(path)).join("\n"),
+  );
   const expectedCatalog = new Set([...manifestProviders, ...approvedExtras]);
   assertEqualSets(`${laneName} provider catalog`, catalogProviders, expectedCatalog);
 }
 
 const swiftSource = swiftSourcePaths.map((path) => sourceFromTree(path)).join("\n");
 const kotlinSource = kotlinSourcePaths.map((path) => sourceFromTree(path)).join("\n");
+const kotlinAndroidSource = kotlinAndroidSourcePaths
+  .map((path) => sourceFromTree(path))
+  .join("\n");
 const typescriptSource = typescriptSourcePaths.map((path) => sourceFromTree(path)).join("\n");
+const sourceFilesByLane = {
+  swift: sourceFilesFromTrees(swiftSourcePaths),
+  kotlin_jvm: sourceFilesFromTrees(kotlinSourcePaths),
+  kotlin_android: sourceFilesFromTrees(kotlinAndroidSourcePaths),
+  typescript_wasm: sourceFilesFromTrees(typescriptSourcePaths),
+};
 const rustRouteSource = rustRoutePaths.map((path) => sourceFromTree(path)).join("\n");
 const routingTestSource = routingTestPaths.map((path) => sourceFromTree(path)).join("\n");
 
@@ -290,8 +347,9 @@ const sourceForLane = (laneName) => {
     case "swift":
       return swiftSource;
     case "kotlin_jvm":
-    case "kotlin_android":
       return kotlinSource;
+    case "kotlin_android":
+      return kotlinAndroidSource;
     case "typescript_wasm":
       return typescriptSource;
     default:
@@ -320,10 +378,80 @@ const apiMarkersFor = (algorithmId, api) => {
   if (api.includes("ML-DSA")) {
     markers.add("ReallyMeMlDsa");
   }
+  if (
+    algorithmId === "BIP340-Schnorr-secp256k1-SHA256" &&
+    api.includes("signBip340Schnorr")
+  ) {
+    markers.add("ReallyMeBip340Schnorr");
+  }
   if (api.includes("ReallyMeRsa")) {
     markers.add("ReallyMeRsa");
   }
   return [...markers].filter((marker) => marker !== "ReallyMeCrypto");
+};
+
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const declarationPatternFor = (laneName, owner) => {
+  const escapedOwner = escapeRegex(owner);
+  switch (laneName) {
+    case "swift":
+      return new RegExp(`\\bpublic\\s+(?:actor|class|enum|struct)\\s+${escapedOwner}\\b`);
+    case "kotlin_jvm":
+    case "kotlin_android":
+      return new RegExp(`\\bpublic\\s+(?:class|enum\\s+class|object)\\s+${escapedOwner}\\b`);
+    case "typescript_wasm":
+      return new RegExp(`\\bexport\\s+(?:class|const)\\s+${escapedOwner}\\b`);
+    default:
+      return undefined;
+  }
+};
+
+const forbiddenRustRouteMarkers = {
+  swift: ["ReallyMeRustCAbi", "rustCAbiLibrary"],
+  kotlin_jvm: ["ReallyMeRust"],
+  kotlin_android: ["ReallyMeRust"],
+  typescript_wasm: [
+    "ReallyMeWasmProvider",
+    "resolveWasmProvider",
+    "requireReallyMeWasmProvider",
+    "WithProvider",
+  ],
+};
+
+const assertNativePackageRoute = (algorithmId, laneName, api) => {
+  if (api.includes("ReallyMeRust") || api.includes("rustCAbiLibrary")) {
+    fail(`${algorithmId}/${laneName} non-Rust route must not name a Rust API`);
+  }
+  const owners = apiMarkersFor(algorithmId, api).filter(
+    (marker) => marker.startsWith("ReallyMe") && !marker.startsWith("ReallyMeRust"),
+  );
+  if (owners.length === 0) {
+    fail(`${algorithmId}/${laneName} non-Rust route must name a concrete package API owner`);
+    return;
+  }
+  const sourceFiles = sourceFilesByLane[laneName];
+  for (const owner of owners) {
+    const declarationPattern = declarationPatternFor(laneName, owner);
+    if (declarationPattern === undefined) {
+      fail(`${algorithmId}/${laneName} has no declaration matcher`);
+      continue;
+    }
+    const declarationFiles = sourceFiles.filter(({ source }) => declarationPattern.test(source));
+    if (declarationFiles.length === 0) {
+      fail(`${algorithmId}/${laneName} package route owner ${owner} has no source declaration`);
+      continue;
+    }
+    for (const file of declarationFiles) {
+      for (const marker of forbiddenRustRouteMarkers[laneName]) {
+        assertNotContains(
+          `${algorithmId}/${laneName} native package route ${owner} in ${file.path}`,
+          file.source,
+          marker,
+        );
+      }
+    }
+  }
 };
 
 const wasmMarkersFor = (algorithmId) => {
@@ -360,9 +488,6 @@ const wasmMarkersFor = (algorithmId) => {
   if (algorithmId === "X-Wing-768") {
     return { rust: ["x_wing_768_generate_keypair"], typescript: ["xWing768GenerateKeypair"] };
   }
-  if (algorithmId === "X-Wing-1024") {
-    return { rust: ["x_wing_1024_generate_keypair"], typescript: ["xWing1024GenerateKeypair"] };
-  }
   if (algorithmId.startsWith("DHKEM-")) {
     return {
       rust: ["hpke_seal_base", "hpke_open_base"],
@@ -389,6 +514,15 @@ const wasmMarkersFor = (algorithmId) => {
   }
   if (algorithmId === "Argon2id") {
     return { rust: ["argon2id_derive_key"], typescript: ["argon2idDeriveKey"] };
+  }
+  if (algorithmId === "KMAC256") {
+    return { rust: ["kmac256_derive"], typescript: ["kmac256Derive"] };
+  }
+  if (algorithmId === "AES-128-KW") {
+    return { rust: ["aes_128_kw_wrap_key"], typescript: ["aes128KwWrapKey"] };
+  }
+  if (algorithmId === "AES-192-KW") {
+    return { rust: ["aes_192_kw_wrap_key"], typescript: ["aes192KwWrapKey"] };
   }
   if (algorithmId === "AES-256-KW") {
     return { rust: ["aes_256_kw_wrap_key"], typescript: ["aes256KwWrapKey"] };
@@ -433,9 +567,6 @@ const rustMarkersFor = (algorithmId) => {
   if (algorithmId === "X-Wing-768") {
     return ["Algorithm::XWing768"];
   }
-  if (algorithmId === "X-Wing-1024") {
-    return ["Algorithm::XWing1024"];
-  }
   if (algorithmId === "AES-128-GCM") {
     return ["AeadAlgorithm::Aes128Gcm"];
   }
@@ -456,6 +587,15 @@ const rustMarkersFor = (algorithmId) => {
   }
   if (algorithmId === "Argon2id") {
     return ["argon2id"];
+  }
+  if (algorithmId === "KMAC256") {
+    return ["kmac256"];
+  }
+  if (algorithmId === "AES-128-KW") {
+    return ["aes_128_kw"];
+  }
+  if (algorithmId === "AES-192-KW") {
+    return ["aes_192_kw"];
   }
   if (algorithmId === "AES-256-KW") {
     return ["aes_256_kw"];
@@ -548,6 +688,9 @@ const vectorFileFor = (algorithmId) => {
   if (algorithmId === "HKDF-SHA256") {
     return "hkdf.json";
   }
+  if (algorithmId === "HKDF-SHA384") {
+    return "hkdf_sha384.json";
+  }
   if (algorithmId === "Argon2id") {
     return "argon2id.json";
   }
@@ -556,6 +699,15 @@ const vectorFileFor = (algorithmId) => {
   }
   if (algorithmId === "JWA-CONCAT-KDF-SHA256") {
     return "concat_kdf.json";
+  }
+  if (algorithmId === "KMAC256") {
+    return "kmac256.json";
+  }
+  if (algorithmId === "AES-128-KW") {
+    return "aes128kw.json";
+  }
+  if (algorithmId === "AES-192-KW") {
+    return "aes192kw.json";
   }
   if (algorithmId === "AES-256-KW") {
     return "aes256kw.json";
@@ -585,6 +737,9 @@ for (const algorithm of resolvedAlgorithms) {
     }
     for (const marker of apiMarkersFor(algorithm.id, lane.api)) {
       assertContains(`${algorithm.id} ${laneName} manifest API route`, sourceForLane(laneName), marker);
+    }
+    if (!lane.usesRust) {
+      assertNativePackageRoute(algorithm.id, laneName, lane.api);
     }
   }
 
@@ -632,6 +787,76 @@ for (const algorithm of resolvedAlgorithms) {
     );
   }
 }
+
+for (const algorithmId of [
+  "RSA-PKCS1v15-SHA1",
+  "RSA-PKCS1v15-SHA256",
+  "RSA-PKCS1v15-SHA384",
+  "RSA-PKCS1v15-SHA512",
+  "RSA-PSS-SHA1-MGF1-SHA1",
+  "RSA-PSS-SHA256-MGF1-SHA256",
+  "RSA-PSS-SHA384-MGF1-SHA384",
+  "RSA-PSS-SHA512-MGF1-SHA512",
+  "AES-128-GCM",
+  "AES-192-GCM",
+  "AES-256-GCM",
+]) {
+  const algorithm = resolvedAlgorithms.find((entry) => entry.id === algorithmId);
+  if (algorithm === undefined) {
+    fail(`${algorithmId} is missing from the provider manifest`);
+    continue;
+  }
+  for (const laneName of ["kotlin_jvm", "kotlin_android"]) {
+    const lane = algorithm.lanes[laneName];
+    if (
+      lane.providers.length !== 1 ||
+      lane.providers[0] !== "BouncyCastle" ||
+      lane.fallback !== "typed_provider_failure"
+    ) {
+      fail(`${algorithmId}/${laneName} must pin the bundled BouncyCastle provider`);
+    }
+  }
+}
+assertContains(
+  "Kotlin AES-GCM pinned provider route",
+  readText("packages/kotlin/src/main/kotlin/me/really/crypto/AesGcm.kt"),
+  "ReallyMeJceProviders.bouncyCastleCipher",
+);
+assertNotContains(
+  "Kotlin AES-GCM pinned provider route",
+  readText("packages/kotlin/src/main/kotlin/me/really/crypto/AesGcm.kt"),
+  "ReallyMeJceProviders.cipher(",
+);
+assertContains(
+  "Kotlin RSA pinned signature route",
+  readText("packages/kotlin/src/main/kotlin/me/really/crypto/RsaVerify.kt"),
+  "ReallyMeJceProviders.bouncyCastleSignature",
+);
+assertContains(
+  "Kotlin RSA pinned key parser route",
+  readText("packages/kotlin/src/main/kotlin/me/really/crypto/RsaVerify.kt"),
+  "ReallyMeJceProviders.bouncyCastleKeyFactory",
+);
+assertNotContains(
+  "Kotlin RSA pinned provider route",
+  readText("packages/kotlin/src/main/kotlin/me/really/crypto/RsaVerify.kt"),
+  "ReallyMeJceProviders.signature(",
+);
+assertNotContains(
+  "Kotlin provider routing helper",
+  readText("packages/kotlin/src/main/kotlin/me/really/crypto/JceProviders.kt"),
+  "takeUnless",
+);
+assertNotContains(
+  "Kotlin provider routing helper",
+  readText("packages/kotlin/src/main/kotlin/me/really/crypto/JceProviders.kt"),
+  "Cipher.getInstance(transformation)",
+);
+assertNotContains(
+  "Kotlin provider routing helper",
+  readText("packages/kotlin/src/main/kotlin/me/really/crypto/JceProviders.kt"),
+  "Signature.getInstance(algorithm)",
+);
 
 assertContains("generated provider policy", readText("PROVIDER_POLICY.md"), "provider_manifest.json");
 assertContains(

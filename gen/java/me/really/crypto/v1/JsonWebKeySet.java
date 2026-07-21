@@ -19,6 +19,12 @@ public  final class JsonWebKeySet extends
         JsonWebKeySet, JsonWebKeySet.Builder> implements
     // @@protoc_insertion_point(message_implements:reallyme.crypto.v1.JsonWebKeySet)
     JsonWebKeySetOrBuilder {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  @java.lang.Override
+  public java.lang.String toString() {
+    return "JsonWebKeySet{<redacted>}";
+  }
+
   private JsonWebKeySet() {
     keys_ = emptyProtobufList();
   }

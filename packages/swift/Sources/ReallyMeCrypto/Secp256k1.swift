@@ -17,38 +17,69 @@ import Foundation
 ///   message, not a digest), derives the nonce deterministically (RFC 6979),
 ///   and emits the 64-byte compact `r ‖ s` form normalized to low-S
 ///   (BIP 0062).
-/// - `verify` accepts only the 64-byte compact form and returns a Bool rather
-///   than throwing on a well-formed-but-wrong signature, so callers can
-///   distinguish malformed input (throws) from a failed check (false).
+/// - `verify` accepts only the 64-byte compact form and fails closed with a
+///   typed error for malformed inputs or signatures that do not verify.
 public enum ReallyMeSecp256k1 {
     public static let secretKeyLength = 32
     public static let compressedPublicKeyLength = 33
     public static let signatureLength = 64
 
-    // Safe: created once, never mutated afterwards, and only passed to
-    // libsecp256k1 functions that take the context as const (sign, verify,
-    // key derivation). Upstream documents const-context use as thread-safe.
-    private nonisolated(unsafe) static let context: OpaquePointer? =
-        secp256k1_context_create(UInt32(SECP256K1_CONTEXT_NONE))
-
     /// Generates a random keypair. The secret key is sampled from the
     /// platform CSPRNG and rejection-sampled until libsecp256k1 accepts it as
     /// a valid scalar.
     public static func generateKeyPair() throws -> (publicKey: [UInt8], secretKey: [UInt8]) {
-        guard let ctx = context else {
-            throw ReallyMeCryptoError.providerFailure
-        }
+        let ctx = try makeContext(flags: UInt32(SECP256K1_CONTEXT_SIGN), randomize: true)
+        defer { secp256k1_context_destroy(ctx) }
 
+        return try generateKeyPair(
+            fillRandom: { candidate in
+                SecRandomCopyBytes(kSecRandomDefault, candidate.count, &candidate) == errSecSuccess
+            },
+            acceptsSecret: { candidate in
+                secp256k1_ec_seckey_verify(ctx, candidate) == 1
+            },
+            derivePublicKey: { candidate in
+                try derivePublicKey(secretKey: candidate)
+            }
+        )
+    }
+
+    /// Rejection-sampling core with injectable boundaries for cleanup tests.
+    ///
+    /// The production entrypoint supplies the platform CSPRNG and randomized
+    /// libsecp256k1 context. Keeping cleanup in this shared core makes a later
+    /// provider failure unable to bypass wiping an accepted secret candidate.
+    static func generateKeyPair(
+        fillRandom: (inout [UInt8]) -> Bool,
+        acceptsSecret: ([UInt8]) -> Bool,
+        derivePublicKey: ([UInt8]) throws -> [UInt8],
+        didClear: (([UInt8]) -> Void)? = nil
+    ) throws -> (publicKey: [UInt8], secretKey: [UInt8]) {
         var secretKey = [UInt8](repeating: 0, count: secretKeyLength)
         for _ in 0..<1024 {
-            guard SecRandomCopyBytes(kSecRandomDefault, secretKey.count, &secretKey) == errSecSuccess else {
+            guard fillRandom(&secretKey) else {
+                clearSecretCandidate(&secretKey, didClear: didClear)
                 throw ReallyMeCryptoError.providerFailure
             }
-            if secp256k1_ec_seckey_verify(ctx, secretKey) == 1 {
-                return (publicKey: try derivePublicKey(secretKey: secretKey), secretKey: secretKey)
+            if acceptsSecret(secretKey) {
+                do {
+                    return (publicKey: try derivePublicKey(secretKey), secretKey: secretKey)
+                } catch {
+                    clearSecretCandidate(&secretKey, didClear: didClear)
+                    throw error
+                }
             }
         }
+        clearSecretCandidate(&secretKey, didClear: didClear)
         throw ReallyMeCryptoError.providerFailure
+    }
+
+    private static func clearSecretCandidate(
+        _ secretKey: inout [UInt8],
+        didClear: (([UInt8]) -> Void)?
+    ) {
+        ReallyMeCryptoMemory.bestEffortClear(&secretKey)
+        didClear?(secretKey)
     }
 
     /// Derives a secp256k1 ECDSA keypair from a 32-byte secret scalar.
@@ -64,9 +95,8 @@ public enum ReallyMeSecp256k1 {
         guard secretKey.count == secretKeyLength else {
             throw ReallyMeCryptoError.invalidInput
         }
-        guard let ctx = context else {
-            throw ReallyMeCryptoError.providerFailure
-        }
+        let ctx = try makeContext(flags: UInt32(SECP256K1_CONTEXT_SIGN), randomize: true)
+        defer { secp256k1_context_destroy(ctx) }
         guard secp256k1_ec_seckey_verify(ctx, secretKey) == 1 else {
             throw ReallyMeCryptoError.invalidInput
         }
@@ -95,9 +125,8 @@ public enum ReallyMeSecp256k1 {
         guard publicKey.count == compressedPublicKeyLength else {
             throw ReallyMeCryptoError.invalidInput
         }
-        guard let ctx = context else {
-            throw ReallyMeCryptoError.providerFailure
-        }
+        let ctx = try makeContext(flags: UInt32(SECP256K1_CONTEXT_VERIFY), randomize: false)
+        defer { secp256k1_context_destroy(ctx) }
 
         var parsedKey = secp256k1_pubkey()
         guard secp256k1_ec_pubkey_parse(ctx, &parsedKey, publicKey, publicKey.count) == 1 else {
@@ -123,9 +152,8 @@ public enum ReallyMeSecp256k1 {
         guard secretKey.count == secretKeyLength else {
             throw ReallyMeCryptoError.invalidInput
         }
-        guard let ctx = context else {
-            throw ReallyMeCryptoError.providerFailure
-        }
+        let ctx = try makeContext(flags: UInt32(SECP256K1_CONTEXT_SIGN), randomize: true)
+        defer { secp256k1_context_destroy(ctx) }
 
         let digest = Array(SHA256.hash(data: Data(message)))
 
@@ -165,9 +193,8 @@ public enum ReallyMeSecp256k1 {
         else {
             throw ReallyMeCryptoError.invalidInput
         }
-        guard let ctx = context else {
-            throw ReallyMeCryptoError.providerFailure
-        }
+        let ctx = try makeContext(flags: UInt32(SECP256K1_CONTEXT_VERIFY), randomize: false)
+        defer { secp256k1_context_destroy(ctx) }
 
         var parsedKey = secp256k1_pubkey()
         guard secp256k1_ec_pubkey_parse(ctx, &parsedKey, publicKey, publicKey.count) == 1 else {
@@ -188,5 +215,24 @@ public enum ReallyMeSecp256k1 {
         guard ok == 1 else {
             throw ReallyMeCryptoError.invalidSignature
         }
+    }
+
+    private static func makeContext(flags: UInt32, randomize: Bool) throws -> OpaquePointer {
+        guard let ctx = secp256k1_context_create(flags) else {
+            throw ReallyMeCryptoError.providerFailure
+        }
+        if randomize {
+            var seed = [UInt8](repeating: 0, count: 32)
+            defer { ReallyMeCryptoMemory.bestEffortClear(&seed) }
+            guard SecRandomCopyBytes(kSecRandomDefault, seed.count, &seed) == errSecSuccess else {
+                secp256k1_context_destroy(ctx)
+                throw ReallyMeCryptoError.providerFailure
+            }
+            guard secp256k1_context_randomize(ctx, seed) == 1 else {
+                secp256k1_context_destroy(ctx)
+                throw ReallyMeCryptoError.providerFailure
+            }
+        }
+        return ctx
     }
 }

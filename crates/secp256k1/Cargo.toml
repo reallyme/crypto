@@ -1,0 +1,55 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-secp256k1"
+version = "0.3.0"
+include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = true
+description = "secp256k1 ECDH, ECDSA, and BIP-340 Schnorr primitives for ReallyMe Crypto."
+
+[lib]
+name = "crypto_secp256k1"
+
+[features]
+default = [ ]
+
+native = [
+    "dep:k256",
+    "dep:ecdsa",
+    "dep:sha2",
+]
+
+wasm = [
+    "dep:getrandom",
+    "dep:k256",
+    "dep:ecdsa",
+    "dep:sha2",
+]
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.3.0", path = "../crypto/core" }
+zeroize = { workspace = true }
+
+# -----------------------------
+# Native-only crypto deps
+# -----------------------------
+# NOTE: k256 0.14 has no `zeroize` cargo feature; zeroization support is
+# unconditional in elliptic-curve 0.14 (SecretKey zeroizes on drop).
+k256 = { workspace = true, features = ["ecdh", "ecdsa", "schnorr"], optional = true }
+ecdsa = { workspace = true, optional = true }
+getrandom = { workspace = true, features = ["wasm_js"], optional = true }
+sha2 = { workspace = true, optional = true }
+
+[dev-dependencies]
+hex = { workspace = true }
+hex-literal = { workspace = true }
+wasm-bindgen-test = { workspace = true }
+
+[lints]
+workspace = true

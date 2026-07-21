@@ -1,0 +1,784 @@
+{
+  "schema_version": 1,
+  "retrieved_at": "2026-07-19",
+  "sources": [
+    {
+      "source_id": "nist-acvp",
+      "name": "NIST ACVP Server sample JSON files",
+      "website_url": "https://pages.nist.gov/ACVP/",
+      "source_tree_url": "https://github.com/usnistgov/ACVP-Server/tree/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files",
+      "commit": "15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0",
+      "schema_or_revision": "ACVP sample JSON, release v1.1.0.42",
+      "license": {
+        "declared": "not declared in upstream repository metadata",
+        "note": "NIST ACVP sample files are vendored with immutable source links and per-file hashes because the upstream repository does not declare an SPDX license."
+      }
+    },
+    {
+      "source_id": "cctv",
+      "name": "C2SP Community Cryptography Test Vectors",
+      "website_url": "https://c2sp.org/CCTV",
+      "source_tree_url": "https://github.com/C2SP/CCTV/tree/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc",
+      "commit": "1e3d2860d46e94e777e1b17c7a6f2436387e3ecc",
+      "schema_or_revision": "CCTV repository vectors at pinned commit",
+      "license": {
+        "declared": "mixed per vendored CCTV directory",
+        "note": "Vendored ML-KEM vectors declare CC0-1.0; Ed25519 declares BSD-3-Clause; keygen declares 0BSD or CC0-1.0; ML-DSA and RFC6979 are pinned with immutable upstream URLs and per-file hashes."
+      }
+    },
+    {
+      "source_id": "wycheproof",
+      "name": "Google/C2SP Wycheproof test vectors",
+      "website_url": "https://github.com/C2SP/wycheproof",
+      "source_tree_url": "https://github.com/C2SP/wycheproof/tree/fc24cd5b787d8e496bff31b0468af693a652b0f2",
+      "commit": "fc24cd5b787d8e496bff31b0468af693a652b0f2",
+      "retrieved_at": "2026-07-20",
+      "license": {
+        "declared": "Apache-2.0",
+        "note": "Wycheproof vectors are published under Apache-2.0; pinned by commit with per-file hashes."
+      }
+    },
+    {
+      "source_id": "bip340",
+      "name": "BIP-340 Schnorr signature test vectors",
+      "website_url": "https://github.com/bitcoin/bips",
+      "source_tree_url": "https://github.com/bitcoin/bips/tree/8c369ac8e60629ac6c032ffe21bb5ec5b35213d7",
+      "commit": "8c369ac8e60629ac6c032ffe21bb5ec5b35213d7",
+      "retrieved_at": "2026-07-20",
+      "license": {
+        "declared": "BSD-2-Clause",
+        "note": "BIP text and vectors are BSD-2-Clause; pinned by commit with a per-file hash."
+      }
+    },
+    {
+      "source_id": "rfc8032",
+      "name": "RFC 8032 Ed25519 sign.input corpus (Go standard library testdata)",
+      "website_url": "https://github.com/golang/go",
+      "source_tree_url": "https://github.com/golang/go/tree/53374e7e068c032b9e6278e592974e973a554365",
+      "commit": "53374e7e068c032b9e6278e592974e973a554365",
+      "retrieved_at": "2026-07-20",
+      "license": {
+        "declared": "BSD-3-Clause",
+        "note": "Go standard library crypto/ed25519 testdata; gzip decompressed on vendoring."
+      }
+    },
+    {
+      "source_id": "xwing",
+      "name": "X-Wing KEM IETF CFRG draft test vectors",
+      "website_url": "https://github.com/dconnolly/draft-connolly-cfrg-xwing-kem",
+      "source_tree_url": "https://github.com/dconnolly/draft-connolly-cfrg-xwing-kem/tree/9b6ce9e614811dba8d46841052f3883cbc4c1a65",
+      "commit": "9b6ce9e614811dba8d46841052f3883cbc4c1a65",
+      "retrieved_at": "2026-07-20",
+      "license": {
+        "declared": "CC-BY-SA-4.0 / BSD-3-Clause",
+        "note": "IETF CFRG draft repository vectors; pinned by commit with a per-file hash."
+      }
+    },
+    {
+      "source_id": "hpke-rfc9180",
+      "name": "HPKE RFC 9180 test vectors (CFRG draft repository)",
+      "website_url": "https://github.com/cfrg/draft-irtf-cfrg-hpke",
+      "source_tree_url": "https://github.com/cfrg/draft-irtf-cfrg-hpke/tree/b1f7cb0cdeab6906c61b3d6574e8bdfdbe1cd3fb",
+      "commit": "b1f7cb0cdeab6906c61b3d6574e8bdfdbe1cd3fb",
+      "retrieved_at": "2026-07-20",
+      "license": {
+        "declared": "Simplified BSD / IETF Trust",
+        "note": "CFRG draft repository test vectors; pinned by commit with a per-file hash."
+      }
+    },
+    {
+      "source_id": "brycx",
+      "name": "brycx Test-Vector-Generation PBKDF2-HMAC-SHA2 vectors (RFC 6070-derived)",
+      "website_url": "https://github.com/brycx/Test-Vector-Generation",
+      "source_tree_url": "https://github.com/brycx/Test-Vector-Generation/tree/72810c03e22af1b26fe5b254340e9ae5d9e44b06",
+      "commit": "72810c03e22af1b26fe5b254340e9ae5d9e44b06",
+      "retrieved_at": "2026-07-20",
+      "license": {
+        "declared": "MIT",
+        "note": "RFC 6070-derived PBKDF2-HMAC-SHA2 vectors; MIT-licensed, pinned by commit with a per-file hash."
+      }
+    }
+  ],
+  "coverage": [
+    {
+      "reallyme_algorithm": "AES-GCM",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/ACVP-AES-GCM-1.0"
+    },
+    {
+      "reallyme_algorithm": "AES-GCM-SIV",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/ACVP-AES-GCM-SIV-1.0"
+    },
+    {
+      "reallyme_algorithm": "AES-KW",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/ACVP-AES-KW-1.0"
+    },
+    {
+      "reallyme_algorithm": "HMAC-SHA2",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/HMAC-SHA2-256-1.0"
+    },
+    {
+      "reallyme_algorithm": "HMAC-SHA3",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/HMAC-SHA3-256-2.0"
+    },
+    {
+      "reallyme_algorithm": "KMAC-256",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/KMAC-256-1.0"
+    },
+    {
+      "reallyme_algorithm": "PBKDF2",
+      "source_id": "brycx",
+      "status": "vendored_sample",
+      "upstream_path": "PBKDF2/pbkdf2-hmac-sha2-test-vectors.md"
+    },
+    {
+      "reallyme_algorithm": "HKDF",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/KDA-HKDF-Sp800-56Cr2"
+    },
+    {
+      "reallyme_algorithm": "Concat KDF",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/kdf-components-ansix9.63-1.0"
+    },
+    {
+      "reallyme_algorithm": "SHA-2",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/SHA2-256-1.0; gen-val/json-files/SHA2-384-1.0; gen-val/json-files/SHA2-512-1.0"
+    },
+    {
+      "reallyme_algorithm": "SHA-3",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/SHA3-224-2.0; gen-val/json-files/SHA3-256-2.0; gen-val/json-files/SHA3-384-2.0; gen-val/json-files/SHA3-512-2.0"
+    },
+    {
+      "reallyme_algorithm": "SHAKE-256",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/SHAKE-256-FIPS202"
+    },
+    {
+      "reallyme_algorithm": "ECDSA P-256/P-384/P-521",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/ECDSA-SigVer-FIPS186-5; gen-val/json-files/ECDSA-SigVer-1.0"
+    },
+    {
+      "reallyme_algorithm": "ECDSA P-256 deterministic signing",
+      "source_id": "cctv",
+      "status": "vendored_sample",
+      "upstream_path": "RFC6979"
+    },
+    {
+      "reallyme_algorithm": "Ed25519",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/EDDSA-SigVer-1.0"
+    },
+    {
+      "reallyme_algorithm": "Ed25519 strict verification edge cases",
+      "source_id": "cctv",
+      "status": "vendored_sample",
+      "upstream_path": "ed25519"
+    },
+    {
+      "reallyme_algorithm": "RSA signatures",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/RSA-SigVer-FIPS186-5"
+    },
+    {
+      "reallyme_algorithm": "RSA key generation",
+      "source_id": "cctv",
+      "status": "unsupported_public_boundary",
+      "upstream_path": "keygen"
+    },
+    {
+      "reallyme_algorithm": "X25519",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/XECDH-SSC-RFC7748"
+    },
+    {
+      "reallyme_algorithm": "ML-KEM",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/ML-KEM-keyGen-FIPS203"
+    },
+    {
+      "reallyme_algorithm": "ML-KEM adversarial internals",
+      "source_id": "cctv",
+      "status": "vendored_sample",
+      "upstream_path": "ML-KEM"
+    },
+    {
+      "reallyme_algorithm": "ML-DSA",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/ML-DSA-keyGen-FIPS204; gen-val/json-files/ML-DSA-sigVer-FIPS204"
+    },
+    {
+      "reallyme_algorithm": "ML-DSA accumulated and benchmark signing",
+      "source_id": "cctv",
+      "status": "vendored_sample",
+      "upstream_path": "ML-DSA"
+    },
+    {
+      "reallyme_algorithm": "SLH-DSA",
+      "source_id": "nist-acvp",
+      "status": "vendored_sample",
+      "upstream_path": "gen-val/json-files/SLH-DSA-sigVer-FIPS205"
+    },
+    {
+      "reallyme_algorithm": "Argon2id",
+      "source_id": "nist-acvp",
+      "status": "no_upstream_source_found",
+      "upstream_path": null
+    },
+    {
+      "reallyme_algorithm": "ChaCha20-Poly1305",
+      "source_id": "wycheproof",
+      "status": "vendored_sample",
+      "upstream_path": "testvectors_v1/chacha20_poly1305_test.json"
+    },
+    {
+      "reallyme_algorithm": "secp256k1/BIP-340",
+      "source_id": "wycheproof",
+      "status": "vendored_sample",
+      "upstream_path": "testvectors_v1/ecdsa_secp256k1_sha256_test.json"
+    },
+    {
+      "reallyme_algorithm": "X-Wing-768",
+      "source_id": "xwing",
+      "status": "vendored_sample",
+      "upstream_path": "spec/test-vectors.json"
+    },
+    {
+      "reallyme_algorithm": "HPKE",
+      "source_id": "hpke-rfc9180",
+      "status": "vendored_sample",
+      "upstream_path": "test-vectors.json"
+    }
+  ],
+  "files": [
+    {
+      "source_id": "bip340",
+      "local_path": "bip340/test-vectors.csv",
+      "upstream_url": "https://raw.githubusercontent.com/bitcoin/bips/8c369ac8e60629ac6c032ffe21bb5ec5b35213d7/bip-0340/test-vectors.csv",
+      "sha256": "34c9d1d9c3a88d524bc80778540dc43f8306ec249a7485293063c376db851c2d",
+      "format": "csv"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ed25519/ed25519vectors.json",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ed25519/ed25519vectors.json",
+      "sha256": "b38e84caf3e7e89170ff520292dbeae421b0a794c27408ce5ce973018fe3d7f9",
+      "format": "json"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ed25519/LICENSE",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ed25519/LICENSE",
+      "sha256": "9fe727c21f00a770a683a4c8491bf24203ec839628bad09b026258c5afc17076",
+      "format": "text"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ed25519/README.md",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ed25519/README.md",
+      "sha256": "12889cbe441ce9da56fc65aa00b9d16f02ecdbcb8bb19d706ac35e92380d93d0",
+      "format": "markdown"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/keygen/README.md",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/keygen/README.md",
+      "sha256": "d3fd67ac732284caa0c9029a16542c5b6b3ed88a2736dc4a87c0e4dcde40c653",
+      "format": "markdown"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-dsa/accumulated/README.md",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-DSA/accumulated/README.md",
+      "sha256": "5ed7ba86b92d5529ddc7d18ec92d30855757478ba80fb468ae0968cb61ca0844",
+      "format": "markdown"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-dsa/benchmark/ML-DSA-44.alt.json",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-DSA/benchmark/ML-DSA-44.alt.json",
+      "sha256": "5813ad4b18640b4f6b1e8df656a14d7387ce59aa4167169b5312e3e8937bb5cc",
+      "format": "json"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-dsa/benchmark/ML-DSA-44.json",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-DSA/benchmark/ML-DSA-44.json",
+      "sha256": "53669ddec1e6abbdff379aeb99859707651d9340444edf4b7f61fd36969622f8",
+      "format": "json"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-dsa/benchmark/ML-DSA-65.alt.json",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-DSA/benchmark/ML-DSA-65.alt.json",
+      "sha256": "60ff27900679a2cce3c99723f3a791a587799192d276bca16fabe8de967d0e60",
+      "format": "json"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-dsa/benchmark/ML-DSA-65.json",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-DSA/benchmark/ML-DSA-65.json",
+      "sha256": "9661095e400835961d9887277b332fc3143f99df1b6790447e176339c7cf1023",
+      "format": "json"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-dsa/benchmark/ML-DSA-87.alt.json",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-DSA/benchmark/ML-DSA-87.alt.json",
+      "sha256": "977ea369437a10655d810164ab386c27c51b0088595e7c81dfcf0ab4c2075dbe",
+      "format": "json"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-dsa/benchmark/ML-DSA-87.json",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-DSA/benchmark/ML-DSA-87.json",
+      "sha256": "b84245df11f2277ec935586a50ef0ac5c23744d1c72bccda6354bf3e15442713",
+      "format": "json"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-dsa/benchmark/README.md",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-DSA/benchmark/README.md",
+      "sha256": "0eca63506fdf7eb05e6662ed0ccee68435974a238aa06be6a80e983f9a5600fd",
+      "format": "markdown"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-kem/intermediate/ML-KEM-1024.txt",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-KEM/intermediate/ML-KEM-1024.txt",
+      "sha256": "af15ceb9c7129a152e0a9d66caabe0567b566b949bacfe8349c6a3c4b46cb64a",
+      "format": "text"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-kem/intermediate/ML-KEM-512.txt",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-KEM/intermediate/ML-KEM-512.txt",
+      "sha256": "3cb7a5c2421d4ada68f61b9c26e6136a3436c320e0c016af7095dadb41217bf1",
+      "format": "text"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-kem/intermediate/ML-KEM-768.txt",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-KEM/intermediate/ML-KEM-768.txt",
+      "sha256": "4cdeed48a917ec2825a49a03815c31692d51b4be0b6850a0abc56cb39bab1f84",
+      "format": "text"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-kem/modulus/ML-KEM-1024.txt.gz",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-KEM/modulus/ML-KEM-1024.txt.gz",
+      "sha256": "5792e788280ecdf5be7bfd2d8b66e18a0f9b9c80f4beb1d801fd27d20e882bf7",
+      "format": "gzip-text"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-kem/modulus/ML-KEM-512.txt.gz",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-KEM/modulus/ML-KEM-512.txt.gz",
+      "sha256": "4292314fd44bb211a27ef38273dcac32f602601c2f65b15a69773221227bf298",
+      "format": "gzip-text"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-kem/modulus/ML-KEM-768.txt.gz",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-KEM/modulus/ML-KEM-768.txt.gz",
+      "sha256": "22308df988866e2731c9b79bfa0ce754ea962a77b198436d56bde6481a526af7",
+      "format": "gzip-text"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-kem/README.md",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-KEM/README.md",
+      "sha256": "97c8e10fe83d4512edf8d37d8344cdc4a6dde321bac22a098b2ef3793cc3dd4d",
+      "format": "markdown"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-kem/strcmp/ML-KEM-1024.txt",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-KEM/strcmp/ML-KEM-1024.txt",
+      "sha256": "5059fcb4d5912c37bef560e92608799b576cf785bc20708688f65ffcfca4adfb",
+      "format": "text"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-kem/strcmp/ML-KEM-512.txt",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-KEM/strcmp/ML-KEM-512.txt",
+      "sha256": "4bc308bf9a7ac41c0e1c6845e9195d4932f66650e09a4ff76ed780e5f606a42f",
+      "format": "text"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-kem/strcmp/ML-KEM-768.txt",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-KEM/strcmp/ML-KEM-768.txt",
+      "sha256": "2b09aa46d8b1c7b9a549a25f009cbd3937b98df177e868d3eb6395930079e4fa",
+      "format": "text"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-kem/unluckysample/ML-KEM-1024.txt",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-KEM/unluckysample/ML-KEM-1024.txt",
+      "sha256": "8da6cdb2fb0d4e2223dfa5229ec97d4ded7b93bd8b2202e9a7533850c817b8cd",
+      "format": "text"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-kem/unluckysample/ML-KEM-512.txt",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-KEM/unluckysample/ML-KEM-512.txt",
+      "sha256": "9d4e0ae011978a8f88a49b755ea6996a693428aaea0477c84331580c15b77a9b",
+      "format": "text"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/ml-kem/unluckysample/ML-KEM-768.txt",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/ML-KEM/unluckysample/ML-KEM-768.txt",
+      "sha256": "fede6f787581dc708e5c3337d7e49de33333d23023470668cd0588b65ad0ba90",
+      "format": "text"
+    },
+    {
+      "source_id": "cctv",
+      "local_path": "cctv/rfc6979/README.md",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/RFC6979/README.md",
+      "sha256": "2c9d720028e74767c1cd8346a818a23b3733f97bdd0ead1bf51e5c73bae6ab4d",
+      "format": "markdown"
+    },
+    {
+      "source_id": "hpke-rfc9180",
+      "local_path": "hpke/rfc9180_test_vectors.json",
+      "upstream_url": "https://raw.githubusercontent.com/cfrg/draft-irtf-cfrg-hpke/b1f7cb0cdeab6906c61b3d6574e8bdfdbe1cd3fb/test-vectors.json",
+      "sha256": "61fc662f01996cd06d713dacf5e133167bd309a1f329442d53f1e21a47b3ede6",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/aead/aes-gcm-siv/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/ACVP-AES-GCM-SIV-1.0/internalProjection.json",
+      "sha256": "a355e8dd185700f046a802511af5928fd9f04ffd792cab77ab60122a946036cd",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/aead/aes-gcm/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/ACVP-AES-GCM-1.0/internalProjection.json",
+      "sha256": "0703118c1f751f32cdb8d32b8e54d5f80eb9bbe7bb99b83a6b0221cb40b34f0e",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/agreement/xecdh-ssc/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/XECDH-SSC-RFC7748/internalProjection.json",
+      "sha256": "8cb5804c341c48caada3a2d37da13b7a37ff2930a77efa9afd2736e708debd37",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/hash/sha2-256/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/SHA2-256-1.0/internalProjection.json",
+      "sha256": "a7e0bf4f5c661f1787b343bf3ae1a809b1e62f8fb2c8a627791510d03a570a6c",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/hash/sha2-384/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/SHA2-384-1.0/internalProjection.json",
+      "sha256": "b22d80da99444af78feecaaae49493ee6189f1e6675e49db8764fb77bf16e847",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/hash/sha2-512/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/SHA2-512-1.0/internalProjection.json",
+      "sha256": "2b514c517a2ef150d240efc52fdb2c4127925f0b4291b5a5b9153515e0ec7478",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/hash/sha3-224/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/SHA3-224-2.0/internalProjection.json",
+      "sha256": "9ae4b1480d15526b29498d442125dfcfe80d74fe74c1b56fa840b1fae702ae34",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/hash/sha3-256/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/SHA3-256-2.0/internalProjection.json",
+      "sha256": "dba4689436c7e440e61dc517210def3e8e09e50c0e9eff29ea66d89bdd0f2c63",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/hash/sha3-384/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/SHA3-384-2.0/internalProjection.json",
+      "sha256": "e9eae46bd676dc82e911dcc3af92ef0093e0118615b62ab431086fce47574396",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/hash/sha3-512/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/SHA3-512-2.0/internalProjection.json",
+      "sha256": "b0521468a178f7fd362d63319aa69b708885d08f0c71cee99ac70729f5bdf64b",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/hash/shake-256/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/SHAKE-256-FIPS202/internalProjection.json",
+      "sha256": "a9348d17e009cad62a2baa70160353f5bca936a27116f60dd5811f39b91c6991",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/kdf/ansix963/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/kdf-components-ansix9.63-1.0/internalProjection.json",
+      "sha256": "5f392417c4fc581b0c92eb5da446ef473f58fdd015a62ddf3083ef9bf082241a",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/kdf/hkdf-sp800-56cr2/expectedResults.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/KDA-HKDF-Sp800-56Cr2/expectedResults.json",
+      "sha256": "de35a4b7b3bc795b9c1b7bba4a28407bcfe2941568d097eadf9de57ff2e76395",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/kdf/hkdf-sp800-56cr2/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/KDA-HKDF-Sp800-56Cr2/internalProjection.json",
+      "sha256": "8a31c66049aa816d93f7e200898a4bb484c0814ce5bc2bc9e7249c86e79ded50",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/kdf/pbkdf/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/PBKDF-1.0/internalProjection.json",
+      "sha256": "09d0742e01e1ddfa484eeb1cbae3d2061620ebd6dc85fdabdbb2679713a6269f",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/key-wrap/aes-kw/expectedResults.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/ACVP-AES-KW-1.0/expectedResults.json",
+      "sha256": "ff722dcbc986252c4de5d7df10da5d74e677765524bcdcb666dfc7f4f6c08f34",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/key-wrap/aes-kw/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/ACVP-AES-KW-1.0/internalProjection.json",
+      "sha256": "f3307d3245bd30ab284fb04df2f24802a3a89de437416bd429426669dc56ff89",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/mac/hmac-sha2-256/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/HMAC-SHA2-256-1.0/internalProjection.json",
+      "sha256": "6823ea87534e3d1317acaebb29110a0535fcc3a6d2621ca5ec6e14563bbbdbd4",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/mac/hmac-sha2-384/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/HMAC-SHA2-384-1.0/internalProjection.json",
+      "sha256": "47a2937d640dd0bc06770c6f42ccf34b5c66d3ee14de788166e5858992c2ff11",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/mac/hmac-sha2-512/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/HMAC-SHA2-512-1.0/internalProjection.json",
+      "sha256": "7ec25d51a11b12531c92e8b8e21bc5317546e1ce931e2a670db2573bd5664fbf",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/mac/hmac-sha3-256/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/HMAC-SHA3-256-2.0/internalProjection.json",
+      "sha256": "a13ad967cf3752a11d5cb9bcb3e8eb10ea808f7c9087b768e434ccc6bbed4c89",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/mac/kmac-256/expectedResults.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/KMAC-256-1.0/expectedResults.json",
+      "sha256": "7a54cc6e3899453156acbd73887262d5b1adb97939eba68ede3d44876da87881",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/mac/kmac-256/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/KMAC-256-1.0/internalProjection.json",
+      "sha256": "3c64e79297096cca5e69162be42af8d54e51681001335ee4ecfd10c6f05cf922",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/ml-dsa/keygen/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/ML-DSA-keyGen-FIPS204/internalProjection.json",
+      "sha256": "6027a0ad263de2fa4a96a6bc086b17daa494dcadeb4a51e31b1258225c1d382f",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/ml-dsa/sigver/expectedResults.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/ML-DSA-sigVer-FIPS204/expectedResults.json",
+      "sha256": "33e0ea7dd9c3b0206712da50286ad746864371433977225ab77e8aae76358842",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/ml-dsa/sigver/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/ML-DSA-sigVer-FIPS204/internalProjection.json",
+      "sha256": "85827fd9f058d617b956301d342f2792d66ff188987ccce87f014f0bdb282457",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/ml-kem/encap-decap/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/ML-KEM-encapDecap-FIPS203/internalProjection.json",
+      "sha256": "f1e22b7d399dde7bf61b838770c658a380e4b1cfc4bd395dbed9ec6c1d977d9d",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/ml-kem/keygen/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/ML-KEM-keyGen-FIPS203/internalProjection.json",
+      "sha256": "d7a62a2c3476957f56dd8d24f9004ea6776ccfe995ffe71a65bb9506dc9c7b1b",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/signature/ecdsa-sigver-1.0/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/ECDSA-SigVer-1.0/internalProjection.json",
+      "sha256": "b987739127a54ff86c1018771390b8124b440d0d6011610f21eccfd74754e430",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/signature/ecdsa-sigver/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/ECDSA-SigVer-FIPS186-5/internalProjection.json",
+      "sha256": "45f9e9425e68b099d9c029e0e75ec04e9cc5943b60fa24cdb4d5af778f350b63",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/signature/eddsa-sigver/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/EDDSA-SigVer-1.0/internalProjection.json",
+      "sha256": "8556b9c48ef7ff209a9f866ed83e3c3881cfdd3c4c1ee1abe2602da69c1e97b0",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/signature/rsa-sigver/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/RSA-SigVer-FIPS186-5/internalProjection.json",
+      "sha256": "86088be5f46b3b10794357495c6d914af4a4c03b97bd3d185482f2d47d338578",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/slh-dsa/sigver/expectedResults.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/SLH-DSA-sigVer-FIPS205/expectedResults.json",
+      "sha256": "259f5e2a0665de0adc0fefa45b5db3a2a6ed13c3c44d14bdaf64a80aee12c687",
+      "format": "json"
+    },
+    {
+      "source_id": "nist-acvp",
+      "local_path": "nist-acvp/slh-dsa/sigver/internalProjection.json",
+      "upstream_url": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/15c0f3deeefbfa8cb6cd32a99e1ca3b738c66bf0/gen-val/json-files/SLH-DSA-sigVer-FIPS205/internalProjection.json",
+      "sha256": "a013fc2104f4ed4799d96d51141f65b965969b2cf10646626a021b6d456ce792",
+      "format": "json"
+    },
+    {
+      "source_id": "brycx",
+      "local_path": "pbkdf2/brycx_pbkdf2_hmac_sha2.md",
+      "upstream_url": "https://raw.githubusercontent.com/brycx/Test-Vector-Generation/72810c03e22af1b26fe5b254340e9ae5d9e44b06/PBKDF2/pbkdf2-hmac-sha2-test-vectors.md",
+      "sha256": "894dd80e3ac1d33abf8644236bb9718c863ca4e1f7dca3c568838ff472354473",
+      "format": "text"
+    },
+    {
+      "source_id": "rfc8032",
+      "local_path": "rfc8032/ed25519_sign_input.txt",
+      "upstream_url": "https://raw.githubusercontent.com/golang/go/53374e7e068c032b9e6278e592974e973a554365/src/crypto/ed25519/testdata/sign.input.gz",
+      "sha256": "8d1798de73fe5b7fbd5c4965a5557898fffaa58ac79d1a1296ac917ccaaa9273",
+      "format": "text"
+    },
+    {
+      "source_id": "wycheproof",
+      "local_path": "wycheproof/chacha20_poly1305_test.json",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/wycheproof/fc24cd5b787d8e496bff31b0468af693a652b0f2/testvectors_v1/chacha20_poly1305_test.json",
+      "sha256": "fe61d25f90e1bde4461d00eafe61049e5f29bd999f36b766df9cda90906ad53d",
+      "format": "json"
+    },
+    {
+      "source_id": "wycheproof",
+      "local_path": "wycheproof/ecdh_secp256r1_ecpoint_test.json",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/wycheproof/fc24cd5b787d8e496bff31b0468af693a652b0f2/testvectors_v1/ecdh_secp256r1_ecpoint_test.json",
+      "sha256": "648f16d077caf2400d02331ca51f44744c72c799830c8d0595d0b18b6dd9f886",
+      "format": "json"
+    },
+    {
+      "source_id": "wycheproof",
+      "local_path": "wycheproof/ecdh_secp384r1_ecpoint_test.json",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/wycheproof/fc24cd5b787d8e496bff31b0468af693a652b0f2/testvectors_v1/ecdh_secp384r1_ecpoint_test.json",
+      "sha256": "ffa7835fe1de359dff762c8f1272b98acebd5578e2f855d969051ff956c6dca3",
+      "format": "json"
+    },
+    {
+      "source_id": "wycheproof",
+      "local_path": "wycheproof/ecdh_secp521r1_ecpoint_test.json",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/wycheproof/fc24cd5b787d8e496bff31b0468af693a652b0f2/testvectors_v1/ecdh_secp521r1_ecpoint_test.json",
+      "sha256": "87aba8739c96de2bde8c75b60ffea09d0493192c4d9543d1d969e5e998931f35",
+      "format": "json"
+    },
+    {
+      "source_id": "wycheproof",
+      "local_path": "wycheproof/ecdsa_secp256k1_sha256_test.json",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/wycheproof/fc24cd5b787d8e496bff31b0468af693a652b0f2/testvectors_v1/ecdsa_secp256k1_sha256_test.json",
+      "sha256": "43db761c0a2eae71fb0755d355d5130e28ce64a5b07846cf27e7072082597a81",
+      "format": "json"
+    },
+    {
+      "source_id": "wycheproof",
+      "local_path": "wycheproof/x25519_test.json",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/wycheproof/fc24cd5b787d8e496bff31b0468af693a652b0f2/testvectors_v1/x25519_test.json",
+      "sha256": "35c3f5231cf25cc640b524d403461deee9e49441d5d915a3a25b2c8ff5adbe7d",
+      "format": "json"
+    },
+    {
+      "source_id": "wycheproof",
+      "local_path": "wycheproof/x448_test.json",
+      "upstream_url": "https://raw.githubusercontent.com/C2SP/wycheproof/fc24cd5b787d8e496bff31b0468af693a652b0f2/testvectors_v1/x448_test.json",
+      "sha256": "0f8f7199dbd47d1805cb9b13dfb29c207406bc786827bfd9ba7b73374b830fe5",
+      "format": "json"
+    },
+    {
+      "source_id": "xwing",
+      "local_path": "xwing/test-vectors.json",
+      "upstream_url": "https://raw.githubusercontent.com/dconnolly/draft-connolly-cfrg-xwing-kem/9b6ce9e614811dba8d46841052f3883cbc4c1a65/spec/test-vectors.json",
+      "sha256": "409efe197550b22985b4a0419418a0c5f2c2b193426c55bd998399ec8d3e614d",
+      "format": "json"
+    }
+  ]
+}

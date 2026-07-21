@@ -1,0 +1,6 @@
+{
+  "alg": "AES-128-KW",
+  "kek": "AAECAwQFBgcICQoLDA0ODw",
+  "key_data": "ABEiM0RVZneImaq7zN3u_w",
+  "wrapped_key": "H6aLCoEStEeu80vY-1p7gp0-hiNx0s_l"
+}

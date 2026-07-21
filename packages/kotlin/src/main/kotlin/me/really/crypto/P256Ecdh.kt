@@ -8,6 +8,7 @@ import java.math.BigInteger
 import java.security.SecureRandom
 import org.bouncycastle.asn1.sec.SECNamedCurves
 import org.bouncycastle.crypto.params.ECDomainParameters
+import org.bouncycastle.math.ec.FixedPointCombMultiplier
 
 /**
  * P-256 ECDH backed by BouncyCastle.
@@ -42,7 +43,7 @@ public object ReallyMeP256Ecdh {
 
     public fun derivePublicKey(secretKey: ByteArray): ByteArray {
         val scalar = validatedScalar(secretKey)
-        return domain.g.multiply(scalar).normalize().getEncoded(true)
+        return FixedPointCombMultiplier().multiply(domain.g, scalar).normalize().getEncoded(true)
     }
 
     public fun deriveSharedSecret(publicKey: ByteArray, secretKey: ByteArray): ByteArray {

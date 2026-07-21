@@ -20,11 +20,6 @@ public  final class CryptoJwaConcatKdfSha256DeriveRequest extends
     return "CryptoJwaConcatKdfSha256DeriveRequest{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoJwaConcatKdfSha256DeriveRequest() {
     sharedSecret_ = com.google.protobuf.ByteString.EMPTY;
     algorithmId_ = com.google.protobuf.ByteString.EMPTY;

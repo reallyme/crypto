@@ -4,6 +4,8 @@
 
 package me.really.crypto
 
+import java.security.MessageDigest
+
 public class ReallyMeSignatureKeyPair(
     public val publicKey: ByteArray,
     public val secretKey: ByteArray,
@@ -11,7 +13,7 @@ public class ReallyMeSignatureKeyPair(
     override fun equals(other: Any?): Boolean =
         other is ReallyMeSignatureKeyPair &&
             publicKey.contentEquals(other.publicKey) &&
-            secretKey.contentEquals(other.secretKey)
+            MessageDigest.isEqual(secretKey, other.secretKey)
 
     override fun hashCode(): Int = 31 * publicKey.contentHashCode() + secretKey.size
 
@@ -26,7 +28,7 @@ public class ReallyMeKemKeyPair(
     override fun equals(other: Any?): Boolean =
         other is ReallyMeKemKeyPair &&
             publicKey.contentEquals(other.publicKey) &&
-            secretKey.contentEquals(other.secretKey)
+            MessageDigest.isEqual(secretKey, other.secretKey)
 
     override fun hashCode(): Int = 31 * publicKey.contentHashCode() + secretKey.size
 
@@ -41,7 +43,7 @@ public class ReallyMeKeyAgreementKeyPair(
     override fun equals(other: Any?): Boolean =
         other is ReallyMeKeyAgreementKeyPair &&
             publicKey.contentEquals(other.publicKey) &&
-            secretKey.contentEquals(other.secretKey)
+            MessageDigest.isEqual(secretKey, other.secretKey)
 
     override fun hashCode(): Int = 31 * publicKey.contentHashCode() + secretKey.size
 
@@ -55,7 +57,7 @@ public class ReallyMeKemEncapsulation(
 ) {
     override fun equals(other: Any?): Boolean =
         other is ReallyMeKemEncapsulation &&
-            sharedSecret.contentEquals(other.sharedSecret) &&
+            MessageDigest.isEqual(sharedSecret, other.sharedSecret) &&
             ciphertext.contentEquals(other.ciphertext)
 
     override fun hashCode(): Int = 31 * ciphertext.contentHashCode() + sharedSecret.size
@@ -79,9 +81,47 @@ public class ReallyMeHpkeSealedMessage(
 /**
  * Generic package facade. Algorithm-specific objects remain available for
  * callers that want direct provider access; this facade gives consumers a
- * stable typed route that fails closed for not-yet-exposed algorithms.
+ * stable typed route and rejects algorithm/operation combinations that the
+ * selected method does not define.
  */
 public object ReallyMeCrypto {
+    /**
+     * Executes one binary generated `CryptoOperationRequest`.
+     *
+     * The returned bytes are always a binary `CryptoOperationResponse` with a
+     * generated `CryptoOperationResult` or generated `CryptoError` outcome.
+     */
+    @JvmStatic
+    public fun processOperationResponse(request: ByteArray): ByteArray {
+        ReallyMeRustNativeProvider.requireLoaded()
+        return try {
+            requireNativeOperationResponse(
+                ReallyMeCryptoOperationResponseNative.processOperationResponseNative(request),
+            )
+        } catch (_: UnsatisfiedLinkError) {
+            throw ReallyMeCryptoException.ProviderFailure()
+        }
+    }
+
+    /**
+     * Executes a permitted non-secret generated ProtoJSON request.
+     *
+     * JSON is request-only; secret-bearing selectors fail before value
+     * deserialization. Returned bytes use the same binary response as
+     * [processOperationResponse].
+     */
+    @JvmStatic
+    public fun processOperationResponseJson(requestJson: ByteArray): ByteArray {
+        ReallyMeRustNativeProvider.requireLoaded()
+        return try {
+            requireNativeOperationResponse(
+                ReallyMeCryptoOperationResponseNative.processOperationResponseJsonNative(requestJson),
+            )
+        } catch (_: UnsatisfiedLinkError) {
+            throw ReallyMeCryptoException.ProviderFailure()
+        }
+    }
+
     @JvmStatic
     public fun hash(algorithm: ReallyMeHashAlgorithm, bytes: ByteArray): ByteArray =
         when (algorithm) {
@@ -144,6 +184,7 @@ public object ReallyMeCrypto {
     ): ByteArray =
         when (algorithm) {
             ReallyMeMacAlgorithm.HMAC_SHA256 -> ReallyMeHmac.authenticateSha256(key, message)
+            ReallyMeMacAlgorithm.HMAC_SHA384 -> ReallyMeHmac.authenticateSha384(key, message)
             ReallyMeMacAlgorithm.HMAC_SHA512 -> ReallyMeHmac.authenticateSha512(key, message)
         }
 
@@ -156,6 +197,7 @@ public object ReallyMeCrypto {
     ): Boolean =
         when (algorithm) {
             ReallyMeMacAlgorithm.HMAC_SHA256 -> ReallyMeHmac.verifySha256(tag, key, message)
+            ReallyMeMacAlgorithm.HMAC_SHA384 -> ReallyMeHmac.verifySha384(tag, key, message)
             ReallyMeMacAlgorithm.HMAC_SHA512 -> ReallyMeHmac.verifySha512(tag, key, message)
         }
 
@@ -172,16 +214,20 @@ public object ReallyMeCrypto {
                 ReallyMePbkdf2.deriveHmacSha256(password, salt, iterations, outputLength)
             ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA512 ->
                 ReallyMePbkdf2.deriveHmacSha512(password, salt, iterations, outputLength)
-            ReallyMeKdfAlgorithm.ARGON2ID -> {
-                if (outputLength != ReallyMeArgon2id.DERIVED_KEY_LENGTH) {
-                    throw ReallyMeCryptoException.InvalidInput()
-                }
-                ReallyMeArgon2id.deriveKey(iterations, password, salt)
-            }
+            ReallyMeKdfAlgorithm.ARGON2ID,
             ReallyMeKdfAlgorithm.HKDF_SHA256,
+            ReallyMeKdfAlgorithm.HKDF_SHA384,
+            ReallyMeKdfAlgorithm.KMAC256,
             ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256,
             -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
         }
+
+    @JvmStatic
+    public fun deriveArgon2id(
+        kdfVersion: UInt,
+        secret: ByteArray,
+        salt: ByteArray,
+    ): ByteArray = ReallyMeArgon2id.deriveKey(kdfVersion, secret, salt)
 
     @JvmStatic
     public fun deriveHkdf(
@@ -194,7 +240,10 @@ public object ReallyMeCrypto {
         when (algorithm) {
             ReallyMeKdfAlgorithm.HKDF_SHA256 ->
                 ReallyMeHkdf.deriveSha256(inputKeyMaterial, salt, info, outputLength)
+            ReallyMeKdfAlgorithm.HKDF_SHA384 ->
+                ReallyMeHkdf.deriveSha384(inputKeyMaterial, salt, info, outputLength)
             ReallyMeKdfAlgorithm.ARGON2ID,
+            ReallyMeKdfAlgorithm.KMAC256,
             ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256,
             ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA512,
             ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256,
@@ -221,8 +270,30 @@ public object ReallyMeCrypto {
                 )
             ReallyMeKdfAlgorithm.ARGON2ID,
             ReallyMeKdfAlgorithm.HKDF_SHA256,
+            ReallyMeKdfAlgorithm.HKDF_SHA384,
+            ReallyMeKdfAlgorithm.KMAC256,
             ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256,
             ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA512,
+            -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
+        }
+
+    @JvmStatic
+    public fun deriveKmac256(
+        algorithm: ReallyMeKdfAlgorithm,
+        key: ByteArray,
+        context: ByteArray,
+        customization: ByteArray,
+        outputLength: Int,
+    ): ByteArray =
+        when (algorithm) {
+            ReallyMeKdfAlgorithm.KMAC256 ->
+                ReallyMeKmac.deriveKmac256(key, context, customization, outputLength)
+            ReallyMeKdfAlgorithm.ARGON2ID,
+            ReallyMeKdfAlgorithm.HKDF_SHA256,
+            ReallyMeKdfAlgorithm.HKDF_SHA384,
+            ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256,
+            ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA512,
+            ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256,
             -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
         }
 
@@ -233,7 +304,10 @@ public object ReallyMeCrypto {
         keyToWrap: ByteArray,
     ): ByteArray =
         when (algorithm) {
-            ReallyMeKeyWrapAlgorithm.AES_256_KW -> ReallyMeAesKw.wrapKey(wrappingKey, keyToWrap)
+            ReallyMeKeyWrapAlgorithm.AES_128_KW,
+            ReallyMeKeyWrapAlgorithm.AES_192_KW,
+            ReallyMeKeyWrapAlgorithm.AES_256_KW,
+            -> ReallyMeAesKw.wrapKey(algorithm, wrappingKey, keyToWrap)
         }
 
     @JvmStatic
@@ -243,7 +317,10 @@ public object ReallyMeCrypto {
         wrappedKey: ByteArray,
     ): ByteArray =
         when (algorithm) {
-            ReallyMeKeyWrapAlgorithm.AES_256_KW -> ReallyMeAesKw.unwrapKey(wrappingKey, wrappedKey)
+            ReallyMeKeyWrapAlgorithm.AES_128_KW,
+            ReallyMeKeyWrapAlgorithm.AES_192_KW,
+            ReallyMeKeyWrapAlgorithm.AES_256_KW,
+            -> ReallyMeAesKw.unwrapKey(algorithm, wrappingKey, wrappedKey)
         }
 
     @JvmStatic
@@ -462,9 +539,7 @@ public object ReallyMeCrypto {
                 val (publicKey, secretKey) = ReallyMeMlKem.generateKeyPair(algorithm)
                 ReallyMeKemKeyPair(publicKey = publicKey, secretKey = secretKey)
             }
-            ReallyMeKemAlgorithm.X_WING_768,
-            ReallyMeKemAlgorithm.X_WING_1024,
-            -> {
+            ReallyMeKemAlgorithm.X_WING_768 -> {
                 val (publicKey, secretKey) = ReallyMeXWing.generateKeyPair(algorithm)
                 ReallyMeKemKeyPair(publicKey = publicKey, secretKey = secretKey)
             }
@@ -483,9 +558,7 @@ public object ReallyMeCrypto {
                 val (publicKey, returnedSecretKey) = ReallyMeMlKem.deriveKeyPair(algorithm, secretKey)
                 ReallyMeKemKeyPair(publicKey = publicKey, secretKey = returnedSecretKey)
             }
-            ReallyMeKemAlgorithm.X_WING_768,
-            ReallyMeKemAlgorithm.X_WING_1024,
-            -> {
+            ReallyMeKemAlgorithm.X_WING_768 -> {
                 val publicKey = ReallyMeXWing.derivePublicKey(algorithm, secretKey)
                 ReallyMeKemKeyPair(publicKey = publicKey, secretKey = secretKey.copyOf())
             }
@@ -501,9 +574,7 @@ public object ReallyMeCrypto {
             ReallyMeKemAlgorithm.ML_KEM_768,
             ReallyMeKemAlgorithm.ML_KEM_1024,
             -> ReallyMeMlKem.encapsulate(algorithm, publicKey)
-            ReallyMeKemAlgorithm.X_WING_768,
-            ReallyMeKemAlgorithm.X_WING_1024,
-            -> ReallyMeXWing.encapsulate(algorithm, publicKey)
+            ReallyMeKemAlgorithm.X_WING_768 -> ReallyMeXWing.encapsulate(algorithm, publicKey)
         }
 
     @JvmStatic
@@ -517,9 +588,7 @@ public object ReallyMeCrypto {
             ReallyMeKemAlgorithm.ML_KEM_768,
             ReallyMeKemAlgorithm.ML_KEM_1024,
             -> ReallyMeMlKem.encapsulateDeterministicForTest(algorithm, publicKey, seed)
-            ReallyMeKemAlgorithm.X_WING_768,
-            ReallyMeKemAlgorithm.X_WING_1024,
-            -> ReallyMeXWing.encapsulateDeterministicForTest(algorithm, publicKey, seed)
+            ReallyMeKemAlgorithm.X_WING_768 -> ReallyMeXWing.encapsulateDeterministicForTest(algorithm, publicKey, seed)
         }
 
     @JvmStatic
@@ -533,9 +602,7 @@ public object ReallyMeCrypto {
             ReallyMeKemAlgorithm.ML_KEM_768,
             ReallyMeKemAlgorithm.ML_KEM_1024,
             -> ReallyMeMlKem.decapsulate(algorithm, ciphertext, secretKey)
-            ReallyMeKemAlgorithm.X_WING_768,
-            ReallyMeKemAlgorithm.X_WING_1024,
-            -> ReallyMeXWing.decapsulate(algorithm, ciphertext, secretKey)
+            ReallyMeKemAlgorithm.X_WING_768 -> ReallyMeXWing.decapsulate(algorithm, ciphertext, secretKey)
         }
 
     @JvmStatic

@@ -6,6 +6,9 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Cargo gives encoded flags precedence over RUSTFLAGS. Release packaging owns
+# the complete codegen policy, so inherited encoded flags must not participate.
+unset CARGO_ENCODED_RUSTFLAGS
 BUILD_DIR="${ROOT_DIR}/build/swift"
 HEADERS_DIR="${BUILD_DIR}/headers"
 FRAMEWORK_DIR="${BUILD_DIR}/ReallyMeCryptoFFI.xcframework"
@@ -22,8 +25,10 @@ require_tool() {
 build_target() {
   local target="$1"
   rustup target add "${target}"
-  RUSTFLAGS="${RUSTFLAGS:-} -C panic=unwind" \
-    cargo build -p crypto-ffi --release --target "${target}"
+  # Do not let ambient codegen flags override the audited panic strategy.
+  RUSTFLAGS="" cargo build --locked -p crypto-ffi \
+    --profile release-ffi \
+    --target "${target}"
 }
 
 copy_or_lipo() {
@@ -51,6 +56,78 @@ MODULEMAP
   done
 }
 
+normalize_xcframework_info_plist() {
+  # xcodebuild does not guarantee AvailableLibraries ordering. SwiftPM hashes
+  # the raw archive, so canonicalize the plist before normalizing zip metadata.
+  cat >"${FRAMEWORK_DIR}/Info.plist" <<'PLIST'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AvailableLibraries</key>
+	<array>
+		<dict>
+			<key>BinaryPath</key>
+			<string>libcrypto_ffi_macos.a</string>
+			<key>HeadersPath</key>
+			<string>Headers</string>
+			<key>LibraryIdentifier</key>
+			<string>macos-arm64_x86_64</string>
+			<key>LibraryPath</key>
+			<string>libcrypto_ffi_macos.a</string>
+			<key>SupportedArchitectures</key>
+			<array>
+				<string>arm64</string>
+				<string>x86_64</string>
+			</array>
+			<key>SupportedPlatform</key>
+			<string>macos</string>
+		</dict>
+		<dict>
+			<key>BinaryPath</key>
+			<string>libcrypto_ffi_ios.a</string>
+			<key>HeadersPath</key>
+			<string>Headers</string>
+			<key>LibraryIdentifier</key>
+			<string>ios-arm64</string>
+			<key>LibraryPath</key>
+			<string>libcrypto_ffi_ios.a</string>
+			<key>SupportedArchitectures</key>
+			<array>
+				<string>arm64</string>
+			</array>
+			<key>SupportedPlatform</key>
+			<string>ios</string>
+		</dict>
+		<dict>
+			<key>BinaryPath</key>
+			<string>libcrypto_ffi_ios_simulator.a</string>
+			<key>HeadersPath</key>
+			<string>Headers</string>
+			<key>LibraryIdentifier</key>
+			<string>ios-arm64_x86_64-simulator</string>
+			<key>LibraryPath</key>
+			<string>libcrypto_ffi_ios_simulator.a</string>
+			<key>SupportedArchitectures</key>
+			<array>
+				<string>arm64</string>
+				<string>x86_64</string>
+			</array>
+			<key>SupportedPlatform</key>
+			<string>ios</string>
+			<key>SupportedPlatformVariant</key>
+			<string>simulator</string>
+		</dict>
+	</array>
+	<key>CFBundlePackageType</key>
+	<string>XFWK</string>
+	<key>XCFrameworkFormatVersion</key>
+	<string>1.0</string>
+</dict>
+</plist>
+PLIST
+}
+
 verify_xcframework_layout() {
   local header_modulemap
   header_modulemap="$(find "${FRAMEWORK_DIR}" -path '*/Headers/module.modulemap' -print -quit)"
@@ -73,7 +150,7 @@ require_tool zip
 
 rm -rf "${BUILD_DIR}"
 mkdir -p "${HEADERS_DIR}" "${BUILD_DIR}/libs"
-cp "${ROOT_DIR}/crates/crypto/ffi/abi/reallyme_crypto_ffi.h" \
+cp "${ROOT_DIR}/crates/ffi/abi/reallyme_crypto_ffi.h" \
   "${HEADERS_DIR}/reallyme_crypto_ffi.h"
 
 build_target aarch64-apple-darwin
@@ -84,17 +161,17 @@ build_target x86_64-apple-ios
 
 copy_or_lipo \
   "${BUILD_DIR}/libs/libcrypto_ffi_macos.a" \
-  "${ROOT_DIR}/target/aarch64-apple-darwin/release/libcrypto_ffi.a" \
-  "${ROOT_DIR}/target/x86_64-apple-darwin/release/libcrypto_ffi.a"
+  "${ROOT_DIR}/target/aarch64-apple-darwin/release-ffi/libcrypto_ffi.a" \
+  "${ROOT_DIR}/target/x86_64-apple-darwin/release-ffi/libcrypto_ffi.a"
 
 copy_or_lipo \
   "${BUILD_DIR}/libs/libcrypto_ffi_ios.a" \
-  "${ROOT_DIR}/target/aarch64-apple-ios/release/libcrypto_ffi.a"
+  "${ROOT_DIR}/target/aarch64-apple-ios/release-ffi/libcrypto_ffi.a"
 
 copy_or_lipo \
   "${BUILD_DIR}/libs/libcrypto_ffi_ios_simulator.a" \
-  "${ROOT_DIR}/target/aarch64-apple-ios-sim/release/libcrypto_ffi.a" \
-  "${ROOT_DIR}/target/x86_64-apple-ios/release/libcrypto_ffi.a"
+  "${ROOT_DIR}/target/aarch64-apple-ios-sim/release-ffi/libcrypto_ffi.a" \
+  "${ROOT_DIR}/target/x86_64-apple-ios/release-ffi/libcrypto_ffi.a"
 
 xcodebuild -create-xcframework \
   -library "${BUILD_DIR}/libs/libcrypto_ffi_macos.a" -headers "${HEADERS_DIR}" \
@@ -102,6 +179,7 @@ xcodebuild -create-xcframework \
   -library "${BUILD_DIR}/libs/libcrypto_ffi_ios_simulator.a" -headers "${HEADERS_DIR}" \
   -output "${FRAMEWORK_DIR}"
 
+normalize_xcframework_info_plist
 install_modulemaps
 verify_xcframework_layout
 

@@ -2,13 +2,15 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+private let aes128KwKekLength = 16
+private let aes192KwKekLength = 24
 private let aes256KwKekLength = 32
 private let aesKwIntegrityLength = 8
 private let aesKwMinKeyDataLength = 16
 private let aesKwMinWrappedKeyLength = 24
 private let aesKwMaxKeyDataLength = 4096
 
-private typealias Aes256KwWrapKeyFunction = @convention(c) (
+private typealias AesKwWrapKeyFunction = @convention(c) (
     UnsafePointer<UInt8>?,
     Int,
     UnsafePointer<UInt8>?,
@@ -18,7 +20,7 @@ private typealias Aes256KwWrapKeyFunction = @convention(c) (
     UnsafeMutablePointer<Int>?
 ) -> Int32
 
-private typealias Aes256KwUnwrapKeyFunction = @convention(c) (
+private typealias AesKwUnwrapKeyFunction = @convention(c) (
     UnsafePointer<UInt8>?,
     Int,
     UnsafePointer<UInt8>?,
@@ -28,30 +30,54 @@ private typealias Aes256KwUnwrapKeyFunction = @convention(c) (
     UnsafeMutablePointer<Int>?
 ) -> Int32
 
-/// AES-256-KW operations backed by the ReallyMe Rust C ABI.
+/// AES-128/192/256-KW operations backed by the ReallyMe Rust C ABI.
 ///
 /// This provider is explicit because loading a Rust dynamic library is a
 /// deployment choice. The default Swift facade stays fail-closed unless callers
 /// pass a `ReallyMeRustCAbiLibrary` into the provider-aware overloads.
 public struct ReallyMeRustCAbiAesKw: Sendable {
     private let library: ReallyMeRustCAbiLibrary
-    private let wrapKeyFunction: Aes256KwWrapKeyFunction
-    private let unwrapKeyFunction: Aes256KwUnwrapKeyFunction
+    private let wrap128KeyFunction: AesKwWrapKeyFunction
+    private let unwrap128KeyFunction: AesKwUnwrapKeyFunction
+    private let wrap192KeyFunction: AesKwWrapKeyFunction
+    private let unwrap192KeyFunction: AesKwUnwrapKeyFunction
+    private let wrap256KeyFunction: AesKwWrapKeyFunction
+    private let unwrap256KeyFunction: AesKwUnwrapKeyFunction
 
     public init(library: ReallyMeRustCAbiLibrary) throws {
         self.library = library
-        wrapKeyFunction = try library.loadFunction(
-            "rm_crypto_aes256_kw_wrap_key",
-            as: Aes256KwWrapKeyFunction.self
+        wrap128KeyFunction = try library.loadFunction(
+            "rm_crypto_aes128_kw_wrap_key",
+            as: AesKwWrapKeyFunction.self
         )
-        unwrapKeyFunction = try library.loadFunction(
+        unwrap128KeyFunction = try library.loadFunction(
+            "rm_crypto_aes128_kw_unwrap_key",
+            as: AesKwUnwrapKeyFunction.self
+        )
+        wrap192KeyFunction = try library.loadFunction(
+            "rm_crypto_aes192_kw_wrap_key",
+            as: AesKwWrapKeyFunction.self
+        )
+        unwrap192KeyFunction = try library.loadFunction(
+            "rm_crypto_aes192_kw_unwrap_key",
+            as: AesKwUnwrapKeyFunction.self
+        )
+        wrap256KeyFunction = try library.loadFunction(
+            "rm_crypto_aes256_kw_wrap_key",
+            as: AesKwWrapKeyFunction.self
+        )
+        unwrap256KeyFunction = try library.loadFunction(
             "rm_crypto_aes256_kw_unwrap_key",
-            as: Aes256KwUnwrapKeyFunction.self
+            as: AesKwUnwrapKeyFunction.self
         )
     }
 
-    public func wrapKey(wrappingKey: [UInt8], keyToWrap: [UInt8]) throws -> [UInt8] {
-        try validateWrappingKey(wrappingKey)
+    public func wrapKey(
+        _ algorithm: ReallyMeKeyWrapAlgorithm,
+        wrappingKey: [UInt8],
+        keyToWrap: [UInt8]
+    ) throws -> [UInt8] {
+        try validateWrappingKey(wrappingKey, algorithm: algorithm)
         try validateKeyData(keyToWrap)
 
         let outputLength = keyToWrap.count.addingReportingOverflow(aesKwIntegrityLength)
@@ -60,28 +86,54 @@ public struct ReallyMeRustCAbiAesKw: Sendable {
         }
 
         return try call(
-            wrapKeyFunction,
+            wrapFunction(for: algorithm),
             wrappingKey: wrappingKey,
             input: keyToWrap,
             outputLength: outputLength.partialValue
         )
     }
 
-    public func unwrapKey(wrappingKey: [UInt8], wrappedKey: [UInt8]) throws -> [UInt8] {
-        try validateWrappingKey(wrappingKey)
+    public func unwrapKey(
+        _ algorithm: ReallyMeKeyWrapAlgorithm,
+        wrappingKey: [UInt8],
+        wrappedKey: [UInt8]
+    ) throws -> [UInt8] {
+        try validateWrappingKey(wrappingKey, algorithm: algorithm)
         try validateWrappedKey(wrappedKey)
 
         let outputLength = wrappedKey.count - aesKwIntegrityLength
         return try call(
-            unwrapKeyFunction,
+            unwrapFunction(for: algorithm),
             wrappingKey: wrappingKey,
             input: wrappedKey,
             outputLength: outputLength
         )
     }
 
+    private func wrapFunction(for algorithm: ReallyMeKeyWrapAlgorithm) -> AesKwWrapKeyFunction {
+        switch algorithm {
+        case .aes128Kw:
+            return wrap128KeyFunction
+        case .aes192Kw:
+            return wrap192KeyFunction
+        case .aes256Kw:
+            return wrap256KeyFunction
+        }
+    }
+
+    private func unwrapFunction(for algorithm: ReallyMeKeyWrapAlgorithm) -> AesKwUnwrapKeyFunction {
+        switch algorithm {
+        case .aes128Kw:
+            return unwrap128KeyFunction
+        case .aes192Kw:
+            return unwrap192KeyFunction
+        case .aes256Kw:
+            return unwrap256KeyFunction
+        }
+    }
+
     private func call(
-        _ function: Aes256KwWrapKeyFunction,
+        _ function: AesKwWrapKeyFunction,
         wrappingKey: [UInt8],
         input: [UInt8],
         outputLength: Int
@@ -111,18 +163,30 @@ public struct ReallyMeRustCAbiAesKw: Sendable {
             ReallyMeCryptoMemory.bestEffortClear(&output)
             throw error
         }
-        guard producedLength <= output.count else {
+        guard producedLength == output.count else {
             ReallyMeCryptoMemory.bestEffortClear(&output)
             throw ReallyMeCryptoError.providerFailure
         }
-        let result = Array(output.prefix(producedLength))
-        ReallyMeCryptoMemory.bestEffortClear(&output)
-        return result
+        // Transfer the validated allocation directly to the caller. Creating a
+        // second array would briefly duplicate unwrapped key material and add
+        // another managed allocation whose lifetime cannot be controlled.
+        return output
     }
 
-    private func validateWrappingKey(_ key: [UInt8]) throws {
-        guard key.count == aes256KwKekLength else {
+    private func validateWrappingKey(_ key: [UInt8], algorithm: ReallyMeKeyWrapAlgorithm) throws {
+        guard key.count == kekLength(for: algorithm) else {
             throw ReallyMeCryptoError.invalidInput
+        }
+    }
+
+    private func kekLength(for algorithm: ReallyMeKeyWrapAlgorithm) -> Int {
+        switch algorithm {
+        case .aes128Kw:
+            return aes128KwKekLength
+        case .aes192Kw:
+            return aes192KwKekLength
+        case .aes256Kw:
+            return aes256KwKekLength
         }
     }
 
@@ -153,9 +217,9 @@ public extension ReallyMeCrypto {
         rustCAbiLibrary: ReallyMeRustCAbiLibrary
     ) throws -> [UInt8] {
         switch algorithm {
-        case .aes256Kw:
+        case .aes128Kw, .aes192Kw, .aes256Kw:
             return try ReallyMeRustCAbiAesKw(library: rustCAbiLibrary)
-                .wrapKey(wrappingKey: wrappingKey, keyToWrap: keyToWrap)
+                .wrapKey(algorithm, wrappingKey: wrappingKey, keyToWrap: keyToWrap)
         }
     }
 
@@ -166,9 +230,9 @@ public extension ReallyMeCrypto {
         rustCAbiLibrary: ReallyMeRustCAbiLibrary
     ) throws -> [UInt8] {
         switch algorithm {
-        case .aes256Kw:
+        case .aes128Kw, .aes192Kw, .aes256Kw:
             return try ReallyMeRustCAbiAesKw(library: rustCAbiLibrary)
-                .unwrapKey(wrappingKey: wrappingKey, wrappedKey: wrappedKey)
+                .unwrapKey(algorithm, wrappingKey: wrappingKey, wrappedKey: wrappedKey)
         }
     }
 }

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { hkdf } from "@noble/hashes/hkdf.js";
-import { sha256 } from "@noble/hashes/sha2.js";
+import { sha256, sha384 } from "@noble/hashes/sha2.js";
 import { ReallyMeCryptoError } from "./errors.js";
 
 export const HKDF_MIN_INPUT_KEY_MATERIAL_LENGTH = 1;
@@ -20,6 +20,16 @@ export const ReallyMeHkdf = {
   ): Uint8Array {
     validate(inputKeyMaterial, salt, info, outputLength);
     return hkdf(sha256, inputKeyMaterial, salt, info, outputLength);
+  },
+
+  deriveSha384(
+    inputKeyMaterial: Uint8Array,
+    salt: Uint8Array,
+    info: Uint8Array,
+    outputLength: number,
+  ): Uint8Array {
+    validate(inputKeyMaterial, salt, info, outputLength);
+    return hkdf(sha384, inputKeyMaterial, salt, info, outputLength);
   },
 } as const;
 

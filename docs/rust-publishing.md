@@ -22,17 +22,17 @@ while allowing crates.io to resolve published dependencies.
 The Rust packages require Rust `1.96.0` or newer. The project intentionally
 tracks current stable Rust for public releases so the conformance wall, lints,
 target support, and dependency graph are exercised on the same compiler family
-used by CI. Lowering MSRV should be treated as a compatibility project, not a
+used by CI. Lowering MSRV should be treated as a toolchain-support project, not a
 metadata-only edit.
 
 Backend features are separate from algorithm features. `native` and `wasm`
 select the Rust backend lane for whichever primitive crates are enabled; they
 do not enable every algorithm by themselves. The root crate also exposes
 `messaging-primitives` for consumers that only need ChaCha20-Poly1305,
-HKDF, HMAC, ML-KEM-768, SHA-2, and X25519. Use `messaging-dispatch` when a
-crate needs that same set through algorithm-by-identifier dispatch. `dispatch`
-and `signer` are also algorithm-feature gated; they should be paired with the
-specific algorithm features a consumer actually calls.
+HKDF, HMAC, ML-KEM-768, SHA-2, and X25519. This bundle includes `dispatch`
+because ML-KEM-768 and X25519 are algorithm-selected routes. `dispatch` and
+`signer` are algorithm-feature gated; they should be paired with the specific
+algorithm features a consumer actually calls.
 
 The `wasm` lane is a `wasm32-unknown-unknown` lane. Host checks should use
 `native`; wasm checks should include `--target wasm32-unknown-unknown`.
@@ -43,7 +43,7 @@ The dependency order matters. Core leaves must exist on crates.io before
 primitives and umbrellas can package cleanly.
 `reallyme-crypto-proto` is a separately published public crate and must be
 published before `reallyme-crypto`, because the umbrella crate exposes the
-optional `proto-process` feature through that package.
+optional `operation-response` feature through that package.
 
 Use the manual **Crates.io Release** workflow for Rust publishing. Its preflight
 job inspects every publishable crate tarball in workspace dependency order. The

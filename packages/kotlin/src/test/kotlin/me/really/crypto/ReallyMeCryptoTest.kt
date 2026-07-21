@@ -7,24 +7,87 @@ package me.really.crypto
 import java.math.BigInteger
 import java.nio.file.Files
 import java.nio.file.Path
-import java.security.Security
+import java.nio.file.attribute.PosixFileAttributeView
+import java.nio.file.attribute.PosixFilePermission
+import java.security.SecureRandom
 import java.util.Base64
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import me.really.codec.ReallyMeCodecRustNativeProvider
 import me.really.crypto.proto.ReallyMeCryptoProtoAdapters
 import me.really.crypto.proto.ReallyMeCryptoWireErrorBranch
 import me.really.crypto.v1.CryptoErrorReason
+import me.really.crypto.v1.CryptoOperationResponse
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERSequence
 import org.junit.jupiter.api.Assumptions.assumeTrue
 
 class ReallyMeCryptoTest {
+    private companion object {
+        private const val MAX_PROTOBUF_REQUEST_BYTES = 1_048_576
+        private const val MAX_PROTO_JSON_REQUEST_BYTES = 1_572_864
+    }
+
+    @Test
+    fun nullNativeOperationResponseMapsToTypedProviderFailure() {
+        assertFailsWith<ReallyMeCryptoException.ProviderFailure> {
+            requireNativeOperationResponse(null)
+        }
+        assertContentEquals(
+            byteArrayOf(1, 2, 3),
+            requireNativeOperationResponse(byteArrayOf(1, 2, 3)),
+        )
+    }
+
+    @Test
+    fun genericProtoAndProtoJsonLanesMatchGeneratedVector() {
+        ReallyMeRustNativeProvider.loadBundledLibrary()
+        assertContentEquals(
+            vectorField("operation_response.json", "operation_response"),
+            ReallyMeCrypto.processOperationResponse(
+                vectorField("operation_response.json", "request_protobuf"),
+            ),
+        )
+        assertContentEquals(
+            vectorField("operation_response.json", "operation_response"),
+            ReallyMeCrypto.processOperationResponseJson(
+                vectorField("operation_response.json", "request_json"),
+            ),
+        )
+        assertContentEquals(
+            vectorField("operation_response.json", "malformed_protobuf_response"),
+            ReallyMeCrypto.processOperationResponse(
+                vectorField("operation_response.json", "malformed_protobuf"),
+            ),
+        )
+        assertContentEquals(
+            vectorField("operation_response.json", "malformed_json_response"),
+            ReallyMeCrypto.processOperationResponseJson(
+                vectorField("operation_response.json", "malformed_json"),
+            ),
+        )
+
+        for (oversizedResponseBytes in listOf(
+            ReallyMeCrypto.processOperationResponse(ByteArray(MAX_PROTOBUF_REQUEST_BYTES + 1)),
+            ReallyMeCrypto.processOperationResponseJson(ByteArray(MAX_PROTO_JSON_REQUEST_BYTES + 1)),
+        )) {
+            val response = CryptoOperationResponse.parseFrom(oversizedResponseBytes)
+            assertEquals(
+                CryptoOperationResponse.OutcomeCase.ERROR,
+                response.outcomeCase,
+            )
+            assertEquals(
+                CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
+                response.error.primitive.reason,
+            )
+        }
+    }
+
     @Test
     fun providerCatalogIsExplicit() {
         assertEquals(
@@ -41,26 +104,15 @@ class ReallyMeCryptoTest {
 
     @Test
     fun jceProviderIdentityIsInspectableForProviderBackedPrimitives() {
-        val gcmCipher = ReallyMeJceProviders.cipher("AES/GCM/NoPadding")
+        val gcmCipher = ReallyMeJceProviders.bouncyCastleCipher("AES/GCM/NoPadding")
         val aesKwCipher = ReallyMeJceProviders.bouncyCastleCipher("AESWrap")
-        val ecdsaSignature = ReallyMeJceProviders.signature("SHA256withECDSA")
-        val gcmProvider = gcmCipher.provider.name
-        val ecdsaProvider = ecdsaSignature.provider.name
-        val installedProviders = Security.getProviders().map { provider -> provider.name }.toSet()
+        val rsaSignature = ReallyMeJceProviders.bouncyCastleSignature("SHA256withRSA")
+        val rsaKeyFactory = ReallyMeJceProviders.bouncyCastleKeyFactory("RSA")
 
-        assertTrue(gcmProvider.isNotBlank())
-        assertTrue(ecdsaProvider.isNotBlank())
-        if (gcmProvider == "BC") {
-            assertTrue(ReallyMeJceProviders.isBundledBouncyCastleProvider(gcmCipher.provider))
-        } else {
-            assertTrue(gcmProvider in installedProviders)
-        }
+        assertTrue(ReallyMeJceProviders.isBundledBouncyCastleProvider(gcmCipher.provider))
         assertTrue(ReallyMeJceProviders.isBundledBouncyCastleProvider(aesKwCipher.provider))
-        if (ecdsaProvider == "BC") {
-            assertTrue(ReallyMeJceProviders.isBundledBouncyCastleProvider(ecdsaSignature.provider))
-        } else {
-            assertTrue(ecdsaProvider in installedProviders)
-        }
+        assertTrue(ReallyMeJceProviders.isBundledBouncyCastleProvider(rsaSignature.provider))
+        assertTrue(ReallyMeJceProviders.isBundledBouncyCastleProvider(rsaKeyFactory.provider))
     }
 
     @Test
@@ -68,6 +120,45 @@ class ReallyMeCryptoTest {
         val secret = byteArrayOf(1, 2, 3, 4, 5, 6)
         ReallyMeCryptoMemory.bestEffortClear(secret)
         assertContentEquals(ByteArray(6), secret)
+    }
+
+    @Test
+    fun randomSecretSamplingClearsItsInternalCandidateOnSuccessAndFailure() {
+        val sampledBytes = ByteArray(32) { index -> (index + 1).toByte() }
+        var successfulCandidate: ByteArray? = null
+        val successfulRandom = object : SecureRandom() {
+            override fun nextBytes(bytes: ByteArray) {
+                sampledBytes.copyInto(bytes)
+                successfulCandidate = bytes
+            }
+        }
+
+        val retainedSecret = withRandomSecretCandidate(
+            length = sampledBytes.size,
+            random = successfulRandom,
+            isValid = { true },
+            buildResult = { candidate -> candidate.copyOf() },
+        )
+
+        assertContentEquals(sampledBytes, retainedSecret)
+        assertTrue(successfulCandidate?.all { byte -> byte == 0.toByte() } == true)
+
+        var rejectedCandidate: ByteArray? = null
+        val rejectingRandom = object : SecureRandom() {
+            override fun nextBytes(bytes: ByteArray) {
+                sampledBytes.copyInto(bytes)
+                rejectedCandidate = bytes
+            }
+        }
+        assertFailsWith<ReallyMeCryptoException.ProviderFailure> {
+            withRandomSecretCandidate(
+                length = sampledBytes.size,
+                random = rejectingRandom,
+                isValid = { false },
+                buildResult = { candidate -> candidate.copyOf() },
+            )
+        }
+        assertTrue(rejectedCandidate?.all { byte -> byte == 0.toByte() } == true)
     }
 
     @Test
@@ -93,6 +184,46 @@ class ReallyMeCryptoTest {
     }
 
     @Test
+    fun secretBearingContainersCompareSecretHalvesWithoutChangingValueSemantics() {
+        val publicKey = byteArrayOf(1, 2, 3)
+        val secret = byteArrayOf(4, 5, 6)
+        assertEquals(
+            ReallyMeSignatureKeyPair(publicKey, secret),
+            ReallyMeSignatureKeyPair(publicKey.copyOf(), secret.copyOf()),
+        )
+        assertEquals(
+            ReallyMeKemKeyPair(publicKey, secret),
+            ReallyMeKemKeyPair(publicKey.copyOf(), secret.copyOf()),
+        )
+        assertEquals(
+            ReallyMeKeyAgreementKeyPair(publicKey, secret),
+            ReallyMeKeyAgreementKeyPair(publicKey.copyOf(), secret.copyOf()),
+        )
+        assertEquals(
+            ReallyMeKemEncapsulation(secret, publicKey),
+            ReallyMeKemEncapsulation(secret.copyOf(), publicKey.copyOf()),
+        )
+
+        val differentSecret = byteArrayOf(4, 5, 7)
+        assertFalse(
+            ReallyMeSignatureKeyPair(publicKey, secret) ==
+                ReallyMeSignatureKeyPair(publicKey, differentSecret),
+        )
+        assertFalse(
+            ReallyMeKemKeyPair(publicKey, secret) ==
+                ReallyMeKemKeyPair(publicKey, differentSecret),
+        )
+        assertFalse(
+            ReallyMeKeyAgreementKeyPair(publicKey, secret) ==
+                ReallyMeKeyAgreementKeyPair(publicKey, differentSecret),
+        )
+        assertFalse(
+            ReallyMeKemEncapsulation(secret, publicKey) ==
+                ReallyMeKemEncapsulation(differentSecret, publicKey),
+        )
+    }
+
+    @Test
     fun rustNativeResultDecoderPreservesTypedStatus() {
         val payload = byteArrayOf(0x01, 0x02, 0x03)
         val encodedOk = nativeEnvelope(ReallyMeNativeStatus.OK, payload)
@@ -105,17 +236,28 @@ class ReallyMeCryptoTest {
             ReallyMeNativeStatus.BACKEND_INTERNAL,
             decodeRustNativeResult(null).status,
         )
+        val shortEnvelope = byteArrayOf(0x00, 0x01)
         assertEquals(
             ReallyMeNativeStatus.BACKEND_INTERNAL,
-            decodeRustNativeResult(byteArrayOf(0x00, 0x01)).status,
+            decodeRustNativeResult(shortEnvelope).status,
         )
+        assertContentEquals(ByteArray(shortEnvelope.size), shortEnvelope)
+
+        val unknownEnvelope = nativeEnvelope(127, byteArrayOf(0x55, 0x66))
+        val unknown = decodeRustNativeResult(unknownEnvelope)
         assertEquals(
             ReallyMeNativeStatus.BACKEND_INTERNAL,
-            decodeRustNativeResult(nativeEnvelope(127, ByteArray(0))).status,
+            unknown.status,
         )
+        assertContentEquals(ByteArray(0), unknown.bytes)
+        assertContentEquals(ByteArray(unknownEnvelope.size), unknownEnvelope)
+        assertTrue(unknown.toString().contains("<redacted>"))
+        assertFalse(unknown.toString().contains("85"))
 
         assertFailsWith<ReallyMeCryptoException.InvalidInput> {
-            requireRustNativeBytes(nativeEnvelope(ReallyMeNativeStatus.INVALID_INPUT))
+            requireRustNativeBytes(
+                nativeEnvelope(ReallyMeNativeStatus.INVALID_INPUT, byteArrayOf(0x55, 0x66)),
+            )
         }
         assertFailsWith<ReallyMeCryptoException.AuthenticationFailed> {
             requireRustNativeBytes(nativeEnvelope(ReallyMeNativeStatus.AUTHENTICATION_FAILED))
@@ -190,6 +332,118 @@ class ReallyMeCryptoTest {
     }
 
     @Test
+    fun classpathNativeExtractionUsesPrivateDirectoryAndRehashesOnDiskFile() {
+        val resource = ReallyMeRustNativeProvider.platformNativeResource()
+        assumeTrue(resource != null)
+        if (resource == null) {
+            return
+        }
+        val stream = ReallyMeRustNativeProvider::class.java.getResourceAsStream(resource.path)
+        assumeTrue(stream != null)
+        if (stream == null) {
+            return
+        }
+        val bytes = stream.use { source -> source.readBytes() }
+        val parent = Files.createTempDirectory("reallyme-crypto-native-parent")
+        var extractedPath: Path? = null
+        try {
+            val extracted = assertNotNull(
+                ReallyMeRustNativeProvider.extractNativeResourceForLoad(resource, bytes, parent),
+            )
+            extractedPath = extracted
+            val extractionParent = assertNotNull(extracted.parent?.parent)
+            assertEquals(parent.toRealPath(), extractionParent.toRealPath())
+            assertTrue(ReallyMeRustNativeProvider.verifyNativeResourceOnDisk(resource, extracted))
+            assertEquals(
+                extracted.toRealPath(),
+                ReallyMeRustNativeProvider.validateExtractedLibraryForLoad(resource, extracted),
+            )
+            val directoryView = Files.getFileAttributeView(
+                extracted.parent,
+                PosixFileAttributeView::class.java,
+            )
+            val fileView = Files.getFileAttributeView(extracted, PosixFileAttributeView::class.java)
+            if (directoryView != null && fileView != null) {
+                assertEquals(
+                    setOf(
+                        PosixFilePermission.OWNER_READ,
+                        PosixFilePermission.OWNER_WRITE,
+                        PosixFilePermission.OWNER_EXECUTE,
+                    ),
+                    directoryView.readAttributes().permissions(),
+                )
+                assertEquals(
+                    setOf(
+                        PosixFilePermission.OWNER_READ,
+                        PosixFilePermission.OWNER_WRITE,
+                    ),
+                    fileView.readAttributes().permissions(),
+                )
+            }
+
+            val tampered = bytes.copyOf()
+            tampered[0] = (tampered[0].toInt() xor 0x01).toByte()
+            Files.write(extracted, tampered)
+            assertFalse(ReallyMeRustNativeProvider.verifyNativeResourceOnDisk(resource, extracted))
+            assertEquals(
+                null,
+                ReallyMeRustNativeProvider.validateExtractedLibraryForLoad(resource, extracted),
+            )
+        } finally {
+            if (extractedPath != null) {
+                Files.deleteIfExists(extractedPath)
+                Files.deleteIfExists(extractedPath.parent)
+            }
+            Files.deleteIfExists(parent)
+        }
+    }
+
+    @Test
+    fun secretBearingKeyPairResultsDoNotAliasCallerInputs() {
+        val xWingSecret = ByteArray(ReallyMeXWing.SECRET_KEY_LENGTH) { index ->
+            (index + 1).toByte()
+        }
+        val originalXWingSecret = xWingSecret.copyOf()
+        val xWingKeyPair = ReallyMeCrypto.deriveKemKeyPair(
+            ReallyMeKemAlgorithm.X_WING_768,
+            xWingSecret,
+        )
+        xWingSecret.fill(0)
+        assertContentEquals(originalXWingSecret, xWingKeyPair.secretKey)
+
+        val mlKemSecret = ByteArray(ReallyMeMlKem.SECRET_KEY_LENGTH) { index ->
+            (index + 3).toByte()
+        }
+        val originalMlKemSecret = mlKemSecret.copyOf()
+        val mlKemKeyPair = ReallyMeCrypto.deriveKemKeyPair(
+            ReallyMeKemAlgorithm.ML_KEM_768,
+            mlKemSecret,
+        )
+        mlKemSecret.fill(0)
+        assertContentEquals(originalMlKemSecret, mlKemKeyPair.secretKey)
+
+        val signingSecret = ByteArray(ReallyMeEd25519.SECRET_KEY_LENGTH) { index ->
+            (index + 5).toByte()
+        }
+        val originalSigningSecret = signingSecret.copyOf()
+        val signingKeyPair = ReallyMeCrypto.deriveKeyPair(
+            ReallyMeSignatureAlgorithm.ED25519,
+            signingSecret,
+        )
+        signingSecret.fill(0)
+        assertContentEquals(originalSigningSecret, signingKeyPair.secretKey)
+
+        val agreementSecret = x25519SecretKey.copyOf()
+        val originalAgreementSecret = agreementSecret.copyOf()
+        val agreementKeyPair = ReallyMeCrypto.deriveKeyAgreementKeyPair(
+            ReallyMeKeyAgreementAlgorithm.X25519,
+            agreementSecret,
+        )
+        agreementSecret.fill(0)
+        assertContentEquals(originalAgreementSecret, agreementKeyPair.secretKey)
+    }
+
+    @Test
     fun rustNativeJniBoundaryRejectsNullArraysWhenLoaded() {
         loadCryptoProviderForTestOrReturn() ?: return
 
@@ -245,7 +499,6 @@ class ReallyMeCryptoTest {
 
     @Test
     fun multikeyVectorRoundTrips() {
-        loadCodecProviderForTest()
         val vector = jwkVectors().first { it.alg == "Ed25519" && it.multikeyStatus == "supported" }
         val multikey = requireNotNull(vector.multikey)
         val parsed = ReallyMeMultikey.parse(multikey)
@@ -259,7 +512,6 @@ class ReallyMeCryptoTest {
 
     @Test
     fun jwkVectorsMatchPackageFacade() {
-        loadCodecProviderForTest()
         jwkVectors().forEach { vector ->
             val algorithm = ReallyMeJwkAlgorithm.entries.first { it.algorithmName == vector.alg }
             val publicKey = base64UrlBytes(vector.publicKey)
@@ -277,7 +529,6 @@ class ReallyMeCryptoTest {
 
     @Test
     fun jwkParserRejectsPrivateKeyMembers() {
-        loadCodecProviderForTest()
         val publicX = "A".repeat(43)
         listOf("d", "p", "q", "dp", "dq", "qi", "oth", "k", "priv", "privateKey", "secretKey")
             .forEach { name ->
@@ -290,8 +541,51 @@ class ReallyMeCryptoTest {
     }
 
     @Test
+    fun jwkParserRejectsDuplicateUnknownAndMixedShapeMembers() {
+        val publicX = "A".repeat(43)
+        val valid = """{"alg":"EdDSA","crv":"Ed25519","kty":"OKP","use":"sig","x":"$publicX"}"""
+        listOf(
+            """{"alg":"EdDSA","crv":"Ed25519","kty":"OKP","kty":"OKP","use":"sig","x":"$publicX"}""",
+            """{"alg":"EdDSA","crv":"Ed25519","kty":"OKP","use":"sig","x":"$publicX","unknown":"value"}""",
+            """{"alg":"EdDSA","crv":"Ed25519","kty":"OKP","use":"sig","x":"$publicX","y":"$publicX"}""",
+        ).forEach { json ->
+            assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+                ReallyMeJwk.fromJwkJson(json)
+            }
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeJwk.fromJwksJson("""{"keys":[$valid],"unknown":"value"}""")
+        }
+    }
+
+    @Test
+    fun jwkParserRejectsMismatchedEcCoordinates() {
+        listOf("P-256", "secp256k1").forEach { algorithm ->
+            val vector = jwkVectors().first { it.alg == algorithm }
+            listOf(YMutation.SAME_PARITY, YMutation.OPPOSITE_PARITY).forEach { mutation ->
+                assertFailsWith<ReallyMeCryptoException.InvalidInput>(message = algorithm) {
+                    ReallyMeJwk.fromJwkJson(mutatedEcJwkJson(vector.jwkJcs, mutation))
+                }
+            }
+        }
+    }
+
+    @Test
+    fun okpMetadataIsOptionalButConflictsAreRejected() {
+        val publicX = "A".repeat(43)
+        val omitted = """{"crv":"Ed25519","kty":"OKP","x":"$publicX"}"""
+        assertEquals(ReallyMeJwkAlgorithm.ED25519, ReallyMeJwk.fromJwkJson(omitted).algorithm)
+
+        listOf(""""alg":"ECDH-ES",""", """"use":"enc",""").forEach { metadata ->
+            val conflicting = """{$metadata"crv":"Ed25519","kty":"OKP","x":"$publicX"}"""
+            assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+                ReallyMeJwk.fromJwkJson(conflicting)
+            }
+        }
+    }
+
+    @Test
     fun multikeyRejectsMalformedInputs() {
-        loadCodecProviderForTest()
         assertFailsWith<ReallyMeCryptoException.InvalidInput> {
             ReallyMeMultikey.parse("")
         }
@@ -316,12 +610,6 @@ class ReallyMeCryptoTest {
         assertFailsWith<ReallyMeCryptoException.UnsupportedAlgorithm> {
             ReallyMeMulticodec.algorithmForCodecName("not-a-codec")
         }
-    }
-
-    private fun loadCodecProviderForTest() {
-        val libraryPath = System.getProperty("reallyme.codec.ffiLibraryPath").orEmpty()
-        assumeTrue(libraryPath.isNotEmpty(), "set REALLYME_CODEC_FFI_LIBRARY_PATH to a built codec-ffi library")
-        ReallyMeCodecRustNativeProvider.loadLibrary(libraryPath)
     }
 
     private fun loadCryptoProviderForTestOrReturn(): String? {
@@ -404,12 +692,24 @@ class ReallyMeCryptoTest {
             key,
             message,
         )
+        val sha384Tag = ReallyMeCrypto.authenticate(
+            ReallyMeMacAlgorithm.HMAC_SHA384,
+            key,
+            message,
+        )
         val sha512Tag = ReallyMeCrypto.authenticate(
             ReallyMeMacAlgorithm.HMAC_SHA512,
             key,
             message,
         )
 
+        assertContentEquals(
+            bytes(
+                "afd03944d84895626b0825f4ab46907f15f9dadbe4101ec682aa034c7cebc59c" +
+                    "faea9ea9076ede7f4af152e8b2fa9cb6",
+            ),
+            sha384Tag,
+        )
         assertContentEquals(
             bytes("b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7"),
             sha256Tag,
@@ -422,6 +722,7 @@ class ReallyMeCryptoTest {
             sha512Tag,
         )
         assertTrue(ReallyMeCrypto.verifyMac(ReallyMeMacAlgorithm.HMAC_SHA256, sha256Tag, key, message))
+        assertTrue(ReallyMeCrypto.verifyMac(ReallyMeMacAlgorithm.HMAC_SHA384, sha384Tag, key, message))
         assertTrue(ReallyMeCrypto.verifyMac(ReallyMeMacAlgorithm.HMAC_SHA512, sha512Tag, key, message))
     }
 
@@ -586,24 +887,134 @@ class ReallyMeCryptoTest {
     }
 
     @Test
-    fun genericFacadeAes256KwKnownAnswerAndTampering() {
-        val kek = base64UrlBytes("AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8")
-        val keyData = base64UrlBytes("ABEiM0RVZneImaq7zN3u_wABAgMEBQYHCAkKCwwNDg8")
-        val wrappedKey = base64UrlBytes("KMn0BMS4EPTLzLNc-4f4Jj9XhuLYDtMmy8fw5xqZ9Dv7mIubegLdIQ")
+    fun rustNativeFacadesRejectOversizedInputsBeforeDispatch() {
+        val oversizedAeadInput = ByteArray(ReallyMeRustAead.MAX_INPUT_LENGTH + 1)
+        val oversizedAeadCiphertext =
+            ByteArray(ReallyMeRustAead.MAX_INPUT_LENGTH + ReallyMeRustAead.TAG_LENGTH + 1)
+        val oversizedArgonSecret = ByteArray(ReallyMeArgon2id.SECRET_MAX_LENGTH + 1)
+        val key = ByteArray(ReallyMeRustAead.KEY_LENGTH)
+        val nonce = ByteArray(ReallyMeRustAead.AES_GCM_SIV_NONCE_LENGTH)
+        val salt = ByteArray(ReallyMeArgon2id.SALT_MIN_LENGTH)
 
-        assertContentEquals(wrappedKey, ReallyMeCrypto.wrapKey(ReallyMeKeyWrapAlgorithm.AES_256_KW, kek, keyData))
-        assertContentEquals(keyData, ReallyMeCrypto.unwrapKey(ReallyMeKeyWrapAlgorithm.AES_256_KW, kek, wrappedKey))
-
-        val tampered = wrappedKey.copyOf()
-        tampered[0] = (tampered[0].toInt() xor 0x01).toByte()
-        assertFailsWith<ReallyMeCryptoException.AuthenticationFailed> {
-            ReallyMeCrypto.unwrapKey(ReallyMeKeyWrapAlgorithm.AES_256_KW, kek, tampered)
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeRustAead.sealAes256GcmSiv(key, nonce, ByteArray(0), oversizedAeadInput)
         }
         assertFailsWith<ReallyMeCryptoException.InvalidInput> {
-            ReallyMeCrypto.wrapKey(ReallyMeKeyWrapAlgorithm.AES_256_KW, byteArrayOf(0x00), keyData)
+            ReallyMeRustAead.openAes256GcmSiv(key, nonce, ByteArray(0), oversizedAeadCiphertext)
         }
         assertFailsWith<ReallyMeCryptoException.InvalidInput> {
-            ReallyMeCrypto.wrapKey(ReallyMeKeyWrapAlgorithm.AES_256_KW, kek, ByteArray(8))
+            ReallyMeArgon2id.deriveKey(ReallyMeArgon2id.V1, oversizedArgonSecret, salt)
+        }
+
+        oversizedAeadInput.fill(0)
+        oversizedAeadCiphertext.fill(0)
+        oversizedArgonSecret.fill(0)
+        key.fill(0)
+        salt.fill(0)
+    }
+
+    @Test
+    fun genericFacadeAesKwKnownAnswersAndTampering() {
+        val vectors = listOf(
+            Triple(
+                ReallyMeKeyWrapAlgorithm.AES_128_KW,
+                "aes128kw.json",
+                "AES-128-KW",
+            ),
+            Triple(
+                ReallyMeKeyWrapAlgorithm.AES_192_KW,
+                "aes192kw.json",
+                "AES-192-KW",
+            ),
+            Triple(
+                ReallyMeKeyWrapAlgorithm.AES_256_KW,
+                "aes256kw.json",
+                "AES-256-KW",
+            ),
+        )
+
+        for ((algorithm, vectorName, expectedAlgorithm) in vectors) {
+            val kek = vectorField(vectorName, "kek")
+            val keyData = vectorField(vectorName, "key_data")
+            val wrappedKey = vectorField(vectorName, "wrapped_key")
+
+            assertEquals(expectedAlgorithm, vectorString(vectorName, "alg"))
+            val producedWrappedKey = ReallyMeCrypto.wrapKey(algorithm, kek, keyData)
+            assertEquals(keyData.size + ReallyMeAesKw.INTEGRITY_LENGTH, producedWrappedKey.size)
+            assertContentEquals(wrappedKey, producedWrappedKey)
+            val producedKeyData = ReallyMeCrypto.unwrapKey(algorithm, kek, wrappedKey)
+            assertEquals(wrappedKey.size - ReallyMeAesKw.INTEGRITY_LENGTH, producedKeyData.size)
+            assertContentEquals(keyData, producedKeyData)
+
+            val tampered = wrappedKey.copyOf()
+            tampered[0] = (tampered[0].toInt() xor 0x01).toByte()
+            assertFailsWith<ReallyMeCryptoException.AuthenticationFailed> {
+                ReallyMeCrypto.unwrapKey(algorithm, kek, tampered)
+            }
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeCrypto.wrapKey(
+                ReallyMeKeyWrapAlgorithm.AES_256_KW,
+                byteArrayOf(0x00),
+                vectorField("aes256kw.json", "key_data"),
+            )
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeCrypto.wrapKey(
+                ReallyMeKeyWrapAlgorithm.AES_256_KW,
+                vectorField("aes256kw.json", "kek"),
+                ByteArray(8),
+            )
+        }
+    }
+
+    @Test
+    fun kmac256RustNativeProviderKnownAnswerWhenLoaded() {
+        if (loadCryptoProviderForTestOrReturn() == null) {
+            return
+        }
+        val key = vectorField("kmac256.json", "key")
+        val context = vectorField("kmac256.json", "context")
+        val customization = vectorField("kmac256.json", "customization")
+        val expected = vectorField("kmac256.json", "derived_key")
+
+        assertEquals("KMAC256", vectorString("kmac256.json", "alg"))
+        assertContentEquals(
+            expected,
+            ReallyMeCrypto.deriveKmac256(
+                ReallyMeKdfAlgorithm.KMAC256,
+                key,
+                context,
+                customization,
+                expected.size,
+            ),
+        )
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeCrypto.deriveKmac256(
+                ReallyMeKdfAlgorithm.KMAC256,
+                key.copyOf(31),
+                context,
+                customization,
+                64,
+            )
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeCrypto.deriveKmac256(
+                ReallyMeKdfAlgorithm.KMAC256,
+                key,
+                ByteArray(ReallyMeKmac.MAX_CONTEXT_LENGTH + 1),
+                customization,
+                64,
+            )
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeCrypto.deriveKmac256(
+                ReallyMeKdfAlgorithm.KMAC256,
+                key,
+                context,
+                ByteArray(ReallyMeKmac.MAX_CUSTOMIZATION_LENGTH + 1),
+                64,
+            )
         }
     }
 
@@ -613,25 +1024,25 @@ class ReallyMeCryptoTest {
         val salt = "salt".toByteArray()
 
         assertContentEquals(
-            bytes("c5e478d59288c841aa530db6845c4c8d962893a001ce4e11a4963873aa98134a"),
+            bytes("0394a2ede332c9a13eb82e9b24631604c31df978b4e2f0fbd2c549944f9d79a5"),
             ReallyMeCrypto.deriveKey(
                 ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256,
                 password,
                 salt,
-                4096u,
+                100_000u,
                 32,
             ),
         )
         assertContentEquals(
             bytes(
-                "d197b1b33db0143e018b12f3d1d1479e6cdebdcc97c5c0f87f6902e072f457b5" +
-                    "143f30602641b3d55cd335988cb36b84376060ecd532e039b742a239434af2d5",
+                "f5d17022c96af46c0a1dc49a58bbe654a28e98104883e4af4de974cda2c74122" +
+                    "dd082f4105a93fc80692ca4eb1a784cfeda81bfaa33f5192cc9143d818bd7581",
             ),
             ReallyMeCrypto.deriveKey(
                 ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA512,
                 password,
                 salt,
-                4096u,
+                100_000u,
                 64,
             ),
         )
@@ -647,7 +1058,7 @@ class ReallyMeCryptoTest {
                 ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256,
                 ByteArray(0),
                 salt,
-                4096u,
+                100_000u,
                 32,
             )
         }
@@ -656,7 +1067,7 @@ class ReallyMeCryptoTest {
                 ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256,
                 password,
                 ByteArray(0),
-                4096u,
+                100_000u,
                 32,
             )
         }
@@ -678,14 +1089,40 @@ class ReallyMeCryptoTest {
                 32,
             )
         }
-        assertFailsWith<ReallyMeCryptoException.ProviderFailure> {
-            ReallyMeCrypto.deriveKey(
-                ReallyMeKdfAlgorithm.ARGON2ID,
-                password,
-                "somesaltvalue1234".toByteArray(),
-                1u,
-                ReallyMeArgon2id.DERIVED_KEY_LENGTH,
+        try {
+            assertContentEquals(
+                bytes("53334265f014b5a46f2b3fce4de2c965669b6cd3a4879366385dfc301c234757"),
+                ReallyMeCrypto.deriveArgon2id(
+                    1u,
+                    password,
+                    "somesaltvalue1234".toByteArray(),
+                ),
             )
+        } catch (_: ReallyMeCryptoException.ProviderFailure) {
+            // The default test lane intentionally leaves the explicit Rust
+            // provider unloaded. Provider-enabled matrix jobs execute and
+            // assert the same known answer instead.
+        }
+    }
+
+    @Test
+    fun pbkdf2IterationConversionEnforcesPublicWorkBounds() {
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMePbkdf2.checkedIterationCount(1u)
+        }
+        assertEquals(
+            ReallyMePbkdf2.MIN_ITERATIONS.toInt(),
+            ReallyMePbkdf2.checkedIterationCount(ReallyMePbkdf2.MIN_ITERATIONS),
+        )
+        assertEquals(
+            ReallyMePbkdf2.MAX_ITERATIONS.toInt(),
+            ReallyMePbkdf2.checkedIterationCount(ReallyMePbkdf2.MAX_ITERATIONS),
+        )
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMePbkdf2.checkedIterationCount(ReallyMePbkdf2.MAX_ITERATIONS + 1u)
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMePbkdf2.checkedIterationCount(UInt.MAX_VALUE)
         }
     }
 
@@ -702,28 +1139,13 @@ class ReallyMeCryptoTest {
         val expected = bytes("53334265f014b5a46f2b3fce4de2c965669b6cd3a4879366385dfc301c234757")
 
         assertContentEquals(expected, ReallyMeArgon2id.deriveKey(1u, secret, salt))
-        assertContentEquals(
-            expected,
-            ReallyMeCrypto.deriveKey(
-                ReallyMeKdfAlgorithm.ARGON2ID,
-                secret,
-                salt,
-                1u,
-                ReallyMeArgon2id.DERIVED_KEY_LENGTH,
-            ),
-        )
+        assertContentEquals(expected, ReallyMeCrypto.deriveArgon2id(1u, secret, salt))
 
         assertFailsWith<ReallyMeCryptoException.InvalidInput> {
             ReallyMeArgon2id.deriveKey(99u, secret, salt)
         }
-        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
-            ReallyMeCrypto.deriveKey(
-                ReallyMeKdfAlgorithm.ARGON2ID,
-                secret,
-                salt,
-                1u,
-                ReallyMeArgon2id.DERIVED_KEY_LENGTH - 1,
-            )
+        assertFailsWith<ReallyMeCryptoException.UnsupportedAlgorithm> {
+            ReallyMeCrypto.deriveKey(ReallyMeKdfAlgorithm.ARGON2ID, secret, salt, 1u, 32)
         }
     }
 
@@ -741,6 +1163,19 @@ class ReallyMeCryptoTest {
             ),
             ReallyMeCrypto.deriveHkdf(
                 ReallyMeKdfAlgorithm.HKDF_SHA256,
+                inputKeyMaterial,
+                salt,
+                info,
+                42,
+            ),
+        )
+        assertContentEquals(
+            bytes(
+                "9b5097a86038b805309076a44b3a9f38063e25b516dcbf369f394cfab43685f7" +
+                    "48b6457763e4f0204fc5",
+            ),
+            ReallyMeCrypto.deriveHkdf(
+                ReallyMeKdfAlgorithm.HKDF_SHA384,
                 inputKeyMaterial,
                 salt,
                 info,
@@ -875,7 +1310,7 @@ class ReallyMeCryptoTest {
         assertFailsWith<ReallyMeCryptoException.InvalidInput> {
             ReallyMeCrypto.seal(ReallyMeAeadAlgorithm.CHACHA20_POLY1305, empty, empty, empty, empty)
         }
-        assertEquals(5, ReallyMeKemAlgorithm.entries.size)
+        assertEquals(4, ReallyMeKemAlgorithm.entries.size)
     }
 
     @Test
@@ -893,7 +1328,11 @@ class ReallyMeCryptoTest {
             ReallyMeHashAlgorithm.entries.toSet(),
         )
         assertEquals(
-            setOf(ReallyMeMacAlgorithm.HMAC_SHA256, ReallyMeMacAlgorithm.HMAC_SHA512),
+            setOf(
+                ReallyMeMacAlgorithm.HMAC_SHA256,
+                ReallyMeMacAlgorithm.HMAC_SHA384,
+                ReallyMeMacAlgorithm.HMAC_SHA512,
+            ),
             ReallyMeMacAlgorithm.entries.toSet(),
         )
         assertEquals(
@@ -987,11 +1426,13 @@ class ReallyMeCryptoTest {
     fun genericFacadeUnsupportedKdfRoutesAreExhaustive() {
         val empty = ByteArray(0)
         val deriveKeySupported = setOf(
-            ReallyMeKdfAlgorithm.ARGON2ID,
             ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256,
             ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA512,
         )
-        val deriveHkdfSupported = setOf(ReallyMeKdfAlgorithm.HKDF_SHA256)
+        val deriveHkdfSupported = setOf(
+            ReallyMeKdfAlgorithm.HKDF_SHA256,
+            ReallyMeKdfAlgorithm.HKDF_SHA384,
+        )
         val deriveJwaConcatKdfSupported = setOf(ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256)
 
         ReallyMeKdfAlgorithm.entries
@@ -1001,10 +1442,6 @@ class ReallyMeCryptoTest {
                     ReallyMeCrypto.deriveKey(algorithm, empty, empty, 1u, 1)
                 }
             }
-
-        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
-            ReallyMeCrypto.deriveKey(ReallyMeKdfAlgorithm.ARGON2ID, empty, empty, 1u, 1)
-        }
 
         ReallyMeKdfAlgorithm.entries
             .filter { algorithm -> !deriveHkdfSupported.contains(algorithm) }
@@ -1457,7 +1894,6 @@ class ReallyMeCryptoTest {
     @Test
     fun xWingVectorsDeriveEncapsulateAndDecapsulate() {
         validateXWingVector("x_wing_768", ReallyMeKemAlgorithm.X_WING_768)
-        validateXWingVector("x_wing_1024", ReallyMeKemAlgorithm.X_WING_1024)
     }
 
     @Test
@@ -1497,6 +1933,59 @@ class ReallyMeCryptoTest {
                 ciphertext.copyOf(ciphertext.size - 1),
                 secretKey,
             )
+        }
+    }
+
+    @Test
+    fun xWingLowOrderDecapsulationMatchesRustAndEncapsulationRejects() {
+        val secretKey = vectorCaseField("x_wing.json", "x_wing_768", "secret_key")
+        val publicKey = vectorCaseField("x_wing.json", "x_wing_768", "public_key")
+        val encapsulationSeed = vectorCaseField("x_wing.json", "x_wing_768", "encaps_seed")
+        val ciphertext = vectorCaseField("x_wing.json", "x_wing_768", "ciphertext")
+        val orderEightPoint = bytes(
+            "e0eb7a7c3b41b8ae1656e3faf19fc46ada098deb9c32b1fd866205165f49b800"
+        )
+        // These expected secrets are pinned by the matching Rust primitive
+        // test. Sharing the KAT outcomes makes an adversarial, length-valid
+        // ciphertext produce byte-for-byte identical results across lanes.
+        val lowOrderCases = listOf(
+            Pair(
+                ByteArray(32),
+                bytes("a293a5fbf5b7c27782ab8dfad8c05ac6aab9d960d2b8c3dbe2887f6e1911eb0d"),
+            ),
+            Pair(
+                orderEightPoint,
+                bytes("dbbda70c3a15ffddf213d8abd918c30ffff602d67fd67e65a01bf0404bf05a78"),
+            ),
+        )
+
+        for ((lowOrderPoint, expectedSharedSecret) in lowOrderCases) {
+            val adversarialCiphertext = ciphertext.copyOf()
+            lowOrderPoint.copyInto(
+                adversarialCiphertext,
+                destinationOffset = adversarialCiphertext.size - lowOrderPoint.size,
+            )
+            assertContentEquals(
+                expectedSharedSecret,
+                ReallyMeCrypto.decapsulate(
+                    ReallyMeKemAlgorithm.X_WING_768,
+                    adversarialCiphertext,
+                    secretKey,
+                ),
+            )
+
+            val nonContributoryPublicKey = publicKey.copyOf()
+            lowOrderPoint.copyInto(
+                nonContributoryPublicKey,
+                destinationOffset = nonContributoryPublicKey.size - lowOrderPoint.size,
+            )
+            assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+                ReallyMeXWing.encapsulateDeterministicForTest(
+                    ReallyMeKemAlgorithm.X_WING_768,
+                    nonContributoryPublicKey,
+                    encapsulationSeed,
+                )
+            }
         }
     }
 
@@ -1697,6 +2186,26 @@ class ReallyMeCryptoTest {
                 info,
                 aad,
                 plaintext,
+            )
+        }
+
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeCrypto.sealHpke(
+                ReallyMeHpkeSuite.DHKEM_X25519_HKDF_SHA256_HKDF_SHA256_CHACHA20_POLY1305,
+                ByteArray(32),
+                info,
+                aad,
+                plaintext,
+            )
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeCrypto.openHpke(
+                ReallyMeHpkeSuite.DHKEM_X25519_HKDF_SHA256_HKDF_SHA256_CHACHA20_POLY1305,
+                privateKey,
+                ByteArray(32),
+                info,
+                aad,
+                sealed.ciphertext,
             )
         }
     }
@@ -2338,6 +2847,9 @@ class ReallyMeCryptoTest {
 
     private fun base64UrlBytes(encoded: String): ByteArray = Base64.getUrlDecoder().decode(encoded)
 
+    private fun base64UrlString(bytes: ByteArray): String =
+        Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
+
     private fun vectorField(vectorName: String, fieldName: String): ByteArray {
         return base64UrlBytes(vectorString(vectorName, fieldName))
     }
@@ -2472,6 +2984,24 @@ class ReallyMeCryptoTest {
             index += 1
         }
         throw IllegalStateException("unterminated string field")
+    }
+
+    private enum class YMutation {
+        SAME_PARITY,
+        OPPOSITE_PARITY,
+    }
+
+    private fun mutatedEcJwkJson(jwkJcs: String, mutation: YMutation): String {
+        val encodedY = jsonStringField(jwkJcs, "y")
+        val y = base64UrlBytes(encodedY)
+        when (mutation) {
+            YMutation.SAME_PARITY -> y[0] = (y[0].toInt() xor 0x02).toByte()
+            YMutation.OPPOSITE_PARITY -> y[31] = (y[31].toInt() xor 0x01).toByte()
+        }
+        return jwkJcs.replace(
+            """"y":"$encodedY"""",
+            """"y":"${base64UrlString(y)}"""",
+        )
     }
 
     private fun jsonOptionalStringField(text: String, fieldName: String): String? {

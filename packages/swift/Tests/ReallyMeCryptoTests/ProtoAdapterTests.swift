@@ -79,7 +79,7 @@ extension ReallyMeCryptoTests {
         XCTAssertEqual(authenticationDecoded, .authenticationFailed)
         XCTAssertEqual(
             try ReallyMeCryptoProtoAdapters.fromProtoErrorBytes([0xff]),
-            .providerFailure
+            .invalidInput
         )
     }
 
@@ -92,21 +92,8 @@ extension ReallyMeCryptoTests {
         let decoded = try ReallyMeCryptoProtoAdapters.wireError(
             fromProtoErrorBytes: encoded
         )
-        let errorResult = try ReallyMeCryptoProtoAdapters.protoErrorResult(wireError)
-        let successResult = ReallyMeCryptoProtoAdapters.protoResult(bytes: [1, 2, 3])
 
         XCTAssertEqual(decoded, wireError)
-        XCTAssertEqual(errorResult.status, .cryptoError)
-        XCTAssertTrue(errorResult.isCryptoError)
-        XCTAssertEqual(
-            try ReallyMeCryptoProtoAdapters.wireError(
-                fromProtoErrorBytes: errorResult.bytes
-            ),
-            wireError
-        )
-        XCTAssertEqual(successResult.status, .result)
-        XCTAssertFalse(successResult.isCryptoError)
-        XCTAssertEqual(successResult.bytes, [1, 2, 3])
     }
 
     func testProtoWireErrorsPreserveFutureBranchReasonCodes() throws {
@@ -127,19 +114,44 @@ extension ReallyMeCryptoTests {
         XCTAssertEqual(roundTrip, wire)
     }
 
-    func testProtoResultAndGeneratedMessagesRedactAndClearBytes() {
-        var result = ReallyMeCryptoProtoAdapters.protoResult(bytes: [1, 2, 3])
-        XCTAssertTrue(result.debugDescription.contains("<redacted>"))
-        result.bestEffortClear()
-        XCTAssertTrue(result.bytes.isEmpty)
-
+    func testGeneratedMessagesRedactRetainedBytes() {
         var first = ReallyMeCryptoProto.ReallyMeProtoCryptoSignatureDeriveKeyPairRequest()
         first.secretKey = Data([1, 2, 3])
         var second = ReallyMeCryptoProto.ReallyMeProtoCryptoSignatureDeriveKeyPairRequest()
         second.secretKey = Data([4, 5, 6])
         XCTAssertTrue(first.debugDescription.contains("<redacted>"))
         XCTAssertFalse(first.debugDescription.contains("AQID"))
-        XCTAssertEqual(first.hashValue, second.hashValue)
+        XCTAssertTrue(second.debugDescription.contains("<redacted>"))
+        XCTAssertFalse(second.debugDescription.contains("BAUG"))
+    }
+
+    func testGeneratedOperationOwnersRedactNestedSecretMaterial() {
+        var keyPair = ReallyMeCryptoProto.ReallyMeProtoCryptoKeyPair()
+        keyPair.publicKey = Data([250])
+        keyPair.secretKey = Data([251, 252, 253])
+
+        var result = ReallyMeCryptoProto.ReallyMeProtoCryptoOperationResult()
+        result.signatureGenerateKeyPair = keyPair
+        var response = ReallyMeCryptoProto.ReallyMeProtoCryptoOperationResponse()
+        response.result = result
+
+        XCTAssertTrue(result.debugDescription.contains("<redacted>"))
+        XCTAssertTrue(response.debugDescription.contains("<redacted>"))
+        for encodedSecret in ["+g==", "+/z9", "\\372", "\\373\\374\\375"] {
+            XCTAssertFalse(result.debugDescription.contains(encodedSecret))
+            XCTAssertFalse(response.debugDescription.contains(encodedSecret))
+        }
+
+        var sign = ReallyMeCryptoProto.ReallyMeProtoCryptoSignatureSignRequest()
+        sign.message = Data([250])
+        sign.secretKey = Data([251, 252, 253])
+        var request = ReallyMeCryptoProto.ReallyMeProtoCryptoOperationRequest()
+        request.signatureSign = sign
+
+        XCTAssertTrue(request.debugDescription.contains("<redacted>"))
+        for encodedSecret in ["+g==", "+/z9", "\\372", "\\373\\374\\375"] {
+            XCTAssertFalse(request.debugDescription.contains(encodedSecret))
+        }
     }
 
     func testProtoWireErrorConstructorRejectsInvalidPairs() throws {
@@ -167,7 +179,7 @@ extension ReallyMeCryptoTests {
         }
     }
 
-    func testMalformedCryptoErrorEnvelopesBecomeBackendFailures() throws {
+    func testMalformedCryptoErrorEnvelopesBecomePrimitiveInvalidInputFailures() throws {
         let malformedBytes: [UInt8] = [0xff]
         let missingBranch = ReallyMeCryptoProto.ReallyMeProtoCryptoError()
         var unspecifiedReason = ReallyMeCryptoProto.ReallyMeProtoCryptoError()
@@ -186,11 +198,11 @@ extension ReallyMeCryptoTests {
             try mismatchedBranch.serializedBytes(),
         ] {
             let wire = try ReallyMeCryptoProtoAdapters.wireError(fromProtoErrorBytes: bytes)
-            XCTAssertEqual(wire.branch, .backend)
-            XCTAssertEqual(wire.reason, .backendMalformedProtobuf)
+            XCTAssertEqual(wire.branch, .primitive)
+            XCTAssertEqual(wire.reason, .primitiveMalformedProtobuf)
             XCTAssertEqual(
                 try ReallyMeCryptoProtoAdapters.fromProtoErrorBytes(bytes),
-                .providerFailure
+                .invalidInput
             )
         }
     }
@@ -227,6 +239,30 @@ extension ReallyMeCryptoTests {
                 )
             ),
             .authenticationFailed
+        )
+
+        for reason in [
+            ReallyMeCryptoProto.ReallyMeProtoCryptoErrorReason.providerKeyExists,
+            .providerKeyNotFound,
+            .providerAccessDenied,
+            .providerUserAuthenticationRequired,
+            .providerUserCanceled,
+            .providerHardwareRejectedKey,
+        ] {
+            let wireError = try ReallyMeCryptoWireError.tryNew(branch: .provider, reason: reason)
+            XCTAssertEqual(
+                ReallyMeCryptoProtoAdapters.facadeError(fromWireError: wireError),
+                .providerFailure
+            )
+        }
+        XCTAssertEqual(
+            ReallyMeCryptoProtoAdapters.facadeError(
+                fromWireError: try ReallyMeCryptoWireError.tryNew(
+                    branch: .provider,
+                    reason: .providerHardwareUnavailable
+                )
+            ),
+            .unsupportedPlatform
         )
     }
 

@@ -1,0 +1,6 @@
+{
+  "alg": "AES-192-KW",
+  "kek": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYX",
+  "key_data": "ABEiM0RVZneImaq7zN3u_w",
+  "wrapped_key": "lneLJa5spDX5K1uXwFCu0kaKuKF62E5d"
+}

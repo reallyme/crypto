@@ -6,7 +6,7 @@ import CryptoKit
 import Foundation
 import Security
 
-public struct ReallyMeKeyAgreementHandleKeyPair: Equatable, Sendable {
+public struct ReallyMeKeyAgreementHandleKeyPair: Sendable {
     public let publicKey: [UInt8]
     public let privateKeyHandle: [UInt8]
 }
@@ -18,12 +18,20 @@ public struct ReallyMeKeyAgreementHandleKeyPair: Equatable, Sendable {
 /// generated as a permanent Secure Enclave key and callers receive only a
 /// small handle (`SE:` + application tag). JWE/JOSE code can use the handle to
 /// derive an ECDH shared secret without exporting the private key.
+///
+/// ECDH keys deliberately use `.privateKeyUsage` without an interactive
+/// user-presence constraint so background receive/decryption flows can derive
+/// shared secrets. Secure Enclave residency prevents private-key export but
+/// does not imply per-operation user authentication.
 public enum ReallyMeP256SecureEnclaveEcdh {
     public static let handlePrefix = Array("SE:".utf8)
     public static let minTagLength = 1
     public static let maxTagLength = 256
     public static let compressedPublicKeyLength = ReallyMeP256Ecdh.compressedPublicKeyLength
     public static let sharedSecretLength = ReallyMeP256Ecdh.sharedSecretLength
+    internal static let storageTagPrefix =
+        Array("me.really.crypto.secure-enclave.ecdh.v1:".utf8)
+    private static let lifecycleLock = NSLock()
 
     public static func encodePrivateKeyHandle(tag: [UInt8]) throws -> [UInt8] {
         try validateTag(tag)
@@ -49,16 +57,31 @@ public enum ReallyMeP256SecureEnclaveEcdh {
         guard supportsSecureEnclaveKeyAgreement else {
             throw ReallyMeCryptoError.unsupportedPlatform
         }
+        lifecycleLock.lock()
+        defer { lifecycleLock.unlock() }
         if overwriteExisting {
             try deleteKey(tag: tag)
+        } else if try privateKeyExists(tag: tag) {
+            throw ReallyMeCryptoError.invalidInput
         }
 
         let privateKey = try createPrivateKey(tag: tag)
-        let publicKey = try compressedPublicKey(for: privateKey)
-        return ReallyMeKeyAgreementHandleKeyPair(
-            publicKey: publicKey,
-            privateKeyHandle: try encodePrivateKeyHandle(tag: tag)
-        )
+        do {
+            let publicKey = try compressedPublicKey(for: privateKey)
+            return ReallyMeKeyAgreementHandleKeyPair(
+                publicKey: publicKey,
+                privateKeyHandle: try encodePrivateKeyHandle(tag: tag)
+            )
+        } catch let generationError {
+            // Key generation is permanent. If any post-generation validation
+            // fails, remove the entry so callers never inherit an orphaned key.
+            do {
+                try deleteKey(tag: tag)
+            } catch {
+                throw ReallyMeCryptoError.providerFailure
+            }
+            throw generationError
+        }
     }
 
     public static func derivePublicKey(privateKeyHandle: [UInt8]) throws -> [UInt8] {
@@ -84,15 +107,21 @@ public enum ReallyMeP256SecureEnclaveEcdh {
         ) as Data? else {
             throw mapKeychainError(error)
         }
-        let bytes = Array(secret)
+        // Security.framework owns the transient `Data`; this wrapper clears the
+        // mutable Swift copy it creates before any validation error return.
+        var bytes = Array(secret)
         guard bytes.count == sharedSecretLength else {
+            ReallyMeCryptoMemory.bestEffortClear(&bytes)
             throw ReallyMeCryptoError.providerFailure
         }
         return bytes
     }
 
     public static func deleteKey(privateKeyHandle: [UInt8]) throws {
-        try deleteKey(tag: try decodePrivateKeyHandle(privateKeyHandle))
+        let tag = try decodePrivateKeyHandle(privateKeyHandle)
+        lifecycleLock.lock()
+        defer { lifecycleLock.unlock() }
+        try deleteKey(tag: tag)
     }
 
     private static var supportsSecureEnclaveKeyAgreement: Bool {
@@ -110,6 +139,7 @@ public enum ReallyMeP256SecureEnclaveEcdh {
     }
 
     private static func createPrivateKey(tag: [UInt8]) throws -> SecKey {
+        let keychainTag = storageTag(for: tag)
         var accessError: Unmanaged<CFError>?
         guard let access = SecAccessControlCreateWithFlags(
             nil,
@@ -126,7 +156,7 @@ public enum ReallyMeP256SecureEnclaveEcdh {
             kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
             kSecPrivateKeyAttrs as String: [
                 kSecAttrIsPermanent as String: true,
-                kSecAttrApplicationTag as String: Data(tag),
+                kSecAttrApplicationTag as String: Data(keychainTag),
                 kSecAttrAccessControl as String: access,
             ],
         ]
@@ -139,12 +169,14 @@ public enum ReallyMeP256SecureEnclaveEcdh {
 
     private static func privateKey(for privateKeyHandle: [UInt8]) throws -> SecKey {
         let tag = try decodePrivateKeyHandle(privateKeyHandle)
+        let keychainTag = storageTag(for: tag)
         let query: [String: Any] = [
             kSecClass as String: kSecClassKey,
             kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
             kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
-            kSecAttrApplicationTag as String: Data(tag),
+            kSecAttrApplicationTag as String: Data(keychainTag),
             kSecReturnRef as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne,
         ]
         var item: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &item)
@@ -167,16 +199,42 @@ public enum ReallyMeP256SecureEnclaveEcdh {
 
     private static func deleteKey(tag: [UInt8]) throws {
         try validateTag(tag)
+        let keychainTag = storageTag(for: tag)
         let query: [String: Any] = [
             kSecClass as String: kSecClassKey,
             kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
             kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
-            kSecAttrApplicationTag as String: Data(tag),
+            kSecAttrApplicationTag as String: Data(keychainTag),
         ]
         let status = SecItemDelete(query as CFDictionary)
         guard status == errSecSuccess || status == errSecItemNotFound else {
             throw mapSecurityStatus(status)
         }
+    }
+
+    private static func privateKeyExists(tag: [UInt8]) throws -> Bool {
+        let keychainTag = storageTag(for: tag)
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassKey,
+            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+            kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
+            kSecAttrApplicationTag as String: Data(keychainTag),
+            kSecMatchLimit as String: kSecMatchLimitOne,
+        ]
+        let status = SecItemCopyMatching(query as CFDictionary, nil)
+        if status == errSecSuccess {
+            return true
+        }
+        if status == errSecItemNotFound {
+            return false
+        }
+        throw mapSecurityStatus(status)
+    }
+
+    private static func storageTag(for tag: [UInt8]) -> [UInt8] {
+        // The Keychain identifier binds the cryptographic purpose even when an
+        // application deliberately reuses the same public tag across APIs.
+        storageTagPrefix + Array(SHA256.hash(data: Data(tag)))
     }
 
     private static func compressedPublicKey(for privateKey: SecKey) throws -> [UInt8] {

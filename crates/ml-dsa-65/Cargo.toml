@@ -1,0 +1,44 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-ml-dsa-65"
+version = "0.3.0"
+include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = true
+description = "ML-DSA-65 signature primitive for ReallyMe Crypto."
+
+[lib]
+name = "crypto_ml_dsa_65"
+
+[features]
+default = [ ]
+
+native = [
+    "dep:ml-dsa",
+]
+
+# Platform backends
+wasm = [
+    "dep:getrandom",
+    "dep:ml-dsa",
+]
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.3.0", path = "../crypto/core" }
+zeroize = { workspace = true }
+getrandom = { workspace = true, features = ["wasm_js"], optional = true }
+
+# -----------------------------
+# Package-owned Rust implementation dependency for both backend lanes.
+# -----------------------------
+ml-dsa = { workspace = true, features = ["getrandom", "zeroize"], optional = true }
+
+
+[lints]
+workspace = true

@@ -1,0 +1,39 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-sha2-256"
+version = "0.3.0"
+include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = true
+description = "SHA-256 digest primitive for ReallyMe Crypto."
+
+[package.metadata.cargo-machete]
+ignored = [
+    # Enables getrandom's wasm entropy backend for the transitive digest stack.
+    "getrandom",
+]
+
+[lib]
+name = "crypto_sha2_256"
+
+[features]
+default = []
+native = []
+wasm = ["dep:getrandom"]
+
+[dependencies]
+getrandom = { version = "0.4", features = ["wasm_js"], optional = true }
+sha2 = { workspace = true }
+zeroize = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+hex = { workspace = true }
+
+[lints]
+workspace = true

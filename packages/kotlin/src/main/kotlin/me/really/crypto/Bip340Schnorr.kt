@@ -6,7 +6,6 @@ package me.really.crypto
 
 import fr.acinq.secp256k1.Secp256k1
 import fr.acinq.secp256k1.Secp256k1Exception
-import java.security.SecureRandom
 
 /**
  * BIP-340 Schnorr signatures over secp256k1, backed by Bitcoin Core
@@ -28,16 +27,13 @@ public object ReallyMeBip340Schnorr {
     public const val SIGNATURE_LENGTH: Int = 64
 
     public fun generateKeyPair(): Pair<ByteArray, ByteArray> {
-        val random = SecureRandom()
-        val secretKey = ByteArray(SECRET_KEY_LENGTH)
         val secp = provider()
-        repeat(1024) {
-            random.nextBytes(secretKey)
-            if (secp.secKeyVerify(secretKey)) {
-                return Pair(derivePublicKey(secretKey), secretKey.copyOf())
-            }
+        return withRandomSecretCandidate(
+            length = SECRET_KEY_LENGTH,
+            isValid = secp::secKeyVerify,
+        ) { secretKey ->
+            Pair(derivePublicKey(secretKey), secretKey.copyOf())
         }
-        throw ReallyMeCryptoException.ProviderFailure()
     }
 
     public fun deriveKeyPair(secretKey: ByteArray): Pair<ByteArray, ByteArray> =

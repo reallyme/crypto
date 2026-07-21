@@ -6,6 +6,8 @@ use crate::AlgorithmError;
 use codec_multikey::{parse_multikey, validate_key_binding, KeyBindingInput};
 use crypto_core::Algorithm;
 
+const SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN: usize = 32;
+
 fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError> {
     match algorithm {
         Algorithm::Ed25519 => {
@@ -98,6 +100,7 @@ fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError
                 Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
             }
         }
+        Algorithm::SlhDsaSha2_128s => Ok(SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN),
         Algorithm::MlKem512 => {
             #[cfg(feature = "ml-kem-512")]
             {
@@ -132,16 +135,6 @@ fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError
             #[cfg(feature = "x-wing")]
             {
                 Ok(crypto_x_wing::X_WING_768_PUBLIC_KEY_LEN)
-            }
-            #[cfg(not(feature = "x-wing"))]
-            {
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
-            }
-        }
-        Algorithm::XWing1024 => {
-            #[cfg(feature = "x-wing")]
-            {
-                Ok(crypto_x_wing::X_WING_1024_PUBLIC_KEY_LEN)
             }
             #[cfg(not(feature = "x-wing"))]
             {

@@ -20,11 +20,6 @@ public  final class CryptoKemDecapsulateResult extends
     return "CryptoKemDecapsulateResult{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoKemDecapsulateResult() {
     sharedSecret_ = com.google.protobuf.ByteString.EMPTY;
   }

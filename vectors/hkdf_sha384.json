@@ -1,0 +1,9 @@
+{
+  "alg": "HKDF-SHA384",
+  "hash": "SHA-384",
+  "ikm": "CwsLCwsLCwsLCwsLCwsLCwsLCwsLCw",
+  "salt": "AAECAwQFBgcICQoLDA",
+  "info": "8PHy8_T19vf4-Q",
+  "output_len": 42,
+  "okm": "m1CXqGA4uAUwkHakSzqfOAY-JbUW3L82nzlM-rQ2hfdItkV3Y-TwIE_F"
+}

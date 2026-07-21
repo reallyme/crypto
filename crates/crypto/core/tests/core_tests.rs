@@ -23,6 +23,7 @@ fn signature_algorithms_are_correct() {
     assert!(Algorithm::MlDsa44.is_signature());
     assert!(Algorithm::MlDsa65.is_signature());
     assert!(Algorithm::MlDsa87.is_signature());
+    assert!(Algorithm::SlhDsaSha2_128s.is_signature());
     assert!(!Algorithm::X25519.is_signature());
 }
 
@@ -33,7 +34,6 @@ fn key_agreement_algorithms_are_correct() {
     assert!(Algorithm::MlKem768.is_key_agreement());
     assert!(Algorithm::MlKem1024.is_key_agreement());
     assert!(Algorithm::XWing768.is_key_agreement());
-    assert!(Algorithm::XWing1024.is_key_agreement());
     assert!(!Algorithm::Ed25519.is_key_agreement());
 }
 
@@ -46,9 +46,9 @@ fn algorithm_string_mappings_are_stable() {
     assert_eq!(Algorithm::MlDsa44.as_str(), "ML-DSA-44");
     assert_eq!(Algorithm::MlDsa65.as_str(), "ML-DSA-65");
     assert_eq!(Algorithm::MlDsa87.as_str(), "ML-DSA-87");
+    assert_eq!(Algorithm::SlhDsaSha2_128s.as_str(), "SLH-DSA-SHA2-128s");
     assert_eq!(Algorithm::MlKem512.as_str(), "ML-KEM-512");
     assert_eq!(Algorithm::XWing768.as_str(), "X-Wing-768");
-    assert_eq!(Algorithm::XWing1024.as_str(), "X-Wing-1024");
 }
 
 #[test]
@@ -69,6 +69,7 @@ fn hash_algorithm_string_mapping_is_stable() {
 #[test]
 fn mac_algorithm_string_mapping_is_stable() {
     assert_eq!(MacAlgorithm::HmacSha256.as_str(), "HMAC-SHA-256");
+    assert_eq!(MacAlgorithm::HmacSha384.as_str(), "HMAC-SHA-384");
     assert_eq!(MacAlgorithm::HmacSha512.as_str(), "HMAC-SHA-512");
 }
 

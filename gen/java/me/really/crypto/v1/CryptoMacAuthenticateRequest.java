@@ -20,11 +20,6 @@ public  final class CryptoMacAuthenticateRequest extends
     return "CryptoMacAuthenticateRequest{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoMacAuthenticateRequest() {
     key_ = com.google.protobuf.ByteString.EMPTY;
     message_ = com.google.protobuf.ByteString.EMPTY;

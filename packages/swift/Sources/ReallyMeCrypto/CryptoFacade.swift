@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /// Public/secret keypair returned by generic package facade key generation.
-public struct ReallyMeSignatureKeyPair: Equatable, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
+public struct ReallyMeSignatureKeyPair: Sendable, CustomStringConvertible, CustomDebugStringConvertible {
     public let publicKey: [UInt8]
     public let secretKey: [UInt8]
 
@@ -19,7 +19,7 @@ public struct ReallyMeSignatureKeyPair: Equatable, Sendable, CustomStringConvert
     public var debugDescription: String { description }
 }
 
-public struct ReallyMeKemKeyPair: Equatable, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
+public struct ReallyMeKemKeyPair: Sendable, CustomStringConvertible, CustomDebugStringConvertible {
     public let publicKey: [UInt8]
     public let secretKey: [UInt8]
 
@@ -35,7 +35,7 @@ public struct ReallyMeKemKeyPair: Equatable, Sendable, CustomStringConvertible, 
     public var debugDescription: String { description }
 }
 
-public struct ReallyMeKeyAgreementKeyPair: Equatable, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
+public struct ReallyMeKeyAgreementKeyPair: Sendable, CustomStringConvertible, CustomDebugStringConvertible {
     public let publicKey: [UInt8]
     public let secretKey: [UInt8]
 
@@ -51,7 +51,7 @@ public struct ReallyMeKeyAgreementKeyPair: Equatable, Sendable, CustomStringConv
     public var debugDescription: String { description }
 }
 
-public struct ReallyMeKemEncapsulation: Equatable, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
+public struct ReallyMeKemEncapsulation: Sendable, CustomStringConvertible, CustomDebugStringConvertible {
     public let sharedSecret: [UInt8]
     public let ciphertext: [UInt8]
 
@@ -67,7 +67,7 @@ public struct ReallyMeKemEncapsulation: Equatable, Sendable, CustomStringConvert
     public var debugDescription: String { description }
 }
 
-public struct ReallyMeHpkeSealedMessage: Equatable, Sendable {
+public struct ReallyMeHpkeSealedMessage: Sendable {
     public let encapsulatedKey: [UInt8]
     public let ciphertext: [UInt8]
 
@@ -77,7 +77,10 @@ public struct ReallyMeHpkeSealedMessage: Equatable, Sendable {
     }
 }
 
-private let genericFacadeArgon2idDerivedKeyLength = 32
+public enum ReallyMeRustCAbiProviderDiagnostic: Equatable, Sendable {
+    case bundledProviderNotLinked
+    case bundledProviderLoadFailed
+}
 
 /// Provider configuration for the Swift facade.
 ///
@@ -87,23 +90,33 @@ private let genericFacadeArgon2idDerivedKeyLength = 32
 /// dynamic library when testing a freshly built `crypto-ffi`.
 public struct ReallyMeCryptoProviders: Sendable {
     public let rustCAbiLibrary: ReallyMeRustCAbiLibrary?
+    public let rustCAbiDiagnostic: ReallyMeRustCAbiProviderDiagnostic?
 
-    public init(rustCAbiLibrary: ReallyMeRustCAbiLibrary? = nil) {
+    public init(
+        rustCAbiLibrary: ReallyMeRustCAbiLibrary? = nil,
+        rustCAbiDiagnostic: ReallyMeRustCAbiProviderDiagnostic? = nil
+    ) {
         self.rustCAbiLibrary = rustCAbiLibrary
+        self.rustCAbiDiagnostic = rustCAbiDiagnostic
     }
 
     public static var `default`: ReallyMeCryptoProviders {
         #if REALLYME_CRYPTO_LINKED_FFI
-        return ReallyMeCryptoProviders(rustCAbiLibrary: try? ReallyMeRustCAbiLibrary.bundledProvider())
+        do {
+            return ReallyMeCryptoProviders(rustCAbiLibrary: try ReallyMeRustCAbiLibrary.bundledProvider())
+        } catch {
+            return ReallyMeCryptoProviders(rustCAbiDiagnostic: .bundledProviderLoadFailed)
+        }
         #else
-        return ReallyMeCryptoProviders()
+        return ReallyMeCryptoProviders(rustCAbiDiagnostic: .bundledProviderNotLinked)
         #endif
     }
 }
 
 /// Generic package facade. Algorithm-specific types remain available for
 /// callers that want direct provider access; this facade gives consumers a
-/// stable typed route that fails closed for not-yet-exposed algorithms.
+/// stable typed route and rejects algorithm/operation combinations that the
+/// selected method does not define.
 public struct ReallyMeCrypto: Sendable {
     public let providers: ReallyMeCryptoProviders
 
@@ -200,6 +213,8 @@ public struct ReallyMeCrypto: Sendable {
         switch algorithm {
         case .hmacSha256:
             return try ReallyMeHmac.authenticateSha256(key: key, message: message)
+        case .hmacSha384:
+            return try ReallyMeHmac.authenticateSha384(key: key, message: message)
         case .hmacSha512:
             return try ReallyMeHmac.authenticateSha512(key: key, message: message)
         }
@@ -214,6 +229,8 @@ public struct ReallyMeCrypto: Sendable {
         switch algorithm {
         case .hmacSha256:
             return try ReallyMeHmac.verifySha256(tag: tag, key: key, message: message)
+        case .hmacSha384:
+            return try ReallyMeHmac.verifySha384(tag: tag, key: key, message: message)
         case .hmacSha512:
             return try ReallyMeHmac.verifySha512(tag: tag, key: key, message: message)
         }
@@ -241,7 +258,7 @@ public struct ReallyMeCrypto: Sendable {
                 iterations: iterations,
                 outputLength: outputLength
             )
-        case .hkdfSha256, .argon2id, .jwaConcatKdfSha256:
+        case .hkdfSha256, .hkdfSha384, .argon2id, .kmac256, .jwaConcatKdfSha256:
             throw ReallyMeCryptoError.unsupportedAlgorithm
         }
     }
@@ -261,7 +278,14 @@ public struct ReallyMeCrypto: Sendable {
                 info: info,
                 outputLength: outputLength
             )
-        case .argon2id, .pbkdf2HmacSha256, .pbkdf2HmacSha512, .jwaConcatKdfSha256:
+        case .hkdfSha384:
+            return try ReallyMeHkdf.deriveSha384(
+                inputKeyMaterial: inputKeyMaterial,
+                salt: salt,
+                info: info,
+                outputLength: outputLength
+            )
+        case .argon2id, .kmac256, .pbkdf2HmacSha256, .pbkdf2HmacSha512, .jwaConcatKdfSha256:
             throw ReallyMeCryptoError.unsupportedAlgorithm
         }
     }
@@ -283,7 +307,7 @@ public struct ReallyMeCrypto: Sendable {
                 partyVInfo: partyVInfo,
                 outputLength: outputLength
             )
-        case .argon2id, .hkdfSha256, .pbkdf2HmacSha256, .pbkdf2HmacSha512:
+        case .argon2id, .hkdfSha256, .hkdfSha384, .kmac256, .pbkdf2HmacSha256, .pbkdf2HmacSha512:
             throw ReallyMeCryptoError.unsupportedAlgorithm
         }
     }
@@ -294,7 +318,7 @@ public struct ReallyMeCrypto: Sendable {
         keyToWrap: [UInt8]
     ) throws -> [UInt8] {
         switch algorithm {
-        case .aes256Kw:
+        case .aes128Kw, .aes192Kw, .aes256Kw:
             throw ReallyMeCryptoError.unsupportedAlgorithm
         }
     }
@@ -305,7 +329,7 @@ public struct ReallyMeCrypto: Sendable {
         wrappedKey: [UInt8]
     ) throws -> [UInt8] {
         switch algorithm {
-        case .aes256Kw:
+        case .aes128Kw, .aes192Kw, .aes256Kw:
             throw ReallyMeCryptoError.unsupportedAlgorithm
         }
     }
@@ -387,6 +411,166 @@ public struct ReallyMeCrypto: Sendable {
              .ecdsaP256Sha256,
              .ecdsaP384Sha384,
              .ecdsaP521Sha512,
+             .bip340SchnorrSecp256k1Sha256,
+             .rsaPkcs1v15Sha1,
+             .rsaPkcs1v15Sha256,
+             .rsaPkcs1v15Sha384,
+             .rsaPkcs1v15Sha512,
+             .rsaPssSha1Mgf1Sha1,
+             .rsaPssSha256Mgf1Sha256,
+             .rsaPssSha384Mgf1Sha384,
+             .rsaPssSha512Mgf1Sha512,
+             .mlDsa44,
+             .mlDsa65,
+             .mlDsa87,
+             .slhDsaSha2_128s:
+            throw ReallyMeCryptoError.unsupportedAlgorithm
+        }
+    }
+
+    public static func generateSecureEnclaveSigningKeyPair(
+        _ algorithm: ReallyMeSignatureAlgorithm,
+        tag: [UInt8],
+        accessControl: ReallyMeSecureEnclaveAccessControl = .userPresence,
+        overwriteExisting: Bool = false
+    ) throws -> ReallyMeSignatureHandleKeyPair {
+        switch algorithm {
+        case .ecdsaP256Sha256:
+            return try ReallyMeP256SecureEnclaveEcdsa.generateKeyPair(
+                tag: tag,
+                accessControl: accessControl,
+                overwriteExisting: overwriteExisting
+            )
+        case .ed25519,
+             .ecdsaP384Sha384,
+             .ecdsaP521Sha512,
+             .ecdsaSecp256k1Sha256,
+             .bip340SchnorrSecp256k1Sha256,
+             .rsaPkcs1v15Sha1,
+             .rsaPkcs1v15Sha256,
+             .rsaPkcs1v15Sha384,
+             .rsaPkcs1v15Sha512,
+             .rsaPssSha1Mgf1Sha1,
+             .rsaPssSha256Mgf1Sha256,
+             .rsaPssSha384Mgf1Sha384,
+             .rsaPssSha512Mgf1Sha512,
+             .mlDsa44,
+             .mlDsa65,
+             .mlDsa87,
+             .slhDsaSha2_128s:
+            throw ReallyMeCryptoError.unsupportedAlgorithm
+        }
+    }
+
+    public static func deriveSecureEnclaveSigningPublicKey(
+        _ algorithm: ReallyMeSignatureAlgorithm,
+        privateKeyHandle: [UInt8]
+    ) throws -> [UInt8] {
+        switch algorithm {
+        case .ecdsaP256Sha256:
+            return try ReallyMeP256SecureEnclaveEcdsa.derivePublicKey(
+                privateKeyHandle: privateKeyHandle
+            )
+        case .ed25519,
+             .ecdsaP384Sha384,
+             .ecdsaP521Sha512,
+             .ecdsaSecp256k1Sha256,
+             .bip340SchnorrSecp256k1Sha256,
+             .rsaPkcs1v15Sha1,
+             .rsaPkcs1v15Sha256,
+             .rsaPkcs1v15Sha384,
+             .rsaPkcs1v15Sha512,
+             .rsaPssSha1Mgf1Sha1,
+             .rsaPssSha256Mgf1Sha256,
+             .rsaPssSha384Mgf1Sha384,
+             .rsaPssSha512Mgf1Sha512,
+             .mlDsa44,
+             .mlDsa65,
+             .mlDsa87,
+             .slhDsaSha2_128s:
+            throw ReallyMeCryptoError.unsupportedAlgorithm
+        }
+    }
+
+    public static func signWithPrivateKeyHandle(
+        _ algorithm: ReallyMeSignatureAlgorithm,
+        message: [UInt8],
+        privateKeyHandle: [UInt8],
+        authenticationPrompt: String? = nil
+    ) throws -> [UInt8] {
+        switch algorithm {
+        case .ecdsaP256Sha256:
+            return try ReallyMeP256SecureEnclaveEcdsa.sign(
+                message: message,
+                privateKeyHandle: privateKeyHandle,
+                authenticationPrompt: authenticationPrompt
+            )
+        case .ed25519,
+             .ecdsaP384Sha384,
+             .ecdsaP521Sha512,
+             .ecdsaSecp256k1Sha256,
+             .bip340SchnorrSecp256k1Sha256,
+             .rsaPkcs1v15Sha1,
+             .rsaPkcs1v15Sha256,
+             .rsaPkcs1v15Sha384,
+             .rsaPkcs1v15Sha512,
+             .rsaPssSha1Mgf1Sha1,
+             .rsaPssSha256Mgf1Sha256,
+             .rsaPssSha384Mgf1Sha384,
+             .rsaPssSha512Mgf1Sha512,
+             .mlDsa44,
+             .mlDsa65,
+             .mlDsa87,
+             .slhDsaSha2_128s:
+            throw ReallyMeCryptoError.unsupportedAlgorithm
+        }
+    }
+
+    public static func verifySecureEnclaveSignature(
+        _ algorithm: ReallyMeSignatureAlgorithm,
+        signature: [UInt8],
+        message: [UInt8],
+        publicKey: [UInt8]
+    ) throws {
+        switch algorithm {
+        case .ecdsaP256Sha256:
+            try ReallyMeP256SecureEnclaveEcdsa.verify(
+                signature: signature,
+                message: message,
+                publicKey: publicKey
+            )
+        case .ed25519,
+             .ecdsaP384Sha384,
+             .ecdsaP521Sha512,
+             .ecdsaSecp256k1Sha256,
+             .bip340SchnorrSecp256k1Sha256,
+             .rsaPkcs1v15Sha1,
+             .rsaPkcs1v15Sha256,
+             .rsaPkcs1v15Sha384,
+             .rsaPkcs1v15Sha512,
+             .rsaPssSha1Mgf1Sha1,
+             .rsaPssSha256Mgf1Sha256,
+             .rsaPssSha384Mgf1Sha384,
+             .rsaPssSha512Mgf1Sha512,
+             .mlDsa44,
+             .mlDsa65,
+             .mlDsa87,
+             .slhDsaSha2_128s:
+            throw ReallyMeCryptoError.unsupportedAlgorithm
+        }
+    }
+
+    public static func deleteSecureEnclaveSigningKey(
+        _ algorithm: ReallyMeSignatureAlgorithm,
+        privateKeyHandle: [UInt8]
+    ) throws {
+        switch algorithm {
+        case .ecdsaP256Sha256:
+            try ReallyMeP256SecureEnclaveEcdsa.deleteKey(privateKeyHandle: privateKeyHandle)
+        case .ed25519,
+             .ecdsaP384Sha384,
+             .ecdsaP521Sha512,
+             .ecdsaSecp256k1Sha256,
              .bip340SchnorrSecp256k1Sha256,
              .rsaPkcs1v15Sha1,
              .rsaPkcs1v15Sha256,
@@ -487,7 +671,7 @@ public struct ReallyMeCrypto: Sendable {
 
     public static func generateKemKeyPair(_ algorithm: ReallyMeKemAlgorithm) throws -> ReallyMeKemKeyPair {
         switch algorithm {
-        case .mlKem512, .mlKem768, .mlKem1024, .xWing768, .xWing1024:
+        case .mlKem512, .mlKem768, .mlKem1024, .xWing768:
             throw ReallyMeCryptoError.unsupportedAlgorithm
         }
     }
@@ -497,7 +681,7 @@ public struct ReallyMeCrypto: Sendable {
         publicKey: [UInt8]
     ) throws -> ReallyMeKemEncapsulation {
         switch algorithm {
-        case .mlKem512, .mlKem768, .mlKem1024, .xWing768, .xWing1024:
+        case .mlKem512, .mlKem768, .mlKem1024, .xWing768:
             throw ReallyMeCryptoError.unsupportedAlgorithm
         }
     }
@@ -508,7 +692,7 @@ public struct ReallyMeCrypto: Sendable {
         secretKey: [UInt8]
     ) throws -> [UInt8] {
         switch algorithm {
-        case .mlKem512, .mlKem768, .mlKem1024, .xWing768, .xWing1024:
+        case .mlKem512, .mlKem768, .mlKem1024, .xWing768:
             throw ReallyMeCryptoError.unsupportedAlgorithm
         }
     }
@@ -622,15 +806,7 @@ public struct ReallyMeCrypto: Sendable {
     ) throws -> [UInt8] {
         switch algorithm {
         case .argon2id:
-            guard outputLength == genericFacadeArgon2idDerivedKeyLength else {
-                throw ReallyMeCryptoError.invalidInput
-            }
-            return try Self.deriveArgon2idKey(
-                kdfVersion: iterations,
-                secret: password,
-                salt: salt,
-                rustCAbiLibrary: requireRustCAbiLibrary()
-            )
+            throw ReallyMeCryptoError.unsupportedAlgorithm
         case .pbkdf2HmacSha256, .pbkdf2HmacSha512:
             return try Self.deriveKey(
                 algorithm,
@@ -639,7 +815,7 @@ public struct ReallyMeCrypto: Sendable {
                 iterations: iterations,
                 outputLength: outputLength
             )
-        case .hkdfSha256, .jwaConcatKdfSha256:
+        case .hkdfSha256, .hkdfSha384, .kmac256, .jwaConcatKdfSha256:
             throw ReallyMeCryptoError.unsupportedAlgorithm
         }
     }
@@ -653,6 +829,23 @@ public struct ReallyMeCrypto: Sendable {
             kdfVersion: kdfVersion,
             secret: secret,
             salt: salt,
+            rustCAbiLibrary: requireRustCAbiLibrary()
+        )
+    }
+
+    public func deriveKmac256(
+        _ algorithm: ReallyMeKdfAlgorithm,
+        key: [UInt8],
+        context: [UInt8],
+        customization: [UInt8],
+        outputLength: Int
+    ) throws -> [UInt8] {
+        try Self.deriveKmac256(
+            algorithm,
+            key: key,
+            context: context,
+            customization: customization,
+            outputLength: outputLength,
             rustCAbiLibrary: requireRustCAbiLibrary()
         )
     }
@@ -1001,7 +1194,7 @@ public struct ReallyMeCrypto: Sendable {
         publicKey: [UInt8]
     ) throws -> ReallyMeKemEncapsulation {
         switch algorithm {
-        case .xWing768, .xWing1024:
+        case .xWing768:
             return try Self.encapsulate(
                 algorithm,
                 publicKey: publicKey,
@@ -1014,19 +1207,6 @@ public struct ReallyMeCrypto: Sendable {
                 rustCAbiLibrary: requireRustCAbiLibrary()
             )
         }
-    }
-
-    public func encapsulate(
-        _ algorithm: ReallyMeKemAlgorithm,
-        publicKey: [UInt8],
-        seed: [UInt8]
-    ) throws -> ReallyMeKemEncapsulation {
-        try Self.encapsulate(
-            algorithm,
-            publicKey: publicKey,
-            seed: seed,
-            rustCAbiLibrary: requireRustCAbiLibrary()
-        )
     }
 
     public func decapsulate(

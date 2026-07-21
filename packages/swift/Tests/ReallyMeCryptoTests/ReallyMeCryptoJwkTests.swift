@@ -41,6 +41,59 @@ final class ReallyMeCryptoJwkTests: XCTestCase {
         }
     }
 
+    func testJwkParserRejectsDuplicateUnknownAndMixedShapeMembers() throws {
+        try installReallyMeCodecProviderForTest()
+        let publicX = String(repeating: "A", count: 43)
+        let valid = #"{"alg":"EdDSA","crv":"Ed25519","kty":"OKP","use":"sig","x":"\#(publicX)"}"#
+        let malformed = [
+            #"{"alg":"EdDSA","crv":"Ed25519","kty":"OKP","kty":"OKP","use":"sig","x":"\#(publicX)"}"#,
+            #"{"alg":"EdDSA","crv":"Ed25519","kty":"OKP","use":"sig","x":"\#(publicX)","unknown":"value"}"#,
+            #"{"alg":"EdDSA","crv":"Ed25519","kty":"OKP","use":"sig","x":"\#(publicX)","y":"\#(publicX)"}"#,
+        ]
+        for json in malformed {
+            XCTAssertThrowsError(try ReallyMeJwk.fromJwkJson(Data(json.utf8))) { error in
+                XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+            }
+        }
+        let jwksWithUnknownMember = #"{"keys":[\#(valid)],"unknown":"value"}"#
+        XCTAssertThrowsError(try ReallyMeJwk.fromJwksJson(Data(jwksWithUnknownMember.utf8))) { error in
+            XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+        }
+    }
+
+    func testJwkParserRejectsMismatchedEcCoordinates() throws {
+        try installReallyMeCodecProviderForTest()
+        let data = try Data(contentsOf: reallyMeVectorURL("jwk.json"))
+        let vectors = try JSONDecoder().decode(JwkVectorFile.self, from: data)
+
+        for algorithm in ["P-256", "secp256k1"] {
+            let vector = try XCTUnwrap(vectors.vectors.first { $0.alg == algorithm })
+            for mutation in [YMutation.sameParity, .oppositeParity] {
+                let json = try Self.mutatedEcJwkJson(vector.jwkJcs, mutation: mutation)
+                XCTAssertThrowsError(try ReallyMeJwk.fromJwkJson(Data(json.utf8)), algorithm) { error in
+                    XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+                }
+            }
+        }
+    }
+
+    func testOkpMetadataIsOptionalButConflictsAreRejected() throws {
+        try installReallyMeCodecProviderForTest()
+        let publicX = String(repeating: "A", count: 43)
+        let omitted = #"{"crv":"Ed25519","kty":"OKP","x":"\#(publicX)"}"#
+        XCTAssertEqual(
+            try ReallyMeJwk.fromJwkJson(Data(omitted.utf8)).algorithm,
+            .ed25519
+        )
+
+        for metadata in [#""alg":"ECDH-ES","#, #""use":"enc","#] {
+            let conflicting = #"{\#(metadata)"crv":"Ed25519","kty":"OKP","x":"\#(publicX)"}"#
+            XCTAssertThrowsError(try ReallyMeJwk.fromJwkJson(Data(conflicting.utf8))) { error in
+                XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+            }
+        }
+    }
+
     private static func base64UrlBytes(_ encoded: String) throws -> [UInt8] {
         let paddingLength = (4 - (encoded.count % 4)) % 4
         let padded = encoded
@@ -51,6 +104,38 @@ final class ReallyMeCryptoJwkTests: XCTestCase {
         }
         return Array(data)
     }
+
+    private static func base64UrlString(_ bytes: [UInt8]) -> String {
+        Data(bytes).base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+    }
+
+    private static func mutatedEcJwkJson(_ json: String, mutation: YMutation) throws -> String {
+        let decoded = try JSONSerialization.jsonObject(with: Data(json.utf8))
+        guard var object = decoded as? [String: Any], let encodedY = object["y"] as? String else {
+            throw ReallyMeCryptoError.invalidInput
+        }
+        var y = try base64UrlBytes(encodedY)
+        switch mutation {
+        case .sameParity:
+            y[0] ^= 0x02
+        case .oppositeParity:
+            y[31] ^= 0x01
+        }
+        object["y"] = base64UrlString(y)
+        let data = try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys])
+        guard let output = String(data: data, encoding: .utf8) else {
+            throw ReallyMeCryptoError.invalidInput
+        }
+        return output
+    }
+}
+
+private enum YMutation {
+    case sameParity
+    case oppositeParity
 }
 
 private struct JwkVectorFile: Decodable {

@@ -7,7 +7,8 @@ package me.really.crypto.v1;
 
 /**
  * <pre>
- * AeadAlgorithm identifies authenticated-encryption suites.
+ * AeadAlgorithm identifies authenticated-encryption suites. Values 100-199 are
+ * AES-based suites and 200-299 are ChaCha-based suites.
  * </pre>
  *
  * Protobuf enum {@code reallyme.crypto.v1.AeadAlgorithm}
@@ -20,29 +21,29 @@ public enum AeadAlgorithm
    */
   AEAD_ALGORITHM_UNSPECIFIED(0),
   /**
-   * <code>AEAD_ALGORITHM_AES_256_GCM = 1;</code>
+   * <code>AEAD_ALGORITHM_AES_128_GCM = 100;</code>
    */
-  AEAD_ALGORITHM_AES_256_GCM(1),
+  AEAD_ALGORITHM_AES_128_GCM(100),
   /**
-   * <code>AEAD_ALGORITHM_AES_256_GCM_SIV = 2;</code>
+   * <code>AEAD_ALGORITHM_AES_192_GCM = 110;</code>
    */
-  AEAD_ALGORITHM_AES_256_GCM_SIV(2),
+  AEAD_ALGORITHM_AES_192_GCM(110),
   /**
-   * <code>AEAD_ALGORITHM_CHACHA20_POLY1305 = 3;</code>
+   * <code>AEAD_ALGORITHM_AES_256_GCM = 120;</code>
    */
-  AEAD_ALGORITHM_CHACHA20_POLY1305(3),
+  AEAD_ALGORITHM_AES_256_GCM(120),
   /**
-   * <code>AEAD_ALGORITHM_XCHACHA20_POLY1305 = 4;</code>
+   * <code>AEAD_ALGORITHM_AES_256_GCM_SIV = 130;</code>
    */
-  AEAD_ALGORITHM_XCHACHA20_POLY1305(4),
+  AEAD_ALGORITHM_AES_256_GCM_SIV(130),
   /**
-   * <code>AEAD_ALGORITHM_AES_128_GCM = 5;</code>
+   * <code>AEAD_ALGORITHM_CHACHA20_POLY1305 = 200;</code>
    */
-  AEAD_ALGORITHM_AES_128_GCM(5),
+  AEAD_ALGORITHM_CHACHA20_POLY1305(200),
   /**
-   * <code>AEAD_ALGORITHM_AES_192_GCM = 6;</code>
+   * <code>AEAD_ALGORITHM_XCHACHA20_POLY1305 = 210;</code>
    */
-  AEAD_ALGORITHM_AES_192_GCM(6),
+  AEAD_ALGORITHM_XCHACHA20_POLY1305(210),
   UNRECOGNIZED(-1),
   ;
 
@@ -51,29 +52,29 @@ public enum AeadAlgorithm
    */
   public static final int AEAD_ALGORITHM_UNSPECIFIED_VALUE = 0;
   /**
-   * <code>AEAD_ALGORITHM_AES_256_GCM = 1;</code>
+   * <code>AEAD_ALGORITHM_AES_128_GCM = 100;</code>
    */
-  public static final int AEAD_ALGORITHM_AES_256_GCM_VALUE = 1;
+  public static final int AEAD_ALGORITHM_AES_128_GCM_VALUE = 100;
   /**
-   * <code>AEAD_ALGORITHM_AES_256_GCM_SIV = 2;</code>
+   * <code>AEAD_ALGORITHM_AES_192_GCM = 110;</code>
    */
-  public static final int AEAD_ALGORITHM_AES_256_GCM_SIV_VALUE = 2;
+  public static final int AEAD_ALGORITHM_AES_192_GCM_VALUE = 110;
   /**
-   * <code>AEAD_ALGORITHM_CHACHA20_POLY1305 = 3;</code>
+   * <code>AEAD_ALGORITHM_AES_256_GCM = 120;</code>
    */
-  public static final int AEAD_ALGORITHM_CHACHA20_POLY1305_VALUE = 3;
+  public static final int AEAD_ALGORITHM_AES_256_GCM_VALUE = 120;
   /**
-   * <code>AEAD_ALGORITHM_XCHACHA20_POLY1305 = 4;</code>
+   * <code>AEAD_ALGORITHM_AES_256_GCM_SIV = 130;</code>
    */
-  public static final int AEAD_ALGORITHM_XCHACHA20_POLY1305_VALUE = 4;
+  public static final int AEAD_ALGORITHM_AES_256_GCM_SIV_VALUE = 130;
   /**
-   * <code>AEAD_ALGORITHM_AES_128_GCM = 5;</code>
+   * <code>AEAD_ALGORITHM_CHACHA20_POLY1305 = 200;</code>
    */
-  public static final int AEAD_ALGORITHM_AES_128_GCM_VALUE = 5;
+  public static final int AEAD_ALGORITHM_CHACHA20_POLY1305_VALUE = 200;
   /**
-   * <code>AEAD_ALGORITHM_AES_192_GCM = 6;</code>
+   * <code>AEAD_ALGORITHM_XCHACHA20_POLY1305 = 210;</code>
    */
-  public static final int AEAD_ALGORITHM_AES_192_GCM_VALUE = 6;
+  public static final int AEAD_ALGORITHM_XCHACHA20_POLY1305_VALUE = 210;
 
 
   @java.lang.Override
@@ -97,12 +98,12 @@ public enum AeadAlgorithm
   public static AeadAlgorithm forNumber(int value) {
     switch (value) {
       case 0: return AEAD_ALGORITHM_UNSPECIFIED;
-      case 1: return AEAD_ALGORITHM_AES_256_GCM;
-      case 2: return AEAD_ALGORITHM_AES_256_GCM_SIV;
-      case 3: return AEAD_ALGORITHM_CHACHA20_POLY1305;
-      case 4: return AEAD_ALGORITHM_XCHACHA20_POLY1305;
-      case 5: return AEAD_ALGORITHM_AES_128_GCM;
-      case 6: return AEAD_ALGORITHM_AES_192_GCM;
+      case 100: return AEAD_ALGORITHM_AES_128_GCM;
+      case 110: return AEAD_ALGORITHM_AES_192_GCM;
+      case 120: return AEAD_ALGORITHM_AES_256_GCM;
+      case 130: return AEAD_ALGORITHM_AES_256_GCM_SIV;
+      case 200: return AEAD_ALGORITHM_CHACHA20_POLY1305;
+      case 210: return AEAD_ALGORITHM_XCHACHA20_POLY1305;
       default: return null;
     }
   }

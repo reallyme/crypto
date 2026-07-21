@@ -20,11 +20,6 @@ public  final class CryptoBip340SchnorrSignRequest extends
     return "CryptoBip340SchnorrSignRequest{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoBip340SchnorrSignRequest() {
     message32_ = com.google.protobuf.ByteString.EMPTY;
     secretKey_ = com.google.protobuf.ByteString.EMPTY;

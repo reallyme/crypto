@@ -7,7 +7,8 @@ package me.really.crypto.v1;
 
 /**
  * <pre>
- * MacAlgorithm identifies message-authentication-code suites.
+ * MacAlgorithm identifies message-authentication-code suites. Values 100-199
+ * are HMAC suites over SHA-2.
  * </pre>
  *
  * Protobuf enum {@code reallyme.crypto.v1.MacAlgorithm}
@@ -20,13 +21,17 @@ public enum MacAlgorithm
    */
   MAC_ALGORITHM_UNSPECIFIED(0),
   /**
-   * <code>MAC_ALGORITHM_HMAC_SHA256 = 1;</code>
+   * <code>MAC_ALGORITHM_HMAC_SHA256 = 100;</code>
    */
-  MAC_ALGORITHM_HMAC_SHA256(1),
+  MAC_ALGORITHM_HMAC_SHA256(100),
   /**
-   * <code>MAC_ALGORITHM_HMAC_SHA512 = 2;</code>
+   * <code>MAC_ALGORITHM_HMAC_SHA384 = 110;</code>
    */
-  MAC_ALGORITHM_HMAC_SHA512(2),
+  MAC_ALGORITHM_HMAC_SHA384(110),
+  /**
+   * <code>MAC_ALGORITHM_HMAC_SHA512 = 120;</code>
+   */
+  MAC_ALGORITHM_HMAC_SHA512(120),
   UNRECOGNIZED(-1),
   ;
 
@@ -35,13 +40,17 @@ public enum MacAlgorithm
    */
   public static final int MAC_ALGORITHM_UNSPECIFIED_VALUE = 0;
   /**
-   * <code>MAC_ALGORITHM_HMAC_SHA256 = 1;</code>
+   * <code>MAC_ALGORITHM_HMAC_SHA256 = 100;</code>
    */
-  public static final int MAC_ALGORITHM_HMAC_SHA256_VALUE = 1;
+  public static final int MAC_ALGORITHM_HMAC_SHA256_VALUE = 100;
   /**
-   * <code>MAC_ALGORITHM_HMAC_SHA512 = 2;</code>
+   * <code>MAC_ALGORITHM_HMAC_SHA384 = 110;</code>
    */
-  public static final int MAC_ALGORITHM_HMAC_SHA512_VALUE = 2;
+  public static final int MAC_ALGORITHM_HMAC_SHA384_VALUE = 110;
+  /**
+   * <code>MAC_ALGORITHM_HMAC_SHA512 = 120;</code>
+   */
+  public static final int MAC_ALGORITHM_HMAC_SHA512_VALUE = 120;
 
 
   @java.lang.Override
@@ -65,8 +74,9 @@ public enum MacAlgorithm
   public static MacAlgorithm forNumber(int value) {
     switch (value) {
       case 0: return MAC_ALGORITHM_UNSPECIFIED;
-      case 1: return MAC_ALGORITHM_HMAC_SHA256;
-      case 2: return MAC_ALGORITHM_HMAC_SHA512;
+      case 100: return MAC_ALGORITHM_HMAC_SHA256;
+      case 110: return MAC_ALGORITHM_HMAC_SHA384;
+      case 120: return MAC_ALGORITHM_HMAC_SHA512;
       default: return null;
     }
   }

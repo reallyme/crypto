@@ -26,11 +26,6 @@ public  final class CryptoKemEncapsulation extends
     return "CryptoKemEncapsulation{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoKemEncapsulation() {
     ciphertext_ = com.google.protobuf.ByteString.EMPTY;
     sharedSecret_ = com.google.protobuf.ByteString.EMPTY;

@@ -1,0 +1,48 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-aes256-gcm"
+version = "0.3.0"
+include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = true
+description = "AES-256-GCM authenticated encryption primitive for ReallyMe Crypto."
+
+[lib]
+name = "crypto_aes256_gcm"
+
+[features]
+default = []
+
+native = [
+    "dep:aes",
+    "dep:aes-gcm",
+]
+
+wasm = [
+    "dep:aes",
+    "dep:aes-gcm",
+]
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.3.0", path = "../crypto/core" }
+zeroize = { workspace = true, features = ["zeroize_derive"] }
+
+# Package-owned Rust implementation dependencies for both backend lanes.
+aes = { workspace = true, features = ["zeroize"], optional = true }
+aes-gcm = { workspace = true, optional = true }
+
+[dev-dependencies]
+hex = { workspace = true }
+wasm-bindgen-test = { workspace = true }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+aes-gcm = { workspace = true }
+
+[lints]
+workspace = true

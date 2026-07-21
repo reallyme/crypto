@@ -9,7 +9,6 @@ private let rustCAbiMlKem768CiphertextLength = 1_088
 private let rustCAbiMlKem1024PublicKeyLength = 1_568
 private let rustCAbiMlKem1024CiphertextLength = 1_568
 private let rustCAbiMlKemSecretKeyLength = 64
-private let rustCAbiMlKemEncapsulationRandomnessLength = 32
 private let rustCAbiMlKemSharedSecretLength = 32
 
 private typealias MlKemGenerateKeyPairFunction = @convention(c) (
@@ -37,17 +36,6 @@ private typealias MlKemEncapsulateFunction = @convention(c) (
     Int
 ) -> Int32
 
-private typealias MlKemEncapsulateDerandFunction = @convention(c) (
-    UnsafePointer<UInt8>?,
-    Int,
-    UnsafePointer<UInt8>?,
-    Int,
-    UnsafeMutablePointer<UInt8>?,
-    Int,
-    UnsafeMutablePointer<UInt8>?,
-    Int
-) -> Int32
-
 private typealias MlKemDecapsulateFunction = @convention(c) (
     UnsafePointer<UInt8>?,
     Int,
@@ -63,7 +51,6 @@ private struct RustCAbiMlKemSuite {
     let generateKeyPairFunction: MlKemGenerateKeyPairFunction
     let deriveKeyPairFunction: MlKemDeriveKeyPairFunction
     let encapsulateFunction: MlKemEncapsulateFunction
-    let encapsulateDerandFunction: MlKemEncapsulateDerandFunction
     let decapsulateFunction: MlKemDecapsulateFunction
 }
 
@@ -77,17 +64,14 @@ public struct ReallyMeRustCAbiMlKem: Sendable {
     private let mlKem512GenerateKeyPairFunction: MlKemGenerateKeyPairFunction
     private let mlKem512DeriveKeyPairFunction: MlKemDeriveKeyPairFunction
     private let mlKem512EncapsulateFunction: MlKemEncapsulateFunction
-    private let mlKem512EncapsulateDerandFunction: MlKemEncapsulateDerandFunction
     private let mlKem512DecapsulateFunction: MlKemDecapsulateFunction
     private let mlKem768GenerateKeyPairFunction: MlKemGenerateKeyPairFunction
     private let mlKem768DeriveKeyPairFunction: MlKemDeriveKeyPairFunction
     private let mlKem768EncapsulateFunction: MlKemEncapsulateFunction
-    private let mlKem768EncapsulateDerandFunction: MlKemEncapsulateDerandFunction
     private let mlKem768DecapsulateFunction: MlKemDecapsulateFunction
     private let mlKem1024GenerateKeyPairFunction: MlKemGenerateKeyPairFunction
     private let mlKem1024DeriveKeyPairFunction: MlKemDeriveKeyPairFunction
     private let mlKem1024EncapsulateFunction: MlKemEncapsulateFunction
-    private let mlKem1024EncapsulateDerandFunction: MlKemEncapsulateDerandFunction
     private let mlKem1024DecapsulateFunction: MlKemDecapsulateFunction
 
     public init(library: ReallyMeRustCAbiLibrary) throws {
@@ -103,10 +87,6 @@ public struct ReallyMeRustCAbiMlKem: Sendable {
         mlKem512EncapsulateFunction = try library.loadFunction(
             "rm_crypto_ml_kem_512_encapsulate",
             as: MlKemEncapsulateFunction.self
-        )
-        mlKem512EncapsulateDerandFunction = try library.loadFunction(
-            "rm_crypto_ml_kem_512_encapsulate_derand",
-            as: MlKemEncapsulateDerandFunction.self
         )
         mlKem512DecapsulateFunction = try library.loadFunction(
             "rm_crypto_ml_kem_512_decapsulate",
@@ -124,10 +104,6 @@ public struct ReallyMeRustCAbiMlKem: Sendable {
             "rm_crypto_ml_kem_768_encapsulate",
             as: MlKemEncapsulateFunction.self
         )
-        mlKem768EncapsulateDerandFunction = try library.loadFunction(
-            "rm_crypto_ml_kem_768_encapsulate_derand",
-            as: MlKemEncapsulateDerandFunction.self
-        )
         mlKem768DecapsulateFunction = try library.loadFunction(
             "rm_crypto_ml_kem_768_decapsulate",
             as: MlKemDecapsulateFunction.self
@@ -143,10 +119,6 @@ public struct ReallyMeRustCAbiMlKem: Sendable {
         mlKem1024EncapsulateFunction = try library.loadFunction(
             "rm_crypto_ml_kem_1024_encapsulate",
             as: MlKemEncapsulateFunction.self
-        )
-        mlKem1024EncapsulateDerandFunction = try library.loadFunction(
-            "rm_crypto_ml_kem_1024_encapsulate_derand",
-            as: MlKemEncapsulateDerandFunction.self
         )
         mlKem1024DecapsulateFunction = try library.loadFunction(
             "rm_crypto_ml_kem_1024_decapsulate",
@@ -251,50 +223,6 @@ public struct ReallyMeRustCAbiMlKem: Sendable {
         return ReallyMeKemEncapsulation(sharedSecret: sharedSecret, ciphertext: ciphertext)
     }
 
-    public func encapsulateDerand(
-        _ algorithm: ReallyMeKemAlgorithm,
-        publicKey: [UInt8],
-        randomness: [UInt8]
-    ) throws -> ReallyMeKemEncapsulation {
-        let suite = try rustSuite(for: algorithm)
-        guard publicKey.count == suite.publicKeyLength,
-              randomness.count == rustCAbiMlKemEncapsulationRandomnessLength
-        else {
-            throw ReallyMeCryptoError.invalidInput
-        }
-
-        var ciphertext = [UInt8](repeating: 0, count: suite.ciphertextLength)
-        var sharedSecret = [UInt8](repeating: 0, count: rustCAbiMlKemSharedSecretLength)
-        let ciphertextCapacity = ciphertext.count
-        let sharedSecretCapacity = sharedSecret.count
-        let status = publicKey.withUnsafeBufferPointer { publicBuffer in
-            randomness.withUnsafeBufferPointer { randomnessBuffer in
-                ciphertext.withUnsafeMutableBufferPointer { ciphertextBuffer in
-                    sharedSecret.withUnsafeMutableBufferPointer { sharedSecretBuffer in
-                        suite.encapsulateDerandFunction(
-                            publicBuffer.baseAddress,
-                            publicKey.count,
-                            randomnessBuffer.baseAddress,
-                            randomness.count,
-                            ciphertextBuffer.baseAddress,
-                            ciphertextCapacity,
-                            sharedSecretBuffer.baseAddress,
-                            sharedSecretCapacity
-                        )
-                    }
-                }
-            }
-        }
-
-        do {
-            try ReallyMeRustCAbiStatus.throwIfError(status)
-        } catch {
-            ReallyMeCryptoMemory.bestEffortClear(&sharedSecret)
-            throw error
-        }
-        return ReallyMeKemEncapsulation(sharedSecret: sharedSecret, ciphertext: ciphertext)
-    }
-
     public func decapsulate(
         _ algorithm: ReallyMeKemAlgorithm,
         ciphertext: [UInt8],
@@ -342,7 +270,6 @@ public struct ReallyMeRustCAbiMlKem: Sendable {
                 generateKeyPairFunction: mlKem512GenerateKeyPairFunction,
                 deriveKeyPairFunction: mlKem512DeriveKeyPairFunction,
                 encapsulateFunction: mlKem512EncapsulateFunction,
-                encapsulateDerandFunction: mlKem512EncapsulateDerandFunction,
                 decapsulateFunction: mlKem512DecapsulateFunction
             )
         case .mlKem768:
@@ -352,7 +279,6 @@ public struct ReallyMeRustCAbiMlKem: Sendable {
                 generateKeyPairFunction: mlKem768GenerateKeyPairFunction,
                 deriveKeyPairFunction: mlKem768DeriveKeyPairFunction,
                 encapsulateFunction: mlKem768EncapsulateFunction,
-                encapsulateDerandFunction: mlKem768EncapsulateDerandFunction,
                 decapsulateFunction: mlKem768DecapsulateFunction
             )
         case .mlKem1024:
@@ -362,10 +288,9 @@ public struct ReallyMeRustCAbiMlKem: Sendable {
                 generateKeyPairFunction: mlKem1024GenerateKeyPairFunction,
                 deriveKeyPairFunction: mlKem1024DeriveKeyPairFunction,
                 encapsulateFunction: mlKem1024EncapsulateFunction,
-                encapsulateDerandFunction: mlKem1024EncapsulateDerandFunction,
                 decapsulateFunction: mlKem1024DecapsulateFunction
             )
-        case .xWing768, .xWing1024:
+        case .xWing768:
             throw ReallyMeCryptoError.unsupportedAlgorithm
         }
     }

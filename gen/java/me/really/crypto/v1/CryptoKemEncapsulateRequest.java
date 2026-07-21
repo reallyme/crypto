@@ -20,11 +20,6 @@ public  final class CryptoKemEncapsulateRequest extends
     return "CryptoKemEncapsulateRequest{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoKemEncapsulateRequest() {
     publicKey_ = com.google.protobuf.ByteString.EMPTY;
   }

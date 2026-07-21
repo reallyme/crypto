@@ -128,37 +128,6 @@ public object CryptoAlgorithmIdentifierKt {
     }
 
     /**
-     * `.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];`
-     */
-    public var hpke: me.really.crypto.v1.HpkeSuite
-      @kotlin.jvm.JvmName("getHpke")
-        get() = _builder.hpke
-      @kotlin.jvm.JvmName("setHpke")
-        set(value) {
-        _builder.hpke = value
-      }
-    public var hpkeValue: kotlin.Int
-      @kotlin.jvm.JvmName("getHpkeValue")
-        get() = _builder.hpkeValue
-      @kotlin.jvm.JvmName("setHpkeValue")
-        set(value) {
-        _builder.hpkeValue = value
-      }
-    /**
-     * `.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];`
-     */
-    public fun clearHpke() {
-      _builder.clearHpke()
-    }
-    /**
-     * `.reallyme.crypto.v1.HpkeSuite hpke = 4 [json_name = "hpke"];`
-     * @return Whether the hpke field is set.
-     */
-    public fun hasHpke(): kotlin.Boolean {
-      return _builder.hasHpke()
-    }
-
-    /**
      * `.reallyme.crypto.v1.AeadAlgorithm aead = 5 [json_name = "aead"];`
      */
     public var aead: me.really.crypto.v1.AeadAlgorithm
@@ -343,6 +312,30 @@ public object CryptoAlgorithmIdentifierKt {
     public fun hasMulticodecKey(): kotlin.Boolean {
       return _builder.hasMulticodecKey()
     }
+
+    /**
+     * `.reallyme.crypto.v1.HpkeSuiteIdentifier hpke_suite = 11 [json_name = "hpkeSuite"];`
+     */
+    public var hpkeSuite: me.really.crypto.v1.HpkeSuiteIdentifier
+      @kotlin.jvm.JvmName("getHpkeSuite")
+        get() = _builder.hpkeSuite
+      @kotlin.jvm.JvmName("setHpkeSuite")
+        set(value) {
+        _builder.hpkeSuite = value
+      }
+    /**
+     * `.reallyme.crypto.v1.HpkeSuiteIdentifier hpke_suite = 11 [json_name = "hpkeSuite"];`
+     */
+    public fun clearHpkeSuite() {
+      _builder.clearHpkeSuite()
+    }
+    /**
+     * `.reallyme.crypto.v1.HpkeSuiteIdentifier hpke_suite = 11 [json_name = "hpkeSuite"];`
+     * @return Whether the hpkeSuite field is set.
+     */
+    public fun hasHpkeSuite(): kotlin.Boolean {
+      return _builder.hasHpkeSuite()
+    }
     public val algorithmCase: me.really.crypto.v1.CryptoAlgorithmIdentifier.AlgorithmCase
     @kotlin.jvm.JvmName("getAlgorithmCase")
       get() = _builder.algorithmCase
@@ -354,4 +347,7 @@ public object CryptoAlgorithmIdentifierKt {
 }
 public inline fun me.really.crypto.v1.CryptoAlgorithmIdentifier.copy(block: `me.really.crypto.v1`.CryptoAlgorithmIdentifierKt.Dsl.() -> kotlin.Unit): me.really.crypto.v1.CryptoAlgorithmIdentifier =
   `me.really.crypto.v1`.CryptoAlgorithmIdentifierKt.Dsl._create(this.toBuilder()).apply { block() }._build()
+
+public val me.really.crypto.v1.CryptoAlgorithmIdentifierOrBuilder.hpkeSuiteOrNull: me.really.crypto.v1.HpkeSuiteIdentifier?
+  get() = if (hasHpkeSuite()) getHpkeSuite() else null
 

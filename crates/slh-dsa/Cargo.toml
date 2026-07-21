@@ -1,0 +1,40 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-crypto-slh-dsa"
+version = "0.3.0"
+include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = true
+description = "SLH-DSA-SHA2-128s signature primitive for ReallyMe Crypto."
+readme = "README.md"
+
+[lib]
+name = "crypto_slh_dsa"
+
+[features]
+default = []
+native = [
+    "crypto-csprng/native",
+    "dep:crypto-csprng",
+    "dep:slh-dsa",
+]
+wasm = [
+    "crypto-csprng/wasm",
+    "dep:crypto-csprng",
+    "dep:slh-dsa",
+]
+
+[dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "0.3.0", path = "../crypto/core" }
+crypto-csprng = { package = "reallyme-crypto-csprng", version = "0.3.0", path = "../csprng", optional = true, default-features = false }
+zeroize = { workspace = true }
+slh-dsa = { workspace = true, features = ["zeroize"], optional = true }
+
+[lints]
+workspace = true

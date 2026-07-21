@@ -20,11 +20,6 @@ public  final class CryptoKeyWrapRequest extends
     return "CryptoKeyWrapRequest{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoKeyWrapRequest() {
     wrappingKey_ = com.google.protobuf.ByteString.EMPTY;
     keyToWrap_ = com.google.protobuf.ByteString.EMPTY;

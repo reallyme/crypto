@@ -5,7 +5,6 @@
 package me.really.crypto
 
 import java.security.GeneralSecurityException
-import java.security.KeyFactory
 import java.security.PublicKey
 import java.security.spec.MGF1ParameterSpec
 import java.security.spec.PSSParameterSpec
@@ -27,11 +26,13 @@ private data class RsaPssSuite(
 )
 
 /**
- * RSA signature verification through JCA/JCE with BouncyCastle fallback.
+ * RSA signature verification through the bundled, pinned BouncyCastle provider.
  *
  * RSA is verification-only in this SDK. The route exists for X.509, eMRTD
- * passive authentication, and legacy interop; adding RSA signing would require
- * a separate key-residency and padding-policy review.
+ * passive authentication, and historical document verification; adding RSA
+ * signing would require a separate key-residency and padding-policy review. Pinning the provider
+ * prevents ambient JCA provider order from changing PSS or key-parsing
+ * semantics across Android and JVM deployments.
  */
 public object ReallyMeRsa {
     public fun verify(
@@ -62,7 +63,7 @@ public object ReallyMeRsa {
         publicKey: PublicKey,
     ) {
         try {
-            val verifier = ReallyMeJceProviders.signature(suite.signatureAlgorithm)
+            val verifier = ReallyMeJceProviders.bouncyCastleSignature(suite.signatureAlgorithm)
             verifier.initVerify(publicKey)
             verifier.update(message)
             if (!verifier.verify(signature)) {
@@ -80,7 +81,7 @@ public object ReallyMeRsa {
         publicKey: PublicKey,
     ) {
         try {
-            val verifier = ReallyMeJceProviders.signature("RSASSA-PSS")
+            val verifier = ReallyMeJceProviders.bouncyCastleSignature("RSASSA-PSS")
             verifier.setParameter(
                 PSSParameterSpec(
                     suite.digestAlgorithm,
@@ -108,7 +109,7 @@ public object ReallyMeRsa {
             throw ReallyMeCryptoException.InvalidInput()
         }
         val keyFactory = try {
-            KeyFactory.getInstance("RSA")
+            ReallyMeJceProviders.bouncyCastleKeyFactory("RSA")
         } catch (_: GeneralSecurityException) {
             throw ReallyMeCryptoException.ProviderFailure()
         }

@@ -20,11 +20,6 @@ public  final class CryptoHashRequest extends
     return "CryptoHashRequest{<redacted>}";
   }
 
-  @java.lang.Override
-  public int hashCode() {
-    return 0x524d;
-  }
-
   private CryptoHashRequest() {
     input_ = com.google.protobuf.ByteString.EMPTY;
   }

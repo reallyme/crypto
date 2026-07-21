@@ -4,8 +4,7 @@
 
 import { readFileSync } from "node:fs";
 
-import { installReallyMeCodecWasmProvider } from "@reallyme/codec";
-import * as codecWasmProvider from "@reallyme/codec/wasm/reallyme_codec_wasm.js";
+import { installCodecWasmProvider } from "./codec-wasm-provider.mjs";
 
 // Conformance scripts import the built Crypto facade directly, so they must
 // install the same published Codec provider that normal package consumers use.
@@ -14,5 +13,4 @@ import * as codecWasmProvider from "@reallyme/codec/wasm/reallyme_codec_wasm.js"
 const codecWasmBytes = readFileSync(
   new URL(import.meta.resolve("@reallyme/codec/wasm/reallyme_codec_wasm_bg.wasm")),
 );
-codecWasmProvider.initSync({ module: codecWasmBytes });
-installReallyMeCodecWasmProvider(codecWasmProvider);
+installCodecWasmProvider(codecWasmBytes);
