@@ -174,10 +174,18 @@ profiles:
 Swift requires the Rust C ABI provider explicitly. No SDK retries through a
 different provider when its declared route is unavailable.
 
-The MLS 192-bit hybrid profile is represented as the canonical triple
-`MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384`: KEM
-`HPKE_KEM_ID_ML_KEM_1024_P384` (`0x0051`), KDF
-`HPKE_KDF_ID_HKDF_SHA384`, and AEAD `HPKE_AEAD_ID_AES_256_GCM`.
+The Rust HPKE surface provides OpenMLS-friendly names for three draft profiles:
+
+| MLS profile alias | HPKE KEM | HPKE KDF | HPKE AEAD |
+|---|---|---|---|
+| `MLS_192_MLKEM1024_AES256GCM_SHA384_P384` | `HPKE_KEM_ID_ML_KEM_1024` (`0x0042`) | `HPKE_KDF_ID_SHAKE256` (`0x0011`) | `HPKE_AEAD_ID_AES_256_GCM` |
+| `MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87` | `HPKE_KEM_ID_ML_KEM_1024` (`0x0042`) | `HPKE_KDF_ID_SHAKE256` (`0x0011`) | `HPKE_AEAD_ID_AES_256_GCM` |
+| `MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384` | `HPKE_KEM_ID_ML_KEM_1024_P384` (`0x0051`) | `HPKE_KDF_ID_SHAKE256` (`0x0011`) | `HPKE_AEAD_ID_AES_256_GCM` |
+
+`SHA384` in each alias identifies the MLS transcript hash; it does not select
+the HPKE KDF. The signature suffix (`P384` or `MLDSA87`) likewise is not an
+HPKE component. The first two aliases therefore encode the same canonical
+protobuf HPKE triple, and all three use HPKE SHAKE256 (`0x0011`).
 
 Messages use `CryptoAlgorithmIdentifier.hpke_suite`; superseded field numbers
 and names remain reserved against reuse. Live HPKE contexts,
@@ -186,6 +194,31 @@ protobuf surface exposes single operations for key generation, deterministic
 key derivation, Base-mode seal/open, sender/receiver export, and PSK seal/open.
 HPKE seal requests do not carry a nonce because the HPKE key schedule derives
 the 12-byte AEAD nonce internally.
+
+`CryptoHpkeDeriveKeyPairRequest.input_key_material` accepts arbitrary-length
+IKM of at least 32 bytes. The operation owner invokes the selected KEM's
+registered HPKE `DeriveKeyPair` procedure; serialized adapters must not invent
+a KEM-specific normalization step. The raw Rust primitive retains the
+KEM-defined non-empty contract for conformance and protocol-specific callers,
+while operation, protobuf, FFI, JNI, and WASM routes apply the 256-bit floor.
+
+For in-process OpenMLS targeted messages, the Rust API additionally exposes a
+split PSK sender setup that returns the encapsulated key beside a live opaque
+sender context, plus matching receiver setup and context opening. These APIs
+are suite-generic across every executable HPKE combination and require typed
+PSK and PSK-identifier references. The caller can construct AAD from the
+encapsulated key before sealing. Stateful contexts intentionally have no
+protobuf, FFI, JNI, or WASM representation because serializing traffic keys,
+base nonces, or sequence state would violate the context ownership boundary.
+Likewise, deterministic encapsulation randomness is test-only and is never
+accepted by a production protobuf message.
+
+Serialized operation-contract and C ABI tests execute Base seal/open, exporter
+agreement, malformed-key and tampered-ciphertext failures, and oversized export
+rejection for ML-KEM-1024/SHAKE256/AES-256-GCM,
+MLKEM1024-P384/SHAKE256/AES-256-GCM, and
+X-Wing/HKDF-SHA256/ChaCha20-Poly1305. Swift, Kotlin, Android, and TypeScript
+therefore consume the same generated identifiers and typed response boundary.
 
 The error envelope intentionally splits failures by owning subpart:
 

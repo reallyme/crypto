@@ -21632,8 +21632,10 @@ pub struct CryptoHpkeDeriveKeyPairRequest {
         CryptoAlgorithmIdentifier,
         ::buffa::Inline<CryptoAlgorithmIdentifier>,
     >,
-    /// Secret-bearing input keying material. The selected KEM defines its exact
-    /// accepted length; callers must supply high-entropy bytes.
+    /// Secret-bearing arbitrary-length input keying material of at least 32
+    /// bytes. The selected KEM applies its registered HPKE DeriveKeyPair
+    /// procedure; callers must supply high-entropy bytes and must not normalize
+    /// the input to a suite-specific seed length outside the protocol owner.
     ///
     /// Field 2: `input_key_material`
     #[serde(

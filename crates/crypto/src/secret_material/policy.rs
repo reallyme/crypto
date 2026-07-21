@@ -56,6 +56,10 @@ pub enum SecretMaterialOperation {
     HpkeKeyGeneration,
     /// HPKE keypair derivation.
     HpkeKeyDerivation,
+    /// Establishment of a live, non-exportable HPKE sender context.
+    HpkeSenderSetup,
+    /// Establishment of a live, non-exportable HPKE receiver context.
+    HpkeReceiverSetup,
     /// HPKE sealing.
     HpkeSeal,
     /// HPKE opening.
@@ -138,6 +142,9 @@ pub const fn operation_secret_material_policy(
         | SecretMaterialOperation::KeyAgreementKeyDerivation
         | SecretMaterialOperation::KemKeyDerivation
         | SecretMaterialOperation::HpkeKeyDerivation => secret_output(OutputMaterial::Mixed),
+        SecretMaterialOperation::HpkeSenderSetup | SecretMaterialOperation::HpkeReceiverSetup => {
+            secret_input_non_exportable_output(OutputMaterial::Mixed)
+        }
         SecretMaterialOperation::HpkeSeal => {
             secret_input_sensitive_output(OutputMaterial::SensitivePublic)
         }
@@ -221,6 +228,25 @@ const fn secret_output(output_material: OutputMaterial) -> OperationSecretMateri
         owned_secret(),
         secret_wire(),
         secret_wire(),
+        output_material,
+    )
+}
+
+const fn secret_input_non_exportable_output(
+    output_material: OutputMaterial,
+) -> OperationSecretMaterialPolicy {
+    operation_policy(
+        borrowed_secret(),
+        MaterialPolicy {
+            owner: BufferOwner::OperationLayer,
+            sensitivity: SecretSensitivity::Secret,
+            retention: RetentionPolicy::ResultLifetime,
+            zeroization: ZeroizationPolicy::OwnerZeroizesOnDrop,
+            export: ExportPolicy::NonExportable,
+            destruction: DestructionPolicy::ZeroizeOnDrop,
+        },
+        public_wire(),
+        public_wire(),
         output_material,
     )
 }

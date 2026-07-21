@@ -7,7 +7,8 @@
 #![allow(clippy::expect_used)]
 
 use reallyme_crypto::hpke::{
-    HpkeAeadId, HpkeKdfId, HpkeKemId, HpkeOpenRequest, HpkePskOpenRequest, HpkePskSealRequest,
+    HpkeAeadId, HpkeError, HpkeKdfId, HpkeKemId, HpkeOpenRequest, HpkePskIdRef, HpkePskOpenRequest,
+    HpkePskReceiverSetupRequest, HpkePskRef, HpkePskSealRequest, HpkePskSenderSetupRequest,
     HpkeReceiverExportRequest, HpkeSealRequest, HpkeSenderExportRequest, HpkeSuite,
     HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM,
 };
@@ -29,6 +30,12 @@ fn semantic_owner_executes_every_hpke_operation() {
 
     let key_pair = reallyme_crypto::hpke::derive_keypair(suite, &[0x31; 32])
         .expect("deterministic key derivation succeeds");
+    let arbitrary_ikm_key_pair = reallyme_crypto::hpke::derive_keypair_from_ikm(
+        suite,
+        b"arbitrary OpenMLS IKM with 256 bits",
+    )
+    .expect("arbitrary IKM derivation succeeds");
+    assert_eq!(arbitrary_ikm_key_pair.public_key.len(), 65);
     let sealed = reallyme_crypto::hpke::seal_base(&HpkeSealRequest {
         suite,
         recipient_public_key: &key_pair.public_key,
@@ -89,6 +96,35 @@ fn semantic_owner_executes_every_hpke_operation() {
     })
     .expect("PSK open succeeds");
     assert_eq!(psk_opened.plaintext.as_slice(), PLAINTEXT);
+
+    let mut split_sender = reallyme_crypto::hpke::setup_sender_psk(&HpkePskSenderSetupRequest {
+        suite,
+        recipient_public_key: &key_pair.public_key,
+        info: INFO,
+        psk: HpkePskRef::new(PSK).expect("PSK is valid"),
+        psk_id: HpkePskIdRef::new(PSK_ID).expect("PSK identifier is valid"),
+    })
+    .expect("split PSK sender setup succeeds");
+    let mut targeted_aad = AAD.to_vec();
+    targeted_aad.extend_from_slice(&split_sender.encapsulated_key);
+    let split_ciphertext = split_sender
+        .context
+        .seal(&targeted_aad, PLAINTEXT)
+        .expect("split sender context seals");
+    let mut split_receiver =
+        reallyme_crypto::hpke::setup_receiver_psk(&HpkePskReceiverSetupRequest {
+            suite,
+            encapsulated_key: &split_sender.encapsulated_key,
+            recipient_private_key: key_pair.private_key(),
+            info: INFO,
+            psk: HpkePskRef::new(PSK).expect("PSK is valid"),
+            psk_id: HpkePskIdRef::new(PSK_ID).expect("PSK identifier is valid"),
+        })
+        .expect("split PSK receiver setup succeeds");
+    let split_opened = split_receiver
+        .open(&targeted_aad, &split_ciphertext)
+        .expect("split PSK ciphertext opens");
+    assert_eq!(split_opened.plaintext.as_slice(), PLAINTEXT);
 }
 
 #[test]
@@ -96,6 +132,14 @@ fn semantic_owner_preserves_specific_redacted_failure_reasons() {
     let suite = HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM;
     assert_eq!(
         reallyme_crypto::hpke::derive_keypair(suite, &[0_u8; 31]).map(|_| ()),
+        Err(primitive(PrimitiveErrorReason::InvalidLength))
+    );
+    assert_eq!(
+        reallyme_crypto::hpke::derive_keypair_from_ikm(suite, &[]).map(|_| ()),
+        Err(primitive(PrimitiveErrorReason::InvalidLength))
+    );
+    assert_eq!(
+        reallyme_crypto::hpke::derive_keypair_from_ikm(suite, &[0x5a; 31]).map(|_| ()),
         Err(primitive(PrimitiveErrorReason::InvalidLength))
     );
 
@@ -187,6 +231,54 @@ fn semantic_owner_preserves_specific_redacted_failure_reasons() {
         .map(|_| ()),
         Err(primitive(PrimitiveErrorReason::InvalidLength))
     );
+}
+
+#[test]
+fn facade_exposes_explicit_raw_and_operation_error_boundaries() {
+    let suite = HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM;
+
+    assert_eq!(
+        reallyme_crypto::hpke::derive_keypair_from_ikm_raw(suite, &[]).map(|_| ()),
+        Err(HpkeError::InvalidInputKeyMaterial)
+    );
+    assert_eq!(
+        reallyme_crypto::hpke::derive_keypair_from_ikm_operation(suite, &[]).map(|_| ()),
+        Err(primitive(PrimitiveErrorReason::InvalidLength))
+    );
+    assert!(reallyme_crypto::hpke::derive_keypair_from_ikm_raw(suite, &[0x4d]).is_ok());
+    assert_eq!(
+        reallyme_crypto::hpke::derive_keypair_from_ikm_operation(suite, &[0x4d]).map(|_| ()),
+        Err(primitive(PrimitiveErrorReason::InvalidLength))
+    );
+
+    let key_pair = reallyme_crypto::hpke::derive_keypair_raw(suite, &[0x61; 32])
+        .expect("raw deterministic key derivation succeeds");
+    let mut sender = reallyme_crypto::hpke::setup_sender_psk_raw(&HpkePskSenderSetupRequest {
+        suite,
+        recipient_public_key: &key_pair.public_key,
+        info: INFO,
+        psk: HpkePskRef::new(PSK).expect("PSK is valid"),
+        psk_id: HpkePskIdRef::new(PSK_ID).expect("PSK identifier is valid"),
+    })
+    .expect("raw split sender setup succeeds");
+    let mut targeted_aad = AAD.to_vec();
+    targeted_aad.extend_from_slice(&sender.encapsulated_key);
+    let ciphertext = sender
+        .context
+        .seal(&targeted_aad, PLAINTEXT)
+        .expect("raw sender context preserves HPKE errors");
+    let opened = reallyme_crypto::hpke::open_psk_raw(&HpkePskOpenRequest {
+        suite,
+        encapsulated_key: &sender.encapsulated_key,
+        recipient_private_key: key_pair.private_key(),
+        info: INFO,
+        aad: &targeted_aad,
+        ciphertext: &ciphertext,
+        psk: PSK,
+        psk_id: PSK_ID,
+    })
+    .expect("raw PSK open succeeds");
+    assert_eq!(opened.plaintext.as_slice(), PLAINTEXT);
 }
 
 #[test]

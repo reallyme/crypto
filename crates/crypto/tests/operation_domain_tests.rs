@@ -54,6 +54,27 @@ fn caller_owned_random_output_keeps_cleanup_with_the_caller() {
 }
 
 #[test]
+fn hpke_live_contexts_are_non_exportable_and_zeroized_on_drop() {
+    for operation in [
+        SecretMaterialOperation::HpkeSenderSetup,
+        SecretMaterialOperation::HpkeReceiverSetup,
+    ] {
+        let policy = operation_secret_material_policy(operation);
+
+        assert_eq!(policy.output_material, OutputMaterial::Mixed);
+        assert_eq!(policy.output.owner, BufferOwner::OperationLayer);
+        assert_eq!(policy.output.sensitivity, SecretSensitivity::Secret);
+        assert_eq!(
+            policy.output.zeroization,
+            ZeroizationPolicy::OwnerZeroizesOnDrop
+        );
+        assert_eq!(policy.output.export, ExportPolicy::NonExportable);
+        assert_eq!(policy.output.destruction, DestructionPolicy::ZeroizeOnDrop);
+        assert_eq!(policy.response_wire.sensitivity, SecretSensitivity::Public);
+    }
+}
+
+#[test]
 fn random_fill_policy_distinguishes_public_nonce_and_secret_key_output() {
     let nonce = random_fill_secret_material_policy(RngOutputKind::AeadNonce12);
     let key = random_fill_secret_material_policy(RngOutputKind::Aes256GcmKey);

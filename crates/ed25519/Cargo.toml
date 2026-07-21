@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-ed25519"
-version = "0.3.0"
+version = "0.3.1"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -34,8 +34,8 @@ wasm = [
 
 
 [dependencies]
-crypto-core = { package = "reallyme-crypto-core", version = "0.3.0", path = "../crypto/core" }
-crypto-csprng = { package = "reallyme-crypto-csprng", version = "0.3.0", path = "../csprng", optional = true, default-features = false }
+crypto-core = { package = "reallyme-crypto-core", version = "0.3.1", path = "../crypto/core" }
+crypto-csprng = { package = "reallyme-crypto-csprng", version = "0.3.1", path = "../csprng", optional = true, default-features = false }
 zeroize = { workspace = true }
 
 # -----------------------------

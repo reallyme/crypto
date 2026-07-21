@@ -4,7 +4,56 @@
 
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
+use crate::constants::HPKE_MIN_PSK_LEN;
+use crate::error::HpkeError;
 use crate::identifiers::HpkeSuite;
+
+/// Validated, non-owning view of high-entropy HPKE pre-shared key material.
+///
+/// This type deliberately does not implement `Clone`, `Copy`, or formatting
+/// traits. It does not own the referenced bytes, so the caller remains
+/// responsible for zeroizing the backing storage after the borrow ends.
+pub struct HpkePskRef<'a> {
+    bytes: &'a [u8],
+}
+
+impl<'a> HpkePskRef<'a> {
+    /// Validates and borrows high-entropy HPKE PSK bytes.
+    pub fn new(bytes: &'a [u8]) -> Result<Self, HpkeError> {
+        if bytes.len() < HPKE_MIN_PSK_LEN {
+            return Err(HpkeError::InvalidPsk);
+        }
+        Ok(Self { bytes })
+    }
+
+    /// Borrows the validated PSK bytes.
+    pub fn as_slice(&self) -> &[u8] {
+        self.bytes
+    }
+}
+
+/// Validated, non-owning view of an HPKE pre-shared key identifier.
+///
+/// The identifier is not secret, but keeping it distinct from the PSK prevents
+/// accidental argument swaps at protocol boundaries.
+pub struct HpkePskIdRef<'a> {
+    bytes: &'a [u8],
+}
+
+impl<'a> HpkePskIdRef<'a> {
+    /// Validates and borrows a non-empty HPKE PSK identifier.
+    pub fn new(bytes: &'a [u8]) -> Result<Self, HpkeError> {
+        if bytes.is_empty() {
+            return Err(HpkeError::InvalidPskIdentifier);
+        }
+        Ok(Self { bytes })
+    }
+
+    /// Borrows the validated PSK identifier bytes.
+    pub fn as_slice(&self) -> &[u8] {
+        self.bytes
+    }
+}
 
 /// HPKE Base-mode encryption request.
 pub struct HpkeSealRequest<'a> {
@@ -207,6 +256,23 @@ pub struct HpkeDerandSealRequest<'a> {
     pub aad: &'a [u8],
     /// Plaintext to encrypt.
     pub plaintext: &'a [u8],
+}
+
+/// Deterministic HPKE sender-export request for conformance vectors.
+#[cfg(feature = "test-vectors")]
+pub struct HpkeDerandSenderExportRequest<'a> {
+    /// Ciphersuite to use, including export-only where appropriate.
+    pub suite: HpkeSuite,
+    /// Encoded recipient public key.
+    pub recipient_public_key: &'a [u8],
+    /// Suite-specific randomness consumed by the HPKE KEM.
+    pub encapsulation_randomness: &'a [u8],
+    /// RFC 9180 `info` value.
+    pub info: &'a [u8],
+    /// Exporter context bound into the exported secret.
+    pub exporter_context: &'a [u8],
+    /// Requested output length.
+    pub output_length: usize,
 }
 
 /// Typed zeroizing owner for an encoded HPKE private key.

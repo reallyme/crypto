@@ -38,6 +38,25 @@ pub fn derive_keypair(
         return Err(HpkeError::InvalidInputKeyMaterial);
     }
 
+    derive_keypair_from_ikm(suite, input_key_material)
+}
+
+/// Deterministically derives an HPKE KEM keypair from arbitrary-length input
+/// keying material.
+///
+/// Each KEM applies its registered HPKE `DeriveKeyPair` procedure to the caller
+/// input, including any KEM-specific draft normalization. This is the
+/// OpenMLS-friendly entry point for MLS secrets whose length does not match the
+/// KEM's serialized private-key length.
+pub fn derive_keypair_from_ikm(
+    suite: HpkeSuite,
+    input_key_material: &[u8],
+) -> Result<HpkeKeyPair, HpkeError> {
+    require_executable_suite(suite)?;
+    if input_key_material.is_empty() {
+        return Err(HpkeError::InvalidInputKeyMaterial);
+    }
+
     match suite.kem {
         HpkeKemId::DhKemP256HkdfSha256 => {
             derive_keypair_for::<DhP256HkdfSha256>(suite, input_key_material)

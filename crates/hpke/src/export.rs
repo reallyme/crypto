@@ -9,3 +9,5 @@ mod sender;
 
 pub use receiver::receiver_export;
 pub use sender::sender_export;
+#[cfg(feature = "test-vectors")]
+pub use sender::sender_export_derand;

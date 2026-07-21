@@ -82,8 +82,9 @@ pub(super) fn process_hpke_derive_key_pair(
     request: CryptoHpkeDeriveKeyPairRequest,
 ) -> Result<CryptoKeyPair, CryptoWireError> {
     let suite = hpke_suite(&request.algorithm)?;
-    let key_pair = crate::operations::hpke::derive_keypair(suite, &request.input_key_material)
-        .map_err(map_operation_error)?;
+    let key_pair =
+        crate::operations::hpke::derive_keypair_from_ikm(suite, &request.input_key_material)
+            .map_err(map_operation_error)?;
     let secret_key = key_pair.private_key().to_vec();
     let result = CryptoKeyPair {
         algorithm: request.algorithm.clone(),

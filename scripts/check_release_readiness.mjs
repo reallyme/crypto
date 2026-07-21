@@ -34,11 +34,11 @@ const {
   requireTrackedFiles: true,
 });
 
-const rustRootVersion = "0.3.0";
-const cryptoProtoPackageVersion = "0.3.0";
-const typescriptPackageVersion = "0.3.0";
-const kotlinPackageVersion = "0.3.0";
-const kotlinAndroidPackageVersion = "0.3.0";
+const rustRootVersion = "0.3.1";
+const cryptoProtoPackageVersion = "0.3.1";
+const typescriptPackageVersion = "0.3.1";
+const kotlinPackageVersion = "0.3.1";
+const kotlinAndroidPackageVersion = "0.3.1";
 const codecVersion = "0.2.0";
 const rustSemverBaselineCommit = "5b8928f10777d0ce44561bb966b9425a281a05d7";
 const rustSemverBaselinePath = ".semver-baseline";
@@ -101,7 +101,7 @@ const assertZeroizingGeneratedUnknownFieldOwner = (generatedPath, messageName) =
 };
 
 if (releaseVersionEnv !== undefined && !/^[0-9]+[.][0-9]+[.][0-9]+$/.test(releaseVersionEnv)) {
-  fail("RELEASE_VERSION must be an exact semver release such as 0.3.0");
+  fail("RELEASE_VERSION must be an exact semver release such as 0.3.1");
 }
 
 const manifest = readJson("provider_manifest.json");
@@ -745,7 +745,7 @@ assertContains(
 assertNotContains("packages/ts/scripts/build-wasm.mjs", '"wasm-package"');
 assertContains(
   "crates/wasm/Cargo.toml",
-  'crypto-runtime = { package = "reallyme-crypto", version = "0.3.0", path = "../crypto", default-features = false, features = ["operation-response", "native"',
+  'crypto-runtime = { package = "reallyme-crypto", version = "0.3.1", path = "../crypto", default-features = false, features = ["operation-response", "native"',
 );
 assertNotContains(
   "crates/wasm/Cargo.toml",
@@ -1542,6 +1542,7 @@ assertContains(
   "Generic AEAD primitive and dispatch APIs treat `aad` as caller-provided bytes",
 );
 assertContains("RELEASE_NOTES.md", "## 0.3.0");
+assertContains("RELEASE_NOTES.md", "## 0.3.1");
 assertContains("RELEASE_NOTES.md", "legacy `reallyme.codec.v1` protobuf/package surface was removed");
 assertContains("RELEASE_NOTES.md", "not a `reallyme.crypto.v1` wire break");
 assertContains("RELEASE_NOTES.md", "permanently retired in this repository");
@@ -1843,6 +1844,12 @@ assertContains("crates/hpke/src/error.rs", "pub enum HpkeError");
 assertContains("crates/hpke/src/error.rs", "#[non_exhaustive]");
 assertContains("crates/crypto/src/operations/hpke.rs", "pub fn keygen(");
 assertContains("crates/crypto/src/operations/hpke.rs", "pub fn derive_keypair(");
+assertContains("crates/crypto/src/operations/hpke.rs", "pub fn derive_keypair_from_ikm(");
+assertContains(
+  "crates/crypto/src/operations/hpke.rs",
+  "HPKE_OPERATION_MIN_INPUT_KEY_MATERIAL_LEN: usize = 32",
+);
+assertContains("crates/crypto/src/operations/hpke.rs", "pub fn setup_sender_psk(");
 assertContains("crates/crypto/src/operations/hpke.rs", "pub fn seal_base(");
 assertContains("crates/crypto/src/operations/hpke.rs", "pub fn open_base(");
 assertContains("crates/crypto/src/operations/hpke.rs", "pub fn sender_export(");
@@ -1852,6 +1859,77 @@ assertContains("crates/crypto/src/operations/hpke.rs", "pub fn open_psk(");
 assertContains("crates/crypto/src/operations/platform_key.rs", "pub enum PlatformKeyOperation");
 assertContains("crates/crypto/src/operations/platform_key.rs", "produces_secret_material");
 assertContains("crates/crypto/src/hpke.rs", "pub use crate::operations::hpke");
+for (const hpkeFunction of [
+  "keygen",
+  "derive_keypair",
+  "derive_keypair_from_ikm",
+  "setup_sender_psk",
+  "setup_receiver_psk",
+  "seal_base",
+  "open_base",
+  "sender_export",
+  "receiver_export",
+  "seal_psk",
+  "open_psk",
+]) {
+  assertContains("crates/crypto/src/hpke.rs", `${hpkeFunction} as ${hpkeFunction}_raw`);
+  assertContains(
+    "crates/crypto/src/hpke.rs",
+    `${hpkeFunction} as ${hpkeFunction}_operation`,
+  );
+}
+assertContains("crates/crypto/src/hpke.rs", "RawHpkePskSenderContext");
+assertContains("crates/crypto/src/hpke.rs", "RawHpkePskSenderSetupOutput");
+assertContains("crates/crypto/src/hpke.rs", "RawHpkeReceiverContext");
+assertContains("crates/crypto/src/hpke.rs", "HpkePskRef");
+assertContains("crates/crypto/src/hpke.rs", "HpkePskIdRef");
+assertContains("crates/crypto/src/operations/hpke.rs", "pub fn seal_base_derand(");
+assertContains("crates/crypto/src/operations/hpke.rs", "pub fn sender_export_derand(");
+assertContains("crates/hpke/src/lib.rs", "sender_export_derand");
+assertContains("crates/hpke/src/lib.rs", "setup_receiver_psk");
+assertContains("crates/hpke/src/lib.rs", "setup_sender_psk_derand");
+assertContains("crates/hpke/src/lib.rs", "HpkePskSenderContext");
+// Keep the compatibility one-shot API as a facade over the stateful PSK
+// implementation. A second PSK key schedule here would recreate the exact
+// protocol divergence that the OpenMLS context API is intended to remove.
+assertContains(
+  "crates/hpke/src/seal.rs",
+  "setup_sender_psk(&HpkePskSenderSetupRequest",
+);
+assertContains(
+  "crates/hpke/src/seal.rs",
+  "setup_receiver_psk(&HpkePskReceiverSetupRequest",
+);
+assertNotContains("crates/hpke/src/seal.rs", "OpModeS::Psk");
+assertNotContains("crates/hpke/src/seal.rs", "OpModeR::Psk");
+assertContains(
+  "crates/hpke/src/identifiers.rs",
+  "MLS_192_MLKEM1024_AES256GCM_SHA384_P384",
+);
+assertContains(
+  "crates/hpke/src/identifiers.rs",
+  "MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87",
+);
+assertContains(
+  "crates/hpke/tests/identifier_tests.rs",
+  "assert_eq!(suite.kdf_id(), 0x0011)",
+);
+assertContains(
+  "crates/hpke/tests/openmls_compatibility_tests.rs",
+  "xwing_arbitrary_ikm_matches_the_deployed_openmls_libcrux_vector",
+);
+assertContains(
+  "crates/crypto/src/operation_contract/hpke.rs",
+  "crate::operations::hpke::derive_keypair_from_ikm",
+);
+assertContains(
+  "crates/crypto/tests/hpke_operation_contract_tests.rs",
+  "post_quantum_hpke_suites_execute_through_the_serialized_contract",
+);
+assertContains(
+  "crates/ffi/tests/operation_response_ffi_tests.rs",
+  "ffi_operation_contract_executes_post_quantum_hpke_suite_matrix",
+);
 assertContains("crates/crypto/src/operations/random.rs", "pub fn fill_bytes(");
 assertContains("crates/crypto/src/operations/key_encoding.rs", "pub fn copy_fixed_public_key(");
 assertContains(
@@ -2894,7 +2972,7 @@ if (swiftReleaseArtifactVerificationCount !== 2) {
 assertContains(".github/workflows/npm-package-preflight.yml", "npm package preflight");
 assertContains(".github/workflows/npm-package-preflight.yml", "npm run pack:check");
 assertContains(".github/workflows/npm-package-release.yml", "npm Package Release");
-assertContains(".github/workflows/npm-package-release.yml", "default: 0.3.0");
+assertContains(".github/workflows/npm-package-release.yml", "default: 0.3.1");
 assertContains(".github/workflows/npm-package-release.yml", "node scripts/run_pinned_release_readiness.mjs --release-packages");
 assertContains(".github/workflows/npm-package-release.yml", "wasm-pack@0.15.0");
 assertContains(".github/workflows/npm-package-release.yml", "wasm-bindgen-cli@0.2.126");

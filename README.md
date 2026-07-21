@@ -92,6 +92,15 @@ supports reviewed classical, post-quantum, and hybrid HPKE components; see
 [docs/protobuf.md](docs/protobuf.md#hpke-support) for the executable component
 set and operation-level constraints.
 
+The Rust HPKE surface includes split PSK sender setup for OpenMLS targeted
+messages, arbitrary-length IKM key derivation through each KEM's registered
+`DeriveKeyPair` construction, and named aliases for the MLS 192/256-bit
+ML-KEM-1024 and MLKEM1024-P384 draft profiles. Live sender contexts remain
+in-process, non-exportable state and are not exposed through protobuf or SDK
+transport adapters. Raw Rust derivation accepts the selected KEM's non-empty
+input contract; operation and serialized SDK boundaries require at least 32
+bytes of caller-owned high-entropy IKM.
+
 Every provider route must implement identical input validation and
 normalization, output encodings, typed failure semantics, and edge-case
 behavior. Security-sensitive composition, canonical serialization,
@@ -119,7 +128,7 @@ When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.3.0", default-features = false, features = [
+reallyme-crypto = { version = "0.3.1", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -132,7 +141,7 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.3.0", default-features = false, features = [
+reallyme-crypto = { version = "0.3.1", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }
@@ -171,7 +180,7 @@ separate from raw private-key bytes.
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.3.0"
+    from: "0.3.1"
 )
 ```
 
@@ -183,7 +192,7 @@ separate from raw private-key bytes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.3.0")
+    implementation("me.really:crypto:0.3.1")
 }
 ```
 

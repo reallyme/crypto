@@ -4,7 +4,7 @@
 
 [package]
 name = "crypto-conformance-vectors"
-version = "0.3.0"
+version = "0.3.1"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -110,41 +110,41 @@ p384-conformance = { package = "p384", version = "0.14", features = ["ecdsa"] }
 p521-conformance = { package = "p521", version = "0.14", features = ["ecdsa"] }
 x25519-dalek-conformance = { package = "x25519-dalek", version = "3", features = ["static_secrets"] }
 
-crypto-aes-kw = { package = "reallyme-crypto-aes-kw", version = "0.3.0", path = "../aes-kw", default-features = false }
-crypto-aes256-gcm = { package = "reallyme-crypto-aes256-gcm", version = "0.3.0", path = "../aes256-gcm", default-features = false }
-crypto-aes256-gcm-siv = { package = "reallyme-crypto-aes256-gcm-siv", version = "0.3.0", path = "../aes256-gcm-siv", default-features = false }
-crypto-argon2id = { package = "reallyme-crypto-argon2id", version = "0.3.0", path = "../argon2id", default-features = false }
-crypto-chacha20-poly1305 = { package = "reallyme-crypto-chacha20-poly1305", version = "0.3.0", path = "../chacha20-poly1305", default-features = false }
-crypto-concat-kdf = { package = "reallyme-crypto-concat-kdf", version = "0.3.0", path = "../concat-kdf", default-features = false }
-crypto-core = { package = "reallyme-crypto-core", version = "0.3.0", path = "../crypto/core" }
-crypto-proto = { package = "reallyme-crypto-proto", version = "0.3.0", path = "../proto", default-features = false, features = ["generated"] }
-crypto-runtime = { package = "reallyme-crypto", version = "0.3.0", path = "../crypto", default-features = false, features = ["operation-response", "native", "aes", "aes-gcm-siv", "chacha20-poly1305", "ed25519", "hmac", "p256", "p384", "p521", "secp256k1", "x25519", "ml-dsa-44", "ml-dsa-65", "ml-dsa-87", "ml-kem-512", "ml-kem-768", "ml-kem-1024", "sha2", "sha3", "x-wing"] }
-crypto-hkdf = { package = "reallyme-crypto-hkdf", version = "0.3.0", path = "../hkdf", default-features = false }
-crypto-kmac = { package = "reallyme-crypto-kmac", version = "0.3.0", path = "../kmac", default-features = false }
-crypto-hmac = { package = "reallyme-crypto-hmac", version = "0.3.0", path = "../hmac", default-features = false }
-crypto-hpke = { package = "reallyme-crypto-hpke", version = "0.3.0", path = "../hpke", default-features = false }
-crypto-sha2 = { package = "reallyme-crypto-sha2", version = "0.3.0", path = "../sha2", default-features = false }
-crypto-sha3 = { package = "reallyme-crypto-sha3", version = "0.3.0", path = "../sha3", default-features = false }
-crypto-p256 = { package = "reallyme-crypto-p256", version = "0.3.0", path = "../p256", default-features = false }
-crypto-p384 = { package = "reallyme-crypto-p384", version = "0.3.0", path = "../p384", default-features = false }
-crypto-p521 = { package = "reallyme-crypto-p521", version = "0.3.0", path = "../p521", default-features = false }
-crypto-pbkdf2 = { package = "reallyme-crypto-pbkdf2", version = "0.3.0", path = "../pbkdf2", default-features = false }
-crypto-rsa = { package = "reallyme-crypto-rsa", version = "0.3.0", path = "../rsa", default-features = false }
-crypto-ed25519 = { package = "reallyme-crypto-ed25519", version = "0.3.0", path = "../ed25519", default-features = false }
-crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "0.3.0", path = "../secp256k1", default-features = false }
-crypto-x25519 = { package = "reallyme-crypto-x25519", version = "0.3.0", path = "../x25519", default-features = false }
-crypto-x-wing = { package = "reallyme-crypto-x-wing", version = "0.3.0", path = "../x-wing", default-features = false }
-crypto-ml-dsa-44 = { package = "reallyme-crypto-ml-dsa-44", version = "0.3.0", path = "../ml-dsa-44", default-features = false }
-crypto-ml-dsa-65 = { package = "reallyme-crypto-ml-dsa-65", version = "0.3.0", path = "../ml-dsa-65", default-features = false }
-crypto-ml-dsa-87 = { package = "reallyme-crypto-ml-dsa-87", version = "0.3.0", path = "../ml-dsa-87", default-features = false }
-crypto-ml-kem-512 = { package = "reallyme-crypto-ml-kem-512", version = "0.3.0", path = "../ml-kem-512", default-features = false }
-crypto-ml-kem-768 = { package = "reallyme-crypto-ml-kem-768", version = "0.3.0", path = "../ml-kem-768", default-features = false }
-crypto-ml-kem-1024 = { package = "reallyme-crypto-ml-kem-1024", version = "0.3.0", path = "../ml-kem-1024", default-features = false }
-crypto-slh-dsa = { package = "reallyme-crypto-slh-dsa", version = "0.3.0", path = "../slh-dsa", default-features = false }
-crypto-sha2-256 = { package = "reallyme-crypto-sha2-256", version = "0.3.0", path = "../sha2-256" }
-crypto-sha3-256 = { package = "reallyme-crypto-sha3-256", version = "0.3.0", path = "../sha3-256" }
-envelopes-jwk = { package = "reallyme-crypto-jwk", version = "0.3.0", path = "../jwk", default-features = false }
-envelopes-jwk-multikey = { package = "reallyme-crypto-jwk-multikey", version = "0.3.0", path = "../jwk-multikey", default-features = false }
+crypto-aes-kw = { package = "reallyme-crypto-aes-kw", version = "0.3.1", path = "../aes-kw", default-features = false }
+crypto-aes256-gcm = { package = "reallyme-crypto-aes256-gcm", version = "0.3.1", path = "../aes256-gcm", default-features = false }
+crypto-aes256-gcm-siv = { package = "reallyme-crypto-aes256-gcm-siv", version = "0.3.1", path = "../aes256-gcm-siv", default-features = false }
+crypto-argon2id = { package = "reallyme-crypto-argon2id", version = "0.3.1", path = "../argon2id", default-features = false }
+crypto-chacha20-poly1305 = { package = "reallyme-crypto-chacha20-poly1305", version = "0.3.1", path = "../chacha20-poly1305", default-features = false }
+crypto-concat-kdf = { package = "reallyme-crypto-concat-kdf", version = "0.3.1", path = "../concat-kdf", default-features = false }
+crypto-core = { package = "reallyme-crypto-core", version = "0.3.1", path = "../crypto/core" }
+crypto-proto = { package = "reallyme-crypto-proto", version = "0.3.1", path = "../proto", default-features = false, features = ["generated"] }
+crypto-runtime = { package = "reallyme-crypto", version = "0.3.1", path = "../crypto", default-features = false, features = ["operation-response", "native", "aes", "aes-gcm-siv", "chacha20-poly1305", "ed25519", "hmac", "p256", "p384", "p521", "secp256k1", "x25519", "ml-dsa-44", "ml-dsa-65", "ml-dsa-87", "ml-kem-512", "ml-kem-768", "ml-kem-1024", "sha2", "sha3", "x-wing"] }
+crypto-hkdf = { package = "reallyme-crypto-hkdf", version = "0.3.1", path = "../hkdf", default-features = false }
+crypto-kmac = { package = "reallyme-crypto-kmac", version = "0.3.1", path = "../kmac", default-features = false }
+crypto-hmac = { package = "reallyme-crypto-hmac", version = "0.3.1", path = "../hmac", default-features = false }
+crypto-hpke = { package = "reallyme-crypto-hpke", version = "0.3.1", path = "../hpke", default-features = false }
+crypto-sha2 = { package = "reallyme-crypto-sha2", version = "0.3.1", path = "../sha2", default-features = false }
+crypto-sha3 = { package = "reallyme-crypto-sha3", version = "0.3.1", path = "../sha3", default-features = false }
+crypto-p256 = { package = "reallyme-crypto-p256", version = "0.3.1", path = "../p256", default-features = false }
+crypto-p384 = { package = "reallyme-crypto-p384", version = "0.3.1", path = "../p384", default-features = false }
+crypto-p521 = { package = "reallyme-crypto-p521", version = "0.3.1", path = "../p521", default-features = false }
+crypto-pbkdf2 = { package = "reallyme-crypto-pbkdf2", version = "0.3.1", path = "../pbkdf2", default-features = false }
+crypto-rsa = { package = "reallyme-crypto-rsa", version = "0.3.1", path = "../rsa", default-features = false }
+crypto-ed25519 = { package = "reallyme-crypto-ed25519", version = "0.3.1", path = "../ed25519", default-features = false }
+crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "0.3.1", path = "../secp256k1", default-features = false }
+crypto-x25519 = { package = "reallyme-crypto-x25519", version = "0.3.1", path = "../x25519", default-features = false }
+crypto-x-wing = { package = "reallyme-crypto-x-wing", version = "0.3.1", path = "../x-wing", default-features = false }
+crypto-ml-dsa-44 = { package = "reallyme-crypto-ml-dsa-44", version = "0.3.1", path = "../ml-dsa-44", default-features = false }
+crypto-ml-dsa-65 = { package = "reallyme-crypto-ml-dsa-65", version = "0.3.1", path = "../ml-dsa-65", default-features = false }
+crypto-ml-dsa-87 = { package = "reallyme-crypto-ml-dsa-87", version = "0.3.1", path = "../ml-dsa-87", default-features = false }
+crypto-ml-kem-512 = { package = "reallyme-crypto-ml-kem-512", version = "0.3.1", path = "../ml-kem-512", default-features = false }
+crypto-ml-kem-768 = { package = "reallyme-crypto-ml-kem-768", version = "0.3.1", path = "../ml-kem-768", default-features = false }
+crypto-ml-kem-1024 = { package = "reallyme-crypto-ml-kem-1024", version = "0.3.1", path = "../ml-kem-1024", default-features = false }
+crypto-slh-dsa = { package = "reallyme-crypto-slh-dsa", version = "0.3.1", path = "../slh-dsa", default-features = false }
+crypto-sha2-256 = { package = "reallyme-crypto-sha2-256", version = "0.3.1", path = "../sha2-256" }
+crypto-sha3-256 = { package = "reallyme-crypto-sha3-256", version = "0.3.1", path = "../sha3-256" }
+envelopes-jwk = { package = "reallyme-crypto-jwk", version = "0.3.1", path = "../jwk", default-features = false }
+envelopes-jwk-multikey = { package = "reallyme-crypto-jwk-multikey", version = "0.3.1", path = "../jwk-multikey", default-features = false }
 zeroize = { workspace = true }
 
 [lints]
