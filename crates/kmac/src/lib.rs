@@ -11,8 +11,9 @@
 
 mod algorithm;
 
+#[cfg(any(feature = "native", feature = "wasm"))]
+pub use self::algorithm::derive_kmac256;
 pub use self::algorithm::{
-    derive_kmac256, Kmac256Key, Kmac256Output, KMAC256_MAX_CONTEXT_LENGTH,
-    KMAC256_MAX_CUSTOMIZATION_LENGTH, KMAC256_MAX_KEY_LENGTH, KMAC256_MAX_OUTPUT_LENGTH,
-    KMAC256_MIN_KEY_LENGTH,
+    Kmac256Key, Kmac256Output, KMAC256_MAX_CONTEXT_LENGTH, KMAC256_MAX_CUSTOMIZATION_LENGTH,
+    KMAC256_MAX_KEY_LENGTH, KMAC256_MAX_OUTPUT_LENGTH, KMAC256_MIN_KEY_LENGTH,
 };

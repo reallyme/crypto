@@ -128,6 +128,9 @@ jobs:
       - name: Check umbrella crate tarball
         run: cargo package --locked -p reallyme-crypto --list
 
+      - name: Inspect publishable crate tarballs
+        run: node scripts/publish_crates_in_order.mjs inspect
+
       - name: Check narrow Rust feature surfaces
         run: |
           cargo test --locked -p reallyme-crypto-dispatch --test feature_lane_tests --no-default-features
