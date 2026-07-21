@@ -2802,7 +2802,7 @@ assertContains("scripts/verify_swift_release_artifact.mjs", '"compute-checksum"'
 assertContains("scripts/verify_swift_release_artifact.mjs", "Package.swift checksum does not match");
 assertContains("scripts/verify_swift_release_artifact.test.mjs", "rejects a forged sidecar");
 assertContains(".github/workflows/rust-ci.yml", "tool: nextest@0.9.140");
-assertContains(".github/workflows/rust-ci.yml", "tool: cargo-deny@0.20.2");
+assertContains(".github/workflows/rust-ci.yml", "cargo install cargo-deny --version 0.20.2 --locked");
 assertContains(".github/workflows/rust-ci.yml", "tool: cargo-audit@0.22.2");
 assertContains(".github/workflows/rust-ci.yml", "cargo metadata --locked --format-version 1 --no-deps");
 assertContains(
@@ -2914,6 +2914,7 @@ assertContains(
 assertNotContains("scripts/publish_crates_in_order.mjs", "REALLYME_CRATES_ALLOW_ALREADY_PUBLISHED");
 assertContains("scripts/publish_crates_in_order.mjs", "RELEASE_VERSION must be set when publishing crates");
 assertContains("scripts/publish_crates_in_order.mjs", "publishWithRetries");
+assertContains("scripts/publish_crates_in_order.mjs", "continuing release resume");
 assertContains("scripts/publish_retry_policy.mjs", "RateLimitExhausted");
 assertContains("scripts/publish_retry_policy.mjs", "IndexLagExhausted");
 assertContains("scripts/publish_retry_policy.test.mjs", "permanent rate limiting fails terminally");

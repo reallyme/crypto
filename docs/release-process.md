@@ -44,8 +44,9 @@ Release workflows require:
 - protected environments or equivalent approval gates before credentials;
 - immutable Swift release-asset behavior;
 - Maven credential preflight and signing evidence;
-- crates.io publish retry tests with terminal failure on exhausted retries or
-  already-published output without identity proof.
+- crates.io publish retry tests with terminal failure on exhausted retries, and
+  release-runner resume behavior for crate versions that are already present on
+  crates.io from an interrupted ordered publish.
 
 ## Publishing Credentials
 

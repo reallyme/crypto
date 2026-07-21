@@ -47,8 +47,8 @@ optional `operation-response` feature through that package.
 
 Use the manual **Crates.io Release** workflow for Rust publishing. Its preflight
 job inspects every publishable crate tarball in workspace dependency order. The
-publish job runs only when the workflow is started with `publish=true` and the
-repository has `CARGO_REGISTRY_TOKEN` configured.
+publish job runs after the protected `crates-io-release` environment approves
+the credentialed step and the repository has `CARGO_REGISTRY_TOKEN` configured.
 
 The first publish cannot use `cargo publish --dry-run` end-to-end for downstream
 workspace crates, because Cargo resolves already-published dependencies from

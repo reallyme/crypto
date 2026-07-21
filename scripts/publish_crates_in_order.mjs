@@ -5,6 +5,7 @@
 import { spawnSync } from "node:child_process";
 
 import {
+  PublishFailureCode,
   PublishRetryError,
   PublishRetryKind,
   publishWithRetries,
@@ -338,6 +339,12 @@ function publishPackage(pkg) {
     });
   } catch (error) {
     if (error instanceof PublishRetryError) {
+      if (error.code === PublishFailureCode.AlreadyPublished) {
+        console.log(
+          `${pkg.name} ${pkg.version} is already published on crates.io; continuing release resume.`,
+        );
+        return;
+      }
       console.error(`${pkg.name} ${pkg.version} publish failed: ${error.code}.`);
       process.exit(error.status);
     }
