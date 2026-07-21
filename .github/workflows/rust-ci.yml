@@ -64,9 +64,7 @@ jobs:
           tool: nextest@0.9.140
 
       - name: Install cargo-deny
-        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # cargo-deny
-        with:
-          tool: cargo-deny@0.20.2
+        run: cargo install cargo-deny --version 0.20.2 --locked
 
       - name: Install cargo-audit
         uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # cargo-audit
