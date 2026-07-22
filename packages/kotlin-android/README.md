@@ -14,7 +14,7 @@ libraries required by Rust-backed routes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto-android:0.3.2")
+    implementation("me.really:crypto-android:0.3.3")
 }
 ```
 

@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-proto"
-version = "0.3.2"
+version = "0.3.3"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -21,7 +21,7 @@ generated = ["dep:buffa", "buffa/json", "dep:crypto-core", "dep:serde", "dep:ser
 buffa = { workspace = true, optional = true }
 # Enables the `convert` bridge between the generated protobuf algorithm
 # identifiers and the internal `crypto_core` enums.
-crypto-core = { package = "reallyme-crypto-core", version = "=0.3.2", path = "../crypto/core", optional = true }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.3.3", path = "../crypto/core", optional = true }
 serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
 thiserror = { workspace = true, optional = true }

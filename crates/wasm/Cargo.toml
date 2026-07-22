@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-wasm"
-version = "0.3.2"
+version = "0.3.3"
 edition.workspace = true
 rust-version.workspace = true
 publish = false
@@ -31,20 +31,20 @@ default = []
 test-vectors = ["crypto-hpke/test-vectors"]
 
 [dependencies]
-crypto-aes256-gcm = { package = "reallyme-crypto-aes256-gcm", version = "=0.3.2", path = "../aes256-gcm", default-features = false, features = ["native"] }
-crypto-argon2id = { package = "reallyme-crypto-argon2id", version = "=0.3.2", path = "../argon2id", default-features = false }
-crypto-core = { package = "reallyme-crypto-core", version = "=0.3.2", path = "../crypto/core" }
-crypto-hpke = { package = "reallyme-crypto-hpke", version = "=0.3.2", path = "../hpke", default-features = false, features = ["wasm"] }
-crypto-kmac = { package = "reallyme-crypto-kmac", version = "=0.3.2", path = "../kmac", default-features = false, features = ["wasm"] }
-crypto-ml-dsa-44 = { package = "reallyme-crypto-ml-dsa-44", version = "=0.3.2", path = "../ml-dsa-44", default-features = false, features = ["native"] }
-crypto-ml-dsa-65 = { package = "reallyme-crypto-ml-dsa-65", version = "=0.3.2", path = "../ml-dsa-65", default-features = false, features = ["native"] }
-crypto-ml-dsa-87 = { package = "reallyme-crypto-ml-dsa-87", version = "=0.3.2", path = "../ml-dsa-87", default-features = false, features = ["native"] }
-crypto-ml-kem-1024 = { package = "reallyme-crypto-ml-kem-1024", version = "=0.3.2", path = "../ml-kem-1024", default-features = false, features = ["native"] }
-crypto-ml-kem-512 = { package = "reallyme-crypto-ml-kem-512", version = "=0.3.2", path = "../ml-kem-512", default-features = false, features = ["native"] }
-crypto-ml-kem-768 = { package = "reallyme-crypto-ml-kem-768", version = "=0.3.2", path = "../ml-kem-768", default-features = false, features = ["native"] }
-crypto-slh-dsa = { package = "reallyme-crypto-slh-dsa", version = "=0.3.2", path = "../slh-dsa", default-features = false, features = ["native"] }
-crypto-x-wing = { package = "reallyme-crypto-x-wing", version = "=0.3.2", path = "../x-wing", default-features = false, features = ["wasm"] }
-crypto-runtime = { package = "reallyme-crypto", version = "=0.3.2", path = "../crypto", default-features = false, features = ["operation-response", "native", "aes", "aes-kw", "aes-gcm-siv", "argon2id", "chacha20-poly1305", "ed25519", "hmac", "p256", "p384", "p521", "rsa", "secp256k1", "x25519", "ml-dsa-44", "ml-dsa-65", "ml-dsa-87", "ml-kem-512", "ml-kem-768", "ml-kem-1024", "sha2", "sha3", "slh-dsa", "x-wing"] }
+crypto-aes256-gcm = { package = "reallyme-crypto-aes256-gcm", version = "=0.3.3", path = "../aes256-gcm", default-features = false, features = ["native"] }
+crypto-argon2id = { package = "reallyme-crypto-argon2id", version = "=0.3.3", path = "../argon2id", default-features = false }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.3.3", path = "../crypto/core" }
+crypto-hpke = { package = "reallyme-crypto-hpke", version = "=0.3.3", path = "../hpke", default-features = false, features = ["wasm"] }
+crypto-kmac = { package = "reallyme-crypto-kmac", version = "=0.3.3", path = "../kmac", default-features = false, features = ["wasm"] }
+crypto-ml-dsa-44 = { package = "reallyme-crypto-ml-dsa-44", version = "=0.3.3", path = "../ml-dsa-44", default-features = false, features = ["native"] }
+crypto-ml-dsa-65 = { package = "reallyme-crypto-ml-dsa-65", version = "=0.3.3", path = "../ml-dsa-65", default-features = false, features = ["native"] }
+crypto-ml-dsa-87 = { package = "reallyme-crypto-ml-dsa-87", version = "=0.3.3", path = "../ml-dsa-87", default-features = false, features = ["native"] }
+crypto-ml-kem-1024 = { package = "reallyme-crypto-ml-kem-1024", version = "=0.3.3", path = "../ml-kem-1024", default-features = false, features = ["native"] }
+crypto-ml-kem-512 = { package = "reallyme-crypto-ml-kem-512", version = "=0.3.3", path = "../ml-kem-512", default-features = false, features = ["native"] }
+crypto-ml-kem-768 = { package = "reallyme-crypto-ml-kem-768", version = "=0.3.3", path = "../ml-kem-768", default-features = false, features = ["native"] }
+crypto-slh-dsa = { package = "reallyme-crypto-slh-dsa", version = "=0.3.3", path = "../slh-dsa", default-features = false, features = ["native"] }
+crypto-x-wing = { package = "reallyme-crypto-x-wing", version = "=0.3.3", path = "../x-wing", default-features = false, features = ["wasm"] }
+crypto-runtime = { package = "reallyme-crypto", version = "=0.3.3", path = "../crypto", default-features = false, features = ["operation-response", "native", "aes", "aes-kw", "aes-gcm-siv", "argon2id", "chacha20-poly1305", "ed25519", "hmac", "p256", "p384", "p521", "rsa", "secp256k1", "x25519", "ml-dsa-44", "ml-dsa-65", "ml-dsa-87", "ml-kem-512", "ml-kem-768", "ml-kem-1024", "sha2", "sha3", "slh-dsa", "x-wing"] }
 js-sys = { workspace = true }
 wasm-bindgen = { workspace = true }
 zeroize = { workspace = true }

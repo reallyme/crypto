@@ -34,11 +34,11 @@ const {
   requireTrackedFiles: true,
 });
 
-const rustRootVersion = "0.3.2";
-const cryptoProtoPackageVersion = "0.3.2";
-const typescriptPackageVersion = "0.3.2";
-const kotlinPackageVersion = "0.3.2";
-const kotlinAndroidPackageVersion = "0.3.2";
+const rustRootVersion = "0.3.3";
+const cryptoProtoPackageVersion = "0.3.3";
+const typescriptPackageVersion = "0.3.3";
+const kotlinPackageVersion = "0.3.3";
+const kotlinAndroidPackageVersion = "0.3.3";
 const codecVersion = "0.2.0";
 const rustSemverBaselineCommit = "5b8928f10777d0ce44561bb966b9425a281a05d7";
 const rustSemverBaselinePath = ".semver-baseline";
@@ -65,6 +65,21 @@ const allowedFallbacks = new Set([
 ]);
 const releaseVersionEnv = process.env.RELEASE_VERSION;
 const escapeRegExpLiteral = (value) => value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+
+const assertSubstringsInOrder = (path, substrings) => {
+  const contents = readText(path);
+  let previousIndex = -1;
+  for (const substring of substrings) {
+    const currentIndex = contents.indexOf(substring, previousIndex + 1);
+    if (currentIndex < 0) {
+      fail(`${path} is missing ordered release step: ${substring}`);
+    }
+    if (currentIndex <= previousIndex) {
+      fail(`${path} has release steps in an unsafe order near: ${substring}`);
+    }
+    previousIndex = currentIndex;
+  }
+};
 
 const collectRustProductionSources = (directory) => {
   const paths = [];
@@ -114,7 +129,7 @@ const assertZeroizingGeneratedUnknownFieldOwner = (generatedPath, messageName) =
 };
 
 if (releaseVersionEnv !== undefined && !/^[0-9]+[.][0-9]+[.][0-9]+$/.test(releaseVersionEnv)) {
-  fail("RELEASE_VERSION must be an exact semver release such as 0.3.2");
+  fail("RELEASE_VERSION must be an exact semver release such as 0.3.3");
 }
 
 const manifest = readJson("provider_manifest.json");
@@ -778,7 +793,7 @@ assertContains(
 assertNotContains("packages/ts/scripts/build-wasm.mjs", '"wasm-package"');
 assertContains(
   "crates/wasm/Cargo.toml",
-  'crypto-runtime = { package = "reallyme-crypto", version = "=0.3.2", path = "../crypto", default-features = false, features = ["operation-response", "native"',
+  'crypto-runtime = { package = "reallyme-crypto", version = "=0.3.3", path = "../crypto", default-features = false, features = ["operation-response", "native"',
 );
 assertNotContains(
   "crates/wasm/Cargo.toml",
@@ -1575,7 +1590,7 @@ assertContains(
   "Generic AEAD primitive and dispatch APIs treat `aad` as caller-provided bytes",
 );
 assertContains("RELEASE_NOTES.md", "## 0.3.0");
-assertContains("RELEASE_NOTES.md", "## 0.3.2");
+assertContains("RELEASE_NOTES.md", "## 0.3.3");
 assertContains("RELEASE_NOTES.md", "legacy `reallyme.codec.v1` protobuf/package surface was removed");
 assertContains("RELEASE_NOTES.md", "not a `reallyme.crypto.v1` wire break");
 assertContains("RELEASE_NOTES.md", "permanently retired in this repository");
@@ -1954,8 +1969,30 @@ assertContains(
 );
 assertContains(
   "crates/hpke/tests/identifier_tests.rs",
-  "assert_eq!(suite.kdf_id(), 0x0011)",
+  "assert_eq!(suite.kdf_id(), 0x0002)",
 );
+assertContains(
+  "crates/hpke/src/identifiers.rs",
+  "HPKE_MLKEM1024_HKDF_SHA384_AES256GCM",
+);
+assertContains(
+  "crates/hpke/src/identifiers.rs",
+  "HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM",
+);
+assertContains("crates/hpke/tests/hpke_pq_vector_tests.rs", "draft-ietf-hpke-pq-05");
+const hpkeManifest = readText("crates/hpke/Cargo.toml");
+const openMlsFeatureStart = hpkeManifest.indexOf("openmls = [");
+const openMlsFeatureEnd = hpkeManifest.indexOf("\n]", openMlsFeatureStart);
+if (openMlsFeatureStart < 0 || openMlsFeatureEnd < 0) {
+  fail("crates/hpke/Cargo.toml is missing the OpenMLS feature aggregate");
+}
+const openMlsFeature = hpkeManifest.slice(openMlsFeatureStart, openMlsFeatureEnd);
+if (!openMlsFeature.includes('"kdf-hkdf-sha384"')) {
+  fail("OpenMLS HPKE feature aggregate must enable HKDF-SHA384");
+}
+if (openMlsFeature.includes('"kdf-shake256"')) {
+  fail("OpenMLS HPKE feature aggregate must not enable SHAKE256");
+}
 assertContains(
   "crates/hpke/tests/openmls_compatibility_tests.rs",
   "xwing_arbitrary_ikm_matches_the_deployed_openmls_libcrux_vector",
@@ -2912,7 +2949,7 @@ assertContains("scripts/prepare_swift_release_candidate.sh", "build_swift_xcfram
 assertContains("scripts/prepare_swift_release_candidate.sh", "prepare_swift_binary_manifest.mjs");
 assertContains("scripts/prepare_swift_release_candidate.sh", "verify_swift_release_artifact.mjs");
 assertContains("RELEASE_CHECKLIST.md", "retains that exact archive as the release candidate");
-assertContains("docs/release-process.md", "prepare_swift_release_candidate.sh 0.3.2");
+assertContains("docs/release-process.md", "prepare_swift_release_candidate.sh 0.3.3");
 assertContains(
   "packages/kotlin/src/main/kotlin/me/really/crypto/OperationResponse.kt",
   "processOperationResponseNative(request: ByteArray): ByteArray?",
@@ -3005,6 +3042,12 @@ assertContains(swiftPreflightWorkflow, "Prepare local SwiftPM binary manifest");
 assertContains(swiftPreflightWorkflow, "--local-artifact-path build/swift/ReallyMeCryptoFFI.xcframework");
 assertContains(swiftPreflightWorkflow, "Test Swift package with linked binary target");
 assertContains(swiftPreflightWorkflow, "node scripts/run_pinned_release_readiness.mjs --release-packages");
+assertSubstringsInOrder(swiftPreflightWorkflow, [
+  "Build SwiftPM binary artifact",
+  "Upload Swift release candidate",
+  "Bind manifest to Swift release candidate",
+  "Verify generated SwiftPM manifest and release candidate",
+]);
 
 const swiftReleaseWorkflow = ".github/workflows/swift-package-release.yml";
 assertContains(swiftReleaseWorkflow, "ReallyMeCryptoFFI.xcframework.zip");
@@ -3020,6 +3063,14 @@ assertContains(swiftReleaseWorkflow, "verify_release_attestation.mjs");
 assertContains(swiftReleaseWorkflow, "gh release create");
 assertContains(swiftReleaseWorkflow, "--verify-tag");
 assertNotContains(swiftReleaseWorkflow, "scripts/build_swift_xcframework.sh");
+assertSubstringsInOrder(swiftReleaseWorkflow, [
+  "Download attested Swift artifact",
+  "Bind manifest to attested Swift artifact",
+  "Verify SwiftPM manifest and downloaded artifact",
+  "Download verified Swift artifact",
+  "Bind release manifest to verified Swift artifact",
+  "Create immutable GitHub release with Swift artifact",
+]);
 const swiftReleaseArtifactVerificationCount = readText(swiftReleaseWorkflow).match(
   /node scripts\/verify_swift_release_artifact[.]mjs/gu,
 )?.length;
@@ -3030,7 +3081,7 @@ if (swiftReleaseArtifactVerificationCount !== 2) {
 assertContains(".github/workflows/npm-package-preflight.yml", "npm package preflight");
 assertContains(".github/workflows/npm-package-preflight.yml", "npm run pack:check");
 assertContains(".github/workflows/npm-package-release.yml", "npm Package Release");
-assertContains(".github/workflows/npm-package-release.yml", "default: 0.3.2");
+assertContains(".github/workflows/npm-package-release.yml", "default: 0.3.3");
 assertContains(".github/workflows/npm-package-release.yml", "node scripts/run_pinned_release_readiness.mjs --release-packages");
 assertContains(".github/workflows/npm-package-release.yml", "wasm-pack@0.15.0");
 assertContains(".github/workflows/npm-package-release.yml", "wasm-bindgen-cli@0.2.126");

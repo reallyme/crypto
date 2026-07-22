@@ -178,14 +178,14 @@ The Rust HPKE surface provides OpenMLS-friendly names for three draft profiles:
 
 | MLS profile alias | HPKE KEM | HPKE KDF | HPKE AEAD |
 |---|---|---|---|
-| `MLS_192_MLKEM1024_AES256GCM_SHA384_P384` | `HPKE_KEM_ID_ML_KEM_1024` (`0x0042`) | `HPKE_KDF_ID_SHAKE256` (`0x0011`) | `HPKE_AEAD_ID_AES_256_GCM` |
-| `MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87` | `HPKE_KEM_ID_ML_KEM_1024` (`0x0042`) | `HPKE_KDF_ID_SHAKE256` (`0x0011`) | `HPKE_AEAD_ID_AES_256_GCM` |
-| `MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384` | `HPKE_KEM_ID_ML_KEM_1024_P384` (`0x0051`) | `HPKE_KDF_ID_SHAKE256` (`0x0011`) | `HPKE_AEAD_ID_AES_256_GCM` |
+| `MLS_192_MLKEM1024_AES256GCM_SHA384_P384` | `HPKE_KEM_ID_ML_KEM_1024` (`0x0042`) | `HPKE_KDF_ID_HKDF_SHA384` (`0x0002`) | `HPKE_AEAD_ID_AES_256_GCM` |
+| `MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87` | `HPKE_KEM_ID_ML_KEM_1024` (`0x0042`) | `HPKE_KDF_ID_HKDF_SHA384` (`0x0002`) | `HPKE_AEAD_ID_AES_256_GCM` |
+| `MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384` | `HPKE_KEM_ID_ML_KEM_1024_P384` (`0x0051`) | `HPKE_KDF_ID_HKDF_SHA384` (`0x0002`) | `HPKE_AEAD_ID_AES_256_GCM` |
 
-`SHA384` in each alias identifies the MLS transcript hash; it does not select
-the HPKE KDF. The signature suffix (`P384` or `MLDSA87`) likewise is not an
-HPKE component. The first two aliases therefore encode the same canonical
-protobuf HPKE triple, and all three use HPKE SHAKE256 (`0x0011`).
+Draft-06 selects the two-stage HPKE HKDF-SHA384 KDF because MLS requires both
+Extract and Expand. The signature suffix (`P384` or `MLDSA87`) is not an HPKE
+component. The first two aliases therefore encode the same canonical protobuf
+HPKE triple, and all three use HPKE HKDF-SHA384 (`0x0002`).
 
 Messages use `CryptoAlgorithmIdentifier.hpke_suite`; superseded field numbers
 and names remain reserved against reuse. Live HPKE contexts,
@@ -215,10 +215,11 @@ accepted by a production protobuf message.
 
 Serialized operation-contract and C ABI tests execute Base seal/open, exporter
 agreement, malformed-key and tampered-ciphertext failures, and oversized export
-rejection for ML-KEM-1024/SHAKE256/AES-256-GCM,
-MLKEM1024-P384/SHAKE256/AES-256-GCM, and
-X-Wing/HKDF-SHA256/ChaCha20-Poly1305. Swift, Kotlin, Android, and TypeScript
-therefore consume the same generated identifiers and typed response boundary.
+rejection for the draft-06 ML-KEM-1024/HKDF-SHA384/AES-256-GCM and
+MLKEM1024-P384/HKDF-SHA384/AES-256-GCM profiles. They retain separate coverage
+for the generic SHAKE256 combinations and X-Wing/HKDF-SHA256/
+ChaCha20-Poly1305. Swift, Kotlin, Android, and TypeScript therefore consume the
+same generated identifiers and typed response boundary.
 
 The error envelope intentionally splits failures by owning subpart:
 
