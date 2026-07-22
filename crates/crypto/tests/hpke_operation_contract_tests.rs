@@ -317,8 +317,18 @@ struct HpkeSuiteCase {
     aead: HpkeAeadId,
 }
 
-fn post_quantum_suite_cases() -> [HpkeSuiteCase; 3] {
+fn post_quantum_suite_cases() -> [HpkeSuiteCase; 5] {
     [
+        HpkeSuiteCase {
+            kem: HpkeKemId::HPKE_KEM_ID_ML_KEM_1024,
+            kdf: HpkeKdfId::HPKE_KDF_ID_HKDF_SHA384,
+            aead: HpkeAeadId::HPKE_AEAD_ID_AES_256_GCM,
+        },
+        HpkeSuiteCase {
+            kem: HpkeKemId::HPKE_KEM_ID_ML_KEM_1024_P384,
+            kdf: HpkeKdfId::HPKE_KDF_ID_HKDF_SHA384,
+            aead: HpkeAeadId::HPKE_AEAD_ID_AES_256_GCM,
+        },
         HpkeSuiteCase {
             kem: HpkeKemId::HPKE_KEM_ID_ML_KEM_1024,
             kdf: HpkeKdfId::HPKE_KDF_ID_SHAKE256,

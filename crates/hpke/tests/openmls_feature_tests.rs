@@ -12,7 +12,7 @@
 use crypto_hpke::{
     derive_keypair_from_ikm, open_base, seal_base, HpkeAeadId, HpkeComponentSupport, HpkeError,
     HpkeKdfId, HpkeKemId, HpkeOpenRequest, HpkeSealRequest, HpkeSuite,
-    HPKE_MLKEM1024P384_SHAKE256_AES256GCM, HPKE_MLKEM1024_SHAKE256_AES256GCM,
+    HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM, HPKE_MLKEM1024_HKDF_SHA384_AES256GCM,
     HPKE_REGISTERED_AEADS, HPKE_REGISTERED_KDFS, HPKE_REGISTERED_KEMS,
     HPKE_XWING_HKDF_SHA256_CHACHA20POLY1305,
 };
@@ -43,7 +43,7 @@ fn openmls_feature_exposes_only_selected_hpke_components() {
         .collect();
     assert_eq!(
         executable_kdfs,
-        [HpkeKdfId::HkdfSha256, HpkeKdfId::Shake256]
+        [HpkeKdfId::HkdfSha256, HpkeKdfId::HkdfSha384]
     );
 
     let executable_aeads: Vec<HpkeAeadId> = HPKE_REGISTERED_AEADS
@@ -59,8 +59,8 @@ fn openmls_feature_exposes_only_selected_hpke_components() {
 #[test]
 fn openmls_feature_round_trips_each_selected_profile() -> Result<(), HpkeError> {
     for suite in [
-        HPKE_MLKEM1024_SHAKE256_AES256GCM,
-        HPKE_MLKEM1024P384_SHAKE256_AES256GCM,
+        HPKE_MLKEM1024_HKDF_SHA384_AES256GCM,
+        HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM,
         HPKE_XWING_HKDF_SHA256_CHACHA20POLY1305,
     ] {
         let keypair = derive_keypair_from_ikm(suite, TEST_IKM)?;
@@ -98,7 +98,7 @@ fn openmls_feature_rejects_registered_but_disabled_components() {
 
     let disabled_kdf_suite = HpkeSuite::new(
         HpkeKemId::MlKem1024,
-        HpkeKdfId::HkdfSha384,
+        HpkeKdfId::Shake256,
         HpkeAeadId::Aes256Gcm,
     );
     assert_eq!(
@@ -108,7 +108,7 @@ fn openmls_feature_rejects_registered_but_disabled_components() {
 
     let disabled_aead_suite = HpkeSuite::new(
         HpkeKemId::MlKem1024,
-        HpkeKdfId::Shake256,
+        HpkeKdfId::HkdfSha384,
         HpkeAeadId::Aes128Gcm,
     );
     assert_eq!(

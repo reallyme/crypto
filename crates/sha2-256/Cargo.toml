@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-sha2-256"
-version = "0.3.2"
+version = "0.3.3"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true

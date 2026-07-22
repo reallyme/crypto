@@ -101,10 +101,11 @@ bytes of high-entropy IKM; the explicit raw HPKE alias retains the KEM-defined
 non-empty input contract.
 
 With default features disabled, `hpke-openmls` selects only ML-KEM-1024,
-ML-KEM-1024/P-384, X-Wing, and the KDF/AEAD implementations required by those
-profiles. The existing `hpke` feature remains the compatibility aggregate for
-the complete reviewed HPKE surface. Direct `reallyme-crypto-hpke` consumers can
-compose individual `kem-*`, `kdf-*`, and `aead-*` component features.
+ML-KEM-1024/P-384, X-Wing, HKDF-SHA256, HKDF-SHA384, AES-256-GCM, and
+ChaCha20-Poly1305. The SHAKE256 HPKE KDF and unrelated KEMs are excluded. The
+existing `hpke` feature remains the compatibility aggregate for the complete
+reviewed HPKE surface. Direct `reallyme-crypto-hpke` consumers can compose
+individual `kem-*`, `kdf-*`, and `aead-*` component features.
 
 The root `reallyme_crypto::hpke` facade makes its error boundary explicit.
 Established unsuffixed functions and their `*_operation` aliases return the
@@ -140,7 +141,7 @@ When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.3.2", default-features = false, features = [
+reallyme-crypto = { version = "0.3.3", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -153,7 +154,7 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.3.2", default-features = false, features = [
+reallyme-crypto = { version = "0.3.3", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }
@@ -192,7 +193,7 @@ separate from raw private-key bytes.
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.3.2"
+    from: "0.3.3"
 )
 ```
 
@@ -204,7 +205,7 @@ separate from raw private-key bytes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.3.2")
+    implementation("me.really:crypto:0.3.3")
 }
 ```
 

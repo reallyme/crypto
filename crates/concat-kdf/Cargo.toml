@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-concat-kdf"
-version = "0.3.2"
+version = "0.3.3"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -22,7 +22,7 @@ native = []
 wasm = []
 
 [dependencies]
-crypto-core = { package = "reallyme-crypto-core", version = "=0.3.2", path = "../crypto/core" }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.3.3", path = "../crypto/core" }
 sha2 = { workspace = true }
 zeroize = { workspace = true, features = ["derive"] }
 

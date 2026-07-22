@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-chacha20-poly1305"
-version = "0.3.2"
+version = "0.3.3"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -28,7 +28,7 @@ native = ["dep:chacha20poly1305", "dep:getrandom"]
 wasm = ["dep:chacha20poly1305", "dep:getrandom"]
 
 [dependencies]
-crypto-core = { package = "reallyme-crypto-core", version = "=0.3.2", path = "../crypto/core" }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.3.3", path = "../crypto/core" }
 zeroize = { workspace = true, features = ["zeroize_derive"] }
 chacha20poly1305 = { workspace = true, optional = true, features = ["zeroize"] }
 getrandom = { workspace = true, features = ["wasm_js"], optional = true }

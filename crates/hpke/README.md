@@ -45,10 +45,10 @@ for reproducible conformance vectors.
 fn main() -> Result<(), crypto_hpke::HpkeError> {
     use crypto_hpke::{
         derive_keypair, open_base, seal_base, HpkeOpenRequest, HpkeSealRequest,
-        HPKE_MLKEM1024P384_SHAKE256_AES256GCM,
+        HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM,
     };
 
-    let suite = HPKE_MLKEM1024P384_SHAKE256_AES256GCM;
+    let suite = HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM;
     let input_key_material = [0x5a; 32];
     let recipient = derive_keypair(suite, &input_key_material)?;
     let sealed = seal_base(&HpkeSealRequest {
@@ -81,10 +81,10 @@ The Rust API also names the draft MLS profiles directly:
 - `MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87`
 - `MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384`
 
-`SHA384` identifies the MLS transcript hash, not the HPKE KDF, and the final
-suffix identifies the MLS signature profile. All three aliases use HPKE
-SHAKE256 (`0x0011`); the first two therefore resolve to the same ML-KEM-1024,
-SHAKE256, AES-256-GCM HPKE triple.
+The draft-06 profiles select HPKE HKDF-SHA384 (`0x0002`) because MLS requires
+separate Extract and Expand operations. The final suffix identifies the MLS
+signature profile and is not part of the HPKE triple. The first two aliases
+therefore resolve to the same ML-KEM-1024, HKDF-SHA384, AES-256-GCM suite.
 
 The `test-vectors` feature exposes deterministic Base-mode seal, Base-mode
 sender export, and PSK sender setup for reproducible conformance data. The root
@@ -101,10 +101,11 @@ the internal native backend automatically; registered components that were not
 selected remain recognizable but fail closed as unavailable.
 
 The `openmls` aggregate enables only ML-KEM-1024, ML-KEM-1024/P-384, X-Wing,
-HKDF-SHA256, SHAKE256, AES-256-GCM, and ChaCha20-Poly1305. It deliberately does
-not enable P-256, P-521, secp256k1, X448, or unrelated KDF and AEAD
-implementations. Consumers needing another reviewed component can compose its
-individual feature explicitly.
+HKDF-SHA256, HKDF-SHA384, AES-256-GCM, and ChaCha20-Poly1305. It deliberately
+does not enable P-256, P-521, secp256k1, X448, the SHAKE256 HPKE KDF, or
+unrelated KDF and AEAD implementations. ML-KEM still brings its required
+SHAKE primitive dependency for KEM-internal operations. Consumers needing
+another reviewed component can compose its individual feature explicitly.
 
 ## IANA registry and runtime support
 

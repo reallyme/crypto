@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-jwk"
-version = "0.3.2"
+version = "0.3.3"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -35,8 +35,8 @@ serde_json.workspace = true
 
 codec-base64url = { package = "reallyme-codec-base64url", version = "0.2.0" }
 codec-jcs = { package = "reallyme-codec-jcs", version = "0.2.0" }
-crypto-p256 = { package = "reallyme-crypto-p256", version = "=0.3.2", path = "../p256", default-features = false }
-crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "=0.3.2", path = "../secp256k1", default-features = false }
+crypto-p256 = { package = "reallyme-crypto-p256", version = "=0.3.3", path = "../p256", default-features = false }
+crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "=0.3.3", path = "../secp256k1", default-features = false }
 
 thiserror.workspace = true
 

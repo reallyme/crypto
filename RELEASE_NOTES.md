@@ -6,13 +6,41 @@ SPDX-License-Identifier: Apache-2.0
 
 # Release Notes
 
+## 0.3.3
+
+- Corrects all three named post-quantum MLS HPKE profile aliases to the
+  draft-06 KDF selection: HKDF-SHA384 (`0x0002`). Draft-06 restored the
+  two-stage HKDF construction because MLS requires separate Extract and Expand
+  operations. Generic SHAKE256 HPKE suites remain available through explicit
+  constants and component features.
+- This correction changes the HPKE traffic state and ciphertexts produced by
+  the three aliases and is not wire-compatible with their `0.3.1`/`0.3.2`
+  SHAKE256 mapping. Deployments must upgrade all participants atomically.
+  Callers that intentionally need to process legacy HPKE data can select
+  `HPKE_MLKEM1024_SHAKE256_AES256GCM` or
+  `HPKE_MLKEM1024P384_SHAKE256_AES256GCM` explicitly.
+- Updates the narrow `hpke-openmls` aggregate to enable HKDF-SHA384 instead of
+  SHAKE256, while retaining HKDF-SHA256 for the deployed X-Wing profile. The
+  graph remains restricted to the three intended KEMs and two intended AEADs.
+- Adds explicit generic HKDF-SHA384 suite constants plus independent
+  known-answer coverage from the ML-KEM-1024 and MLKEM1024-P384 vectors in
+  `draft-ietf-hpke-pq-05`. Serialized operation and C-FFI matrices now exercise
+  both the draft-06 MLS triples and the separately supported SHAKE256 triples.
+- Strengthens release-readiness checks to enforce Swift artifact workflow
+  ordering: the exact XCFramework candidate must be uploaded before its
+  checksum is bound into the manifest, and release jobs must bind and verify
+  the downloaded attested artifact before creating the immutable release.
+- Stages the Rust crates, npm package, Swift binary package, Kotlin/JVM package,
+  and Android AAR package at version `0.3.3` for coordinated release.
+
 ## 0.3.2
 
 - Splits the HPKE native backend into independently selectable KEM, KDF, and
   AEAD features while retaining `native` as the backward-compatible full-suite
   aggregate. The root `hpke-openmls` profile enables only ML-KEM-1024,
   ML-KEM-1024/P-384, X-Wing, HPKE SHAKE256, HKDF-SHA256, AES-256-GCM, and
-  ChaCha20-Poly1305.
+  ChaCha20-Poly1305. This draft-05 mapping is superseded by the draft-06
+  correction in `0.3.3`.
 - Adds a package-owned ML-KEM-1024/P-384 HPKE KEM adapter so the OpenMLS graph
   does not inherit the upstream HPKE crate's monolithic NIST-curve feature.
   P-256, P-521, secp256k1/K-256, and X448 are absent from the narrow production
@@ -34,8 +62,9 @@ SPDX-License-Identifier: Apache-2.0
 
 `0.3.0` already exported
 `MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384`, but incorrectly assigned
-HPKE HKDF-SHA384 to it. `0.3.1` corrects that existing constant to the draft's
-HPKE SHAKE256 KDF (`0x0011`). This changes derived HPKE traffic state and
+HPKE HKDF-SHA384 to it. `0.3.1` changed that constant to the then-current
+SHAKE256 KDF (`0x0011`); draft-06 subsequently restored HKDF-SHA384, and the
+`0.3.3` aliases follow that newer draft. The `0.3.1` change altered HPKE traffic state and
 ciphertext compatibility for callers that used the `0.3.0` constant. Such
 deployments must coordinate the upgrade; historical data can be opened by
 constructing the former explicit `(MLKEM1024-P384, HKDF-SHA384, AES-256-GCM)`
@@ -54,8 +83,8 @@ triple. The other two MLS profile aliases listed below are new in `0.3.1`.
   serialized boundaries require at least 32 bytes of high-entropy IKM.
 - Adds exact MLS draft-profile aliases for the 192-bit ML-KEM-1024/P-384,
   256-bit ML-KEM-1024/ML-DSA-87, and 192-bit MLKEM1024-P384/P-384 profiles.
-  `SHA384` in these names is the MLS transcript hash; each alias selects the
-  registered HPKE SHAKE256 KDF (`0x0011`), not HPKE HKDF-SHA384.
+  The `0.3.1` aliases selected HPKE SHAKE256 (`0x0011`) under the prior draft;
+  `0.3.3` supersedes that mapping with draft-06 HPKE HKDF-SHA384 (`0x0002`).
   Deterministic Base seal and split PSK setup coverage for all three profiles
   is available only through the `test-vectors` feature.
 - Makes the root Rust HPKE error boundary explicit with `*_operation` aliases

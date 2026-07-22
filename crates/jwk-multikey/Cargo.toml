@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-jwk-multikey"
-version = "0.3.2"
+version = "0.3.3"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -30,12 +30,12 @@ thiserror.workspace = true
 codec-multikey = { package = "reallyme-codec-multikey", version = "0.2.0" }
 
 # JWK envelope
-envelopes-jwk = { package = "reallyme-crypto-jwk", version = "=0.3.2", path = "../jwk", default-features = false }
+envelopes-jwk = { package = "reallyme-crypto-jwk", version = "=0.3.3", path = "../jwk", default-features = false }
 
 [dev-dependencies]
 codec-base64url = { package = "reallyme-codec-base64url", version = "0.2.0" }
-crypto-core = { package = "reallyme-crypto-core", version = "=0.3.2", path = "../crypto/core" }
-crypto-dispatch = { package = "reallyme-crypto-dispatch", version = "=0.3.2", path = "../crypto/dispatch", default-features = false, features = ["native", "p256"] }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.3.3", path = "../crypto/core" }
+crypto-dispatch = { package = "reallyme-crypto-dispatch", version = "=0.3.3", path = "../crypto/dispatch", default-features = false, features = ["native", "p256"] }
 
 [lints]
 workspace = true

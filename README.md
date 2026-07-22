@@ -128,7 +128,7 @@ When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.3.2", default-features = false, features = [
+reallyme-crypto = { version = "0.3.3", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -141,7 +141,7 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.3.2", default-features = false, features = [
+reallyme-crypto = { version = "0.3.3", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }
@@ -156,14 +156,15 @@ OpenMLS adapters can select the narrow HPKE profile without enabling the full
 HPKE compatibility surface:
 
 ```toml
-reallyme-crypto = { version = "0.3.2", default-features = false, features = [
+reallyme-crypto = { version = "0.3.3", default-features = false, features = [
   "native",
   "hpke-openmls",
 ] }
 ```
 
-`hpke-openmls` enables ML-KEM-1024, ML-KEM-1024/P-384, X-Wing, the exact KDFs
-and AEADs used by those draft profiles, and no unrelated HPKE KEMs. Direct
+`hpke-openmls` enables ML-KEM-1024, ML-KEM-1024/P-384, X-Wing, HKDF-SHA256,
+HKDF-SHA384, AES-256-GCM, and ChaCha20-Poly1305. It does not enable the
+SHAKE256 HPKE KDF or unrelated HPKE KEMs. Direct
 `reallyme-crypto-hpke` consumers can compose its granular `kem-*`, `kdf-*`, and
 `aead-*` features when an even narrower profile is required.
 
@@ -195,7 +196,7 @@ separate from raw private-key bytes.
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.3.2"
+    from: "0.3.3"
 )
 ```
 
@@ -207,7 +208,7 @@ separate from raw private-key bytes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.3.2")
+    implementation("me.really:crypto:0.3.3")
 }
 ```
 

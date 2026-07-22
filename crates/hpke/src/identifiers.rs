@@ -246,7 +246,7 @@ impl HpkeAeadId {
     }
 }
 
-/// Complete IANA HPKE KEM registry snapshot supported by the `0.3.2` contract.
+/// Complete IANA HPKE KEM registry snapshot supported by the `0.3.3` contract.
 pub const HPKE_REGISTERED_KEMS: [HpkeKemId; 17] = [
     HpkeKemId::DhKemP256HkdfSha256,
     HpkeKemId::DhKemP384HkdfSha384,
@@ -267,7 +267,7 @@ pub const HPKE_REGISTERED_KEMS: [HpkeKemId; 17] = [
     HpkeKemId::XWing,
 ];
 
-/// Complete IANA HPKE KDF registry snapshot supported by the `0.3.2` contract.
+/// Complete IANA HPKE KDF registry snapshot supported by the `0.3.3` contract.
 pub const HPKE_REGISTERED_KDFS: [HpkeKdfId; 7] = [
     HpkeKdfId::HkdfSha256,
     HpkeKdfId::HkdfSha384,
@@ -278,7 +278,7 @@ pub const HPKE_REGISTERED_KDFS: [HpkeKdfId; 7] = [
     HpkeKdfId::TurboShake256,
 ];
 
-/// Complete IANA HPKE AEAD registry snapshot supported by the `0.3.2` contract.
+/// Complete IANA HPKE AEAD registry snapshot supported by the `0.3.3` contract.
 pub const HPKE_REGISTERED_AEADS: [HpkeAeadId; 4] = [
     HpkeAeadId::Aes128Gcm,
     HpkeAeadId::Aes256Gcm,
@@ -406,6 +406,12 @@ pub const HPKE_MLKEM1024_SHAKE256_AES256GCM: HpkeSuite = HpkeSuite::new(
     HpkeKdfId::Shake256,
     HpkeAeadId::Aes256Gcm,
 );
+/// ML-KEM-1024, HKDF-SHA384, AES-256-GCM.
+pub const HPKE_MLKEM1024_HKDF_SHA384_AES256GCM: HpkeSuite = HpkeSuite::new(
+    HpkeKemId::MlKem1024,
+    HpkeKdfId::HkdfSha384,
+    HpkeAeadId::Aes256Gcm,
+);
 /// MLKEM768-P256, SHAKE256, AES-256-GCM.
 pub const HPKE_MLKEM768P256_SHAKE256_AES256GCM: HpkeSuite = HpkeSuite::new(
     HpkeKemId::MlKem768P256,
@@ -418,31 +424,28 @@ pub const HPKE_MLKEM1024P384_SHAKE256_AES256GCM: HpkeSuite = HpkeSuite::new(
     HpkeKdfId::Shake256,
     HpkeAeadId::Aes256Gcm,
 );
-/// MLS 192-bit profile: ML-KEM-1024, SHAKE256, AES-256-GCM, and P-384 signatures.
-///
-/// `SHA384` in the MLS profile name identifies the MLS transcript hash. The
-/// HPKE KDF is the separately registered SHAKE256 KDF (`0x0011`). The P-384
-/// suffix identifies the MLS signature algorithm and does not alter the HPKE
-/// ciphersuite triple represented by this value.
-pub const MLS_192_MLKEM1024_AES256GCM_SHA384_P384: HpkeSuite = HpkeSuite::new(
-    HpkeKemId::MlKem1024,
-    HpkeKdfId::Shake256,
-    HpkeAeadId::Aes256Gcm,
-);
-/// MLS 256-bit profile: ML-KEM-1024, SHAKE256, AES-256-GCM, and ML-DSA-87 signatures.
-///
-/// `SHA384` in the MLS profile name identifies the MLS transcript hash. The
-/// HPKE KDF is the separately registered SHAKE256 KDF (`0x0011`). The
-/// ML-DSA-87 suffix identifies the MLS signature algorithm and does not alter
-/// the HPKE ciphersuite triple represented by this value.
-pub const MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87: HpkeSuite =
-    MLS_192_MLKEM1024_AES256GCM_SHA384_P384;
-/// MLS 192-bit profile: MLKEM1024-P384, SHAKE256, AES-256-GCM, and P-384 signatures.
-///
-/// `SHA384` in the MLS profile name identifies the MLS transcript hash, while
-/// this HPKE triple uses the registered SHAKE256 KDF (`0x0011`).
-pub const MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384: HpkeSuite = HpkeSuite::new(
+/// MLKEM1024-P384, HKDF-SHA384, AES-256-GCM.
+pub const HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM: HpkeSuite = HpkeSuite::new(
     HpkeKemId::MlKem1024P384,
-    HpkeKdfId::Shake256,
+    HpkeKdfId::HkdfSha384,
     HpkeAeadId::Aes256Gcm,
 );
+/// MLS 192-bit profile: ML-KEM-1024, HKDF-SHA384, AES-256-GCM, and P-384 signatures.
+///
+/// The profile's MLS transcript hash and HPKE KDF both use SHA-384, but they
+/// remain distinct protocol components. The P-384 suffix identifies the MLS
+/// signature algorithm and does not alter the HPKE ciphersuite triple.
+pub const MLS_192_MLKEM1024_AES256GCM_SHA384_P384: HpkeSuite = HPKE_MLKEM1024_HKDF_SHA384_AES256GCM;
+/// MLS 256-bit profile: ML-KEM-1024, HKDF-SHA384, AES-256-GCM, and ML-DSA-87 signatures.
+///
+/// The ML-DSA-87 suffix identifies the MLS signature algorithm and does not
+/// alter the HPKE ciphersuite triple represented by this value.
+pub const MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87: HpkeSuite =
+    HPKE_MLKEM1024_HKDF_SHA384_AES256GCM;
+/// MLS 192-bit profile: MLKEM1024-P384, HKDF-SHA384, AES-256-GCM, and P-384 signatures.
+///
+/// The profile's MLS transcript hash and HPKE KDF both use SHA-384, but they
+/// remain distinct protocol components. The final P-384 suffix identifies the
+/// MLS signature algorithm rather than an additional HPKE component.
+pub const MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384: HpkeSuite =
+    HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM;

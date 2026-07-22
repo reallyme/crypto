@@ -36,10 +36,12 @@ algorithm features a consumer actually calls.
 
 HPKE follows the same rule. The root `hpke` feature is the complete
 compatibility aggregate, while `hpke-openmls` selects only ML-KEM-1024,
-ML-KEM-1024/P-384, X-Wing, and their profile KDF/AEAD implementations. The
-focused HPKE crate also exposes granular `kem-*`, `kdf-*`, and `aead-*`
-features for protocol-specific dependency graphs. CI rejects unrelated P-256,
-P-521, secp256k1/K-256, and X448 packages in the OpenMLS graph.
+ML-KEM-1024/P-384, X-Wing, HKDF-SHA256, HKDF-SHA384, AES-256-GCM, and
+ChaCha20-Poly1305. The focused HPKE crate also exposes granular `kem-*`,
+`kdf-*`, and `aead-*` features for protocol-specific dependency graphs. CI
+rejects unrelated P-256, P-521, secp256k1/K-256, and X448 packages in the
+OpenMLS graph. The OpenMLS aggregate does not enable the SHAKE256 HPKE KDF;
+ML-KEM retains its required SHAKE primitive dependency for KEM-internal use.
 
 The `wasm` lane is a `wasm32-unknown-unknown` lane. Host checks should use
 `native`; wasm checks should include `--target wasm32-unknown-unknown`.
