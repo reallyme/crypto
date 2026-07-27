@@ -246,7 +246,7 @@ impl HpkeAeadId {
     }
 }
 
-/// Complete IANA HPKE KEM registry snapshot supported by the `0.3.3` contract.
+/// Complete IANA HPKE KEM registry snapshot supported by the `0.3.4` contract.
 pub const HPKE_REGISTERED_KEMS: [HpkeKemId; 17] = [
     HpkeKemId::DhKemP256HkdfSha256,
     HpkeKemId::DhKemP384HkdfSha384,
@@ -267,7 +267,7 @@ pub const HPKE_REGISTERED_KEMS: [HpkeKemId; 17] = [
     HpkeKemId::XWing,
 ];
 
-/// Complete IANA HPKE KDF registry snapshot supported by the `0.3.3` contract.
+/// Complete IANA HPKE KDF registry snapshot supported by the `0.3.4` contract.
 pub const HPKE_REGISTERED_KDFS: [HpkeKdfId; 7] = [
     HpkeKdfId::HkdfSha256,
     HpkeKdfId::HkdfSha384,
@@ -278,7 +278,7 @@ pub const HPKE_REGISTERED_KDFS: [HpkeKdfId; 7] = [
     HpkeKdfId::TurboShake256,
 ];
 
-/// Complete IANA HPKE AEAD registry snapshot supported by the `0.3.3` contract.
+/// Complete IANA HPKE AEAD registry snapshot supported by the `0.3.4` contract.
 pub const HPKE_REGISTERED_AEADS: [HpkeAeadId; 4] = [
     HpkeAeadId::Aes128Gcm,
     HpkeAeadId::Aes256Gcm,
