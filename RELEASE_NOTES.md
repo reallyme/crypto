@@ -6,6 +6,20 @@ SPDX-License-Identifier: Apache-2.0
 
 # Release Notes
 
+## 0.3.4
+
+- Refreshes Rust release dependencies for the coordinated `0.3.x` package set,
+  including `buffa` `0.9.1` and the Rust `reallyme-codec-*` crates at
+  `0.2.1`.
+- Keeps Swift, npm, Kotlin/JVM, and Android package dependencies on the
+  published `reallyme-codec` `0.2.0` artifacts while release-readiness validates
+  the Rust `0.2.1` codec provenance separately.
+- Aligns protobuf CI generator policy with the reviewed `buffa` version and
+  refreshes the main and fuzz lockfiles with the latest compatible registry
+  versions.
+- Stages the Rust crates, npm package, Swift binary package, Kotlin/JVM package,
+  and Android AAR package at version `0.3.4` for coordinated release.
+
 ## 0.3.3
 
 - Corrects all three named post-quantum MLS HPKE profile aliases to the

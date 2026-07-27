@@ -34,16 +34,17 @@ const {
   requireTrackedFiles: true,
 });
 
-const rustRootVersion = "0.3.3";
-const cryptoProtoPackageVersion = "0.3.3";
-const typescriptPackageVersion = "0.3.3";
-const kotlinPackageVersion = "0.3.3";
-const kotlinAndroidPackageVersion = "0.3.3";
-const codecVersion = "0.2.0";
+const rustRootVersion = "0.3.4";
+const cryptoProtoPackageVersion = "0.3.4";
+const typescriptPackageVersion = "0.3.4";
+const kotlinPackageVersion = "0.3.4";
+const kotlinAndroidPackageVersion = "0.3.4";
+const rustCodecVersion = "0.2.1";
+const sdkCodecVersion = "0.2.0";
 const rustSemverBaselineCommit = "5b8928f10777d0ce44561bb966b9425a281a05d7";
 const rustSemverBaselinePath = ".semver-baseline";
 const cargoSemverChecksVersion = "0.49.0";
-const buffaVersion = "0.9.0";
+const buffaVersion = "0.9.1";
 const releaseReadinessCommit = "f27973caf9d3a12847cac4032c361f5f553c97e9";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
 const releaseReadinessCheckoutRequired = [
@@ -129,7 +130,7 @@ const assertZeroizingGeneratedUnknownFieldOwner = (generatedPath, messageName) =
 };
 
 if (releaseVersionEnv !== undefined && !/^[0-9]+[.][0-9]+[.][0-9]+$/.test(releaseVersionEnv)) {
-  fail("RELEASE_VERSION must be an exact semver release such as 0.3.3");
+  fail("RELEASE_VERSION must be an exact semver release such as 0.3.4");
 }
 
 const manifest = readJson("provider_manifest.json");
@@ -295,27 +296,27 @@ const assertCodecDependencyProvenance = () => {
   const registryCodecCargoDependencies = [
     [
       "crates/crypto/dispatch/Cargo.toml",
-      `codec-multikey = { package = "reallyme-codec-multikey", version = "${codecVersion}" }`,
+      `codec-multikey = { package = "reallyme-codec-multikey", version = "${rustCodecVersion}" }`,
     ],
     [
       "crates/p256/Cargo.toml",
-      `codec-pem = { package = "reallyme-codec-pem", version = "${codecVersion}", optional = true }`,
+      `codec-pem = { package = "reallyme-codec-pem", version = "${rustCodecVersion}", optional = true }`,
     ],
     [
       "crates/jwk/Cargo.toml",
-      `codec-base64url = { package = "reallyme-codec-base64url", version = "${codecVersion}" }`,
+      `codec-base64url = { package = "reallyme-codec-base64url", version = "${rustCodecVersion}" }`,
     ],
     [
       "crates/jwk/Cargo.toml",
-      `codec-jcs = { package = "reallyme-codec-jcs", version = "${codecVersion}" }`,
+      `codec-jcs = { package = "reallyme-codec-jcs", version = "${rustCodecVersion}" }`,
     ],
     [
       "crates/jwk-multikey/Cargo.toml",
-      `codec-multikey = { package = "reallyme-codec-multikey", version = "${codecVersion}" }`,
+      `codec-multikey = { package = "reallyme-codec-multikey", version = "${rustCodecVersion}" }`,
     ],
     [
       "crates/jwk-multikey/Cargo.toml",
-      `codec-base64url = { package = "reallyme-codec-base64url", version = "${codecVersion}" }`,
+      `codec-base64url = { package = "reallyme-codec-base64url", version = "${rustCodecVersion}" }`,
     ],
   ];
   for (const [path, dependency] of registryCodecCargoDependencies) {
@@ -324,12 +325,12 @@ const assertCodecDependencyProvenance = () => {
   }
 
   const registryCodecChecksums = new Map([
-    ["reallyme-codec-base64url", "318534e19a178ea727b2e141fde87e892c3b338d4b8a52323b29bd3a5f50cb94"],
-    ["reallyme-codec-jcs", "be98f72844bae8c270002805b7e727782f3903a9b244b81bffbc154582422a92"],
-    ["reallyme-codec-multibase", "060dbf70afe2e22822c726dc38d4efb24654cca7c02b134624a11777cda966f8"],
-    ["reallyme-codec-multicodec", "378589a32bb420707728dc36b693e15aaf34a0baa48cf91f50ec8c15c6b1c6f9"],
-    ["reallyme-codec-multikey", "fdce86dc938b3de36f8fd6f7213dd4127cbeb47018263dbbfdeab78adb60165e"],
-    ["reallyme-codec-pem", "32bcc148863f3d8d9e347f858e1bbf8f9df6154bab85b46da7da850e747f3633"],
+    ["reallyme-codec-base64url", "10608dc06f39c1cae1441056d4489c139db2518a667aed0d2e01382b82b74031"],
+    ["reallyme-codec-jcs", "96d439e3a0eea917ee23f9a1451acf614d0973a68f0218a99ff4fb41cccac046"],
+    ["reallyme-codec-multibase", "8c2a60c5138b822ab91063549149ae6f6b5933e33b98640bca95a34f600c7262"],
+    ["reallyme-codec-multicodec", "57e11460f7bafa9d9bc41a371dba7af674c772914abdb39197d6fdfc73f32bac"],
+    ["reallyme-codec-multikey", "b112d7468ba315e88b01de987dca5914b8a7ac54ec7d8cbffb519cf5c64884fe"],
+    ["reallyme-codec-pem", "92e6a0fcc7608ef608dbec18556127a418a8b791bb1a79d0a63c78435f881734"],
   ]);
   for (const lockPath of ["Cargo.lock", "fuzz/Cargo.lock"]) {
     for (const [packageName, checksum] of registryCodecChecksums) {
@@ -337,10 +338,10 @@ const assertCodecDependencyProvenance = () => {
       requireMatch(
         lockPath,
         new RegExp(
-          `name = "${escapedPackageName}"\\nversion = "${escapeRegExpLiteral(codecVersion)}"\\nsource = "registry\\+https://github\\.com/rust-lang/crates\\.io-index"\\nchecksum = "${checksum}"`,
+          `name = "${escapedPackageName}"\\nversion = "${escapeRegExpLiteral(rustCodecVersion)}"\\nsource = "registry\\+https://github\\.com/rust-lang/crates\\.io-index"\\nchecksum = "${checksum}"`,
           "u",
         ),
-        `checksum-backed crates.io provenance for ${packageName} ${codecVersion}`,
+        `checksum-backed crates.io provenance for ${packageName} ${rustCodecVersion}`,
       );
     }
   }
@@ -349,16 +350,16 @@ const assertCodecDependencyProvenance = () => {
   if (JSON.stringify(tsPackage.dependencies ?? {}).includes("../../../codec")) {
     fail("packages/ts/package.json must not depend on a local codec package path");
   }
-  if ((tsPackage.dependencies ?? {})["@reallyme/codec"] !== codecVersion) {
-    fail(`packages/ts/package.json must depend on published @reallyme/codec ${codecVersion}`);
+  if ((tsPackage.dependencies ?? {})["@reallyme/codec"] !== sdkCodecVersion) {
+    fail(`packages/ts/package.json must depend on published @reallyme/codec ${sdkCodecVersion}`);
   }
 
   assertContains("Package.swift", 'url: "https://github.com/reallyme/codec"');
-  assertContains("Package.swift", `from: "${codecVersion}"`);
-  assertContains("packages/kotlin/build.gradle.kts", `implementation("me.really:codec:${codecVersion}")`);
+  assertContains("Package.swift", `from: "${sdkCodecVersion}"`);
+  assertContains("packages/kotlin/build.gradle.kts", `implementation("me.really:codec:${sdkCodecVersion}")`);
   assertContains(
     "packages/kotlin-android/build.gradle.kts",
-    `implementation("me.really:codec-android:${codecVersion}")`,
+    `implementation("me.really:codec-android:${sdkCodecVersion}")`,
   );
   assertNotContains("packages/kotlin/settings.gradle.kts", "includeBuild");
   assertNotContains("packages/kotlin/settings.gradle.kts", "../../../codec");
@@ -767,8 +768,8 @@ if (
 if (JSON.stringify(tsPackage.dependencies ?? {}).includes("../../../codec")) {
   fail("packages/ts/package.json must not depend on a local codec package path");
 }
-if ((tsPackage.dependencies ?? {})["@reallyme/codec"] !== codecVersion) {
-  fail(`packages/ts/package.json must depend on published @reallyme/codec ${codecVersion}`);
+if ((tsPackage.dependencies ?? {})["@reallyme/codec"] !== sdkCodecVersion) {
+  fail(`packages/ts/package.json must depend on published @reallyme/codec ${sdkCodecVersion}`);
 }
 if ((tsPackage.scripts ?? {}).prepack !== "npm run build") {
   fail("packages/ts/package.json must rebuild dist in prepack");
@@ -793,7 +794,7 @@ assertContains(
 assertNotContains("packages/ts/scripts/build-wasm.mjs", '"wasm-package"');
 assertContains(
   "crates/wasm/Cargo.toml",
-  'crypto-runtime = { package = "reallyme-crypto", version = "=0.3.3", path = "../crypto", default-features = false, features = ["operation-response", "native"',
+  'crypto-runtime = { package = "reallyme-crypto", version = "=0.3.4", path = "../crypto", default-features = false, features = ["operation-response", "native"',
 );
 assertNotContains(
   "crates/wasm/Cargo.toml",
@@ -963,7 +964,7 @@ if (!kotlinBuild.includes(`version = "${kotlinPackageVersion}"`)) {
   fail(`packages/kotlin/build.gradle.kts is not versioned ${kotlinPackageVersion}`);
 }
 assertContains("Package.swift", 'url: "https://github.com/reallyme/codec"');
-assertContains("Package.swift", `from: "${codecVersion}"`);
+assertContains("Package.swift", `from: "${sdkCodecVersion}"`);
 assertContains("Package.swift", 'name: "ReallyMeCryptoFFI"');
 assertContains("Package.swift", "ReallyMeCryptoFFI.xcframework.zip");
 assertContains("Package.swift", 'let ffiArtifactLocalPathOverride = ""');
@@ -1323,7 +1324,7 @@ assertContains(
   "packages/kotlin/src/test/java/me/really/crypto/ReallyMeCryptoJavaTest.java",
   "ReallyMeCrypto.hash",
 );
-assertContains("packages/kotlin/build.gradle.kts", `implementation("me.really:codec:${codecVersion}")`);
+assertContains("packages/kotlin/build.gradle.kts", `implementation("me.really:codec:${sdkCodecVersion}")`);
 assertNotContains("packages/kotlin/settings.gradle.kts", "includeBuild");
 assertNotContains("packages/kotlin/settings.gradle.kts", "../../../codec");
 assertContains(
@@ -1423,7 +1424,10 @@ if (!kotlinAndroidBuild.includes(`version = "${kotlinAndroidPackageVersion}"`)) 
 }
 assertContains("packages/kotlin-android/settings.gradle.kts", 'rootProject.name = "reallyme-crypto-android"');
 assertContains("packages/kotlin-android/build.gradle.kts", 'artifactId = "crypto-android"');
-assertContains("packages/kotlin-android/build.gradle.kts", `implementation("me.really:codec-android:${codecVersion}")`);
+assertContains(
+  "packages/kotlin-android/build.gradle.kts",
+  `implementation("me.really:codec-android:${sdkCodecVersion}")`,
+);
 assertContains("packages/kotlin-android/build.gradle.kts", "patchAndroidModuleCapabilities");
 assertContains("packages/kotlin-android/build.gradle.kts", '"name" to "crypto-android"');
 assertContains("packages/kotlin-android/build.gradle.kts", '"name" to "crypto"');
@@ -1590,7 +1594,7 @@ assertContains(
   "Generic AEAD primitive and dispatch APIs treat `aad` as caller-provided bytes",
 );
 assertContains("RELEASE_NOTES.md", "## 0.3.0");
-assertContains("RELEASE_NOTES.md", "## 0.3.3");
+assertContains("RELEASE_NOTES.md", "## 0.3.4");
 assertContains("RELEASE_NOTES.md", "legacy `reallyme.codec.v1` protobuf/package surface was removed");
 assertContains("RELEASE_NOTES.md", "not a `reallyme.crypto.v1` wire break");
 assertContains("RELEASE_NOTES.md", "permanently retired in this repository");
@@ -2520,7 +2524,7 @@ const repositoryPolicy = {
         dependencies: [
           {
             name: "reallyme-codec-multikey",
-            requirement: `^${codecVersion}`,
+            requirement: `^${rustCodecVersion}`,
             source: "registry",
           },
         ],
@@ -2532,7 +2536,7 @@ const repositoryPolicy = {
         dependencies: [
           {
             name: "reallyme-codec-pem",
-            requirement: `^${codecVersion}`,
+            requirement: `^${rustCodecVersion}`,
             source: "registry",
             optional: true,
           },
@@ -2545,12 +2549,12 @@ const repositoryPolicy = {
         dependencies: [
           {
             name: "reallyme-codec-base64url",
-            requirement: `^${codecVersion}`,
+            requirement: `^${rustCodecVersion}`,
             source: "registry",
           },
           {
             name: "reallyme-codec-jcs",
-            requirement: `^${codecVersion}`,
+            requirement: `^${rustCodecVersion}`,
             source: "registry",
           },
         ],
@@ -2562,12 +2566,12 @@ const repositoryPolicy = {
         dependencies: [
           {
             name: "reallyme-codec-multikey",
-            requirement: `^${codecVersion}`,
+            requirement: `^${rustCodecVersion}`,
             source: "registry",
           },
           {
             name: "reallyme-codec-base64url",
-            requirement: `^${codecVersion}`,
+            requirement: `^${rustCodecVersion}`,
             source: "registry",
           },
         ],
@@ -2949,7 +2953,7 @@ assertContains("scripts/prepare_swift_release_candidate.sh", "build_swift_xcfram
 assertContains("scripts/prepare_swift_release_candidate.sh", "prepare_swift_binary_manifest.mjs");
 assertContains("scripts/prepare_swift_release_candidate.sh", "verify_swift_release_artifact.mjs");
 assertContains("RELEASE_CHECKLIST.md", "retains that exact archive as the release candidate");
-assertContains("docs/release-process.md", "prepare_swift_release_candidate.sh 0.3.3");
+assertContains("docs/release-process.md", "prepare_swift_release_candidate.sh 0.3.4");
 assertContains(
   "packages/kotlin/src/main/kotlin/me/really/crypto/OperationResponse.kt",
   "processOperationResponseNative(request: ByteArray): ByteArray?",
@@ -3081,7 +3085,7 @@ if (swiftReleaseArtifactVerificationCount !== 2) {
 assertContains(".github/workflows/npm-package-preflight.yml", "npm package preflight");
 assertContains(".github/workflows/npm-package-preflight.yml", "npm run pack:check");
 assertContains(".github/workflows/npm-package-release.yml", "npm Package Release");
-assertContains(".github/workflows/npm-package-release.yml", "default: 0.3.3");
+assertContains(".github/workflows/npm-package-release.yml", "default: 0.3.4");
 assertContains(".github/workflows/npm-package-release.yml", "node scripts/run_pinned_release_readiness.mjs --release-packages");
 assertContains(".github/workflows/npm-package-release.yml", "wasm-pack@0.15.0");
 assertContains(".github/workflows/npm-package-release.yml", "wasm-bindgen-cli@0.2.126");

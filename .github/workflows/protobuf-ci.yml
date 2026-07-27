@@ -39,7 +39,7 @@ permissions:
   contents: read
 
 env:
-  BUFFA_VERSION: 0.9.0
+  BUFFA_VERSION: 0.9.1
   BUF_VERSION: 1.71.0
 
 jobs:
@@ -70,6 +70,7 @@ jobs:
         uses: bufbuild/buf-setup-action@a47c93e0b1648d5651a065437926377d060baa99 # v1.50.0
         with:
           version: ${{ env.BUF_VERSION }}
+          github_token: ${{ github.token }}
 
       - name: Install pinned Buffa generators
         run: |
