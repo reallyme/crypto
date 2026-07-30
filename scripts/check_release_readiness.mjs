@@ -45,7 +45,7 @@ const rustSemverBaselineCommit = "5b8928f10777d0ce44561bb966b9425a281a05d7";
 const rustSemverBaselinePath = ".semver-baseline";
 const cargoSemverChecksVersion = "0.49.0";
 const buffaVersion = "0.9.1";
-const releaseReadinessCommit = "f27973caf9d3a12847cac4032c361f5f553c97e9";
+const releaseReadinessCommit = "44065b7488a8d3c77f66f530dff770fb39be9707";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
 const releaseReadinessCheckoutRequired = [
   "repository: reallyme/release-readiness",
@@ -2443,7 +2443,7 @@ const primaryOperationBoundaryPolicy = {
 const repositoryPolicy = {
   generatedFreshnessMode,
   vendoredCore: {
-    contractVersion: 8,
+    contractVersion: 9,
     scriptPath: "scripts/check_release_readiness.mjs",
     corePath: "scripts/release-readiness/core.mjs",
   },
@@ -2599,7 +2599,7 @@ const repositoryPolicy = {
         path: "scripts/run_pinned_release_readiness.mjs",
         required: [
           `const RELEASE_READINESS_COMMIT = "${releaseReadinessCommit}";`,
-          'const RELEASE_READINESS_CORE_SHA256 =\n  "70cc78721738cf352024938e8fc86e73380e71b2cdf7a9a733687543167cbaae";',
+          'const RELEASE_READINESS_CORE_SHA256 =\n  "fcc0b725a85784617568c29f1aa3382a206faaddc3a22012e46f0e35303e4e6d";',
         ],
         forbidden: [
           "RELEASE_READINESS_COMMIT = \"main\"",
