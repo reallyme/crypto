@@ -11,14 +11,14 @@ import java.nio.file.Files
 import java.security.MessageDigest
 
 plugins {
-    kotlin("jvm") version "2.4.0"
+    kotlin("jvm") version "2.4.10"
     `java-library`
     `maven-publish`
     signing
 }
 
 group = "me.really"
-version = "0.3.4"
+version = "0.3.5"
 
 val remoteMavenRepositoryUrl = providers.gradleProperty("reallyme.maven.repositoryUrl")
     .orElse(providers.environmentVariable("REALLYME_MAVEN_REPOSITORY_URL"))
@@ -208,25 +208,25 @@ val writeHostNativeManifest = tasks.register("writeHostNativeManifest") {
 }
 
 dependencies {
-    implementation("com.google.code.gson:gson:2.11.0")
-    api("com.google.protobuf:protobuf-javalite:4.35.1")
-    api("com.google.protobuf:protobuf-kotlin-lite:4.35.1")
+    implementation("com.google.code.gson:gson:2.14.0")
+    api("com.google.protobuf:protobuf-javalite:4.36.1")
+    api("com.google.protobuf:protobuf-kotlin-lite:4.36.1")
     // Same pinned BouncyCastle the Kotlin conformance lane proves vectors
     // against; the SDK and the oracle must not drift apart.
-    implementation("org.bouncycastle:bcprov-jdk18on:1.84")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.85.2")
     // secp256k1 ECDSA and BIP-340 Schnorr are backed by Bitcoin Core
     // libsecp256k1 (the constant-time reference implementation) via ACINQ's
     // JNI bindings. This is the same C library the Swift lane uses through
     // CSecp256k1, so signatures are byte-identical across lanes and no EC
     // scalar math is hand-rolled. The `-jni-jvm` artifact bundles desktop
     // natives; an Android consumer swaps it for `secp256k1-kmp-jni-android`.
-    implementation("fr.acinq.secp256k1:secp256k1-kmp-jvm:0.23.0")
-    implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.23.0")
-    implementation("me.really:codec:0.2.0")
+    implementation("fr.acinq.secp256k1:secp256k1-kmp-jvm:0.24.0")
+    implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.24.0")
+    implementation("me.really:codec:0.2.1")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.14.4")
     testImplementation(kotlin("test"))
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.4")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.14.4")
 }
 
 tasks.test {

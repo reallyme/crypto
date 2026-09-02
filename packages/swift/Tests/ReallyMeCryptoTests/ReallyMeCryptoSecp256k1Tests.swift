@@ -25,7 +25,7 @@ extension ReallyMeCryptoTests {
         XCTAssertEqual(first, second, "RFC 6979 signatures must be deterministic")
         XCTAssertEqual(first.count, ReallyMeSecp256k1.signatureLength)
 
-        // Cross-lane KAT: the same bytes @noble/curves 2.2.0 (TS lane oracle)
+        // Cross-lane KAT: the same bytes @noble/curves 2.4.0 (TS lane oracle)
         // and BouncyCastle (Kotlin lane) produce for this message and key.
         XCTAssertEqual(
             first,

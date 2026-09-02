@@ -309,7 +309,7 @@ fn write_manifest(dir: &Path) -> Result<(), VectorGenError> {
                 ],
                 notes: vec![
                     "Uses JVM JCA/JCE for platform algorithms, including AES-GCM, ChaCha20-Poly1305, HMAC, and SHA-2/SHA-3.",
-                    "Uses Bouncy Castle bcprov-jdk18on 1.84 for secp256k1, ML-DSA, ML-KEM, and SLH-DSA shape/provider conformance.",
+                    "Uses Bouncy Castle bcprov-jdk18on 1.85.2 for secp256k1, ML-DSA, ML-KEM, and SLH-DSA shape/provider conformance.",
                     "The harness command includes --rerun-tasks so an audit run executes tests instead of accepting Gradle's up-to-date cache.",
                 ],
             },

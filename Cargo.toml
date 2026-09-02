@@ -90,12 +90,12 @@ sha1 = "0.11"
 hkdf = "0.13"
 hmac = { version = "0.13", features = ["zeroize"] }
 pbkdf2 = "0.13"
-argon2 = { version = "0.5", default-features = false }
+argon2 = { version = "0.6", default-features = false }
 hpke = { version = "0.14.0", default-features = false }
 # AEAD
 aes = "0.9"
 aes-gcm = { version = "0.11", features = ["zeroize"] }
-aes-gcm-siv = "0.11"
+aes-gcm-siv = "0.12"
 aes-kw = { version = "0.3.1", default-features = false }
 chacha20poly1305 = "0.11"
 # Signatures / key agreement
@@ -116,7 +116,7 @@ ml-kem = "0.3.2"
 slh-dsa = "0.2.0-rc.5"
 # Encoding / serialization
 buffa = "0.9.1"
-base64 = "0.22"
+base64 = "0.23"
 serde = "1.0"
 serde_json = "1.0"
 ryu-js = "1"

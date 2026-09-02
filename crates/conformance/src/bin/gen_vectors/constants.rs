@@ -197,7 +197,7 @@ const ML_KEM_1024_SEED: [u8; 64] = [
     0x41, 0x5d, 0xf2, 0x68, 0x92, 0x33, 0x77, 0x81, 0xe5, 0xc4, 0x28, 0x6a, 0x09, 0x51, 0x6f, 0x2d,
 ];
 const NOBLE_POST_QUANTUM_PACKAGE: &str = "@noble/post-quantum";
-const NOBLE_POST_QUANTUM_VERSION: &str = "0.6.1";
+const NOBLE_POST_QUANTUM_VERSION: &str = "0.7.1";
 
 type KeypairBytes = (Vec<u8>, Vec<u8>);
 type XWingKeypairFn =

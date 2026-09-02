@@ -13,14 +13,14 @@ import java.security.MessageDigest
 import java.util.zip.ZipFile
 
 plugins {
-    id("com.android.library") version "8.13.0"
-    kotlin("android") version "2.4.0"
+    id("com.android.library") version "8.13.2"
+    kotlin("android") version "2.4.10"
     `maven-publish`
     signing
 }
 
 group = "me.really"
-version = "0.3.4"
+version = "0.3.5"
 
 val remoteMavenRepositoryUrl = providers.gradleProperty("reallyme.maven.repositoryUrl")
     .orElse(providers.environmentVariable("REALLYME_MAVEN_REPOSITORY_URL"))
@@ -298,13 +298,13 @@ kotlin {
 }
 
 dependencies {
-    implementation("com.google.code.gson:gson:2.11.0")
-    api("com.google.protobuf:protobuf-javalite:4.35.1")
-    api("com.google.protobuf:protobuf-kotlin-lite:4.35.1")
-    implementation("org.bouncycastle:bcprov-jdk18on:1.84")
-    implementation("fr.acinq.secp256k1:secp256k1-kmp:0.23.0")
-    implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.23.0")
-    implementation("me.really:codec-android:0.2.0")
+    implementation("com.google.code.gson:gson:2.14.0")
+    api("com.google.protobuf:protobuf-javalite:4.36.1")
+    api("com.google.protobuf:protobuf-kotlin-lite:4.36.1")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.85.2")
+    implementation("fr.acinq.secp256k1:secp256k1-kmp:0.24.0")
+    implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.24.0")
+    implementation("me.really:codec-android:0.2.1")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
 }

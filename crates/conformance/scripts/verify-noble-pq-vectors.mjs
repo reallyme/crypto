@@ -104,7 +104,7 @@ async function verifyOracleMetadata() {
     typeof manifest !== "object" ||
     manifest === null ||
     manifest.post_quantum_oracle?.package !== "@noble/post-quantum" ||
-    manifest.post_quantum_oracle.version !== "0.6.1"
+    manifest.post_quantum_oracle.version !== "0.7.1"
   ) {
     throw new VectorVerificationError(ErrorCode.InvalidOracleMetadata, "manifest.json");
   }

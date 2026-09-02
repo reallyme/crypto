@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 plugins {
-    kotlin("jvm") version "2.4.0"
+    kotlin("jvm") version "2.4.10"
 }
 
 group = "me.really"
@@ -15,9 +15,9 @@ kotlin {
 
 dependencies {
     testImplementation(kotlin("test"))
-    testImplementation("org.bouncycastle:bcprov-jdk18on:1.84")
-    testImplementation("fr.acinq.secp256k1:secp256k1-kmp-jvm:0.23.0")
-    testImplementation("fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.23.0")
+    testImplementation("org.bouncycastle:bcprov-jdk18on:1.85.2")
+    testImplementation("fr.acinq.secp256k1:secp256k1-kmp-jvm:0.24.0")
+    testImplementation("fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.24.0")
 }
 
 tasks.test {

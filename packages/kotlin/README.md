@@ -23,7 +23,7 @@ identical output.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.3.4")
+    implementation("me.really:crypto:0.3.5")
 }
 ```
 
@@ -188,9 +188,9 @@ supply-chain event:
 Release and CI workflows run Gradle with strict dependency verification and
 validate all checked-in Gradle wrapper jars before invoking `gradlew`.
 
-The JVM package and Kotlin conformance lane intentionally use Gradle 9.6.1.
+The JVM package and Kotlin conformance lane intentionally use Gradle 9.7.1.
 The Android package remains independently pinned to Gradle 8.14.4 because that
-is the reviewed wrapper line for Android Gradle Plugin 8.13.0. Each lane pins
+is the reviewed wrapper line for Android Gradle Plugin 8.13.2. Each lane pins
 its distribution checksum, validates its wrapper jar, and uses strict
 dependency verification; release readiness rejects unreviewed version or
 checksum drift instead of treating the version difference as an implicit

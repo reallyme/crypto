@@ -18,9 +18,9 @@ use crate::support::{
     read_repo_file, VectorTestError,
 };
 
-const NOBLE_POST_QUANTUM_VERSION: &str = "0.6.1";
+const NOBLE_POST_QUANTUM_VERSION: &str = "0.7.1";
 const NOBLE_POST_QUANTUM_INTEGRITY: &str =
-    "sha512-+pormrDZwjRw05U8ADK4JpHejo87+gBd+muRBB/ozztH5yhDLMDF4jHQWN3NQQAsu1zBNPWTG0ZwVI0CR29H0A==";
+    "sha512-+P9981IiAnVh+rmcubozzVwrEy3XsN/tMhTnvsjV9VDaYpOnNCqWqKo2FLWxbu92YHfjGIlE5XnW175UK+ln+Q==";
 
 #[test]
 fn noble_post_quantum_vector_oracle_is_pinned() -> Result<(), VectorTestError> {
