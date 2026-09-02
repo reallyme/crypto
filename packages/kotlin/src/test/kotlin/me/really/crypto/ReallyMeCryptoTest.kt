@@ -2579,7 +2579,7 @@ class ReallyMeCryptoTest {
         assertContentEquals(first, second, "RFC 6979 signatures must be deterministic")
         assertEquals(ReallyMeSecp256k1.SIGNATURE_LENGTH, first.size)
 
-        // Cross-lane KAT: the same bytes @noble/curves 2.2.0 (TS lane oracle)
+        // Cross-lane KAT: the same bytes @noble/curves 2.4.0 (TS lane oracle)
         // and libsecp256k1 (Swift lane) produce for this message and key.
         assertContentEquals(
             bytes(

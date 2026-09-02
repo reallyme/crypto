@@ -6,6 +6,23 @@ SPDX-License-Identifier: Apache-2.0
 
 # Release Notes
 
+## 0.3.5
+
+- Removes the yanked transitive `chacha20` `0.10.1` release from the reviewed
+  dependency graph by refreshing it to `0.10.2`.
+- Updates the Rust cryptographic and encoding stack, including `argon2` `0.6`,
+  `aes-gcm-siv` `0.12`, and `base64` `0.23`, together with the latest
+  compatible transitive releases.
+- Refreshes the TypeScript and conformance packages to current Buf, Noble,
+  ReallyMe Codec, and TypeScript releases, including the Noble post-quantum
+  `0.7` line.
+- Updates the Swift, Kotlin/JVM, and Android dependency lanes to ReallyMe Codec
+  `0.2.1`, and refreshes Kotlin, Gradle, Android Gradle Plugin, protobuf,
+  Bouncy Castle, secp256k1, Gson, and JUnit within their stable compatible
+  release lines.
+- Stages the Rust crates, npm package, Swift binary package, Kotlin/JVM package,
+  and Android AAR package at version `0.3.5` for coordinated release.
+
 ## 0.3.4
 
 - Refreshes Rust release dependencies for the coordinated `0.3.x` package set,

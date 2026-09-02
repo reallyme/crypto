@@ -37,7 +37,7 @@ formats.
 - SHA3-256
 - SHA3-384
 - SHA3-512
-Post-quantum vectors are cross-checked with `@noble/post-quantum` 0.6.1.
+Post-quantum vectors are cross-checked with `@noble/post-quantum` 0.7.1.
 
 ## Generate
 

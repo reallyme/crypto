@@ -34,13 +34,13 @@ const {
   requireTrackedFiles: true,
 });
 
-const rustRootVersion = "0.3.4";
-const cryptoProtoPackageVersion = "0.3.4";
-const typescriptPackageVersion = "0.3.4";
-const kotlinPackageVersion = "0.3.4";
-const kotlinAndroidPackageVersion = "0.3.4";
+const rustRootVersion = "0.3.5";
+const cryptoProtoPackageVersion = "0.3.5";
+const typescriptPackageVersion = "0.3.5";
+const kotlinPackageVersion = "0.3.5";
+const kotlinAndroidPackageVersion = "0.3.5";
 const rustCodecVersion = "0.2.1";
-const sdkCodecVersion = "0.2.0";
+const sdkCodecVersion = "0.2.1";
 const rustSemverBaselineCommit = "5b8928f10777d0ce44561bb966b9425a281a05d7";
 const rustSemverBaselinePath = ".semver-baseline";
 const cargoSemverChecksVersion = "0.49.0";
@@ -130,7 +130,7 @@ const assertZeroizingGeneratedUnknownFieldOwner = (generatedPath, messageName) =
 };
 
 if (releaseVersionEnv !== undefined && !/^[0-9]+[.][0-9]+[.][0-9]+$/.test(releaseVersionEnv)) {
-  fail("RELEASE_VERSION must be an exact semver release such as 0.3.4");
+  fail("RELEASE_VERSION must be an exact semver release such as 0.3.5");
 }
 
 const manifest = readJson("provider_manifest.json");
@@ -604,10 +604,10 @@ assertContains(
 assertContains("buf.gen.yaml", "out: crates/proto/src/generated/buffa");
 assertNotContains("buf.gen.yaml", "reallyme.crypto.v1.**");
 assertNotContains("buf.gen.yaml", "types:");
-assertContains("buf.gen.yaml", "buf.build/bufbuild/es:v2.12.1");
+assertContains("buf.gen.yaml", "buf.build/bufbuild/es:v2.14.1");
 assertContains("buf.gen.yaml", "buf.build/apple/swift:v1.38.1");
-assertContains("buf.gen.yaml", "buf.build/protocolbuffers/java:v35.1");
-assertContains("buf.gen.yaml", "buf.build/protocolbuffers/kotlin:v35.1");
+assertContains("buf.gen.yaml", "buf.build/protocolbuffers/java:v36.1");
+assertContains("buf.gen.yaml", "buf.build/protocolbuffers/kotlin:v36.1");
 assertContains("crates/proto/src/generated/buffa/mod.rs", "pub mod crypto");
 assertProtoContract("crates/proto/proto/reallyme/crypto/v1/crypto.proto");
 if (readdirSync("crates/crypto/src").includes("proto_process.rs")) {
@@ -794,7 +794,7 @@ assertContains(
 assertNotContains("packages/ts/scripts/build-wasm.mjs", '"wasm-package"');
 assertContains(
   "crates/wasm/Cargo.toml",
-  'crypto-runtime = { package = "reallyme-crypto", version = "=0.3.4", path = "../crypto", default-features = false, features = ["operation-response", "native"',
+  'crypto-runtime = { package = "reallyme-crypto", version = "=0.3.5", path = "../crypto", default-features = false, features = ["operation-response", "native"',
 );
 assertNotContains(
   "crates/wasm/Cargo.toml",
@@ -826,7 +826,7 @@ assertContains(
 );
 assertContains("packages/ts/scripts/check-pack.mjs", "package/LICENSE");
 assertContains("packages/ts/scripts/build-wasm.mjs", "const REQUIRED_WASM_PACK_VERSION = [0, 15, 0]");
-assertContains("packages/ts/scripts/build-wasm.mjs", "const REQUIRED_WASM_BINDGEN_VERSION = [0, 2, 126]");
+assertContains("packages/ts/scripts/build-wasm.mjs", "const REQUIRED_WASM_BINDGEN_VERSION = [0, 2, 127]");
 assertContains("packages/ts/scripts/build-wasm.mjs", '"--release"');
 assertContains("packages/ts/scripts/build-wasm.mjs", "versionText(wasmPackVersion) !== versionText(REQUIRED_WASM_PACK_VERSION)");
 assertContains("packages/ts/scripts/build-wasm.mjs", "versionText(wasmBindgenVersion) !== versionText(REQUIRED_WASM_BINDGEN_VERSION)");
@@ -1208,11 +1208,11 @@ assertContains(
 );
 assertContains(
   "packages/kotlin/gradle/wrapper/gradle-wrapper.properties",
-  "distributionSha256Sum=9c0f7faeeb306cb14e4279a3e084ca6b596894089a0638e68a07c945a32c9e14",
+  "distributionSha256Sum=acd53f1edaf02f1a8ff99879f8a34b302661a057d9b063ae9e35b552f804d20a",
 );
 assertContains(
   "crates/conformance/platform/kotlin/gradle/wrapper/gradle-wrapper.properties",
-  "distributionSha256Sum=9c0f7faeeb306cb14e4279a3e084ca6b596894089a0638e68a07c945a32c9e14",
+  "distributionSha256Sum=acd53f1edaf02f1a8ff99879f8a34b302661a057d9b063ae9e35b552f804d20a",
 );
 assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/CryptoFacade.kt", "@JvmStatic");
 assertContains(
@@ -1405,17 +1405,17 @@ for (const metadataPath of [
 }
 assertContains(
   "docs/maven-provenance.md",
-  "d05881f156df4b84a1d08ae074c9bd64a179d405b015f4d676fc8e8d9921b65f",
+  "485ce03b61be0eca66f3c481392b6b4b234c47a306af356e342e627007c536e0",
 );
 assertContains(
   "docs/maven-provenance.md",
-  "0cbd62443dc06a775b378c86556c29f87f5e4a6da05575903300cb66e174cba0",
+  "dafac20329ab1e5e0b9805f3acb8727bc5e08ff93222a146762f76ab4fbd4dc6",
 );
 assertContains(
   "docs/maven-provenance.md",
-  "142c9175ab012f8f715bbf5972117ea2cd867524",
+  "c584eef1e7fa829ac9c845bffb5fadb19fa1b9e3",
 );
-assertContains("packages/kotlin/README.md", "intentionally use Gradle 9.6.1");
+assertContains("packages/kotlin/README.md", "intentionally use Gradle 9.7.1");
 assertContains("packages/kotlin/README.md", "independently pinned to Gradle 8.14.4");
 
 const kotlinAndroidBuild = readText("packages/kotlin-android/build.gradle.kts");
@@ -1594,7 +1594,7 @@ assertContains(
   "Generic AEAD primitive and dispatch APIs treat `aad` as caller-provided bytes",
 );
 assertContains("RELEASE_NOTES.md", "## 0.3.0");
-assertContains("RELEASE_NOTES.md", "## 0.3.4");
+assertContains("RELEASE_NOTES.md", "## 0.3.5");
 assertContains("RELEASE_NOTES.md", "legacy `reallyme.codec.v1` protobuf/package surface was removed");
 assertContains("RELEASE_NOTES.md", "not a `reallyme.crypto.v1` wire break");
 assertContains("RELEASE_NOTES.md", "permanently retired in this repository");
@@ -2145,7 +2145,7 @@ assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/proto/ProtoAdap
 assertContains("buf.yaml", "modules:");
 assertContains("buf.yaml", "- path: crates/proto/proto");
 assertContains(".github/workflows/protobuf-ci.yml", `BUFFA_VERSION: ${buffaVersion}`);
-assertContains(".github/workflows/protobuf-ci.yml", "BUF_VERSION: 1.71.0");
+assertContains(".github/workflows/protobuf-ci.yml", "BUF_VERSION: 1.72.0");
 assertContains(".github/workflows/protobuf-ci.yml", "scripts/release-readiness/core.mjs");
 assertContains(".github/workflows/protobuf-ci.yml", "scripts/run_pinned_release_readiness.mjs");
 assertNotContains(".github/workflows/protobuf-ci.yml", "buf breaking");
@@ -2160,6 +2160,7 @@ assertContains(
 assertContains("scripts/release-readiness/core.mjs", "assertReallyMeProtobufReleasePolicy");
 const protobufReleasePolicy = {
   workflowMode: "delegated",
+  bufVersion: "1.72.0",
   buffaVersion,
   generatedFreshnessStepRun:
     `${releaseReadinessCommand} --generated-freshness`,
@@ -2953,7 +2954,7 @@ assertContains("scripts/prepare_swift_release_candidate.sh", "build_swift_xcfram
 assertContains("scripts/prepare_swift_release_candidate.sh", "prepare_swift_binary_manifest.mjs");
 assertContains("scripts/prepare_swift_release_candidate.sh", "verify_swift_release_artifact.mjs");
 assertContains("RELEASE_CHECKLIST.md", "retains that exact archive as the release candidate");
-assertContains("docs/release-process.md", "prepare_swift_release_candidate.sh 0.3.4");
+assertContains("docs/release-process.md", "prepare_swift_release_candidate.sh 0.3.5");
 assertContains(
   "packages/kotlin/src/main/kotlin/me/really/crypto/OperationResponse.kt",
   "processOperationResponseNative(request: ByteArray): ByteArray?",
@@ -3085,10 +3086,10 @@ if (swiftReleaseArtifactVerificationCount !== 2) {
 assertContains(".github/workflows/npm-package-preflight.yml", "npm package preflight");
 assertContains(".github/workflows/npm-package-preflight.yml", "npm run pack:check");
 assertContains(".github/workflows/npm-package-release.yml", "npm Package Release");
-assertContains(".github/workflows/npm-package-release.yml", "default: 0.3.4");
+assertContains(".github/workflows/npm-package-release.yml", "default: 0.3.5");
 assertContains(".github/workflows/npm-package-release.yml", "node scripts/run_pinned_release_readiness.mjs --release-packages");
 assertContains(".github/workflows/npm-package-release.yml", "wasm-pack@0.15.0");
-assertContains(".github/workflows/npm-package-release.yml", "wasm-bindgen-cli@0.2.126");
+assertContains(".github/workflows/npm-package-release.yml", "wasm-bindgen-cli@0.2.127");
 assertContains(".github/workflows/npm-package-release.yml", "npm test");
 assertContains(".github/workflows/npm-package-release.yml", "npm run pack:check");
 assertContains(".github/workflows/npm-package-release.yml", "npm pack --ignore-scripts");

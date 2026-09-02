@@ -608,7 +608,7 @@ class VectorConformanceTest {
             lane.requiredStringArray("algorithms"),
         )
         val notes = lane.requiredStringArray("notes").joinToString(separator = "\n")
-        assertContains(notes, "Bouncy Castle bcprov-jdk18on 1.84")
+        assertContains(notes, "Bouncy Castle bcprov-jdk18on 1.85.2")
         assertContains(notes, "--rerun-tasks")
     }
 

@@ -40,7 +40,7 @@ permissions:
 
 env:
   BUFFA_VERSION: 0.9.1
-  BUF_VERSION: 1.71.0
+  BUF_VERSION: 1.72.0
 
 jobs:
   protobuf:
