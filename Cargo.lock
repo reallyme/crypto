@@ -343,7 +343,7 @@ dependencies = [
 
 [[package]]
 name = "crypto-conformance-vectors"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "base64 0.23.1",
  "buffa",
@@ -399,7 +399,7 @@ dependencies = [
 
 [[package]]
 name = "crypto-ffi"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "base64 0.23.1",
  "buffa",
@@ -1240,19 +1240,19 @@ checksum = "63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69"
 
 [[package]]
 name = "reallyme-codec-base64url"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "10608dc06f39c1cae1441056d4489c139db2518a667aed0d2e01382b82b74031"
+checksum = "bb74b4024974a42b57af7e6adaac4de29064c418aabd1f6a4340e036159008ef"
 dependencies = [
- "base64 0.22.1",
+ "base64 0.23.1",
  "thiserror",
 ]
 
 [[package]]
 name = "reallyme-codec-jcs"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "96d439e3a0eea917ee23f9a1451acf614d0973a68f0218a99ff4fb41cccac046"
+checksum = "ffd1f9596d04571fb7770a68ea9b34c73a37a785fb040dbd76bf607d2a9b5c17"
 dependencies = [
  "itoa",
  "ryu-js",
@@ -1264,11 +1264,11 @@ dependencies = [
 
 [[package]]
 name = "reallyme-codec-multibase"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c2a60c5138b822ab91063549149ae6f6b5933e33b98640bca95a34f600c7262"
+checksum = "052ad33dd79323e26feefdc931b5592bacef1a5bff5fd44102a2b1b2aac8414f"
 dependencies = [
- "base64 0.22.1",
+ "base64 0.23.1",
  "bs58",
  "reallyme-codec-base64url",
  "thiserror",
@@ -1277,15 +1277,15 @@ dependencies = [
 
 [[package]]
 name = "reallyme-codec-multicodec"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57e11460f7bafa9d9bc41a371dba7af674c772914abdb39197d6fdfc73f32bac"
+checksum = "1fcc8c9eaf92b3ea70e1410cccf7ad3afeb047a2e72c4a5a314194f7d25b1c9e"
 
 [[package]]
 name = "reallyme-codec-multikey"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b112d7468ba315e88b01de987dca5914b8a7ac54ec7d8cbffb519cf5c64884fe"
+checksum = "4e2f9a1fbbfb554dec213a45bea13a4698c943bfc62ded87e10ba5fa9f9fd770"
 dependencies = [
  "reallyme-codec-multibase",
  "reallyme-codec-multicodec",
@@ -1294,18 +1294,18 @@ dependencies = [
 
 [[package]]
 name = "reallyme-codec-pem"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92e6a0fcc7608ef608dbec18556127a418a8b791bb1a79d0a63c78435f881734"
+checksum = "5562771b670dce08f659d1c391bb78f7e46a5d6ad5a2dd551161e93bdb38e663"
 dependencies = [
- "base64 0.22.1",
+ "base64 0.23.1",
  "thiserror",
  "zeroize",
 ]
 
 [[package]]
 name = "reallyme-crypto"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "base64 0.23.1",
  "buffa",
@@ -1355,7 +1355,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-aes-kw"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "aes-kw",
  "hex-literal",
@@ -1365,7 +1365,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-aes256-gcm"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "aes",
  "aes-gcm",
@@ -1377,7 +1377,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-aes256-gcm-siv"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "aes",
  "aes-gcm-siv",
@@ -1389,7 +1389,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-argon2id"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "argon2",
  "getrandom 0.2.17",
@@ -1401,7 +1401,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-chacha20-poly1305"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "chacha20poly1305",
  "getrandom 0.4.3",
@@ -1411,7 +1411,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-concat-kdf"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "reallyme-crypto-core",
  "sha2",
@@ -1420,7 +1420,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-constant-time"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "reallyme-crypto-core",
  "subtle",
@@ -1428,14 +1428,14 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-core"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "thiserror",
 ]
 
 [[package]]
 name = "reallyme-crypto-csprng"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "getrandom 0.4.3",
  "reallyme-crypto-core",
@@ -1446,7 +1446,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-dispatch"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "hex",
  "reallyme-codec-multikey",
@@ -1471,7 +1471,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-ed25519"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "ed25519-dalek",
  "hex",
@@ -1483,7 +1483,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-hkdf"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "getrandom 0.4.3",
  "hex-literal",
@@ -1496,7 +1496,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-hmac"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "hex-literal",
  "hmac",
@@ -1508,7 +1508,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-hpke"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "aes-gcm",
  "chacha20poly1305",
@@ -1532,7 +1532,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-jwk"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "reallyme-codec-base64url",
  "reallyme-codec-jcs",
@@ -1545,7 +1545,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-jwk-multikey"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "reallyme-codec-base64url",
  "reallyme-codec-multikey",
@@ -1557,7 +1557,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-kmac"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "reallyme-crypto-core",
  "sha3 0.10.9",
@@ -1567,7 +1567,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-ml-dsa-44"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "getrandom 0.4.3",
  "ml-dsa",
@@ -1577,7 +1577,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-ml-dsa-65"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "getrandom 0.4.3",
  "ml-dsa",
@@ -1587,7 +1587,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-ml-dsa-87"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "getrandom 0.4.3",
  "ml-dsa",
@@ -1597,7 +1597,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-ml-kem-1024"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "getrandom 0.4.3",
  "ml-kem",
@@ -1607,7 +1607,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-ml-kem-512"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "getrandom 0.4.3",
  "ml-kem",
@@ -1617,7 +1617,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-ml-kem-768"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "getrandom 0.4.3",
  "ml-kem",
@@ -1627,7 +1627,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-p256"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "ecdsa",
  "getrandom 0.4.3",
@@ -1642,7 +1642,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-p384"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "ecdsa",
  "getrandom 0.4.3",
@@ -1654,7 +1654,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-p521"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "ecdsa",
  "getrandom 0.4.3",
@@ -1666,7 +1666,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-pbkdf2"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "hex-literal",
  "pbkdf2",
@@ -1677,7 +1677,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-proto"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "buffa",
  "reallyme-crypto-core",
@@ -1689,7 +1689,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-rsa"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "base64 0.23.1",
  "const-oid",
@@ -1704,7 +1704,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-secp256k1"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "ecdsa",
  "getrandom 0.4.3",
@@ -1719,7 +1719,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-sha2"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "hex",
  "sha2",
@@ -1728,7 +1728,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-sha2-256"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "getrandom 0.4.3",
  "hex",
@@ -1738,7 +1738,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-sha3"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "hex",
  "sha3 0.12.0",
@@ -1748,7 +1748,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-sha3-256"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "getrandom 0.4.3",
  "hex",
@@ -1758,7 +1758,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-signer"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "reallyme-crypto-core",
  "reallyme-crypto-dispatch",
@@ -1769,7 +1769,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-slh-dsa"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "reallyme-crypto-core",
  "reallyme-crypto-csprng",
@@ -1779,7 +1779,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-wasm"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "getrandom 0.2.17",
  "js-sys",
@@ -1803,7 +1803,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-x-wing"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "getrandom 0.4.3",
  "ml-kem",
@@ -1816,7 +1816,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-x25519"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "getrandom 0.4.3",
  "hex",
@@ -1828,7 +1828,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-crypto-x448"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "getrandom 0.4.3",
  "hex",

@@ -211,7 +211,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
-      # ReallyMe Codec 0.2.1 requires Swift tools 6.3. Pin the runner's newest
+      # ReallyMe Codec 0.2.2 requires Swift tools 6.3. Pin the runner's newest
       # stable Xcode so SwiftPM validates that manifest before compiling tests.
       - name: Select Xcode 26.6
         run: |

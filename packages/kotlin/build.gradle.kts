@@ -18,7 +18,7 @@ plugins {
 }
 
 group = "me.really"
-version = "0.3.5"
+version = "0.3.6"
 
 val remoteMavenRepositoryUrl = providers.gradleProperty("reallyme.maven.repositoryUrl")
     .orElse(providers.environmentVariable("REALLYME_MAVEN_REPOSITORY_URL"))
@@ -222,7 +222,7 @@ dependencies {
     // natives; an Android consumer swaps it for `secp256k1-kmp-jni-android`.
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jvm:0.24.0")
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.24.0")
-    implementation("me.really:codec:0.2.1")
+    implementation("me.really:codec:0.2.2")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.14.4")
     testImplementation(kotlin("test"))

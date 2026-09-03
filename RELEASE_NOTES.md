@@ -6,6 +6,15 @@ SPDX-License-Identifier: Apache-2.0
 
 # Release Notes
 
+## 0.3.6
+
+- Updates ReallyMe Codec to `0.2.2` across Rust, Swift, TypeScript, Kotlin/JVM,
+  and Android, including refreshed registry locks and artifact verification
+  metadata.
+- Replaces the deprecated `bufbuild/buf-setup-action` with the SHA-pinned
+  `bufbuild/buf-action` `v1.5.0` in setup-only mode. Buf CLI remains on the
+  current `1.72.0` release and Buffa remains on the current `0.9.1` release.
+
 ## 0.3.5
 
 - Removes the yanked transitive `chacha20` `0.10.1` release from the reviewed

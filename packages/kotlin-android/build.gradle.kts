@@ -20,7 +20,7 @@ plugins {
 }
 
 group = "me.really"
-version = "0.3.5"
+version = "0.3.6"
 
 val remoteMavenRepositoryUrl = providers.gradleProperty("reallyme.maven.repositoryUrl")
     .orElse(providers.environmentVariable("REALLYME_MAVEN_REPOSITORY_URL"))
@@ -304,7 +304,7 @@ dependencies {
     implementation("org.bouncycastle:bcprov-jdk18on:1.85.2")
     implementation("fr.acinq.secp256k1:secp256k1-kmp:0.24.0")
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.24.0")
-    implementation("me.really:codec-android:0.2.1")
+    implementation("me.really:codec-android:0.2.2")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
 }
