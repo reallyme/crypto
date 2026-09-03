@@ -332,12 +332,12 @@ fn hex(input: &str) -> Vec<u8> {
         input.len().is_multiple_of(2),
         "hex fixture has complete bytes"
     );
-    input
-        .as_bytes()
-        .chunks_exact(2)
-        .map(|chunk| {
-            let pair = core::str::from_utf8(chunk).expect("hex fixture is UTF-8");
-            u8::from_str_radix(pair, 16).expect("hex fixture is valid")
-        })
-        .collect()
+    let bytes = input.as_bytes();
+    let mut output = Vec::with_capacity(input.len() / 2);
+    for offset in (0..bytes.len()).step_by(2) {
+        let end = offset.checked_add(2).expect("hex fixture offset is valid");
+        let pair = core::str::from_utf8(&bytes[offset..end]).expect("hex fixture is UTF-8");
+        output.push(u8::from_str_radix(pair, 16).expect("hex fixture is valid"));
+    }
+    output
 }
