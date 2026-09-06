@@ -67,6 +67,7 @@ impl ::core::ops::Drop for __ReallyMeZeroizingUnknownFields {
 ///   100-199: primitive operations and validation
 ///   200-299: provider selection and availability
 ///   300-399: backend dispatch and internal failures
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum CryptoErrorReason {
@@ -769,6 +770,7 @@ impl ::buffa::Enumeration for CryptoErrorReason {
 }
 /// CryptoAlgorithmFamily classifies an algorithm identifier without implying
 /// that the identifier is valid for a specific operation.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum CryptoAlgorithmFamily {
@@ -1008,6 +1010,7 @@ impl ::buffa::Enumeration for CryptoAlgorithmFamily {
 ///
 /// RSA values identify verification suites; RSA signing is intentionally not
 /// exposed by this package today.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum SignatureAlgorithm {
@@ -1408,6 +1411,7 @@ impl ::buffa::Enumeration for SignatureAlgorithm {
 /// Values 100-199 are Montgomery-form curves and 200-299 are NIST prime
 /// curves. Callers must still feed derived shared secrets through a protocol
 /// KDF.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum KeyAgreementAlgorithm {
@@ -1592,6 +1596,7 @@ impl ::buffa::Enumeration for KeyAgreementAlgorithm {
 /// KemAlgorithm identifies encapsulation suites. X-Wing values are supported
 /// hybrid KEM variants over X25519 and ML-KEM. Values 1000-1099 are
 /// post-quantum KEMs and 1100-1199 are hybrid KEMs.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum KemAlgorithm {
@@ -1758,6 +1763,7 @@ impl ::buffa::Enumeration for KemAlgorithm {
 /// draft values are append-only wire values even while their defining drafts
 /// continue to evolve. Runtime provider policy separately determines whether a
 /// registered identifier is executable in a given build.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum HpkeKemId {
@@ -2103,6 +2109,7 @@ impl ::buffa::Enumeration for HpkeKemId {
     }
 }
 /// HpkeKdfId carries the two-byte HPKE KDF registry identifier.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum HpkeKdfId {
@@ -2296,6 +2303,7 @@ impl ::buffa::Enumeration for HpkeKdfId {
     }
 }
 /// HpkeAeadId carries the two-byte HPKE AEAD registry identifier.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum HpkeAeadId {
@@ -2460,6 +2468,7 @@ impl ::buffa::Enumeration for HpkeAeadId {
 }
 /// AeadAlgorithm identifies authenticated-encryption suites. Values 100-199 are
 /// AES-based suites and 200-299 are ChaCha-based suites.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum AeadAlgorithm {
@@ -2650,6 +2659,7 @@ impl ::buffa::Enumeration for AeadAlgorithm {
 }
 /// HashAlgorithm identifies digest algorithms exposed by the hash primitives.
 /// Values 100-199 are SHA-2 and 200-299 are SHA-3.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum HashAlgorithm {
@@ -2844,6 +2854,7 @@ impl ::buffa::Enumeration for HashAlgorithm {
 }
 /// MacAlgorithm identifies message-authentication-code suites. Values 100-199
 /// are HMAC suites over SHA-2.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum MacAlgorithm {
@@ -3005,6 +3016,7 @@ impl ::buffa::Enumeration for MacAlgorithm {
 ///   300-399: password-record KDFs
 ///   400-499: concatenation KDFs
 ///   500-599: XOF/MAC-based KDFs
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum KdfAlgorithm {
@@ -3208,6 +3220,7 @@ impl ::buffa::Enumeration for KdfAlgorithm {
 /// Argon2idKdfVersion selects one immutable, reviewed resource-cost profile.
 /// Numeric versions are stable API values shared by the direct SDK and
 /// generated operation boundaries.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum Argon2idKdfVersion {
@@ -3354,6 +3367,7 @@ impl ::buffa::Enumeration for Argon2idKdfVersion {
 }
 /// KeyWrapAlgorithm identifies key-wrapping algorithms. Values 100-199 are
 /// AES-based key-wrapping suites.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum KeyWrapAlgorithm {
@@ -3511,6 +3525,7 @@ impl ::buffa::Enumeration for KeyWrapAlgorithm {
 /// MulticodecKeyAlgorithm identifies table-backed key codecs that ReallyMe
 /// recognizes. These are codec identifiers, not permission to expose private key
 /// material in protobuf payloads.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum MulticodecKeyAlgorithm {
@@ -4026,6 +4041,7 @@ impl ::buffa::Enumeration for MulticodecKeyAlgorithm {
 }
 /// RsaPublicKeyDerEncoding identifies the accepted DER wrapper for RSA public
 /// keys at verification boundaries.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum RsaPublicKeyDerEncoding {
@@ -4184,6 +4200,7 @@ impl ::buffa::Enumeration for RsaPublicKeyDerEncoding {
 /// PlatformKeyProvider identifies the platform owner of a non-exportable key.
 /// Hardware residency is represented by security level, not by inventing a
 /// separate cryptographic algorithm value.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum PlatformKeyProvider {
@@ -4346,6 +4363,7 @@ impl ::buffa::Enumeration for PlatformKeyProvider {
 /// PlatformKeySecurityLevel records requested and actual key residency. Actual
 /// residency must be reported by the provider after generation or lookup; a
 /// requested value is not evidence by itself.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum PlatformKeySecurityLevel {
@@ -4543,6 +4561,7 @@ impl ::buffa::Enumeration for PlatformKeySecurityLevel {
         ]
     }
 }
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum PlatformKeyPurpose {
@@ -4691,6 +4710,7 @@ impl ::buffa::Enumeration for PlatformKeyPurpose {
         ]
     }
 }
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum AppleSecureEnclaveAccessPolicy {
@@ -4916,6 +4936,7 @@ impl ::buffa::Enumeration for AppleSecureEnclaveAccessPolicy {
         ]
     }
 }
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum AppleKeychainAccessibility {
@@ -5087,6 +5108,7 @@ impl ::buffa::Enumeration for AppleKeychainAccessibility {
 }
 /// CryptoVerificationStatus avoids using a bare bool in protocol results where
 /// "unset" and "false" need to remain distinguishable.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum CryptoVerificationStatus {
@@ -5260,6 +5282,7 @@ impl ::buffa::Enumeration for CryptoVerificationStatus {
 }
 /// CryptoProviderSupportStatus mirrors the release provider matrix at a stable
 /// wire boundary without exposing backend exception text or dynamic logs.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum CryptoProviderSupportStatus {
@@ -5671,18 +5694,21 @@ impl ::buffa::ExtensionSet for CryptoError {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for CryptoError {
-    fn deserialize<D: serde::Deserializer<'de>>(
+impl<'de> ::serde::Deserialize<'de> for CryptoError {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
-        impl<'de> serde::de::Visitor<'de> for _V {
+        impl<'de> ::serde::de::Visitor<'de> for _V {
             type Value = CryptoError;
-            fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
                 f.write_str("struct CryptoError")
             }
             #[allow(clippy::field_reassign_with_default)]
-            fn visit_map<A: serde::de::MapAccess<'de>>(
+            fn visit_map<A: ::serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
             ) -> ::core::result::Result<CryptoError, A::Error> {
@@ -5703,7 +5729,7 @@ impl<'de> serde::Deserialize<'de> for CryptoError {
                             if let Some(v) = v {
                                 if __oneof_error.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'error'",
                                         ),
                                     );
@@ -5727,7 +5753,7 @@ impl<'de> serde::Deserialize<'de> for CryptoError {
                             if let Some(v) = v {
                                 if __oneof_error.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'error'",
                                         ),
                                     );
@@ -5751,7 +5777,7 @@ impl<'de> serde::Deserialize<'de> for CryptoError {
                             if let Some(v) = v {
                                 if __oneof_error.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'error'",
                                         ),
                                     );
@@ -7612,18 +7638,21 @@ impl ::buffa::ExtensionSet for CryptoOperationRequest {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
-    fn deserialize<D: serde::Deserializer<'de>>(
+impl<'de> ::serde::Deserialize<'de> for CryptoOperationRequest {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
-        impl<'de> serde::de::Visitor<'de> for _V {
+        impl<'de> ::serde::de::Visitor<'de> for _V {
             type Value = CryptoOperationRequest;
-            fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
                 f.write_str("struct CryptoOperationRequest")
             }
             #[allow(clippy::field_reassign_with_default)]
-            fn visit_map<A: serde::de::MapAccess<'de>>(
+            fn visit_map<A: ::serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
             ) -> ::core::result::Result<CryptoOperationRequest, A::Error> {
@@ -7644,7 +7673,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -7668,7 +7697,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -7692,7 +7721,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -7718,7 +7747,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -7742,7 +7771,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -7768,7 +7797,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -7794,7 +7823,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -7818,7 +7847,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -7844,7 +7873,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -7870,7 +7899,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -7894,7 +7923,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -7921,7 +7950,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -7948,7 +7977,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -7974,7 +8003,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -7998,7 +8027,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8022,7 +8051,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8048,7 +8077,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8072,7 +8101,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8096,7 +8125,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8122,7 +8151,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8146,7 +8175,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8170,7 +8199,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8194,7 +8223,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8218,7 +8247,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8242,7 +8271,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8266,7 +8295,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8292,7 +8321,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8318,7 +8347,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8344,7 +8373,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8370,7 +8399,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8394,7 +8423,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8418,7 +8447,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -8648,18 +8677,21 @@ impl ::buffa::ExtensionSet for CryptoOperationResponse {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for CryptoOperationResponse {
-    fn deserialize<D: serde::Deserializer<'de>>(
+impl<'de> ::serde::Deserialize<'de> for CryptoOperationResponse {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
-        impl<'de> serde::de::Visitor<'de> for _V {
+        impl<'de> ::serde::de::Visitor<'de> for _V {
             type Value = CryptoOperationResponse;
-            fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
                 f.write_str("struct CryptoOperationResponse")
             }
             #[allow(clippy::field_reassign_with_default)]
-            fn visit_map<A: serde::de::MapAccess<'de>>(
+            fn visit_map<A: ::serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
             ) -> ::core::result::Result<CryptoOperationResponse, A::Error> {
@@ -8680,7 +8712,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -8704,7 +8736,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -10115,18 +10147,21 @@ impl ::buffa::ExtensionSet for CryptoOperationResult {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
-    fn deserialize<D: serde::Deserializer<'de>>(
+impl<'de> ::serde::Deserialize<'de> for CryptoOperationResult {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
-        impl<'de> serde::de::Visitor<'de> for _V {
+        impl<'de> ::serde::de::Visitor<'de> for _V {
             type Value = CryptoOperationResult;
-            fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
                 f.write_str("struct CryptoOperationResult")
             }
             #[allow(clippy::field_reassign_with_default)]
-            fn visit_map<A: serde::de::MapAccess<'de>>(
+            fn visit_map<A: ::serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
             ) -> ::core::result::Result<CryptoOperationResult, A::Error> {
@@ -10147,7 +10182,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10171,7 +10206,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10195,7 +10230,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10219,7 +10254,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10243,7 +10278,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10267,7 +10302,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10291,7 +10326,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10315,7 +10350,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10339,7 +10374,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10363,7 +10398,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10387,7 +10422,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10414,7 +10449,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10439,7 +10474,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10463,7 +10498,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10487,7 +10522,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10511,7 +10546,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10535,7 +10570,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10559,7 +10594,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10583,7 +10618,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10609,7 +10644,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10633,7 +10668,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10657,7 +10692,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10681,7 +10716,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10705,7 +10740,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10729,7 +10764,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10753,7 +10788,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10777,7 +10812,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10801,7 +10836,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10827,7 +10862,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10853,7 +10888,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10877,7 +10912,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -10901,7 +10936,7 @@ impl<'de> serde::Deserialize<'de> for CryptoOperationResult {
                             if let Some(v) = v {
                                 if __oneof_result.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'result'",
                                         ),
                                     );
@@ -11444,18 +11479,21 @@ impl ::buffa::ExtensionSet for CryptoAlgorithmIdentifier {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for CryptoAlgorithmIdentifier {
-    fn deserialize<D: serde::Deserializer<'de>>(
+impl<'de> ::serde::Deserialize<'de> for CryptoAlgorithmIdentifier {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
-        impl<'de> serde::de::Visitor<'de> for _V {
+        impl<'de> ::serde::de::Visitor<'de> for _V {
             type Value = CryptoAlgorithmIdentifier;
-            fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
                 f.write_str("struct CryptoAlgorithmIdentifier")
             }
             #[allow(clippy::field_reassign_with_default)]
-            fn visit_map<A: serde::de::MapAccess<'de>>(
+            fn visit_map<A: ::serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
             ) -> ::core::result::Result<CryptoAlgorithmIdentifier, A::Error> {
@@ -11478,7 +11516,7 @@ impl<'de> serde::Deserialize<'de> for CryptoAlgorithmIdentifier {
                             if let Some(v) = v {
                                 if __oneof_algorithm.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'algorithm'",
                                         ),
                                     );
@@ -11504,7 +11542,7 @@ impl<'de> serde::Deserialize<'de> for CryptoAlgorithmIdentifier {
                             if let Some(v) = v {
                                 if __oneof_algorithm.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'algorithm'",
                                         ),
                                     );
@@ -11530,7 +11568,7 @@ impl<'de> serde::Deserialize<'de> for CryptoAlgorithmIdentifier {
                             if let Some(v) = v {
                                 if __oneof_algorithm.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'algorithm'",
                                         ),
                                     );
@@ -11556,7 +11594,7 @@ impl<'de> serde::Deserialize<'de> for CryptoAlgorithmIdentifier {
                             if let Some(v) = v {
                                 if __oneof_algorithm.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'algorithm'",
                                         ),
                                     );
@@ -11582,7 +11620,7 @@ impl<'de> serde::Deserialize<'de> for CryptoAlgorithmIdentifier {
                             if let Some(v) = v {
                                 if __oneof_algorithm.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'algorithm'",
                                         ),
                                     );
@@ -11608,7 +11646,7 @@ impl<'de> serde::Deserialize<'de> for CryptoAlgorithmIdentifier {
                             if let Some(v) = v {
                                 if __oneof_algorithm.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'algorithm'",
                                         ),
                                     );
@@ -11634,7 +11672,7 @@ impl<'de> serde::Deserialize<'de> for CryptoAlgorithmIdentifier {
                             if let Some(v) = v {
                                 if __oneof_algorithm.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'algorithm'",
                                         ),
                                     );
@@ -11660,7 +11698,7 @@ impl<'de> serde::Deserialize<'de> for CryptoAlgorithmIdentifier {
                             if let Some(v) = v {
                                 if __oneof_algorithm.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'algorithm'",
                                         ),
                                     );
@@ -11686,7 +11724,7 @@ impl<'de> serde::Deserialize<'de> for CryptoAlgorithmIdentifier {
                             if let Some(v) = v {
                                 if __oneof_algorithm.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'algorithm'",
                                         ),
                                     );
@@ -11710,7 +11748,7 @@ impl<'de> serde::Deserialize<'de> for CryptoAlgorithmIdentifier {
                             if let Some(v) = v {
                                 if __oneof_algorithm.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'algorithm'",
                                         ),
                                     );
@@ -11938,7 +11976,7 @@ impl ::buffa::Message for CryptoHashRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.input, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.input, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -12153,7 +12191,7 @@ impl ::buffa::Message for CryptoHashResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.digest, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.digest, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -12427,28 +12465,28 @@ impl ::buffa::Message for CryptoAeadSealRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.nonce, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.nonce, buf)?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.aad, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.aad, buf)?;
             }
             5u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.plaintext, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.plaintext, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -12670,7 +12708,7 @@ impl ::buffa::Message for CryptoAeadSealResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.ciphertext_with_tag, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.ciphertext_with_tag, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -12946,28 +12984,28 @@ impl ::buffa::Message for CryptoAeadOpenRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.nonce, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.nonce, buf)?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.aad, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.aad, buf)?;
             }
             5u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.ciphertext_with_tag, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.ciphertext_with_tag, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -13187,7 +13225,7 @@ impl ::buffa::Message for CryptoAeadOpenResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.plaintext, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.plaintext, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -13422,14 +13460,14 @@ impl ::buffa::Message for CryptoMacAuthenticateRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.message, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.message, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -13645,7 +13683,7 @@ impl ::buffa::Message for CryptoMacAuthenticateResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.tag, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.tag, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -13898,21 +13936,21 @@ impl ::buffa::Message for CryptoMacVerifyRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.tag, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.tag, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.key, buf)?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.message, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.message, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -14187,14 +14225,14 @@ impl ::buffa::Message for CryptoKdfDeriveKeyRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.password, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.password, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.salt, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.salt, buf)?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
@@ -14429,7 +14467,7 @@ impl ::buffa::Message for CryptoKdfDeriveKeyResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.derived_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.derived_key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -14700,14 +14738,14 @@ impl ::buffa::Message for CryptoArgon2idDeriveRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.secret, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.secret, buf)?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.salt, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.salt, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -14985,21 +15023,21 @@ impl ::buffa::Message for CryptoHkdfDeriveRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.input_key_material, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.input_key_material, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.salt, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.salt, buf)?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.info, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.info, buf)?;
             }
             5u32 => {
                 ::buffa::encoding::check_wire_type(
@@ -15230,7 +15268,7 @@ impl ::buffa::Message for CryptoHkdfDeriveResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.output_key_material, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.output_key_material, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -15523,28 +15561,28 @@ impl ::buffa::Message for CryptoJwaConcatKdfSha256DeriveRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.shared_secret, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.shared_secret, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.algorithm_id, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.algorithm_id, buf)?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.party_u_info, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.party_u_info, buf)?;
             }
             5u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.party_v_info, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.party_v_info, buf)?;
             }
             6u32 => {
                 ::buffa::encoding::check_wire_type(
@@ -15777,7 +15815,7 @@ impl ::buffa::Message for CryptoJwaConcatKdfSha256DeriveResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.derived_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.derived_key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -16056,21 +16094,21 @@ impl ::buffa::Message for CryptoKmac256DeriveRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.context, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.context, buf)?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.customization, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.customization, buf)?;
             }
             5u32 => {
                 ::buffa::encoding::check_wire_type(
@@ -16298,7 +16336,7 @@ impl ::buffa::Message for CryptoKmac256DeriveResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.derived_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.derived_key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -16537,14 +16575,14 @@ impl ::buffa::Message for CryptoKeyWrapRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.wrapping_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.wrapping_key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.key_to_wrap, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.key_to_wrap, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -16761,7 +16799,7 @@ impl ::buffa::Message for CryptoKeyWrapResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.wrapped_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.wrapped_key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -16998,14 +17036,14 @@ impl ::buffa::Message for CryptoKeyUnwrapRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.wrapping_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.wrapping_key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.wrapped_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.wrapped_key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -17223,7 +17261,7 @@ impl ::buffa::Message for CryptoKeyUnwrapResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -17587,7 +17625,7 @@ impl ::buffa::Message for CryptoSignatureDeriveKeyPairRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.secret_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.secret_key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -17825,14 +17863,14 @@ impl ::buffa::Message for CryptoSignatureSignRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.message, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.message, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.secret_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.secret_key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -18048,7 +18086,7 @@ impl ::buffa::Message for CryptoSignatureSignResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.signature, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.signature, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -18262,21 +18300,21 @@ impl ::buffa::Message for CryptoBip340SchnorrSignRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.message32, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.message32, buf)?;
             }
             2u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.secret_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.secret_key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.aux_rand32, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.aux_rand32, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -18529,21 +18567,21 @@ impl ::buffa::Message for CryptoSignatureVerifyRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.signature, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.signature, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.message, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.message, buf)?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.public_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.public_key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -18822,21 +18860,21 @@ impl ::buffa::Message for CryptoRsaVerifyRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.signature, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.signature, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.message, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.message, buf)?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.public_key_der, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.public_key_der, buf)?;
             }
             5u32 => {
                 ::buffa::encoding::check_wire_type(
@@ -19085,14 +19123,14 @@ impl ::buffa::Message for CryptoKeyAgreementDeriveSharedSecretRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.public_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.public_key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.secret_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.secret_key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -19316,7 +19354,7 @@ impl ::buffa::Message for CryptoKeyAgreementDeriveSharedSecretResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.shared_secret, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.shared_secret, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -19539,7 +19577,7 @@ impl ::buffa::Message for CryptoKeyAgreementDeriveKeyPairRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.secret_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.secret_key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -19903,7 +19941,7 @@ impl ::buffa::Message for CryptoKemDeriveKeyPairRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.secret_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.secret_key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -20119,7 +20157,7 @@ impl ::buffa::Message for CryptoKemEncapsulateRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.public_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.public_key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -20355,14 +20393,14 @@ impl ::buffa::Message for CryptoKemDecapsulateRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.ciphertext, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.ciphertext, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.secret_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.secret_key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -20581,7 +20619,7 @@ impl ::buffa::Message for CryptoKemDecapsulateResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.shared_secret, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.shared_secret, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -20860,28 +20898,28 @@ impl ::buffa::Message for CryptoHpkeSealRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.recipient_public_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.recipient_public_key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.info, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.info, buf)?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.aad, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.aad, buf)?;
             }
             5u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.plaintext, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.plaintext, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -21184,35 +21222,35 @@ impl ::buffa::Message for CryptoHpkeOpenRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.recipient_secret_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.recipient_secret_key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.encapsulated_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.encapsulated_key, buf)?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.info, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.info, buf)?;
             }
             5u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.aad, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.aad, buf)?;
             }
             6u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.ciphertext, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.ciphertext, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -21433,7 +21471,7 @@ impl ::buffa::Message for CryptoHpkeOpenResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.plaintext, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.plaintext, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -21798,7 +21836,7 @@ impl ::buffa::Message for CryptoHpkeDeriveKeyPairRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.input_key_material, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.input_key_material, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -22078,21 +22116,21 @@ impl ::buffa::Message for CryptoHpkeSenderExportRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.recipient_public_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.recipient_public_key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.info, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.info, buf)?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.exporter_context, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.exporter_context, buf)?;
             }
             5u32 => {
                 ::buffa::encoding::check_wire_type(
@@ -22405,28 +22443,28 @@ impl ::buffa::Message for CryptoHpkeReceiverExportRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.recipient_secret_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.recipient_secret_key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.encapsulated_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.encapsulated_key, buf)?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.info, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.info, buf)?;
             }
             5u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.exporter_context, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.exporter_context, buf)?;
             }
             6u32 => {
                 ::buffa::encoding::check_wire_type(
@@ -22678,14 +22716,14 @@ impl ::buffa::Message for CryptoHpkeSenderExportResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.encapsulated_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.encapsulated_key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.exporter_secret, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.exporter_secret, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -22906,7 +22944,7 @@ impl ::buffa::Message for CryptoHpkeReceiverExportResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.exporter_secret, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.exporter_secret, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -23225,42 +23263,42 @@ impl ::buffa::Message for CryptoHpkePskSealRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.recipient_public_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.recipient_public_key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.info, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.info, buf)?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.aad, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.aad, buf)?;
             }
             5u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.plaintext, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.plaintext, buf)?;
             }
             6u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.psk, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.psk, buf)?;
             }
             7u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.psk_id, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.psk_id, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -23605,49 +23643,49 @@ impl ::buffa::Message for CryptoHpkePskOpenRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.recipient_secret_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.recipient_secret_key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.encapsulated_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.encapsulated_key, buf)?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.info, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.info, buf)?;
             }
             5u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.aad, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.aad, buf)?;
             }
             6u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.ciphertext, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.ciphertext, buf)?;
             }
             7u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.psk, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.psk, buf)?;
             }
             8u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.psk_id, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.psk_id, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -23894,14 +23932,14 @@ impl ::buffa::Message for CryptoKeyPair {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.public_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.public_key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.secret_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.secret_key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -24141,14 +24179,14 @@ impl ::buffa::Message for CryptoKemEncapsulation {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.ciphertext, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.ciphertext, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.shared_secret, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.shared_secret, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -24387,14 +24425,14 @@ impl ::buffa::Message for CryptoHpkeSealedMessage {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.encapsulated_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.encapsulated_key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.ciphertext, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.ciphertext, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -24973,7 +25011,7 @@ impl ::buffa::Message for AndroidPlatformKeyPolicy {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.attestation_challenge, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.attestation_challenge, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -25192,18 +25230,21 @@ impl ::buffa::ExtensionSet for PlatformKeyPolicy {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for PlatformKeyPolicy {
-    fn deserialize<D: serde::Deserializer<'de>>(
+impl<'de> ::serde::Deserialize<'de> for PlatformKeyPolicy {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
-        impl<'de> serde::de::Visitor<'de> for _V {
+        impl<'de> ::serde::de::Visitor<'de> for _V {
             type Value = PlatformKeyPolicy;
-            fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
                 f.write_str("struct PlatformKeyPolicy")
             }
             #[allow(clippy::field_reassign_with_default)]
-            fn visit_map<A: serde::de::MapAccess<'de>>(
+            fn visit_map<A: ::serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
             ) -> ::core::result::Result<PlatformKeyPolicy, A::Error> {
@@ -25224,7 +25265,7 @@ impl<'de> serde::Deserialize<'de> for PlatformKeyPolicy {
                             if let Some(v) = v {
                                 if __oneof_policy.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'policy'",
                                         ),
                                     );
@@ -25248,7 +25289,7 @@ impl<'de> serde::Deserialize<'de> for PlatformKeyPolicy {
                             if let Some(v) = v {
                                 if __oneof_policy.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'policy'",
                                         ),
                                     );
@@ -25608,14 +25649,14 @@ impl ::buffa::Message for CryptoPlatformPrivateKeyHandle {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.opaque_handle, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.opaque_handle, buf)?;
             }
             5u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.public_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.public_key, buf)?;
             }
             6u32 => {
                 ::buffa::encoding::check_wire_type(
@@ -25998,7 +26039,7 @@ impl ::buffa::Message for CryptoPlatformKeyGenerateRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.application_tag, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.application_tag, buf)?;
             }
             5u32 => {
                 ::buffa::encoding::check_wire_type(
@@ -26535,7 +26576,7 @@ impl ::buffa::Message for CryptoPlatformKeyGetPublicKeyResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.public_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.public_key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -26775,14 +26816,14 @@ impl ::buffa::Message for CryptoPlatformSignatureSignRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.message, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.message, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_string(&mut self.authentication_prompt, buf)?;
+                crate::merge_sensitive::merge_string(&mut self.authentication_prompt, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -27000,7 +27041,7 @@ impl ::buffa::Message for CryptoPlatformSignatureSignResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.signature, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.signature, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -27254,21 +27295,21 @@ impl ::buffa::Message for CryptoPlatformSignatureVerifyRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.signature, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.signature, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.message, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.message, buf)?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.public_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.public_key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -27491,7 +27532,7 @@ impl ::buffa::Message for CryptoPlatformKeyAgreementDeriveSharedSecretRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.peer_public_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.peer_public_key, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -27712,7 +27753,7 @@ impl ::buffa::Message for CryptoPlatformKeyAgreementDeriveSharedSecretResult {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.shared_secret, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.shared_secret, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -28185,7 +28226,7 @@ impl ::buffa::Message for CryptoPlatformKeyAttestRequest {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.challenge, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.challenge, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -28362,7 +28403,7 @@ impl ::buffa::Message for CryptoPlatformKeyAttestationCertificate {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.certificate_der, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.certificate_der, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -29384,14 +29425,14 @@ impl ::buffa::Message for JsonWebKey {
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.public_key, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.public_key, buf)?;
             }
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
                     ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                ::buffa::types::merge_bytes(&mut self.canonical_jcs, buf)?;
+                crate::merge_sensitive::merge_bytes(&mut self.canonical_jcs, buf)?;
             }
             _ => {
                 self.__buffa_unknown_fields
