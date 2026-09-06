@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 //! Fuzz operation-family boundary parsers that are easy to bypass with only
 //! raw protobuf fuzzing: HPKE component identifiers and sealed-message inputs,

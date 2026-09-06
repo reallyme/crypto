@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { p521 } from "@noble/curves/nist.js";
 import { ReallyMeCryptoError } from "./errors.js";
+import { ensureByteArray } from "./validateBytes.js";
 import { bestEffortClear } from "./memory.js";
 
 /**
@@ -29,11 +30,13 @@ export const ReallyMeP521Ecdh = {
   deriveKeyPair(secretKey: Uint8Array): { publicKey: Uint8Array; secretKey: Uint8Array } {
     return {
       publicKey: this.derivePublicKey(secretKey),
-      secretKey: secretKey.slice(),
+      // Buffer.slice() aliases its input; the returned key must own its bytes.
+      secretKey: new Uint8Array(secretKey),
     };
   },
 
   derivePublicKey(secretKey: Uint8Array): Uint8Array {
+    ensureByteArray(secretKey);
     if (secretKey.length !== P521_ECDH_SECRET_KEY_LENGTH) {
       throw new ReallyMeCryptoError("invalid-input");
     }
@@ -45,6 +48,8 @@ export const ReallyMeP521Ecdh = {
   },
 
   deriveSharedSecret(publicKey: Uint8Array, secretKey: Uint8Array): Uint8Array {
+    ensureByteArray(publicKey);
+    ensureByteArray(secretKey);
     if (
       publicKey.length !== P521_ECDH_COMPRESSED_PUBLIC_KEY_LENGTH ||
       secretKey.length !== P521_ECDH_SECRET_KEY_LENGTH

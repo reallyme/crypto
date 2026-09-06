@@ -1,6 +1,5 @@
 {
   "spdx_filecopyrighttext": "Copyright \u00a9 2026 ReallyMe LLC. All rights reserved",
-  "spdx_license_identifier": "Apache-2.0",
   "schema_version": 1,
   "purpose": "Machine-readable map from exposed operation routes to their authoritative operation owner.",
   "scope": {

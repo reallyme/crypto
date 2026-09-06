@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 //! Fail-closed JWK deserialization with explicit key-type dispatch.
 
@@ -17,36 +17,59 @@ use crate::JwtError;
 
 const MAX_JWK_MEMBER_COUNT: usize = 16;
 
+// Option treats an explicit null as absence. Public-only parsing must reject
+// the member name regardless of its value, including through concrete JWK types.
+#[derive(Default)]
+struct PrivateMemberPresence(bool);
+
+impl<'de> Deserialize<'de> for PrivateMemberPresence {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        serde::de::IgnoredAny::deserialize(deserializer)?;
+        Ok(Self(true))
+    }
+}
+
+fn is_private_member(name: &str) -> bool {
+    matches!(
+        name,
+        "d" | "p" | "q" | "dp" | "dq" | "qi" | "oth" | "k" | "priv" | "privateKey" | "secretKey"
+    )
+}
+
 #[derive(Deserialize, Default)]
+#[serde(default)]
 struct PrivateJwkMembers {
-    d: Option<serde::de::IgnoredAny>,
-    p: Option<serde::de::IgnoredAny>,
-    q: Option<serde::de::IgnoredAny>,
-    dp: Option<serde::de::IgnoredAny>,
-    dq: Option<serde::de::IgnoredAny>,
-    qi: Option<serde::de::IgnoredAny>,
-    oth: Option<serde::de::IgnoredAny>,
-    k: Option<serde::de::IgnoredAny>,
-    r#priv: Option<serde::de::IgnoredAny>,
+    d: PrivateMemberPresence,
+    p: PrivateMemberPresence,
+    q: PrivateMemberPresence,
+    dp: PrivateMemberPresence,
+    dq: PrivateMemberPresence,
+    qi: PrivateMemberPresence,
+    oth: PrivateMemberPresence,
+    k: PrivateMemberPresence,
+    r#priv: PrivateMemberPresence,
     #[serde(rename = "privateKey")]
-    private_key: Option<serde::de::IgnoredAny>,
+    private_key: PrivateMemberPresence,
     #[serde(rename = "secretKey")]
-    secret_key: Option<serde::de::IgnoredAny>,
+    secret_key: PrivateMemberPresence,
 }
 
 impl PrivateJwkMembers {
     fn is_present(&self) -> bool {
-        self.d.is_some()
-            || self.p.is_some()
-            || self.q.is_some()
-            || self.dp.is_some()
-            || self.dq.is_some()
-            || self.qi.is_some()
-            || self.oth.is_some()
-            || self.k.is_some()
-            || self.r#priv.is_some()
-            || self.private_key.is_some()
-            || self.secret_key.is_some()
+        self.d.0
+            || self.p.0
+            || self.q.0
+            || self.dp.0
+            || self.dq.0
+            || self.qi.0
+            || self.oth.0
+            || self.k.0
+            || self.r#priv.0
+            || self.private_key.0
+            || self.secret_key.0
     }
 }
 
@@ -111,16 +134,23 @@ impl<'de> Visitor<'de> for JwkVisitor {
     {
         let mut members = serde_json::Map::new();
         let mut member_count = 0_usize;
-        while let Some((name, value)) = map.next_entry::<String, Value>()? {
+        while let Some(name) = map.next_key::<String>()? {
             member_count = member_count
                 .checked_add(1)
                 .ok_or_else(|| M::Error::custom(JwtError::InvalidEnvelope))?;
             if member_count > MAX_JWK_MEMBER_COUNT {
                 return Err(M::Error::custom(JwtError::InvalidEnvelope));
             }
-            if members.insert(name, value).is_some() {
+            // Reject before reading the value: private-key JSON must not be
+            // materialized as an unzeroized serde_json::Value merely to discard it.
+            if is_private_member(&name) {
+                return Err(M::Error::custom(JwtError::PrivateKeyMaterial));
+            }
+            if members.contains_key(&name) {
                 return Err(M::Error::custom(JwtError::DuplicateMember));
             }
+            let value = map.next_value::<Value>()?;
+            members.insert(name, value);
         }
 
         deserialize_by_key_type(Value::Object(members)).map_err(M::Error::custom)

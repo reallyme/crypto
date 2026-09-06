@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # ReallyMeCrypto Swift
@@ -22,7 +20,7 @@ by Git URL; the source lives under `packages/swift` with the other language SDKs
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.3.6"
+    from: "0.3.7"
 )
 ```
 
@@ -307,8 +305,11 @@ REALLYME_CRYPTO_FFI_LIBRARY_PATH="$PWD/target/debug/libcrypto_ffi.dylib" \
 rm .reallyme-crypto-runtime-ffi
 ```
 
-Plain source-tree tests skip Rust ABI vectors unless the runtime library path is
-set. The SwiftPM runtime-FFI override is development-only and requires both
+Plain `swift test` uses the binary target selected by the root manifest,
+including its checksum validation, and tests the linked Rust ABI. For changes
+to local Rust sources, use the runtime override above to test the newly built
+library. Hardware-dependent tests may skip when their requirements are absent.
+The SwiftPM runtime-FFI override is development-only and requires both
 `REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI=1` and the repo-local
 `.reallyme-crypto-runtime-ffi` marker; the environment variable alone is ignored
 so normal consumers keep the reviewed binary target. Release preflight builds

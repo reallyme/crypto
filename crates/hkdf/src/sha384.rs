@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crypto_core::{CryptoError, HkdfFailureKind, HkdfHash};
 use hkdf::Hkdf;
 use sha2::Sha384;
+use zeroize::Zeroizing;
 
 use crate::material::{
     HkdfInfo, HkdfInputKeyMaterial, HkdfOutput, HkdfSalt, HkdfSha384Prk, HKDF_SHA384_PRK_LENGTH,
@@ -26,6 +27,9 @@ pub fn extract_sha384(
     }
 
     let (prk, _) = Hkdf::<Sha384>::extract(salt.map(HkdfSalt::as_bytes), ikm.as_bytes());
+    // Extract returns a separate PRK copy in addition to the HMAC state.
+    // Wipe that copy after transferring it to the typed secret owner.
+    let prk = Zeroizing::new(prk);
     let mut bytes = [0u8; HKDF_SHA384_PRK_LENGTH];
     bytes.copy_from_slice(prk.as_ref());
     Ok(HkdfSha384Prk::from_array(bytes))

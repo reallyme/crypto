@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 mod encoding;
 mod key_agreement;
@@ -18,7 +18,10 @@ pub use encoding::{
     encode_secp256k1_public_key,
 };
 pub use key_agreement::{derive_secp256k1_shared_secret, Secp256k1SharedSecret};
-pub use keypair::{generate_secp256k1_keypair, generate_secp256k1_keypair_from_secret_key};
+pub use keypair::{
+    generate_secp256k1_keypair, generate_secp256k1_keypair_from_secret_key,
+    try_generate_secp256k1_keypair,
+};
 pub use schnorr_encode::{
     decode_bip340_schnorr_public_key, derive_bip340_schnorr_public_key,
     encode_bip340_schnorr_public_key,

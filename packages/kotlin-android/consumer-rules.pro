@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
 
 # BouncyCastle registers many JCA/JCE SPI implementations by class name.
 # Consumers that minify with R8 full mode must not strip the provider classes

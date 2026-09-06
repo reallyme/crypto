@@ -1,11 +1,14 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 //! ReallyMe crypto protobuf identifiers with generated Buffa bindings.
 
 /// Generated protobuf boundary.
 pub mod generated;
+
+#[cfg(feature = "generated")]
+mod merge_sensitive;
 
 /// Conversions between the generated protobuf algorithm identifiers and the
 /// internal [`crypto_core`] enums, with a compile-time drift guard.

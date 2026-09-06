@@ -1,12 +1,11 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # reallyme-crypto-jwk
 
 JWK envelope encoding and canonicalization for ReallyMe Crypto public keys.
 
-This crate is part of the ReallyMe Crypto workspace. It preserves the
-`reallyme-crypto-jwk` Cargo package identity while living at `crates/jwk`.
+Private-key members and malformed public-key encodings are rejected. See the
+[JWK contract](https://github.com/reallyme/crypto/blob/main/docs/jwk.md) for
+supported key shapes and canonicalization rules.

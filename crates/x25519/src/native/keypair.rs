@@ -1,7 +1,8 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crypto_core::{CryptoError, RngFailureKind, RngOutputKind};
 use x25519_dalek::{PublicKey, StaticSecret};
 use zeroize::Zeroizing;
 
@@ -11,6 +12,11 @@ use zeroize::Zeroizing;
 /// - public key: 32 bytes
 /// - secret key: 32 bytes, in a zeroizing wrapper so it is wiped when the
 ///   caller drops it
+///
+/// # Panics
+///
+/// The legacy infallible API inherits the provider panic on entropy failure.
+/// Use [`try_generate_x25519_keypair`] for typed failure handling.
 pub fn generate_x25519_keypair() -> (Vec<u8>, Zeroizing<Vec<u8>>) {
     let secret = StaticSecret::random();
     let public = PublicKey::from(&secret);
@@ -22,6 +28,18 @@ pub fn generate_x25519_keypair() -> (Vec<u8>, Zeroizing<Vec<u8>>) {
         public.as_bytes().to_vec(),
         Zeroizing::new(secret_bytes.to_vec()),
     )
+}
+
+/// Generate an X25519 keypair with explicit entropy failure handling.
+///
+/// The seed remains zeroizing even if the OS reports a partial-fill failure.
+pub fn try_generate_x25519_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
+    let mut seed = Zeroizing::new([0_u8; 32]);
+    getrandom::fill(seed.as_mut_slice()).map_err(|_| CryptoError::Rng {
+        output: RngOutputKind::Generic,
+        kind: RngFailureKind::EntropyUnavailable,
+    })?;
+    Ok(generate_x25519_keypair_from_seed(&seed))
 }
 
 /// Generate an X25519 keypair deterministically from a 32-byte seed.

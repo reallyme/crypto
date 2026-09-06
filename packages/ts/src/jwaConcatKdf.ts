@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { sha256 } from "@noble/hashes/sha2.js";
 import { ReallyMeCryptoError } from "./errors.js";
+import { ensureByteArray } from "./validateBytes.js";
 import { bestEffortClear } from "./memory.js";
 
 export const JWA_CONCAT_KDF_SHA256_DIGEST_LENGTH = 32;
@@ -50,6 +51,10 @@ function validate(
   partyVInfo: Uint8Array,
   outputLength: number,
 ): void {
+  ensureByteArray(sharedSecret);
+  ensureByteArray(algorithmId);
+  ensureByteArray(partyUInfo);
+  ensureByteArray(partyVInfo);
   if (
     sharedSecret.length === 0 ||
     sharedSecret.length > JWA_CONCAT_KDF_MAX_SHARED_SECRET_LENGTH ||

@@ -1,14 +1,14 @@
 // swift-tools-version: 6.0
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 // Root manifest for `reallyme-crypto`.
 //
 // SwiftPM and Xcode only read a `Package.swift` at the repository root when a
 // package is consumed by URL, e.g.
 //
-//     .package(url: "https://github.com/reallyme/crypto", from: "0.3.6")
+//     .package(url: "https://github.com/reallyme/crypto", from: "0.3.7")
 //     .product(name: "ReallyMeCrypto", package: "crypto")
 //
 // The Swift sources live under `packages/swift/` to keep symmetry with the
@@ -19,7 +19,7 @@ import PackageDescription
 import Foundation
 
 let ffiArtifactChecksum = "d6f6d033b4b051ff1dcaf55fcf84aa016813d815c6032b1ee550e4c3461bdada"
-let ffiArtifactVersion = "0.3.6"
+let ffiArtifactVersion = "0.3.7"
 let ffiArtifactLocalPathOverride = ""
 // Source-tree CI explicitly exercises the runtime loader before testing the
 // linked release artifact. Public consumers do not set this development-only
@@ -127,7 +127,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/reallyme/codec",
-            from: "0.2.2"
+            from: "0.2.3"
         ),
         .package(
             url: "https://github.com/reallyme/CSecp256k1",

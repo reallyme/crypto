@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # Proto-JSON Examples
@@ -20,7 +18,8 @@ These examples are JSON encodings of the operation request/response messages in
 enum names and `bytes` fields use base64. Examples for secret-bearing operations
 below document the generated schema only; the executable JSON adapter rejects
 those selectors before deserializing their values. Submit those requests as
-binary protobuf.
+binary protobuf. `BASE64_*` values below are placeholders; replace them with
+standard base64 of correctly sized bytes. They are not runnable test vectors.
 
 `CryptoOperationRequest` is the only executable JSON request shape. Each
 example therefore includes the generated ProtoJSON name of its selected
@@ -390,7 +389,9 @@ Structured errors keep the owning branch explicit.
 ```
 
 For fixtures and diagnostics, a binary `CryptoOperationResponse` may be
-explicitly rendered as generated ProtoJSON. Successful data remains in its
+explicitly rendered as generated ProtoJSON only when the result is safe to
+expose; keypairs, plaintext, and derived secrets must not be logged. Successful
+data remains in its
 typed result branch; it is never wrapped in opaque payload bytes:
 
 ```json

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 #[cfg(any(
     feature = "aead-aes128-gcm",
@@ -98,16 +98,15 @@ impl HpkeReceiverContext {
             .len()
             .checked_sub(self.authentication_tag_len)
             .ok_or(HpkeError::InvalidCiphertext)?;
-        let plaintext = self
-            .backend
-            .open(aad, ciphertext)
-            .map_err(map_context_open_error)?;
+        let plaintext = Zeroizing::new(
+            self.backend
+                .open(aad, ciphertext)
+                .map_err(map_context_open_error)?,
+        );
         if plaintext.len() != expected_plaintext_length {
             return Err(HpkeError::OpenFailed);
         }
-        Ok(HpkeOpenOutput {
-            plaintext: Zeroizing::new(plaintext),
-        })
+        Ok(HpkeOpenOutput { plaintext })
     }
 }
 
@@ -208,5 +207,37 @@ fn map_context_open_error(error: hpke::HpkeError) -> HpkeError {
         | hpke::HpkeError::MessageLimitReached
         | hpke::HpkeError::OpenError
         | hpke::HpkeError::SealError => HpkeError::OpenFailed,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{HpkeReceiverContext, ReceiverContextBackend};
+    use crate::error::HpkeError;
+
+    struct FixedPlaintext(Vec<u8>);
+
+    impl ReceiverContextBackend for FixedPlaintext {
+        fn open(&mut self, _aad: &[u8], _ciphertext: &[u8]) -> Result<Vec<u8>, hpke::HpkeError> {
+            Ok(core::mem::take(&mut self.0))
+        }
+    }
+
+    #[test]
+    fn receiver_preserves_plaintext_length_validation() -> Result<(), HpkeError> {
+        const TAG_LENGTH: usize = 16;
+        for length in [0, 2, 3, 4] {
+            let mut context = HpkeReceiverContext {
+                backend: Box::new(FixedPlaintext(vec![0xa5; length])),
+                authentication_tag_len: TAG_LENGTH,
+            };
+            let result = context.open(&[], &[0; 19]);
+            if length == 3 {
+                assert_eq!(result?.plaintext.as_slice(), &[0xa5; 3]);
+            } else {
+                assert!(matches!(result, Err(HpkeError::OpenFailed)));
+            }
+        }
+        Ok(())
     }
 }

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 // Cross-implementation conformance: every byte compared here was produced
 // by the Rust (RustCrypto ml-kem / ml-dsa) generator; this script must

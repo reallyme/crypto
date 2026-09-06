@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # External Conformance Vectors
@@ -195,8 +193,8 @@ without waiting for a manual audit.
 
 ### Vendoring supplementary corpora
 
-The Wycheproof, BIP-340, and RFC 8032 corpora are not committed until a reviewer
-pins the exact upstream commit for each. [vendor_external_vectors.mjs](../scripts/vendor_external_vectors.mjs)
+The Wycheproof, BIP-340, and RFC 8032 corpora are committed with reviewed,
+pinned upstream commits in `provenance.json`. To refresh them, [vendor_external_vectors.mjs](../scripts/vendor_external_vectors.mjs)
 fetches the pinned bytes, records their SHA-256 and source in
 `provenance.json`, and flips the matching coverage rows to a vendored source.
 It refuses to run against an unpinned or non-commit ref, so vendoring is always

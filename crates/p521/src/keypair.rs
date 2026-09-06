@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crypto_core::CryptoError;
 use p521::ecdsa::SigningKey;
@@ -13,7 +13,10 @@ use zeroize::{Zeroize, Zeroizing};
 /// The public key is returned as compressed SEC1; the secret key is the raw
 /// scalar in a zeroizing heap buffer owned by the caller.
 pub fn generate_p521_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
-    let secret_key = SecretKey::generate();
+    let secret_key = SecretKey::try_generate().map_err(|_| CryptoError::Rng {
+        output: crypto_core::RngOutputKind::Generic,
+        kind: crypto_core::RngFailureKind::EntropyUnavailable,
+    })?;
     let signing_key = SigningKey::from(&secret_key);
     let verifying_key = signing_key.verifying_key();
 

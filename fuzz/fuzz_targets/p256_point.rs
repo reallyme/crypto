@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 //! Fuzz the P-256 SEC1 point decompressor and the ECDSA DER signature parser.
 //! Property: decompressing an untrusted compressed point, and verifying an

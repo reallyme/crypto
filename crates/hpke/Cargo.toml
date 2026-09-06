@@ -1,10 +1,9 @@
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
 
 [package]
 name = "reallyme-crypto-hpke"
-version = "0.3.6"
+version = "0.3.7"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -135,8 +134,8 @@ test-vectors = ["native"]
 [dependencies]
 aes-gcm = { workspace = true, optional = true }
 chacha20poly1305 = { workspace = true, optional = true, features = ["zeroize"] }
-crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "=0.3.6", path = "../secp256k1", default-features = false, features = ["native"], optional = true }
-crypto-x448 = { package = "reallyme-crypto-x448", version = "=0.3.6", path = "../x448", default-features = false, features = ["native"], optional = true }
+crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "=0.3.7", path = "../secp256k1", default-features = false, features = ["native"], optional = true }
+crypto-x448 = { package = "reallyme-crypto-x448", version = "=0.3.7", path = "../x448", default-features = false, features = ["native"], optional = true }
 getrandom = { workspace = true, optional = true, features = ["wasm_js"] }
 # Keep the HKDF/HMAC working state covered by the digest zeroization feature.
 hmac = { workspace = true, optional = true }

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crypto_core::CryptoError;
 use k256::ecdsa::SigningKey;
@@ -14,6 +14,11 @@ use zeroize::{Zeroize, Zeroizing};
 /// - public key: 33-byte compressed SEC1
 /// - secret key: 32-byte scalar, in a zeroizing wrapper so it is wiped when
 ///   the caller drops it
+///
+/// # Panics
+///
+/// The legacy infallible API inherits the provider panic on entropy failure.
+/// Use [`try_generate_secp256k1_keypair`] for typed failure handling.
 pub fn generate_secp256k1_keypair() -> (Vec<u8>, Zeroizing<Vec<u8>>) {
     let sk = SecretKey::generate();
 
@@ -27,6 +32,19 @@ pub fn generate_secp256k1_keypair() -> (Vec<u8>, Zeroizing<Vec<u8>>) {
     let public_bytes = verifying_key.to_sec1_point(true).as_bytes().to_vec(); // 33 bytes (compressed)
 
     (public_bytes, secret_bytes)
+}
+
+/// Generate a secp256k1 keypair with explicit entropy failure handling.
+///
+/// Prefer this entry point over the legacy infallible generator when the
+/// application must recover from an unavailable operating-system RNG.
+pub fn try_generate_secp256k1_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
+    let secret = SecretKey::try_generate().map_err(|_| CryptoError::Rng {
+        output: crypto_core::RngOutputKind::Generic,
+        kind: crypto_core::RngFailureKind::EntropyUnavailable,
+    })?;
+    let secret_bytes = Zeroizing::new(secret.to_bytes());
+    generate_secp256k1_keypair_from_secret_key(secret_bytes.as_ref())
 }
 
 /// Derive a secp256k1 keypair from an existing 32-byte secret scalar.

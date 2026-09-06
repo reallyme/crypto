@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 /// Length in bytes of an AES-256-GCM-SIV key (32 bytes / 256 bits).
 pub const AES_256_GCM_SIV_KEY_LENGTH: usize = 32;

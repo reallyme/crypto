@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # ReallyMe Crypto Vectors
@@ -11,30 +9,15 @@ Application-specific document, token, and container formats are not part of this
 
 - `positive/`: inputs expected to validate or round-trip.
 - `negative/`: malformed, tampered, downgraded, unsupported, or wrong-context inputs expected to fail closed with typed errors.
-- `external/`: pinned third-party corpora used for optional belt-and-suspenders
+- `external/`: pinned third-party corpora used for default and optional extended
   conformance checks. Source URLs, commits, license status, and SHA-256 hashes
   are recorded in `external/provenance.json`.
 
 ## Current Artifacts
 
-- `p256.json`
-- `ed25519.json`
-- `secp256k1.json`
-- `x25519.json`
-- `ml_dsa_44.json`
-- `ml_dsa_65.json`
-- `ml_dsa_87.json`
-- `mlkem512.json`
-- `mlkem768.json`
-- `mlkem1024.json`
-- `aes128gcm.json`
-- `aes192gcm.json`
-- `aes256gcm.json`
-- `concat_kdf.json`
-- `chacha20poly1305.json`
-- `hmac.json`
-- `hashes.json`
-- `manifest.json`
+[`manifest.json`](manifest.json) lists the complete current positive and negative
+vector files. Positive cryptographic vectors live directly in this directory;
+`positive/` describes their required structure.
 
 `manifest.json` also declares the runtime lane matrix for Rust native, Rust
 WASM, TypeScript native noble, Swift native, and Kotlin/JVM native conformance.
@@ -56,5 +39,6 @@ Every new primitive, backend, or security hardening change must add or reference
 - runtime-lane coverage for Rust native, Rust WASM, Swift, and Kotlin, or an
   explicit guard test explaining why a lane cannot execute that vector.
 
-Vectors must not contain real user data, production secrets, private keys, or
-regulated evidence.
+Vectors must not contain real user data, production secrets, production private keys, or
+regulated evidence. Deterministic test keys are public fixtures and must never
+be used to protect real data.

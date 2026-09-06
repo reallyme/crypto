@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # Crypto Contract
@@ -83,9 +81,10 @@ at 1000 and above. Adjacent strength or size variants normally advance by ten.
 AES-GCM and AES-KW each independently assign their AES-128/192/256 variants
 `100`, `110`, and `120` inside their separate family enums. Equal values across
 different enums do not imply interchangeable semantics. These are ReallyMe
-wire identifiers, not IANA COSE, JOSE, JWA, HPKE, TLS, or multicodec registry
-values; adapters must translate by typed algorithm identity rather than pass
-numeric values through. New names may consume an unused value in the
+wire identifiers, not COSE, JOSE, JWA, TLS, or multicodec registry values.
+The separate `HpkeKemId`, `HpkeKdfId`, and `HpkeAeadId` enums retain their
+HPKE registry numbers. Adapters must translate other selectors by typed
+algorithm identity rather than pass numeric values through. New names may consume an unused value in the
 appropriate band, but an assigned number must never be renumbered or reused.
 If an assignment is removed, both its number and name must be declared
 `reserved` in the protobuf enum.

@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
 
 name: Code Checks
 
@@ -186,7 +185,7 @@ jobs:
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           repository: reallyme/release-readiness
-          ref: 44065b7488a8d3c77f66f530dff770fb39be9707
+          ref: 304bc55cdca3c53bf66218982d51188f341806ed
           path: .release-readiness
 
       - name: Release readiness
@@ -202,7 +201,7 @@ jobs:
         run: cargo deny check
 
       - name: Security advisory audit
-        run: cargo audit
+        run: scripts/audit_committed_lockfiles.sh
 
   swift:
     name: swift package + vector conformance
@@ -211,7 +210,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
-      # ReallyMe Codec 0.2.2 requires Swift tools 6.3. Pin the runner's newest
+      # ReallyMe Codec 0.2.3 requires Swift tools 6.3. Pin the runner's newest
       # stable Xcode so SwiftPM validates that manifest before compiling tests.
       - name: Select Xcode 26.6
         run: |

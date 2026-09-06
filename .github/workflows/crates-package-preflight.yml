@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
 
 name: Crates Package Preflight
 
@@ -18,7 +17,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.3.6
+        default: 0.3.7
 
 permissions:
   contents: read
@@ -81,6 +80,11 @@ jobs:
         with:
           toolchain: 1.98.1
 
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # cargo-audit
+        with:
+          tool: cargo-audit@0.22.2
+
       - name: Install Node
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
@@ -104,6 +108,9 @@ jobs:
 
       - name: Check workspace metadata
         run: cargo metadata --format-version 1 --no-deps
+
+      - name: Security advisory audit
+        run: scripts/audit_committed_lockfiles.sh
 
       - name: Check release version and publish order
         run: node scripts/publish_crates_in_order.mjs order

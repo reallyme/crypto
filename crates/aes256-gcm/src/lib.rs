@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 //! AES-GCM authenticated encryption for 128-bit, 192-bit, and 256-bit keys. Nonce
 //! uniqueness is the caller's responsibility; use AES-256-GCM-SIV when

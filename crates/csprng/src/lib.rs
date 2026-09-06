@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 //! Cryptographically secure random-byte helpers backed by the operating system CSPRNG (`OsRng`), for nonces, salts, and key material. Fails closed if the OS entropy source is unavailable.
 

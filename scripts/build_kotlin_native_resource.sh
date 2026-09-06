@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT OR Apache-2.0
 
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Build the repository whose artifacts we stage, even from another working
+# directory or with an ambient CARGO_TARGET_DIR override.
 RESOURCES_ROOT="${1:-${ROOT_DIR}/packages/kotlin/native}"
 
 case "$(uname -s)" in
@@ -28,5 +30,7 @@ esac
 # injection route before selecting the audited profile and an empty flag set.
 unset CARGO_ENCODED_RUSTFLAGS
 RUSTFLAGS="" cargo build --locked -p crypto-ffi \
+  --manifest-path "${ROOT_DIR}/Cargo.toml" \
+  --target-dir "${ROOT_DIR}/target" \
   --profile release-ffi
 node "${ROOT_DIR}/scripts/stage_kotlin_native_resource.mjs" "${LIBRARY_PATH}" "${RESOURCES_ROOT}"

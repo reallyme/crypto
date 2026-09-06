@@ -1,13 +1,11 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # @reallyme/crypto
 
 [![npm](https://img.shields.io/npm/v/@reallyme/crypto?label=npm&color=2563eb)](https://www.npmjs.com/package/@reallyme/crypto)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](https://github.com/reallyme/crypto/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](https://github.com/reallyme/crypto/blob/main/LICENSE)
 
 `@reallyme/crypto` is the TypeScript SDK for ReallyMe Crypto. It provides typed,
 synchronous APIs for Node.js and browsers, with explicit JavaScript and
@@ -16,16 +14,6 @@ package-owned WASM providers.
 The package shares algorithm identifiers, byte formats, typed failures, and
 conformance vectors with the Rust, Swift, Kotlin, and Android SDKs. Availability
 is provider-specific; unsupported routes fail closed.
-
-## Why
-
-Modern cryptography APIs differ across platforms. Algorithms are exposed
-differently, key formats vary, providers have different capabilities, and error
-behavior is inconsistent.
-
-ReallyMe Crypto makes platform differences explicit while preserving a stable
-contract for every supported route. Applications can share protocol logic
-without silently changing cryptographic providers.
 
 ## Installation
 
@@ -187,18 +175,6 @@ created.
 Do not move private keys, passwords, plaintext, shared secrets, or derived keys
 through strings or JSON paths.
 
-## Features
-
-- Platform-agnostic cryptography APIs.
-- Consistent key formats and protocol identifiers.
-- Shared conformance vectors across Rust, Swift, Kotlin, and TypeScript.
-- Native providers where available, WASM-backed implementations where needed.
-- Typed errors and fail-closed verification behavior.
-- Generated protobuf operations, algorithm identifiers, and typed wire errors
-  via `@reallyme/crypto/proto`.
-- JWK, multikey, multicodec, HPKE, ML-KEM, ML-DSA, Ed25519, secp256k1, X25519,
-  AES-GCM, ChaCha20-Poly1305, and more.
-
 ## Protobuf Process Boundary
 
 `processOperationResponse(request)` accepts one generated binary
@@ -220,3 +196,9 @@ The complete documentation, provider matrix, protocol contracts, and conformance
 specifications are available in the main repository:
 
 https://github.com/reallyme/crypto
+
+## License
+
+Licensed under either the MIT License or the Apache License, Version 2.0,
+at your option. See [LICENSE](https://github.com/reallyme/crypto/blob/main/LICENSE). Third-party components retain
+their own licenses and notices.

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crypto_ed25519::{sign_ed25519, verify_ed25519};
 use crypto_ml_dsa_44::{sign_ml_dsa_44, verify_ml_dsa_44};

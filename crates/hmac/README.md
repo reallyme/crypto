@@ -1,14 +1,12 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # crypto-hmac
 
 Standalone HMAC authentication tags for ReallyMe Crypto.
 
-This crate exposes HMAC-SHA-256 and HMAC-SHA-512 through typed key and tag
+This crate exposes HMAC-SHA-256, HMAC-SHA-384, and HMAC-SHA-512 through typed key and tag
 wrappers. It is intended for ratchet chain KDFs, transcript authentication, and
 protocol code that needs raw HMAC rather than HKDF.
 

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 /// HPKE KEM identifier for DHKEM(P-256, HKDF-SHA256).
 pub const HPKE_KEM_DHKEM_P256_HKDF_SHA256: u16 = 0x0010;

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
     AES_128_KW_KEK_LENGTH, AES_192_KW_KEK_LENGTH, AES_256_KW_KEK_LENGTH, AES_KW_BLOCK_LENGTH,

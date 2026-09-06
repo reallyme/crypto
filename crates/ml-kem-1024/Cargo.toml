@@ -1,10 +1,9 @@
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
 
 [package]
 name = "reallyme-crypto-ml-kem-1024"
-version = "0.3.6"
+version = "0.3.7"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -20,6 +19,7 @@ name = "crypto_ml_kem_1024"
 default = [ ]
 
 native = [
+    "dep:getrandom",
     "dep:ml-kem",
 ]
 
@@ -30,7 +30,7 @@ wasm = [
 ]
 
 [dependencies]
-crypto-core = { package = "reallyme-crypto-core", version = "=0.3.6", path = "../crypto/core" }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.3.7", path = "../crypto/core" }
 zeroize = { workspace = true }
 getrandom = { workspace = true, features = ["wasm_js"], optional = true }
 

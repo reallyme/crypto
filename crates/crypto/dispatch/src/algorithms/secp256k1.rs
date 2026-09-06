@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 #![allow(clippy::needless_return)]
 use crate::traits::SignatureAlgorithm;
@@ -18,7 +18,7 @@ impl SignatureAlgorithm for Secp256k1Algo {
         #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
         {
             return crate::algorithms::KeypairResultExt::into_algorithm_keypair(
-                crypto_secp256k1::generate_secp256k1_keypair(),
+                crypto_secp256k1::try_generate_secp256k1_keypair(),
                 Self::ALG,
             );
         }

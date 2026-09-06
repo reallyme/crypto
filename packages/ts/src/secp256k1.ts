@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { ReallyMeCryptoError } from "./errors.js";
+import { ensureByteArray } from "./validateBytes.js";
 
 /**
  * secp256k1 ECDSA backed by @noble/curves — the same pinned implementation
@@ -40,12 +41,14 @@ export const ReallyMeSecp256k1 = {
   deriveKeyPair(secretKey: Uint8Array): { publicKey: Uint8Array; secretKey: Uint8Array } {
     return {
       publicKey: this.derivePublicKey(secretKey),
-      secretKey: secretKey.slice(),
+      // Buffer.slice() aliases its input; the returned key must own its bytes.
+      secretKey: new Uint8Array(secretKey),
     };
   },
 
   /** Derives the 33-byte compressed SEC1 public key for a 32-byte secret. */
   derivePublicKey(secretKey: Uint8Array): Uint8Array {
+    ensureByteArray(secretKey);
     if (secretKey.length !== SECP256K1_SECRET_KEY_LENGTH) {
       throw new ReallyMeCryptoError("invalid-input");
     }
@@ -61,6 +64,8 @@ export const ReallyMeSecp256k1 = {
    * SHA-256(message), returning the 64-byte compact low-S signature.
    */
   sign(message: Uint8Array, secretKey: Uint8Array): Uint8Array {
+    ensureByteArray(message);
+    ensureByteArray(secretKey);
     if (secretKey.length !== SECP256K1_SECRET_KEY_LENGTH) {
       throw new ReallyMeCryptoError("invalid-input");
     }
@@ -89,6 +94,9 @@ export const ReallyMeSecp256k1 = {
     message: Uint8Array,
     publicKey: Uint8Array,
   ): void {
+    ensureByteArray(signature);
+    ensureByteArray(message);
+    ensureByteArray(publicKey);
     if (
       signature.length !== SECP256K1_SIGNATURE_LENGTH ||
       publicKey.length !== SECP256K1_COMPRESSED_PUBLIC_KEY_LENGTH

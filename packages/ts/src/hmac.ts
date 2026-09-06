@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256, sha384, sha512 } from "@noble/hashes/sha2.js";
 import { ReallyMeCryptoError } from "./errors.js";
+import { ensureByteArray } from "./validateBytes.js";
 
 export const HMAC_MAX_KEY_LENGTH = 4096;
 export const HMAC_SHA256_TAG_LENGTH = 32;
@@ -14,20 +15,24 @@ export const HMAC_SHA512_TAG_LENGTH = 64;
 export const ReallyMeHmac = {
   authenticateSha256(key: Uint8Array, message: Uint8Array): Uint8Array {
     validateKey(key);
+    ensureByteArray(message);
     return hmac(sha256, key, message);
   },
 
   authenticateSha384(key: Uint8Array, message: Uint8Array): Uint8Array {
     validateKey(key);
+    ensureByteArray(message);
     return hmac(sha384, key, message);
   },
 
   authenticateSha512(key: Uint8Array, message: Uint8Array): Uint8Array {
     validateKey(key);
+    ensureByteArray(message);
     return hmac(sha512, key, message);
   },
 
   verifySha256(tag: Uint8Array, key: Uint8Array, message: Uint8Array): boolean {
+    ensureByteArray(tag);
     if (tag.length !== HMAC_SHA256_TAG_LENGTH) {
       throw new ReallyMeCryptoError("invalid-input");
     }
@@ -35,6 +40,7 @@ export const ReallyMeHmac = {
   },
 
   verifySha384(tag: Uint8Array, key: Uint8Array, message: Uint8Array): boolean {
+    ensureByteArray(tag);
     if (tag.length !== HMAC_SHA384_TAG_LENGTH) {
       throw new ReallyMeCryptoError("invalid-input");
     }
@@ -42,6 +48,7 @@ export const ReallyMeHmac = {
   },
 
   verifySha512(tag: Uint8Array, key: Uint8Array, message: Uint8Array): boolean {
+    ensureByteArray(tag);
     if (tag.length !== HMAC_SHA512_TAG_LENGTH) {
       throw new ReallyMeCryptoError("invalid-input");
     }
@@ -50,6 +57,7 @@ export const ReallyMeHmac = {
 } as const;
 
 function validateKey(key: Uint8Array): void {
+  ensureByteArray(key);
   if (key.length === 0 || key.length > HMAC_MAX_KEY_LENGTH) {
     throw new ReallyMeCryptoError("invalid-input");
   }
@@ -60,9 +68,10 @@ function constantTimeEquals(left: Uint8Array, right: Uint8Array): boolean {
     return false;
   }
   let difference = 0;
-  for (const [index, leftByte] of left.entries()) {
+  for (let index = 0; index < left.length; index += 1) {
+    const leftByte = left[index];
     const rightByte = right[index];
-    if (rightByte === undefined) {
+    if (leftByte === undefined || rightByte === undefined) {
       return false;
     }
     difference |= leftByte ^ rightByte;

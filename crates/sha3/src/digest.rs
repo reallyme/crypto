@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use sha3::{Digest, Sha3_224, Sha3_384, Sha3_512};
 use zeroize::{Zeroize, ZeroizeOnDrop};

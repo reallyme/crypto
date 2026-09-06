@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # reallyme-crypto-hpke
@@ -44,13 +42,12 @@ for reproducible conformance vectors.
 #[cfg(feature = "native")]
 fn main() -> Result<(), crypto_hpke::HpkeError> {
     use crypto_hpke::{
-        derive_keypair, open_base, seal_base, HpkeOpenRequest, HpkeSealRequest,
+        keygen, open_base, seal_base, HpkeOpenRequest, HpkeSealRequest,
         HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM,
     };
 
     let suite = HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM;
-    let input_key_material = [0x5a; 32];
-    let recipient = derive_keypair(suite, &input_key_material)?;
+    let recipient = keygen(suite)?;
     let sealed = seal_base(&HpkeSealRequest {
         suite,
         recipient_public_key: &recipient.public_key,

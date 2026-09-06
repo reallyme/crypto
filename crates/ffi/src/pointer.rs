@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::status::{CryptoStatus, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INVALID_ARGUMENT};
 use core::cell::RefCell;
@@ -186,7 +186,7 @@ fn validate_nonzero_len<T>(ptr: *const T, len: usize) -> Result<(), CryptoStatus
     if ptr.is_null() {
         return Err(CRYPTO_INVALID_ARGUMENT);
     }
-    if len > MAX_FFI_SLICE_LEN {
+    if len > MAX_FFI_SLICE_LEN || ptr.addr().checked_add(len).is_none() {
         return Err(CRYPTO_INVALID_ARGUMENT);
     }
     Ok(())
@@ -466,4 +466,23 @@ pub unsafe fn write_i32(ptr: *mut i32, value: i32) -> CryptoStatus {
         *ptr = value;
     }
     crate::status::CRYPTO_OK
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{validate_read_pair, validate_write_pair};
+    use crate::status::CRYPTO_INVALID_ARGUMENT;
+
+    #[test]
+    fn wrapping_byte_ranges_fail_validation_without_dereferencing() {
+        let pointer = core::ptr::without_provenance_mut::<u8>(usize::MAX);
+        assert_eq!(validate_read_pair(pointer, 2), Err(CRYPTO_INVALID_ARGUMENT));
+        assert_eq!(
+            validate_write_pair(pointer, 2),
+            Err(CRYPTO_INVALID_ARGUMENT)
+        );
+        // Zero-length pointers retain their existing no-access semantics.
+        assert_eq!(validate_read_pair(pointer, 0), Ok(()));
+        assert_eq!(validate_write_pair(pointer, 0), Ok(()));
+    }
 }

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 /// Minimum password/secret input length accepted by the primitive.
 pub const PBKDF2_MIN_PASSWORD_LENGTH: usize = 1;

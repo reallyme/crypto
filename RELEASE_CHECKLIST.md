@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # Release Checklist
@@ -70,30 +68,8 @@ published artifacts from the reviewed source commit.
 - Provider policy, generated matrices, protobuf files, and conformance vectors
   must be fresh before any package release.
 
-## Release Commit
+## Publication Sequence
 
-Before publishing a cross-language release, finish all source and package
-version changes and create the release commit once. Push that commit to `main`.
-Run the four versioned package preflights on that exact commit:
-
-- `crates-package-preflight.yml`;
-- `swift-package-preflight.yml`;
-- `kotlin-android-package-preflight.yml`;
-- `npm-package-preflight.yml`.
-
-Each preflight fails unless its resolved release commit matches both the
-current `origin/main` tip and the workflow run's recorded head SHA.
-
-After every preflight and the `Code Checks` push workflow succeeds, invoke the
-matching release workflow. `swift-package-release.yml` retrieves the exact
-XCFramework retained by the successful Swift preflight, recomputes its SwiftPM
-checksum in a separate job, and publishes that same zip on a tag whose tree
-differs from the reviewed commit only when a generated `Package.swift` binding
-is required. `kotlin-android-package-release.yml`
-publishes the JVM jar and Android AAR. `crates-release.yml` and
-`npm-package-release.yml` publish their registries independently. Starting a
-release workflow is an authorization to publish; release workflows do not have
-dry-run boolean inputs.
-
-The complete operator sequence, required credentials, and recovery guidance
-are documented in [`docs/release-process.md`](docs/release-process.md).
+Follow the [release process](docs/release-process.md#publication) for exact-SHA
+preflights, release workflow order, credentials, and recovery. Starting a release
+workflow authorizes publication; those workflows have no dry-run mode.

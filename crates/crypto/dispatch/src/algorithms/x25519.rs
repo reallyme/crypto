@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 #![allow(clippy::needless_return)]
 use crate::AlgorithmError;
@@ -22,7 +22,7 @@ impl X25519Algo {
         #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
         {
             return crate::algorithms::KeypairResultExt::into_algorithm_keypair(
-                crypto_x25519::generate_x25519_keypair(),
+                crypto_x25519::try_generate_x25519_keypair(),
                 Self::ALG,
             );
         }

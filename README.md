@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # reallyme-crypto
@@ -11,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
 [![npm](https://img.shields.io/npm/v/@reallyme/crypto?label=npm&color=2563eb)](https://www.npmjs.com/package/@reallyme/crypto)
 [![Maven Central](https://img.shields.io/maven-central/v/me.really/crypto?label=maven)](https://central.sonatype.com/artifact/me.really/crypto)
 [![Security Policy](https://img.shields.io/badge/security-policy-0f766e)](SECURITY.md)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE)
 
 ReallyMe Crypto is a cross-platform cryptography workspace for Rust, Swift,
 Kotlin, Android, and TypeScript. It provides one typed operation contract,
@@ -128,7 +126,7 @@ When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.3.6", default-features = false, features = [
+reallyme-crypto = { version = "0.3.7", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -141,7 +139,7 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.3.6", default-features = false, features = [
+reallyme-crypto = { version = "0.3.7", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }
@@ -156,7 +154,7 @@ OpenMLS adapters can select the narrow HPKE profile without enabling the full
 HPKE compatibility surface:
 
 ```toml
-reallyme-crypto = { version = "0.3.6", default-features = false, features = [
+reallyme-crypto = { version = "0.3.7", default-features = false, features = [
   "native",
   "hpke-openmls",
 ] }
@@ -182,9 +180,15 @@ the selected backend into every enabled primitive crate. The `wasm` lane is for
 Some Rust helper APIs are intentionally lane-scoped. P-256 raw scalar import is
 available in both native and wasm lanes through
 `p256::generate_p256_keypair_from_secret_key`; it validates an existing private
-scalar and is not random key generation. P-384 and P-521 ECDH are native Rust
-APIs today; the Swift, Kotlin, and TypeScript package facades expose their own
-provider-backed P-384/P-521 ECDH surfaces.
+scalar and is not random key generation. P-384 and P-521 ECDH are available
+in both Rust lanes; the Swift, Kotlin, and TypeScript facades expose their
+manifest-declared provider-backed P-384/P-521 ECDH surfaces.
+
+For standalone X25519 and secp256k1 random key generation, prefer
+`try_generate_x25519_keypair` and `try_generate_secp256k1_keypair`. These
+return typed errors when operating-system entropy is unavailable. The legacy
+infallible functions remain for compatibility; the dispatch API uses the
+fallible path.
 
 The Swift package also includes a P-256 ECDH Secure Enclave / Keychain API for
 applications that need non-exportable private-key residency, such as JOSE/JWE
@@ -196,7 +200,7 @@ separate from raw private-key bytes.
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.3.6"
+    from: "0.3.7"
 )
 ```
 
@@ -208,7 +212,7 @@ separate from raw private-key bytes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.3.6")
+    implementation("me.really:crypto:0.3.7")
 }
 ```
 
@@ -275,8 +279,8 @@ ReallyMe Crypto uses raw bytes for single primitive outputs, protobuf bytes for
 fixed multi-field boundary results, and strict proto-JSON for Connect JSON,
 CLI, browser-adapter, and conformance boundaries that require JSON. Proto-JSON
 is available for operation requests, but it is not a casual
-JSON crypto facade and is not the preferred representation for secret-bearing
-payloads. JSON convenience shapes remain limited to public metadata such as
+JSON crypto facade. Executable secret-bearing requests must use binary
+protobuf; their ProtoJSON selectors are rejected before value deserialization. JSON convenience shapes remain limited to public metadata such as
 JWK/JWKS.
 
 For example, a JSON-only client can express a SHA2-256 hash request as strict
@@ -336,7 +340,7 @@ policy.
   — External conformance vectors from NIST ACVP, CCTV, Wycheproof, BIP-340, and
   RFC 8032, plus the optional audit workflow and formal-methods notes.
 - [docs/dependency-updates.md](docs/dependency-updates.md) — dependency update
-  policy and Renovate review rules.
+  policy and manual review requirements.
 - [docs/rust-publishing.md](docs/rust-publishing.md) — publishing the Rust crates.
 - [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) — cross-ecosystem release gates.
 - [SECURITY.md](SECURITY.md), [SECURITY_MEMORY_MODEL.md](SECURITY_MEMORY_MODEL.md)
@@ -367,3 +371,15 @@ cargo nextest run --workspace --all-features
 ```
 
 The full release wall is documented in [docs/conformance.md](docs/conformance.md).
+
+## License
+
+Licensed under either the MIT License or the Apache License, Version 2.0,
+at your option. See [LICENSE](LICENSE). Third-party components retain
+their own licenses and notices.
+
+## Copyright And Trademarks
+
+Copyright © 2026 by ReallyMe LLC.
+
+ReallyMe® is a registered trademark of ReallyMe LLC.

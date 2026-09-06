@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 #[test]
 fn rsa_ffi_verifies_pkcs1v15_and_pss() -> Result<(), crypto_core::CryptoError> {

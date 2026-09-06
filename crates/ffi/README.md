@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # crypto-ffi
@@ -19,7 +17,8 @@ The crate builds an `rlib`, `staticlib`, and `cdylib`. The public C header is
 - all byte pointer/length pairs are checked in `src/pointer.rs` before Rust
   slices are constructed
 - null byte pointers are accepted only with a paired length of `0`
-- byte lengths greater than `isize::MAX` are rejected at the boundary
+- byte lengths greater than `isize::MAX` and overflowing pointer ranges are
+  rejected at the boundary
 - typed output pointers (`size_t*`, `int32_t*`) must be non-null and naturally
   aligned
 - output lengths are explicit and caller-owned output buffers must not overlap
@@ -28,6 +27,10 @@ The crate builds an `rlib`, `staticlib`, and `cdylib`. The public C header is
 - failures return `rm_crypto_status_t`
 - errors never carry secret or caller-provided data
 - callers own output buffers and any platform-specific zeroization policy
+
+These checks cannot prove that a non-null address belongs to a live allocation.
+Callers must provide readable/writable allocations of the declared size, keep
+them alive for the call, and prevent concurrent mutation or invalid aliasing.
 
 Only `rm_crypto_process_operation_response` and
 `rm_crypto_process_operation_response_json` support probe/fill sizing: when the
@@ -101,5 +104,5 @@ cargo test -p crypto-ffi
 ```
 
 The Swift conformance harness also loads this library dynamically for the
-post-quantum and SHA-3 checks. Rust FFI tests cover the exported SHA-2 and
-SHA-3 ABI.
+post-quantum and SHA-3 checks. Rust FFI tests exercise scalar and structured
+operation routes, invalid pointers and lengths, aliasing, and typed failures.

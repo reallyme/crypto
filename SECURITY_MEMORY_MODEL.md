@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # Security Memory Model
@@ -61,6 +59,10 @@ Protocol crates may impose stricter rules. They must not weaken this model.
 ### 4. Clear / Drop
 
 - Owner types zeroize on drop.
+- Generated Rust protobuf byte/string fields clear their previous contents
+  before replacement during merging. Failed merges clear partial output, and
+  owner destruction clears retained allocation capacity. Caller-owned input
+  buffers and managed-runtime codec copies remain the caller's responsibility.
 - Temporary buffers are zeroized before returning where drop timing is not enough.
 - FFI, JNI, WASM, and platform FFI adapters zeroize Rust-owned temporary inputs,
   plaintexts, shared secrets, derived keys, and secret-bearing output staging
@@ -80,11 +82,11 @@ Protocol crates may impose stricter rules. They must not weaken this model.
 | Member lint inheritance | Implemented | Every member `Cargo.toml` has `[lints] workspace = true` |
 | Typed domain errors | Implemented | `core/src/error.rs`, primitive-specific `ErrorReason` use |
 | Zeroizing secret wrappers | Implemented for secret-bearing primitives | AES/KDF/HKDF key and secret owner types |
-| Runtime lane separation | Implemented as feature lanes and package matrix entries | `native`, `wasm`, `swift`, `kotlin` feature checks; backend matrix in `PROVIDER_POLICY.md` |
+| Runtime lane separation | Implemented as feature lanes and package matrix entries | Rust `native`/`wasm` feature checks; Swift/Kotlin SDK lanes in `PROVIDER_POLICY.md` |
 | Negative-vector policy | Implemented as workspace policy | `vectors/README.md`, `CONTRACT.md`, `PROVIDER_POLICY.md` |
 | Managed-runtime best-effort cleanup helpers | Implemented for Swift, Kotlin, and TypeScript | `ReallyMeCryptoMemory.bestEffortClear`, `bestEffortClear(bytes)` |
 | Dependency policy gate | Implemented | `deny.toml` |
-| Apache-2.0 source headers | Implemented | SPDX headers on hand-written workspace files |
+| Dual MIT / Apache-2.0 licensing | Implemented | License headers on project-owned code and scripts; package metadata and `LICENSE` |
 
 ## Hardening Expectations
 
@@ -211,18 +213,9 @@ crash reporters, debugger snapshots, swap, hibernation, or application logs.
 4. Require positive and negative vectors for every new primitive, backend, or security hardening change.
 5. Treat FFI destroy/zeroize paths as part of the API contract, not cleanup polish.
 
-## Audit Evidence
+## Validation
 
-Required local gate:
-
-```sh
-cargo fmt --check
-cargo check --workspace --all-features
-cargo clippy --workspace --all-targets --all-features -- -D warnings
-cargo nextest run --workspace --no-default-features --features native
-cargo check --workspace --no-default-features --features native
-cargo check --workspace --no-default-features --features wasm
-node scripts/generate_provider_matrix.mjs --check
-node scripts/check_release_readiness.mjs
-cargo deny check
-```
+Run the [conformance validation](docs/conformance.md#full-release-wall), including
+`node scripts/check_release_readiness.mjs`, before accepting changes to secret
+ownership or boundary handling. Record skipped hardware tests and their scope
+in release evidence.

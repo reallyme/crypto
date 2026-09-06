@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { gcm } from "@noble/ciphers/aes.js";
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";

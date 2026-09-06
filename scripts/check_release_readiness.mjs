@@ -1,15 +1,21 @@
 #!/usr/bin/env node
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { readdirSync } from "node:fs";
 
 import { assertCryptoOperationRouteReadiness } from "./crypto_operation_route_readiness.mjs";
 import { createReleaseReadinessContext } from "./release-readiness/core.mjs";
 
+// The checker parses Cargo's registry output. Rust setup actions export
+// CARGO_TERM_COLOR=always, which otherwise inserts ANSI escapes into crate names
+// even when stdout is captured and makes exact registry lookups fail in CI.
+process.env.CARGO_TERM_COLOR = "never";
+
 const {
   readText,
+  loadTrackedFiles,
   readJson,
   fail,
   assertContains,
@@ -34,18 +40,67 @@ const {
   requireTrackedFiles: true,
 });
 
-const rustRootVersion = "0.3.6";
-const cryptoProtoPackageVersion = "0.3.6";
-const typescriptPackageVersion = "0.3.6";
-const kotlinPackageVersion = "0.3.6";
-const kotlinAndroidPackageVersion = "0.3.6";
-const rustCodecVersion = "0.2.2";
-const sdkCodecVersion = "0.2.2";
+// Keep shipped license copies and package metadata aligned with the choice
+// offered by the repository, without changing third-party license notices.
+const projectLicense = "MIT OR Apache-2.0";
+const trackedFiles = loadTrackedFiles();
+const trackedPaths = new Set(trackedFiles);
+for (const path of trackedFiles) {
+  if (path.startsWith("vectors/external/")) continue;
+  if (/\.(?:md|txt|toml|json|ya?ml|xml|properties|pro)$/u.test(path) || path.endsWith(".gitignore") || path.endsWith("NOTICE")) {
+    assertNotContains(path, "SPDX-License-Identifier:");
+    assertNotContains(path, '"spdxLicenseIdentifier"');
+    assertNotContains(path, '"spdx_license_identifier"');
+  }
+  // An include allowlist does not make absent license files part of a crate.
+  // Require committed copies so standalone registry packages carry the terms.
+  if (path.endsWith("/Cargo.toml") && /^publish = true$/mu.test(readText(path))) {
+    const directory = path.slice(0, -"Cargo.toml".length);
+    for (const name of ["LICENSE", "NOTICE"]) {
+      if (!trackedPaths.has(`${directory}${name}`)) {
+        fail(`${path} is missing a committed ${name} for publication`);
+      }
+      assertContains(path, `"/${name}"`);
+    }
+  }
+  if (path.endsWith("/LICENSE")) {
+    if (readText(path) !== readText("LICENSE")) fail(`${path} differs from the repository license`);
+  }
+  if (path.endsWith("/NOTICE")) {
+    if (readText(path) !== readText("NOTICE")) fail(`${path} differs from the repository notice`);
+  }
+}
+assertContains("Cargo.toml", `license = "${projectLicense}"`);
+assertContains("LICENSE", "MIT License");
+assertContains("LICENSE", "Apache License");
+assertContains("README.md", `## Copyright And Trademarks
+
+Copyright © 2026 by ReallyMe LLC.
+
+ReallyMe® is a registered trademark of ReallyMe LLC.`);
+for (const directory of ["packages/ts", "crates/conformance"]) {
+  if (readJson(`${directory}/package.json`).license !== projectLicense ||
+      readJson(`${directory}/package-lock.json`).packages[""].license !== projectLicense) {
+    fail(`${directory} package license metadata is inconsistent`);
+  }
+}
+for (const path of ["packages/kotlin/build.gradle.kts", "packages/kotlin-android/build.gradle.kts"]) {
+  assertContains(path, 'name.set("MIT License")');
+  assertContains(path, 'name.set("Apache License, Version 2.0")');
+}
+
+const rustRootVersion = "0.3.7";
+const cryptoProtoPackageVersion = "0.3.7";
+const typescriptPackageVersion = "0.3.7";
+const kotlinPackageVersion = "0.3.7";
+const kotlinAndroidPackageVersion = "0.3.7";
+const rustCodecVersion = "0.2.3";
+const sdkCodecVersion = "0.2.3";
 const rustSemverBaselineCommit = "5b8928f10777d0ce44561bb966b9425a281a05d7";
 const rustSemverBaselinePath = ".semver-baseline";
 const cargoSemverChecksVersion = "0.49.0";
-const buffaVersion = "0.9.1";
-const releaseReadinessCommit = "44065b7488a8d3c77f66f530dff770fb39be9707";
+const buffaVersion = "0.9.2";
+const releaseReadinessCommit = "304bc55cdca3c53bf66218982d51188f341806ed";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
 const releaseReadinessCheckoutRequired = [
   "repository: reallyme/release-readiness",
@@ -130,7 +185,7 @@ const assertZeroizingGeneratedUnknownFieldOwner = (generatedPath, messageName) =
 };
 
 if (releaseVersionEnv !== undefined && !/^[0-9]+[.][0-9]+[.][0-9]+$/.test(releaseVersionEnv)) {
-  fail("RELEASE_VERSION must be an exact semver release such as 0.3.6");
+  fail("RELEASE_VERSION must be an exact semver release such as 0.3.7");
 }
 
 const manifest = readJson("provider_manifest.json");
@@ -138,6 +193,8 @@ runNodeCheck("scripts/check_provider_routing.mjs");
 runNodeCheck("scripts/check_negative_vectors.mjs");
 runNodeCheck("scripts/crypto_operation_route_readiness.test.mjs");
 runNodeCheck("scripts/prepare_semver_baseline.test.mjs");
+runNodeCheck("scripts/native_build_scripts.test.mjs");
+runNodeCheck("scripts/proto_hardening.test.mjs");
 runNodeCheck("scripts/publish_retry_policy.test.mjs");
 runNodeCheck("scripts/verify_release_attestation.test.mjs");
 runNodeCheck("scripts/verify_native_artifact_handoff.test.mjs");
@@ -325,12 +382,12 @@ const assertCodecDependencyProvenance = () => {
   }
 
   const registryCodecChecksums = new Map([
-    ["reallyme-codec-base64url", "bb74b4024974a42b57af7e6adaac4de29064c418aabd1f6a4340e036159008ef"],
-    ["reallyme-codec-jcs", "ffd1f9596d04571fb7770a68ea9b34c73a37a785fb040dbd76bf607d2a9b5c17"],
-    ["reallyme-codec-multibase", "052ad33dd79323e26feefdc931b5592bacef1a5bff5fd44102a2b1b2aac8414f"],
-    ["reallyme-codec-multicodec", "1fcc8c9eaf92b3ea70e1410cccf7ad3afeb047a2e72c4a5a314194f7d25b1c9e"],
-    ["reallyme-codec-multikey", "4e2f9a1fbbfb554dec213a45bea13a4698c943bfc62ded87e10ba5fa9f9fd770"],
-    ["reallyme-codec-pem", "5562771b670dce08f659d1c391bb78f7e46a5d6ad5a2dd551161e93bdb38e663"],
+    ["reallyme-codec-base64url", "f6bf7a30f229edf6e3236df0b2b11c522da128cfbdcc3b0dfca4912b7f6463a0"],
+    ["reallyme-codec-jcs", "4e8f5718cd2bdbcdc6b6b9eb91ac77ea35aaec6051c7222367090ad52b1fc551"],
+    ["reallyme-codec-multibase", "e38491c026515d692ac863bd277eba813a399053bc3740550f0cb3e6206bd003"],
+    ["reallyme-codec-multicodec", "9400a5df3a8bc8e66e87be32a2563dd631f923c29418ce582949ac6ba4fcfa8f"],
+    ["reallyme-codec-multikey", "86018a0dd6bad08ad4f48f5a1d62c8db722f2f4407bd0991824fdd8ca1744e0f"],
+    ["reallyme-codec-pem", "7bcaf67e2614ae686fab132732937779dfaaa93bc527c0f1dea0637791432b81"],
   ]);
   for (const lockPath of ["Cargo.lock", "fuzz/Cargo.lock"]) {
     for (const [packageName, checksum] of registryCodecChecksums) {
@@ -794,7 +851,7 @@ assertContains(
 assertNotContains("packages/ts/scripts/build-wasm.mjs", '"wasm-package"');
 assertContains(
   "crates/wasm/Cargo.toml",
-  'crypto-runtime = { package = "reallyme-crypto", version = "=0.3.6", path = "../crypto", default-features = false, features = ["operation-response", "native"',
+  'crypto-runtime = { package = "reallyme-crypto", version = "=0.3.7", path = "../crypto", default-features = false, features = ["operation-response", "native"',
 );
 assertNotContains(
   "crates/wasm/Cargo.toml",
@@ -1405,15 +1462,15 @@ for (const metadataPath of [
 }
 assertContains(
   "docs/maven-provenance.md",
-  "4262bdb4cd844c3f44a120df1b2baa456b35ca05e82cfc1ee126e2ce8ad4c669",
+  "a85f18da11b207f7a675d5cee19b295f090e647a5d0483517b036c32d89a73da",
 );
 assertContains(
   "docs/maven-provenance.md",
-  "74d926351b438e7e6bd1b893c73fe1286b54127a667fa02e31f85d4f36603816",
+  "d71f6481d903e88fdf7a58def6ab3b81b15f4666f8acc7dcedbd02b5e523676a",
 );
 assertContains(
   "docs/maven-provenance.md",
-  "cf5c0e2bc465d24a833f6c3492b574675b0a0f2b",
+  "50e7053b683ef54155fa794d1a84a7db67a4ab57",
 );
 assertContains("packages/kotlin/README.md", "intentionally use Gradle 9.7.1");
 assertContains("packages/kotlin/README.md", "independently pinned to Gradle 8.14.4");
@@ -1594,7 +1651,7 @@ assertContains(
   "Generic AEAD primitive and dispatch APIs treat `aad` as caller-provided bytes",
 );
 assertContains("RELEASE_NOTES.md", "## 0.3.0");
-assertContains("RELEASE_NOTES.md", "## 0.3.6");
+assertContains("RELEASE_NOTES.md", "## 0.3.7");
 assertContains("RELEASE_NOTES.md", "legacy `reallyme.codec.v1` protobuf/package surface was removed");
 assertContains("RELEASE_NOTES.md", "not a `reallyme.crypto.v1` wire break");
 assertContains("RELEASE_NOTES.md", "permanently retired in this repository");
@@ -2445,7 +2502,7 @@ const primaryOperationBoundaryPolicy = {
 const repositoryPolicy = {
   generatedFreshnessMode,
   vendoredCore: {
-    contractVersion: 9,
+    contractVersion: 10,
     scriptPath: "scripts/check_release_readiness.mjs",
     corePath: "scripts/release-readiness/core.mjs",
   },
@@ -2468,17 +2525,32 @@ const repositoryPolicy = {
     validatePublishablePathDependencies: true,
   },
   spdx: {
+    // License identifiers belong on source and scripts, not documentation or
+    // configuration. Vendored sources retain their upstream licensing.
+    extensions: [".rs", ".ts", ".js", ".mjs", ".py", ".sh", ".swift", ".kt", ".kts", ".java", ".h", ".c", ".proto", ".spthy"],
+    names: [],
+    license: "SPDX-License-Identifier: MIT OR Apache-2.0",
     excludedPrefixes: [
       "crates/proto/src/generated",
       "packages/ts/src/proto/generated",
       "gen",
       "target",
       "vectors/external",
+      "scripts/release-readiness/core.mjs",
     ],
   },
   protobufBoundary: primaryOperationBoundaryPolicy,
   protobufRelease: protobufReleasePolicy,
   cargoMetadata: {
+    reallyMeLatestStableDependencies: {
+      names: [
+        "reallyme-codec-base64url",
+        "reallyme-codec-jcs",
+        "reallyme-codec-multikey",
+        "reallyme-codec-pem",
+      ],
+      requirement: "caret",
+    },
     packages: [
       {
         name: "reallyme-crypto",
@@ -2601,7 +2673,7 @@ const repositoryPolicy = {
         path: "scripts/run_pinned_release_readiness.mjs",
         required: [
           `const RELEASE_READINESS_COMMIT = "${releaseReadinessCommit}";`,
-          'const RELEASE_READINESS_CORE_SHA256 =\n  "fcc0b725a85784617568c29f1aa3382a206faaddc3a22012e46f0e35303e4e6d";',
+          'const RELEASE_READINESS_CORE_SHA256 =\n  "0a33532aa595871c1beefb1ad1d3930f1a51675b236a73e8bf93ad5d7ccdbae4";',
         ],
         forbidden: [
           "RELEASE_READINESS_COMMIT = \"main\"",
@@ -2955,7 +3027,7 @@ assertContains("scripts/prepare_swift_release_candidate.sh", "build_swift_xcfram
 assertContains("scripts/prepare_swift_release_candidate.sh", "prepare_swift_binary_manifest.mjs");
 assertContains("scripts/prepare_swift_release_candidate.sh", "verify_swift_release_artifact.mjs");
 assertContains("RELEASE_CHECKLIST.md", "retains that exact archive as the release candidate");
-assertContains("docs/release-process.md", "prepare_swift_release_candidate.sh 0.3.6");
+assertContains("docs/release-process.md", "prepare_swift_release_candidate.sh 0.3.7");
 assertContains(
   "packages/kotlin/src/main/kotlin/me/really/crypto/OperationResponse.kt",
   "processOperationResponseNative(request: ByteArray): ByteArray?",
@@ -2976,6 +3048,7 @@ assertContains("scripts/verify_swift_release_artifact.test.mjs", "rejects a forg
 assertContains(".github/workflows/rust-ci.yml", "tool: nextest@0.9.140");
 assertContains(".github/workflows/rust-ci.yml", "cargo install cargo-deny --version 0.20.2 --locked");
 assertContains(".github/workflows/rust-ci.yml", "tool: cargo-audit@0.22.2");
+assertContains(".github/workflows/rust-ci.yml", "scripts/audit_committed_lockfiles.sh");
 assertContains(".github/workflows/rust-ci.yml", "cargo metadata --locked --format-version 1 --no-deps");
 assertContains(
   ".github/workflows/rust-ci.yml",
@@ -3087,7 +3160,7 @@ if (swiftReleaseArtifactVerificationCount !== 2) {
 assertContains(".github/workflows/npm-package-preflight.yml", "npm package preflight");
 assertContains(".github/workflows/npm-package-preflight.yml", "npm run pack:check");
 assertContains(".github/workflows/npm-package-release.yml", "npm Package Release");
-assertContains(".github/workflows/npm-package-release.yml", "default: 0.3.6");
+assertContains(".github/workflows/npm-package-release.yml", "default: 0.3.7");
 assertContains(".github/workflows/npm-package-release.yml", "node scripts/run_pinned_release_readiness.mjs --release-packages");
 assertContains(".github/workflows/npm-package-release.yml", "wasm-pack@0.15.0");
 assertContains(".github/workflows/npm-package-release.yml", "wasm-bindgen-cli@0.2.127");
@@ -3097,7 +3170,10 @@ assertContains(".github/workflows/npm-package-release.yml", "npm pack --ignore-s
 assertContains(".github/workflows/npm-package-release.yml", "reallyme-crypto-${RELEASE_VERSION}.tgz");
 
 assertContains(".github/workflows/crates-package-preflight.yml", "cargo semver-checks --workspace");
+assertContains(".github/workflows/crates-package-preflight.yml", "tool: cargo-audit@0.22.2");
+assertContains(".github/workflows/crates-package-preflight.yml", "scripts/audit_committed_lockfiles.sh");
 assertContains(".github/workflows/crates-package-preflight.yml", "node scripts/publish_crates_in_order.mjs inspect");
+assertContains("deny.toml", 'yanked = "deny"');
 assertContains(".github/workflows/crates-release.yml", "verify_release_attestation.mjs");
 assertContains(".github/workflows/crates-release.yml", "node scripts/publish_crates_in_order.mjs order");
 assertContains(

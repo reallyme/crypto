@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { ReallyMeCryptoError } from "./errors.js";
+import { ensureByteArray } from "./validateBytes.js";
 
 /**
  * Ed25519 signatures backed by @noble/curves — the same pinned implementation
@@ -37,12 +38,14 @@ export const ReallyMeEd25519 = {
   deriveKeyPair(secretKey: Uint8Array): { publicKey: Uint8Array; secretKey: Uint8Array } {
     return {
       publicKey: this.derivePublicKey(secretKey),
-      secretKey: secretKey.slice(),
+      // Buffer.slice() aliases its input; the returned key must own its bytes.
+      secretKey: new Uint8Array(secretKey),
     };
   },
 
   /** Derives the 32-byte Ed25519 public key from a 32-byte seed. */
   derivePublicKey(secretKey: Uint8Array): Uint8Array {
+    ensureByteArray(secretKey);
     if (secretKey.length !== ED25519_SECRET_KEY_LENGTH) {
       throw new ReallyMeCryptoError("invalid-input");
     }
@@ -55,6 +58,8 @@ export const ReallyMeEd25519 = {
 
   /** Signs the full message using plain deterministic Ed25519. */
   sign(message: Uint8Array, secretKey: Uint8Array): Uint8Array {
+    ensureByteArray(message);
+    ensureByteArray(secretKey);
     if (secretKey.length !== ED25519_SECRET_KEY_LENGTH) {
       throw new ReallyMeCryptoError("invalid-input");
     }
@@ -75,6 +80,9 @@ export const ReallyMeEd25519 = {
     message: Uint8Array,
     publicKey: Uint8Array,
   ): void {
+    ensureByteArray(signature);
+    ensureByteArray(message);
+    ensureByteArray(publicKey);
     if (
       signature.length !== ED25519_SIGNATURE_LENGTH ||
       publicKey.length !== ED25519_PUBLIC_KEY_LENGTH

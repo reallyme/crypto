@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -626,6 +626,11 @@ impl ::core::ops::Drop for __ReallyMeZeroizingUnknownFields {
         `        self.${field.name}.clear();`,
         `        ::zeroize::Zeroize::zeroize(&mut self.${field.name});`,
       );
+      const mergeFunction = isSensitiveStringField(field) ? "merge_string" : "merge_bytes";
+      source = source.replaceAll(
+        `::buffa::types::${mergeFunction}(&mut self.${field.name}, buf)?;`,
+        `crate::merge_sensitive::${mergeFunction}(&mut self.${field.name}, buf)?;`,
+      );
     }
 
     const implMarker = `impl ${messageName} {`;
@@ -685,8 +690,14 @@ impl ::core::ops::Drop for __ReallyMeZeroizingUnknownFields {
   const ignoredUnknownField = `                        _ => {
                             map.next_value::<serde::de::IgnoredAny>()?;
                         }`;
+  // Buffa 0.9.2 qualifies serde from the crate root. Accept that spelling
+  // alongside older generated input while retaining the exact branch count.
+  const qualifiedIgnoredUnknownField = ignoredUnknownField.replace(
+    "::<serde::", "::<::serde::",
+  );
   const ignoredUnknownFieldCount =
-    source.split(ignoredUnknownField).length - 1;
+    source.split(ignoredUnknownField).length - 1 +
+    source.split(qualifiedIgnoredUnknownField).length - 1;
   const strictUnknownField = `                        _ => {
                             return Err(serde::de::Error::custom("unknown field"));
                         }`;
@@ -700,6 +711,7 @@ impl ::core::ops::Drop for __ReallyMeZeroizingUnknownFields {
     );
   }
   source = source.replaceAll(ignoredUnknownField, strictUnknownField);
+  source = source.replaceAll(qualifiedIgnoredUnknownField, strictUnknownField);
 
   writeFileSync(rustGeneratedPath, source);
 }

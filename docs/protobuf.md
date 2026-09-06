@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # Protobuf
@@ -34,6 +32,26 @@ lanes may execute each algorithm and what output they must produce.
 | Swift | `ReallyMeCryptoProto` plus `ReallyMeCryptoProtoAdapters` |
 | Kotlin | generated `me.really.crypto.v1` types plus `me.really.crypto.proto.ReallyMeCryptoProtoAdapters` |
 | TypeScript | `@reallyme/crypto/proto` |
+
+## Generation
+
+From the repository root, using Buf `1.72.0`, `protoc-gen-buffa` `0.9.2`, and
+`protoc-gen-buffa-packaging` `0.9.2`, matching protobuf CI:
+
+```sh
+buf lint
+buf generate
+node scripts/redact_crypto_proto_debug.mjs
+node scripts/redact_crypto_proto_debug.mjs --check-idempotent
+cargo fmt -p reallyme-crypto-proto
+```
+
+The post-generation step is required: it applies secret redaction, zeroization,
+and strict decoding to generated bindings. Do not publish raw generator output
+without it. Rust outputs live under `crates/proto/src/generated`, TypeScript
+package bindings under `packages/ts/src/proto/generated`, and additional
+TypeScript, JavaScript, Swift, Java, and Kotlin outputs under `gen/`.
+Review generated diffs and run the conformance checks before accepting them.
 
 ## Boundary Rule
 
@@ -83,7 +101,7 @@ operation contract executes hash, AEAD seal/open,
 MAC authenticate/verify, signature key
 generation/derivation/sign/verify, key-agreement key derivation and
 shared-secret derivation, KEM generation/derivation/encapsulation/decapsulation,
-versioned Argon2id derivation, HKDF-SHA256 derivation, modern-policy
+versioned Argon2id derivation, HKDF-SHA256/SHA384 derivation, modern-policy
 PBKDF2-HMAC-SHA256/SHA512 derivation, KMAC256 derivation, fixed-size JWA Concat
 KDF SHA-256 derivation, and AES-128/192/256
 key wrap/unwrap, BIP-340 Schnorr signing, and RSA PKCS#1 v1.5/PSS
@@ -264,22 +282,22 @@ algorithms, unavailable providers, and backend/internal failures use
 
 ### Proto-JSON Transport
 
-Strict proto-JSON is supported for the same operation request/result messages
-that are available as protobuf bytes. This is a transport and conformance lane,
+Generated bindings define ProtoJSON shapes for the operation messages, but
+the executable adapter accepts only non-secret request selectors and returns
+binary protobuf responses. This is a transport and conformance lane,
 not a separate crypto facade. It exists for Connect JSON clients, CLIs,
 browser-facing adapters, fixtures, and cross-language tests that need
 human-inspectable requests while preserving the protobuf schema: algorithms are
 enum-backed, byte fields are base64-encoded, malformed JSON maps to typed
-backend errors, and size limits are enforced before conversion to protobuf
+malformed-JSON errors, and size limits are enforced before conversion to protobuf
 bytes.
 
-Proto-JSON can represent every operation envelope, including AEAD, MAC, KDF,
-key-wrap, HPKE, KEM, and signature messages. That does not make JSON the
-preferred representation for secret-bearing data. JSON parsers, logs,
+Secret-bearing selectors, including AEAD, MAC, KDF, key-wrap, private-key
+derivation, signing, and decapsulation, are rejected before JSON value
+deserialization. Use binary protobuf for those operations. JSON parsers, logs,
 middleware, browser developer tools, crash reporters, and managed runtimes make
-extra copies that are harder to zeroize. Use proto-JSON for secret-bearing
-requests only when an actual protocol boundary requires JSON; otherwise prefer
-raw bytes or protobuf bytes.
+extra copies that are harder to zeroize; a JSON-only transport does not bypass
+this restriction.
 
 Generated bindings retain the copy/clone behavior required by their protobuf
 runtimes. Rust-owned byte fields are redacted from `Debug`, zeroized on drop,
@@ -316,7 +334,7 @@ The rule of thumb is:
 | Multiple fields or typed boundary result | Protobuf binary |
 | Connect JSON / CLI / conformance request | Strict proto-JSON |
 | Human/app-facing public metadata | JSON convenience |
-| Secret-bearing material | Raw binary or protobuf binary; proto-JSON only when required by the protocol boundary |
+| Secret-bearing material | Raw binary or protobuf binary; executable ProtoJSON rejects secret-bearing selectors |
 
 ## TypeScript Example
 

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 //! Fuzz the RSA public-key DER parser reached through signature verification.
 //! Property: parsing an untrusted DER public key (PKCS#1 or SPKI) and a

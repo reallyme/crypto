@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.tasks.PublishToMavenLocal
@@ -20,7 +20,7 @@ plugins {
 }
 
 group = "me.really"
-version = "0.3.6"
+version = "0.3.7"
 
 val remoteMavenRepositoryUrl = providers.gradleProperty("reallyme.maven.repositoryUrl")
     .orElse(providers.environmentVariable("REALLYME_MAVEN_REPOSITORY_URL"))
@@ -304,7 +304,7 @@ dependencies {
     implementation("org.bouncycastle:bcprov-jdk18on:1.85.2")
     implementation("fr.acinq.secp256k1:secp256k1-kmp:0.24.0")
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.24.0")
-    implementation("me.really:codec-android:0.2.2")
+    implementation("me.really:codec-android:0.2.3")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
 }
@@ -512,6 +512,11 @@ afterEvaluate {
                     )
                     url.set("https://github.com/reallyme/crypto")
                     licenses {
+                        license {
+                            name.set("MIT License")
+                            url.set("https://opensource.org/license/mit")
+                            distribution.set("repo")
+                        }
                         license {
                             name.set("Apache License, Version 2.0")
                             url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")

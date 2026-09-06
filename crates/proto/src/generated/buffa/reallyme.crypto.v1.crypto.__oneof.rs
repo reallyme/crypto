@@ -44,22 +44,22 @@ pub mod crypto_error {
             Self::Some(Error::from(v))
         }
     }
-    impl serde::Serialize for Error {
-        fn serialize<S: serde::Serializer>(
+    impl ::serde::Serialize for Error {
+        fn serialize<S: ::serde::Serializer>(
             &self,
             s: S,
         ) -> ::core::result::Result<S::Ok, S::Error> {
-            use serde::ser::SerializeMap;
+            use ::serde::ser::SerializeMap;
             let mut map = s.serialize_map(Some(1))?;
             match self {
                 Self::Primitive(v) => {
-                    map.serialize_entry("primitive", v)?;
+                    map.serialize_entry("primitive", &**v)?;
                 }
                 Self::Provider(v) => {
-                    map.serialize_entry("provider", v)?;
+                    map.serialize_entry("provider", &**v)?;
                 }
                 Self::Backend(v) => {
-                    map.serialize_entry("backend", v)?;
+                    map.serialize_entry("backend", &**v)?;
                 }
             }
             map.end()
@@ -539,109 +539,109 @@ pub mod crypto_operation_request {
             Self::Some(Operation::from(v))
         }
     }
-    impl serde::Serialize for Operation {
-        fn serialize<S: serde::Serializer>(
+    impl ::serde::Serialize for Operation {
+        fn serialize<S: ::serde::Serializer>(
             &self,
             s: S,
         ) -> ::core::result::Result<S::Ok, S::Error> {
-            use serde::ser::SerializeMap;
+            use ::serde::ser::SerializeMap;
             let mut map = s.serialize_map(Some(1))?;
             match self {
                 Self::Hash(v) => {
-                    map.serialize_entry("hash", v)?;
+                    map.serialize_entry("hash", &**v)?;
                 }
                 Self::AeadSeal(v) => {
-                    map.serialize_entry("aeadSeal", v)?;
+                    map.serialize_entry("aeadSeal", &**v)?;
                 }
                 Self::AeadOpen(v) => {
-                    map.serialize_entry("aeadOpen", v)?;
+                    map.serialize_entry("aeadOpen", &**v)?;
                 }
                 Self::MacAuthenticate(v) => {
-                    map.serialize_entry("macAuthenticate", v)?;
+                    map.serialize_entry("macAuthenticate", &**v)?;
                 }
                 Self::MacVerify(v) => {
-                    map.serialize_entry("macVerify", v)?;
+                    map.serialize_entry("macVerify", &**v)?;
                 }
                 Self::SignatureGenerateKeyPair(v) => {
-                    map.serialize_entry("signatureGenerateKeyPair", v)?;
+                    map.serialize_entry("signatureGenerateKeyPair", &**v)?;
                 }
                 Self::SignatureDeriveKeyPair(v) => {
-                    map.serialize_entry("signatureDeriveKeyPair", v)?;
+                    map.serialize_entry("signatureDeriveKeyPair", &**v)?;
                 }
                 Self::SignatureSign(v) => {
-                    map.serialize_entry("signatureSign", v)?;
+                    map.serialize_entry("signatureSign", &**v)?;
                 }
                 Self::SignatureVerify(v) => {
-                    map.serialize_entry("signatureVerify", v)?;
+                    map.serialize_entry("signatureVerify", &**v)?;
                 }
                 Self::Bip340SchnorrSign(v) => {
-                    map.serialize_entry("bip340SchnorrSign", v)?;
+                    map.serialize_entry("bip340SchnorrSign", &**v)?;
                 }
                 Self::RsaVerify(v) => {
-                    map.serialize_entry("rsaVerify", v)?;
+                    map.serialize_entry("rsaVerify", &**v)?;
                 }
                 Self::KeyAgreementDeriveSharedSecret(v) => {
-                    map.serialize_entry("keyAgreementDeriveSharedSecret", v)?;
+                    map.serialize_entry("keyAgreementDeriveSharedSecret", &**v)?;
                 }
                 Self::KeyAgreementDeriveKeyPair(v) => {
-                    map.serialize_entry("keyAgreementDeriveKeyPair", v)?;
+                    map.serialize_entry("keyAgreementDeriveKeyPair", &**v)?;
                 }
                 Self::KemGenerateKeyPair(v) => {
-                    map.serialize_entry("kemGenerateKeyPair", v)?;
+                    map.serialize_entry("kemGenerateKeyPair", &**v)?;
                 }
                 Self::KemEncapsulate(v) => {
-                    map.serialize_entry("kemEncapsulate", v)?;
+                    map.serialize_entry("kemEncapsulate", &**v)?;
                 }
                 Self::KemDecapsulate(v) => {
-                    map.serialize_entry("kemDecapsulate", v)?;
+                    map.serialize_entry("kemDecapsulate", &**v)?;
                 }
                 Self::KemDeriveKeyPair(v) => {
-                    map.serialize_entry("kemDeriveKeyPair", v)?;
+                    map.serialize_entry("kemDeriveKeyPair", &**v)?;
                 }
                 Self::HkdfDerive(v) => {
-                    map.serialize_entry("hkdfDerive", v)?;
+                    map.serialize_entry("hkdfDerive", &**v)?;
                 }
                 Self::KdfDeriveKey(v) => {
-                    map.serialize_entry("kdfDeriveKey", v)?;
+                    map.serialize_entry("kdfDeriveKey", &**v)?;
                 }
                 Self::JwaConcatKdfSha256Derive(v) => {
-                    map.serialize_entry("jwaConcatKdfSha256Derive", v)?;
+                    map.serialize_entry("jwaConcatKdfSha256Derive", &**v)?;
                 }
                 Self::Kmac256Derive(v) => {
-                    map.serialize_entry("kmac256Derive", v)?;
+                    map.serialize_entry("kmac256Derive", &**v)?;
                 }
                 Self::Argon2idDerive(v) => {
-                    map.serialize_entry("argon2idDerive", v)?;
+                    map.serialize_entry("argon2idDerive", &**v)?;
                 }
                 Self::KeyWrap(v) => {
-                    map.serialize_entry("keyWrap", v)?;
+                    map.serialize_entry("keyWrap", &**v)?;
                 }
                 Self::KeyUnwrap(v) => {
-                    map.serialize_entry("keyUnwrap", v)?;
+                    map.serialize_entry("keyUnwrap", &**v)?;
                 }
                 Self::HpkeSeal(v) => {
-                    map.serialize_entry("hpkeSeal", v)?;
+                    map.serialize_entry("hpkeSeal", &**v)?;
                 }
                 Self::HpkeOpen(v) => {
-                    map.serialize_entry("hpkeOpen", v)?;
+                    map.serialize_entry("hpkeOpen", &**v)?;
                 }
                 Self::HpkeGenerateKeyPair(v) => {
-                    map.serialize_entry("hpkeGenerateKeyPair", v)?;
+                    map.serialize_entry("hpkeGenerateKeyPair", &**v)?;
                 }
                 Self::HpkeDeriveKeyPair(v) => {
-                    map.serialize_entry("hpkeDeriveKeyPair", v)?;
+                    map.serialize_entry("hpkeDeriveKeyPair", &**v)?;
                 }
                 Self::HpkeSenderExport(v) => {
-                    map.serialize_entry("hpkeSenderExport", v)?;
+                    map.serialize_entry("hpkeSenderExport", &**v)?;
                 }
                 Self::HpkeReceiverExport(v) => {
-                    map.serialize_entry("hpkeReceiverExport", v)?;
+                    map.serialize_entry("hpkeReceiverExport", &**v)?;
                 }
                 Self::HpkePskSeal(v) => {
-                    map.serialize_entry("hpkePskSeal", v)?;
+                    map.serialize_entry("hpkePskSeal", &**v)?;
                 }
                 Self::HpkePskOpen(v) => {
-                    map.serialize_entry("hpkePskOpen", v)?;
+                    map.serialize_entry("hpkePskOpen", &**v)?;
                 }
             }
             map.end()
@@ -678,19 +678,19 @@ pub mod crypto_operation_response {
             Self::Some(Outcome::from(v))
         }
     }
-    impl serde::Serialize for Outcome {
-        fn serialize<S: serde::Serializer>(
+    impl ::serde::Serialize for Outcome {
+        fn serialize<S: ::serde::Serializer>(
             &self,
             s: S,
         ) -> ::core::result::Result<S::Ok, S::Error> {
-            use serde::ser::SerializeMap;
+            use ::serde::ser::SerializeMap;
             let mut map = s.serialize_map(Some(1))?;
             match self {
                 Self::Result(v) => {
-                    map.serialize_entry("result", v)?;
+                    map.serialize_entry("result", &**v)?;
                 }
                 Self::Error(v) => {
-                    map.serialize_entry("error", v)?;
+                    map.serialize_entry("error", &**v)?;
                 }
             }
             map.end()
@@ -952,109 +952,109 @@ pub mod crypto_operation_result {
             Self::Some(Result::from(v))
         }
     }
-    impl serde::Serialize for Result {
-        fn serialize<S: serde::Serializer>(
+    impl ::serde::Serialize for Result {
+        fn serialize<S: ::serde::Serializer>(
             &self,
             s: S,
         ) -> ::core::result::Result<S::Ok, S::Error> {
-            use serde::ser::SerializeMap;
+            use ::serde::ser::SerializeMap;
             let mut map = s.serialize_map(Some(1))?;
             match self {
                 Self::Hash(v) => {
-                    map.serialize_entry("hash", v)?;
+                    map.serialize_entry("hash", &**v)?;
                 }
                 Self::AeadSeal(v) => {
-                    map.serialize_entry("aeadSeal", v)?;
+                    map.serialize_entry("aeadSeal", &**v)?;
                 }
                 Self::AeadOpen(v) => {
-                    map.serialize_entry("aeadOpen", v)?;
+                    map.serialize_entry("aeadOpen", &**v)?;
                 }
                 Self::MacAuthenticate(v) => {
-                    map.serialize_entry("macAuthenticate", v)?;
+                    map.serialize_entry("macAuthenticate", &**v)?;
                 }
                 Self::MacVerify(v) => {
-                    map.serialize_entry("macVerify", v)?;
+                    map.serialize_entry("macVerify", &**v)?;
                 }
                 Self::SignatureGenerateKeyPair(v) => {
-                    map.serialize_entry("signatureGenerateKeyPair", v)?;
+                    map.serialize_entry("signatureGenerateKeyPair", &**v)?;
                 }
                 Self::SignatureDeriveKeyPair(v) => {
-                    map.serialize_entry("signatureDeriveKeyPair", v)?;
+                    map.serialize_entry("signatureDeriveKeyPair", &**v)?;
                 }
                 Self::SignatureSign(v) => {
-                    map.serialize_entry("signatureSign", v)?;
+                    map.serialize_entry("signatureSign", &**v)?;
                 }
                 Self::SignatureVerify(v) => {
-                    map.serialize_entry("signatureVerify", v)?;
+                    map.serialize_entry("signatureVerify", &**v)?;
                 }
                 Self::Bip340SchnorrSign(v) => {
-                    map.serialize_entry("bip340SchnorrSign", v)?;
+                    map.serialize_entry("bip340SchnorrSign", &**v)?;
                 }
                 Self::RsaVerify(v) => {
-                    map.serialize_entry("rsaVerify", v)?;
+                    map.serialize_entry("rsaVerify", &**v)?;
                 }
                 Self::KeyAgreementDeriveSharedSecret(v) => {
-                    map.serialize_entry("keyAgreementDeriveSharedSecret", v)?;
+                    map.serialize_entry("keyAgreementDeriveSharedSecret", &**v)?;
                 }
                 Self::KeyAgreementDeriveKeyPair(v) => {
-                    map.serialize_entry("keyAgreementDeriveKeyPair", v)?;
+                    map.serialize_entry("keyAgreementDeriveKeyPair", &**v)?;
                 }
                 Self::KemGenerateKeyPair(v) => {
-                    map.serialize_entry("kemGenerateKeyPair", v)?;
+                    map.serialize_entry("kemGenerateKeyPair", &**v)?;
                 }
                 Self::KemEncapsulate(v) => {
-                    map.serialize_entry("kemEncapsulate", v)?;
+                    map.serialize_entry("kemEncapsulate", &**v)?;
                 }
                 Self::KemDecapsulate(v) => {
-                    map.serialize_entry("kemDecapsulate", v)?;
+                    map.serialize_entry("kemDecapsulate", &**v)?;
                 }
                 Self::KemDeriveKeyPair(v) => {
-                    map.serialize_entry("kemDeriveKeyPair", v)?;
+                    map.serialize_entry("kemDeriveKeyPair", &**v)?;
                 }
                 Self::HkdfDerive(v) => {
-                    map.serialize_entry("hkdfDerive", v)?;
+                    map.serialize_entry("hkdfDerive", &**v)?;
                 }
                 Self::KdfDeriveKey(v) => {
-                    map.serialize_entry("kdfDeriveKey", v)?;
+                    map.serialize_entry("kdfDeriveKey", &**v)?;
                 }
                 Self::JwaConcatKdfSha256Derive(v) => {
-                    map.serialize_entry("jwaConcatKdfSha256Derive", v)?;
+                    map.serialize_entry("jwaConcatKdfSha256Derive", &**v)?;
                 }
                 Self::Kmac256Derive(v) => {
-                    map.serialize_entry("kmac256Derive", v)?;
+                    map.serialize_entry("kmac256Derive", &**v)?;
                 }
                 Self::Argon2idDerive(v) => {
-                    map.serialize_entry("argon2idDerive", v)?;
+                    map.serialize_entry("argon2idDerive", &**v)?;
                 }
                 Self::KeyWrap(v) => {
-                    map.serialize_entry("keyWrap", v)?;
+                    map.serialize_entry("keyWrap", &**v)?;
                 }
                 Self::KeyUnwrap(v) => {
-                    map.serialize_entry("keyUnwrap", v)?;
+                    map.serialize_entry("keyUnwrap", &**v)?;
                 }
                 Self::HpkeSeal(v) => {
-                    map.serialize_entry("hpkeSeal", v)?;
+                    map.serialize_entry("hpkeSeal", &**v)?;
                 }
                 Self::HpkeOpen(v) => {
-                    map.serialize_entry("hpkeOpen", v)?;
+                    map.serialize_entry("hpkeOpen", &**v)?;
                 }
                 Self::HpkeGenerateKeyPair(v) => {
-                    map.serialize_entry("hpkeGenerateKeyPair", v)?;
+                    map.serialize_entry("hpkeGenerateKeyPair", &**v)?;
                 }
                 Self::HpkeDeriveKeyPair(v) => {
-                    map.serialize_entry("hpkeDeriveKeyPair", v)?;
+                    map.serialize_entry("hpkeDeriveKeyPair", &**v)?;
                 }
                 Self::HpkeSenderExport(v) => {
-                    map.serialize_entry("hpkeSenderExport", v)?;
+                    map.serialize_entry("hpkeSenderExport", &**v)?;
                 }
                 Self::HpkeReceiverExport(v) => {
-                    map.serialize_entry("hpkeReceiverExport", v)?;
+                    map.serialize_entry("hpkeReceiverExport", &**v)?;
                 }
                 Self::HpkePskSeal(v) => {
-                    map.serialize_entry("hpkePskSeal", v)?;
+                    map.serialize_entry("hpkePskSeal", &**v)?;
                 }
                 Self::HpkePskOpen(v) => {
-                    map.serialize_entry("hpkePskOpen", v)?;
+                    map.serialize_entry("hpkePskOpen", &**v)?;
                 }
             }
             map.end()
@@ -1089,12 +1089,12 @@ pub mod crypto_algorithm_identifier {
             Self::Some(Algorithm::from(v))
         }
     }
-    impl serde::Serialize for Algorithm {
-        fn serialize<S: serde::Serializer>(
+    impl ::serde::Serialize for Algorithm {
+        fn serialize<S: ::serde::Serializer>(
             &self,
             s: S,
         ) -> ::core::result::Result<S::Ok, S::Error> {
-            use serde::ser::SerializeMap;
+            use ::serde::ser::SerializeMap;
             let mut map = s.serialize_map(Some(1))?;
             match self {
                 Self::Signature(v) => {
@@ -1125,7 +1125,7 @@ pub mod crypto_algorithm_identifier {
                     map.serialize_entry("multicodecKey", v)?;
                 }
                 Self::HpkeSuite(v) => {
-                    map.serialize_entry("hpkeSuite", v)?;
+                    map.serialize_entry("hpkeSuite", &**v)?;
                 }
             }
             map.end()
@@ -1165,19 +1165,19 @@ pub mod platform_key_policy {
             Self::Some(Policy::from(v))
         }
     }
-    impl serde::Serialize for Policy {
-        fn serialize<S: serde::Serializer>(
+    impl ::serde::Serialize for Policy {
+        fn serialize<S: ::serde::Serializer>(
             &self,
             s: S,
         ) -> ::core::result::Result<S::Ok, S::Error> {
-            use serde::ser::SerializeMap;
+            use ::serde::ser::SerializeMap;
             let mut map = s.serialize_map(Some(1))?;
             match self {
                 Self::Apple(v) => {
-                    map.serialize_entry("apple", v)?;
+                    map.serialize_entry("apple", &**v)?;
                 }
                 Self::Android(v) => {
-                    map.serialize_entry("android", v)?;
+                    map.serialize_entry("android", &**v)?;
                 }
             }
             map.end()

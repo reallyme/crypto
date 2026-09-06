@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 fn write_kmac_vector(dir: &Path) -> Result<(), VectorGenError> {
     // NIST SP 800-185 KMAC256 sample with a 256-bit key, 4-byte message, and

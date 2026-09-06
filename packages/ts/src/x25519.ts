@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { x25519 } from "@noble/curves/ed25519.js";
 import { ReallyMeCryptoError } from "./errors.js";
+import { ensureByteArray } from "./validateBytes.js";
 
 /**
  * X25519 key agreement backed by @noble/curves — the same pinned
@@ -32,12 +33,14 @@ export const ReallyMeX25519 = {
   deriveKeyPair(secretKey: Uint8Array): { publicKey: Uint8Array; secretKey: Uint8Array } {
     return {
       publicKey: this.derivePublicKey(secretKey),
-      secretKey: secretKey.slice(),
+      // Buffer.slice() aliases its input; the returned key must own its bytes.
+      secretKey: new Uint8Array(secretKey),
     };
   },
 
   /** Derives the 32-byte X25519 public key from a 32-byte secret. */
   derivePublicKey(secretKey: Uint8Array): Uint8Array {
+    ensureByteArray(secretKey);
     if (secretKey.length !== X25519_SECRET_KEY_LENGTH) {
       throw new ReallyMeCryptoError("invalid-input");
     }
@@ -50,6 +53,8 @@ export const ReallyMeX25519 = {
 
   /** Derives the raw 32-byte X25519 shared secret. */
   deriveSharedSecret(publicKey: Uint8Array, secretKey: Uint8Array): Uint8Array {
+    ensureByteArray(publicKey);
+    ensureByteArray(secretKey);
     if (
       publicKey.length !== X25519_PUBLIC_KEY_LENGTH ||
       secretKey.length !== X25519_SECRET_KEY_LENGTH

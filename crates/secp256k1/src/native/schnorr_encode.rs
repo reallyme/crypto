@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{BIP340_SCHNORR_PUBLIC_KEY_LEN, SECP256K1_SECRET_KEY_LEN};
 use crypto_core::CryptoError;

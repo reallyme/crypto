@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # Maven Artifact Provenance
@@ -14,12 +12,12 @@ the corresponding Gradle verification metadata.
 
 | Coordinate | Maven Central artifact | SHA-256 | Reviewed source release |
 | --- | --- | --- | --- |
-| `me.really:codec:0.2.2` | `https://repo.maven.apache.org/maven2/me/really/codec/0.2.2/codec-0.2.2.jar` | `4262bdb4cd844c3f44a120df1b2baa456b35ca05e82cfc1ee126e2ce8ad4c669` | `reallyme/codec` tag `v0.2.2`, commit `cf5c0e2bc465d24a833f6c3492b574675b0a0f2b` |
-| `me.really:codec-android:0.2.2` | `https://repo.maven.apache.org/maven2/me/really/codec-android/0.2.2/codec-android-0.2.2.aar` | `74d926351b438e7e6bd1b893c73fe1286b54127a667fa02e31f85d4f36603816` | `reallyme/codec` tag `v0.2.2`, commit `cf5c0e2bc465d24a833f6c3492b574675b0a0f2b` |
+| `me.really:codec:0.2.3` | `https://repo.maven.apache.org/maven2/me/really/codec/0.2.3/codec-0.2.3.jar` | `a85f18da11b207f7a675d5cee19b295f090e647a5d0483517b036c32d89a73da` | `reallyme/codec` tag `v0.2.3`, commit `50e7053b683ef54155fa794d1a84a7db67a4ab57` |
+| `me.really:codec-android:0.2.3` | `https://repo.maven.apache.org/maven2/me/really/codec-android/0.2.3/codec-android-0.2.3.aar` | `d71f6481d903e88fdf7a58def6ab3b81b15f4666f8acc7dcedbd02b5e523676a` | `reallyme/codec` tag `v0.2.3`, commit `50e7053b683ef54155fa794d1a84a7db67a4ab57` |
 
 The published POMs identify ReallyMe LLC as the developer and
 `https://github.com/reallyme/codec.git` as the SCM repository. The repository's
-reviewed `v0.2.2` tag resolves to the commit recorded above. The artifact hashes
+reviewed `v0.2.3` tag resolves to the commit recorded above. The artifact hashes
 match the entries in `packages/kotlin/gradle/verification-metadata.xml` and
 `packages/kotlin-android/gradle/verification-metadata.xml`, so strict Gradle
 verification accepts only those reviewed registry bytes.

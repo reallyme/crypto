@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 fn chacha_case<'a>(v: &'a Value, field_name: &str) -> Result<&'a Value, VectorTestError> {
     object_field(v, field_name)

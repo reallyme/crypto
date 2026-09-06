@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 private let rustCAbiMlDsa44PublicKeyLength = 1_312
 private let rustCAbiMlDsa44SignatureLength = 2_420

@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { pbkdf2 } from "@noble/hashes/pbkdf2.js";
 import { sha256, sha512 } from "@noble/hashes/sha2.js";
 import { ReallyMeCryptoError } from "./errors.js";
+import { ensureByteArray } from "./validateBytes.js";
 
 export const PBKDF2_MIN_INPUT_LENGTH = 1;
 export const PBKDF2_MAX_INPUT_LENGTH = 4096;
@@ -63,6 +64,8 @@ function validate(
   iterations: number,
   outputLength: number,
 ): void {
+  ensureByteArray(password);
+  ensureByteArray(salt);
   if (
     password.length < PBKDF2_MIN_INPUT_LENGTH ||
     password.length > PBKDF2_MAX_INPUT_LENGTH ||

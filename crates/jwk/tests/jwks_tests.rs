@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 #![allow(clippy::unwrap_used, missing_docs)]
 
@@ -88,4 +88,45 @@ fn public_jwk_deserialization_keeps_benign_extensions_compatible() {
     });
 
     assert!(serde_json::from_value::<Jwk>(value).is_ok());
+}
+
+#[test]
+fn null_private_members_are_rejected_by_generic_and_concrete_jwk_parsers() {
+    use envelopes_jwk::{AkpJwk, EcJwk, OkpJwk};
+
+    for member in [
+        "d",
+        "p",
+        "q",
+        "dp",
+        "dq",
+        "qi",
+        "oth",
+        "k",
+        "priv",
+        "privateKey",
+        "secretKey",
+    ] {
+        for mut value in [
+            serde_json::json!({"kty": "OKP", "crv": "Ed25519", "x": "AA"}),
+            serde_json::json!({"kty": "EC", "crv": "P-256", "x": "AA", "y": "AA"}),
+            serde_json::json!({"kty": "AKP", "alg": "ML-DSA-44", "pub": "AA"}),
+        ] {
+            value[member] = serde_json::Value::Null;
+            assert!(serde_json::from_value::<Jwk>(value.clone()).is_err());
+            assert!(serde_json::from_value::<OkpJwk>(value.clone()).is_err());
+            assert!(serde_json::from_value::<EcJwk>(value.clone()).is_err());
+            assert!(serde_json::from_value::<AkpJwk>(value).is_err());
+        }
+    }
+}
+
+#[test]
+fn private_member_is_rejected_before_its_value_is_deserialized() {
+    // The deliberately unfinished string proves rejection occurs at the field
+    // name, before unescaping or allocating the private member's value.
+    let error = serde_json::from_str::<Jwk>(r#"{"d":"\u0041"#).unwrap_err();
+    assert!(error
+        .to_string()
+        .starts_with(&JwtError::PrivateKeyMaterial.to_string()));
 }

@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT OR Apache-2.0
 
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Build the repository whose artifacts we stage, even from another working
+# directory or with an ambient CARGO_TARGET_DIR override.
 # Cargo gives encoded flags precedence over the controlled Android linker
 # RUSTFLAGS below. Remove inherited encoded flags before building any ABI.
 unset CARGO_ENCODED_RUSTFLAGS
@@ -58,6 +60,8 @@ build_android_target() {
   export "${ar_var}=${TOOLCHAIN_BIN}/llvm-ar"
   RUSTFLAGS="${rustflags}" \
     cargo build --locked -p crypto-ffi \
+      --manifest-path "${ROOT_DIR}/Cargo.toml" \
+      --target-dir "${ROOT_DIR}/target" \
       --profile release-ffi \
       --target "${rust_target}"
 

@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # ReallyMe Crypto Android
@@ -14,12 +12,12 @@ libraries required by Rust-backed routes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto-android:0.3.6")
+    implementation("me.really:crypto-android:0.3.7")
 }
 ```
 
 The package reuses the audited Kotlin facade sources from `packages/kotlin`,
-depends on the published `me.really:codec-android:0.2.2` artifact, and bundles
+depends on the published `me.really:codec-android:0.2.3` artifact, and bundles
 `libcrypto_ffi.so` for the standard Android ABIs:
 
 - `arm64-v8a`
@@ -51,7 +49,7 @@ Release packaging verifies that `arm64-v8a` and `x86_64` JNI libraries have
 `x86` libraries are still required and checksummed, but they are intentionally
 not held to the 64-bit page-size rule. The native rebuild scripts pass the
 64-bit linker max-page-size flag explicitly and print the selected NDK and
-effective Rust flags.
+the audited `release-ffi` profile.
 
 ## Android Keystore and StrongBox
 

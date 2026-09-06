@@ -1,10 +1,9 @@
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
 
 [package]
 name = "reallyme-crypto-proto"
-version = "0.3.6"
+version = "0.3.7"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -21,7 +20,7 @@ generated = ["dep:buffa", "buffa/json", "dep:crypto-core", "dep:serde", "dep:ser
 buffa = { workspace = true, optional = true }
 # Enables the `convert` bridge between the generated protobuf algorithm
 # identifiers and the internal `crypto_core` enums.
-crypto-core = { package = "reallyme-crypto-core", version = "=0.3.6", path = "../crypto/core", optional = true }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.3.7", path = "../crypto/core", optional = true }
 serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
 thiserror = { workspace = true, optional = true }

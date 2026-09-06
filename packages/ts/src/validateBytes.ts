@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { ReallyMeCryptoError } from "./errors.js";
 
@@ -8,11 +8,30 @@ import { ReallyMeCryptoError } from "./errors.js";
 // ask a provider to copy or allocate an attacker-controlled unbounded buffer.
 export const MAX_CRYPTO_INPUT_LENGTH = 1_048_576;
 
-export const ensureByteArray = (value: Uint8Array): void => {
-  if (!(value instanceof Uint8Array)) {
+// The intrinsic getter reads the typed-array element kind from internal slots.
+// instanceof rejects legitimate arrays from other realms, while an object's
+// constructor name or own toStringTag can be spoofed.
+const typedArrayTagGetter = Object.getOwnPropertyDescriptor(
+  Object.getPrototypeOf(Uint8Array.prototype),
+  Symbol.toStringTag,
+)?.get;
+
+export function ensureByteArray(value: unknown): asserts value is Uint8Array {
+  if (!ArrayBuffer.isView(value) || typedArrayTagGetter === undefined) {
     throw new ReallyMeCryptoError("invalid-input");
   }
-};
+  try {
+    const elementKind: unknown = Reflect.apply(typedArrayTagGetter, value, []);
+    if (elementKind !== "Uint8Array") {
+      throw new ReallyMeCryptoError("invalid-input");
+    }
+    // Detached views report zero length; validate the backing store before a
+    // provider can confuse them with an intentionally empty message.
+    Uint8Array.prototype.values.call(value);
+  } catch {
+    throw new ReallyMeCryptoError("invalid-input");
+  }
+}
 
 export const ensureByteArrayAtMost = (
   value: Uint8Array,

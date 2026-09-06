@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crypto_core::{CryptoError, SignatureBackend, SignatureOperation};
 use ml_dsa::{Generate, KeyExport, Keypair, MlDsa87, Seed, SigningKey};
@@ -32,7 +32,7 @@ pub fn generate_ml_dsa_87_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), Cry
 pub fn generate_ml_dsa_87_keypair_from_seed(
     seed: &[u8; 32],
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
-    let ml_seed = Seed::try_from(&seed[..]).map_err(|_| CryptoError::InvalidKey)?;
+    let ml_seed = Zeroizing::new(Seed::try_from(&seed[..]).map_err(|_| CryptoError::InvalidKey)?);
     let signing_key = SigningKey::<MlDsa87>::from_seed(&ml_seed);
     let verifying_key = signing_key.verifying_key();
 

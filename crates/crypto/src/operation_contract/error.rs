@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crypto_proto::generated::proto::reallyme::crypto::v1::CryptoOperationResponse;
 use crypto_proto::generated::proto::reallyme::crypto::v1::__buffa::oneof::crypto_operation_response::Outcome as CryptoOperationOutcome;

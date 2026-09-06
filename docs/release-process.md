@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # Release Process
@@ -11,26 +9,12 @@ available only after the exact release SHA has passed the required checks.
 
 ## Required Local Validation
 
-Before asking CI to publish, run the repository validation suite:
-
-```sh
-cargo fmt --check
-cargo check --workspace --all-features
-RUSTFLAGS=-Dwarnings cargo check --workspace --all-features
-cargo clippy --workspace --all-targets --all-features -- -D warnings
-cargo nextest run --workspace --no-default-features --features native
-cargo check --workspace --no-default-features --features native
-cargo check --workspace --no-default-features --features wasm --target wasm32-unknown-unknown
-cargo test -p crypto-conformance-vectors --test vectors_tests --all-features
-node scripts/check_release_readiness.mjs
-cargo deny check
-```
-
-When SDK packages are touched, also run Swift, Kotlin, Android where
-applicable, and TypeScript package tests.
+Run the [full conformance validation](conformance.md#full-release-wall), including
+the affected SDK and hardware lanes, before asking CI to publish. Package-specific
+artifact gates are listed in [the release checklist](../RELEASE_CHECKLIST.md).
 
 Before creating the release commit, finish every Rust and SDK source/version
-change. `scripts/prepare_swift_release_candidate.sh 0.3.6` remains available as
+change. `scripts/prepare_swift_release_candidate.sh 0.3.7` remains available as
 an optional local packaging check, but its machine-specific checksum is not a
 release input. The Swift preflight produces the canonical archive on the pinned
 GitHub runner, tests it, and retains those exact bytes. The release workflow
@@ -131,3 +115,34 @@ identity evidence and reviewer approval.
 Any skipped command or unavailable hardware lane must be recorded with a
 concrete reason and release risk. Secure Enclave and Android hardware tests may
 be hardware-skip-aware, but the skip must not hide a provider-policy failure.
+
+## Repository Scripts
+
+The public `scripts/` directory contains the tools used by CI and maintainers:
+
+- Provider, operation-route, negative-vector, and release-readiness checks
+  enforce the documented contract. Their `.test.mjs` files test the checks.
+- Protobuf hardening and provider-matrix generation keep generated files aligned
+  with the schema and manifest. See [protobuf generation](protobuf.md#generation).
+- Native builders, manifest writers, and artifact verifiers build and validate
+  the JNI and Swift artifacts consumed by package workflows.
+- The semver-baseline preparer freezes dependencies of the pinned historical
+  checkout used for API compatibility checks; it does not update current code.
+- External-vector tools maintain pinned public corpora and run optional slow
+  conformance checks. See [external conformance](external-conformance-vectors.md).
+- Browser and package-local scripts build, initialize, and test WASM artifacts.
+
+`maven-central-bundle.local.sh` is an optional maintainer tool for manual Central
+Portal submission. It builds and signs a local bundle; it does not upload it.
+When JVM resources are absent, it may dispatch the public native-resource
+workflow and download its artifacts for the current commit. It requires the
+local GPG key, signing environment variables, GitHub CLI authentication, and
+Android build tools. Load passphrases through a secret manager or a non-echoing
+prompt, not literal commands saved in shell history. Output/resource overrides
+must name dedicated, trusted build directories: the script replaces their
+staging contents. The normal CI release path is described above.
+
+The shared `scripts/release-readiness/core.mjs` is vendored from the pinned
+ReallyMe release-readiness repository. Its original Apache license and exact
+bytes are retained so its SHA-256 verification remains meaningful. Project
+license checks are configured by the local consumer script.

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 // Vendors additional third-party conformance corpora (Wycheproof, BIP-340,
 // RFC 8032) into vectors/external, records per-file SHA-256 provenance, and

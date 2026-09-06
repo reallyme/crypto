@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 //! secp256k1 ECDH, ECDSA signatures, and BIP-340 Schnorr signatures.
 
@@ -26,5 +26,6 @@ pub use native::{
     derive_bip340_schnorr_public_key, derive_secp256k1_shared_secret,
     encode_bip340_schnorr_public_key, encode_public_key, encode_secp256k1_public_key,
     generate_secp256k1_keypair, generate_secp256k1_keypair_from_secret_key, sign_bip340_schnorr,
-    sign_secp256k1, verify_bip340_schnorr, verify_secp256k1, Secp256k1SharedSecret,
+    sign_secp256k1, try_generate_secp256k1_keypair, verify_bip340_schnorr, verify_secp256k1,
+    Secp256k1SharedSecret,
 };

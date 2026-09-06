@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT OR Apache-2.0
 
 set -euo pipefail
 IFS=$'\n\t'
 
+# Load MAVEN_SIGNING_PASSWORD from a secret manager or a non-echoing prompt
+# before running; do not put the passphrase in shell history.
 # Usage:
 #   MAVEN_SIGNING_KEY_ID=<long-gpg-key-id-or-fingerprint> \
-#   MAVEN_SIGNING_PASSWORD="..." \
 #   KOTLIN_NATIVE_RESOURCES_DIR=/path/to/full/jvm-native-resources \
 #   ANDROID_NDK_HOME=/path/to/android-ndk \
 #   ./scripts/maven-central-bundle.local.sh

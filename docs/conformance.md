@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # Conformance
@@ -11,7 +9,7 @@ verifiers live in [../crates/conformance](../crates/conformance).
 Those vectors complement the proto-first structured operation contract, typed
 error taxonomy, package facade types, and provider manifest.
 
-Third-party vector coverage from NIST ACVP and CCTV is tracked separately in
+Third-party vector coverage from NIST ACVP, CCTV, and supplementary corpora is tracked separately in
 [External conformance vectors](external-conformance-vectors.md). Those adapters
 exercise public primitive boundaries and keep raw upstream files intact under
 [../vectors/external](../vectors/external).
@@ -46,12 +44,15 @@ cargo nextest run --workspace --all-features
 
 ## Full Release Wall
 
-Run the full wall before publishing a release or changing a cryptographic
-contract:
+Before publishing a release or changing a cryptographic contract, run the
+[protobuf generation checks](protobuf.md#generation), then the following
+commands from the repository root. See the Swift README for testing locally
+modified Rust sources through the development runtime override.
 
 ```sh
 cargo fmt --check
 cargo check --workspace --all-features
+RUSTFLAGS=-Dwarnings cargo check --workspace --all-features
 cargo test -p reallyme-crypto-dispatch --test feature_lane_tests --no-default-features
 cargo test -p reallyme-crypto-dispatch --test feature_lane_tests --no-default-features --features native,x25519,ml-kem-768
 cargo test -p reallyme-crypto-signer --no-default-features
@@ -59,7 +60,7 @@ cargo test -p reallyme-crypto-signer --no-default-features --features native
 cargo test -p reallyme-crypto-signer --no-default-features --features native,ed25519
 cargo check -p reallyme-crypto --no-default-features --features native,messaging-primitives
 cargo clippy --workspace --all-targets --all-features -- -D warnings
-cargo nextest run --workspace --all-features
+cargo test --workspace --all-features
 cargo nextest run --workspace --no-default-features --features native
 cargo check --workspace --no-default-features --features native
 cargo check --workspace --no-default-features --features wasm --target wasm32-unknown-unknown
@@ -68,17 +69,16 @@ npm run --prefix crates/conformance verify:ts-native
 npm run --prefix crates/conformance verify:noble-pq
 swift test
 swift test --package-path crates/conformance/platform/swift
-cd packages/kotlin && ./gradlew test --rerun-tasks
-cd crates/conformance/platform/kotlin && ./gradlew test --rerun-tasks
+(cd packages/kotlin && ./gradlew test --rerun-tasks)
+(cd crates/conformance/platform/kotlin && ./gradlew test --rerun-tasks)
 npm --prefix packages/ts ci && npm --prefix packages/ts test
 node scripts/generate_provider_matrix.mjs --check
 node scripts/check_release_readiness.mjs
-buf lint
-buf generate
 cargo deny check
-cargo audit
+bash scripts/audit_committed_lockfiles.sh
 ```
 
-Do not regenerate vectors unless the public byte contract intentionally
-changes. If vectors change, update proto adapters, provider policy, package
+The generation commands above must reproduce the committed files. Review any
+diff before accepting it; vector changes require an intentional public byte
+contract change. If vectors change, update proto adapters, provider policy, package
 facades, and conformance tests in the same pass.

@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # Security Policy
@@ -87,11 +85,10 @@ commit and XCFramework artifact have passed their verification gates.
 
 ## Cryptography And Assurance
 
-- We do not implement cryptographic primitives from scratch; we wrap vetted
-  implementations (RustCrypto, `ed25519-dalek`, `x25519-dalek`, `ml-kem`,
+- We build on cryptographic implementations (RustCrypto, `ed25519-dalek`, `x25519-dalek`, `ml-kem`,
   `ml-dsa`, BouncyCastle, Bitcoin Core `libsecp256k1` through
   `reallyme/CSecp256k1`) and platform crypto (CryptoKit, JCA/JCE) behind a
-  uniform, misuse-resistant API.
+  typed API with package-owned validation, encodings, and protocol composition.
 - Cross-implementation conformance vectors pin our Rust output against an
   independent oracle (`@noble/*`), including deterministic ML-KEM
   encapsulation, implicit rejection, and deterministic ML-DSA signatures.

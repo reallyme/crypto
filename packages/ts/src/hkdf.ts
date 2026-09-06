@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256, sha384 } from "@noble/hashes/sha2.js";
 import { ReallyMeCryptoError } from "./errors.js";
+import { ensureByteArray } from "./validateBytes.js";
 
 export const HKDF_MIN_INPUT_KEY_MATERIAL_LENGTH = 1;
 export const HKDF_MAX_INPUT_LENGTH = 4096;
@@ -39,6 +40,9 @@ function validate(
   info: Uint8Array,
   outputLength: number,
 ): void {
+  ensureByteArray(inputKeyMaterial);
+  ensureByteArray(salt);
+  ensureByteArray(info);
   if (
     inputKeyMaterial.length < HKDF_MIN_INPUT_KEY_MATERIAL_LENGTH ||
     inputKeyMaterial.length > HKDF_MAX_INPUT_LENGTH ||

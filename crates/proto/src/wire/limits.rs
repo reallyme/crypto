@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 pub(super) const CRYPTO_PROTO_RECURSION_LIMIT: u32 = 64;
 pub(super) const CRYPTO_PROTO_UNKNOWN_FIELD_LIMIT: usize = 0;

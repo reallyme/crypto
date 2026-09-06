@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 //! Tests for C ABI pointer and length validation helpers.
 
@@ -48,6 +48,16 @@ fn write_slice_rejects_lengths_that_cannot_be_valid_rust_slices() {
     let ptr = NonNull::<u8>::dangling().as_ptr();
     let status = unsafe { write_slice(ptr, usize::MAX) };
     assert_eq!(status, Err(CRYPTO_INVALID_ARGUMENT));
+}
+
+#[test]
+fn slice_helpers_reject_address_wraparound_before_constructing_references() {
+    let ptr = core::ptr::without_provenance_mut::<u8>(usize::MAX);
+    // SAFETY: These deliberately invalid ranges must be rejected before a
+    // reference is constructed or memory is accessed, including outside a guard.
+    assert_eq!(unsafe { read_slice(ptr, 2) }, Err(CRYPTO_INVALID_ARGUMENT));
+    assert_eq!(unsafe { write_slice(ptr, 2) }, Err(CRYPTO_INVALID_ARGUMENT));
+    assert_eq!(unsafe { write_fixed(ptr, 2, &[]) }, CRYPTO_INVALID_ARGUMENT);
 }
 
 #[test]

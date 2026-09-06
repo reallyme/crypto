@@ -1,10 +1,27 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # Release Notes
+
+## 0.3.7
+
+- Offers project-owned code under either the MIT License or Apache License,
+  Version 2.0, at the recipient's option. Third-party licenses remain unchanged.
+- Updates Buffa to `0.9.2`, refreshes generated Rust protobuf bindings, and
+  fixes generator hardening compatibility with regression coverage.
+- Updates ReallyMe Codec dependencies to `0.2.3` across Rust, Swift,
+  TypeScript, Kotlin/JVM, and Android.
+- Fixes standalone SHA3-256 builds by finalizing into the zeroizing digest owner.
+- Includes the complete license and notice texts in every published Rust crate.
+- Improves secret-buffer zeroization, fallible key generation, FFI pointer
+  validation, public JWK validation, and TypeScript byte handling.
+- Reduces RSA public-exponent computation while preserving verification behavior.
+- Fixes native build output selection to prevent staging stale libraries and
+  audits all committed Cargo lockfiles for advisories and yanked dependencies.
+- Consolidates documentation and removes the unused top-level `proto` directory.
+- Prepares Rust, npm, Swift, Kotlin/JVM, and Android packages for `0.3.7`,
+  preserving conformance vectors and the two-step Swift artifact binding process.
 
 ## 0.3.6
 
@@ -13,7 +30,9 @@ SPDX-License-Identifier: Apache-2.0
   metadata.
 - Replaces the deprecated `bufbuild/buf-setup-action` with the SHA-pinned
   `bufbuild/buf-action` `v1.5.0` in setup-only mode. Buf CLI remains on the
-  current `1.72.0` release and Buffa remains on the current `0.9.1` release.
+  current `1.72.0` release and Buffa remains on the current `0.9.2` release.
+- Pins the vendored release-readiness core to the reviewed upstream commit that
+  enforces latest-stable Cargo requirements for ReallyMe Codec dependencies.
 
 ## 0.3.5
 
@@ -35,7 +54,7 @@ SPDX-License-Identifier: Apache-2.0
 ## 0.3.4
 
 - Refreshes Rust release dependencies for the coordinated `0.3.x` package set,
-  including `buffa` `0.9.1` and the Rust `reallyme-codec-*` crates at
+  including `buffa` `0.9.2` and the Rust `reallyme-codec-*` crates at
   `0.2.1`.
 - Keeps Swift, npm, Kotlin/JVM, and Android package dependencies on the
   published `reallyme-codec` `0.2.0` artifacts while release-readiness validates

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 //! Tests for generated protobuf bindings.
 
@@ -33,6 +33,34 @@ enum GeneratedJsonTestError {
     Serialize,
     #[error("failed to parse generated proto JSON")]
     Parse,
+}
+
+#[test]
+fn repeated_secret_fields_keep_protobuf_last_value_wins_semantics() -> Result<(), buffa::DecodeError>
+{
+    // CryptoAeadSealRequest.key is field 2. A shorter duplicate and then an
+    // empty duplicate must still replace the old key after memory cleanup.
+    let mut request = CryptoAeadSealRequest::decode_from_slice(&[0x12, 4, 1, 2, 3, 4, 0x12, 1, 9])?;
+    assert_eq!(request.key, [9]);
+    request.merge_from_slice(&[0x12, 0])?;
+    assert!(request.key.is_empty());
+    Ok(())
+}
+
+#[test]
+#[allow(unsafe_code)]
+fn repeated_secret_fields_wipe_the_previous_initialized_tail() -> Result<(), buffa::DecodeError> {
+    let mut request = CryptoAeadSealRequest::default();
+    request.key = vec![0xa5; 64];
+    let allocation = request.key.as_ptr();
+    request.merge_from_slice(&[0x12, 1, 9])?;
+    assert_eq!(request.key, [9]);
+    assert_eq!(request.key.as_ptr(), allocation);
+    // SAFETY: The same live allocation still holds the 64 previously initialized
+    // bytes. No mutation occurs while the full initialized storage is observed.
+    let storage = unsafe { core::slice::from_raw_parts(request.key.as_ptr(), 64) };
+    assert!(storage[1..].iter().all(|byte| *byte == 0));
+    Ok(())
 }
 
 fn assert_golden_wire<M>(message: &M, expected: &[u8]) -> Result<(), buffa::DecodeError>

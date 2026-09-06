@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use sha3::{Digest, Sha3_256};
 use zeroize::{Zeroize, ZeroizeOnDrop};
@@ -36,9 +36,12 @@ impl core::fmt::Debug for Sha3_256Digest {
 pub fn digest(message: &[u8]) -> Sha3_256Digest {
     let mut hasher = Sha3_256::new();
     hasher.update(message);
-    let output = hasher.finalize();
-
-    let mut bytes = [0u8; SHA3_256_DIGEST_LENGTH];
-    bytes.copy_from_slice(&output);
-    Sha3_256Digest { bytes }
+    // The X-Wing combiner uses this digest as a shared secret. Finalize directly
+    // into its zeroizing owner, avoiding a temporary digest and any reliance on
+    // other crates enabling the upstream array type's optional zeroize feature.
+    let mut digest = Sha3_256Digest {
+        bytes: [0u8; SHA3_256_DIGEST_LENGTH],
+    };
+    hasher.finalize_into((&mut digest.bytes).into());
+    digest
 }

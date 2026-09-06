@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 // Swift implementation of the secp256k1 C ABI backed by Bitcoin Core
 // libsecp256k1, consumed through the reallyme/CSecp256k1 binary package.

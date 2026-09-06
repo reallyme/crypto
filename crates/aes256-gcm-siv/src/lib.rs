@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 //! AES-256-GCM-SIV (RFC 8452) nonce-misuse-resistant AEAD. There is no dedicated browser backend: the `native` and `wasm` lanes both use the audited RustCrypto implementation by design.
 

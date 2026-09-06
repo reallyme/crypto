@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # reallyme-crypto-proto
@@ -27,7 +25,7 @@ value deserialization and must use binary protobuf.
 
 ```toml
 [dependencies]
-reallyme-crypto-proto = { version = "0.3.6", features = ["generated"] }
+reallyme-crypto-proto = { version = "0.3.7", features = ["generated"] }
 ```
 
 The `generated` feature includes Buffa protobuf bytes and strict ProtoJSON

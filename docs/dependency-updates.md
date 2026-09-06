@@ -1,17 +1,16 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # Dependency Updates
 
-Renovate monitors this repository for dependency updates across Cargo, npm,
-Gradle, SwiftPM, and GitHub Actions.
+Renovate is currently disabled in `.github/renovate.json`. Dependency updates
+across Cargo, npm, Gradle, SwiftPM, and GitHub Actions are reviewed manually.
 
 The policy is simple:
 
-- Renovate opens pull requests; it does not automerge them.
+- If Renovate is enabled, configure it to open reviewable pull requests without
+  automerging them.
 - Runtime cryptography updates are reviewed one dependency at a time.
 - GitHub Actions stay pinned to immutable revisions.
 - Lockfile maintenance is allowed, but still review-only.

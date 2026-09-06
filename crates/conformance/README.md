@@ -1,7 +1,5 @@
 <!--
 SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
 -->
 
 # crypto-conformance-vectors
@@ -13,30 +11,12 @@ formats.
 
 ## Covered Surface
 
-- P-256
-- P-384
-- P-521
-- Ed25519
-- secp256k1
-- X25519
-- ML-DSA-44
-- ML-DSA-65
-- ML-DSA-87
-- ML-KEM-512
-- ML-KEM-768
-- ML-KEM-1024
-- AES-256-GCM
-- ChaCha20-Poly1305
-- XChaCha20-Poly1305
-- HMAC-SHA-256
-- HMAC-SHA-512
-- SHA2-256
-- SHA2-384
-- SHA2-512
-- SHA3-224
-- SHA3-256
-- SHA3-384
-- SHA3-512
+The current file inventory and algorithm identifiers are recorded in
+[`vectors/manifest.json`](../../vectors/manifest.json). It covers signatures,
+key agreement, KEMs, AEAD, hashes, MACs, KDFs, key wrap, HPKE, JWK/multikey,
+and the structured operation response. Per-lane tests execute the subset their
+provider implements; manifest coverage alone does not prove every lane ran it.
+
 Post-quantum vectors are cross-checked with `@noble/post-quantum` 0.7.1.
 
 ## Generate
@@ -53,7 +33,7 @@ The generator writes JSON files to the repository-level `vectors/` directory.
 cargo nextest run -p crypto-conformance-vectors
 npm run --prefix crates/conformance verify:ts-native
 swift test --package-path crates/conformance/platform/swift
-cd crates/conformance/platform/kotlin && ./gradlew test
+(cd crates/conformance/platform/kotlin && ./gradlew test)
 ```
 
 The Rust tests validate local invariants. The TypeScript verifier checks

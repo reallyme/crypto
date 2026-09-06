@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT OR Apache-2.0
 
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Build the repository whose artifacts we stage, even from another working
+# directory or with an ambient CARGO_TARGET_DIR override.
 # Cargo gives encoded flags precedence over RUSTFLAGS. Release packaging owns
 # the complete codegen policy, so inherited encoded flags must not participate.
 unset CARGO_ENCODED_RUSTFLAGS
@@ -27,6 +29,8 @@ build_target() {
   rustup target add "${target}"
   # Do not let ambient codegen flags override the audited panic strategy.
   RUSTFLAGS="" cargo build --locked -p crypto-ffi \
+    --manifest-path "${ROOT_DIR}/Cargo.toml" \
+    --target-dir "${ROOT_DIR}/target" \
     --profile release-ffi \
     --target "${target}"
 }
