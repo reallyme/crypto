@@ -1205,6 +1205,7 @@ name = "reallyme-crypto-hkdf"
 version = "0.3.7"
 dependencies = [
  "hkdf",
+ "hybrid-array",
  "reallyme-crypto-core",
  "sha2",
  "sha3 0.12.0",

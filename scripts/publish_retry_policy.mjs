@@ -68,7 +68,10 @@ export function publishWithRetries({
       continue;
     }
 
-    if (combined.includes("no matching package named")) {
+    const registryIndexIsStale =
+      combined.includes("no matching package named") ||
+      combined.includes("failed to select a version for the requirement");
+    if (registryIndexIsStale) {
       if (attempt === maxAttempts) {
         throw new PublishRetryError(PublishFailureCode.IndexLagExhausted, status);
       }

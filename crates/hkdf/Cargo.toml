@@ -16,6 +16,8 @@ repository.workspace = true
 ignored = [
     # Enables getrandom's wasm entropy backend for the transitive digest stack.
     "getrandom",
+    # Enables zeroization for the fixed-size SHA-384 PRK returned by `hkdf`.
+    "hybrid-array",
 ]
 
 [lib]
@@ -31,6 +33,7 @@ sha3 = ["dep:sha3"]
 crypto-core = { package = "reallyme-crypto-core", version = "=0.3.7", path = "../crypto/core" }
 getrandom = { workspace = true, features = ["wasm_js"], optional = true }
 hkdf = { workspace = true }
+hybrid-array = { workspace = true, features = ["zeroize"] }
 sha2 = { workspace = true }
 sha3 = { workspace = true, optional = true }
 zeroize = { workspace = true, features = ["derive"] }
