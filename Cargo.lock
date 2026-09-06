@@ -1489,6 +1489,7 @@ dependencies = [
  "getrandom 0.4.3",
  "hex-literal",
  "hkdf",
+ "hybrid-array",
  "reallyme-crypto-core",
  "sha2",
  "sha3 0.12.0",

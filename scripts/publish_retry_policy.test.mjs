@@ -92,6 +92,20 @@ test("permanent registry index lag fails terminally", () => {
   assert.equal(attempts, 12);
 });
 
+test("exact-version registry index lag retries and then succeeds", () => {
+  const observed = runSequence([
+    result(
+      1,
+      'failed to select a version for the requirement `reallyme-crypto-x448 = "=0.3.7"`',
+    ),
+    result(0),
+  ]);
+  assert.equal(observed.attempts, 2);
+  assert.deepEqual(observed.retries, [
+    { kind: PublishRetryKind.IndexLag, delayMs: 15_000, attempt: 1 },
+  ]);
+});
+
 test("already-published output is never accepted without artifact identity proof", () => {
   assert.throws(
     () =>

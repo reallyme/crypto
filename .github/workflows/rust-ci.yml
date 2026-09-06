@@ -138,6 +138,7 @@ jobs:
 
       - name: Check narrow Rust feature surfaces
         run: |
+          cargo check --locked -p reallyme-crypto-hkdf --no-default-features
           cargo test --locked -p reallyme-crypto-dispatch --test feature_lane_tests --no-default-features
           cargo test --locked -p reallyme-crypto-dispatch --test feature_lane_tests --no-default-features --features native,x25519,ml-kem-768
           cargo test --locked -p reallyme-crypto-signer --no-default-features

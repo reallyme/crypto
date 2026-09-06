@@ -81,6 +81,7 @@ rand = "0.10"
 rand_chacha = "0.10"
 getrandom = "0.4"
 # Hashing / KDF
+hybrid-array = "0.4"
 sha2 = { version = "0.11", features = ["zeroize"] }
 sha3 = { version = "0.12", features = ["zeroize"] }
 sha3-kmac = { version = "0.3.0", default-features = false }
