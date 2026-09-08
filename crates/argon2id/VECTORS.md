@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # Argon2id Vectors (Audit Record)
 
 This file records fixed regression vectors for `crypto-argon2id`.

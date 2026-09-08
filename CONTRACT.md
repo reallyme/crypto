@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # Crypto Contract
 
 This document defines the cross-package contract shared by every published

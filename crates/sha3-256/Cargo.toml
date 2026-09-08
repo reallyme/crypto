@@ -1,9 +1,6 @@
-# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-#
-
 [package]
 name = "reallyme-crypto-sha3-256"
-version = "0.3.7"
+version = "0.3.8"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true

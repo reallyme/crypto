@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # crypto-rsa
 
 RSA verification for ReallyMe Crypto.

@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # ReallyMeCrypto Swift
 
 `ReallyMeCrypto` is the Apple-platform SDK for
@@ -20,7 +16,7 @@ by Git URL; the source lives under `packages/swift` with the other language SDKs
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.3.7"
+    from: "0.3.8"
 )
 ```
 

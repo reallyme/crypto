@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # Rust Publishing
 
 Rust crates are published as a namespaced workspace, not as one collapsed

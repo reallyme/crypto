@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # ReallyMeCrypto Kotlin
 
 `me.really:crypto` is the Kotlin/JVM SDK for
@@ -21,7 +17,7 @@ identical output.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.3.7")
+    implementation("me.really:crypto:0.3.8")
 }
 ```
 

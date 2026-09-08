@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # Dependency Updates
 
 Renovate is currently disabled in `.github/renovate.json`. Dependency updates

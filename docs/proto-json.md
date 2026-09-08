@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # Proto-JSON Examples
 
 ReallyMe Crypto supports a restricted, strict proto-JSON route for generated

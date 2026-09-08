@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # ReallyMe Crypto X448
 
 Typed X448 key agreement for ReallyMe Crypto. Private keys and shared secrets

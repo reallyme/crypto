@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # Algorithm Lifecycle
 
 ReallyMe Crypto changes algorithm support only with matching code, vectors,

@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # reallyme-crypto-sha2
 
 `reallyme-crypto-sha2` provides SHA-384 and SHA-512 digest wrappers for the

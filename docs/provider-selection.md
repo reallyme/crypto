@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # Provider Selection
 
 Provider selection is explicit, deterministic, and fail-closed. A missing,

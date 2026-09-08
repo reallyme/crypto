@@ -1,8 +1,14 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # Release Notes
+
+## 0.3.8
+
+- Accepts HPKE HKDF contexts larger than 64 KiB, including MLS Welcomes with
+  inline post-quantum ratchet trees. The original HKDF key schedule and wire
+  encoding are unchanged. SHAKE context limits remain enforced, and oversized
+  SHAKE pre-shared keys return a typed error before backend setup.
+- Prepares Rust, npm, Swift, Kotlin/JVM, and Android packages for `0.3.8`,
+  preserving the manual npm and Maven publishing lanes and the two-step Swift
+  artifact binding process.
 
 ## 0.3.7
 

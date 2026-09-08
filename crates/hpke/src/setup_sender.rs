@@ -176,8 +176,12 @@ pub(crate) fn setup_sender_psk_with_randomness(
 ) -> Result<HpkePskSenderSetupOutput, HpkeError> {
     require_sealing_suite(request.suite)?;
     validate_public_key(request.suite, request.recipient_public_key)?;
-    validate_psk(request.psk.as_slice(), request.psk_id.as_slice())?;
-    validate_key_schedule_inputs(request.info, request.psk_id.as_slice())?;
+    validate_psk(
+        request.suite.kdf,
+        request.psk.as_slice(),
+        request.psk_id.as_slice(),
+    )?;
+    validate_key_schedule_inputs(request.suite.kdf, request.info, request.psk_id.as_slice())?;
     if randomness.len() != kem_parameters(request.suite.kem)?.encapsulation_randomness_len {
         return Err(HpkeError::InvalidRandomness);
     }

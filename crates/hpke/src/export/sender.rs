@@ -49,7 +49,7 @@ fn sender_export_with_randomness(
 ) -> Result<HpkeSenderExportOutput, HpkeError> {
     require_export_suite(request.suite)?;
     validate_public_key(request.suite, request.recipient_public_key)?;
-    validate_key_schedule_inputs(request.info, &[])?;
+    validate_key_schedule_inputs(request.suite.kdf, request.info, &[])?;
     validate_export_length(request.suite, request.output_length)?;
     if randomness.len() != request.suite.encapsulation_randomness_len()? {
         return Err(HpkeError::InvalidRandomness);

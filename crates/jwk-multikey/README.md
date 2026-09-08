@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # reallyme-crypto-jwk-multikey
 
 JWK and Multikey public-key envelope conversion for ReallyMe Crypto.

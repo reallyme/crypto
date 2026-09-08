@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # reallyme-crypto-sha3
 
 `reallyme-crypto-sha3` provides SHA3-224, SHA3-384, and SHA3-512 digest

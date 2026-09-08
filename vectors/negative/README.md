@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # Negative Vectors
 
 Negative vectors contain malformed, tampered, downgraded, unsupported,

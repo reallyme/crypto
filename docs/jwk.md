@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # JWK And Multikey
 
 JWK and multikey are envelope formats over public key bytes. They are not

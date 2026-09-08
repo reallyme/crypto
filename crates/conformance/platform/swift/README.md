@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # ReallyMeCryptoVectorConformance
 
 This Swift package is a conformance harness, not the ReallyMe Swift SDK. It

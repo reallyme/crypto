@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # ReallyMe Crypto Android
 
 `me.really:crypto-android` is the Android AAR for the ReallyMe Crypto Kotlin
@@ -12,7 +8,7 @@ libraries required by Rust-backed routes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto-android:0.3.7")
+    implementation("me.really:crypto-android:0.3.8")
 }
 ```
 

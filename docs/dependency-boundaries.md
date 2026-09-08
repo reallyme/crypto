@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # Dependency Boundaries
 
 ReallyMe Crypto treats dependency direction as part of the security contract.

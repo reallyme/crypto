@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # Maven Artifact Provenance
 
 This record binds the JVM and Android codec dependencies used by ReallyMe

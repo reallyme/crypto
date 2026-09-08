@@ -21,7 +21,7 @@ pub fn receiver_export(
     require_export_suite(request.suite)?;
     validate_encapsulated_key(request.suite, request.encapsulated_key)?;
     validate_private_key(request.suite, request.recipient_private_key)?;
-    validate_key_schedule_inputs(request.info, &[])?;
+    validate_key_schedule_inputs(request.suite.kdf, request.info, &[])?;
     validate_export_length(request.suite, request.output_length)?;
 
     dispatch_kem!(request.suite.kem, receiver_export_for_kem, request)

@@ -1,6 +1,3 @@
-# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-#
-
 [workspace]
 resolver = "2"
 default-members = ["crates/crypto"]

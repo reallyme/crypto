@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # reallyme-crypto-proto
 
 `reallyme-crypto-proto` contains the Rust Buffa bindings for the canonical
@@ -25,7 +21,7 @@ value deserialization and must use binary protobuf.
 
 ```toml
 [dependencies]
-reallyme-crypto-proto = { version = "0.3.7", features = ["generated"] }
+reallyme-crypto-proto = { version = "0.3.8", features = ["generated"] }
 ```
 
 The `generated` feature includes Buffa protobuf bytes and strict ProtoJSON

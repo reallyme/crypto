@@ -105,7 +105,7 @@ fn seal_with_randomness(
 ) -> Result<HpkeSealOutput, HpkeError> {
     require_sealing_suite(request.suite)?;
     validate_public_key(request.suite, request.recipient_public_key)?;
-    validate_key_schedule_inputs(request.info, &[])?;
+    validate_key_schedule_inputs(request.suite.kdf, request.info, &[])?;
     if randomness.len() != kem_parameters(request.suite.kem)?.encapsulation_randomness_len {
         return Err(HpkeError::InvalidRandomness);
     }
@@ -188,7 +188,7 @@ fn open_base_inner(request: &HpkeOpenRequest<'_>) -> Result<HpkeOpenOutput, Hpke
     validate_encapsulated_key(request.suite, request.encapsulated_key)?;
     validate_private_key(request.suite, request.recipient_private_key)?;
     validate_ciphertext(request.suite, request.ciphertext)?;
-    validate_key_schedule_inputs(request.info, &[])?;
+    validate_key_schedule_inputs(request.suite.kdf, request.info, &[])?;
 
     dispatch_kem!(request.suite.kem, open_for_kem, request)
 }

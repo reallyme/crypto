@@ -117,8 +117,12 @@ pub fn setup_receiver_psk(
     require_sealing_suite(request.suite)?;
     validate_encapsulated_key(request.suite, request.encapsulated_key)?;
     validate_private_key(request.suite, request.recipient_private_key)?;
-    validate_psk(request.psk.as_slice(), request.psk_id.as_slice())?;
-    validate_key_schedule_inputs(request.info, request.psk_id.as_slice())?;
+    validate_psk(
+        request.suite.kdf,
+        request.psk.as_slice(),
+        request.psk_id.as_slice(),
+    )?;
+    validate_key_schedule_inputs(request.suite.kdf, request.info, request.psk_id.as_slice())?;
 
     dispatch_kem!(request.suite.kem, setup_for_kem, request)
 }

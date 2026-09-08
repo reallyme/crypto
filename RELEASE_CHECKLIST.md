@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # Release Checklist
 
 Every ReallyMe Crypto release is built and verified from one immutable,

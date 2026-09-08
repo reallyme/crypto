@@ -1,6 +1,3 @@
-# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-#
-
 # Coverage-guided fuzzing harnesses for the untrusted-input parsers.
 #
 # This crate is deliberately OUTSIDE the main workspace (see the empty

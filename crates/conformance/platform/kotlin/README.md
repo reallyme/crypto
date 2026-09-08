@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
--->
-
 # ReallyMe Kotlin Vector Conformance
 
 This Gradle project is a Kotlin/JVM conformance harness, not the ReallyMe
