@@ -122,7 +122,7 @@ When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.3.8", default-features = false, features = [
+reallyme-crypto = { version = "0.3.9", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -135,7 +135,7 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.3.8", default-features = false, features = [
+reallyme-crypto = { version = "0.3.9", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }
@@ -150,17 +150,28 @@ OpenMLS adapters can select the narrow HPKE profile without enabling the full
 HPKE compatibility surface:
 
 ```toml
-reallyme-crypto = { version = "0.3.8", default-features = false, features = [
+reallyme-crypto = { version = "0.3.9", default-features = false, features = [
   "native",
   "hpke-openmls",
 ] }
 ```
 
-`hpke-openmls` enables ML-KEM-1024, ML-KEM-1024/P-384, X-Wing, HKDF-SHA256,
-HKDF-SHA384, AES-256-GCM, and ChaCha20-Poly1305. It does not enable the
-SHAKE256 HPKE KDF or unrelated HPKE KEMs. Direct
+`hpke-openmls` enables ML-KEM-768, ML-KEM-1024, ML-KEM-1024/P-384, X-Wing,
+HKDF-SHA256, HKDF-SHA384, AES-256-GCM, and ChaCha20-Poly1305. It does not
+enable the SHAKE256 HPKE KDF or unrelated HPKE KEMs. Direct
 `reallyme-crypto-hpke` consumers can compose its granular `kem-*`, `kdf-*`, and
 `aead-*` features when an even narrower profile is required.
+
+The Rust HPKE surface exposes the official ciphersuite names from
+[Post-Quantum and Post-Quantum/Traditional Hybrid Ciphersuites for MLS](https://datatracker.ietf.org/doc/draft-ietf-mls-pq-ciphersuites/):
+
+| Construction | Current IETF name |
+|---|---|
+| ML-KEM-768 + ML-DSA-65 | `MLS_192_MLKEM768_AES256GCM_SHA384_MLDSA65` |
+| ML-KEM-1024 + ML-DSA-87 | `MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87` |
+| ML-KEM-1024 + P-384 signature | `MLS_192_MLKEM1024_AES256GCM_SHA384_P384` |
+| ML-KEM-1024 + P-384 hybrid KEM + P-384 signature | `MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384` |
+| ML-KEM-768 + X25519 hybrid + Ed25519 | `MLS_128_MLKEM768X25519_AES256GCM_SHA384_Ed25519` |
 
 Dispatch and signer surfaces are feature-gated by algorithm, so enabling the
 router does not pull in unrelated primitives unless the matching algorithm
@@ -196,7 +207,7 @@ separate from raw private-key bytes.
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.3.8"
+    from: "0.3.9"
 )
 ```
 
@@ -208,7 +219,7 @@ separate from raw private-key bytes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.3.8")
+    implementation("me.really:crypto:0.3.9")
 }
 ```
 

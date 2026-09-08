@@ -1,5 +1,17 @@
 # Release Notes
 
+## 0.3.9
+
+- Adds the MLS draft profiles for ML-KEM-768 with ML-DSA-65 and the X-Wing
+  ML-KEM-768/X25519 hybrid with Ed25519, using the required HPKE HKDF-SHA384
+  and AES-256-GCM components.
+- Extends the focused OpenMLS HPKE feature set with ML-KEM-768 and adds
+  identifier, draft-vector, round-trip, and OpenMLS compatibility coverage for
+  the new profiles.
+- Prepares Rust, npm, Swift, Kotlin/JVM, and Android packages for `0.3.9`,
+  preserving the manual npm and Maven publishing lanes and the two-step Swift
+  artifact binding process.
+
 ## 0.3.8
 
 - Accepts HPKE HKDF contexts larger than 64 KiB, including MLS Welcomes with

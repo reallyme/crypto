@@ -96,7 +96,7 @@ test("exact-version registry index lag retries and then succeeds", () => {
   const observed = runSequence([
     result(
       1,
-      'failed to select a version for the requirement `reallyme-crypto-x448 = "=0.3.8"`',
+      'failed to select a version for the requirement `reallyme-crypto-x448 = "=0.3.9"`',
     ),
     result(0),
   ]);

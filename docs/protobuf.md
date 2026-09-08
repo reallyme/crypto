@@ -188,18 +188,21 @@ profiles:
 Swift requires the Rust C ABI provider explicitly. No SDK retries through a
 different provider when its declared route is unavailable.
 
-The Rust HPKE surface provides OpenMLS-friendly names for three draft profiles:
+The Rust HPKE surface provides OpenMLS-friendly names for five draft profiles:
 
 | MLS profile alias | HPKE KEM | HPKE KDF | HPKE AEAD |
 |---|---|---|---|
+| `MLS_128_MLKEM768X25519_AES256GCM_SHA384_Ed25519` | `HPKE_KEM_ID_X_WING` (`0x647A`) | `HPKE_KDF_ID_HKDF_SHA384` (`0x0002`) | `HPKE_AEAD_ID_AES_256_GCM` |
+| `MLS_192_MLKEM768_AES256GCM_SHA384_MLDSA65` | `HPKE_KEM_ID_ML_KEM_768` (`0x0041`) | `HPKE_KDF_ID_HKDF_SHA384` (`0x0002`) | `HPKE_AEAD_ID_AES_256_GCM` |
 | `MLS_192_MLKEM1024_AES256GCM_SHA384_P384` | `HPKE_KEM_ID_ML_KEM_1024` (`0x0042`) | `HPKE_KDF_ID_HKDF_SHA384` (`0x0002`) | `HPKE_AEAD_ID_AES_256_GCM` |
 | `MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87` | `HPKE_KEM_ID_ML_KEM_1024` (`0x0042`) | `HPKE_KDF_ID_HKDF_SHA384` (`0x0002`) | `HPKE_AEAD_ID_AES_256_GCM` |
 | `MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384` | `HPKE_KEM_ID_ML_KEM_1024_P384` (`0x0051`) | `HPKE_KDF_ID_HKDF_SHA384` (`0x0002`) | `HPKE_AEAD_ID_AES_256_GCM` |
 
 Draft-06 selects the two-stage HPKE HKDF-SHA384 KDF because MLS requires both
-Extract and Expand. The signature suffix (`P384` or `MLDSA87`) is not an HPKE
-component. The first two aliases therefore encode the same canonical protobuf
-HPKE triple, and all three use HPKE HKDF-SHA384 (`0x0002`).
+Extract and Expand. The signature suffix (`Ed25519`, `P384`, `MLDSA65`, or
+`MLDSA87`) is not an HPKE component. The two ML-KEM-1024 aliases therefore
+encode the same canonical protobuf HPKE triple, and all five use HPKE
+HKDF-SHA384 (`0x0002`).
 
 Messages use `CryptoAlgorithmIdentifier.hpke_suite`; superseded field numbers
 and names remain reserved against reuse. Live HPKE contexts,

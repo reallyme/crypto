@@ -6,17 +6,20 @@
 
 use crypto_hpke::{
     HpkeAeadId, HpkeComponentSupport, HpkeError, HpkeKdfId, HpkeKemId, HpkeSuite,
-    HPKE_AEAD_AES_256_GCM, HPKE_AEAD_EXPORT_ONLY, HPKE_KDF_HKDF_SHA384, HPKE_KDF_SHAKE256,
-    HPKE_KEM_ML_KEM_1024, HPKE_KEM_ML_KEM_1024_P384, HPKE_KEM_X_WING,
-    HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM, HPKE_MLKEM1024_HKDF_SHA384_AES256GCM,
+    MLS_128_MLKEM768X25519_AES256GCM_SHA384_Ed25519, HPKE_AEAD_AES_256_GCM, HPKE_AEAD_EXPORT_ONLY,
+    HPKE_KDF_HKDF_SHA384, HPKE_KDF_SHAKE256, HPKE_KEM_ML_KEM_1024, HPKE_KEM_ML_KEM_1024_P384,
+    HPKE_KEM_ML_KEM_768, HPKE_KEM_X_WING, HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM,
+    HPKE_MLKEM1024_HKDF_SHA384_AES256GCM, HPKE_MLKEM768_HKDF_SHA384_AES256GCM,
     HPKE_REGISTERED_AEADS, HPKE_REGISTERED_KDFS, HPKE_REGISTERED_KEMS,
     HPKE_SECP256K1_PRIVATE_KEY_LEN, HPKE_SECP256K1_PUBLIC_KEY_LEN, HPKE_X448_PRIVATE_KEY_LEN,
-    HPKE_X448_PUBLIC_KEY_LEN, MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384,
-    MLS_192_MLKEM1024_AES256GCM_SHA384_P384, MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87,
+    HPKE_X448_PUBLIC_KEY_LEN, HPKE_XWING_HKDF_SHA384_AES256GCM,
+    MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384, MLS_192_MLKEM1024_AES256GCM_SHA384_P384,
+    MLS_192_MLKEM768_AES256GCM_SHA384_MLDSA65, MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87,
 };
 
 #[test]
 fn required_registry_values_are_stable() {
+    assert_eq!(HPKE_KEM_ML_KEM_768, 0x0041);
     assert_eq!(HPKE_KEM_ML_KEM_1024, 0x0042);
     assert_eq!(HPKE_KEM_ML_KEM_1024_P384, 0x0051);
     assert_eq!(HPKE_KEM_X_WING, 0x647a);
@@ -119,6 +122,22 @@ fn mls_profile_aliases_use_the_exact_draft_hpke_components() {
     assert_eq!(hybrid.aead, HpkeAeadId::Aes256Gcm);
     assert_eq!(hybrid.kem_id(), 0x0051);
     assert_eq!(hybrid.kdf_id(), 0x0002);
+
+    let mlkem768 = MLS_192_MLKEM768_AES256GCM_SHA384_MLDSA65;
+    assert_eq!(mlkem768.kem, HpkeKemId::MlKem768);
+    assert_eq!(mlkem768.kdf, HpkeKdfId::HkdfSha384);
+    assert_eq!(mlkem768.aead, HpkeAeadId::Aes256Gcm);
+    assert_eq!(mlkem768.kem_id(), 0x0041);
+    assert_eq!(mlkem768.kdf_id(), 0x0002);
+    assert_eq!(mlkem768.aead_id(), 0x0002);
+
+    let xwing = MLS_128_MLKEM768X25519_AES256GCM_SHA384_Ed25519;
+    assert_eq!(xwing.kem, HpkeKemId::XWing);
+    assert_eq!(xwing.kdf, HpkeKdfId::HkdfSha384);
+    assert_eq!(xwing.aead, HpkeAeadId::Aes256Gcm);
+    assert_eq!(xwing.kem_id(), 0x647a);
+    assert_eq!(xwing.kdf_id(), 0x0002);
+    assert_eq!(xwing.aead_id(), 0x0002);
 }
 
 #[test]
@@ -134,6 +153,14 @@ fn mls_profile_aliases_match_their_generic_hpke_suites() {
     assert_eq!(
         MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384,
         HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM
+    );
+    assert_eq!(
+        MLS_192_MLKEM768_AES256GCM_SHA384_MLDSA65,
+        HPKE_MLKEM768_HKDF_SHA384_AES256GCM
+    );
+    assert_eq!(
+        MLS_128_MLKEM768X25519_AES256GCM_SHA384_Ed25519,
+        HPKE_XWING_HKDF_SHA384_AES256GCM
     );
 }
 

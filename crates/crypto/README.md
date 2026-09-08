@@ -32,7 +32,7 @@ When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.3.8", default-features = false, features = [
+reallyme-crypto = { version = "0.3.9", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -45,7 +45,7 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.3.8", default-features = false, features = [
+reallyme-crypto = { version = "0.3.9", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }

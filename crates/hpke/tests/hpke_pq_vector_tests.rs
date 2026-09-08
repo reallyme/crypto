@@ -15,6 +15,7 @@
 use crypto_hpke::{
     derive_keypair_from_ikm, open_base, seal_base_derand, HpkeDerandSealRequest, HpkeOpenRequest,
     HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM, HPKE_MLKEM1024_HKDF_SHA384_AES256GCM,
+    HPKE_MLKEM768_HKDF_SHA384_AES256GCM,
 };
 use sha2::{Digest, Sha256};
 
@@ -32,6 +33,59 @@ fn decode(encoded: &str) -> Vec<u8> {
 
 fn sha256_hex(bytes: &[u8]) -> String {
     hex::encode(Sha256::digest(bytes))
+}
+
+#[test]
+fn ml_kem_768_kem_matches_hpke_pq_draft_vector() {
+    // draft-ietf-hpke-pq-05, Appendix A.2. The published profile uses
+    // HKDF-SHA256 and AES-128-GCM, while MLS draft-06 combines the same KEM
+    // with HKDF-SHA384 and AES-256-GCM. Key derivation and encapsulation are
+    // KEM operations, so their complete-value commitments remain applicable;
+    // the ciphertext below is intentionally checked by round-trip instead of
+    // being described as an exact Appendix A.2 HPKE ciphertext vector.
+    let recipient_ikm = decode(concat!(
+        "a60b35f174ce9ac7a4ff5b9f81e38125b03506ecbd56a3a55c31ece0f5907052",
+        "0729773a61a499d5137daaef824b493848b6e4dd332a815ff19aa9f58a381eb8"
+    ));
+    let sender_ikm = decode("9b933cd9c9421cd58db0c5f6cea53eedbd7fae056ff95d688d8ed9a58177e76b");
+    let recipient = derive_keypair_from_ikm(HPKE_MLKEM768_HKDF_SHA384_AES256GCM, &recipient_ikm)
+        .expect("published recipient IKM must derive");
+    assert_eq!(
+        sha256_hex(&recipient.public_key),
+        "80aabb142999e683475598517f3bca6b9b8c8f01109ec8f861b450d2a8b9148d"
+    );
+    assert_eq!(
+        sha256_hex(recipient.private_key()),
+        "386aeafcaac84b3ae7227e02d6ca8a77b5b909866fe8542e5e84dd7bc14dba9b"
+    );
+
+    let info = decode(INFO_HEX);
+    let aad = decode(AAD_HEX);
+    let plaintext = decode(PLAINTEXT_HEX);
+    let sealed = seal_base_derand(&HpkeDerandSealRequest {
+        suite: HPKE_MLKEM768_HKDF_SHA384_AES256GCM,
+        recipient_public_key: &recipient.public_key,
+        encapsulation_randomness: &sender_ikm,
+        info: &info,
+        aad: &aad,
+        plaintext: &plaintext,
+    })
+    .expect("published sender IKM must encapsulate");
+    assert_eq!(
+        sha256_hex(&sealed.encapsulated_key),
+        "48f93a13c1ee2be820054837dae8c60bb9fdec23347521ec8b81d0e4716a649c"
+    );
+
+    let opened = open_base(&HpkeOpenRequest {
+        suite: HPKE_MLKEM768_HKDF_SHA384_AES256GCM,
+        encapsulated_key: &sealed.encapsulated_key,
+        recipient_private_key: recipient.private_key(),
+        info: &info,
+        aad: &aad,
+        ciphertext: &sealed.ciphertext,
+    })
+    .expect("MLS-profile ciphertext must open");
+    assert_eq!(opened.plaintext.as_slice(), plaintext);
 }
 
 #[test]
