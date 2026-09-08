@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe Technologies Limited. All rights reserved
--->
-
 # reallyme-crypto-hpke
 
 `reallyme-crypto-hpke` exposes typed RFC 9180 and post-quantum HPKE component

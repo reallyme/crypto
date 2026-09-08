@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe Technologies Limited. All rights reserved
--->
-
 # reallyme-crypto-p384
 
 NIST P-384 ECDSA and ECDH primitive for ReallyMe Crypto.

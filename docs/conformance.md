@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe Technologies Limited. All rights reserved
--->
-
 # Conformance
 
 Shared vectors live in [../vectors](../vectors). The generator and platform

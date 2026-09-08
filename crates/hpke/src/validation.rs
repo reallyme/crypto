@@ -8,8 +8,8 @@ use crate::constants::{
 };
 use crate::error::HpkeError;
 #[cfg(feature = "backend-native")]
-use crate::identifiers::HpkeKdfId;
-use crate::identifiers::{HpkeAeadId, HpkeComponentSupport, HpkeKemId, HpkeSuite};
+use crate::identifiers::{HpkeAeadId, HpkeKdfId};
+use crate::identifiers::{HpkeComponentSupport, HpkeKemId, HpkeSuite};
 use crate::{
     HPKE_SECP256K1_PRIVATE_KEY_LEN, HPKE_SECP256K1_PUBLIC_KEY_LEN, HPKE_X448_PRIVATE_KEY_LEN,
     HPKE_X448_PUBLIC_KEY_LEN,
@@ -183,7 +183,25 @@ pub(crate) fn validate_ciphertext(suite: HpkeSuite, ciphertext: &[u8]) -> Result
 }
 
 #[cfg(feature = "backend-native")]
-pub(crate) fn validate_key_schedule_inputs(info: &[u8], psk_id: &[u8]) -> Result<(), HpkeError> {
+pub(crate) fn validate_key_schedule_inputs(
+    kdf: HpkeKdfId,
+    info: &[u8],
+    psk_id: &[u8],
+) -> Result<(), HpkeError> {
+    match kdf {
+        // HKDF hashes these inputs independently with LabeledExtract. Applying
+        // the one-stage KDF's context bound here rejects valid MLS Welcomes
+        // with large inline ratchet trees and is not required by RFC 9180.
+        HpkeKdfId::HkdfSha256 | HpkeKdfId::HkdfSha384 | HpkeKdfId::HkdfSha512 => {
+            return Ok(());
+        }
+        HpkeKdfId::Shake256 => {}
+        HpkeKdfId::Shake128 | HpkeKdfId::TurboShake128 | HpkeKdfId::TurboShake256 => {
+            return Err(HpkeError::UnsupportedKdf);
+        }
+    }
+    // Preserve the backend's documented one-stage key-schedule input bound
+    // before it performs infallible 16-bit length conversions.
     let encoded_len = info
         .len()
         .checked_add(psk_id.len())
@@ -196,14 +214,19 @@ pub(crate) fn validate_key_schedule_inputs(info: &[u8], psk_id: &[u8]) -> Result
 }
 
 #[cfg(feature = "backend-native")]
-pub(crate) fn validate_psk(psk: &[u8], psk_id: &[u8]) -> Result<(), HpkeError> {
+pub(crate) fn validate_psk(kdf: HpkeKdfId, psk: &[u8], psk_id: &[u8]) -> Result<(), HpkeError> {
     if psk.len() < HPKE_MIN_PSK_LEN {
         return Err(HpkeError::InvalidPsk);
     }
     if psk_id.is_empty() {
         return Err(HpkeError::InvalidPskIdentifier);
     }
-    validate_key_schedule_inputs(&[], psk_id)
+    // The one-stage schedule also length-prefixes the PSK itself. Check it
+    // separately: it is not included in the info/identifier context budget.
+    if kdf == HpkeKdfId::Shake256 && u16::try_from(psk.len()).is_err() {
+        return Err(HpkeError::InvalidPsk);
+    }
+    validate_key_schedule_inputs(kdf, &[], psk_id)
 }
 
 #[cfg(feature = "backend-native")]

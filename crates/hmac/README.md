@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe Technologies Limited. All rights reserved
--->
-
 # crypto-hmac
 
 Standalone HMAC authentication tags for ReallyMe Crypto.

@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe Technologies Limited. All rights reserved
--->
-
 # Security Policy
 
 `reallyme-crypto` is cryptographic infrastructure. We take vulnerability

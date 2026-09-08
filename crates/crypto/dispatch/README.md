@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe Technologies Limited. All rights reserved
--->
-
 # reallyme-crypto-dispatch
 
 `reallyme-crypto-dispatch` owns algorithm-selected

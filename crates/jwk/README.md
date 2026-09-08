@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe Technologies Limited. All rights reserved
--->
-
 # reallyme-crypto-jwk
 
 JWK envelope encoding and canonicalization for ReallyMe Crypto public keys.

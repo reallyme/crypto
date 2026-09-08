@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe Technologies Limited. All rights reserved
--->
-
 # crypto-ffi
 
 `crypto-ffi` builds the native C ABI for ReallyMe Crypto. Swift, Kotlin, and

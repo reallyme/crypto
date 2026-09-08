@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe Technologies Limited. All rights reserved
--->
-
 # External Vector Audit
 
 This package tests public primitive APIs against raw upstream vectors in

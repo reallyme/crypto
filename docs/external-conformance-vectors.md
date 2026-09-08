@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe Technologies Limited. All rights reserved
--->
-
 # External Conformance Vectors
 
 ReallyMe Crypto vendors selected third-party conformance vectors under

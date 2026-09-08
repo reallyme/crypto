@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe Technologies Limited. All rights reserved
--->
-
 # ReallyMe Crypto Vectors
 
 This directory contains crypto conformance vectors used by tests.

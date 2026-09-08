@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe Technologies Limited. All rights reserved
--->
-
 # crypto-slh-dsa
 
 SLH-DSA (FIPS 205) signature primitives for ReallyMe Crypto.

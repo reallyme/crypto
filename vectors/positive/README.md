@@ -1,7 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe Technologies Limited. All rights reserved
--->
-
 # Positive Vectors
 
 Positive vectors contain inputs that must validate, encrypt/decrypt, derive,
