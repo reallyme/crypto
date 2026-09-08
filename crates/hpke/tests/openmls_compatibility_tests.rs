@@ -15,11 +15,12 @@
 use crypto_hpke::{
     derive_keypair_from_ikm, setup_receiver_psk, setup_sender_psk, HpkeError, HpkePskIdRef,
     HpkePskReceiverSetupRequest, HpkePskRef, HpkePskSenderContext, HpkePskSenderSetupRequest,
-    HpkeReceiverContext, HpkeSuite, HPKE_XWING_HKDF_SHA256_CHACHA20POLY1305,
-    MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384, MLS_192_MLKEM1024_AES256GCM_SHA384_P384,
+    HpkeReceiverContext, HpkeSuite, MLS_128_MLKEM768X25519_AES256GCM_SHA384_Ed25519,
+    HPKE_XWING_HKDF_SHA256_CHACHA20POLY1305, MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384,
+    MLS_192_MLKEM1024_AES256GCM_SHA384_P384, MLS_192_MLKEM768_AES256GCM_SHA384_MLDSA65,
     MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87,
 };
-use hpke::kem::{MlKem1024, MlKem1024P384};
+use hpke::kem::{MlKem1024, MlKem1024P384, MlKem768};
 use hpke::{Kem as HpkeKem, Serializable};
 use sha2::{Digest, Sha256};
 use zeroize::ZeroizeOnDrop;
@@ -38,6 +39,14 @@ const XWING_OPENMLS_PUBLIC_KEY_SHA256_HEX: &str =
 
 #[test]
 fn arbitrary_ikm_uses_each_kems_registered_derive_key_pair() {
+    let mlkem768 = derive_keypair_from_ikm(MLS_192_MLKEM768_AES256GCM_SHA384_MLDSA65, IKM)
+        .expect("ML-KEM-768 derivation succeeds");
+    let (_, expected_mlkem768_public_key) = MlKem768::derive_keypair(IKM);
+    assert_eq!(
+        mlkem768.public_key,
+        expected_mlkem768_public_key.to_bytes().as_slice()
+    );
+
     let mlkem = derive_keypair_from_ikm(MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87, IKM)
         .expect("ML-KEM derivation succeeds");
     let (_, expected_mlkem_public_key) = MlKem1024::derive_keypair(IKM);
@@ -222,8 +231,10 @@ fn split_psk_receiver_rejects_malformed_setup_and_tampered_ciphertext() {
     );
 }
 
-fn mls_profiles() -> [HpkeSuite; 3] {
+fn mls_profiles() -> [HpkeSuite; 5] {
     [
+        MLS_128_MLKEM768X25519_AES256GCM_SHA384_Ed25519,
+        MLS_192_MLKEM768_AES256GCM_SHA384_MLDSA65,
         MLS_192_MLKEM1024_AES256GCM_SHA384_P384,
         MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87,
         MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384,

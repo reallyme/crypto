@@ -13,8 +13,9 @@ use crypto_hpke::{
     derive_keypair_from_ikm, open_base, seal_base, HpkeAeadId, HpkeComponentSupport, HpkeError,
     HpkeKdfId, HpkeKemId, HpkeOpenRequest, HpkeSealRequest, HpkeSuite,
     HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM, HPKE_MLKEM1024_HKDF_SHA384_AES256GCM,
-    HPKE_REGISTERED_AEADS, HPKE_REGISTERED_KDFS, HPKE_REGISTERED_KEMS,
-    HPKE_XWING_HKDF_SHA256_CHACHA20POLY1305,
+    HPKE_MLKEM768_HKDF_SHA384_AES256GCM, HPKE_REGISTERED_AEADS, HPKE_REGISTERED_KDFS,
+    HPKE_REGISTERED_KEMS, HPKE_XWING_HKDF_SHA256_CHACHA20POLY1305,
+    HPKE_XWING_HKDF_SHA384_AES256GCM,
 };
 
 const TEST_IKM: &[u8] = b"reallyme-openmls-hpke-feature-test-ikm";
@@ -31,6 +32,7 @@ fn openmls_feature_exposes_only_selected_hpke_components() {
     assert_eq!(
         executable_kems,
         [
+            HpkeKemId::MlKem768,
             HpkeKemId::MlKem1024,
             HpkeKemId::MlKem1024P384,
             HpkeKemId::XWing,
@@ -59,9 +61,11 @@ fn openmls_feature_exposes_only_selected_hpke_components() {
 #[test]
 fn openmls_feature_round_trips_each_selected_profile() -> Result<(), HpkeError> {
     for suite in [
+        HPKE_MLKEM768_HKDF_SHA384_AES256GCM,
         HPKE_MLKEM1024_HKDF_SHA384_AES256GCM,
         HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM,
         HPKE_XWING_HKDF_SHA256_CHACHA20POLY1305,
+        HPKE_XWING_HKDF_SHA384_AES256GCM,
     ] {
         let keypair = derive_keypair_from_ikm(suite, TEST_IKM)?;
         let sealed = seal_base(&HpkeSealRequest {

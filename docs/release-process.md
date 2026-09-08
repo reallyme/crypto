@@ -10,7 +10,7 @@ the affected SDK and hardware lanes, before asking CI to publish. Package-specif
 artifact gates are listed in [the release checklist](../RELEASE_CHECKLIST.md).
 
 Before creating the release commit, finish every Rust and SDK source/version
-change. `scripts/prepare_swift_release_candidate.sh 0.3.8` remains available as
+change. `scripts/prepare_swift_release_candidate.sh 0.3.9` remains available as
 an optional local packaging check, but its machine-specific checksum is not a
 release input. The Swift preflight produces the canonical archive on the pinned
 GitHub runner, tests it, and retains those exact bytes. The release workflow

@@ -17,7 +17,8 @@ use crypto_hpke::{
     sender_export_derand, setup_sender_psk_derand, HpkeDerandPskSenderSetupRequest,
     HpkeDerandSealRequest, HpkeDerandSenderExportRequest, HpkeError, HpkeOpenRequest, HpkePskIdRef,
     HpkePskOpenRequest, HpkePskRef, HpkeReceiverExportRequest, HpkeSuite,
-    MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384, MLS_192_MLKEM1024_AES256GCM_SHA384_P384,
+    MLS_128_MLKEM768X25519_AES256GCM_SHA384_Ed25519, MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384,
+    MLS_192_MLKEM1024_AES256GCM_SHA384_P384, MLS_192_MLKEM768_AES256GCM_SHA384_MLDSA65,
     MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87,
 };
 
@@ -169,8 +170,10 @@ fn deterministic_split_setup_rejects_wrong_randomness_lengths() {
     }
 }
 
-fn mls_profiles() -> [HpkeSuite; 3] {
+fn mls_profiles() -> [HpkeSuite; 5] {
     [
+        MLS_128_MLKEM768X25519_AES256GCM_SHA384_Ed25519,
+        MLS_192_MLKEM768_AES256GCM_SHA384_MLDSA65,
         MLS_192_MLKEM1024_AES256GCM_SHA384_P384,
         MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87,
         MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384,

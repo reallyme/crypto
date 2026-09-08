@@ -70,13 +70,15 @@ fn main() {}
 
 The Rust API also names the draft MLS profiles directly:
 
+- `MLS_128_MLKEM768X25519_AES256GCM_SHA384_Ed25519`
+- `MLS_192_MLKEM768_AES256GCM_SHA384_MLDSA65`
 - `MLS_192_MLKEM1024_AES256GCM_SHA384_P384`
 - `MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87`
 - `MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384`
 
 The draft-06 profiles select HPKE HKDF-SHA384 (`0x0002`) because MLS requires
 separate Extract and Expand operations. The final suffix identifies the MLS
-signature profile and is not part of the HPKE triple. The first two aliases
+signature profile and is not part of the HPKE triple. The ML-KEM-1024 aliases
 therefore resolve to the same ML-KEM-1024, HKDF-SHA384, AES-256-GCM suite.
 
 The `test-vectors` feature exposes deterministic Base-mode seal, Base-mode

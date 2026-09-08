@@ -246,7 +246,7 @@ impl HpkeAeadId {
     }
 }
 
-/// Complete IANA HPKE KEM registry snapshot supported by the `0.3.8` contract.
+/// Complete IANA HPKE KEM registry snapshot supported by the `0.3.9` contract.
 pub const HPKE_REGISTERED_KEMS: [HpkeKemId; 17] = [
     HpkeKemId::DhKemP256HkdfSha256,
     HpkeKemId::DhKemP384HkdfSha384,
@@ -267,7 +267,7 @@ pub const HPKE_REGISTERED_KEMS: [HpkeKemId; 17] = [
     HpkeKemId::XWing,
 ];
 
-/// Complete IANA HPKE KDF registry snapshot supported by the `0.3.8` contract.
+/// Complete IANA HPKE KDF registry snapshot supported by the `0.3.9` contract.
 pub const HPKE_REGISTERED_KDFS: [HpkeKdfId; 7] = [
     HpkeKdfId::HkdfSha256,
     HpkeKdfId::HkdfSha384,
@@ -278,7 +278,7 @@ pub const HPKE_REGISTERED_KDFS: [HpkeKdfId; 7] = [
     HpkeKdfId::TurboShake256,
 ];
 
-/// Complete IANA HPKE AEAD registry snapshot supported by the `0.3.8` contract.
+/// Complete IANA HPKE AEAD registry snapshot supported by the `0.3.9` contract.
 pub const HPKE_REGISTERED_AEADS: [HpkeAeadId; 4] = [
     HpkeAeadId::Aes128Gcm,
     HpkeAeadId::Aes256Gcm,
@@ -394,10 +394,22 @@ pub const HPKE_XWING_HKDF_SHA256_CHACHA20POLY1305: HpkeSuite = HpkeSuite::new(
     HpkeKdfId::HkdfSha256,
     HpkeAeadId::ChaCha20Poly1305,
 );
+/// X-Wing (ML-KEM-768 + X25519), HKDF-SHA384, AES-256-GCM.
+pub const HPKE_XWING_HKDF_SHA384_AES256GCM: HpkeSuite = HpkeSuite::new(
+    HpkeKemId::XWing,
+    HpkeKdfId::HkdfSha384,
+    HpkeAeadId::Aes256Gcm,
+);
 /// ML-KEM-768, SHAKE256, AES-256-GCM.
 pub const HPKE_MLKEM768_SHAKE256_AES256GCM: HpkeSuite = HpkeSuite::new(
     HpkeKemId::MlKem768,
     HpkeKdfId::Shake256,
+    HpkeAeadId::Aes256Gcm,
+);
+/// ML-KEM-768, HKDF-SHA384, AES-256-GCM.
+pub const HPKE_MLKEM768_HKDF_SHA384_AES256GCM: HpkeSuite = HpkeSuite::new(
+    HpkeKemId::MlKem768,
+    HpkeKdfId::HkdfSha384,
     HpkeAeadId::Aes256Gcm,
 );
 /// ML-KEM-1024, SHAKE256, AES-256-GCM.
@@ -449,3 +461,17 @@ pub const MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87: HpkeSuite =
 /// MLS signature algorithm rather than an additional HPKE component.
 pub const MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384: HpkeSuite =
     HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM;
+/// MLS 192-bit profile: ML-KEM-768, HKDF-SHA384, AES-256-GCM, and ML-DSA-65 signatures.
+///
+/// The ML-DSA-65 suffix identifies the MLS signature algorithm and does not
+/// alter the HPKE ciphersuite triple represented by this value.
+pub const MLS_192_MLKEM768_AES256GCM_SHA384_MLDSA65: HpkeSuite =
+    HPKE_MLKEM768_HKDF_SHA384_AES256GCM;
+/// MLS 128-bit profile: X-Wing, HKDF-SHA384, AES-256-GCM, and Ed25519 signatures.
+///
+/// X-Wing is the ML-KEM-768 + X25519 hybrid KEM standardized by the HPKE PQ
+/// draft. The Ed25519 suffix identifies the MLS signature algorithm and does
+/// not alter the HPKE ciphersuite triple represented by this value.
+#[allow(non_upper_case_globals)] // Preserve the exact ciphersuite name used by the MLS draft.
+pub const MLS_128_MLKEM768X25519_AES256GCM_SHA384_Ed25519: HpkeSuite =
+    HPKE_XWING_HKDF_SHA384_AES256GCM;
