@@ -46,12 +46,12 @@ const projectLicense = "MIT OR Apache-2.0";
 const trackedFiles = loadTrackedFiles();
 const trackedPaths = new Set(trackedFiles);
 for (const path of trackedFiles) {
-  if (/\.(?:md|txt|toml)$/u.test(path)) {
+  if (/\.(?:md|txt)$/u.test(path)) {
     assertNotContains(path, "SPDX-FileCopyrightText:");
     assertNotContains(path, "SPDX-License-Identifier:");
   }
   if (path.startsWith("vectors/external/")) continue;
-  if (/\.(?:md|txt|toml|json|ya?ml|xml|properties|pro)$/u.test(path) || path.endsWith(".gitignore") || path.endsWith("NOTICE")) {
+  if (/\.(?:md|txt|json|ya?ml|xml|properties|pro)$/u.test(path) || path.endsWith(".gitignore") || path.endsWith("NOTICE")) {
     assertNotContains(path, "SPDX-License-Identifier:");
     assertNotContains(path, '"spdxLicenseIdentifier"');
     assertNotContains(path, '"spdx_license_identifier"');
@@ -2529,9 +2529,9 @@ const repositoryPolicy = {
     validatePublishablePathDependencies: true,
   },
   spdx: {
-    // License identifiers belong on source and scripts, not documentation or
-    // configuration. Vendored sources retain their upstream licensing.
-    extensions: [".rs", ".ts", ".js", ".mjs", ".py", ".sh", ".swift", ".kt", ".kts", ".java", ".h", ".c", ".proto", ".spthy"],
+    // License identifiers belong on source, scripts, and TOML configuration,
+    // not documentation. Vendored sources retain their upstream licensing.
+    extensions: [".rs", ".ts", ".js", ".mjs", ".py", ".sh", ".swift", ".kt", ".kts", ".java", ".h", ".c", ".proto", ".spthy", ".toml"],
     names: [],
     license: "SPDX-License-Identifier: MIT OR Apache-2.0",
     excludedPrefixes: [
