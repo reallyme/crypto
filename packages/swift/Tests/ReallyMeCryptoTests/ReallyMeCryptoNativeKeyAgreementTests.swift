@@ -252,6 +252,35 @@ extension ReallyMeCryptoTests {
         XCTAssertEqual(enclaveSecret, peerSecret)
     }
 
+    func testP256SecureEnclaveAuthenticatedPolicyConstructsOrFailsClosed() throws {
+        let tag = Array("me.really.crypto.tests.p256.authenticated.\(UUID().uuidString)".utf8)
+        let keyPair: ReallyMeKeyAgreementHandleKeyPair
+        do {
+            keyPair = try ReallyMeP256SecureEnclaveEcdh.generateKeyPair(
+                tag: tag,
+                accessPolicy: .biometryCurrentSetWhenPasscodeSet,
+                overwriteExisting: true
+            )
+        } catch ReallyMeCryptoError.unsupportedPlatform {
+            throw XCTSkip("Secure Enclave is not available on this test platform")
+        } catch ReallyMeCryptoError.providerFailure {
+            throw XCTSkip("authenticated Secure Enclave policy is unavailable to this test process")
+        }
+        defer {
+            try? ReallyMeP256SecureEnclaveEcdh.deleteKey(
+                privateKeyHandle: keyPair.privateKeyHandle
+            )
+        }
+
+        XCTAssertEqual(
+            try ReallyMeP256SecureEnclaveEcdh.decodePrivateKeyHandle(
+                keyPair.privateKeyHandle
+            ),
+            tag
+        )
+        XCTAssertEqual(keyPair.publicKey.count, ReallyMeP256Ecdh.compressedPublicKeyLength)
+    }
+
     func testP256SecureEnclaveEcdhRejectsDuplicateTagWhenAvailable() throws {
         let tag = Array("me.really.crypto.tests.p256.duplicate.\(UUID().uuidString)".utf8)
         let firstKeyPair: ReallyMeKeyAgreementHandleKeyPair

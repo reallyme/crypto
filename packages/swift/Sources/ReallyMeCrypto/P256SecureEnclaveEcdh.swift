@@ -4,11 +4,42 @@
 
 import CryptoKit
 import Foundation
+import LocalAuthentication
 import Security
 
 public struct ReallyMeKeyAgreementHandleKeyPair: Sendable {
     public let publicKey: [UInt8]
     public let privateKeyHandle: [UInt8]
+}
+
+/// Closed Secure Enclave access profiles for non-exportable P-256 ECDH keys.
+///
+/// Protocol owners choose the profile; ReallyMe Crypto maps it to one exact
+/// Security.framework construction so SDKs do not reproduce key policy or ECDH.
+public enum ReallyMeSecureEnclaveEcdhAccessPolicy: Sendable {
+    /// Background-capable key use while the device is unlocked.
+    case backgroundWhenUnlocked
+    /// Current-biometric authorization for every operation, invalidated when
+    /// biometric enrollment changes, with a configured device passcode required.
+    case biometryCurrentSetWhenPasscodeSet
+
+    fileprivate var accessibility: CFString {
+        switch self {
+        case .backgroundWhenUnlocked:
+            return kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+        case .biometryCurrentSetWhenPasscodeSet:
+            return kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly
+        }
+    }
+
+    fileprivate var accessControlFlags: SecAccessControlCreateFlags {
+        switch self {
+        case .backgroundWhenUnlocked:
+            return [.privateKeyUsage]
+        case .biometryCurrentSetWhenPasscodeSet:
+            return [.privateKeyUsage, .biometryCurrentSet]
+        }
+    }
 }
 
 /// P-256 ECDH with the private key held by Secure Enclave / Keychain.
@@ -19,10 +50,11 @@ public struct ReallyMeKeyAgreementHandleKeyPair: Sendable {
 /// small handle (`SE:` + application tag). JWE/JOSE code can use the handle to
 /// derive an ECDH shared secret without exporting the private key.
 ///
-/// ECDH keys deliberately use `.privateKeyUsage` without an interactive
-/// user-presence constraint so background receive/decryption flows can derive
-/// shared secrets. Secure Enclave residency prevents private-key export but
-/// does not imply per-operation user authentication.
+/// The default profile supports background receive/decryption while unlocked.
+/// Protocols that require an irrecoverable, explicitly local authority select
+/// the passcode-and-current-biometric profile and provide the authenticated
+/// `LAContext` for each ECDH operation. Secure Enclave residency alone never
+/// implies user authentication.
 public enum ReallyMeP256SecureEnclaveEcdh {
     public static let handlePrefix = Array("SE:".utf8)
     public static let minTagLength = 1
@@ -51,6 +83,7 @@ public enum ReallyMeP256SecureEnclaveEcdh {
 
     public static func generateKeyPair(
         tag: [UInt8],
+        accessPolicy: ReallyMeSecureEnclaveEcdhAccessPolicy = .backgroundWhenUnlocked,
         overwriteExisting: Bool = false
     ) throws -> ReallyMeKeyAgreementHandleKeyPair {
         try validateTag(tag)
@@ -65,7 +98,7 @@ public enum ReallyMeP256SecureEnclaveEcdh {
             throw ReallyMeCryptoError.invalidInput
         }
 
-        let privateKey = try createPrivateKey(tag: tag)
+        let privateKey = try createPrivateKey(tag: tag, accessPolicy: accessPolicy)
         do {
             let publicKey = try compressedPublicKey(for: privateKey)
             return ReallyMeKeyAgreementHandleKeyPair(
@@ -90,12 +123,16 @@ public enum ReallyMeP256SecureEnclaveEcdh {
 
     public static func deriveSharedSecret(
         publicKey: [UInt8],
-        privateKeyHandle: [UInt8]
+        privateKeyHandle: [UInt8],
+        authenticationContext: LAContext? = nil
     ) throws -> [UInt8] {
         guard publicKey.count == compressedPublicKeyLength else {
             throw ReallyMeCryptoError.invalidInput
         }
-        let privateKey = try privateKey(for: privateKeyHandle)
+        let privateKey = try privateKey(
+            for: privateKeyHandle,
+            authenticationContext: authenticationContext
+        )
         let peerPublicKey = try secKeyPublicKey(fromCompressedP256: publicKey)
         var error: Unmanaged<CFError>?
         guard let secret = SecKeyCopyKeyExchangeResult(
@@ -138,13 +175,16 @@ public enum ReallyMeP256SecureEnclaveEcdh {
         }
     }
 
-    private static func createPrivateKey(tag: [UInt8]) throws -> SecKey {
+    private static func createPrivateKey(
+        tag: [UInt8],
+        accessPolicy: ReallyMeSecureEnclaveEcdhAccessPolicy
+    ) throws -> SecKey {
         let keychainTag = storageTag(for: tag)
         var accessError: Unmanaged<CFError>?
         guard let access = SecAccessControlCreateWithFlags(
             nil,
-            kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
-            [.privateKeyUsage],
+            accessPolicy.accessibility,
+            accessPolicy.accessControlFlags,
             &accessError
         ) else {
             throw mapKeychainError(accessError)
@@ -167,10 +207,13 @@ public enum ReallyMeP256SecureEnclaveEcdh {
         return privateKey
     }
 
-    private static func privateKey(for privateKeyHandle: [UInt8]) throws -> SecKey {
+    private static func privateKey(
+        for privateKeyHandle: [UInt8],
+        authenticationContext: LAContext? = nil
+    ) throws -> SecKey {
         let tag = try decodePrivateKeyHandle(privateKeyHandle)
         let keychainTag = storageTag(for: tag)
-        let query: [String: Any] = [
+        var query: [String: Any] = [
             kSecClass as String: kSecClassKey,
             kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
             kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
@@ -178,6 +221,9 @@ public enum ReallyMeP256SecureEnclaveEcdh {
             kSecReturnRef as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne,
         ]
+        if let authenticationContext {
+            query[kSecUseAuthenticationContext as String] = authenticationContext
+        }
         var item: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         guard status == errSecSuccess, let key = item else {
@@ -299,6 +345,8 @@ public enum ReallyMeP256SecureEnclaveEcdh {
         switch status {
         case errSecUnimplemented:
             return ReallyMeCryptoError.unsupportedPlatform
+        case errSecAuthFailed, errSecInteractionNotAllowed, errSecUserCanceled:
+            return ReallyMeCryptoError.authenticationFailed
         case errSecParam, errSecItemNotFound, errSecDuplicateItem:
             return ReallyMeCryptoError.invalidInput
         default:

@@ -165,11 +165,26 @@ public object ReallyMeAndroidPlatformKeys {
         privateKeyHandle: ByteArray,
     ): ByteArray {
         val agreement = newKeyAgreementOperation(privateKeyHandle)
+        return completeKeyAgreementOperation(agreement, peerPublicKey)
+    }
+
+    /**
+     * Completes one initialized, optionally biometric-authorized ECDH operation.
+     *
+     * Android requires the actual [KeyAgreement] object to cross the
+     * `BiometricPrompt.CryptoObject` boundary. Completion returns here so peer
+     * SEC1 validation, platform-key conversion, ECDH, and output bounds remain
+     * owned by ReallyMe Crypto instead of being copied into each SDK.
+     */
+    public fun completeKeyAgreementOperation(
+        agreement: KeyAgreement,
+        peerPublicKey: ByteArray,
+    ): ByteArray {
         val peer = decodeCompressedPublicKey(peerPublicKey)
         return withMappedPlatformErrors {
             agreement.doPhase(peer, true)
             val secret = agreement.generateSecret()
-            if (secret.size != SHARED_SECRET_LENGTH) {
+            if (secret.size != SHARED_SECRET_LENGTH || secret.all { value -> value == 0.toByte() }) {
                 secret.fill(0)
                 throw ReallyMeCryptoException.ProviderFailure()
             }

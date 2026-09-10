@@ -274,9 +274,12 @@ class ReallyMeCryptoAndroidInstrumentedTest {
         var platformSecret = ByteArray(0)
         var peerSecret = ByteArray(0)
         try {
-            platformSecret = ReallyMeAndroidPlatformKeys.deriveSharedSecret(
+            val operation = ReallyMeAndroidPlatformKeys.newKeyAgreementOperation(
+                keyPair.privateKeyHandle,
+            )
+            platformSecret = ReallyMeAndroidPlatformKeys.completeKeyAgreementOperation(
+                agreement = operation,
                 peerPublicKey = peer.first,
-                privateKeyHandle = keyPair.privateKeyHandle,
             )
             peerSecret = ReallyMeP256Ecdh.deriveSharedSecret(keyPair.publicKey, peer.second)
             assertEquals(ReallyMeAndroidPlatformKeyPurpose.KEY_AGREEMENT, keyPair.purpose)
