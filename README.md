@@ -1,13 +1,19 @@
-# reallyme-crypto
+<div align="center">
+
+# ReallyMe Crypto
+
+**Cross-platform cryptography**
 
 [![Code Checks](https://github.com/reallyme/crypto/actions/workflows/rust-ci.yml/badge.svg)](https://github.com/reallyme/crypto/actions/workflows/rust-ci.yml)
 [![reallyme-crypto](https://img.shields.io/crates/v/reallyme-crypto?label=reallyme-crypto&color=2563eb)](https://crates.io/crates/reallyme-crypto)
 [![npm](https://img.shields.io/npm/v/@reallyme/crypto?label=npm&color=2563eb)](https://www.npmjs.com/package/@reallyme/crypto)
 [![Maven Central](https://img.shields.io/maven-central/v/me.really/crypto?label=maven)](https://central.sonatype.com/artifact/me.really/crypto)
 [![Security Policy](https://img.shields.io/badge/security-policy-0f766e)](SECURITY.md)
-[![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE-MIT)
 
-ReallyMe Crypto is a cross-platform cryptography workspace for Rust, Swift,
+</div>
+
+ReallyMe Crypto provides cross-platform cryptography for Rust, Swift,
 Kotlin, Android, and TypeScript. It provides one typed operation contract,
 explicit provider routing, and shared conformance evidence across server,
 mobile, browser, and WASM environments.
@@ -381,9 +387,10 @@ The full release wall is documented in [docs/conformance.md](docs/conformance.md
 
 ## License
 
-Licensed under either the MIT License or the Apache License, Version 2.0,
-at your option. See [LICENSE](LICENSE). Third-party components retain
-their own licenses and notices.
+Licensed under either the [MIT License](LICENSE-MIT) or the
+[Apache License, Version 2.0](LICENSE-APACHE), at your option.
+
+Third-party components retain their own licenses and notices.
 
 ## Copyright And Trademarks
 
