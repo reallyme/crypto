@@ -34,7 +34,20 @@ fn protobuf_operation_contract_captures_public_facade_io() -> Result<(), VectorT
     ];
 
     let facade = read_repo_file("packages/ts/src/cryptoFacade.ts")?;
-    let mut actual_operations = collect_ts_crypto_facade_methods(&facade);
+    assert!(
+        facade.contains("...createReallyMeSymmetricFacade(resolveWasmProvider)")
+            && facade.contains("...createReallyMeAsymmetricFacade(resolveWasmProvider)"),
+        "ReallyMeCrypto must compose both typed facade surfaces"
+    );
+
+    let mut actual_operations = BTreeSet::new();
+    for facade_path in [
+        "packages/ts/src/cryptoFacadeSymmetric.ts",
+        "packages/ts/src/cryptoFacadeAsymmetric.ts",
+    ] {
+        let facade_surface = read_repo_file(facade_path)?;
+        actual_operations.extend(collect_ts_crypto_facade_methods(&facade_surface));
+    }
     // These methods execute the operation already selected by the request
     // oneof. They are transport adapters, so requiring another oneof arm for
     // them would create a recursive wire operation instead of strengthening

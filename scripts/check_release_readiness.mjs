@@ -109,12 +109,9 @@ const rustSemverBaselinePath = ".semver-baseline";
 const cargoSemverChecksVersion = "0.49.0";
 const buffaVersion = "0.9.2";
 const releaseReadinessCommit = "3fcf50eb312ae20dc9dc7a256f8fae67a7ba2c6b";
-const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
-const releaseReadinessCheckoutRequired = [
-  "repository: reallyme/release-readiness",
-  `ref: ${releaseReadinessCommit}`,
-  "path: .release-readiness",
-];
+const releaseReadinessCommand =
+  `npm exec --yes --package=github:reallyme/release-readiness#${releaseReadinessCommit} -- ` +
+  "reallyme-release-readiness";
 const checkoutAction = "actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd";
 const gradleWrapperValidationAction =
   "gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92";
@@ -2805,24 +2802,10 @@ const repositoryPolicy = {
   workflows: [
     {
       path: ".github/workflows/rust-ci.yml",
-      required: releaseReadinessCheckoutRequired,
-      usesSteps: [
-        {
-          name: "Checkout release-readiness runner",
-          uses: checkoutAction,
-        },
-      ],
       runSteps: [{ name: "Release readiness", run: releaseReadinessCommand }],
     },
     {
       path: ".github/workflows/protobuf-ci.yml",
-      required: releaseReadinessCheckoutRequired,
-      usesSteps: [
-        {
-          name: "Checkout release-readiness runner",
-          uses: checkoutAction,
-        },
-      ],
       runSteps: [
         {
           name: "Check release readiness generated freshness",
