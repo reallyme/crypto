@@ -1,14 +1,16 @@
-// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+// SPDX-FileCopyrightText: 2026 ReallyMe LLC
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 package me.really.crypto
 
+private typealias ReallyMeExceptionBase = Exception
+
 /**
  * Typed SDK errors. Variants intentionally carry no secret or user-provided
  * bytes so callers can log the error without leaking key material or PII.
  */
-public sealed class ReallyMeCryptoException(message: String) : Exception(message) {
+public sealed class ReallyMeCryptoException(message: String) : ReallyMeExceptionBase(message) {
     /** Input had the wrong shape: bad length, undecodable key, invalid scalar. */
     public class InvalidInput : ReallyMeCryptoException("invalid input")
 

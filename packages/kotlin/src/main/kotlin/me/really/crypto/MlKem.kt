@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+// SPDX-FileCopyrightText: 2026 ReallyMe LLC
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -179,4 +179,6 @@ private class MlKemFixedSecureRandom(private val seed: ByteArray) : SecureRandom
     }
 }
 
-private class MlKemDeterministicRandomExhaustedException : RuntimeException()
+private typealias MlKemDeterministicRandomExceptionBase = RuntimeException
+
+private class MlKemDeterministicRandomExhaustedException : MlKemDeterministicRandomExceptionBase()

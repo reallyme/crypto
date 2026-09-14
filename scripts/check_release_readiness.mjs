@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+// SPDX-FileCopyrightText: 2026 ReallyMe LLC
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -43,6 +43,7 @@ const {
 // Keep shipped license copies and package metadata aligned with the choice
 // offered by the repository, without changing third-party license notices.
 const projectLicense = "MIT OR Apache-2.0";
+const packageLicenseText = readText("packages/ts/LICENSE");
 const trackedFiles = loadTrackedFiles();
 const trackedPaths = new Set(trackedFiles);
 for (const path of trackedFiles) {
@@ -51,8 +52,7 @@ for (const path of trackedFiles) {
     assertNotContains(path, "SPDX-License-Identifier:");
   }
   if (path.startsWith("vectors/external/")) continue;
-  if (/\.(?:md|txt|json|ya?ml|xml|properties|pro)$/u.test(path) || path.endsWith(".gitignore") || path.endsWith("NOTICE")) {
-    assertNotContains(path, "SPDX-License-Identifier:");
+  if (/\.(?:json|ya?ml|xml|properties|pro)$/u.test(path) || path.endsWith(".gitignore") || path.endsWith("NOTICE")) {
     assertNotContains(path, '"spdxLicenseIdentifier"');
     assertNotContains(path, '"spdx_license_identifier"');
   }
@@ -68,15 +68,19 @@ for (const path of trackedFiles) {
     }
   }
   if (path.endsWith("/LICENSE")) {
-    if (readText(path) !== readText("LICENSE")) fail(`${path} differs from the repository license`);
+    if (readText(path) !== packageLicenseText) {
+      fail(`${path} differs from the canonical package license`);
+    }
   }
   if (path.endsWith("/NOTICE")) {
     if (readText(path) !== readText("NOTICE")) fail(`${path} differs from the repository notice`);
   }
 }
 assertContains("Cargo.toml", `license = "${projectLicense}"`);
-assertContains("LICENSE", "MIT License");
-assertContains("LICENSE", "Apache License");
+assertContains("LICENSE-MIT", "MIT License");
+assertContains("LICENSE-APACHE", "Apache License");
+assertContains("packages/ts/LICENSE", "MIT License");
+assertContains("packages/ts/LICENSE", "Apache License");
 assertContains("README.md", `## Copyright And Trademarks
 
 Copyright © 2026 by ReallyMe LLC.
@@ -104,7 +108,7 @@ const rustSemverBaselineCommit = "5b8928f10777d0ce44561bb966b9425a281a05d7";
 const rustSemverBaselinePath = ".semver-baseline";
 const cargoSemverChecksVersion = "0.49.0";
 const buffaVersion = "0.9.2";
-const releaseReadinessCommit = "304bc55cdca3c53bf66218982d51188f341806ed";
+const releaseReadinessCommit = "48a5ae4a9c6f25053459122d6f84cf1741463454";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
 const releaseReadinessCheckoutRequired = [
   "repository: reallyme/release-readiness",
@@ -326,7 +330,7 @@ assertNotContains(
 );
 assertContains("crates/hpke/src/dhkem.rs", "allocate_secret_buffer(");
 assertContains(
-  "packages/kotlin/src/main/kotlin/me/really/crypto/CryptoFacade.kt",
+  "packages/kotlin/src/main/kotlin/me/really/crypto/CryptoFacadeModels.kt",
   "MessageDigest.isEqual(secretKey, other.secretKey)",
 );
 if (!rootCargo.includes(`version = "${rustRootVersion}"`)) {
@@ -902,10 +906,13 @@ assertContains("packages/ts/src/jwk.ts", "rejectPrivateKeyMaterial");
 assertContains("packages/ts/src/jwk.ts", "codecBase64urlDecodeCanonical");
 assertContains("packages/ts/src/jwk.ts", "ensureExactMembers");
 assertContains("packages/ts/src/jwk.ts", "export const MAX_JWKS_KEYS = 1_024");
-assertContains("packages/ts/src/proto.ts", "keys.length > MAX_JWKS_KEYS");
-assertContains("packages/ts/src/proto.ts", "MAX_JWK_CANONICAL_JCS_LENGTH = 8_192");
-assertContains("packages/ts/src/proto.ts", "ensureByteArrayAtMost(bytes, MAX_CRYPTO_INPUT_LENGTH)");
-assertNotContains("packages/ts/src/proto.ts", "String.fromCharCode(...codeUnits)");
+assertContains("packages/ts/src/protoJwk.ts", "keys.length > MAX_JWKS_KEYS");
+assertContains("packages/ts/src/protoJwk.ts", "MAX_JWK_CANONICAL_JCS_LENGTH = 8_192");
+assertContains(
+  "packages/ts/src/protoJwk.ts",
+  "ensureByteArrayAtMost(bytes, MAX_CRYPTO_INPUT_LENGTH)",
+);
+assertNotContains("packages/ts/src/protoJwk.ts", "String.fromCharCode(...codeUnits)");
 assertContains("packages/ts/src/mlDsa.ts", "value.length !== suite.signatureLength");
 assertContains(
   "packages/ts/src/slhDsa.ts",
@@ -948,12 +955,12 @@ assertNotContains(
 assertContains("packages/ts/src/aead.ts", "CHACHA20_POLY1305_KEY_LENGTH");
 assertContains("packages/ts/src/aead.ts", "return aeadSuiteWithProvider(algorithm, requireReallyMeWasmProvider())");
 assertContains("packages/ts/src/validateBytes.ts", "ensureByteArray");
-assertContains("packages/ts/src/proto.ts", "invalidInputReasons");
+assertContains("packages/ts/src/protoErrors.ts", "invalidInputReasons");
 assertContains("packages/ts/src/cryptoFacade.ts", "createReallyMeCrypto");
 assertContains("packages/ts/src/cryptoFacade.ts", "ReallyMeCryptoProviders");
 assertContains("packages/ts/src/cryptoFacade.ts", "resolveWasmProvider");
-assertContains("packages/ts/src/cryptoFacade.ts", "deriveArgon2id");
-assertContains("packages/ts/src/cryptoFacade.ts", "deriveKemKeyPair");
+assertContains("packages/ts/src/cryptoFacadeSymmetric.ts", "deriveArgon2id");
+assertContains("packages/ts/src/cryptoFacadeAsymmetric.ts", "deriveKemKeyPair");
 assertContains("packages/ts/src/index.ts", "createReallyMeCrypto");
 assertContains("packages/ts/src/index.ts", "createReallyMeWasmProvider");
 assertContains("packages/ts/src/index.ts", "bestEffortClear");
@@ -1031,8 +1038,11 @@ assertContains("Package.swift", "ReallyMeCryptoFFI.xcframework.zip");
 assertContains("Package.swift", 'let ffiArtifactLocalPathOverride = ""');
 assertContains("Package.swift", "REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI");
 assertContains("Package.swift", "runtimeFfiOverrideMarkerPath");
-assertContains("Package.swift", "runtimeFfiOverrideRequested &&");
 assertContains("Package.swift", "FileManager.default.fileExists(atPath: runtimeFfiOverrideMarkerPath)");
+const swiftPackageManifest = readText("Package.swift");
+if (!/let useRuntimeFfiProvider\s*=\s*runtimeFfiOverrideRequested\s*&&\s*FileManager\.default\.fileExists\(atPath: runtimeFfiOverrideMarkerPath\)/u.test(swiftPackageManifest)) {
+  fail("Package.swift must require both the explicit runtime-FFI request and its marker file");
+}
 assertContains("Package.swift", "if !useRuntimeFfiProvider");
 assertContains("Package.swift", 'cryptoTargetDependencies.append("ReallyMeCryptoFFI")');
 assertContains("Package.swift", 'cryptoSwiftSettings.append(.define("REALLYME_CRYPTO_LINKED_FFI"))');
@@ -1041,7 +1051,7 @@ assertContains(".github/workflows/rust-ci.yml", "touch .reallyme-crypto-runtime-
 assertContains(".github/workflows/swift-package-preflight.yml", "touch .reallyme-crypto-runtime-ffi");
 assertContains(".github/workflows/swift-package-preflight.yml", "rm .reallyme-crypto-runtime-ffi");
 assertContains(
-  "packages/swift/Sources/ReallyMeCrypto/RustCAbiLibrary.swift",
+  "packages/swift/Sources/ReallyMeCrypto/RustCAbiLinkedTypes.swift",
   "enum LinkedRustCAbiSymbol: String, CaseIterable",
 );
 assertContains(
@@ -1057,9 +1067,12 @@ assertContains(
   "packages/swift/Sources/ReallyMeCrypto/RustCAbiLibrary.swift",
   "ObjectIdentifier(requestedType) == ObjectIdentifier(Concrete.self)",
 );
-const swiftRustCAbiLibrary = readText(
+const swiftRustCAbiLibrary = [
   "packages/swift/Sources/ReallyMeCrypto/RustCAbiLibrary.swift",
-);
+  "packages/swift/Sources/ReallyMeCrypto/RustCAbiLinkedTypes.swift",
+  "packages/swift/Sources/ReallyMeCrypto/RustCAbiLinkedClassicalSymbols.swift",
+  "packages/swift/Sources/ReallyMeCrypto/RustCAbiLinkedAdvancedSymbols.swift",
+].map((path) => readText(path)).join("\n");
 const swiftLinkedSymbols = new Set(
   [...swiftRustCAbiLibrary.matchAll(/case\s+\w+\s*=\s*"(rm_crypto_[a-z0-9_]+)"/gu)].map(
     (match) => match[1],
@@ -1160,15 +1173,15 @@ assertContains(
   "public init(providers: ReallyMeCryptoProviders = .default)",
 );
 assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacade.swift", "ReallyMeRustCAbiLibrary.bundledProvider()");
-assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacade.swift", "deriveArgon2idKey");
-assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacade.swift", "auxRand32: [UInt8]");
-assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacade.swift", "deriveMlDsaKeyPair");
-assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacade.swift", "deriveSlhDsaSha2_128sKeyPair");
-assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacade.swift", "deriveXWingKeyPair");
-assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacade.swift", "deriveMlKemKeyPair");
-assertNotContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacade.swift", "seed: [UInt8]");
-assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacade.swift", "publicKeyDer: [UInt8]");
-assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacade.swift", "private func requireRustCAbiLibrary()");
+assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacadeInstancePrimitives.swift", "deriveArgon2idKey");
+assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacadeInstanceAsymmetric.swift", "auxRand32: [UInt8]");
+assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacadeInstancePrimitives.swift", "deriveMlDsaKeyPair");
+assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacadeInstancePrimitives.swift", "deriveSlhDsaSha2_128sKeyPair");
+assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacadeInstanceAsymmetric.swift", "deriveXWingKeyPair");
+assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacadeInstanceAsymmetric.swift", "deriveMlKemKeyPair");
+assertNotContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacadeInstanceAsymmetric.swift", "seed: [UInt8]");
+assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacadeInstanceAsymmetric.swift", "publicKeyDer: [UInt8]");
+assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacade.swift", "func requireRustCAbiLibrary()");
 assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacade.swift", "CustomDebugStringConvertible");
 assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacade.swift", "secretKey: <redacted>");
 assertContains("packages/swift/Sources/ReallyMeCrypto/CryptoFacade.swift", "sharedSecret: <redacted>");
@@ -1277,11 +1290,11 @@ assertContains(
 );
 assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/CryptoFacade.kt", "@JvmStatic");
 assertContains(
-  "packages/kotlin/src/main/kotlin/me/really/crypto/CryptoFacade.kt",
+  "packages/kotlin/src/main/kotlin/me/really/crypto/CryptoFacadeModels.kt",
   "public class ReallyMeSignatureKeyPair",
 );
-assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/CryptoFacade.kt", "secretKey=<redacted>");
-assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/CryptoFacade.kt", "sharedSecret=<redacted>");
+assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/CryptoFacadeModels.kt", "secretKey=<redacted>");
+assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/CryptoFacadeModels.kt", "sharedSecret=<redacted>");
 assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/RustNativeResult.kt", "ReallyMeNativeStatus");
 assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/RustNativeResult.kt", "decodeRustNativeResult");
 assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/RustNativeResult.kt", "PROVIDER_UNAVAILABLE");
@@ -1324,7 +1337,7 @@ assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/Pbkdf2.kt", "de
 assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/Pbkdf2.kt", "iterations > MAX_ITERATIONS");
 assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/Pbkdf2.kt", "generator.init(password, salt, providerIterations)");
 assertContains(
-  "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoTest.kt",
+  "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoSymmetricTest.kt",
   "pbkdf2IterationConversionEnforcesPublicWorkBounds",
 );
 assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/MlKem.kt", "sharedSecret.fill(0)");
@@ -1354,7 +1367,7 @@ assertContains(
   "jceProviderIdentityIsInspectableForProviderBackedPrimitives",
 );
 assertContains(
-  "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoTest.kt",
+  "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoSymmetricTest.kt",
   "ByteArray(ReallyMeAesGcm.TAG_LENGTH - 1)",
 );
 assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/RustAead.kt", "requireRustNativeBytes");
@@ -1540,10 +1553,10 @@ assertContains("packages/kotlin/README.md", "`me.really:crypto`");
 assertContains("packages/kotlin-android/README.md", "`me.really:crypto`");
 assertContains("provider_manifest.json", '"api": "ReallyMeP256Ecdsa and ReallyMeAndroidPlatformKeys"');
 assertContains("provider_manifest.json", '"api": "ReallyMeP256Ecdh and ReallyMeAndroidPlatformKeys"');
-assertContains("packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeys.kt", "KeyProperties.PURPOSE_AGREE_KEY");
-assertContains("packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeys.kt", "KeyProperties.SECURITY_LEVEL_STRONGBOX");
+assertContains("packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeySupport.kt", "KeyProperties.PURPOSE_AGREE_KEY");
+assertContains("packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeySupport.kt", "KeyProperties.SECURITY_LEVEL_STRONGBOX");
 assertContains(
-  "packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeys.kt",
+  "packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeySupport.kt",
   "KeyFactory.getInstance(EC_ALGORITHM, ANDROID_OPENSSL)",
 );
 assertContains(
@@ -1555,13 +1568,13 @@ assertContains(
   "Prefer [deriveSharedSecret] outside that prompt flow",
 );
 assertNotContains(
-  "packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeys.kt",
+  "packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeySupport.kt",
   "challenge.fill(0)",
 );
-assertContains("packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeys.kt", "privateKey.encoded != null");
-assertContains("packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeys.kt", "private fun requirePlatformKeyApi()");
-assertNotContains("packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeys.kt", "isInsideSecureHardware");
-assertNotContains("packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeys.kt", '@Suppress("DEPRECATION")');
+assertContains("packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeySupport.kt", "privateKey.encoded != null");
+assertContains("packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeySupport.kt", "internal fun requirePlatformKeyApi()");
+assertNotContains("packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeySupport.kt", "isInsideSecureHardware");
+assertNotContains("packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeySupport.kt", '@Suppress("DEPRECATION")');
 assertContains("packages/kotlin-android/src/androidTest/kotlin/me/really/crypto/ReallyMeCryptoAndroidInstrumentedTest.kt", "p256AndroidKeystoreSigningIsHardwareBackedOrFailsClosed");
 assertContains("packages/kotlin-android/src/androidTest/kotlin/me/really/crypto/ReallyMeCryptoAndroidInstrumentedTest.kt", "p256AndroidKeystoreEcdhIsHardwareBackedOrFailsClosed");
 assertContains("packages/kotlin-android/src/androidTest/kotlin/me/really/crypto/ReallyMeCryptoAndroidInstrumentedTest.kt", "p256AndroidStrongBoxSigningWhenAdvertised");
@@ -1790,20 +1803,20 @@ assertContains(
   "export type ReallyMePbkdf2Algorithm = Extract<",
 );
 assertContains(
-  "packages/ts/src/cryptoFacade.ts",
+  "packages/ts/src/cryptoFacadeSymmetric.ts",
   "algorithm: ReallyMePbkdf2Algorithm",
 );
 assertContains(
-  "packages/ts/src/cryptoFacade.ts",
+  "packages/ts/src/cryptoFacadeSymmetric.ts",
   "deriveArgon2id(",
 );
 assertNotContains(
-  "packages/ts/src/cryptoFacade.ts",
+  "packages/ts/src/cryptoFacadeSymmetric.ts",
   'case "Argon2id":\n        throw new ReallyMeCryptoError("unsupported-algorithm")',
 );
 assertContains(
-  "packages/swift/Sources/ReallyMeCrypto/CryptoFacade.swift",
-  "case .argon2id:\n            throw ReallyMeCryptoError.unsupportedAlgorithm",
+  "packages/swift/Sources/ReallyMeCrypto/CryptoFacadeInstancePrimitives.swift",
+  "case .argon2id:\n      throw ReallyMeCryptoError.unsupportedAlgorithm",
 );
 assertContains(
   "packages/kotlin/src/main/kotlin/me/really/crypto/CryptoFacade.kt",
@@ -2194,7 +2207,7 @@ assertNotContains("packages/ts/src/proto.ts", "cryptoProtoResult");
 assertNotContains("packages/ts/src/proto.ts", "cryptoProtoErrorResult");
 assertContains("packages/swift/Sources/ReallyMeCryptoProtoAdapters/ProtoAdapters.swift", "ReallyMeCryptoWireError");
 assertNotContains("packages/swift/Sources/ReallyMeCryptoProtoAdapters/ProtoAdapters.swift", "ReallyMeCryptoProtoResult");
-assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/proto/ProtoAdapters.kt", "ReallyMeCryptoWireError");
+assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/proto/ProtoModels.kt", "ReallyMeCryptoWireError");
 assertNotContains("packages/kotlin/src/main/kotlin/me/really/crypto/proto/ProtoAdapters.kt", "ReallyMeCryptoProtoResult");
 if (readdirSync("gen/java/me/really/crypto/v1").some((name) => name.startsWith("CryptoProtoResult"))) {
   fail("retired Java result-envelope bindings must remain absent");
@@ -2202,7 +2215,7 @@ if (readdirSync("gen/java/me/really/crypto/v1").some((name) => name.startsWith("
 if (readdirSync("gen/kotlin/me/really/crypto/v1").some((name) => name.startsWith("CryptoProtoResult"))) {
   fail("retired Kotlin result-envelope bindings must remain absent");
 }
-assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/proto/ProtoAdapters.kt", "wireErrorFromNativeStatus");
+assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/proto/ProtoErrorAdapters.kt", "wireErrorFromNativeStatus");
 assertContains("buf.yaml", "modules:");
 assertContains("buf.yaml", "- path: crates/proto/proto");
 assertContains(".github/workflows/protobuf-ci.yml", `BUFFA_VERSION: ${buffaVersion}`);
@@ -2506,7 +2519,7 @@ const primaryOperationBoundaryPolicy = {
 const repositoryPolicy = {
   generatedFreshnessMode,
   vendoredCore: {
-    contractVersion: 10,
+    contractVersion: 12,
     scriptPath: "scripts/check_release_readiness.mjs",
     corePath: "scripts/release-readiness/core.mjs",
   },
@@ -2528,20 +2541,124 @@ const repositoryPolicy = {
     requirePublishInclude: true,
     validatePublishablePathDependencies: true,
   },
+  rustSource: {
+    roots: ["."],
+    generatedPrefixes: [
+      "crates/proto/src/generated.rs",
+      "crates/proto/src/generated",
+    ],
+    // The umbrella facade is documentation-heavy but contains only declarations
+    // and re-exports. Keep a bounded allowance without relaxing implementation
+    // modules beyond the shared 500-line production ceiling.
+    moduleHardLines: 250,
+  },
+  typescriptSource: {
+    roots: ["."],
+    generatedPrefixes: [
+      "gen/es",
+      "packages/ts/src/proto/generated",
+    ],
+    tsconfigPaths: ["packages/ts/tsconfig.json"],
+    staticAnalysis: {
+      files: [
+        {
+          path: "packages/ts/tsconfig.json",
+          required: [
+            '"strict": true',
+            '"noImplicitAny": true',
+            '"noUncheckedIndexedAccess": true',
+            '"exactOptionalPropertyTypes": true',
+            '"useUnknownInCatchVariables": true',
+          ],
+        },
+      ],
+    },
+    verification: [
+      {
+        roles: ["typecheck", "lint"],
+        command: "npm",
+        args: ["--prefix", "packages/ts", "run", "typecheck"],
+      },
+      {
+        roles: ["test"],
+        command: "npm",
+        args: ["--prefix", "packages/ts", "test"],
+      },
+    ],
+  },
+  swiftSource: {
+    roots: ["."],
+    generatedPrefixes: ["gen/swift"],
+    configuration: {
+      files: [
+        {
+          path: "Package.swift",
+          required: ["swift-tools-version: 6.0"],
+        },
+        {
+          path: "crates/conformance/platform/swift/Package.swift",
+          required: ["swift-tools-version: 6.0"],
+        },
+        {
+          path: "scripts/check_swift_source_policy.sh",
+          required: ["swift format lint", "-warnings-as-errors"],
+        },
+      ],
+    },
+    verification: [
+      {
+        roles: ["format", "lint", "build", "test"],
+        command: "scripts/check_swift_source_policy.sh",
+        args: [],
+      },
+    ],
+  },
+  kotlinSource: {
+    roots: ["."],
+    generatedPrefixes: ["gen/kotlin"],
+    configuration: {
+      files: [
+        {
+          path: "packages/kotlin/build.gradle.kts",
+          required: ["jvmToolchain(21)", "allWarningsAsErrors.set(true)"],
+        },
+        {
+          path: "packages/kotlin-android/build.gradle.kts",
+          required: ["allWarningsAsErrors.set(true)"],
+        },
+        {
+          path: "crates/conformance/platform/kotlin/build.gradle.kts",
+          required: ["jvmToolchain(21)", "allWarningsAsErrors.set(true)"],
+        },
+        {
+          path: "scripts/check_kotlin_source_policy.sh",
+          required: ["--dependency-verification", "check"],
+        },
+      ],
+    },
+    verification: [
+      {
+        roles: ["format", "static-analysis", "compile", "test"],
+        command: "scripts/check_kotlin_source_policy.sh",
+        args: [],
+      },
+    ],
+  },
   spdx: {
     // License identifiers belong on source, scripts, and TOML configuration,
     // not documentation. Vendored sources retain their upstream licensing.
     extensions: [".rs", ".ts", ".js", ".mjs", ".py", ".sh", ".swift", ".kt", ".kts", ".java", ".h", ".c", ".proto", ".spthy", ".toml"],
     names: [],
+    copyright: "SPDX-FileCopyrightText: 2026 ReallyMe LLC",
     license: "SPDX-License-Identifier: MIT OR Apache-2.0",
-    excludedPrefixes: [
-      "crates/proto/src/generated",
-      "packages/ts/src/proto/generated",
-      "gen",
-      "target",
-      "vectors/external",
-      "scripts/release-readiness/core.mjs",
+    exclusions: [
+      { path: "crates/proto/src/generated", reason: "generated" },
+      { path: "packages/ts/src/proto/generated", reason: "generated" },
+      { path: "gen", reason: "generated" },
+      { path: "scripts/release-readiness/core.mjs", reason: "vendored" },
     ],
+    requireExclusionsMatched: true,
+    requireExclusionReasons: true,
   },
   protobufBoundary: primaryOperationBoundaryPolicy,
   protobufRelease: protobufReleasePolicy,
@@ -2677,7 +2794,7 @@ const repositoryPolicy = {
         path: "scripts/run_pinned_release_readiness.mjs",
         required: [
           `const RELEASE_READINESS_COMMIT = "${releaseReadinessCommit}";`,
-          'const RELEASE_READINESS_CORE_SHA256 =\n  "0a33532aa595871c1beefb1ad1d3930f1a51675b236a73e8bf93ad5d7ccdbae4";',
+          'const RELEASE_READINESS_CORE_SHA256 =\n  "6eab296596b6badd76bb1ce4abf67b73513981ad352e8f6ab5e44cdca257545e";',
         ],
         forbidden: [
           "RELEASE_READINESS_COMMIT = \"main\"",
@@ -2961,7 +3078,7 @@ assertContains(
 );
 assertContains("packages/ts/src/proto.ts", "cryptoWireErrorTryNew");
 assertContains("packages/swift/Sources/ReallyMeCryptoProtoAdapters/ProtoAdapters.swift", "tryNew");
-assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/proto/ProtoAdapters.kt", "tryNew");
+assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/proto/ProtoModels.kt", "tryNew");
 assertContains("scripts/stage_kotlin_native_resource.mjs", '["me", "really", "crypto", "native"]');
 assertContains("scripts/write_native_manifest.mjs", "reallyme-crypto-native");
 assertContains("scripts/verify_native_artifact_handoff.mjs", "NATIVE_SHA256_LINUX_X86_64");

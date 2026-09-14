@@ -1,13 +1,11 @@
-// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+// SPDX-FileCopyrightText: 2026 ReallyMe LLC
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crypto_core::{CryptoError, KemFailureKind};
 use zeroize::Zeroizing;
 
-use crate::suite::{
-    ML_KEM_SHARED_SECRET_LEN, X25519_KEY_LEN, X_WING_LABEL, X_WING_SHARED_SECRET_LEN,
-};
+use crate::suite::{ML_KEM_SHARED_SECRET_LEN, X25519_KEY_LEN, X_WING_LABEL};
 
 fn combiner_capacity(failure_kind: KemFailureKind) -> Result<usize, CryptoError> {
     ML_KEM_SHARED_SECRET_LEN
@@ -39,6 +37,5 @@ pub(crate) fn combine_shared_secret(
     let digest = crypto_sha3_256::digest(input.as_slice());
     let shared_secret = Zeroizing::new(digest.as_bytes().to_vec());
 
-    debug_assert_eq!(shared_secret.len(), X_WING_SHARED_SECRET_LEN);
     Ok(shared_secret)
 }

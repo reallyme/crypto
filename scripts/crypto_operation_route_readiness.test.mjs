@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+// SPDX-FileCopyrightText: 2026 ReallyMe LLC
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -719,7 +719,10 @@ assert.throws(
   () => assertKeyAgreementSemanticOwnership({
     readText: withSourceMutation(
       "packages/swift/Sources/ReallyMeCrypto/P256SecureEnclaveEcdh.swift",
-      (source) => source.replace("        } else if try privateKeyExists(tag: tag) {\n            throw ReallyMeCryptoError.invalidInput\n", ""),
+      (source) => source.replace(
+        /\s*} else if try privateKeyExists\(tag: tag\) \{\n\s*throw ReallyMeCryptoError\.invalidInput\n/,
+        "",
+      ),
     ),
     fail,
   }),

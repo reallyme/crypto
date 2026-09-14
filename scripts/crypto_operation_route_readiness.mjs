@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+// SPDX-FileCopyrightText: 2026 ReallyMe LLC
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -1140,7 +1140,7 @@ export const assertKdfSemanticOwnership = ({
   assertContainsKdf(
     readText,
     fail,
-    "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoTest.kt",
+    "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoSymmetricTest.kt",
     "pbkdf2IterationConversionEnforcesPublicWorkBounds",
     "Kotlin PBKDF2 work-factor boundary test",
   );
@@ -1585,9 +1585,11 @@ export const assertKeyAgreementSemanticOwnership = ({
     }
   }
 
-  const androidPlatformKeys = readText(
+  const androidPlatformKeys = [
     "packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeys.kt",
-  );
+    "packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeySupport.kt",
+    "packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeyErrorMapping.kt",
+  ].map((path) => readText(path)).join("\n");
   for (const required of [
     "KeyProperties.PURPOSE_AGREE_KEY",
     "KeyProperties.SECURITY_LEVEL_TRUSTED_ENVIRONMENT",

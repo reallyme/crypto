@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+// SPDX-FileCopyrightText: 2026 ReallyMe LLC
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -35,11 +35,11 @@ public object ReallyMeMlDsa {
         generator.init(MLDSAKeyGenerationParameters(SecureRandom(), suite.parameters))
         return try {
             val keyPair = generator.generateKeyPair()
-            val privateKey = keyPair.private as MLDSAPrivateKeyParameters
-            val publicKey = keyPair.public as MLDSAPublicKeyParameters
+            val privateKey = keyPair.private as? MLDSAPrivateKeyParameters
+                ?: throw ReallyMeCryptoException.ProviderFailure()
+            val publicKey = keyPair.public as? MLDSAPublicKeyParameters
+                ?: throw ReallyMeCryptoException.ProviderFailure()
             Pair(publicKey.encoded, privateKey.seed)
-        } catch (_: ClassCastException) {
-            throw ReallyMeCryptoException.ProviderFailure()
         } catch (_: IllegalArgumentException) {
             throw ReallyMeCryptoException.ProviderFailure()
         }

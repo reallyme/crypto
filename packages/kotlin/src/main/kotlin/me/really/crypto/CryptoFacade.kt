@@ -1,82 +1,8 @@
-// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+// SPDX-FileCopyrightText: 2026 ReallyMe LLC
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 package me.really.crypto
-
-import java.security.MessageDigest
-
-public class ReallyMeSignatureKeyPair(
-    public val publicKey: ByteArray,
-    public val secretKey: ByteArray,
-) {
-    override fun equals(other: Any?): Boolean =
-        other is ReallyMeSignatureKeyPair &&
-            publicKey.contentEquals(other.publicKey) &&
-            MessageDigest.isEqual(secretKey, other.secretKey)
-
-    override fun hashCode(): Int = 31 * publicKey.contentHashCode() + secretKey.size
-
-    override fun toString(): String =
-        "ReallyMeSignatureKeyPair(publicKeyLength=${publicKey.size}, secretKey=<redacted>)"
-}
-
-public class ReallyMeKemKeyPair(
-    public val publicKey: ByteArray,
-    public val secretKey: ByteArray,
-) {
-    override fun equals(other: Any?): Boolean =
-        other is ReallyMeKemKeyPair &&
-            publicKey.contentEquals(other.publicKey) &&
-            MessageDigest.isEqual(secretKey, other.secretKey)
-
-    override fun hashCode(): Int = 31 * publicKey.contentHashCode() + secretKey.size
-
-    override fun toString(): String =
-        "ReallyMeKemKeyPair(publicKeyLength=${publicKey.size}, secretKey=<redacted>)"
-}
-
-public class ReallyMeKeyAgreementKeyPair(
-    public val publicKey: ByteArray,
-    public val secretKey: ByteArray,
-) {
-    override fun equals(other: Any?): Boolean =
-        other is ReallyMeKeyAgreementKeyPair &&
-            publicKey.contentEquals(other.publicKey) &&
-            MessageDigest.isEqual(secretKey, other.secretKey)
-
-    override fun hashCode(): Int = 31 * publicKey.contentHashCode() + secretKey.size
-
-    override fun toString(): String =
-        "ReallyMeKeyAgreementKeyPair(publicKeyLength=${publicKey.size}, secretKey=<redacted>)"
-}
-
-public class ReallyMeKemEncapsulation(
-    public val sharedSecret: ByteArray,
-    public val ciphertext: ByteArray,
-) {
-    override fun equals(other: Any?): Boolean =
-        other is ReallyMeKemEncapsulation &&
-            MessageDigest.isEqual(sharedSecret, other.sharedSecret) &&
-            ciphertext.contentEquals(other.ciphertext)
-
-    override fun hashCode(): Int = 31 * ciphertext.contentHashCode() + sharedSecret.size
-
-    override fun toString(): String =
-        "ReallyMeKemEncapsulation(sharedSecret=<redacted>, ciphertextLength=${ciphertext.size})"
-}
-
-public class ReallyMeHpkeSealedMessage(
-    public val encapsulatedKey: ByteArray,
-    public val ciphertext: ByteArray,
-) {
-    override fun equals(other: Any?): Boolean =
-        other is ReallyMeHpkeSealedMessage &&
-            encapsulatedKey.contentEquals(other.encapsulatedKey) &&
-            ciphertext.contentEquals(other.ciphertext)
-
-    override fun hashCode(): Int = 31 * encapsulatedKey.contentHashCode() + ciphertext.contentHashCode()
-}
 
 /**
  * Generic package facade. Algorithm-specific objects remain available for
@@ -92,47 +18,16 @@ public object ReallyMeCrypto {
      * generated `CryptoOperationResult` or generated `CryptoError` outcome.
      */
     @JvmStatic
-    public fun processOperationResponse(request: ByteArray): ByteArray {
-        ReallyMeRustNativeProvider.requireLoaded()
-        return try {
-            requireNativeOperationResponse(
-                ReallyMeCryptoOperationResponseNative.processOperationResponseNative(request),
-            )
-        } catch (_: UnsatisfiedLinkError) {
-            throw ReallyMeCryptoException.ProviderFailure()
-        }
-    }
+    public fun processOperationResponse(request: ByteArray): ByteArray =
+        ReallyMeCryptoSymmetricFacade.processOperationResponse(request)
 
-    /**
-     * Executes a permitted non-secret generated ProtoJSON request.
-     *
-     * JSON is request-only; secret-bearing selectors fail before value
-     * deserialization. Returned bytes use the same binary response as
-     * [processOperationResponse].
-     */
     @JvmStatic
-    public fun processOperationResponseJson(requestJson: ByteArray): ByteArray {
-        ReallyMeRustNativeProvider.requireLoaded()
-        return try {
-            requireNativeOperationResponse(
-                ReallyMeCryptoOperationResponseNative.processOperationResponseJsonNative(requestJson),
-            )
-        } catch (_: UnsatisfiedLinkError) {
-            throw ReallyMeCryptoException.ProviderFailure()
-        }
-    }
+    public fun processOperationResponseJson(requestJson: ByteArray): ByteArray =
+        ReallyMeCryptoSymmetricFacade.processOperationResponseJson(requestJson)
 
     @JvmStatic
     public fun hash(algorithm: ReallyMeHashAlgorithm, bytes: ByteArray): ByteArray =
-        when (algorithm) {
-            ReallyMeHashAlgorithm.SHA2_256 -> ReallyMeDigest.sha256(bytes)
-            ReallyMeHashAlgorithm.SHA2_384 -> ReallyMeDigest.sha384(bytes)
-            ReallyMeHashAlgorithm.SHA2_512 -> ReallyMeDigest.sha512(bytes)
-            ReallyMeHashAlgorithm.SHA3_224 -> ReallyMeDigest.sha3_224(bytes)
-            ReallyMeHashAlgorithm.SHA3_256 -> ReallyMeDigest.sha3_256(bytes)
-            ReallyMeHashAlgorithm.SHA3_384 -> ReallyMeDigest.sha3_384(bytes)
-            ReallyMeHashAlgorithm.SHA3_512 -> ReallyMeDigest.sha3_512(bytes)
-        }
+        ReallyMeCryptoSymmetricFacade.hash(algorithm, bytes)
 
     @JvmStatic
     public fun seal(
@@ -141,18 +36,7 @@ public object ReallyMeCrypto {
         nonce: ByteArray,
         aad: ByteArray,
         plaintext: ByteArray,
-    ): ByteArray =
-        when (algorithm) {
-            ReallyMeAeadAlgorithm.AES_128_GCM -> ReallyMeAesGcm.sealAes128Gcm(key, nonce, aad, plaintext)
-            ReallyMeAeadAlgorithm.AES_192_GCM -> ReallyMeAesGcm.sealAes192Gcm(key, nonce, aad, plaintext)
-            ReallyMeAeadAlgorithm.AES_256_GCM -> ReallyMeAesGcm.seal(key, nonce, aad, plaintext)
-            ReallyMeAeadAlgorithm.AES_256_GCM_SIV ->
-                ReallyMeRustAead.sealAes256GcmSiv(key, nonce, aad, plaintext)
-            ReallyMeAeadAlgorithm.CHACHA20_POLY1305 ->
-                ReallyMeRustAead.sealChaCha20Poly1305(key, nonce, aad, plaintext)
-            ReallyMeAeadAlgorithm.XCHACHA20_POLY1305 ->
-                ReallyMeRustAead.sealXChaCha20Poly1305(key, nonce, aad, plaintext)
-        }
+    ): ByteArray = ReallyMeCryptoSymmetricFacade.seal(algorithm, key, nonce, aad, plaintext)
 
     @JvmStatic
     public fun open(
@@ -161,32 +45,14 @@ public object ReallyMeCrypto {
         nonce: ByteArray,
         aad: ByteArray,
         ciphertextWithTag: ByteArray,
-    ): ByteArray =
-        when (algorithm) {
-            ReallyMeAeadAlgorithm.AES_128_GCM ->
-                ReallyMeAesGcm.openAes128Gcm(key, nonce, aad, ciphertextWithTag)
-            ReallyMeAeadAlgorithm.AES_192_GCM ->
-                ReallyMeAesGcm.openAes192Gcm(key, nonce, aad, ciphertextWithTag)
-            ReallyMeAeadAlgorithm.AES_256_GCM -> ReallyMeAesGcm.open(key, nonce, aad, ciphertextWithTag)
-            ReallyMeAeadAlgorithm.AES_256_GCM_SIV ->
-                ReallyMeRustAead.openAes256GcmSiv(key, nonce, aad, ciphertextWithTag)
-            ReallyMeAeadAlgorithm.CHACHA20_POLY1305 ->
-                ReallyMeRustAead.openChaCha20Poly1305(key, nonce, aad, ciphertextWithTag)
-            ReallyMeAeadAlgorithm.XCHACHA20_POLY1305 ->
-                ReallyMeRustAead.openXChaCha20Poly1305(key, nonce, aad, ciphertextWithTag)
-        }
+    ): ByteArray = ReallyMeCryptoSymmetricFacade.open(algorithm, key, nonce, aad, ciphertextWithTag)
 
     @JvmStatic
     public fun authenticate(
         algorithm: ReallyMeMacAlgorithm,
         key: ByteArray,
         message: ByteArray,
-    ): ByteArray =
-        when (algorithm) {
-            ReallyMeMacAlgorithm.HMAC_SHA256 -> ReallyMeHmac.authenticateSha256(key, message)
-            ReallyMeMacAlgorithm.HMAC_SHA384 -> ReallyMeHmac.authenticateSha384(key, message)
-            ReallyMeMacAlgorithm.HMAC_SHA512 -> ReallyMeHmac.authenticateSha512(key, message)
-        }
+    ): ByteArray = ReallyMeCryptoSymmetricFacade.authenticate(algorithm, key, message)
 
     @JvmStatic
     public fun verifyMac(
@@ -194,12 +60,7 @@ public object ReallyMeCrypto {
         tag: ByteArray,
         key: ByteArray,
         message: ByteArray,
-    ): Boolean =
-        when (algorithm) {
-            ReallyMeMacAlgorithm.HMAC_SHA256 -> ReallyMeHmac.verifySha256(tag, key, message)
-            ReallyMeMacAlgorithm.HMAC_SHA384 -> ReallyMeHmac.verifySha384(tag, key, message)
-            ReallyMeMacAlgorithm.HMAC_SHA512 -> ReallyMeHmac.verifySha512(tag, key, message)
-        }
+    ): Boolean = ReallyMeCryptoSymmetricFacade.verifyMac(algorithm, tag, key, message)
 
     @JvmStatic
     public fun deriveKey(
@@ -209,25 +70,11 @@ public object ReallyMeCrypto {
         iterations: UInt,
         outputLength: Int,
     ): ByteArray =
-        when (algorithm) {
-            ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256 ->
-                ReallyMePbkdf2.deriveHmacSha256(password, salt, iterations, outputLength)
-            ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA512 ->
-                ReallyMePbkdf2.deriveHmacSha512(password, salt, iterations, outputLength)
-            ReallyMeKdfAlgorithm.ARGON2ID,
-            ReallyMeKdfAlgorithm.HKDF_SHA256,
-            ReallyMeKdfAlgorithm.HKDF_SHA384,
-            ReallyMeKdfAlgorithm.KMAC256,
-            ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256,
-            -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
-        }
+        ReallyMeCryptoSymmetricFacade.deriveKey(algorithm, password, salt, iterations, outputLength)
 
     @JvmStatic
-    public fun deriveArgon2id(
-        kdfVersion: UInt,
-        secret: ByteArray,
-        salt: ByteArray,
-    ): ByteArray = ReallyMeArgon2id.deriveKey(kdfVersion, secret, salt)
+    public fun deriveArgon2id(kdfVersion: UInt, secret: ByteArray, salt: ByteArray): ByteArray =
+        ReallyMeCryptoSymmetricFacade.deriveArgon2id(kdfVersion, secret, salt)
 
     @JvmStatic
     public fun deriveHkdf(
@@ -237,18 +84,13 @@ public object ReallyMeCrypto {
         info: ByteArray,
         outputLength: Int,
     ): ByteArray =
-        when (algorithm) {
-            ReallyMeKdfAlgorithm.HKDF_SHA256 ->
-                ReallyMeHkdf.deriveSha256(inputKeyMaterial, salt, info, outputLength)
-            ReallyMeKdfAlgorithm.HKDF_SHA384 ->
-                ReallyMeHkdf.deriveSha384(inputKeyMaterial, salt, info, outputLength)
-            ReallyMeKdfAlgorithm.ARGON2ID,
-            ReallyMeKdfAlgorithm.KMAC256,
-            ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256,
-            ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA512,
-            ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256,
-            -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
-        }
+        ReallyMeCryptoSymmetricFacade.deriveHkdf(
+            algorithm,
+            inputKeyMaterial,
+            salt,
+            info,
+            outputLength,
+        )
 
     @JvmStatic
     public fun deriveJwaConcatKdfSha256(
@@ -259,23 +101,14 @@ public object ReallyMeCrypto {
         partyVInfo: ByteArray,
         outputLength: Int,
     ): ByteArray =
-        when (algorithm) {
-            ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256 ->
-                ReallyMeJwaConcatKdf.deriveSha256(
-                    sharedSecret,
-                    algorithmId,
-                    partyUInfo,
-                    partyVInfo,
-                    outputLength,
-                )
-            ReallyMeKdfAlgorithm.ARGON2ID,
-            ReallyMeKdfAlgorithm.HKDF_SHA256,
-            ReallyMeKdfAlgorithm.HKDF_SHA384,
-            ReallyMeKdfAlgorithm.KMAC256,
-            ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256,
-            ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA512,
-            -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
-        }
+        ReallyMeCryptoSymmetricFacade.deriveJwaConcatKdfSha256(
+            algorithm,
+            sharedSecret,
+            algorithmId,
+            partyUInfo,
+            partyVInfo,
+            outputLength,
+        )
 
     @JvmStatic
     public fun deriveKmac256(
@@ -285,43 +118,27 @@ public object ReallyMeCrypto {
         customization: ByteArray,
         outputLength: Int,
     ): ByteArray =
-        when (algorithm) {
-            ReallyMeKdfAlgorithm.KMAC256 ->
-                ReallyMeKmac.deriveKmac256(key, context, customization, outputLength)
-            ReallyMeKdfAlgorithm.ARGON2ID,
-            ReallyMeKdfAlgorithm.HKDF_SHA256,
-            ReallyMeKdfAlgorithm.HKDF_SHA384,
-            ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256,
-            ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA512,
-            ReallyMeKdfAlgorithm.JWA_CONCAT_KDF_SHA256,
-            -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
-        }
+        ReallyMeCryptoSymmetricFacade.deriveKmac256(
+            algorithm,
+            key,
+            context,
+            customization,
+            outputLength,
+        )
 
     @JvmStatic
     public fun wrapKey(
         algorithm: ReallyMeKeyWrapAlgorithm,
         wrappingKey: ByteArray,
         keyToWrap: ByteArray,
-    ): ByteArray =
-        when (algorithm) {
-            ReallyMeKeyWrapAlgorithm.AES_128_KW,
-            ReallyMeKeyWrapAlgorithm.AES_192_KW,
-            ReallyMeKeyWrapAlgorithm.AES_256_KW,
-            -> ReallyMeAesKw.wrapKey(algorithm, wrappingKey, keyToWrap)
-        }
+    ): ByteArray = ReallyMeCryptoSymmetricFacade.wrapKey(algorithm, wrappingKey, keyToWrap)
 
     @JvmStatic
     public fun unwrapKey(
         algorithm: ReallyMeKeyWrapAlgorithm,
         wrappingKey: ByteArray,
         wrappedKey: ByteArray,
-    ): ByteArray =
-        when (algorithm) {
-            ReallyMeKeyWrapAlgorithm.AES_128_KW,
-            ReallyMeKeyWrapAlgorithm.AES_192_KW,
-            ReallyMeKeyWrapAlgorithm.AES_256_KW,
-            -> ReallyMeAesKw.unwrapKey(algorithm, wrappingKey, wrappedKey)
-        }
+    ): ByteArray = ReallyMeCryptoSymmetricFacade.unwrapKey(algorithm, wrappingKey, wrappedKey)
 
     @JvmStatic
     public fun generateKeyPair(algorithm: ReallyMeSignatureAlgorithm): ReallyMeSignatureKeyPair =

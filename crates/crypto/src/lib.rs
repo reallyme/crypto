@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+// SPDX-FileCopyrightText: 2026 ReallyMe LLC
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -93,12 +93,7 @@ pub mod operation_contract;
 /// Signer/verifier traits and dispatch-backed implementations for producing and
 /// checking detached signatures.
 #[cfg(feature = "signer")]
-pub mod signer {
-    pub use crypto_signer::{
-        DispatchSigner, DispatchVerifier, Signer, SignerError, SignerFailureKind, Verifier,
-        VerifierError, VerifierFailureKind,
-    };
-}
+pub use crypto_signer as signer;
 
 /// AES-GCM authenticated encryption primitives and their typed key/nonce
 /// wrappers and length constants.
@@ -131,13 +126,7 @@ pub mod argon2id;
 /// OS-backed cryptographically secure randomness and typed generators for AEAD
 /// nonces and Argon2 salts.
 #[cfg(feature = "csprng")]
-pub mod csprng {
-    pub use crypto_csprng::{
-        generate_aead_nonce_12, generate_argon2_salt_16, generate_argon2_salt_32, generate_bytes,
-        AeadNonce12, Argon2Salt16, Argon2Salt32, OsSecureRandom, RandomBytes, SecureRandom,
-        AEAD_NONCE_12_LENGTH, ARGON2_SALT_16_LENGTH, ARGON2_SALT_32_LENGTH,
-    };
-}
+pub use crypto_csprng as csprng;
 
 /// Ed25519 signatures: keypair generation, sign/verify, and public-key encoding.
 #[cfg(feature = "ed25519")]

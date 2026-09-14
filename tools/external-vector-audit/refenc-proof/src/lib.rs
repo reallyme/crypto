@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+// SPDX-FileCopyrightText: 2026 ReallyMe LLC
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -12,19 +12,7 @@
 
 #![forbid(unsafe_code)]
 
-/// Minimal, secret-free error vocabulary required by the shared reference
-/// encoder. The full audit adapter crate has additional file and JSON errors;
-/// Kani only needs shape and mismatch reasons for the encoder invariants.
-pub mod support {
-    /// Fixed errors emitted by the standalone reference-encoder proof crate.
-    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-    pub enum AuditError {
-        /// Encoded bytes do not match the expected invariant.
-        Mismatch,
-        /// Input or encoded shape is unsupported by this bounded proof.
-        Shape,
-    }
-}
+pub mod support;
 
 #[path = "../../src/refenc.rs"]
 pub mod refenc;

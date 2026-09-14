@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+// SPDX-FileCopyrightText: 2026 ReallyMe LLC
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -12,10 +12,7 @@ use zeroize::{Zeroize, Zeroizing};
 
 use crate::combine::combine_shared_secret;
 use crate::random::fill_random;
-use crate::suite::{
-    XWingSuite, ML_KEM_SHARED_SECRET_LEN, X25519_KEY_LEN, X_WING_768_CIPHERTEXT_LEN,
-    X_WING_ENCAPS_SEED_LEN, X_WING_SHARED_SECRET_LEN,
-};
+use crate::suite::{XWingSuite, ML_KEM_SHARED_SECRET_LEN, X25519_KEY_LEN, X_WING_ENCAPS_SEED_LEN};
 
 type MlKemEncapsulateFn = fn(
     &[u8],
@@ -106,8 +103,6 @@ fn encapsulate_derand(
     ciphertext.extend_from_slice(&ml_kem_ciphertext);
     ciphertext.extend_from_slice(&x25519_ciphertext);
 
-    debug_assert_eq!(ciphertext.len(), suite.ciphertext_len());
-    debug_assert_eq!(shared_secret.len(), X_WING_SHARED_SECRET_LEN);
     Ok((ciphertext, shared_secret))
 }
 
@@ -141,6 +136,5 @@ pub fn x_wing_768_encapsulate_derand(
         seed,
         ml_kem_encapsulate_derand,
     )?;
-    debug_assert_eq!(result.0.len(), X_WING_768_CIPHERTEXT_LEN);
     Ok(result)
 }

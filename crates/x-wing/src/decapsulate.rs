@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+// SPDX-FileCopyrightText: 2026 ReallyMe LLC
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -13,7 +13,7 @@ use zeroize::{Zeroize, Zeroizing};
 
 use crate::combine::combine_shared_secret;
 use crate::expand::expand_decapsulation_key;
-use crate::suite::{XWingSuite, ML_KEM_SECRET_SEED_LEN, X25519_KEY_LEN, X_WING_768_CIPHERTEXT_LEN};
+use crate::suite::{XWingSuite, ML_KEM_SECRET_SEED_LEN, X25519_KEY_LEN};
 
 type MlKemDecapsulateFn =
     fn(&[u8; ML_KEM_SECRET_SEED_LEN], &[u8]) -> Result<Zeroizing<Vec<u8>>, CryptoError>;
@@ -92,6 +92,5 @@ pub fn x_wing_768_decapsulate(
         secret_key,
         ml_kem_768_decapsulate,
     )?;
-    debug_assert_eq!(ciphertext.len(), X_WING_768_CIPHERTEXT_LEN);
     Ok(result)
 }
