@@ -4,6 +4,11 @@
 
 import Foundation
 import ReallyMeCodec
+#if canImport(os)
+  import os
+#else
+  import Synchronization
+#endif
 
 /// Explicit codec provider hook for Swift package consumers.
 ///
@@ -23,24 +28,25 @@ public enum ReallyMeCryptoCodecProvider {
   }
 }
 
-private final class ReallyMeCryptoCodecProviderStorage: @unchecked Sendable {
-  // `NSLock` is available on every SwiftPM platform we support, unlike the
-  // Apple-platform-only `OSAllocatedUnfairLock`. The unchecked Sendable
-  // boundary is safe because this is the sole mutable state and every access
-  // holds `codecLock`.
-  private let codecLock = NSLock()
-  private var codec: ReallyMeCodec?
+private final class ReallyMeCryptoCodecProviderStorage: Sendable {
+  // Apple platforms use the back-deployable lock required by the package's
+  // macOS 13 and iOS 16 minimums. Linux has no `os` module, so SwiftPM source
+  // validation uses the standard-library mutex instead. Both locks enforce
+  // Sendable state ownership without a concurrency escape hatch.
+  #if canImport(os)
+    private let codec = OSAllocatedUnfairLock<ReallyMeCodec?>(initialState: nil)
+  #else
+    private let codec = Mutex<ReallyMeCodec?>(nil)
+  #endif
 
   func install(_ installedCodec: ReallyMeCodec) {
-    codecLock.lock()
-    defer { codecLock.unlock() }
-    codec = installedCodec
+    codec.withLock { value in
+      value = installedCodec
+    }
   }
 
   func requireCodec() throws(ReallyMeCryptoError) -> ReallyMeCodec {
-    codecLock.lock()
-    defer { codecLock.unlock() }
-    let installed = codec
+    let installed = codec.withLock { value in value }
     guard let installed else {
       throw ReallyMeCryptoError.providerFailure
     }
