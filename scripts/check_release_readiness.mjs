@@ -2598,7 +2598,19 @@ const repositoryPolicy = {
         },
         {
           path: "scripts/check_swift_source_policy.sh",
-          required: ["swift format lint", "-warnings-as-errors"],
+          required: [
+            "swift format lint",
+            '"$(uname -s)" != "Darwin"',
+            "-warnings-as-errors",
+          ],
+        },
+        {
+          path: ".github/workflows/rust-ci.yml",
+          required: [
+            "name: swift package + vector conformance",
+            "runs-on: macos-26",
+            "run: scripts/check_swift_source_policy.sh",
+          ],
         },
       ],
     },
