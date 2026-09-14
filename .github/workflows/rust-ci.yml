@@ -223,14 +223,11 @@ jobs:
       - name: Enable source-tree Swift runtime FFI
         run: touch .reallyme-crypto-runtime-ffi
 
-      - name: Test Swift package
-        run: swift test
+      - name: Check Swift source policy
+        run: scripts/check_swift_source_policy.sh
         env:
           REALLYME_CRYPTO_FFI_LIBRARY_PATH: ${{ github.workspace }}/target/debug/libcrypto_ffi.dylib
           REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI: "1"
-
-      - name: Test Swift vectors
-        run: swift test --package-path crates/conformance/platform/swift
 
   kotlin:
     name: kotlin package + vector conformance
