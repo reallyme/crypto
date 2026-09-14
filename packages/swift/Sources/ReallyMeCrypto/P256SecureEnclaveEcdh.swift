@@ -12,6 +12,28 @@ public struct ReallyMeKeyAgreementHandleKeyPair: Sendable {
   public let privateKeyHandle: [UInt8]
 }
 
+/// Installation-local reference to an existing or newly generated Secure Enclave key.
+///
+/// The reference is deliberately not `Codable`, printable, or a private-key handle. It lets a
+/// higher-level protocol retain its established Keychain application-tag namespace while
+/// ReallyMe Crypto remains the sole owner of Security.framework key creation and use.
+public struct ReallyMeP256SecureEnclaveEcdhKeyReference: Sendable {
+  public static let minimumApplicationTagLength = 1
+  public static let maximumApplicationTagLength = 512
+
+  fileprivate let applicationTag: [UInt8]
+
+  public init(applicationTag: [UInt8]) throws(ReallyMeCryptoError) {
+    guard
+      (Self.minimumApplicationTagLength...Self.maximumApplicationTagLength).contains(
+        applicationTag.count)
+    else {
+      throw ReallyMeCryptoError.invalidInput
+    }
+    self.applicationTag = applicationTag
+  }
+}
+
 /// Closed Secure Enclave access profiles for non-exportable P-256 ECDH keys.
 ///
 /// Protocol owners choose the profile; ReallyMe Crypto maps it to one exact
@@ -99,19 +121,57 @@ public enum ReallyMeP256SecureEnclaveEcdh {
     } else if try privateKeyExists(tag: tag) {
       throw ReallyMeCryptoError.invalidInput
     }
+    let publicKey = try generateKeyLocked(
+      applicationTag: storageTag(for: tag),
+      accessPolicy: accessPolicy
+    )
+    return ReallyMeKeyAgreementHandleKeyPair(
+      publicKey: publicKey,
+      privateKeyHandle: try encodePrivateKeyHandle(tag: tag)
+    )
+  }
 
-    let privateKey = try createPrivateKey(tag: tag, accessPolicy: accessPolicy)
+  /// Generates a key under a caller-owned, installation-local application tag.
+  ///
+  /// This API exists for protocol adapters that already persisted opaque local references before
+  /// delegating platform cryptography to ReallyMe Crypto. Only the public key leaves the provider.
+  public static func generateKey(
+    reference: ReallyMeP256SecureEnclaveEcdhKeyReference,
+    accessPolicy: ReallyMeSecureEnclaveEcdhAccessPolicy = .backgroundWhenUnlocked,
+    overwriteExisting: Bool = false
+  ) throws(ReallyMeCryptoError) -> [UInt8] {
+    guard supportsSecureEnclaveKeyAgreement else {
+      throw ReallyMeCryptoError.unsupportedPlatform
+    }
+    lifecycleLock.lock()
+    defer { lifecycleLock.unlock() }
+    if overwriteExisting {
+      try deleteKey(applicationTag: reference.applicationTag)
+    } else if try privateKeyExists(applicationTag: reference.applicationTag) {
+      throw ReallyMeCryptoError.invalidInput
+    }
+
+    return try generateKeyLocked(
+      applicationTag: reference.applicationTag,
+      accessPolicy: accessPolicy
+    )
+  }
+
+  private static func generateKeyLocked(
+    applicationTag: [UInt8],
+    accessPolicy: ReallyMeSecureEnclaveEcdhAccessPolicy
+  ) throws(ReallyMeCryptoError) -> [UInt8] {
+    let privateKey = try createPrivateKey(
+      applicationTag: applicationTag,
+      accessPolicy: accessPolicy
+    )
     do {
-      let publicKey = try compressedPublicKey(for: privateKey)
-      return ReallyMeKeyAgreementHandleKeyPair(
-        publicKey: publicKey,
-        privateKeyHandle: try encodePrivateKeyHandle(tag: tag)
-      )
+      return try compressedPublicKey(for: privateKey)
     } catch let generationError {
       // Key generation is permanent. If any post-generation validation
       // fails, remove the entry so callers never inherit an orphaned key.
       do {
-        try deleteKey(tag: tag)
+        try deleteKey(applicationTag: applicationTag)
       } catch {
         throw ReallyMeCryptoError.providerFailure
       }
@@ -122,7 +182,26 @@ public enum ReallyMeP256SecureEnclaveEcdh {
   public static func derivePublicKey(privateKeyHandle: [UInt8]) throws(ReallyMeCryptoError)
     -> [UInt8]
   {
-    try compressedPublicKey(for: privateKey(for: privateKeyHandle))
+    let tag = try decodePrivateKeyHandle(privateKeyHandle)
+    let reference = try ReallyMeP256SecureEnclaveEcdhKeyReference(
+      applicationTag: storageTag(for: tag)
+    )
+    return try derivePublicKey(reference: reference)
+  }
+
+  public static func derivePublicKey(
+    reference: ReallyMeP256SecureEnclaveEcdhKeyReference
+  ) throws(ReallyMeCryptoError) -> [UInt8] {
+    try compressedPublicKey(
+      for: privateKey(applicationTag: reference.applicationTag)
+    )
+  }
+
+  /// Reports whether the local reference resolves without returning or using the private key.
+  public static func keyExists(
+    reference: ReallyMeP256SecureEnclaveEcdhKeyReference
+  ) throws(ReallyMeCryptoError) -> Bool {
+    try privateKeyExists(applicationTag: reference.applicationTag)
   }
 
   public static func deriveSharedSecret(
@@ -130,11 +209,27 @@ public enum ReallyMeP256SecureEnclaveEcdh {
     privateKeyHandle: [UInt8],
     authenticationContext: LAContext? = nil
   ) throws(ReallyMeCryptoError) -> [UInt8] {
+    let tag = try decodePrivateKeyHandle(privateKeyHandle)
+    let reference = try ReallyMeP256SecureEnclaveEcdhKeyReference(
+      applicationTag: storageTag(for: tag)
+    )
+    return try deriveSharedSecret(
+      publicKey: publicKey,
+      reference: reference,
+      authenticationContext: authenticationContext
+    )
+  }
+
+  public static func deriveSharedSecret(
+    publicKey: [UInt8],
+    reference: ReallyMeP256SecureEnclaveEcdhKeyReference,
+    authenticationContext: LAContext? = nil
+  ) throws(ReallyMeCryptoError) -> [UInt8] {
     guard publicKey.count == compressedPublicKeyLength else {
       throw ReallyMeCryptoError.invalidInput
     }
     let privateKey = try privateKey(
-      for: privateKeyHandle,
+      applicationTag: reference.applicationTag,
       authenticationContext: authenticationContext
     )
     let peerPublicKey = try secKeyPublicKey(fromCompressedP256: publicKey)
@@ -162,9 +257,18 @@ public enum ReallyMeP256SecureEnclaveEcdh {
 
   public static func deleteKey(privateKeyHandle: [UInt8]) throws(ReallyMeCryptoError) {
     let tag = try decodePrivateKeyHandle(privateKeyHandle)
+    let reference = try ReallyMeP256SecureEnclaveEcdhKeyReference(
+      applicationTag: storageTag(for: tag)
+    )
+    try deleteKey(reference: reference)
+  }
+
+  public static func deleteKey(
+    reference: ReallyMeP256SecureEnclaveEcdhKeyReference
+  ) throws(ReallyMeCryptoError) {
     lifecycleLock.lock()
     defer { lifecycleLock.unlock() }
-    try deleteKey(tag: tag)
+    try deleteKey(applicationTag: reference.applicationTag)
   }
 
   private static var supportsSecureEnclaveKeyAgreement: Bool {
@@ -182,10 +286,9 @@ public enum ReallyMeP256SecureEnclaveEcdh {
   }
 
   private static func createPrivateKey(
-    tag: [UInt8],
+    applicationTag: [UInt8],
     accessPolicy: ReallyMeSecureEnclaveEcdhAccessPolicy
   ) throws(ReallyMeCryptoError) -> SecKey {
-    let keychainTag = storageTag(for: tag)
     var accessError: Unmanaged<CFError>?
     guard
       let access = SecAccessControlCreateWithFlags(
@@ -204,7 +307,7 @@ public enum ReallyMeP256SecureEnclaveEcdh {
       kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
       kSecPrivateKeyAttrs as String: [
         kSecAttrIsPermanent as String: true,
-        kSecAttrApplicationTag as String: Data(keychainTag),
+        kSecAttrApplicationTag as String: Data(applicationTag),
         kSecAttrAccessControl as String: access,
       ],
     ]
@@ -216,16 +319,14 @@ public enum ReallyMeP256SecureEnclaveEcdh {
   }
 
   private static func privateKey(
-    for privateKeyHandle: [UInt8],
+    applicationTag: [UInt8],
     authenticationContext: LAContext? = nil
   ) throws(ReallyMeCryptoError) -> SecKey {
-    let tag = try decodePrivateKeyHandle(privateKeyHandle)
-    let keychainTag = storageTag(for: tag)
     var query: [String: Any] = [
       kSecClass as String: kSecClassKey,
       kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
       kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
-      kSecAttrApplicationTag as String: Data(keychainTag),
+      kSecAttrApplicationTag as String: Data(applicationTag),
       kSecReturnRef as String: true,
       kSecMatchLimit as String: kSecMatchLimitOne,
     ]
@@ -251,14 +352,12 @@ public enum ReallyMeP256SecureEnclaveEcdh {
     return Unmanaged<SecKey>.fromOpaque(opaque).takeUnretainedValue()
   }
 
-  private static func deleteKey(tag: [UInt8]) throws(ReallyMeCryptoError) {
-    try validateTag(tag)
-    let keychainTag = storageTag(for: tag)
+  private static func deleteKey(applicationTag: [UInt8]) throws(ReallyMeCryptoError) {
     let query: [String: Any] = [
       kSecClass as String: kSecClassKey,
       kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
       kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
-      kSecAttrApplicationTag as String: Data(keychainTag),
+      kSecAttrApplicationTag as String: Data(applicationTag),
     ]
     let status = SecItemDelete(query as CFDictionary)
     guard status == errSecSuccess || status == errSecItemNotFound else {
@@ -266,13 +365,18 @@ public enum ReallyMeP256SecureEnclaveEcdh {
     }
   }
 
-  private static func privateKeyExists(tag: [UInt8]) throws(ReallyMeCryptoError) -> Bool {
-    let keychainTag = storageTag(for: tag)
+  private static func deleteKey(tag: [UInt8]) throws(ReallyMeCryptoError) {
+    try validateTag(tag)
+    try deleteKey(applicationTag: storageTag(for: tag))
+  }
+
+  private static func privateKeyExists(applicationTag: [UInt8]) throws(ReallyMeCryptoError) -> Bool
+  {
     let query: [String: Any] = [
       kSecClass as String: kSecClassKey,
       kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
       kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
-      kSecAttrApplicationTag as String: Data(keychainTag),
+      kSecAttrApplicationTag as String: Data(applicationTag),
       kSecMatchLimit as String: kSecMatchLimitOne,
     ]
     let status = SecItemCopyMatching(query as CFDictionary, nil)
@@ -283,6 +387,11 @@ public enum ReallyMeP256SecureEnclaveEcdh {
       return false
     }
     throw mapSecurityStatus(status)
+  }
+
+  private static func privateKeyExists(tag: [UInt8]) throws(ReallyMeCryptoError) -> Bool {
+    try validateTag(tag)
+    return try privateKeyExists(applicationTag: storageTag(for: tag))
   }
 
   private static func storageTag(for tag: [UInt8]) -> [UInt8] {
@@ -308,7 +417,8 @@ public enum ReallyMeP256SecureEnclaveEcdh {
     throws(ReallyMeCryptoError) -> SecKey
   {
     do {
-      let cryptoKitKey = try P256.KeyAgreement.PublicKey(compressedRepresentation: Data(publicKey))
+      let cryptoKitKey = try P256.KeyAgreement.PublicKey(
+        compressedRepresentation: Data(publicKey))
       let attributes: [String: Any] = [
         kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
         kSecAttrKeyClass as String: kSecAttrKeyClassPublic,
