@@ -2806,6 +2806,17 @@ const repositoryPolicy = {
     },
     {
       path: ".github/workflows/protobuf-ci.yml",
+      required: ["wasm-pack@0.15.0", "wasm-bindgen-cli@0.2.127"],
+      usesSteps: [
+        {
+          name: "Install wasm-pack",
+          uses: "taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c",
+        },
+        {
+          name: "Install wasm-bindgen-cli",
+          uses: "taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c",
+        },
+      ],
       runSteps: [
         {
           name: "Check release readiness generated freshness",
