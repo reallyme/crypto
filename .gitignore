@@ -33,7 +33,6 @@ target/
 /AGENTS.md
 /.reallyme-crypto-runtime-ffi
 /.release-readiness/
-/.claude/
 /.agents/
 /.semver-baseline/
 

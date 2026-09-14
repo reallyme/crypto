@@ -184,15 +184,8 @@ jobs:
       - name: Check generated provider matrix
         run: node scripts/generate_provider_matrix.mjs --check
 
-      - name: Checkout release-readiness runner
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
-        with:
-          repository: reallyme/release-readiness
-          ref: 3fcf50eb312ae20dc9dc7a256f8fae67a7ba2c6b
-          path: .release-readiness
-
       - name: Release readiness
-        run: node .release-readiness/scripts/run-consumer-check.mjs
+        run: npm exec --yes --package=github:reallyme/release-readiness#3fcf50eb312ae20dc9dc7a256f8fae67a7ba2c6b -- reallyme-release-readiness
 
       - name: Check native lane
         run: cargo check --locked --workspace --no-default-features --features native

@@ -58,6 +58,9 @@ jobs:
         with:
           node-version: '24'
 
+      - name: Install TypeScript package dependencies
+        run: npm ci --prefix packages/ts
+
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
         with:
@@ -87,12 +90,5 @@ jobs:
           cargo test -p crypto-conformance-vectors --test vectors_tests --all-features contract_tests::protobuf_algorithm_enum_numbers_are_stable
           cargo test -p crypto-conformance-vectors --test vectors_tests --all-features contract_tests::every_public_algorithm_has_exactly_one_proto_selector
 
-      - name: Checkout release-readiness runner
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
-        with:
-          repository: reallyme/release-readiness
-          ref: 3fcf50eb312ae20dc9dc7a256f8fae67a7ba2c6b
-          path: .release-readiness
-
       - name: Check release readiness generated freshness
-        run: node .release-readiness/scripts/run-consumer-check.mjs --generated-freshness
+        run: npm exec --yes --package=github:reallyme/release-readiness#3fcf50eb312ae20dc9dc7a256f8fae67a7ba2c6b -- reallyme-release-readiness --generated-freshness
