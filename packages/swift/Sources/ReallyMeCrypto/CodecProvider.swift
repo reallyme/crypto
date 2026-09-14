@@ -4,7 +4,6 @@
 
 import Foundation
 import ReallyMeCodec
-import os
 
 /// Explicit codec provider hook for Swift package consumers.
 ///
@@ -24,17 +23,24 @@ public enum ReallyMeCryptoCodecProvider {
   }
 }
 
-private final class ReallyMeCryptoCodecProviderStorage: Sendable {
-  private let codec = OSAllocatedUnfairLock<ReallyMeCodec?>(initialState: nil)
+private final class ReallyMeCryptoCodecProviderStorage: @unchecked Sendable {
+  // `NSLock` is available on every SwiftPM platform we support, unlike the
+  // Apple-platform-only `OSAllocatedUnfairLock`. The unchecked Sendable
+  // boundary is safe because this is the sole mutable state and every access
+  // holds `codecLock`.
+  private let codecLock = NSLock()
+  private var codec: ReallyMeCodec?
 
   func install(_ installedCodec: ReallyMeCodec) {
-    codec.withLock { value in
-      value = installedCodec
-    }
+    codecLock.lock()
+    defer { codecLock.unlock() }
+    codec = installedCodec
   }
 
   func requireCodec() throws(ReallyMeCryptoError) -> ReallyMeCodec {
-    let installed = codec.withLock { value in value }
+    codecLock.lock()
+    defer { codecLock.unlock() }
+    let installed = codec
     guard let installed else {
       throw ReallyMeCryptoError.providerFailure
     }
