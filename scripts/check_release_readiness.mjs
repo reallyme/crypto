@@ -108,7 +108,7 @@ const rustSemverBaselineCommit = "5b8928f10777d0ce44561bb966b9425a281a05d7";
 const rustSemverBaselinePath = ".semver-baseline";
 const cargoSemverChecksVersion = "0.49.0";
 const buffaVersion = "0.9.2";
-const releaseReadinessCommit = "48a5ae4a9c6f25053459122d6f84cf1741463454";
+const releaseReadinessCommit = "3fcf50eb312ae20dc9dc7a256f8fae67a7ba2c6b";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
 const releaseReadinessCheckoutRequired = [
   "repository: reallyme/release-readiness",
@@ -2519,7 +2519,7 @@ const primaryOperationBoundaryPolicy = {
 const repositoryPolicy = {
   generatedFreshnessMode,
   vendoredCore: {
-    contractVersion: 12,
+    version: "0.6.0",
     scriptPath: "scripts/check_release_readiness.mjs",
     corePath: "scripts/release-readiness/core.mjs",
   },
@@ -2655,7 +2655,6 @@ const repositoryPolicy = {
       { path: "crates/proto/src/generated", reason: "generated" },
       { path: "packages/ts/src/proto/generated", reason: "generated" },
       { path: "gen", reason: "generated" },
-      { path: "scripts/release-readiness/core.mjs", reason: "vendored" },
     ],
     requireExclusionsMatched: true,
     requireExclusionReasons: true,
@@ -2794,7 +2793,7 @@ const repositoryPolicy = {
         path: "scripts/run_pinned_release_readiness.mjs",
         required: [
           `const RELEASE_READINESS_COMMIT = "${releaseReadinessCommit}";`,
-          'const RELEASE_READINESS_CORE_SHA256 =\n  "6eab296596b6badd76bb1ce4abf67b73513981ad352e8f6ab5e44cdca257545e";',
+          'const RELEASE_READINESS_CORE_SHA256 =\n  "435ae6205d000d1605761bce2e7b75a1584d6d3ad1b7d338ca8e61868959abdc";',
         ],
         forbidden: [
           "RELEASE_READINESS_COMMIT = \"main\"",
