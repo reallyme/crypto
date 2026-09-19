@@ -193,7 +193,11 @@ the selected backend into every enabled primitive crate. The `wasm` lane is for
 Some Rust helper APIs are intentionally lane-scoped. P-256 raw scalar import is
 available in both native and wasm lanes through
 `p256::generate_p256_keypair_from_secret_key`; it validates an existing private
-scalar and is not random key generation. P-384 and P-521 ECDH are available
+scalar and is not random key generation. Keystore and protocol boundaries that
+already own SHA-256 hashing use `p256::sign_p256_digest_der`; it accepts exactly
+one 32-byte digest, signs that digest without hashing it again, and returns a
+deterministic low-S DER signature. `p256::verify_p256_digest_der` verifies that
+same canonical representation. P-384 and P-521 ECDH are available
 in both Rust lanes; the Swift, Kotlin, and TypeScript facades expose their
 manifest-declared provider-backed P-384/P-521 ECDH surfaces.
 

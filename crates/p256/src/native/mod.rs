@@ -6,7 +6,9 @@ mod derive_shared_secret;
 mod encoding;
 mod keypair;
 mod sign;
+mod sign_digest;
 mod verify;
+mod verify_digest;
 
 pub use derive_shared_secret::derive_p256_shared_secret;
 pub use encoding::{
@@ -15,4 +17,6 @@ pub use encoding::{
 };
 pub use keypair::generate_p256_keypair;
 pub use sign::sign_p256_der_prehash;
+pub use sign_digest::sign_p256_digest_der;
 pub use verify::verify_p256_der_prehash;
+pub use verify_digest::verify_p256_digest_der;

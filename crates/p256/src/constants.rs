@@ -8,3 +8,9 @@
 /// leading sign-protection byte. Two INTEGER tag/length/value encodings plus
 /// the enclosing SEQUENCE tag and length require at most 72 bytes.
 pub const P256_SIGNATURE_DER_MAX_LEN: usize = 72;
+
+/// Exact length of a P-256 secret scalar in bytes.
+pub const P256_SECRET_KEY_LEN: usize = 32;
+
+/// Exact length of the SHA-256 digest signed by ES256.
+pub const P256_SHA256_DIGEST_LEN: usize = 32;
