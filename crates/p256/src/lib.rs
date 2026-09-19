@@ -8,7 +8,7 @@ mod constants;
 mod jose_signature;
 mod secure_enclave_handle;
 
-pub use constants::P256_SIGNATURE_DER_MAX_LEN;
+pub use constants::{P256_SECRET_KEY_LEN, P256_SHA256_DIGEST_LEN, P256_SIGNATURE_DER_MAX_LEN};
 
 #[cfg(feature = "native")]
 mod import_pem;
@@ -30,8 +30,8 @@ mod native;
 #[cfg(any(feature = "native", feature = "wasm"))]
 pub use native::{
     compress_p256, compress_public_key, decompress_p256, decompress_public_key,
-    derive_p256_shared_secret, generate_p256_keypair, sign_p256_der_prehash,
-    verify_p256_der_prehash,
+    derive_p256_shared_secret, generate_p256_keypair, sign_p256_der_prehash, sign_p256_digest_der,
+    verify_p256_der_prehash, verify_p256_digest_der,
 };
 
 #[cfg(feature = "native")]
