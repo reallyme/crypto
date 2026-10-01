@@ -1,5 +1,22 @@
 # Release Notes
 
+## 0.3.10
+
+- Adds support for BN254 Poseidon2 byte hashing in Rust, with the fixed
+  parameters, length framing, input bound, and canonical output encoding used
+  by ReallyMe ZK circuits. Cross-checks full and partial blocks against the ZK
+  fixture oracle.
+- Upgrades release-readiness to `0.6.6` and refreshes compatible Cargo and npm
+  lockfile dependencies, including wasm-bindgen `0.2.129` and
+  `@bufbuild/protobuf` `2.16.0`.
+- Updates Kotlin to `2.4.20`, JVM and Android protobuf libraries to `4.36.2`,
+  and JVM JUnit to `6.1.3`, with refreshed Gradle verification metadata.
+- Sets Rust, npm, Swift, Kotlin/JVM, and Android package metadata to `0.3.10`.
+- The Swift release binds its package checksum to the attested `0.3.10` CI
+  XCFramework and verifies the tagged manifest before publication. Android
+  Gradle Plugin 9 and the compatibility-bound `getrandom` and `sha3` lines
+  remain separate migrations.
+
 ## 0.3.9
 
 - Adds the MLS draft profiles for ML-KEM-768 with ML-DSA-65 and the X-Wing

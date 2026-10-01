@@ -16,7 +16,7 @@ by Git URL; the source lives under `packages/swift` with the other language SDKs
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.3.9"
+    from: "0.3.10"
 )
 ```
 

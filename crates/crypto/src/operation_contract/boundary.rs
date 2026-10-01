@@ -5,11 +5,14 @@
 //! Public operation-contract entrypoints for encoded `CryptoOperationRequest`
 //! values.
 
-use crypto_proto::generated::proto::reallyme::crypto::v1::CryptoOperationResponse;
+use crypto_proto::generated::proto::reallyme::crypto::v1::{
+    CryptoOperationRequest, CryptoOperationResponse,
+};
 use crypto_proto::operation_request_wire::{
     decode_operation_request, decode_operation_request_json,
 };
 use crypto_proto::operation_response_wire::encode_operation_response_or_error;
+use crypto_proto::wire::CryptoWireError;
 use zeroize::Zeroizing;
 
 use super::error::error_response;
@@ -25,10 +28,7 @@ pub fn process_operation_response(request_bytes: &[u8]) -> Zeroizing<Vec<u8>> {
 /// Execute a binary generated-protobuf request and retain the generated message.
 #[must_use]
 pub fn process_operation_response_output(request_bytes: &[u8]) -> CryptoOperationResponse {
-    match decode_operation_request(request_bytes) {
-        Ok(request) => process_operation_request(request),
-        Err(error) => error_response(error),
-    }
+    process_decoded_request(decode_operation_request(request_bytes))
 }
 
 /// Execute a permitted non-secret generated ProtoJSON crypto request and return
@@ -42,7 +42,15 @@ pub fn process_operation_response_json(request_json: &[u8]) -> Zeroizing<Vec<u8>
 /// generated message. Secret-bearing selectors fail before value decoding.
 #[must_use]
 pub fn process_operation_response_json_output(request_json: &[u8]) -> CryptoOperationResponse {
-    match decode_operation_request_json(request_json) {
+    process_decoded_request(decode_operation_request_json(request_json))
+}
+
+// Both wire decoders return the same generated request. Keeping this boundary
+// shared makes their typed decoding failures map to one response contract.
+fn process_decoded_request(
+    decoded: Result<CryptoOperationRequest, CryptoWireError>,
+) -> CryptoOperationResponse {
+    match decoded {
         Ok(request) => process_operation_request(request),
         Err(error) => error_response(error),
     }

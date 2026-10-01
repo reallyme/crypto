@@ -167,7 +167,39 @@ const allowedWasmImportNames = [
   /^__wbg___wbindgen_throw_[0-9a-f]+$/,
   /^__wbindgen_init_externref_table$/,
   /^__wbindgen_cast_[0-9a-f]+$/,
+  /^__wbindgen_generic_000000000000000[12]$/,
 ];
+// wasm-bindgen 0.2.129 emits these cast intrinsics. Review their exact glue
+// so the allowlist cannot silently admit a new ambient JavaScript dependency.
+const reviewedCastIntrinsics = [
+  {
+    name: "__wbindgen_generic_0000000000000001",
+    body: [
+      "__wbindgen_generic_0000000000000001: function(arg0) {",
+      "            // Cast intrinsic for `F64 -> Externref`.",
+      "            const ret = arg0;",
+      "            return ret;",
+      "        },",
+    ].join("\n"),
+  },
+  {
+    name: "__wbindgen_generic_0000000000000002",
+    body: [
+      "__wbindgen_generic_0000000000000002: function(arg0, arg1) {",
+      "            // Cast intrinsic for `Ref(String) -> Externref`.",
+      "            const ret = getStringFromWasm0(arg0, arg1);",
+      "            return ret;",
+      "        },",
+    ].join("\n"),
+  },
+];
+for (const intrinsic of reviewedCastIntrinsics) {
+  const occurrenceCount = generatedWasmGlue.split(`${intrinsic.name}: function(`).length - 1;
+  if (occurrenceCount !== 1) {
+    fail(`generated WASM glue has an unexpected ${intrinsic.name} definition count`);
+  }
+  assertContains("dist/wasm/reallyme_crypto_wasm.js", generatedWasmGlue, intrinsic.body);
+}
 for (const wasmImport of WebAssembly.Module.imports(wasmModule)) {
   const allowed =
     wasmImport.module === "./reallyme_crypto_wasm_bg.js" &&

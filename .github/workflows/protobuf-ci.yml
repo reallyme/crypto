@@ -75,7 +75,7 @@ jobs:
       - name: Install wasm-bindgen-cli
         uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # wasm-bindgen-cli
         with:
-          tool: wasm-bindgen-cli@0.2.127
+          tool: wasm-bindgen-cli@0.2.129
 
       - name: Cache Cargo
         uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
@@ -101,4 +101,4 @@ jobs:
           cargo test -p crypto-conformance-vectors --test vectors_tests --all-features contract_tests::every_public_algorithm_has_exactly_one_proto_selector
 
       - name: Check release readiness generated freshness
-        run: npm exec --yes --package=github:reallyme/release-readiness#3fcf50eb312ae20dc9dc7a256f8fae67a7ba2c6b -- reallyme-release-readiness --generated-freshness
+        run: npm exec --yes --package=github:reallyme/release-readiness#bdedc88f3f25fcc14242730d4dec6ce6a0c75531 -- reallyme-release-readiness --generated-freshness

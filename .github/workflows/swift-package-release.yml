@@ -12,7 +12,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.3.9
+        default: 0.3.10
 
 permissions:
   contents: read
@@ -157,6 +157,7 @@ jobs:
         run: |
           node scripts/verify_swift_release_artifact.mjs build/swift/ReallyMeCryptoFFI.xcframework.zip build/swift/ReallyMeCryptoFFI.xcframework.checksum Package.swift "${RELEASE_VERSION}"
           node scripts/verify_release_attestation.mjs
+          node scripts/extract_release_notes.mjs "${RELEASE_VERSION}" > "${RUNNER_TEMP}/release-notes.md"
           if gh release view "v${RELEASE_VERSION}" >/dev/null 2>&1; then
             echo "::error::GitHub release v${RELEASE_VERSION} already exists"
             exit 1
@@ -175,6 +176,10 @@ jobs:
               git commit -m "Bind Swift artifact for v${RELEASE_VERSION}"
             tag_target="$(git rev-parse HEAD)"
           fi
+          # Verify the manifest bytes in the commit that will receive the tag,
+          # not only the working tree used to prepare that commit.
+          git show "${tag_target}:Package.swift" > "${RUNNER_TEMP}/tagged-Package.swift"
+          node scripts/verify_swift_release_artifact.mjs build/swift/ReallyMeCryptoFFI.xcframework.zip build/swift/ReallyMeCryptoFFI.xcframework.checksum "${RUNNER_TEMP}/tagged-Package.swift" "${RELEASE_VERSION}"
           existing_tag_target="$(git ls-remote --tags origin "refs/tags/v${RELEASE_VERSION}" | cut -f1)"
           if [ -n "${existing_tag_target}" ] && [ "${existing_tag_target}" != "${tag_target}" ]; then
             echo "::error::Git tag v${RELEASE_VERSION} already targets a different commit"
@@ -184,7 +189,7 @@ jobs:
             git tag "v${RELEASE_VERSION}" "${tag_target}"
             git push origin "refs/tags/v${RELEASE_VERSION}"
           fi
-          gh release create "v${RELEASE_VERSION}" build/swift/ReallyMeCryptoFFI.xcframework.zip --verify-tag --title "ReallyMe Crypto v${RELEASE_VERSION}" --notes "ReallyMe Crypto package release v${RELEASE_VERSION}."
+          gh release create "v${RELEASE_VERSION}" build/swift/ReallyMeCryptoFFI.xcframework.zip --verify-tag --title "ReallyMe Crypto v${RELEASE_VERSION}" --notes-file "${RUNNER_TEMP}/release-notes.md"
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}

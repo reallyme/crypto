@@ -72,6 +72,13 @@ Availability varies by SDK lane. The exact provider and support map lives in
 an algorithm is either handled by its declared provider
 or rejected with a typed unsupported-algorithm error.
 
+BN254 Poseidon2 byte hashing is available through the Rust
+`reallyme-crypto-poseidon2` crate and the umbrella crate's `poseidon2` feature.
+It uses the fixed byte sponge and 515-byte input bound of ReallyMe ZK's Noir
+circuits. The [primitive documentation](crates/poseidon2/README.md) specifies
+the encoding and reviewed vectors. This Rust-only primitive is outside the SDK
+provider manifest until an SDK facade exposes it.
+
 X448 is not an umbrella-crate or SDK-facade algorithm. It is available through
 the standalone `reallyme-crypto-x448` Rust crate and as an internal HPKE KEM
 component. It is therefore intentionally absent from the package provider
@@ -128,7 +135,7 @@ When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.3.9", default-features = false, features = [
+reallyme-crypto = { version = "0.3.10", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -141,7 +148,7 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.3.9", default-features = false, features = [
+reallyme-crypto = { version = "0.3.10", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }
@@ -156,7 +163,7 @@ OpenMLS adapters can select the narrow HPKE profile without enabling the full
 HPKE compatibility surface:
 
 ```toml
-reallyme-crypto = { version = "0.3.9", default-features = false, features = [
+reallyme-crypto = { version = "0.3.10", default-features = false, features = [
   "native",
   "hpke-openmls",
 ] }
@@ -217,7 +224,7 @@ separate from raw private-key bytes.
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.3.9"
+    from: "0.3.10"
 )
 ```
 
@@ -229,7 +236,7 @@ separate from raw private-key bytes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.3.9")
+    implementation("me.really:crypto:0.3.10")
 }
 ```
 

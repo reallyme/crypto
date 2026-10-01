@@ -34,6 +34,7 @@ members = [
     "crates/p384",
     "crates/p521",
     "crates/pbkdf2",
+    "crates/poseidon2",
     "crates/rsa",
     "crates/secp256k1",
     "crates/sha2",
@@ -110,6 +111,9 @@ k256 = "0.14"
 ecdsa = "0.17"
 crypto-bigint = { version = "0.7", features = ["alloc"] }
 const-oid = { version = "0.10", features = ["db"] }
+ark-bn254 = "0.6"
+ark-ff = "0.6"
+taceo-poseidon2 = { version = "=0.3.0", default-features = false, features = ["bn254", "t4"] }
 spki = "0.8.0"
 # Post-quantum
 ml-dsa = { version = "0.1.1", default-features = false }

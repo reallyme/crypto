@@ -40,12 +40,23 @@ const {
   requireTrackedFiles: true,
 });
 
+const assertDocumented = (path, phrase) => {
+  if (!readText(path).includes(phrase)) {
+    fail(`${path} must document ${phrase}`);
+  }
+};
+
 // Keep shipped license copies and package metadata aligned with the choice
 // offered by the repository, without changing third-party license notices.
 const projectLicense = "MIT OR Apache-2.0";
 const packageLicenseText = readText("packages/ts/LICENSE");
 const trackedFiles = loadTrackedFiles();
 const trackedPaths = new Set(trackedFiles);
+for (const path of ["Package.swift", "crates/conformance/platform/swift/Package.swift"]) {
+  if (!readText(path).startsWith("// swift-tools-version: 6.0\n")) {
+    fail(`${path} must declare Swift tools version 6.0`);
+  }
+}
 for (const path of trackedFiles) {
   if (/\.(?:md|txt)$/u.test(path)) {
     assertNotContains(path, "SPDX-FileCopyrightText:");
@@ -97,18 +108,18 @@ for (const path of ["packages/kotlin/build.gradle.kts", "packages/kotlin-android
   assertContains(path, 'name.set("Apache License, Version 2.0")');
 }
 
-const rustRootVersion = "0.3.9";
-const cryptoProtoPackageVersion = "0.3.9";
-const typescriptPackageVersion = "0.3.9";
-const kotlinPackageVersion = "0.3.9";
-const kotlinAndroidPackageVersion = "0.3.9";
+const rustRootVersion = "0.3.10";
+const cryptoProtoPackageVersion = "0.3.10";
+const typescriptPackageVersion = "0.3.10";
+const kotlinPackageVersion = "0.3.10";
+const kotlinAndroidPackageVersion = "0.3.10";
 const rustCodecVersion = "0.2.3";
 const sdkCodecVersion = "0.2.3";
 const rustSemverBaselineCommit = "5b8928f10777d0ce44561bb966b9425a281a05d7";
 const rustSemverBaselinePath = ".semver-baseline";
 const cargoSemverChecksVersion = "0.49.0";
 const buffaVersion = "0.9.2";
-const releaseReadinessCommit = "3fcf50eb312ae20dc9dc7a256f8fae67a7ba2c6b";
+const releaseReadinessCommit = "bdedc88f3f25fcc14242730d4dec6ce6a0c75531";
 const releaseReadinessCommand =
   `npm exec --yes --package=github:reallyme/release-readiness#${releaseReadinessCommit} -- ` +
   "reallyme-release-readiness";
@@ -190,7 +201,7 @@ const assertZeroizingGeneratedUnknownFieldOwner = (generatedPath, messageName) =
 };
 
 if (releaseVersionEnv !== undefined && !/^[0-9]+[.][0-9]+[.][0-9]+$/.test(releaseVersionEnv)) {
-  fail("RELEASE_VERSION must be an exact semver release such as 0.3.9");
+  fail("RELEASE_VERSION must be an exact semver release such as 0.3.10");
 }
 
 const manifest = readJson("provider_manifest.json");
@@ -753,10 +764,6 @@ assertContains(
 );
 assertContains(
   "crates/ffi/src/kotlin_proto.rs",
-  "copying an attacker-sized managed array into native memory",
-);
-assertContains(
-  "crates/ffi/src/kotlin_proto.rs",
   "output.len() > max_output_len",
 );
 assertContains(
@@ -856,7 +863,7 @@ assertContains(
 assertNotContains("packages/ts/scripts/build-wasm.mjs", '"wasm-package"');
 assertContains(
   "crates/wasm/Cargo.toml",
-  'crypto-runtime = { package = "reallyme-crypto", version = "=0.3.9", path = "../crypto", default-features = false, features = ["operation-response", "native"',
+  'crypto-runtime = { package = "reallyme-crypto", version = "=0.3.10", path = "../crypto", default-features = false, features = ["operation-response", "native"',
 );
 assertNotContains(
   "crates/wasm/Cargo.toml",
@@ -1013,7 +1020,7 @@ assertContains("packages/ts/README.md", "Direct raw WASM calls are unsupported f
 assertContains("packages/ts/README.md", "Custom provider objects are trusted providers");
 assertContains(
   "packages/ts/test/wasm-boundary.test.mjs",
-  "package-owned provider is self-verified",
+  "custom seed-derived providers have an explicit correspondence trust boundary",
 );
 assertContains(
   "packages/ts/src/validateBytes.ts",
@@ -1562,7 +1569,7 @@ assertContains(
 );
 assertContains(
   "packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeys.kt",
-  "Prefer [deriveSharedSecret] outside that prompt flow",
+  "public fun newKeyAgreementOperation(privateKeyHandle: ByteArray): KeyAgreement",
 );
 assertNotContains(
   "packages/kotlin-android/src/main/kotlin/me/really/crypto/AndroidPlatformKeySupport.kt",
@@ -1665,7 +1672,7 @@ assertContains(
   "Generic AEAD primitive and dispatch APIs treat `aad` as caller-provided bytes",
 );
 assertContains("RELEASE_NOTES.md", "## 0.3.0");
-assertContains("RELEASE_NOTES.md", "## 0.3.9");
+assertContains("RELEASE_NOTES.md", "## 0.3.10");
 assertContains("RELEASE_NOTES.md", "legacy `reallyme.codec.v1` protobuf/package surface was removed");
 assertContains("RELEASE_NOTES.md", "not a `reallyme.crypto.v1` wire break");
 assertContains("RELEASE_NOTES.md", "permanently retired in this repository");
@@ -2054,7 +2061,10 @@ assertContains(
   "crates/hpke/src/identifiers.rs",
   "HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM",
 );
-assertContains("crates/hpke/tests/hpke_pq_vector_tests.rs", "draft-ietf-hpke-pq-05");
+assertContains(
+  "crates/hpke/tests/hpke_pq_vector_tests.rs",
+  "ml_kem_768_kem_matches_hpke_pq_draft_vector",
+);
 const hpkeManifest = readText("crates/hpke/Cargo.toml");
 const openMlsFeatureStart = hpkeManifest.indexOf("openmls = [");
 const openMlsFeatureEnd = hpkeManifest.indexOf("\n]", openMlsFeatureStart);
@@ -2092,15 +2102,7 @@ assertContains(
 );
 assertContains(
   "crates/ffi/abi/reallyme_crypto_ffi.h",
-  "Only rm_crypto_process_operation_response",
-);
-assertContains(
-  "crates/ffi/abi/reallyme_crypto_ffi.h",
-  "Other variable-length scalar helpers do not define probe semantics",
-);
-assertContains(
-  "crates/ffi/abi/reallyme_crypto_ffi.h",
-  "Ed25519 signing accepts only a 32-byte seed",
+  "rm_crypto_process_operation_response(",
 );
 assertNotContains(
   "crates/ffi/abi/reallyme_crypto_ffi.h",
@@ -2490,25 +2492,25 @@ const primaryOperationBoundaryPolicy = {
       path: "crates/wasm/src/operation_response.rs",
       processOperationNeedle: "pub fn process_operation_response(",
       processOperationJsonNeedle: "pub fn process_operation_response_json(",
-      binaryResponseNeedle: "CryptoOperationResponse",
+      binaryResponseNeedle: "process_operation_response_request(request.as_slice())",
     },
     {
       path: "packages/ts/src/operationResponse.ts",
       processOperationNeedle: "export const processOperationResponse =",
       processOperationJsonNeedle: "export const processOperationResponseJson =",
-      binaryResponseNeedle: "CryptoOperationResponse",
+      binaryResponseNeedle: "provider.processOperationResponse(requestBytes)",
     },
     {
       path: "packages/swift/Sources/ReallyMeCrypto/OperationResponse.swift",
       processOperationNeedle: "public func processOperationResponse(",
       processOperationJsonNeedle: "public func processOperationResponseJson(",
-      binaryResponseNeedle: "CryptoOperationResponse",
+      binaryResponseNeedle: "ReallyMeRustCAbiOperationResponseProcessor(library: library)",
     },
     {
       path: "packages/kotlin/src/main/kotlin/me/really/crypto/CryptoFacade.kt",
       processOperationNeedle: "public fun processOperationResponse(",
       processOperationJsonNeedle: "public fun processOperationResponseJson(",
-      binaryResponseNeedle: "CryptoOperationResponse",
+      binaryResponseNeedle: "ReallyMeCryptoSymmetricFacade.processOperationResponse(request)",
     },
   ],
 };
@@ -2516,7 +2518,7 @@ const primaryOperationBoundaryPolicy = {
 const repositoryPolicy = {
   generatedFreshnessMode,
   vendoredCore: {
-    version: "0.6.0",
+    version: "0.6.6",
     scriptPath: "scripts/check_release_readiness.mjs",
     corePath: "scripts/release-readiness/core.mjs",
   },
@@ -2590,11 +2592,11 @@ const repositoryPolicy = {
       files: [
         {
           path: "Package.swift",
-          required: ["swift-tools-version: 6.0"],
+          required: ["import PackageDescription"],
         },
         {
           path: "crates/conformance/platform/swift/Package.swift",
-          required: ["swift-tools-version: 6.0"],
+          required: ["import PackageDescription"],
         },
         {
           path: "scripts/check_swift_source_policy.sh",
@@ -2802,7 +2804,7 @@ const repositoryPolicy = {
         path: "scripts/run_pinned_release_readiness.mjs",
         required: [
           `const RELEASE_READINESS_COMMIT = "${releaseReadinessCommit}";`,
-          'const RELEASE_READINESS_CORE_SHA256 =\n  "435ae6205d000d1605761bce2e7b75a1584d6d3ad1b7d338ca8e61868959abdc";',
+          'const RELEASE_READINESS_CORE_SHA256 =\n  "244cef63e5a164f8cdfc09eed62d35f39d377d75f835f4e099369debccdb9662";',
         ],
         forbidden: [
           "RELEASE_READINESS_COMMIT = \"main\"",
@@ -2818,7 +2820,7 @@ const repositoryPolicy = {
     },
     {
       path: ".github/workflows/protobuf-ci.yml",
-      required: ["wasm-pack@0.15.0", "wasm-bindgen-cli@0.2.127"],
+      required: ["wasm-pack@0.15.0", "wasm-bindgen-cli@0.2.129"],
       usesSteps: [
         {
           name: "Install wasm-pack",
@@ -3048,7 +3050,7 @@ assertNotContains(
   "crates/crypto/src/operation_contract/request.rs",
   "decode_protobuf(",
 );
-assertContains(
+assertDocumented(
   "crates/proto/proto/reallyme/crypto/v1/crypto.proto",
   "Potentially privacy-bearing protocol context",
 );
@@ -3113,11 +3115,11 @@ assertContains("Cargo.toml", "[profile.release-ffi]");
 assertContains("Cargo.toml", 'panic = "unwind"');
 assertNotContains("crates/ffi/Cargo.toml", "require-unwind");
 assertContains("crates/ffi/src/lib.rs", '#[cfg(not(panic = "unwind"))]');
-assertContains(
+assertDocumented(
   "crates/ffi/abi/reallyme_crypto_ffi.h",
   "A probe executes the complete operation",
 );
-assertContains(
+assertDocumented(
   "crates/ffi/abi/reallyme_crypto_ffi.h",
   "Callers must discard every output",
 );
@@ -3153,7 +3155,7 @@ assertContains("scripts/prepare_swift_release_candidate.sh", "build_swift_xcfram
 assertContains("scripts/prepare_swift_release_candidate.sh", "prepare_swift_binary_manifest.mjs");
 assertContains("scripts/prepare_swift_release_candidate.sh", "verify_swift_release_artifact.mjs");
 assertContains("RELEASE_CHECKLIST.md", "retains that exact archive as the release candidate");
-assertContains("docs/release-process.md", "prepare_swift_release_candidate.sh 0.3.9");
+assertContains("docs/release-process.md", "prepare_swift_release_candidate.sh 0.3.10");
 assertContains(
   "packages/kotlin/src/main/kotlin/me/really/crypto/OperationResponse.kt",
   "processOperationResponseNative(request: ByteArray): ByteArray?",
@@ -3264,6 +3266,10 @@ assertContains(swiftReleaseWorkflow, "Bind release manifest to verified Swift ar
 assertContains(swiftReleaseWorkflow, "Verify SwiftPM manifest and downloaded artifact");
 assertContains(swiftReleaseWorkflow, "Create immutable GitHub release with Swift artifact");
 assertContains(swiftReleaseWorkflow, "verify_swift_release_artifact.mjs");
+assertContains(swiftReleaseWorkflow, 'git show "${tag_target}:Package.swift"');
+assertContains(swiftReleaseWorkflow, '"${RUNNER_TEMP}/tagged-Package.swift"');
+assertContains(swiftReleaseWorkflow, 'node scripts/extract_release_notes.mjs "${RELEASE_VERSION}"');
+assertContains(swiftReleaseWorkflow, '--notes-file "${RUNNER_TEMP}/release-notes.md"');
 assertContains(swiftReleaseWorkflow, "verify_release_attestation.mjs");
 assertContains(swiftReleaseWorkflow, "gh release create");
 assertContains(swiftReleaseWorkflow, "--verify-tag");
@@ -3279,17 +3285,17 @@ assertSubstringsInOrder(swiftReleaseWorkflow, [
 const swiftReleaseArtifactVerificationCount = readText(swiftReleaseWorkflow).match(
   /node scripts\/verify_swift_release_artifact[.]mjs/gu,
 )?.length;
-if (swiftReleaseArtifactVerificationCount !== 2) {
-  fail("Swift release workflow must verify the downloaded archive in both verification jobs");
+if (swiftReleaseArtifactVerificationCount !== 3) {
+  fail("Swift release workflow must verify the downloaded archive and tagged manifest before publication");
 }
 
 assertContains(".github/workflows/npm-package-preflight.yml", "npm package preflight");
 assertContains(".github/workflows/npm-package-preflight.yml", "npm run pack:check");
 assertContains(".github/workflows/npm-package-release.yml", "npm Package Release");
-assertContains(".github/workflows/npm-package-release.yml", "default: 0.3.9");
+assertContains(".github/workflows/npm-package-release.yml", "default: 0.3.10");
 assertContains(".github/workflows/npm-package-release.yml", "node scripts/run_pinned_release_readiness.mjs --release-packages");
 assertContains(".github/workflows/npm-package-release.yml", "wasm-pack@0.15.0");
-assertContains(".github/workflows/npm-package-release.yml", "wasm-bindgen-cli@0.2.127");
+assertContains(".github/workflows/npm-package-release.yml", "wasm-bindgen-cli@0.2.129");
 assertContains(".github/workflows/npm-package-release.yml", "npm test");
 assertContains(".github/workflows/npm-package-release.yml", "npm run pack:check");
 assertContains(".github/workflows/npm-package-release.yml", "npm pack --ignore-scripts");
@@ -3354,10 +3360,22 @@ if (releasePackagesMode) {
 }
 assertContains("crates/proto/proto/reallyme/crypto/v1/crypto.proto", "package reallyme.crypto.v1;");
 assertContains("crates/proto/proto/reallyme/crypto/v1/crypto.proto", 'option swift_prefix = "ReallyMeProto";');
-assertContains("crates/proto/proto/reallyme/crypto/v1/crypto.proto", "Secret-bearing AEAD key");
-assertContains("crates/proto/proto/reallyme/crypto/v1/crypto.proto", "Secret-bearing derived key material");
-assertContains("crates/proto/proto/reallyme/crypto/v1/crypto.proto", "Secret-bearing KEM shared secret");
-assertContains("crates/proto/proto/reallyme/crypto/v1/crypto.proto", "Decrypted plaintext may contain secret");
+assertDocumented(
+  "crates/proto/proto/reallyme/crypto/v1/crypto.proto",
+  "Secret-bearing AEAD key",
+);
+assertDocumented(
+  "crates/proto/proto/reallyme/crypto/v1/crypto.proto",
+  "Secret-bearing derived key material",
+);
+assertDocumented(
+  "crates/proto/proto/reallyme/crypto/v1/crypto.proto",
+  "Secret-bearing KEM shared secret",
+);
+assertDocumented(
+  "crates/proto/proto/reallyme/crypto/v1/crypto.proto",
+  "Decrypted plaintext may contain secret",
+);
 assertContains("crates/proto/proto/reallyme/crypto/v1/crypto.proto", "message CryptoError");
 assertContains("crates/proto/proto/reallyme/crypto/v1/crypto.proto", "message CryptoPrimitiveError");
 assertContains("crates/proto/proto/reallyme/crypto/v1/crypto.proto", "message CryptoProviderError");

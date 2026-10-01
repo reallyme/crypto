@@ -19,7 +19,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.3.9
+        default: 0.3.10
 
 permissions:
   contents: read
@@ -119,8 +119,8 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      - name: Test Swift release artifact verifier
-        run: node --test scripts/verify_swift_release_artifact.test.mjs
+      - name: Test Swift release artifact and notes checks
+        run: node --test scripts/verify_swift_release_artifact.test.mjs scripts/release_notes.test.mjs
 
       - name: Bind manifest to Swift release candidate
         run: |
