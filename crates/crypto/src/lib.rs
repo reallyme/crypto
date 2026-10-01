@@ -231,3 +231,7 @@ pub mod sha2;
 /// SHA-3-256 hashing and its fixed-length digest wrapper.
 #[cfg(feature = "sha3")]
 pub mod sha3;
+
+/// BN254 Poseidon2 byte hashing compatible with ReallyMe ZK circuits.
+#[cfg(feature = "poseidon2")]
+pub use crypto_poseidon2 as poseidon2;

@@ -14,13 +14,13 @@ import java.util.zip.ZipFile
 
 plugins {
     id("com.android.library") version "8.13.2"
-    kotlin("android") version "2.4.10"
+    kotlin("android") version "2.4.20"
     `maven-publish`
     signing
 }
 
 group = "me.really"
-version = "0.3.9"
+version = "0.3.10"
 
 kotlin {
     compilerOptions {
@@ -305,8 +305,8 @@ kotlin {
 
 dependencies {
     implementation("com.google.code.gson:gson:2.14.0")
-    api("com.google.protobuf:protobuf-javalite:4.36.1")
-    api("com.google.protobuf:protobuf-kotlin-lite:4.36.1")
+    api("com.google.protobuf:protobuf-javalite:4.36.2")
+    api("com.google.protobuf:protobuf-kotlin-lite:4.36.2")
     implementation("org.bouncycastle:bcprov-jdk18on:1.85.2")
     implementation("fr.acinq.secp256k1:secp256k1-kmp:0.24.0")
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.24.0")

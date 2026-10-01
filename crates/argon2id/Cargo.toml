@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-argon2id"
-version = "0.3.9"
+version = "0.3.10"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -17,9 +17,6 @@ repository.workspace = true
 ignored = [
     # Enables getrandom's wasm entropy backend for the transitive password-hash stack.
     "getrandom",
-    # The password-hash stack still uses getrandom 0.2 through rand_core 0.6.
-    # That line uses the older `js` wasm feature name.
-    "getrandom02",
 ]
 
 [lib]
@@ -28,13 +25,12 @@ name = "crypto_argon2id"
 [features]
 default = ["native"]
 native = []
-wasm = ["dep:getrandom", "dep:getrandom02"]
+wasm = ["dep:getrandom"]
 
 [dependencies]
-crypto-core = { package = "reallyme-crypto-core", version = "=0.3.9", path = "../crypto/core" }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.3.10", path = "../crypto/core" }
 argon2 = { workspace = true, features = ["alloc", "zeroize"] }
 getrandom = { workspace = true, features = ["wasm_js"], optional = true }
-getrandom02 = { package = "getrandom", version = "0.2.17", features = ["js"], optional = true }
 zeroize = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]

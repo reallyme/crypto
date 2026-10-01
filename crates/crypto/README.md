@@ -32,7 +32,7 @@ When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.3.9", default-features = false, features = [
+reallyme-crypto = { version = "0.3.10", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -45,7 +45,7 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.3.9", default-features = false, features = [
+reallyme-crypto = { version = "0.3.10", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }
@@ -66,6 +66,12 @@ themselves, enable every primitive. Algorithm features such as `ed25519`,
 no-default consumers from pulling unused cryptography while still forwarding
 the selected backend into every enabled primitive crate. The `wasm` lane is for
 `wasm32` builds; host builds should use `native`.
+
+The `poseidon2` feature exposes BN254 byte hashing compatible with ReallyMe ZK
+through `reallyme_crypto::poseidon2::hash_bytes`. Its fixed parameters, byte
+encoding, and 515-byte input bound are documented in the
+`reallyme-crypto-poseidon2` crate. This Rust-only primitive is not a structured
+operation or SDK provider route.
 
 Some Rust helper APIs are intentionally lane-scoped. P-256 raw scalar import is
 available in both native and wasm lanes through

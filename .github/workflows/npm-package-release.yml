@@ -12,7 +12,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.3.9
+        default: 0.3.10
 
 permissions:
   contents: read
@@ -98,7 +98,7 @@ jobs:
       - name: Install wasm-bindgen-cli
         uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # wasm-bindgen-cli
         with:
-          tool: wasm-bindgen-cli@0.2.127
+          tool: wasm-bindgen-cli@0.2.129
 
       - name: Install TypeScript package dependencies
         run: npm ci

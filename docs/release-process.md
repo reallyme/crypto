@@ -10,7 +10,7 @@ the affected SDK and hardware lanes, before asking CI to publish. Package-specif
 artifact gates are listed in [the release checklist](../RELEASE_CHECKLIST.md).
 
 Before creating the release commit, finish every Rust and SDK source/version
-change. `scripts/prepare_swift_release_candidate.sh 0.3.9` remains available as
+change. `scripts/prepare_swift_release_candidate.sh 0.3.10` remains available as
 an optional local packaging check, but its machine-specific checksum is not a
 release input. The Swift preflight produces the canonical archive on the pinned
 GitHub runner, tests it, and retains those exact bytes. The release workflow
@@ -86,6 +86,12 @@ deterministic `Package.swift`-only child of the reviewed source SHA before
 creating the immutable tag and GitHub release. `main` is never rewritten or
 force-pushed for a Swift checksum.
 
+Immediately before tag publication, the release job reads `Package.swift`
+back from the proposed tag commit and verifies it against the retained
+archive and checksum sidecar. The GitHub release notes are extracted from the
+matching version section in `RELEASE_NOTES.md` and fail closed if that section
+is missing or duplicated.
+
 Run `kotlin-android-package-release.yml` to publish `me.really:crypto` and
 `me.really:crypto-android`. The JVM matrix builds and tests each supported host
 native library and records a distinct SHA-256 job output before upload. The
@@ -105,6 +111,22 @@ dependency order. Starting any release workflow is an authorization to publish.
 Normal release paths do not clobber existing tags, release assets, registry
 versions, or Maven artifacts. Recovery requires separate byte-for-byte artifact
 identity evidence and reviewer approval.
+
+## Dependency Migration Scope
+
+The Android package remains on Android Gradle Plugin `8.13.2` with the
+reviewed Gradle `8.14.4` wrapper for this release. Moving to AGP 9 requires a
+separate migration of built-in Kotlin support, build DSL, Gradle verification
+metadata, and the Android packaging checks; follow the
+[official built-in Kotlin migration](https://developer.android.com/build/migrate-to-built-in-kotlin)
+and [AGP compatibility notes](https://developer.android.com/build/releases/agp-9-4-0-release-notes).
+The Rust `getrandom` `0.2` line
+is retained only by the arkworks graph used for Poseidon2; its standalone WASM
+entropy feature is selected in the Poseidon2 crate. KMAC retains `sha3` `0.10`
+because `sha3-kmac` `0.3.0` uses that line and its sponge state needs the
+matching zeroization feature. These compatibility lines should change with
+their dependent libraries and cross-target validation, not by independently
+raising their direct version requirements.
 
 ## Residual Risk Records
 

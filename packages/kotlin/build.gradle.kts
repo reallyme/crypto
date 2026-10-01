@@ -11,14 +11,14 @@ import java.nio.file.Files
 import java.security.MessageDigest
 
 plugins {
-    kotlin("jvm") version "2.4.10"
+    kotlin("jvm") version "2.4.20"
     `java-library`
     `maven-publish`
     signing
 }
 
 group = "me.really"
-version = "0.3.9"
+version = "0.3.10"
 
 val remoteMavenRepositoryUrl = providers.gradleProperty("reallyme.maven.repositoryUrl")
     .orElse(providers.environmentVariable("REALLYME_MAVEN_REPOSITORY_URL"))
@@ -217,8 +217,8 @@ val writeHostNativeManifest = tasks.register("writeHostNativeManifest") {
 
 dependencies {
     implementation("com.google.code.gson:gson:2.14.0")
-    api("com.google.protobuf:protobuf-javalite:4.36.1")
-    api("com.google.protobuf:protobuf-kotlin-lite:4.36.1")
+    api("com.google.protobuf:protobuf-javalite:4.36.2")
+    api("com.google.protobuf:protobuf-kotlin-lite:4.36.2")
     // Same pinned BouncyCastle the Kotlin conformance lane proves vectors
     // against; the SDK and the oracle must not drift apart.
     implementation("org.bouncycastle:bcprov-jdk18on:1.85.2")
@@ -232,9 +232,9 @@ dependencies {
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.24.0")
     implementation("me.really:codec:0.2.3")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.14.4")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.3")
     testImplementation(kotlin("test"))
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.14.4")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.1.3")
 }
 
 tasks.test {

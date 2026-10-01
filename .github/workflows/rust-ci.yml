@@ -80,7 +80,7 @@ jobs:
       - name: Install wasm-bindgen-cli
         uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # wasm-bindgen-cli
         with:
-          tool: wasm-bindgen-cli@0.2.127
+          tool: wasm-bindgen-cli@0.2.129
 
       - name: Install Node
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
@@ -185,7 +185,7 @@ jobs:
         run: node scripts/generate_provider_matrix.mjs --check
 
       - name: Release readiness
-        run: npm exec --yes --package=github:reallyme/release-readiness#3fcf50eb312ae20dc9dc7a256f8fae67a7ba2c6b -- reallyme-release-readiness
+        run: npm exec --yes --package=github:reallyme/release-readiness#bdedc88f3f25fcc14242730d4dec6ce6a0c75531 -- reallyme-release-readiness
 
       - name: Check native lane
         run: cargo check --locked --workspace --no-default-features --features native
