@@ -26,6 +26,8 @@ import {
 
 const invalidInput = (error) =>
   error instanceof ReallyMeCryptoError && error.code === "invalid-input";
+const authenticationFailed = (error) =>
+  error instanceof ReallyMeCryptoError && error.code === "authentication-failed";
 const bytes = new Uint8Array([1]);
 const empty = new Uint8Array();
 const keyFacades = [
@@ -120,12 +122,12 @@ test("HMAC rejects shape-only tags and ignores overridden iterators", () => {
     [ReallyMeHmac.authenticateSha512, ReallyMeHmac.verifySha512, 64],
   ]) {
     const tag = authenticate(bytes, empty);
-    assert.equal(verify(tag, bytes, empty), true);
+    assert.doesNotThrow(() => verify(tag, bytes, empty));
     assert.throws(() => verify({ length, entries: () => [] }, bytes, empty), invalidInput);
     assert.throws(() => verify(Array.from(tag), bytes, empty), invalidInput);
     tag[0] ^= 1;
     tag.entries = () => [];
-    assert.equal(verify(tag, bytes, empty), false);
+    assert.throws(() => verify(tag, bytes, empty), authenticationFailed);
   }
 });
 
@@ -163,6 +165,6 @@ test("HMAC compares every byte position without using a caller iterator", () => 
   for (let position = 0; position < expected.length; position += 1) {
     const changed = new Uint8Array(expected);
     changed[position] ^= 1;
-    assert.equal(ReallyMeHmac.verifySha512(changed, bytes, empty), false);
+    assert.throws(() => ReallyMeHmac.verifySha512(changed, bytes, empty), authenticationFailed);
   }
 });

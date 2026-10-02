@@ -107,6 +107,9 @@ public enum ReallyMeJwk {
     if algorithm == .x25519 && !ReallyMeX25519Identity.isCanonical(publicKey) {
       throw ReallyMeCryptoError.invalidInput
     }
+    if algorithm == .ed25519 {
+      try ReallyMeEd25519Identity.validate(publicKey)
+    }
 
     if spec.kty == "EC" {
       let uncompressed = try decompressEcPublicKey(algorithm: algorithm, publicKey: publicKey)

@@ -183,6 +183,47 @@ fn invalid_key_and_signature_lengths_are_rejected() -> Result<(), CryptoError> {
     Ok(())
 }
 
+#[test]
+fn signature_equal_to_modulus_is_rejected_before_rsa_verification() -> Result<(), CryptoError> {
+    // The committed PKCS#1 fixture has a 2048-bit modulus with a leading
+    // DER sign octet. A signature representative must be strictly below n.
+    const MODULUS_OFFSET: usize = 9;
+    const MODULUS_LENGTH: usize = 256;
+    let public_der = decode(PUBLIC_KEY_DER)?;
+    assert_eq!(
+        public_der.get(..MODULUS_OFFSET),
+        Some([0x30, 0x82, 0x01, 0x0a, 0x02, 0x82, 0x01, 0x01, 0x00].as_slice())
+    );
+    let modulus_end = MODULUS_OFFSET
+        .checked_add(MODULUS_LENGTH)
+        .ok_or(CryptoError::InvalidKey)?;
+    let signature = public_der
+        .get(MODULUS_OFFSET..modulus_end)
+        .ok_or(CryptoError::InvalidKey)?;
+    let message = decode(MESSAGE)?;
+    assert!(verify_rsa_pkcs1v15(
+        &public_der,
+        RsaPublicKeyDerEncoding::Pkcs1,
+        RsaHash::Sha256,
+        &message,
+        signature,
+    )
+    .is_err());
+    assert!(verify_rsa_pss(
+        &public_der,
+        RsaPublicKeyDerEncoding::Pkcs1,
+        RsaPssParams {
+            message_hash: RsaHash::Sha256,
+            mgf1_hash: RsaHash::Sha256,
+            salt_len: 32,
+        },
+        &message,
+        signature,
+    )
+    .is_err());
+    Ok(())
+}
+
 fn pkcs1v15_cases() -> Result<[(RsaHash, Vec<u8>); 4], CryptoError> {
     Ok([
         (RsaHash::Sha1, decode(PKCS1V15_SHA1)?),

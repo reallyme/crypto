@@ -52,7 +52,7 @@ same module.
 | secp256k1 ECDSA and BIP-340 Schnorr | No current vendored ACVP route for these public boundaries. |
 | RSA verification | Covered by [RSA PKCS#1 v1.5/SHA-256 ACVP signature verification](../vectors/external/nist-acvp/signature/rsa-sigver/internalProjection.json). RSA-PSS samples are status-only for currently unsupported hash/profile combinations. |
 | ML-DSA-44/65/87 | Covered by [ML-DSA ACVP keygen](../vectors/external/nist-acvp/ml-dsa/keygen/internalProjection.json) and the public-boundary subset of [ML-DSA ACVP signature verification](../vectors/external/nist-acvp/ml-dsa/sigver/internalProjection.json). |
-| SLH-DSA-SHA2-128s | Vendored [SLH-DSA ACVP signature verification](../vectors/external/nist-acvp/slh-dsa/sigver/internalProjection.json) is parsed, but the matching public-boundary case in the pinned sample is negative, so the adapter records rejection behavior rather than positive conformance. |
+| SLH-DSA-SHA2-128s | Vendored [SLH-DSA ACVP signature verification](../vectors/external/nist-acvp/slh-dsa/sigver/internalProjection.json) checks public-boundary rejections and independent positive known answers at the backend's internal FIPS 205 interface. The pinned sample has no positive empty-context external case, so these backend checks do not establish positive public-boundary conformance. |
 | X25519 | Covered by [X25519 ACVP shared-secret computation](../vectors/external/nist-acvp/agreement/xecdh-ssc/internalProjection.json). |
 | X448 and P-curve ECDH | No current vendored ACVP route for these public boundaries. |
 | ML-KEM-512/768/1024 | Covered by [ML-KEM ACVP keygen](../vectors/external/nist-acvp/ml-kem/keygen/internalProjection.json) and [encapsulation](../vectors/external/nist-acvp/ml-kem/encap-decap/internalProjection.json). |
@@ -104,7 +104,7 @@ when their corpus has not been vendored, so they never pass vacuously.
 | Wycheproof X25519 | `derive_x25519_shared_secret` adversarial edge cases | [wycheproof_xdh_x25519.rs](../tools/external-vector-audit/tests/wycheproof_xdh_x25519.rs) |
 | Wycheproof X448 | `derive_x448_shared_secret` (previously no external route) | [wycheproof_xdh_x448.rs](../tools/external-vector-audit/tests/wycheproof_xdh_x448.rs) |
 | Wycheproof P-256/384/521 ECDH (`ecpoint`) | `derive_p{256,384,521}_shared_secret` | [wycheproof_ecdh_pcurves.rs](../tools/external-vector-audit/tests/wycheproof_ecdh_pcurves.rs) |
-| BIP-340 `test-vectors.csv` | `verify_bip340_schnorr` positive and negative cases | [bip340_schnorr.rs](../tools/external-vector-audit/tests/bip340_schnorr.rs) |
+| BIP-340 `test-vectors.csv` | `verify_bip340_schnorr` positive and negative cases for the 32-byte message API; four variable-length extension rows must be rejected | [bip340_schnorr.rs](../tools/external-vector-audit/tests/bip340_schnorr.rs) |
 | RFC 8032 `sign.input` | `sign_ed25519` deterministic **signature generation** | [rfc8032_ed25519_siggen.rs](../tools/external-vector-audit/tests/rfc8032_ed25519_siggen.rs) |
 | X-Wing CFRG draft `spec/test-vectors.json` | `generate_x_wing_768_keypair_derand` / `x_wing_768_encapsulate_derand` / `x_wing_768_decapsulate` full KAT | [xwing768_kat.rs](../tools/external-vector-audit/tests/xwing768_kat.rs) |
 | HPKE RFC 9180 `test-vectors.json` | `seal_base_derand` / `open_base` for the supported base-mode suites | [rfc9180_hpke.rs](../tools/external-vector-audit/tests/rfc9180_hpke.rs) |
@@ -113,7 +113,9 @@ when their corpus has not been vendored, so they never pass vacuously.
 **Argon2id** has no executable external route: the public boundary derives only
 through code-pinned cost profiles (`DeriveKeyRequest` takes a profile, not
 arbitrary `m`/`t`/`p`), so the RFC 9106 vectors — which fix their own small
-parameters — cannot be reproduced against it. It remains status-only by design.
+parameters — cannot be reproduced against it. The pinned backend is checked
+against the independent RFC 9106 section 5.3 Argon2id known answer in the
+Argon2id primitive tests; the fixed public profile remains status-only.
 The NIST ACVP PBKDF sample is likewise status-only (SHA-224 only); the brycx
 corpus above is the executable PBKDF2 route for the SHA-256/SHA-512 boundary.
 

@@ -151,14 +151,17 @@ export const createReallyMeSymmetricFacade = (
     tag: Uint8Array,
     key: Uint8Array,
     message: Uint8Array,
-  ): boolean {
+  ): void {
     switch (algorithm) {
       case "HMAC-SHA-256":
-        return ReallyMeHmac.verifySha256(tag, key, message);
+        ReallyMeHmac.verifySha256(tag, key, message);
+        return;
       case "HMAC-SHA-384":
-        return ReallyMeHmac.verifySha384(tag, key, message);
+        ReallyMeHmac.verifySha384(tag, key, message);
+        return;
       case "HMAC-SHA-512":
-        return ReallyMeHmac.verifySha512(tag, key, message);
+        ReallyMeHmac.verifySha512(tag, key, message);
+        return;
       default:
         throw new ReallyMeCryptoError("unsupported-algorithm");
     }

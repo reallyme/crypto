@@ -18,6 +18,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import me.really.codec.ReallyMeCodec
 import me.really.crypto.proto.ReallyMeCryptoProtoAdapters
 import me.really.crypto.proto.ReallyMeCryptoWireErrorBranch
 import me.really.crypto.v1.CryptoErrorReason
@@ -578,8 +579,33 @@ class ReallyMeCryptoTest : ReallyMeCryptoTestSupport() {
     }
 
     @Test
+    fun ed25519EnvelopesRejectInvalidPointIdentities() {
+        val identity = ByteArray(32).also { it[0] = 1 }
+        val aliasedIdentity = ByteArray(32) { 0xff.toByte() }.also {
+            it[0] = 0xee.toByte()
+            it[31] = 0x7f
+        }
+        for (publicKey in listOf(identity, aliasedIdentity, ByteArray(32))) {
+            assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+                ReallyMeJwk.toJwk(ReallyMeJwkAlgorithm.ED25519, publicKey)
+            }
+            assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+                ReallyMeMultikey.encode(ReallyMeMulticodecKeyAlgorithm.ED25519_PUBLIC_KEY, publicKey)
+            }
+            val rawMultikey = ReallyMeCodec.multikeyEncode("ed25519-pub", publicKey)
+            assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+                ReallyMeMultikey.parse(rawMultikey)
+            }
+            val x = Base64.getUrlEncoder().withoutPadding().encodeToString(publicKey)
+            assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+                ReallyMeJwk.fromJwkJson("""{"kty":"OKP","crv":"Ed25519","x":"$x"}""")
+            }
+        }
+    }
+
+    @Test
     fun jwkParserRejectsPrivateKeyMembers() {
-        val publicX = "A".repeat(43)
+        val publicX = "bd_77DacquIWpfuZCAps4BN5nYvqANOYBNepDXNQLYI"
         listOf("d", "p", "q", "dp", "dq", "qi", "oth", "k", "priv", "privateKey", "secretKey")
             .forEach { name ->
                 val json =
@@ -592,7 +618,7 @@ class ReallyMeCryptoTest : ReallyMeCryptoTestSupport() {
 
     @Test
     fun jwkParserRejectsDuplicateUnknownAndMixedShapeMembers() {
-        val publicX = "A".repeat(43)
+        val publicX = "bd_77DacquIWpfuZCAps4BN5nYvqANOYBNepDXNQLYI"
         val valid = """{"alg":"EdDSA","crv":"Ed25519","kty":"OKP","use":"sig","x":"$publicX"}"""
         listOf(
             """{"alg":"EdDSA","crv":"Ed25519","kty":"OKP","kty":"OKP","use":"sig","x":"$publicX"}""",
@@ -622,7 +648,7 @@ class ReallyMeCryptoTest : ReallyMeCryptoTestSupport() {
 
     @Test
     fun okpMetadataIsOptionalButConflictsAreRejected() {
-        val publicX = "A".repeat(43)
+        val publicX = "bd_77DacquIWpfuZCAps4BN5nYvqANOYBNepDXNQLYI"
         val omitted = """{"crv":"Ed25519","kty":"OKP","x":"$publicX"}"""
         assertEquals(ReallyMeJwkAlgorithm.ED25519, ReallyMeJwk.fromJwkJson(omitted).algorithm)
 

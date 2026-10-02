@@ -92,6 +92,9 @@ public object ReallyMeJwk {
         if (publicKey.size != spec.publicKeyLength) {
             throw ReallyMeCryptoException.InvalidInput()
         }
+        if (algorithm == ReallyMeJwkAlgorithm.ED25519) {
+            ReallyMeEd25519.validatePublicKeyIdentity(publicKey)
+        }
         if (algorithm == ReallyMeJwkAlgorithm.X25519 && !isCanonicalX25519Identity(publicKey)) {
             throw ReallyMeCryptoException.InvalidInput()
         }

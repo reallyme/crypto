@@ -140,3 +140,7 @@ fn signature_error() -> CryptoError {
         kind: SignatureFailureKind::InvalidSignature,
     }
 }
+
+#[cfg(test)]
+#[path = "verify_tests.rs"]
+mod tests;

@@ -23,25 +23,25 @@ public object ReallyMeHmac {
     public fun authenticateSha512(key: ByteArray, message: ByteArray): ByteArray =
         authenticate(ProviderAlgorithm.HMAC_SHA512, key, message)
 
-    public fun verifySha256(tag: ByteArray, key: ByteArray, message: ByteArray): Boolean {
+    public fun verifySha256(tag: ByteArray, key: ByteArray, message: ByteArray) {
         if (tag.size != SHA256_TAG_LENGTH) {
             throw ReallyMeCryptoException.InvalidInput()
         }
-        return verifyAndClearExpectedTag(tag, authenticateSha256(key, message))
+        verifyAndClearExpectedTag(tag, authenticateSha256(key, message))
     }
 
-    public fun verifySha384(tag: ByteArray, key: ByteArray, message: ByteArray): Boolean {
+    public fun verifySha384(tag: ByteArray, key: ByteArray, message: ByteArray) {
         if (tag.size != SHA384_TAG_LENGTH) {
             throw ReallyMeCryptoException.InvalidInput()
         }
-        return verifyAndClearExpectedTag(tag, authenticateSha384(key, message))
+        verifyAndClearExpectedTag(tag, authenticateSha384(key, message))
     }
 
-    public fun verifySha512(tag: ByteArray, key: ByteArray, message: ByteArray): Boolean {
+    public fun verifySha512(tag: ByteArray, key: ByteArray, message: ByteArray) {
         if (tag.size != SHA512_TAG_LENGTH) {
             throw ReallyMeCryptoException.InvalidInput()
         }
-        return verifyAndClearExpectedTag(tag, authenticateSha512(key, message))
+        verifyAndClearExpectedTag(tag, authenticateSha512(key, message))
     }
 
     private fun authenticate(
@@ -76,14 +76,18 @@ public object ReallyMeHmac {
         return difference == 0
     }
 
-    private fun verifyAndClearExpectedTag(tag: ByteArray, expectedTag: ByteArray): Boolean =
+    private fun verifyAndClearExpectedTag(tag: ByteArray, expectedTag: ByteArray) {
         try {
-            constantTimeEquals(tag, expectedTag)
+            if (!constantTimeEquals(tag, expectedTag)) {
+                // A rejected tag must fail even if the caller ignores this operation.
+                throw ReallyMeCryptoException.AuthenticationFailed()
+            }
         } finally {
             // JCE returns a new managed array. Clear it immediately so verification
             // does not retain key-derived authentication material until a GC cycle.
             expectedTag.fill(0)
         }
+    }
 
     private enum class ProviderAlgorithm(val jceName: String) {
         HMAC_SHA256("HmacSHA256"),

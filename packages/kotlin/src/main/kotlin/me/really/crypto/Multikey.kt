@@ -34,6 +34,9 @@ public object ReallyMeMultikey {
         algorithm: ReallyMeMulticodecKeyAlgorithm,
         publicKey: ByteArray,
     ): String {
+        if (algorithm == ReallyMeMulticodecKeyAlgorithm.ED25519_PUBLIC_KEY) {
+            ReallyMeEd25519.validatePublicKeyIdentity(publicKey)
+        }
         if (
             algorithm == ReallyMeMulticodecKeyAlgorithm.X25519_PUBLIC_KEY &&
             !isCanonicalX25519Identity(publicKey)
@@ -53,6 +56,9 @@ public object ReallyMeMultikey {
             throw ReallyMeCryptoException.InvalidInput()
         }
         val publicKey = parsed.publicKey()
+        if (algorithm == ReallyMeMulticodecKeyAlgorithm.ED25519_PUBLIC_KEY) {
+            ReallyMeEd25519.validatePublicKeyIdentity(publicKey)
+        }
         if (
             algorithm == ReallyMeMulticodecKeyAlgorithm.X25519_PUBLIC_KEY &&
             !isCanonicalX25519Identity(publicKey)

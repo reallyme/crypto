@@ -288,7 +288,7 @@ class ProtoAdapterTest {
 
     @Test
     fun protoJsonWebKeyBytesRoundTripThroughCodecPackage() {
-        val publicKey = ByteArray(32) { index -> index.toByte() }
+        val publicKey = ReallyMeEd25519.derivePublicKey(ByteArray(32) { index -> index.toByte() })
         val jwk = ReallyMeJwk.toJwk(ReallyMeJwkAlgorithm.ED25519, publicKey)
         val key = ReallyMeJwkKey(ReallyMeJwkAlgorithm.ED25519, publicKey, jwk)
 

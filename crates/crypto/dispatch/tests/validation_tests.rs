@@ -77,6 +77,23 @@ fn ed25519_verification_method_is_valid() {
 }
 
 #[test]
+fn ed25519_verification_method_rejects_invalid_points() {
+    let mut identity = [0_u8; 32];
+    identity[0] = 1;
+    let mut aliased_identity = [0xff_u8; 32];
+    aliased_identity[0] = 0xee;
+    aliased_identity[31] = 0x7f;
+    for invalid in [identity, aliased_identity, [0_u8; 32]] {
+        assert!(public_key_to_multikey(Algorithm::Ed25519, &invalid).is_err());
+        let multikey = encode_multikey("ed25519-pub", &invalid).unwrap();
+        assert!(
+            validate_verification_method_multikey(Algorithm::Ed25519, "Multikey", &multikey)
+                .is_err()
+        );
+    }
+}
+
+#[test]
 fn invalid_multikey_string_is_rejected() {
     let bad = "zthisisnotvalidmultikeydata";
 

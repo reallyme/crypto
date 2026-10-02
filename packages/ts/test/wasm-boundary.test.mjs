@@ -18,8 +18,8 @@ import {
   ReallyMeRsa,
   ReallyMeSecp256k1,
   ReallyMeX25519,
-  createReallyMeWasmProvider,
 } from "../dist/index.js";
+import { createWasmProviderFromModule } from "../dist/wasmProvider.js";
 import {
   CryptoOperationRequestSchema,
   CryptoOperationResponseSchema,
@@ -44,7 +44,7 @@ const wasmBytes = readFileSync(
 );
 initializeWasm(wasmBytes);
 
-const packageProvider = createReallyMeWasmProvider(wasmProviderModule);
+const packageProvider = createWasmProviderFromModule(wasmProviderModule);
 
 const assertReallyMeError = (operation, code) => {
   assert.throws(
@@ -161,7 +161,7 @@ test("variable-length WASM inputs reject oversized buffers before provider dispa
   }
 
   let providerCalls = 0;
-  const countingProvider = createReallyMeWasmProvider({
+  const countingProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     aes256GcmSivSeal: () => {
       providerCalls += 1;
@@ -222,7 +222,7 @@ test("custom seed-derived providers have an explicit correspondence trust bounda
   mismatchedPublicKey[0] ^= 1;
   assert.notDeepEqual(mismatchedPublicKey, packageKeyPair.publicKey);
 
-  const customProvider = createReallyMeWasmProvider({
+  const customProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     mlKem512DeriveKeypair: () => ({
       publicKey: mismatchedPublicKey.slice(),
@@ -247,7 +247,7 @@ test("custom seed-derived providers have an explicit correspondence trust bounda
 
 test("facades reject raw-WASM numeric truncation candidates before dispatch", () => {
   let providerCalls = 0;
-  const rejectingProvider = createReallyMeWasmProvider({
+  const rejectingProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     argon2idDeriveKey: () => {
       providerCalls += 1;
@@ -293,13 +293,13 @@ test("facades reject raw-WASM numeric truncation candidates before dispatch", ()
 test("WASM numeric error codes map to typed SDK errors without untyped strings", () => {
   const key = new Uint8Array(32);
   const salt = new Uint8Array(16);
-  const numericProvider = createReallyMeWasmProvider({
+  const numericProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     argon2idDeriveKey: () => {
       throw WASM_INVALID_INPUT;
     },
   });
-  const stringErrorProvider = createReallyMeWasmProvider({
+  const stringErrorProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     argon2idDeriveKey: () => {
       throw "invalid-input";

@@ -214,6 +214,8 @@ import {
   verificationResultToProto,
   verificationResultToProtoBytes,
 } from "../dist/proto.js";
+import { createReallyMeCryptoFacade } from "../dist/cryptoFacade.js";
+import { createWasmProviderFromModule } from "../dist/wasmProvider.js";
 
 test("package entry point supports synchronous CommonJS loading", () => {
   const require = createRequire(import.meta.url);
@@ -313,6 +315,26 @@ assertReallyMeError(
 );
 installReallyMeWasmProvider(bundledWasm);
 
+test("explicit facades reject untrusted WASM verification providers", () => {
+  const forgedModule = {
+    ...wasmProviderModule,
+    mlDsa44Verify: () => undefined,
+    slhDsaSha2128sVerify: () => undefined,
+    rsaVerifyPss: () => undefined,
+  };
+  assertReallyMeError(() => createReallyMeWasmProvider(forgedModule), "provider-failure");
+  const forgedProvider = createWasmProviderFromModule(forgedModule);
+  assertReallyMeError(
+    () => createReallyMeCrypto({ wasmProvider: forgedProvider }),
+    "provider-failure",
+  );
+  assertReallyMeError(
+    () => createReallyMeCrypto({ wasmProvider: { ...installedWasmProvider } }),
+    "provider-failure",
+  );
+  assert.equal(Object.isFrozen(installedWasmProvider), true);
+});
+
 test("package-global WASM provider is frozen after first install", () => {
   assertReallyMeError(
     () => installReallyMeWasmProvider(wasmProviderModule),
@@ -327,8 +349,8 @@ test("a WASM trap poisons all wrappers from the same provider module", () => {
       throw new WebAssembly.RuntimeError("trap");
     },
   };
-  const first = createReallyMeWasmProvider(module);
-  const second = createReallyMeWasmProvider(module);
+  const first = createWasmProviderFromModule(module);
+  const second = createWasmProviderFromModule(module);
   assertReallyMeError(
     () => first.argon2idDeriveKey(1, new Uint8Array(), new Uint8Array()),
     "provider-failure",
@@ -339,16 +361,16 @@ test("a WASM trap poisons all wrappers from the same provider module", () => {
 test("explicit crypto provider instances isolate WASM-backed routes", () => {
   const secret = new TextEncoder().encode("password");
   const salt = new TextEncoder().encode("somesaltvalue1234");
-  const providerA = createReallyMeWasmProvider({
+  const providerA = createWasmProviderFromModule({
     ...wasmProviderModule,
     argon2idDeriveKey: () => new Uint8Array(32).fill(0x11),
   });
-  const providerB = createReallyMeWasmProvider({
+  const providerB = createWasmProviderFromModule({
     ...wasmProviderModule,
     argon2idDeriveKey: () => new Uint8Array(32).fill(0x22),
   });
-  const cryptoA = createReallyMeCrypto({ wasmProvider: providerA });
-  const cryptoB = createReallyMeCrypto({ wasmProvider: providerB });
+  const cryptoA = createReallyMeCryptoFacade(() => providerA);
+  const cryptoB = createReallyMeCryptoFacade(() => providerB);
 
   assert.deepEqual(
     cryptoA.deriveArgon2id(ARGON2ID_V1, secret, salt),
@@ -367,7 +389,7 @@ test("explicit crypto provider instances isolate WASM-backed routes", () => {
 test("AEAD, Argon2id, and HPKE reject provider outputs that alias caller secrets", () => {
   const aeadKey = new Uint8Array(32).fill(0x11);
   const aeadKeyBefore = aeadKey.slice();
-  const aeadProvider = createReallyMeWasmProvider({
+  const aeadProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     aes256GcmOpen: () => aeadKey,
   });
@@ -387,7 +409,7 @@ test("AEAD, Argon2id, and HPKE reject provider outputs that alias caller secrets
 
   const password = new Uint8Array(32).fill(0x22);
   const passwordBefore = password.slice();
-  const argon2idProvider = createReallyMeWasmProvider({
+  const argon2idProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     argon2idDeriveKey: () => password,
   });
@@ -405,7 +427,7 @@ test("AEAD, Argon2id, and HPKE reject provider outputs that alias caller secrets
 
   const recipientSecretKey = new Uint8Array(32).fill(0x33);
   const recipientSecretKeyBefore = recipientSecretKey.slice();
-  const hpkeProvider = createReallyMeWasmProvider({
+  const hpkeProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     hpkeOpenBase: () => recipientSecretKey,
   });
@@ -428,7 +450,7 @@ test("AEAD, Argon2id, and HPKE reject provider outputs that alias caller secrets
 test("KEM providers reject shared secrets and derived keys that alias inputs", () => {
   const mlKemSecretKey = new Uint8Array(ML_KEM_SECRET_KEY_LENGTH).fill(0x44);
   const mlKemSecretKeyBefore = mlKemSecretKey.slice();
-  const mlKemProvider = createReallyMeWasmProvider({
+  const mlKemProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     mlKem512Decapsulate: () => mlKemSecretKey.subarray(0, ML_KEM_SHARED_SECRET_LENGTH),
   });
@@ -446,7 +468,7 @@ test("KEM providers reject shared secrets and derived keys that alias inputs", (
 
   const xWingSecretKey = new Uint8Array(X_WING_SECRET_KEY_LENGTH).fill(0x55);
   const xWingSecretKeyBefore = xWingSecretKey.slice();
-  const xWingProvider = createReallyMeWasmProvider({
+  const xWingProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     xWing768Decapsulate: () => xWingSecretKey,
   });
@@ -465,7 +487,7 @@ test("KEM providers reject shared secrets and derived keys that alias inputs", (
 
 test("KEM providers wipe wrong-length decapsulation shared secrets", () => {
   const mlKemShortSharedSecret = new Uint8Array(ML_KEM_SHARED_SECRET_LENGTH - 1).fill(0x61);
-  const mlKemShortProvider = createReallyMeWasmProvider({
+  const mlKemShortProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     mlKem512Decapsulate: () => mlKemShortSharedSecret,
   });
@@ -482,7 +504,7 @@ test("KEM providers wipe wrong-length decapsulation shared secrets", () => {
   assert.deepEqual(mlKemShortSharedSecret, new Uint8Array(mlKemShortSharedSecret.length));
 
   const mlKemLongSharedSecret = new Uint8Array(ML_KEM_SHARED_SECRET_LENGTH + 1).fill(0x62);
-  const mlKemLongProvider = createReallyMeWasmProvider({
+  const mlKemLongProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     mlKem512Decapsulate: () => mlKemLongSharedSecret,
   });
@@ -499,7 +521,7 @@ test("KEM providers wipe wrong-length decapsulation shared secrets", () => {
   assert.deepEqual(mlKemLongSharedSecret, new Uint8Array(mlKemLongSharedSecret.length));
 
   const xWingShortSharedSecret = new Uint8Array(X_WING_SHARED_SECRET_LENGTH - 1).fill(0x63);
-  const xWingShortProvider = createReallyMeWasmProvider({
+  const xWingShortProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     xWing768Decapsulate: () => xWingShortSharedSecret,
   });
@@ -516,7 +538,7 @@ test("KEM providers wipe wrong-length decapsulation shared secrets", () => {
   assert.deepEqual(xWingShortSharedSecret, new Uint8Array(xWingShortSharedSecret.length));
 
   const xWingLongSharedSecret = new Uint8Array(X_WING_SHARED_SECRET_LENGTH + 1).fill(0x64);
-  const xWingLongProvider = createReallyMeWasmProvider({
+  const xWingLongProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     xWing768Decapsulate: () => xWingLongSharedSecret,
   });
@@ -536,7 +558,7 @@ test("KEM providers wipe wrong-length decapsulation shared secrets", () => {
 test("signature providers return independently owned keys and signatures", () => {
   const mlDsaSecretKey = new Uint8Array(ML_DSA_SECRET_KEY_LENGTH).fill(0x66);
   const mlDsaSecretKeyBefore = mlDsaSecretKey.slice();
-  const mlDsaProvider = createReallyMeWasmProvider({
+  const mlDsaProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     mlDsa44DeriveKeypair: () => ({
       publicKey: new Uint8Array(ML_DSA_44_PUBLIC_KEY_LENGTH),
@@ -556,7 +578,7 @@ test("signature providers return independently owned keys and signatures", () =>
 
   const message = new Uint8Array(SLH_DSA_SHA2_128S_SIGNATURE_LENGTH).fill(0x77);
   const messageBefore = message.slice();
-  const slhDsaProvider = createReallyMeWasmProvider({
+  const slhDsaProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     slhDsaSha2128sSign: () => message,
   });
@@ -575,7 +597,7 @@ test("signature providers return independently owned keys and signatures", () =>
 
 test("signature providers map wrong-length outputs to provider failure", () => {
   const mlDsaSignature = new Uint8Array(100).fill(0x81);
-  const mlDsaProvider = createReallyMeWasmProvider({
+  const mlDsaProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     mlDsa44Sign: () => mlDsaSignature,
   });
@@ -592,7 +614,7 @@ test("signature providers map wrong-length outputs to provider failure", () => {
   assert.deepEqual(mlDsaSignature, new Uint8Array(100).fill(0x81));
 
   const slhDsaSignature = new Uint8Array(100).fill(0x82);
-  const slhDsaProvider = createReallyMeWasmProvider({
+  const slhDsaProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     slhDsaSha2128sSign: () => slhDsaSignature,
   });
@@ -611,7 +633,7 @@ test("signature providers map wrong-length outputs to provider failure", () => {
 
 test("composite provider outputs fail deterministically and clear malformed storage", () => {
   const malformedSecretKey = new Uint8Array(ML_DSA_SECRET_KEY_LENGTH - 1).fill(0x88);
-  const wrongLengthProvider = createReallyMeWasmProvider({
+  const wrongLengthProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     mlDsa44GenerateKeypair: () => ({
       publicKey: new Uint8Array(ML_DSA_44_PUBLIC_KEY_LENGTH),
@@ -624,7 +646,7 @@ test("composite provider outputs fail deterministically and clear malformed stor
   );
   assert.deepEqual(malformedSecretKey, new Uint8Array(malformedSecretKey.length));
 
-  const throwingGetterProvider = createReallyMeWasmProvider({
+  const throwingGetterProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     mlKem512GenerateKeypair: () =>
       Object.defineProperty(Object.create(null), "publicKey", {
@@ -703,17 +725,17 @@ test("explicit crypto provider instances preserve unsupported algorithm failures
 });
 
 test("WASM provider creation and provider throws map to typed failures", () => {
-  assertReallyMeError(() => createReallyMeWasmProvider(null), "provider-failure");
+  assertReallyMeError(() => createWasmProviderFromModule(null), "provider-failure");
   assertReallyMeError(
     () =>
-      createReallyMeWasmProvider({
+      createWasmProviderFromModule({
         ...wasmProviderModule,
         aes256GcmSeal: 1,
       }),
     "provider-failure",
   );
 
-  const throwingProvider = createReallyMeWasmProvider({
+  const throwingProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     argon2idDeriveKey: () => {
       throw 1;
@@ -721,7 +743,7 @@ test("WASM provider creation and provider throws map to typed failures", () => {
   });
   assertReallyMeError(
     () =>
-      createReallyMeCrypto({ wasmProvider: throwingProvider }).deriveArgon2id(
+      createReallyMeCryptoFacade(() => throwingProvider).deriveArgon2id(
         ARGON2ID_V1,
         new TextEncoder().encode("password"),
         new TextEncoder().encode("somesaltvalue1234"),
@@ -739,7 +761,7 @@ test("ambient globals cannot satisfy explicit WASM provider functions", () => {
   });
   try {
     assertReallyMeError(
-      () => createReallyMeWasmProvider(Object.create(null)),
+      () => createWasmProviderFromModule(Object.create(null)),
       "provider-failure",
     );
   } finally {
@@ -754,11 +776,11 @@ test("ambient globals cannot satisfy explicit WASM provider functions", () => {
 test("explicit crypto provider instances do not leak into one another", () => {
   const secret = new TextEncoder().encode("password");
   const salt = new TextEncoder().encode("somesaltvalue1234");
-  const isolatedProvider = createReallyMeWasmProvider({
+  const isolatedProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     argon2idDeriveKey: () => new Uint8Array(32).fill(0x33),
   });
-  const isolatedCrypto = createReallyMeCrypto({ wasmProvider: isolatedProvider });
+  const isolatedCrypto = createReallyMeCryptoFacade(() => isolatedProvider);
   const missingProviderCrypto = createReallyMeCrypto();
 
   assert.deepEqual(
@@ -1275,32 +1297,32 @@ test("generic operation response and ProtoJSON lanes match the generated process
 
 test("generic operation response lanes reject aliased and invalid provider outputs", () => {
   const request = new Uint8Array([1, 2, 3]);
-  const aliasingProvider = createReallyMeWasmProvider({
+  const aliasingProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     processOperationResponse: () => request,
   });
   const oversizedResponse = new Uint8Array(1_048_609).fill(0xa5);
-  const invalidResponseProvider = createReallyMeWasmProvider({
+  const invalidResponseProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     processOperationResponse: () => oversizedResponse,
     processOperationResponseJson: () => new Uint8Array(),
   });
 
   assertReallyMeError(
-    () => createReallyMeCrypto({ wasmProvider: aliasingProvider }).processOperationResponse(request),
+    () => createReallyMeCryptoFacade(() => aliasingProvider).processOperationResponse(request),
     "provider-failure",
   );
   assert.deepEqual(request, new Uint8Array([1, 2, 3]));
   assertReallyMeError(
     () =>
-      createReallyMeCrypto({ wasmProvider: invalidResponseProvider })
+      createReallyMeCryptoFacade(() => invalidResponseProvider)
         .processOperationResponse(new Uint8Array([4])),
     "provider-failure",
   );
   assert.deepEqual(oversizedResponse, new Uint8Array(oversizedResponse.length));
   assertReallyMeError(
     () =>
-      createReallyMeCrypto({ wasmProvider: invalidResponseProvider })
+      createReallyMeCryptoFacade(() => invalidResponseProvider)
         .processOperationResponseJson(new Uint8Array([5])),
     "provider-failure",
   );
@@ -1598,6 +1620,25 @@ test("X25519 JWK identity rejects the masked high-bit alias", () => {
   const jwk = JSON.parse(vectorString(vector, "jwk_jcs"));
   jwk.x = Buffer.from(aliased).toString("base64url");
   assertReallyMeError(() => ReallyMeJwk.fromJwk(jwk), "invalid-input");
+});
+
+test("Ed25519 JWK identity rejects torsion and noncanonical point aliases", () => {
+  const identity = new Uint8Array(32);
+  identity[0] = 1;
+  const aliasedIdentity = new Uint8Array(32).fill(0xff);
+  aliasedIdentity[0] = 0xee;
+  aliasedIdentity[31] = 0x7f;
+  for (const invalid of [identity, aliasedIdentity, new Uint8Array(32)]) {
+    assertReallyMeError(() => ReallyMeJwk.toJwk("Ed25519", invalid), "invalid-input");
+    assertReallyMeError(
+      () => ReallyMeJwk.fromJwk({
+        kty: "OKP",
+        crv: "Ed25519",
+        x: Buffer.from(invalid).toString("base64url"),
+      }),
+      "invalid-input",
+    );
+  }
 });
 
 test("X25519 JWK identity rejects field elements at or above p", () => {
@@ -1899,23 +1940,14 @@ test("generic facade HMAC known answers", () => {
     hex(sha256Tag),
     "b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7",
   );
-  assert.equal(
-    ReallyMeCrypto.verifyMac("HMAC-SHA-384", sha384Tag, key, message),
-    true,
-  );
+  assert.doesNotThrow(() => ReallyMeCrypto.verifyMac("HMAC-SHA-384", sha384Tag, key, message));
   assert.equal(
     hex(sha512Tag),
     "87aa7cdea5ef619d4ff0b4241a1d6cb02379f4e2ce4ec2787ad0b30545e17cd" +
       "edaa833b7d6b8a702038b274eaea3f4e4be9d914eeb61f1702e696c203a126854",
   );
-  assert.equal(
-    ReallyMeCrypto.verifyMac("HMAC-SHA-256", sha256Tag, key, message),
-    true,
-  );
-  assert.equal(
-    ReallyMeCrypto.verifyMac("HMAC-SHA-512", sha512Tag, key, message),
-    true,
-  );
+  assert.doesNotThrow(() => ReallyMeCrypto.verifyMac("HMAC-SHA-256", sha256Tag, key, message));
+  assert.doesNotThrow(() => ReallyMeCrypto.verifyMac("HMAC-SHA-512", sha512Tag, key, message));
 });
 
 test("generic facade HMAC rejects invalid input and tampering", () => {
@@ -1924,7 +1956,10 @@ test("generic facade HMAC rejects invalid input and tampering", () => {
   const tag = ReallyMeCrypto.authenticate("HMAC-SHA-256", key, message);
   tag[0] ^= 0x01;
 
-  assert.equal(ReallyMeCrypto.verifyMac("HMAC-SHA-256", tag, key, message), false);
+  assertReallyMeError(
+    () => ReallyMeCrypto.verifyMac("HMAC-SHA-256", tag, key, message),
+    "authentication-failed",
+  );
   assert.throws(
     () => ReallyMeCrypto.authenticate("HMAC-SHA-256", new Uint8Array(), message),
     (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
@@ -2348,7 +2383,7 @@ test("kmac256 rejects and wipes invalid provider output lengths", () => {
   const customization = base64UrlBytes(vectorString(kmac256Vector, "customization"));
   const outputLength = vectorNumber(kmac256Vector, "output_length");
   const invalidOutput = new Uint8Array(outputLength - 1).fill(0xa5);
-  const invalidProvider = createReallyMeWasmProvider({
+  const invalidProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     kmac256Derive: () => invalidOutput,
   });
@@ -2373,7 +2408,7 @@ test("kmac256 rejects aliased provider output without clearing caller input", ()
   const context = new Uint8Array([1, 2, 3]);
   const customization = new Uint8Array([4, 5, 6]);
   const originalStorage = storage.slice();
-  const aliasingProvider = createReallyMeWasmProvider({
+  const aliasingProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     kmac256Derive: () => storage.subarray(16, 48),
   });
@@ -2395,7 +2430,7 @@ test("kmac256 rejects aliased provider output without clearing caller input", ()
 test("kmac256 rejects oversized boundary inputs before provider dispatch", () => {
   const validKey = new Uint8Array(32);
   let providerCalled = false;
-  const provider = createReallyMeWasmProvider({
+  const provider = createWasmProviderFromModule({
     ...wasmProviderModule,
     kmac256Derive: () => {
       providerCalled = true;
@@ -2429,7 +2464,7 @@ test("WASM provider construction requires every advertised algorithm hook", () =
     const incompleteModule = { ...wasmProviderModule };
     delete incompleteModule[hook];
     assertReallyMeError(
-      () => createReallyMeWasmProvider(incompleteModule),
+      () => createWasmProviderFromModule(incompleteModule),
       "provider-failure",
     );
   }
@@ -2467,7 +2502,7 @@ test("aes-kw rejects provider outputs with invalid lengths", () => {
   const wrappedKey = base64UrlBytes(vectorString(aes256KwVector, "wrapped_key"));
   const invalidWrappedOutput = new Uint8Array(wrappedKey.length - 1).fill(0x5a);
   const invalidPlaintextOutput = new Uint8Array(keyData.length + 1).fill(0xa5);
-  const invalidProvider = createReallyMeWasmProvider({
+  const invalidProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     aes256KwWrapKey: () => invalidWrappedOutput,
     aes256KwUnwrapKey: () => invalidPlaintextOutput,
@@ -2507,7 +2542,7 @@ test("aes-kw rejects aliased provider output without clearing caller input", () 
   const keyToWrap = wrapStorage.subarray(0, 32);
   const originalWrappingKey = wrappingKey.slice();
   const originalWrapStorage = wrapStorage.slice();
-  const aliasingProvider = createReallyMeWasmProvider({
+  const aliasingProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     aes256KwWrapKey: () => wrapStorage,
     aes256KwUnwrapKey: () => wrappingKey,

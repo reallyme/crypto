@@ -151,6 +151,9 @@ public final class ReallyMeRustCAbiLibrary: Sendable {
         return try linked(rmCryptoEd25519SignLinked as LinkedSignFunction, as: type)
       case .ed25519Verify:
         return try linked(rmCryptoEd25519VerifyLinked as LinkedVerifyFunction, as: type)
+      case .ed25519DecodePublicKey:
+        return try linked(
+          rmCryptoEd25519DecodePublicKeyLinked as LinkedDecodePublicKeyFunction, as: type)
       case .p256GenerateKeypair:
         return try linked(
           rmCryptoP256GenerateKeypairLinked as LinkedGenerateKeyPairFunction, as: type)

@@ -11,6 +11,7 @@ import {
   ReallyMeCodecError,
 } from "@reallyme/codec";
 import { ReallyMeCryptoError } from "./errors.js";
+import { validateEd25519PublicKeyIdentity } from "./ed25519.js";
 
 export type ReallyMeJwkAlgorithm =
   | "Ed25519"
@@ -320,6 +321,9 @@ export const ReallyMeJwk = {
   toJwk(algorithm: ReallyMeJwkAlgorithm, publicKey: Uint8Array): ReallyMeJwk {
     const spec = jwkSpec(algorithm);
     ensureLength(publicKey, spec.publicKeyLength);
+    if (algorithm === "Ed25519") {
+      validateEd25519PublicKeyIdentity(publicKey);
+    }
     if (algorithm === "X25519" && !isCanonicalX25519Identity(publicKey)) {
       throw new ReallyMeCryptoError("invalid-input");
     }

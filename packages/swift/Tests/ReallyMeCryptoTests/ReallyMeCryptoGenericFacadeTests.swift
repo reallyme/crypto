@@ -455,26 +455,25 @@ extension ReallyMeCryptoTests {
           + "edaa833b7d6b8a702038b274eaea3f4e4be9d914eeb61f1702e696c203a126854"
       )
     )
-    XCTAssertTrue(
-      try ReallyMeCrypto.verifyMac(.hmacSha384, tag: sha384Tag, key: key, message: message)
-    )
-    XCTAssertTrue(
-      try ReallyMeCrypto.verifyMac(.hmacSha256, tag: sha256Tag, key: key, message: message)
-    )
-    XCTAssertTrue(
-      try ReallyMeCrypto.verifyMac(.hmacSha512, tag: sha512Tag, key: key, message: message)
-    )
+    try ReallyMeCrypto.verifyMac(.hmacSha384, tag: sha384Tag, key: key, message: message)
+    try ReallyMeCrypto.verifyMac(.hmacSha256, tag: sha256Tag, key: key, message: message)
+    try ReallyMeCrypto.verifyMac(.hmacSha512, tag: sha512Tag, key: key, message: message)
   }
 
   func testGenericFacadeHmacRejectsInvalidInputAndTampering() throws {
     let key = Self.bytes("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b")
     let message = Self.bytes("4869205468657265")
-    var tag = try ReallyMeCrypto.authenticate(.hmacSha256, key: key, message: message)
-    tag[0] ^= 0x01
-
-    XCTAssertFalse(
-      try ReallyMeCrypto.verifyMac(.hmacSha256, tag: tag, key: key, message: message)
-    )
+    for algorithm in [
+      ReallyMeMacAlgorithm.hmacSha256, .hmacSha384, .hmacSha512,
+    ] {
+      var tag = try ReallyMeCrypto.authenticate(algorithm, key: key, message: message)
+      tag[0] ^= 0x01
+      XCTAssertThrowsError(
+        try ReallyMeCrypto.verifyMac(algorithm, tag: tag, key: key, message: message)
+      ) { error in
+        XCTAssertEqual(error as? ReallyMeCryptoError, .authenticationFailed)
+      }
+    }
     XCTAssertThrowsError(
       try ReallyMeCrypto.authenticate(.hmacSha256, key: [], message: message)
     ) { error in

@@ -10,7 +10,8 @@ use envelopes_jwk::{
 
 #[test]
 fn jwks_wraps_public_keys() {
-    let public_key = [7_u8; 32];
+    let public_key =
+        codec_base64url::base64url_to_bytes("bd_77DacquIWpfuZCAps4BN5nYvqANOYBNepDXNQLYI").unwrap();
     let ed25519 = ed25519_public_key_to_jwk(&public_key, JwkOptions::default()).unwrap();
     let jwks = Jwks::new(vec![Jwk::Okp(ed25519.into())]);
 

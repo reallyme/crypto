@@ -33,8 +33,9 @@
   WASM provider installation to the package's initialized module.
 - Requires prime-subgroup public and signature points for Ed25519 verification
   across Rust, TypeScript, and Kotlin, with shared rejection cases for
-  torsion-bearing signatures. Failed WASM HPKE opens now return a typed
-  authentication error.
+  torsion-bearing signatures. JWK and multikey encoding and parsing reject
+  noncanonical, low-order, and non-prime-subgroup Ed25519 public keys in every
+  package lane. Failed WASM HPKE opens now return a typed authentication error.
 - Bounds PBKDF2's combined iteration and output-block work before derivation
   in Rust, Swift, Kotlin, and TypeScript. Over-limit requests fail with typed
   errors before provider dispatch; the Rust umbrella facade preserves the
@@ -49,6 +50,10 @@
   consistency in all SDKs.
 - Keeps the TypeScript package synchronously loadable through Node's CommonJS
   bridge and uses a static reference to its package-owned WASM module.
+- Restricts explicit TypeScript facade providers to the initialized package
+  WASM module. MAC verification in Swift, Kotlin, and TypeScript now returns
+  without a value on success and throws a typed authentication error for an
+  invalid tag, so an ignored result cannot authorize a forged message.
 - Serializes Android Keystore key generation and deletion on one lock and
   rejects software JCA objects at the hardware key-agreement completion API.
 - Caps Swift and Kotlin protobuf value-envelope byte decoders at one megabyte,

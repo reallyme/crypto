@@ -277,3 +277,25 @@ fn x25519_rfc7748_vector_matches_dispatch() {
         .expect("dispatch derive must succeed");
     assert_eq!(*shared, shared_expected);
 }
+
+#[test]
+fn x25519_raw_dispatch_follows_rfc7748_u_coordinate_decoding() {
+    let secret = hex::decode("77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c2a")
+        .expect("RFC 7748 secret must decode");
+    let mut canonical = [0_u8; 32];
+    canonical[0] = 2;
+    let mut high_bit_alias = canonical;
+    high_bit_alias[31] = 0x80;
+    let mut field_alias = [0xff_u8; 32];
+    field_alias[0] = 0xef;
+    field_alias[31] = 0x7f;
+
+    let expected = derive_shared_secret(Algorithm::X25519, &secret, &canonical)
+        .expect("canonical u coordinate must derive");
+    let masked = derive_shared_secret(Algorithm::X25519, &secret, &high_bit_alias)
+        .expect("high-bit masking must derive");
+    let reduced = derive_shared_secret(Algorithm::X25519, &secret, &field_alias)
+        .expect("noncanonical field encoding must derive");
+    assert_eq!(expected, masked);
+    assert_eq!(expected, reduced);
+}

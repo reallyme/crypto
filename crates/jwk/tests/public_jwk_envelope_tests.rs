@@ -4,7 +4,7 @@
 
 #![allow(clippy::expect_used, clippy::panic, missing_docs)]
 
-use codec_base64url::bytes_to_base64url;
+use codec_base64url::{base64url_to_bytes, bytes_to_base64url};
 use envelopes_jwk::{
     ed25519_public_key_to_jwk, p256::p256_public_key_to_jwk, secp256k1_public_key_to_jwk,
     x25519_public_key_to_jwk, Jwk, JwkOptions, JwtError,
@@ -23,6 +23,11 @@ const SECP256K1_GENERATOR_COMPRESSED: [u8; 33] = [
     0x98,
 ];
 
+fn valid_ed25519_public_key() -> Vec<u8> {
+    base64url_to_bytes("bd_77DacquIWpfuZCAps4BN5nYvqANOYBNepDXNQLYI")
+        .expect("conformance public key")
+}
+
 #[test]
 fn ec_jwk_rejects_mismatched_same_parity_y_coordinates() {
     assert_ec_wrong_y_rejected(CurveCase::P256, YMutation::SameParity);
@@ -37,8 +42,8 @@ fn ec_jwk_rejects_mismatched_opposite_parity_y_coordinates() {
 
 #[test]
 fn okp_jwk_rejects_conflicting_alg_and_use_when_present() {
-    let ed25519 =
-        ed25519_public_key_to_jwk(&[0x11; 32], JwkOptions::default()).expect("valid Ed25519 JWK");
+    let ed25519 = ed25519_public_key_to_jwk(&valid_ed25519_public_key(), JwkOptions::default())
+        .expect("valid Ed25519 JWK");
     let mut ed25519_as_x25519 =
         serde_json::to_value(&ed25519).expect("JWK serializes for mutation");
     ed25519_as_x25519["alg"] = json!("ECDH-ES");
@@ -67,7 +72,7 @@ fn okp_jwk_rejects_conflicting_alg_and_use_when_present() {
 #[test]
 fn okp_jwk_allows_matching_or_omitted_alg_and_use() {
     let ed25519 = ed25519_public_key_to_jwk(
-        &[0x33; 32],
+        &valid_ed25519_public_key(),
         JwkOptions {
             alg: true,
             use_sig: true,
@@ -77,13 +82,40 @@ fn okp_jwk_allows_matching_or_omitted_alg_and_use() {
     .expect("valid Ed25519 JWK");
     let jwk: Jwk = serde_json::from_value(serde_json::to_value(&ed25519).expect("serialize"))
         .expect("matching Ed25519 metadata parses");
-    assert_eq!(jwk.public_key_bytes().expect("valid key"), [0x33; 32]);
+    assert_eq!(
+        jwk.public_key_bytes().expect("valid key"),
+        valid_ed25519_public_key()
+    );
 
     let x25519 =
         x25519_public_key_to_jwk(&[0x44; 32], JwkOptions::default()).expect("valid X25519 JWK");
     let jwk: Jwk = serde_json::from_value(serde_json::to_value(&x25519).expect("serialize"))
         .expect("omitted X25519 alg parses");
     assert_eq!(jwk.public_key_bytes().expect("valid key"), [0x44; 32]);
+}
+
+#[test]
+fn ed25519_jwk_rejects_torsion_and_noncanonical_point_aliases() {
+    let mut identity = [0_u8; 32];
+    identity[0] = 1;
+    let mut aliased_identity = [0xff_u8; 32];
+    aliased_identity[0] = 0xee;
+    aliased_identity[31] = 0x7f;
+    for invalid in [identity, aliased_identity, [0_u8; 32]] {
+        assert_eq!(
+            ed25519_public_key_to_jwk(&invalid, JwkOptions::default()).err(),
+            Some(JwtError::InvalidEd25519Key)
+        );
+        let jwk = Jwk::Okp(envelopes_jwk::OkpJwk {
+            kty: "OKP".to_owned(),
+            crv: "Ed25519".to_owned(),
+            x: bytes_to_base64url(&invalid),
+            alg: None,
+            use_: None,
+            kid: None,
+        });
+        assert_eq!(jwk.public_key_bytes(), Err(JwtError::InvalidEd25519Key));
+    }
 }
 
 #[test]

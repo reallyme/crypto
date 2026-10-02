@@ -101,12 +101,13 @@ internal object ReallyMeCryptoSymmetricFacade {
         tag: ByteArray,
         key: ByteArray,
         message: ByteArray,
-    ): Boolean =
+    ) {
         when (algorithm) {
             ReallyMeMacAlgorithm.HMAC_SHA256 -> ReallyMeHmac.verifySha256(tag, key, message)
             ReallyMeMacAlgorithm.HMAC_SHA384 -> ReallyMeHmac.verifySha384(tag, key, message)
             ReallyMeMacAlgorithm.HMAC_SHA512 -> ReallyMeHmac.verifySha512(tag, key, message)
         }
+    }
 
     internal fun deriveKey(
         algorithm: ReallyMeKdfAlgorithm,

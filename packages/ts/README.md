@@ -44,8 +44,9 @@ and others — are backed by a WASM module that ships prebuilt with the package.
 
 Applications may install the package's initialized WASM module once for the
 package-level `ReallyMeCrypto` convenience API, or build isolated facade
-instances with an explicit, caller-trusted provider object. The global installer
-accepts only this package's module namespace. Missing WASM providers fail closed with
+instances with `createReallyMeWasmProvider` and the same package-owned module.
+Both paths reject replacement verification functions. Explicit facades reject
+structural provider objects; missing or untrusted providers fail with
 `provider-failure`. JWK/JWKS helpers delegate base64url and JCS canonicalization
 to the published `@reallyme/codec` package, so applications that use those
 helpers should also install the Codec WASM provider.
@@ -67,8 +68,8 @@ import {
 } from "@reallyme/crypto";
 import { initSync as initCryptoWasm } from "@reallyme/crypto/wasm/reallyme_crypto_wasm.js";
 
-// The global installer binds to this package's own module namespace. An
-// explicit facade can instead accept a trusted provider after shape checks.
+// Both the global installer and explicit facade bind to this package's
+// initialized module namespace after verifying callable identity.
 const wasmProvider: unknown = await import(
   "@reallyme/crypto/wasm/reallyme_crypto_wasm.js"
 );
@@ -95,15 +96,12 @@ const keyPair = ReallyMeCrypto.generateKemKeyPair("X-Wing-768");
 const isolatedKeyPair = isolatedCrypto.generateKemKeyPair("X-Wing-768");
 ```
 
-The explicit facade form is preferred for Workers, SSR, tests, and multi-bundle
-applications because each instance owns its provider routing and does not depend
-on package-global mutable state.
+The explicit facade form is useful for Workers, SSR, tests, and multi-bundle
+applications because each instance owns its provider routing. The provider
+must come from this package's initialized WASM module.
 
 The package-owned WASM provider derives ML-DSA, ML-KEM, and X-Wing seed-based
 keypairs inside Rust and returns the public key produced by that implementation.
-Custom provider objects are trusted providers: if an application supplies its
-own seed-derived keypair provider, it is responsible for public-key
-correspondence and must be covered by its own conformance evidence.
 
 ## Raw WASM Module Contract
 

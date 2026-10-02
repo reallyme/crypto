@@ -60,7 +60,9 @@ public object ReallyMeCrypto {
         tag: ByteArray,
         key: ByteArray,
         message: ByteArray,
-    ): Boolean = ReallyMeCryptoSymmetricFacade.verifyMac(algorithm, tag, key, message)
+    ) {
+        ReallyMeCryptoSymmetricFacade.verifyMac(algorithm, tag, key, message)
+    }
 
     @JvmStatic
     public fun deriveKey(

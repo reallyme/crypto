@@ -779,6 +779,7 @@ dependencies = [
  "serde",
  "serde_json",
  "shake",
+ "slh-dsa",
  "thiserror",
  "zeroize",
 ]
@@ -1800,6 +1801,7 @@ version = "0.3.10"
 dependencies = [
  "reallyme-codec-base64url",
  "reallyme-codec-jcs",
+ "reallyme-crypto-ed25519",
  "reallyme-crypto-p256",
  "reallyme-crypto-secp256k1",
  "serde",
