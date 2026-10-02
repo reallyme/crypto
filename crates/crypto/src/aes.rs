@@ -5,6 +5,7 @@
 //! AES-GCM facade routes backed by the semantic AEAD operation owner.
 
 use crypto_core::{AeadAlgorithm, CryptoError};
+use zeroize::Zeroizing;
 
 use crate::aead_error::{crypto_error_from_operation_error, invalid_output_error, AeadOperation};
 
@@ -87,6 +88,17 @@ pub fn decrypt(request: &DecryptRequest<'_>) -> Result<Vec<u8>, CryptoError> {
     )
 }
 
+/// Decrypts with AES-256-GCM and wipes plaintext when the owner is dropped.
+pub fn decrypt_zeroizing(request: &DecryptRequest<'_>) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
+    open_zeroizing(
+        AeadAlgorithm::Aes256Gcm,
+        request.key.as_bytes(),
+        request.nonce.as_bytes(),
+        request.aad,
+        request.ciphertext.as_bytes(),
+    )
+}
+
 fn seal(
     algorithm: AeadAlgorithm,
     key: &[u8],
@@ -115,16 +127,24 @@ fn open(
     aad: &[u8],
     ciphertext: &[u8],
 ) -> Result<Vec<u8>, CryptoError> {
-    crate::operations::aead::open(algorithm, key, nonce, aad, ciphertext)
-        .map(|plaintext| plaintext.to_vec())
-        .map_err(|error| {
-            crypto_error_from_operation_error(
-                algorithm,
-                AeadOperation::Open,
-                error,
-                key.len(),
-                nonce.len(),
-                ciphertext.len(),
-            )
-        })
+    open_zeroizing(algorithm, key, nonce, aad, ciphertext).map(|plaintext| plaintext.to_vec())
+}
+
+fn open_zeroizing(
+    algorithm: AeadAlgorithm,
+    key: &[u8],
+    nonce: &[u8],
+    aad: &[u8],
+    ciphertext: &[u8],
+) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
+    crate::operations::aead::open(algorithm, key, nonce, aad, ciphertext).map_err(|error| {
+        crypto_error_from_operation_error(
+            algorithm,
+            AeadOperation::Open,
+            error,
+            key.len(),
+            nonce.len(),
+            ciphertext.len(),
+        )
+    })
 }

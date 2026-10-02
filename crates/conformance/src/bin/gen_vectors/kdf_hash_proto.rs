@@ -215,7 +215,7 @@ fn pbkdf2_vector(
         Pbkdf2Password::from_slice(PBKDF2_PASSWORD, prf).map_err(|_| VectorGenError::Pbkdf2)?;
     let salt = Pbkdf2Salt::from_slice(PBKDF2_SALT, prf).map_err(|_| VectorGenError::Pbkdf2)?;
     let iterations =
-        Pbkdf2Iterations::from_u32(PBKDF2_ITERATIONS, prf).map_err(|_| VectorGenError::Pbkdf2)?;
+        Pbkdf2Iterations::from_u32_conformance_only(PBKDF2_ITERATIONS, prf).map_err(|_| VectorGenError::Pbkdf2)?;
     let derived = derive_pbkdf2_key(&Pbkdf2Request {
         prf,
         password: &password,

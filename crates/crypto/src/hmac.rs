@@ -4,6 +4,7 @@
 
 //! HMAC facade routes backed by the semantic MAC operation owner.
 
+#[cfg(any(feature = "native", feature = "wasm"))]
 use crypto_core::{CryptoError, MacAlgorithm, MacFailureKind, MacHash};
 
 pub use crypto_hmac::{
@@ -12,6 +13,7 @@ pub use crypto_hmac::{
 };
 
 /// Computes an HMAC tag through the operation layer.
+#[cfg(any(feature = "native", feature = "wasm"))]
 pub fn authenticate(
     algorithm: MacAlgorithm,
     key: &HmacKey,
@@ -22,6 +24,7 @@ pub fn authenticate(
 }
 
 /// Verifies an HMAC tag through the operation layer.
+#[cfg(any(feature = "native", feature = "wasm"))]
 pub fn verify(
     algorithm: MacAlgorithm,
     key: &HmacKey,
@@ -32,6 +35,7 @@ pub fn verify(
         .map_err(|error| crypto_error_from_operation_error(algorithm, error))
 }
 
+#[cfg(any(feature = "native", feature = "wasm"))]
 fn crypto_error_from_operation_error(
     algorithm: MacAlgorithm,
     error: crate::operations::OperationError,
@@ -58,6 +62,7 @@ fn crypto_error_from_operation_error(
     }
 }
 
+#[cfg(any(feature = "native", feature = "wasm"))]
 fn mac_hash(algorithm: MacAlgorithm) -> MacHash {
     match algorithm {
         MacAlgorithm::HmacSha256 => MacHash::Sha2_256,

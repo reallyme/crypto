@@ -73,9 +73,12 @@ func mapCodecError(_ error: Error) -> ReallyMeCryptoError {
   // failure stable without leaking the rejected representation.
   case .nonCanonical, .unsupportedIpldValue:
     return .invalidInput
-  // Unsupported Codec capabilities have no safe fallback in this facade.
-  case .providerUnavailable, .unsupportedCodec:
+  // Missing provider capability fails closed; an unknown codec identifier is
+  // malformed caller input and must retain that distinction across lanes.
+  case .providerUnavailable:
     return .unsupportedAlgorithm
+  case .unsupportedCodec:
+    return .invalidInput
   case .providerFailure:
     return .providerFailure
   }

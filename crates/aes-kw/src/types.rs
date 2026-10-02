@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::{AES_128_KW_KEK_LENGTH, AES_192_KW_KEK_LENGTH, AES_256_KW_KEK_LENGTH};
+#[cfg(any(feature = "native", feature = "wasm"))]
 use crate::{
-    AES_128_KW_KEK_LENGTH, AES_192_KW_KEK_LENGTH, AES_256_KW_KEK_LENGTH, AES_KW_BLOCK_LENGTH,
-    AES_KW_INTEGRITY_CHECK_LENGTH, AES_KW_MAX_KEY_DATA_LENGTH, AES_KW_MIN_KEY_DATA_LENGTH,
-    AES_KW_MIN_WRAPPED_KEY_LENGTH,
+    AES_KW_BLOCK_LENGTH, AES_KW_INTEGRITY_CHECK_LENGTH, AES_KW_MAX_KEY_DATA_LENGTH,
+    AES_KW_MIN_KEY_DATA_LENGTH, AES_KW_MIN_WRAPPED_KEY_LENGTH,
 };
 use crypto_core::{CryptoError, KeyWrapAlgorithm, KeyWrapFailureKind, KeyWrapOperation};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
@@ -111,6 +112,7 @@ impl Zeroize for AesKwKeyData {
 impl ZeroizeOnDrop for AesKwKeyData {}
 
 impl AesKwKeyData {
+    #[cfg(any(feature = "native", feature = "wasm"))]
     pub(crate) fn from_zeroizing(
         algorithm: KeyWrapAlgorithm,
         bytes: Zeroizing<Vec<u8>>,
@@ -153,6 +155,7 @@ pub struct AesKwWrappedKey {
 }
 
 impl AesKwWrappedKey {
+    #[cfg(any(feature = "native", feature = "wasm"))]
     pub(crate) fn from_zeroizing(
         algorithm: KeyWrapAlgorithm,
         bytes: Zeroizing<Vec<u8>>,
@@ -203,6 +206,7 @@ pub(crate) fn key_wrap_error(
     }
 }
 
+#[cfg(any(feature = "native", feature = "wasm"))]
 pub(crate) fn validate_plaintext_len(
     algorithm: KeyWrapAlgorithm,
     len: usize,
@@ -219,6 +223,7 @@ pub(crate) fn validate_plaintext_len(
     Ok(())
 }
 
+#[cfg(any(feature = "native", feature = "wasm"))]
 pub(crate) fn validate_wrapped_len(
     algorithm: KeyWrapAlgorithm,
     len: usize,

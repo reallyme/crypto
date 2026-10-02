@@ -156,6 +156,32 @@ fn output_pair_helpers_reject_overlaps_without_writing() {
 }
 
 #[test]
+fn output_registry_rejects_byte_buffer_aliasing_a_length_pointer() {
+    let mut first_output = [0xA5_u8; 16];
+    let mut shared = usize::MAX;
+    let mut second_length = usize::MAX;
+    let shared_ptr = &mut shared as *mut usize;
+
+    let status = ffi_guard(|| {
+        let first_status =
+            validate_output_len_pair(first_output.as_mut_ptr(), first_output.len(), shared_ptr);
+        if first_status != CRYPTO_OK {
+            return first_status;
+        }
+        validate_output_len_pair(
+            shared_ptr.cast::<u8>(),
+            core::mem::size_of::<usize>(),
+            &mut second_length,
+        )
+    });
+
+    assert_eq!(status, CRYPTO_INVALID_ARGUMENT);
+    assert_eq!(first_output, [0xA5_u8; 16]);
+    assert_eq!(shared, usize::MAX);
+    assert_eq!(second_length, usize::MAX);
+}
+
+#[test]
 fn typed_output_writes_reject_null_and_misaligned_pointers() {
     assert_eq!(
         unsafe { write_len(core::ptr::null_mut(), 1) },

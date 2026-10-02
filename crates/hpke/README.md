@@ -21,11 +21,13 @@ swapped accidentally. The single-shot PSK APIs remain source-compatible.
 They delegate to these same live context paths and do not maintain a parallel
 PSK key schedule.
 
-`derive_keypair_from_ikm` accepts non-empty arbitrary-length MLS input keying
-material and delegates normalization to the selected KEM's registered HPKE
+`derive_keypair_from_ikm` accepts MLS input keying material of at least 32 bytes
+and delegates normalization to the selected KEM's registered HPKE
 `DeriveKeyPair` procedure. The stricter `derive_keypair` entry point
 continues to require suite-sized input for callers whose protocol already owns
-that contract.
+that contract. Callers of the raw primitive must still supply secret IKM with
+at least 256 bits of entropy; its length check cannot establish entropy. The
+raw and operation entry points both reject shorter, trivially enumerable input.
 
 HPKE derives the AEAD key and 12-byte nonce inside the sender and receiver
 contexts. `HpkeSealRequest` therefore has no nonce field, and callers cannot

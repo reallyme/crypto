@@ -18,6 +18,7 @@ pub use encoding::{
     encode_secp256k1_public_key,
 };
 pub use key_agreement::{derive_secp256k1_shared_secret, Secp256k1SharedSecret};
+#[allow(deprecated)] // The compatibility export remains available for existing callers.
 pub use keypair::{
     generate_secp256k1_keypair, generate_secp256k1_keypair_from_secret_key,
     try_generate_secp256k1_keypair,

@@ -78,6 +78,7 @@ mod identifier;
 ))]
 mod kdf;
 #[cfg(all(
+    any(feature = "native", feature = "wasm"),
     feature = "dispatch",
     any(
         feature = "ml-kem-512",
@@ -88,6 +89,7 @@ mod kdf;
 ))]
 mod kem_algorithms;
 #[cfg(all(
+    any(feature = "native", feature = "wasm"),
     feature = "dispatch",
     any(
         feature = "x25519",
@@ -198,6 +200,7 @@ mod request_symmetric;
 ))]
 mod response;
 #[cfg(all(
+    any(feature = "native", feature = "wasm"),
     feature = "dispatch",
     any(
         feature = "rsa",
@@ -214,6 +217,7 @@ mod response;
 ))]
 mod signature;
 #[cfg(all(
+    any(feature = "native", feature = "wasm"),
     feature = "dispatch",
     any(
         feature = "rsa",

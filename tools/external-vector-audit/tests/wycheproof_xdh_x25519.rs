@@ -62,6 +62,7 @@ fn wycheproof_x25519_vectors_execute_against_public_api() -> Result<(), AuditErr
     let file: WycheproofFile<XdhGroup> = load_json("wycheproof/x25519_test.json")?;
     let mut executed = 0usize;
     let mut policy_rejections = 0usize;
+    let mut acceptable = 0usize;
 
     for group in &file.test_groups {
         if group.curve != "curve25519" {
@@ -69,9 +70,6 @@ fn wycheproof_x25519_vectors_execute_against_public_api() -> Result<(), AuditErr
         }
         for case in &group.tests {
             let must_reject = case.must_reject_zero_shared_secret();
-            if case.result == WycheproofResult::Acceptable && !must_reject {
-                continue;
-            }
             let private_key = hex_bytes(&case.private)?;
             let public_key = hex_bytes(&case.public)?;
             let derived = derive_x25519_shared_secret(&private_key, &public_key);
@@ -93,7 +91,14 @@ fn wycheproof_x25519_vectors_execute_against_public_api() -> Result<(), AuditErr
                         return Err(AuditError::Mismatch);
                     }
                 }
-                (WycheproofResult::Acceptable, false) => {}
+                (WycheproofResult::Acceptable, false) => {
+                    if let Ok(shared) = derived {
+                        assert_bytes_eq(shared.as_slice(), &hex_bytes(&case.shared)?)?;
+                    }
+                    acceptable = acceptable
+                        .checked_add(1)
+                        .ok_or(AuditError::NoExecutableVectors)?;
+                }
             }
             executed = executed
                 .checked_add(1)
@@ -101,7 +106,9 @@ fn wycheproof_x25519_vectors_execute_against_public_api() -> Result<(), AuditErr
         }
     }
 
-    if executed == 0 || policy_rejections == 0 {
+    // The remaining 31 acceptable cases carry ZeroSharedSecret and are
+    // counted as policy rejections above.
+    if executed == 0 || policy_rejections == 0 || acceptable != 223 {
         return Err(AuditError::NoExecutableVectors);
     }
     Ok(())

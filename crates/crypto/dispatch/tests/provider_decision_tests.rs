@@ -6,11 +6,14 @@
 
 use crypto_core::Algorithm;
 use crypto_dispatch::{
-    provider_decision, FallbackPolicy, KeyCopyBoundary, KeyResidency, ProviderDisposition,
-    ProviderKind, ProviderOperation, ProviderOutputPolicy, ProviderPolicyReason,
+    provider_decision, FallbackPolicy, ProviderDisposition, ProviderOperation, ProviderPolicyReason,
 };
+#[cfg(all(feature = "native", any(feature = "ed25519", feature = "ml-kem-512")))]
+use crypto_dispatch::{KeyCopyBoundary, ProviderOutputPolicy};
+#[cfg(all(feature = "native", feature = "ed25519"))]
+use crypto_dispatch::{KeyResidency, ProviderKind};
 
-#[cfg(feature = "ed25519")]
+#[cfg(all(feature = "ed25519", feature = "native"))]
 #[test]
 fn selected_provider_records_lane_custody_copy_and_fallback_policy() {
     let decision = provider_decision(ProviderOperation::Sign, Algorithm::Ed25519);
@@ -57,7 +60,7 @@ fn disabled_provider_is_rejected_without_fallback() {
     assert_eq!(decision.fallback, FallbackPolicy::Prohibited);
 }
 
-#[cfg(feature = "ml-kem-512")]
+#[cfg(all(feature = "ml-kem-512", feature = "native"))]
 #[test]
 fn secret_output_policy_is_explicit_for_kem_encapsulation() {
     let decision = provider_decision(ProviderOperation::KemEncapsulate, Algorithm::MlKem512);
@@ -67,5 +70,32 @@ fn secret_output_policy_is_explicit_for_kem_encapsulation() {
     assert_eq!(
         decision.output_policy,
         ProviderOutputPolicy::ZeroizingSecret
+    );
+}
+
+#[cfg(all(feature = "ed25519", not(any(feature = "native", feature = "wasm"))))]
+#[test]
+fn backendless_feature_cannot_claim_a_selected_provider() {
+    let decision = provider_decision(ProviderOperation::Sign, Algorithm::Ed25519);
+    assert_eq!(decision.disposition, ProviderDisposition::Rejected);
+    assert_eq!(
+        decision.reason,
+        ProviderPolicyReason::RejectedFeatureDisabled
+    );
+}
+
+#[cfg(all(
+    feature = "wasm",
+    not(feature = "native"),
+    target_arch = "wasm32",
+    feature = "p384"
+))]
+#[test]
+fn wasm_only_lane_rejects_native_only_key_derivation() {
+    let decision = provider_decision(ProviderOperation::DeriveKeyPair, Algorithm::P384);
+    assert_eq!(decision.disposition, ProviderDisposition::Rejected);
+    assert_eq!(
+        decision.reason,
+        ProviderPolicyReason::RejectedFeatureDisabled
     );
 }

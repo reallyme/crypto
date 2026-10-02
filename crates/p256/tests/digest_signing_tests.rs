@@ -179,6 +179,7 @@ fn canonical_digest_verifier_rejects_high_s_twin() -> Result<(), CryptoError> {
     let (public_key, _) = generate_p256_keypair_from_secret_key(&SECRET_KEY)?;
     let digest = Sha256::digest(MESSAGE);
     let signature = sign_p256_digest_der(&SECRET_KEY, digest.as_ref())?;
+    verify_p256_digest_der(&signature, digest.as_ref(), &public_key)?;
     let mut compact = p256_ecdsa_der_to_jose_signature(&signature)?;
     let high_s = subtract_scalar(&P256_ORDER, &compact[32..]);
     compact[32..].copy_from_slice(&high_s);

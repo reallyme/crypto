@@ -241,6 +241,27 @@ class ReallyMeCryptoSignatureTest : ReallyMeCryptoTestSupport() {
     }
 
     @Test
+    fun ed25519ValidLengthCctvInputsReportSignatureFailure() {
+        val cases = listOf(
+            Triple(
+                "edffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "fa9dde274f4820efb19a890f8ba2d8791710a4303ceef4aedf9dddc4e81a1f1105ba9a796274d80437afa36f1236563f2f3b0aa84cecddc3d20914615ba4fe02",
+                "ed25519vectors 10",
+            ),
+            Triple(
+                "26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc85",
+                "edffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000000000000000000000000000",
+                "ed25519vectors 2",
+            ),
+        )
+        for ((publicKey, signature, message) in cases) {
+            assertFailsWith<ReallyMeCryptoException.InvalidSignature> {
+                ReallyMeEd25519.verify(bytes(signature), message.toByteArray(), bytes(publicKey))
+            }
+        }
+    }
+
+    @Test
     fun ed25519DerivePublicKeyKnownAnswer() {
         assertContentEquals(
             ed25519PublicKey,

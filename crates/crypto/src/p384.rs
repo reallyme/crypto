@@ -11,10 +11,12 @@ use crate::key_agreement_error::crypto_error_from_derive_shared_secret_operation
 use crate::signature_error::crypto_error_from_operation_error;
 
 pub use crypto_p384::{
-    compress_p384, compress_public_key, decompress_p384, decompress_public_key,
     P384_PUBLIC_KEY_COMPRESSED_LEN, P384_PUBLIC_KEY_RAW_LEN, P384_PUBLIC_KEY_UNCOMPRESSED_LEN,
     P384_SECRET_KEY_LEN, P384_SHARED_SECRET_LEN, P384_SIGNATURE_DER_MAX_LEN,
 };
+
+#[cfg(any(feature = "native", feature = "wasm"))]
+pub use crypto_p384::{compress_p384, compress_public_key, decompress_p384, decompress_public_key};
 
 /// Generate a P-384 ECDSA keypair through the signature operation owner.
 pub fn generate_p384_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {

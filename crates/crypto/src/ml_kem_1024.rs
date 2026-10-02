@@ -13,6 +13,7 @@ use crate::kem_error::{
     crypto_error_from_kem_key_generation_operation_error,
 };
 
+#[cfg(any(feature = "native", feature = "wasm"))]
 pub use crypto_ml_kem_1024::{ML_KEM_1024_PUBLIC_KEY_LEN, ML_KEM_1024_SECRET_KEY_LEN};
 
 /// Generate an ML-KEM-1024 keypair through the KEM operation owner.
@@ -23,6 +24,7 @@ pub fn generate_ml_kem_1024_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), C
 }
 
 /// Reconstruct an ML-KEM-1024 keypair from a 64-byte FIPS 203 seed.
+#[cfg(any(feature = "native", feature = "wasm"))]
 pub fn generate_ml_kem_1024_keypair_from_seed(
     seed: &[u8; ML_KEM_1024_SECRET_KEY_LEN],
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {

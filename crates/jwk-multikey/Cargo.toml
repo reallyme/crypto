@@ -17,7 +17,7 @@ description = "JWK and Multikey public-key envelope conversion for ReallyMe Cryp
 name = "envelopes_jwk_multikey"
 
 [features]
-default = []
+default = ["native"]
 
 native = ["envelopes-jwk/native"]
 

@@ -19,7 +19,9 @@ export const HPKE_P256_PUBLIC_KEY_LENGTH = 65;
 export const HPKE_X25519_PRIVATE_KEY_LENGTH = 32;
 export const HPKE_X25519_PUBLIC_KEY_LENGTH = 32;
 export const HPKE_AEAD_TAG_LENGTH = 16;
-export const HPKE_INFO_MAX_LENGTH = 65_530;
+// HKDF-based HPKE suites accept info beyond a u16 length; the package-wide
+// input limit is the resource boundary for this public parameter.
+export const HPKE_INFO_MAX_LENGTH = MAX_CRYPTO_INPUT_LENGTH;
 
 export type ReallyMeHpkeSealedMessage = Readonly<{
   encapsulatedKey: Uint8Array;

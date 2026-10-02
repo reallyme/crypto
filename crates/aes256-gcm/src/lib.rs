@@ -21,6 +21,6 @@ mod native;
 
 #[cfg(any(feature = "native", feature = "wasm"))]
 pub use native::{
-    decrypt, decrypt_aes128_gcm, decrypt_aes192_gcm, encrypt, encrypt_aes128_gcm,
-    encrypt_aes192_gcm,
+    decrypt, decrypt_aes128_gcm, decrypt_aes192_gcm, decrypt_zeroizing, encrypt,
+    encrypt_aes128_gcm, encrypt_aes192_gcm,
 };

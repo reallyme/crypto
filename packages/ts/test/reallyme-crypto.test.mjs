@@ -335,6 +335,14 @@ test("explicit facades reject untrusted WASM verification providers", () => {
   assert.equal(Object.isFrozen(installedWasmProvider), true);
 });
 
+test("crypto facades cannot have verification methods replaced", () => {
+  const facade = createReallyMeCrypto({ wasmProvider: installedWasmProvider });
+  assert.equal(Object.isFrozen(facade), true);
+  assert.throws(() => {
+    facade.verify = () => undefined;
+  }, TypeError);
+});
+
 test("package-global WASM provider is frozen after first install", () => {
   assertReallyMeError(
     () => installReallyMeWasmProvider(wasmProviderModule),
@@ -1079,6 +1087,20 @@ test("proto decoders own their byte fields after the wire buffer is cleared", ()
   }
 });
 
+test("proto value decoders reject oversized wire inputs before parsing", () => {
+  const oversized = new Uint8Array(1_048_577);
+  for (const decode of [
+    signatureKeyPairFromProtoBytes,
+    keyAgreementKeyPairFromProtoBytes,
+    kemKeyPairFromProtoBytes,
+    kemEncapsulationFromProtoBytes,
+    hpkeSealedMessageFromProtoBytes,
+    verificationResultFromProtoBytes,
+  ]) {
+    assertReallyMeError(() => decode(oversized), "invalid-input");
+  }
+});
+
 test("proto adapters round-trip verification and provider capability envelopes", () => {
   const algorithm = signatureKeyPairToProto("Ed25519", {
     publicKey: new Uint8Array([1]),
@@ -1230,6 +1252,9 @@ const slhDsaVector = JSON.parse(
 );
 const jwkVector = JSON.parse(
   readFileSync(new URL("../../../vectors/jwk.json", import.meta.url), "utf8"),
+);
+const jwkPolicyVector = JSON.parse(
+  readFileSync(new URL("../../../vectors/jwk_policy.json", import.meta.url), "utf8"),
 );
 const p256Vector = JSON.parse(
   readFileSync(new URL("../../../vectors/p256.json", import.meta.url), "utf8"),
@@ -1611,6 +1636,18 @@ test("JWK vectors match the TypeScript package facade", () => {
   }
 });
 
+test("shared JWK metadata policy", () => {
+  for (const jwk of jwkPolicyVector.valid_jwk) {
+    assert.ok(ReallyMeJwk.fromJwk(jwk).publicKey.length > 0);
+  }
+  for (const jwk of jwkPolicyVector.invalid_jwk) {
+    assertReallyMeError(() => ReallyMeJwk.fromJwk(jwk), "invalid-input");
+  }
+  for (const jwks of jwkPolicyVector.valid_jwks) {
+    assert.equal(ReallyMeJwk.fromJwks(jwks).keys.length, 1);
+  }
+});
+
 test("X25519 JWK identity rejects the masked high-bit alias", () => {
   const vector = jwkVector.vectors.find((entry) => entry.alg === "X25519");
   assert.ok(vector);
@@ -1731,9 +1768,9 @@ test("JWK facade rejects malformed public-key inputs", () => {
       }),
     "invalid-input",
   );
-  assertReallyMeError(
-    () => ReallyMeJwk.fromJwks({ keys: [ed25519Jwk], unknown: "value" }),
-    "invalid-input",
+  assert.equal(
+    ReallyMeJwk.fromJwks({ keys: [ed25519Jwk], unknown: "value" }).keys.length,
+    1,
   );
   const hostileProxy = new Proxy({}, {
     ownKeys: () => {
@@ -2635,6 +2672,32 @@ test("hpke vectors seal and open through WASM", () => {
   }
 });
 
+test("HPKE accepts HKDF info beyond the former u16-sized boundary", () => {
+  const vector = hpkeCase("x25519_sha256_chacha20poly1305");
+  const recipientSecretKey = base64UrlBytes(vectorString(vector, "recipient_secret_key"));
+  const recipientPublicKey = base64UrlBytes(vectorString(vector, "recipient_public_key"));
+  const info = new Uint8Array(65_531).fill(0x4f);
+  const sealed = ReallyMeHpke.sealBase(
+    "DHKEM-X25519-HKDF-SHA256-HKDF-SHA256-CHACHA20-POLY1305",
+    recipientPublicKey,
+    info,
+    new Uint8Array(),
+    Uint8Array.of(0x42),
+  );
+
+  assert.deepEqual(
+    ReallyMeHpke.openBase(
+      "DHKEM-X25519-HKDF-SHA256-HKDF-SHA256-CHACHA20-POLY1305",
+      recipientSecretKey,
+      sealed.encapsulatedKey,
+      info,
+      new Uint8Array(),
+      sealed.ciphertext,
+    ),
+    Uint8Array.of(0x42),
+  );
+});
+
 test("hpke rejects malformed and tampered inputs through typed errors", () => {
   const vector = hpkeCase("p256_sha256_aes256gcm");
   const recipientSecretKey = base64UrlBytes(vectorString(vector, "recipient_secret_key"));
@@ -3379,6 +3442,20 @@ test("ed25519 matches the strict CCTV acceptance set", () => {
       assert.ok(error.code === "invalid-input" || error.code === "invalid-signature");
     }
     assert.equal(accepted, flags.length === 0, `CCTV vector ${vector.number}`);
+  }
+});
+
+test("ed25519 reports valid-length CCTV 226 and 526 as signature failures", () => {
+  const vectors = JSON.parse(
+    readFileSync(new URL("../../../vectors/external/cctv/ed25519/ed25519vectors.json", import.meta.url), "utf8"),
+  );
+  for (const number of [226, 526]) {
+    const vector = vectors.find((candidate) => candidate.number === number);
+    assert.ok(vector);
+    assertReallyMeError(
+      () => ReallyMeEd25519.verify(bytes(vector.sig), new TextEncoder().encode(vector.msg), bytes(vector.key)),
+      "invalid-signature",
+    );
   }
 });
 

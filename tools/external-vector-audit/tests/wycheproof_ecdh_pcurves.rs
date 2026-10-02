@@ -93,15 +93,13 @@ fn run_ecdh(
 ) -> Result<(), AuditError> {
     let file: WycheproofFile<EcdhGroup> = load_json(path)?;
     let mut executed = 0usize;
+    let mut acceptable = 0usize;
 
     for group in &file.test_groups {
         if group.curve != curve {
             continue;
         }
         for case in &group.tests {
-            if case.result == WycheproofResult::Acceptable {
-                continue;
-            }
             let public_key = hex_bytes(&case.public)?;
             // Normalize the variable-width Wycheproof scalar to fixed width, then
             // derive. A scalar that cannot be normalized counts as rejected.
@@ -125,7 +123,14 @@ fn run_ecdh(
                         return Err(AuditError::Mismatch);
                     }
                 }
-                WycheproofResult::Acceptable => {}
+                WycheproofResult::Acceptable => {
+                    if let Some(shared) = derived {
+                        assert_bytes_eq(shared.as_slice(), &hex_bytes(&case.shared)?)?;
+                    }
+                    acceptable = acceptable
+                        .checked_add(1)
+                        .ok_or(AuditError::NoExecutableVectors)?;
+                }
             }
             executed = executed
                 .checked_add(1)
@@ -133,7 +138,7 @@ fn run_ecdh(
         }
     }
 
-    if executed == 0 {
+    if executed == 0 || acceptable != 1 {
         return Err(AuditError::NoExecutableVectors);
     }
     Ok(())

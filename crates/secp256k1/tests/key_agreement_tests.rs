@@ -39,9 +39,18 @@ fn secp256k1_ecdh_agrees_for_both_parties() -> Result<(), CryptoError> {
 fn secp256k1_ecdh_rejects_invalid_private_keys() -> Result<(), CryptoError> {
     let public_key = uncompressed_public_key(&[0x22_u8; 32])?;
 
-    assert!(derive_secp256k1_shared_secret(&[], &public_key).is_err());
-    assert!(derive_secp256k1_shared_secret(&[0_u8; 32], &public_key).is_err());
-    assert!(derive_secp256k1_shared_secret(&[0xff_u8; 32], &public_key).is_err());
+    for invalid in [
+        &[][..],
+        &[1_u8; 24][..],
+        &[1_u8; 31][..],
+        &[0_u8; 32][..],
+        &[0xff_u8; 32][..],
+    ] {
+        assert!(matches!(
+            derive_secp256k1_shared_secret(invalid, &public_key),
+            Err(CryptoError::InvalidKey)
+        ));
+    }
     Ok(())
 }
 
@@ -51,6 +60,12 @@ fn secp256k1_ecdh_requires_valid_uncompressed_public_keys() {
     let compressed = [0x02_u8; 33];
     let malformed = [0x04_u8; 65];
 
-    assert!(derive_secp256k1_shared_secret(&secret_key, &compressed).is_err());
-    assert!(derive_secp256k1_shared_secret(&secret_key, &malformed).is_err());
+    assert!(matches!(
+        derive_secp256k1_shared_secret(&secret_key, &compressed),
+        Err(CryptoError::InvalidKey)
+    ));
+    assert!(matches!(
+        derive_secp256k1_shared_secret(&secret_key, &malformed),
+        Err(CryptoError::InvalidKey)
+    ));
 }

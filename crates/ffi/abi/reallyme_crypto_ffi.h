@@ -703,6 +703,8 @@ rm_crypto_status_t rm_crypto_p256_generate_keypair_from_secret_key(
     size_t secret_out_len
 );
 
+/* The message pointer contains raw message bytes. This boundary hashes them
+ * with SHA-256 internally before signing; passing a digest hashes it again. */
 rm_crypto_status_t rm_crypto_p256_sign_der_prehash(
     const uint8_t* secret_key,
     size_t secret_key_len,
@@ -713,6 +715,7 @@ rm_crypto_status_t rm_crypto_p256_sign_der_prehash(
     size_t* signature_len_out
 );
 
+/* The message pointer contains raw message bytes, hashed with SHA-256 here. */
 rm_crypto_status_t rm_crypto_p256_verify_der_prehash(
     const uint8_t* signature,
     size_t signature_len,
@@ -761,6 +764,7 @@ rm_crypto_status_t rm_crypto_p384_generate_keypair_from_secret_key(
     size_t secret_out_len
 );
 
+/* The message pointer contains raw message bytes, hashed with SHA-384 here. */
 rm_crypto_status_t rm_crypto_p384_sign_der_prehash(
     const uint8_t* secret_key,
     size_t secret_key_len,
@@ -771,6 +775,7 @@ rm_crypto_status_t rm_crypto_p384_sign_der_prehash(
     size_t* signature_len_out
 );
 
+/* The message pointer contains raw message bytes, hashed with SHA-384 here. */
 rm_crypto_status_t rm_crypto_p384_verify_der_prehash(
     const uint8_t* signature,
     size_t signature_len,
@@ -819,6 +824,7 @@ rm_crypto_status_t rm_crypto_p521_generate_keypair_from_secret_key(
     size_t secret_out_len
 );
 
+/* The message pointer contains raw message bytes, hashed with SHA-512 here. */
 rm_crypto_status_t rm_crypto_p521_sign_der_prehash(
     const uint8_t* secret_key,
     size_t secret_key_len,
@@ -829,6 +835,7 @@ rm_crypto_status_t rm_crypto_p521_sign_der_prehash(
     size_t* signature_len_out
 );
 
+/* The message pointer contains raw message bytes, hashed with SHA-512 here. */
 rm_crypto_status_t rm_crypto_p521_verify_der_prehash(
     const uint8_t* signature,
     size_t signature_len,

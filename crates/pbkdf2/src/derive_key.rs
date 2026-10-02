@@ -42,18 +42,7 @@ pub fn derive_key(request: &Pbkdf2Request<'_>) -> Result<Pbkdf2Output, CryptoErr
         .checked_add(digest_length - 1)
         .and_then(|length| length.checked_div(digest_length))
         .ok_or_else(|| kdf_error(request.prf, KdfFailureKind::ResourceLimitExceeded))?;
-    let total_evaluations = u64::from(request.iterations.as_u32())
-        .checked_mul(
-            u64::try_from(blocks)
-                .map_err(|_| kdf_error(request.prf, KdfFailureKind::ResourceLimitExceeded))?,
-        )
-        .ok_or_else(|| kdf_error(request.prf, KdfFailureKind::ResourceLimitExceeded))?;
-    if total_evaluations > PBKDF2_MAX_HMAC_EVALUATIONS {
-        return Err(kdf_error(
-            request.prf,
-            KdfFailureKind::ResourceLimitExceeded,
-        ));
-    }
+    validate_work_factor(request.prf, request.iterations.as_u32(), blocks)?;
     // Install drop-time cleanup before the backend writes derived key material.
     // This also covers unwinding or future early-return paths in this function.
     let mut output = Zeroizing::new(vec![0u8; request.output_len]);
@@ -73,3 +62,20 @@ pub fn derive_key(request: &Pbkdf2Request<'_>) -> Result<Pbkdf2Output, CryptoErr
     }
     Ok(Pbkdf2Output::from_zeroizing(output))
 }
+
+fn validate_work_factor(prf: Pbkdf2Prf, iterations: u32, blocks: usize) -> Result<(), CryptoError> {
+    let total_evaluations = u64::from(iterations)
+        .checked_mul(
+            u64::try_from(blocks)
+                .map_err(|_| kdf_error(prf, KdfFailureKind::ResourceLimitExceeded))?,
+        )
+        .ok_or_else(|| kdf_error(prf, KdfFailureKind::ResourceLimitExceeded))?;
+    if total_evaluations > PBKDF2_MAX_HMAC_EVALUATIONS {
+        return Err(kdf_error(prf, KdfFailureKind::ResourceLimitExceeded));
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+#[path = "derive_key_tests.rs"]
+mod tests;

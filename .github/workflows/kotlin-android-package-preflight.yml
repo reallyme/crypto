@@ -38,6 +38,7 @@ jobs:
       - name: Checkout main for release SHA resolution
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
+          persist-credentials: false
           ref: main
           fetch-depth: 0
 
@@ -95,6 +96,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
+          persist-credentials: false
           ref: ${{ needs.verify-source-sha.outputs.release_sha }}
 
       - name: Install Rust toolchain
@@ -133,6 +135,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
+          persist-credentials: false
           ref: ${{ needs.verify-source-sha.outputs.release_sha }}
 
       - name: Validate Gradle wrappers
@@ -142,6 +145,25 @@ jobs:
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: '24'
+
+      - name: Install Rust toolchain for release readiness
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: 1.98.1
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # wasm-pack
+        with:
+          tool: wasm-pack@0.15.0
+
+      - name: Install wasm-bindgen-cli
+        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # wasm-bindgen-cli
+        with:
+          tool: wasm-bindgen-cli@0.2.129
+
+      - name: Install TypeScript package dependencies
+        run: npm ci --prefix packages/ts
 
       - name: Install Java
         uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5
@@ -185,6 +207,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
+          persist-credentials: false
           ref: ${{ needs.verify-source-sha.outputs.release_sha }}
 
       - name: Validate Gradle wrappers
@@ -232,6 +255,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
+          persist-credentials: false
           ref: ${{ needs.verify-source-sha.outputs.release_sha }}
 
       - name: Validate Gradle wrappers

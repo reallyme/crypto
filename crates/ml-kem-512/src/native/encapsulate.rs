@@ -50,6 +50,9 @@ fn encapsulate_with_rng(
 
 /// Encapsulate to an ML-KEM-512 public key using caller-supplied 32-byte
 /// message randomness (FIPS 203 `m`).
+/// Reusing randomness with the same public key repeats the shared secret.
+/// Production callers should use [`ml_kem_512_encapsulate`], which obtains
+/// fresh randomness from the configured CSPRNG.
 pub fn ml_kem_512_encapsulate_derand(
     public_key: &[u8],
     randomness: &[u8],
@@ -75,8 +78,9 @@ pub fn ml_kem_512_decapsulate(
     ciphertext: &[u8],
     secret_key: &[u8],
 ) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
-    let secret_seed = Seed::try_from(secret_key).map_err(|_| CryptoError::InvalidKey)?;
-    let sk = DecapsulationKey::from_seed(secret_seed);
+    let secret_seed =
+        Zeroizing::new(Seed::try_from(secret_key).map_err(|_| CryptoError::InvalidKey)?);
+    let sk = DecapsulationKey::from_seed(*secret_seed);
     let ciphertext =
         Ciphertext::try_from(ciphertext).map_err(|_| CryptoError::InvalidCiphertextLength {
             minimum: ML_KEM_512_CIPHERTEXT_LEN,

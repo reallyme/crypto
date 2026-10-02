@@ -5,6 +5,7 @@
 //! Signature branch gates for the primary operation contract.
 
 #[cfg(all(
+    any(feature = "native", feature = "wasm"),
     feature = "dispatch",
     any(
         feature = "ed25519",
@@ -28,6 +29,7 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 };
 
 #[cfg(all(
+    any(feature = "native", feature = "wasm"),
     feature = "dispatch",
     any(
         feature = "rsa",
@@ -43,11 +45,20 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
     )
 ))]
 use super::request::process_request;
-#[cfg(all(feature = "dispatch", feature = "secp256k1"))]
+#[cfg(all(
+    any(feature = "native", feature = "wasm"),
+    feature = "dispatch",
+    feature = "secp256k1"
+))]
 use super::signature::process_bip340_schnorr_sign;
-#[cfg(all(feature = "dispatch", feature = "rsa"))]
+#[cfg(all(
+    any(feature = "native", feature = "wasm"),
+    feature = "dispatch",
+    feature = "rsa"
+))]
 use super::signature::process_rsa_verify;
 #[cfg(all(
+    any(feature = "native", feature = "wasm"),
     feature = "dispatch",
     any(
         feature = "rsa",
@@ -71,6 +82,7 @@ pub(super) fn process_signature_generate_key_pair_request(
     request: CryptoSignatureGenerateKeyPairRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(
+        any(feature = "native", feature = "wasm"),
         feature = "dispatch",
         any(
             feature = "rsa",
@@ -93,6 +105,7 @@ pub(super) fn process_signature_generate_key_pair_request(
         )
     }
     #[cfg(not(all(
+        any(feature = "native", feature = "wasm"),
         feature = "dispatch",
         any(
             feature = "rsa",
@@ -117,6 +130,7 @@ pub(super) fn process_signature_derive_key_pair_request(
     request: CryptoSignatureDeriveKeyPairRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(
+        any(feature = "native", feature = "wasm"),
         feature = "dispatch",
         any(
             feature = "rsa",
@@ -139,6 +153,7 @@ pub(super) fn process_signature_derive_key_pair_request(
         )
     }
     #[cfg(not(all(
+        any(feature = "native", feature = "wasm"),
         feature = "dispatch",
         any(
             feature = "rsa",
@@ -163,6 +178,7 @@ pub(super) fn process_signature_sign_request(
     request: CryptoSignatureSignRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(
+        any(feature = "native", feature = "wasm"),
         feature = "dispatch",
         any(
             feature = "rsa",
@@ -185,6 +201,7 @@ pub(super) fn process_signature_sign_request(
         )
     }
     #[cfg(not(all(
+        any(feature = "native", feature = "wasm"),
         feature = "dispatch",
         any(
             feature = "rsa",
@@ -209,6 +226,7 @@ pub(super) fn process_signature_verify_request(
     request: CryptoSignatureVerifyRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(
+        any(feature = "native", feature = "wasm"),
         feature = "dispatch",
         any(
             feature = "rsa",
@@ -231,6 +249,7 @@ pub(super) fn process_signature_verify_request(
         )
     }
     #[cfg(not(all(
+        any(feature = "native", feature = "wasm"),
         feature = "dispatch",
         any(
             feature = "rsa",
@@ -254,7 +273,11 @@ pub(super) fn process_signature_verify_request(
 pub(super) fn process_bip340_schnorr_sign_request(
     request: CryptoBip340SchnorrSignRequest,
 ) -> CryptoOperationResponse {
-    #[cfg(all(feature = "dispatch", feature = "secp256k1"))]
+    #[cfg(all(
+        any(feature = "native", feature = "wasm"),
+        feature = "dispatch",
+        feature = "secp256k1"
+    ))]
     {
         process_request(
             request,
@@ -262,7 +285,11 @@ pub(super) fn process_bip340_schnorr_sign_request(
             CryptoOperationResultBranch::Bip340SchnorrSign,
         )
     }
-    #[cfg(not(all(feature = "dispatch", feature = "secp256k1")))]
+    #[cfg(not(all(
+        any(feature = "native", feature = "wasm"),
+        feature = "dispatch",
+        feature = "secp256k1"
+    )))]
     {
         let _ = request;
         super::request::unsupported_response()
@@ -272,7 +299,11 @@ pub(super) fn process_bip340_schnorr_sign_request(
 pub(super) fn process_rsa_verify_request(
     request: CryptoRsaVerifyRequest,
 ) -> CryptoOperationResponse {
-    #[cfg(all(feature = "dispatch", feature = "rsa"))]
+    #[cfg(all(
+        any(feature = "native", feature = "wasm"),
+        feature = "dispatch",
+        feature = "rsa"
+    ))]
     {
         process_request(
             request,
@@ -280,7 +311,11 @@ pub(super) fn process_rsa_verify_request(
             CryptoOperationResultBranch::RsaVerify,
         )
     }
-    #[cfg(not(all(feature = "dispatch", feature = "rsa")))]
+    #[cfg(not(all(
+        any(feature = "native", feature = "wasm"),
+        feature = "dispatch",
+        feature = "rsa"
+    )))]
     {
         let _ = request;
         super::request::unsupported_response()

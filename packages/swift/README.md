@@ -25,8 +25,10 @@ by Git URL; the source lives under `packages/swift` with the other language SDKs
 ```
 
 The `from:` version resolves after publication. The verified Swift package
-release workflow creates the corresponding immutable `v<version>` tag together
+release workflow creates the corresponding `v<version>` tag together
 with the XCFramework-backed GitHub release; an unreleased version has no tag.
+Crypto 0.3.10 requires Swift 6.3 or later because its Codec 0.3.0 dependency
+declares that tools version.
 
 Applications that process structured operations or store ReallyMe Crypto
 algorithm identifiers can add the proto products at the same boundary:

@@ -3,173 +3,17 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::status::{CryptoStatus, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INVALID_ARGUMENT};
-use core::cell::RefCell;
+
+#[path = "pointer_range_registry.rs"]
+mod range_registry;
+
+pub(crate) use range_registry::begin_input_range_call;
+use range_registry::{
+    register_input_range, register_output_range, validate_registered_inputs_against_output,
+    OutputRangeKind,
+};
 
 const MAX_FFI_SLICE_LEN: usize = isize::MAX.unsigned_abs();
-const MAX_FFI_INPUT_RANGES_PER_CALL: usize = 32;
-const MAX_FFI_OUTPUT_RANGES_PER_CALL: usize = 32;
-
-#[derive(Clone, Copy)]
-struct ByteRange {
-    ptr: *const u8,
-    len: usize,
-}
-
-impl ByteRange {
-    const EMPTY: Self = Self {
-        ptr: core::ptr::null(),
-        len: 0,
-    };
-}
-
-struct RangeRegistry {
-    inputs: [ByteRange; MAX_FFI_INPUT_RANGES_PER_CALL],
-    input_count: usize,
-    outputs: [ByteRange; MAX_FFI_OUTPUT_RANGES_PER_CALL],
-    output_count: usize,
-    active: bool,
-}
-
-impl RangeRegistry {
-    const fn new() -> Self {
-        Self {
-            inputs: [ByteRange::EMPTY; MAX_FFI_INPUT_RANGES_PER_CALL],
-            input_count: 0,
-            outputs: [ByteRange::EMPTY; MAX_FFI_OUTPUT_RANGES_PER_CALL],
-            output_count: 0,
-            active: false,
-        }
-    }
-
-    fn clear(&mut self) {
-        self.inputs.fill(ByteRange::EMPTY);
-        self.input_count = 0;
-        self.outputs.fill(ByteRange::EMPTY);
-        self.output_count = 0;
-        self.active = false;
-    }
-}
-
-std::thread_local! {
-    static RANGES: RefCell<RangeRegistry> = const {
-        RefCell::new(RangeRegistry::new())
-    };
-}
-
-/// Per-call guard that clears raw pointer-range metadata after an FFI operation.
-pub(crate) struct PointerRangeCallGuard;
-
-impl Drop for PointerRangeCallGuard {
-    fn drop(&mut self) {
-        let _ = RANGES.try_with(|registry| {
-            if let Ok(mut ranges) = registry.try_borrow_mut() {
-                ranges.clear();
-            }
-        });
-    }
-}
-
-/// Starts raw input/output-range tracking for one exported FFI call.
-pub(crate) fn begin_input_range_call() -> Result<PointerRangeCallGuard, CryptoStatus> {
-    RANGES
-        .try_with(|registry| {
-            let mut ranges = registry
-                .try_borrow_mut()
-                .map_err(|_| CRYPTO_INVALID_ARGUMENT)?;
-            if ranges.active {
-                return Err(CRYPTO_INVALID_ARGUMENT);
-            }
-            ranges.clear();
-            ranges.active = true;
-            Ok(PointerRangeCallGuard)
-        })
-        .map_err(|_| CRYPTO_INVALID_ARGUMENT)?
-}
-
-fn register_input_range(ptr: *const u8, len: usize) -> Result<(), CryptoStatus> {
-    if len == 0 {
-        return Ok(());
-    }
-    RANGES
-        .try_with(|registry| {
-            let mut ranges = registry
-                .try_borrow_mut()
-                .map_err(|_| CRYPTO_INVALID_ARGUMENT)?;
-            if !ranges.active {
-                return Ok(());
-            }
-            for output in &ranges.outputs[..ranges.output_count] {
-                validate_disjoint_ranges(ptr, len, output.ptr.cast_mut(), output.len)?;
-            }
-            if ranges.input_count >= MAX_FFI_INPUT_RANGES_PER_CALL {
-                return Err(CRYPTO_INVALID_ARGUMENT);
-            }
-            let index = ranges.input_count;
-            ranges.inputs[index] = ByteRange { ptr, len };
-            ranges.input_count = index.checked_add(1).ok_or(CRYPTO_INVALID_ARGUMENT)?;
-            Ok(())
-        })
-        .map_err(|_| CRYPTO_INVALID_ARGUMENT)?
-}
-
-fn register_output_range<T>(ptr: *mut T, len_bytes: usize) -> Result<(), CryptoStatus> {
-    if len_bytes == 0 {
-        return Ok(());
-    }
-    RANGES
-        .try_with(|registry| {
-            let mut ranges = registry
-                .try_borrow_mut()
-                .map_err(|_| CRYPTO_INVALID_ARGUMENT)?;
-            if !ranges.active {
-                return Ok(());
-            }
-            for input in &ranges.inputs[..ranges.input_count] {
-                validate_disjoint_ranges(input.ptr, input.len, ptr.cast::<u8>(), len_bytes)?;
-            }
-            for output in &ranges.outputs[..ranges.output_count] {
-                // Validation helpers may register the same output more than
-                // once while checking a multi-output ABI. Treat an identical
-                // range as idempotent, but reject every partial or cross-output
-                // overlap before any mutable reference is constructed.
-                if output.ptr == ptr.cast::<u8>().cast_const() && output.len == len_bytes {
-                    return Ok(());
-                }
-                validate_disjoint_ranges(output.ptr, output.len, ptr.cast::<u8>(), len_bytes)?;
-            }
-            if ranges.output_count >= MAX_FFI_OUTPUT_RANGES_PER_CALL {
-                return Err(CRYPTO_INVALID_ARGUMENT);
-            }
-            let index = ranges.output_count;
-            ranges.outputs[index] = ByteRange {
-                ptr: ptr.cast::<u8>().cast_const(),
-                len: len_bytes,
-            };
-            ranges.output_count = index.checked_add(1).ok_or(CRYPTO_INVALID_ARGUMENT)?;
-            Ok(())
-        })
-        .map_err(|_| CRYPTO_INVALID_ARGUMENT)?
-}
-
-fn validate_registered_inputs_against_output<T>(
-    output_ptr: *mut T,
-    output_len_bytes: usize,
-) -> Result<(), CryptoStatus> {
-    RANGES
-        .try_with(|registry| {
-            let ranges = registry.try_borrow().map_err(|_| CRYPTO_INVALID_ARGUMENT)?;
-            for input in &ranges.inputs[..ranges.input_count] {
-                validate_disjoint_ranges(
-                    input.ptr,
-                    input.len,
-                    output_ptr.cast::<u8>(),
-                    output_len_bytes,
-                )?;
-            }
-            Ok(())
-        })
-        .map_err(|_| CRYPTO_INVALID_ARGUMENT)?
-}
 
 fn validate_read_pair(ptr: *const u8, len: usize) -> Result<(), CryptoStatus> {
     validate_nonzero_len(ptr, len)
@@ -247,6 +91,9 @@ pub unsafe fn read_slice<'a>(ptr: *const u8, len: usize) -> Result<&'a [u8], Cry
         return Ok(&[]);
     }
     register_input_range(ptr, len)?;
+    // SAFETY: The caller guarantees initialized storage for the returned
+    // lifetime. Validation above bounds the length and records this read range
+    // so later output slices cannot alias it.
     Ok(unsafe { core::slice::from_raw_parts(ptr, len) })
 }
 
@@ -269,6 +116,9 @@ pub unsafe fn write_slice<'a>(ptr: *mut u8, len: usize) -> Result<&'a mut [u8], 
         return Ok(&mut []);
     }
     validate_registered_inputs_against_output(ptr, len)?;
+    // SAFETY: The caller owns writable storage for the returned lifetime.
+    // Validation above bounds the slice and excludes every registered input
+    // range, preserving the mutable borrow's aliasing requirement.
     Ok(unsafe { core::slice::from_raw_parts_mut(ptr, len) })
 }
 
@@ -290,6 +140,8 @@ pub unsafe fn write_fixed(ptr: *mut u8, len: usize, value: &[u8]) -> CryptoStatu
     if validate_disjoint_ranges(value.as_ptr(), value.len(), ptr, len).is_err() {
         return CRYPTO_INVALID_ARGUMENT;
     }
+    // SAFETY: The caller owns `ptr` for this call, and the checks above bound
+    // its writable length and exclude overlap with the source bytes.
     let Ok(out) = (unsafe { write_slice(ptr, len) }) else {
         return CRYPTO_INVALID_ARGUMENT;
     };
@@ -330,10 +182,14 @@ pub fn validate_output_len_pair(
     ) {
         return status;
     }
-    if let Err(status) = register_output_range(output_ptr, output_len) {
+    if let Err(status) = register_output_range(output_ptr, output_len, OutputRangeKind::Bytes) {
         return status;
     }
-    match register_output_range(len_out, core::mem::size_of::<usize>()) {
+    match register_output_range(
+        len_out,
+        core::mem::size_of::<usize>(),
+        OutputRangeKind::Length,
+    ) {
         Ok(()) => crate::status::CRYPTO_OK,
         Err(status) => status,
     }
@@ -351,10 +207,10 @@ pub fn validate_disjoint_output_pair(
     {
         return status;
     }
-    if let Err(status) = register_output_range(first_ptr, first_len) {
+    if let Err(status) = register_output_range(first_ptr, first_len, OutputRangeKind::Bytes) {
         return status;
     }
-    match register_output_range(second_ptr, second_len) {
+    match register_output_range(second_ptr, second_len, OutputRangeKind::Bytes) {
         Ok(()) => crate::status::CRYPTO_OK,
         Err(status) => status,
     }
@@ -441,10 +297,18 @@ pub fn validate_disjoint_len_outputs(first: *mut usize, second: *mut usize) -> C
     ) {
         return status;
     }
-    if let Err(status) = register_output_range(first, core::mem::size_of::<usize>()) {
+    if let Err(status) = register_output_range(
+        first,
+        core::mem::size_of::<usize>(),
+        OutputRangeKind::Length,
+    ) {
         return status;
     }
-    match register_output_range(second, core::mem::size_of::<usize>()) {
+    match register_output_range(
+        second,
+        core::mem::size_of::<usize>(),
+        OutputRangeKind::Length,
+    ) {
         Ok(()) => crate::status::CRYPTO_OK,
         Err(status) => status,
     }
@@ -465,6 +329,9 @@ pub unsafe fn write_len(ptr: *mut usize, value: usize) -> CryptoStatus {
     if validate_registered_inputs_against_output(ptr, core::mem::size_of::<usize>()).is_err() {
         return CRYPTO_INVALID_ARGUMENT;
     }
+    // SAFETY: The caller supplies a writable, aligned usize for this call.
+    // The output validation rejects null and input-range aliases before the
+    // single write; this function does not retain the pointer.
     unsafe {
         *ptr = value;
     }
@@ -486,6 +353,9 @@ pub unsafe fn write_i32(ptr: *mut i32, value: i32) -> CryptoStatus {
     if validate_registered_inputs_against_output(ptr, core::mem::size_of::<i32>()).is_err() {
         return CRYPTO_INVALID_ARGUMENT;
     }
+    // SAFETY: The caller supplies a writable, aligned i32 for this call.
+    // The output validation rejects null and input-range aliases before the
+    // single write; this function does not retain the pointer.
     unsafe {
         *ptr = value;
     }

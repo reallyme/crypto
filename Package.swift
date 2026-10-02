@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.3
 // SPDX-FileCopyrightText: 2026 ReallyMe LLC
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0

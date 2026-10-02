@@ -42,12 +42,87 @@ permissions:
   contents: read
 
 jobs:
+  mobile-targets:
+    name: iOS and Android Rust targets
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain and mobile targets
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: 1.98.1
+          targets: aarch64-apple-ios,aarch64-linux-android
+
+      - name: Check iOS FFI target
+        run: cargo check --locked -p crypto-ffi --target aarch64-apple-ios
+
+      - name: Check Android FFI target
+        run: cargo check --locked -p crypto-ffi --target aarch64-linux-android
+
+  rust-msrv:
+    name: Rust 1.96 minimum version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
+
+      - name: Install minimum Rust toolchain
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: 1.96.0
+
+      - name: Check workspace at declared minimum Rust version
+        run: cargo check --locked --workspace --all-features
+
+  rust-semver:
+    name: Rust public API semver
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
+
+      - name: Checkout Rust semver baseline
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
+          ref: v0.3.9
+          path: .semver-baseline
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: 1.98.1
+
+      - name: Install Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+
+      - name: Prepare reproducible Rust semver baseline
+        run: node scripts/prepare_semver_baseline.mjs .semver-baseline
+
+      - name: Install cargo-semver-checks
+        run: cargo install cargo-semver-checks --version 0.49.0 --locked
+
+      - name: Check public Rust API semver
+        run: node scripts/check_rust_semver.mjs
+
   rust:
     name: fmt, lint, test, wasm, package
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
@@ -81,6 +156,12 @@ jobs:
         uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # wasm-bindgen-cli
         with:
           tool: wasm-bindgen-cli@0.2.129
+
+      - name: Install Java for release readiness
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5
+        with:
+          distribution: temurin
+          java-version: '21'
 
       - name: Install Node
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
@@ -160,14 +241,15 @@ jobs:
           cargo test --locked -p reallyme-crypto-hpke --no-default-features --features openmls
           cargo check --locked -p reallyme-crypto --no-default-features --features native,hpke-openmls
 
-      # SSI selects these algorithms without a Rust backend. Encoding helpers
-      # must remain gated, and the operation facade must fail closed.
-      - name: Check backendless Ed25519 feature build
+      # SSI and other facade consumers select algorithms without a Rust backend.
+      # Every feature must compile independently and as a combined graph.
+      - name: Check backendless feature builds
         env:
           RUSTFLAGS: -Dwarnings
-        run: |
-          cargo check --locked --offline -p reallyme-crypto --no-default-features --features ed25519,sha2
-          cargo test --locked --offline -p reallyme-crypto --no-default-features --features ed25519,sha2 --test ed25519_backendless_tests
+        run: bash scripts/check_backendless_features.sh
+
+      - name: Check default JWK multikey EC round trips
+        run: cargo test --locked --offline -p reallyme-crypto-jwk-multikey --test p256_roundtrip_tests --test secp256k1_roundtrip_tests
 
       - name: Clippy
         run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
@@ -197,6 +279,9 @@ jobs:
       - name: Verify post-quantum vectors against @noble/post-quantum oracle
         run: npm run --prefix crates/conformance verify:noble-pq
 
+      - name: Verify committed external vectors against public APIs
+        run: bash scripts/check_external_vector_adapters.sh
+
       - name: Test TypeScript package
         run: npm --prefix packages/ts test
 
@@ -205,6 +290,9 @@ jobs:
 
       - name: Test TypeScript package in Chromium
         run: npm --prefix packages/ts run test:browser
+
+      - name: Test primitive WASM backends in Chromium
+        run: bash scripts/check_wasm_browser_backends.sh
 
       - name: Check generated provider matrix
         run: node scripts/generate_provider_matrix.mjs --check
@@ -230,6 +318,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
 
       - name: Install pinned Rust nightly
         uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
@@ -245,6 +335,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
@@ -260,6 +352,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
 
       - name: Install pinned Miri toolchain
         uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
@@ -278,6 +372,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
 
       # ReallyMe Codec 0.3.0 requires Swift tools 6.3. Pin the runner's newest
       # stable Xcode so SwiftPM validates that manifest before compiling tests.
@@ -308,6 +404,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
 
       - name: Validate Gradle wrappers
         uses: gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0

@@ -20,6 +20,8 @@ pub use constants::{
 #[cfg(any(feature = "native", feature = "wasm"))]
 pub use decrypt::decrypt;
 #[cfg(any(feature = "native", feature = "wasm"))]
+pub use decrypt::decrypt_zeroizing;
+#[cfg(any(feature = "native", feature = "wasm"))]
 pub use encrypt::encrypt;
 pub use types::{
     Aes256GcmSivKey, Aes256GcmSivNonce, CiphertextWithTag, DecryptRequest, EncryptRequest,

@@ -83,6 +83,11 @@ fn arbitrary_ikm_derivation_is_stable_and_rejects_empty_input() {
             derive_keypair_from_ikm(suite, &[]).err(),
             Some(HpkeError::InvalidInputKeyMaterial)
         );
+        assert_eq!(
+            derive_keypair_from_ikm(suite, &[0x5a; 31]).err(),
+            Some(HpkeError::InvalidInputKeyMaterial)
+        );
+        assert!(derive_keypair_from_ikm(suite, &[0x5a; 32]).is_ok());
     }
 }
 

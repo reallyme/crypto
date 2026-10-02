@@ -11,10 +11,14 @@ use crate::key_agreement_error::crypto_error_from_derive_shared_secret_operation
 use crate::signature_error::crypto_error_from_operation_error;
 
 pub use crypto_p256::{
-    compress_public_key, decode_se_handle, decompress_public_key, encode_se_handle,
-    p256_ecdsa_der_to_jose_signature, p256_ecdsa_jose_signature_to_der, sign_p256_digest_der,
-    verify_p256_digest_der, P256_ECDSA_JOSE_SIGNATURE_LEN, P256_SECRET_KEY_LEN,
+    decode_se_handle, encode_se_handle, p256_ecdsa_der_to_jose_signature,
+    p256_ecdsa_jose_signature_to_der, P256_ECDSA_JOSE_SIGNATURE_LEN, P256_SECRET_KEY_LEN,
     P256_SHA256_DIGEST_LEN, P256_SIGNATURE_DER_MAX_LEN, SE_HANDLE_PREFIX,
+};
+
+#[cfg(any(feature = "native", feature = "wasm"))]
+pub use crypto_p256::{
+    compress_public_key, decompress_public_key, sign_p256_digest_der, verify_p256_digest_der,
 };
 
 #[cfg(feature = "native")]

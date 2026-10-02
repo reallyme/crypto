@@ -36,6 +36,7 @@ impl Poseidon2Digest {
 
 /// Stable reasons for rejecting a Poseidon2 input.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Error)]
+#[non_exhaustive]
 pub enum Poseidon2ErrorReason {
     /// The circuit's reviewed input bound was exceeded.
     #[error("Poseidon2 input exceeds the supported bound")]

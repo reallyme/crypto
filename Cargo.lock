@@ -1634,6 +1634,7 @@ version = "0.3.10"
 dependencies = [
  "aes",
  "aes-gcm",
+ "getrandom 0.4.3",
  "hex",
  "reallyme-crypto-core",
  "wasm-bindgen-test",
@@ -1962,6 +1963,7 @@ dependencies = [
  "reallyme-crypto-core",
  "serde",
  "serde_json",
+ "subtle",
  "thiserror",
  "zeroize",
 ]
@@ -2111,6 +2113,7 @@ dependencies = [
  "getrandom 0.4.3",
  "hex",
  "reallyme-crypto-core",
+ "subtle",
  "x448",
  "zeroize",
 ]

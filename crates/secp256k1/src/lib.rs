@@ -20,6 +20,7 @@ pub use jose_signature::{
 mod native;
 
 #[cfg(any(feature = "native", feature = "wasm"))]
+#[allow(deprecated)] // Preserve the legacy export while steering callers to the fallible API.
 pub use native::{
     assert_secp256k1_public_key, decode_bip340_schnorr_public_key, decode_public_key,
     decode_secp256k1_public_key, decompress_public_key, decompress_secp256k1_public_key,

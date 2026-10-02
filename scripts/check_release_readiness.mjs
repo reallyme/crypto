@@ -6,6 +6,7 @@
 import { readdirSync } from "node:fs";
 
 import { assertCryptoOperationRouteReadiness } from "./crypto_operation_route_readiness.mjs";
+import { REQUIRED_WORKFLOW_GATES, workflowGateViolation } from "./workflow_gate_policy.mjs";
 // The package runner supplies the exact upstream module URL and verifies its
 // version. Direct local checks use the reviewed vendored copy.
 const coreUrl = process.env.RELEASE_READINESS_CORE_URL ?? "./release-readiness/core.mjs";
@@ -49,11 +50,12 @@ const assertDocumented = (path, phrase) => {
   }
 };
 
-const assertUnconditionalRequiredWorkflow = (path) => {
+const assertUnconditionalRequiredWorkflow = (path, requiredCommands) => {
   // Gate jobs must not turn a missing test or failed command into a green run.
   // Release attestation trusts the workflow conclusion for this exact SHA.
-  if (/^\s*(?:if|continue-on-error):/mu.test(readText(path))) {
-    fail(`${path} conditionally skips or tolerates a required release gate`);
+  const violation = workflowGateViolation(readText(path), requiredCommands);
+  if (violation !== null) {
+    fail(`${path} has an unsafe release gate: ${violation}`);
   }
 };
 
@@ -63,9 +65,12 @@ const projectLicense = "MIT OR Apache-2.0";
 const packageLicenseText = readText("packages/ts/LICENSE");
 const trackedFiles = loadTrackedFiles();
 const trackedPaths = new Set(trackedFiles);
-for (const path of ["Package.swift", "crates/conformance/platform/swift/Package.swift"]) {
-  if (!readText(path).startsWith("// swift-tools-version: 6.0\n")) {
-    fail(`${path} must declare Swift tools version 6.0`);
+for (const [path, toolsVersion] of [
+  ["Package.swift", "6.3"],
+  ["crates/conformance/platform/swift/Package.swift", "6.0"],
+]) {
+  if (!readText(path).startsWith(`// swift-tools-version: ${toolsVersion}\n`)) {
+    fail(`${path} must declare Swift tools version ${toolsVersion}`);
   }
 }
 for (const path of trackedFiles) {
@@ -217,6 +222,7 @@ const manifest = readJson("provider_manifest.json");
 runNodeCheck("scripts/check_provider_routing.mjs");
 runNodeCheck("scripts/check_negative_vectors.mjs");
 runNodeCheck("scripts/crypto_operation_route_readiness.test.mjs");
+runNodeCheck("scripts/workflow_gate_policy.test.mjs");
 runNodeCheck("scripts/prepare_semver_baseline.test.mjs");
 runNodeCheck("scripts/release_notes.test.mjs");
 runNodeCheck("scripts/native_build_scripts.test.mjs");
@@ -480,7 +486,7 @@ for (const primitivePolicy of [
   {
     crateRoot: "crates/aes256-gcm",
     manifestNeedles: [
-      'wasm = [\n    "dep:aes",\n    "dep:aes-gcm",\n]',
+      'wasm = [\n    "dep:aes",\n    "dep:aes-gcm",\n    "dep:getrandom",\n]',
     ],
     sourceNeedle: '#[cfg(any(feature = "native", feature = "wasm"))]',
     testPath: "crates/aes256-gcm/tests/wasm_backend_tests.rs",
@@ -1405,7 +1411,7 @@ assertContains(
   "crates/wasm/src/aead.rs",
   "let plaintext_bytes = Zeroizing::new(copy_bounded(plaintext, MAX_WASM_INPUT_LENGTH)?);",
 );
-assertContains("crates/wasm/src/hpke.rs", "copy_bounded(info, HPKE_INFO_MAX_LENGTH)?");
+assertContains("crates/wasm/src/hpke.rs", "copy_bounded(info, MAX_WASM_INPUT_LENGTH)?");
 assertContains(
   "crates/wasm/src/argon2id.rs",
   "copy_bounded_nonempty(secret, ARGON2ID_SECRET_MAX_LENGTH)?",
@@ -1703,16 +1709,8 @@ assertContains(".github/workflows/rust-ci.yml", "!PROVIDER_POLICY.md");
 assertContains(".github/workflows/rust-ci.yml", "!CONTRACT.md");
 assertContains(".github/workflows/rust-ci.yml", "cargo package --locked -p reallyme-crypto --list");
 assertContains(".github/workflows/rust-ci.yml", "Verify OpenMLS HPKE dependency isolation");
-for (const path of [
-  ".github/workflows/rust-ci.yml",
-  ".github/workflows/dependency-security.yml",
-  ".github/workflows/protobuf-ci.yml",
-  ".github/workflows/swift-package-preflight.yml",
-  ".github/workflows/crates-package-preflight.yml",
-  ".github/workflows/npm-package-preflight.yml",
-  ".github/workflows/kotlin-android-package-preflight.yml",
-]) {
-  assertUnconditionalRequiredWorkflow(path);
+for (const [path, requiredCommands] of REQUIRED_WORKFLOW_GATES) {
+  assertUnconditionalRequiredWorkflow(path, requiredCommands);
 }
 for (const command of [
   "cargo clippy --locked --workspace --all-targets --all-features -- -D warnings",
@@ -1735,6 +1733,10 @@ assertContains(".github/workflows/rust-ci.yml", "node scripts/generate_provider_
 assertContains(".github/workflows/rust-ci.yml", releaseReadinessCommand);
 assertContains(".github/workflows/rust-ci.yml", "REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI");
 assertContains(".github/workflows/rust-ci.yml", "npm --prefix packages/ts run test:browser");
+assertContains(".github/workflows/rust-ci.yml", "bash scripts/check_wasm_browser_backends.sh");
+assertContains(".github/workflows/rust-ci.yml", "toolchain: 1.96.0");
+assertContains(".github/workflows/rust-ci.yml", "--target aarch64-linux-android");
+assertContains(".github/workflows/rust-ci.yml", "--target aarch64-apple-ios");
 assertContains(".github/workflows/rust-ci.yml", "bash scripts/test_native_sanitizers.sh");
 assertContains(".github/workflows/rust-ci.yml", "bash scripts/test_ffi_abi_release_artifact.sh");
 assertContains(".github/workflows/rust-ci.yml", "miri test --locked -p crypto-ffi --lib pointer::tests");
@@ -1744,13 +1746,25 @@ assertContains(".github/workflows/dependency-security.yml", "verify_gradle_check
 assertContains(".github/workflows/codeql.yml", "javascript-typescript");
 assertContains(".github/workflows/codeql.yml", "java-kotlin");
 assertContains(".github/workflows/codeql.yml", "swift");
+for (const workflow of [
+  ".github/workflows/crates-package-preflight.yml",
+  ".github/workflows/kotlin-android-package-preflight.yml",
+  ".github/workflows/swift-package-preflight.yml",
+  ".github/workflows/swift-package-release.yml",
+]) {
+  assertContains(workflow, "wasm-pack@0.15.0");
+  assertContains(workflow, "wasm-bindgen-cli@0.2.129");
+  assertContains(workflow, "npm ci --prefix packages/ts");
+  assertContains(workflow, "wasm32-unknown-unknown");
+}
 assertContains("scripts/maven-central-bundle.local.sh", "verify_release_preflight");
 assertContains("scripts/maven-central-bundle.local.sh", "NATIVE_RESOURCE_RUN_ID");
 assertContains("scripts/maven-central-bundle.local.sh", "RELEASE_ATTESTATION_WRITE_GITHUB_OUTPUT=1");
 assertContains("scripts/maven-central-bundle.local.sh", "gh run download \"$run_id\" --repo reallyme/crypto");
 assertContains(".github/workflows/fuzz.yml", "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
 assertContains(".github/workflows/fuzz.yml", "cargo install cargo-fuzz --version 0.13.2 --locked");
-assertContains(".github/workflows/fuzz.yml", "crates/crypto/src/operation_contract/**");
+assertContains(".github/workflows/fuzz.yml", "crates/crypto/**");
+assertContains(".github/workflows/fuzz.yml", "crates/wasm/**");
 assertNotContains(".github/workflows/fuzz.yml", "crates/crypto/src/operation_response.rs");
 assertContains(".github/workflows/fuzz.yml", "crates/proto/**");
 assertContains(".github/workflows/fuzz.yml", "crates/p384/**");
@@ -2158,7 +2172,7 @@ assertNotContains(
   "crates/ffi/abi/reallyme_crypto_ffi.h",
   "RM_CRYPTO_ED25519_EXPANDED_SECRET_KEY_LEN",
 );
-assertContains("crates/ffi/src/pointer.rs", "if ranges.active");
+assertContains("crates/ffi/src/pointer_range_registry.rs", "if ranges.active");
 assertContains(
   "crates/ffi/tests/pointer_tests.rs",
   "nested_ffi_guard_fails_without_clearing_outer_input_ranges",
@@ -2856,6 +2870,9 @@ const repositoryPolicy = {
           `const RELEASE_READINESS_COMMIT = "${releaseReadinessCommit}";`,
           'const RELEASE_READINESS_CORE_SHA256 =\n  "d3434554901ea5438bb0dd64f4f7214b9050e95cd1e3d579cc2992f4c662e85a";',
           "const LOCAL_CHECKER_SHA256 =",
+          "const LOCAL_CHECKER_DEPENDENCIES =",
+          "scripts/crypto_operation_route_readiness.mjs",
+          "scripts/workflow_gate_policy.mjs",
         ],
         forbidden: [
           "RELEASE_READINESS_COMMIT = \"main\"",
@@ -3326,6 +3343,8 @@ assertContains(swiftReleaseWorkflow, "run-id: ${{ needs.verify-release-sha.outpu
 assertContains(swiftReleaseWorkflow, "RELEASE_ATTESTATION_PREFLIGHT_RUN_ID");
 assertContains(swiftReleaseWorkflow, "Bind release manifest to verified Swift artifact");
 assertContains(swiftReleaseWorkflow, "Verify SwiftPM manifest and downloaded artifact");
+assertContains(swiftReleaseWorkflow, "Build local FFI for source policy verification");
+assertContains(swiftReleaseWorkflow, "REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI: \"1\"");
 assertContains(swiftReleaseWorkflow, "Create immutable GitHub release with Swift artifact");
 assertContains(swiftReleaseWorkflow, "verify_swift_release_artifact.mjs");
 assertContains(swiftReleaseWorkflow, 'git show "${tag_target}:Package.swift"');

@@ -16,11 +16,10 @@ use crate::operations::{
 };
 use crate::secret_material::{bind_operation_policy, SecretMaterialOperation};
 
-/// Minimum IKM length accepted by operation and serialized HPKE boundaries.
+/// Minimum IKM length accepted by raw and serialized HPKE boundaries.
 ///
-/// The raw HPKE primitive retains the KEM-defined non-empty input contract for
-/// conformance and protocol-specific use. Public operation transports apply a
-/// 256-bit floor so accidental low-entropy caller input fails closed.
+/// Each boundary applies this 256-bit floor so trivially enumerable caller
+/// input fails closed before invoking a KEM's derivation procedure.
 pub const HPKE_OPERATION_MIN_INPUT_KEY_MATERIAL_LEN: usize = 32;
 
 /// Generates a recipient keypair for the selected HPKE KEM.

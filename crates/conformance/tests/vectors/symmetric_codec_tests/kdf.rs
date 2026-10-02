@@ -44,7 +44,7 @@ fn verify_pbkdf2_case(v: &Value, field_name: &str, prf: Pbkdf2Prf) -> Result<(),
         Pbkdf2Password::from_slice(&password_bytes, prf).map_err(|_| VectorTestError::Pbkdf2)?;
     let salt = Pbkdf2Salt::from_slice(&salt_bytes, prf).map_err(|_| VectorTestError::Pbkdf2)?;
     let iterations =
-        Pbkdf2Iterations::from_u32(iterations, prf).map_err(|_| VectorTestError::Pbkdf2)?;
+        Pbkdf2Iterations::from_u32_conformance_only(iterations, prf).map_err(|_| VectorTestError::Pbkdf2)?;
     let output = derive_pbkdf2_key(&Pbkdf2Request {
         prf,
         password: &password,

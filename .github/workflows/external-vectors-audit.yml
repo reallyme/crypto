@@ -11,8 +11,7 @@ name: External Vector Audit
 #               PRs that touch the external vectors or harness, so vendored-file
 #               drift is caught continuously without loading the main PR wall.
 #   deep-audit  the enormous ignored ACVP/CCTV sweeps run on dispatch/schedule.
-#               Supplementary adapters run only on a deliberate dispatch with
-#               their reviewed, already-committed source refs.
+#               Supplementary adapters also run against committed corpora.
 #   kani        bounded formal proofs of the reference DER encoder. Dispatch or
 #               schedule only.
 on:
@@ -64,6 +63,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
@@ -108,6 +109,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
@@ -152,7 +155,6 @@ jobs:
         run: node scripts/run_external_cctv_deep_audit.mjs
 
       - name: Execute Wycheproof adapters
-        if: ${{ github.event.inputs.wycheproof_ref != '' }}
         run: >-
           cargo test --locked -p external-vector-audit --no-default-features --features native
           --test wycheproof_chacha20_poly1305
@@ -162,31 +164,26 @@ jobs:
           --test wycheproof_ecdh_pcurves -- --ignored
 
       - name: Execute BIP-340 adapter
-        if: ${{ github.event.inputs.bip340_ref != '' }}
         run: >-
           cargo test --locked -p external-vector-audit --no-default-features --features native
           --test bip340_schnorr -- --ignored
 
       - name: Execute RFC 8032 Ed25519 sigGen adapter
-        if: ${{ github.event.inputs.rfc8032_ref != '' }}
         run: >-
           cargo test --locked -p external-vector-audit --no-default-features --features native
           --test rfc8032_ed25519_siggen -- --ignored
 
       - name: Execute X-Wing-768 adapter
-        if: ${{ github.event.inputs.xwing_ref != '' }}
         run: >-
           cargo test --locked -p external-vector-audit --no-default-features --features native
           --test xwing768_kat -- --ignored
 
       - name: Execute HPKE RFC 9180 adapter
-        if: ${{ github.event.inputs.hpke_ref != '' }}
         run: >-
           cargo test --locked -p external-vector-audit --no-default-features --features native
           --test rfc9180_hpke -- --ignored
 
       - name: Execute PBKDF2 adapter
-        if: ${{ github.event.inputs.brycx_ref != '' }}
         run: >-
           cargo test --locked -p external-vector-audit --no-default-features --features native
           --test pbkdf2_rfc6070 -- --ignored
@@ -205,6 +202,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master

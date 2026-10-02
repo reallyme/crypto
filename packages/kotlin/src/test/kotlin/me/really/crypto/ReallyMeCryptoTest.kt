@@ -11,6 +11,7 @@ import java.nio.file.attribute.PosixFileAttributeView
 import java.nio.file.attribute.PosixFilePermission
 import java.security.SecureRandom
 import java.util.Base64
+import com.google.gson.JsonParser
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -29,6 +30,23 @@ import org.bouncycastle.asn1.DERSequence
 import org.junit.jupiter.api.Assumptions.assumeTrue
 
 class ReallyMeCryptoTest : ReallyMeCryptoTestSupport() {
+    @Test
+    fun sharedJwkMetadataPolicy() {
+        val path = Path.of("..", "..", "vectors", "jwk_policy.json")
+        val policy = JsonParser.parseString(Files.readString(path)).asJsonObject
+        policy.getAsJsonArray("valid_jwk").forEach { value ->
+            assertTrue(ReallyMeJwk.fromJwkJson(value.toString()).publicKey.isNotEmpty())
+        }
+        policy.getAsJsonArray("invalid_jwk").forEach { value ->
+            assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+                ReallyMeJwk.fromJwkJson(value.toString())
+            }
+        }
+        policy.getAsJsonArray("valid_jwks").forEach { value ->
+            assertEquals(1, ReallyMeJwk.fromJwksJson(value.toString()).size)
+        }
+    }
+
     @Test
     fun nullNativeOperationResponseMapsToTypedProviderFailure() {
         assertFailsWith<ReallyMeCryptoException.ProviderFailure> {
@@ -629,9 +647,7 @@ class ReallyMeCryptoTest : ReallyMeCryptoTestSupport() {
                 ReallyMeJwk.fromJwkJson(json)
             }
         }
-        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
-            ReallyMeJwk.fromJwksJson("""{"keys":[$valid],"unknown":"value"}""")
-        }
+        assertEquals(1, ReallyMeJwk.fromJwksJson("""{"keys":[$valid],"unknown":"value"}""").size)
     }
 
     @Test

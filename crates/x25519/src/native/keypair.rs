@@ -17,6 +17,7 @@ use zeroize::Zeroizing;
 ///
 /// The legacy infallible API inherits the provider panic on entropy failure.
 /// Use [`try_generate_x25519_keypair`] for typed failure handling.
+#[deprecated(note = "use try_generate_x25519_keypair for typed entropy failures")]
 pub fn generate_x25519_keypair() -> (Vec<u8>, Zeroizing<Vec<u8>>) {
     let secret = StaticSecret::random();
     let public = PublicKey::from(&secret);

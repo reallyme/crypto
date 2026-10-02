@@ -8,6 +8,7 @@
 mod native;
 
 #[cfg(any(feature = "native", feature = "wasm"))]
+#[allow(deprecated)] // Preserve the legacy export while steering callers to the fallible API.
 pub use native::{
     assert_public_key, decode_public_key, derive_x25519_shared_secret, encode_public_key,
     generate_x25519_keypair, generate_x25519_keypair_from_seed, try_generate_x25519_keypair,

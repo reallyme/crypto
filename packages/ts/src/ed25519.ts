@@ -116,7 +116,7 @@ export const ReallyMeEd25519 = {
     try {
       point = ed25519.Point.fromBytes(publicKey, false);
     } catch {
-      throw new ReallyMeCryptoError("invalid-input");
+      throw new ReallyMeCryptoError("invalid-signature");
     }
     try {
       const rBytes = signature.subarray(0, ED25519_PUBLIC_KEY_LENGTH);

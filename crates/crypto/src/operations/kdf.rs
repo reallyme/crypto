@@ -79,7 +79,7 @@ pub fn derive_domain_hkdf_key_32(
     crypto_hkdf::derive_domain_key_32(ikm, salt, purpose, domain_tag).map_err(map_hkdf_error)
 }
 
-#[cfg(feature = "pbkdf2")]
+#[cfg(all(feature = "pbkdf2", any(feature = "native", feature = "wasm")))]
 /// Derives PBKDF2 output under the modern public work-factor policy.
 pub fn derive_pbkdf2(
     request: &crypto_pbkdf2::Pbkdf2Request<'_>,
@@ -93,7 +93,7 @@ pub fn derive_pbkdf2(
     crypto_pbkdf2::derive_key(request).map_err(map_kdf_error)
 }
 
-#[cfg(feature = "pbkdf2")]
+#[cfg(all(feature = "pbkdf2", any(feature = "native", feature = "wasm")))]
 /// Builds PBKDF2 owners under the modern policy, then derives key material.
 pub fn derive_pbkdf2_from_raw(
     prf: crypto_pbkdf2::Pbkdf2Prf,
@@ -117,7 +117,7 @@ pub fn derive_pbkdf2_from_raw(
     })
 }
 
-#[cfg(feature = "kmac")]
+#[cfg(all(feature = "kmac", any(feature = "native", feature = "wasm")))]
 /// Derives KMAC256 output keying material.
 pub fn derive_kmac256(
     key: &crypto_kmac::Kmac256Key,

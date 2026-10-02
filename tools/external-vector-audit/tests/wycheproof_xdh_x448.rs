@@ -64,6 +64,7 @@ fn wycheproof_x448_vectors_execute_against_public_api() -> Result<(), AuditError
     let file: WycheproofFile<XdhGroup> = load_json("wycheproof/x448_test.json")?;
     let mut executed = 0usize;
     let mut policy_rejections = 0usize;
+    let mut acceptable = 0usize;
 
     for group in &file.test_groups {
         if group.curve != "curve448" {
@@ -71,9 +72,6 @@ fn wycheproof_x448_vectors_execute_against_public_api() -> Result<(), AuditError
         }
         for case in &group.tests {
             let must_reject = case.must_reject_zero_shared_secret();
-            if case.result == WycheproofResult::Acceptable && !must_reject {
-                continue;
-            }
             let private_bytes = hex_bytes(&case.private)?;
             let public_bytes = hex_bytes(&case.public)?;
             let derived = derive_x448(&private_bytes, &public_bytes);
@@ -95,7 +93,14 @@ fn wycheproof_x448_vectors_execute_against_public_api() -> Result<(), AuditError
                         return Err(AuditError::Mismatch);
                     }
                 }
-                (WycheproofResult::Acceptable, false) => {}
+                (WycheproofResult::Acceptable, false) => {
+                    if let Some(shared) = derived {
+                        assert_bytes_eq(&shared, &hex_bytes(&case.shared)?)?;
+                    }
+                    acceptable = acceptable
+                        .checked_add(1)
+                        .ok_or(AuditError::NoExecutableVectors)?;
+                }
             }
             executed = executed
                 .checked_add(1)
@@ -103,7 +108,9 @@ fn wycheproof_x448_vectors_execute_against_public_api() -> Result<(), AuditError
         }
     }
 
-    if executed == 0 || policy_rejections == 0 {
+    // The remaining 11 acceptable cases carry ZeroSharedSecret and are
+    // counted as policy rejections above.
+    if executed == 0 || policy_rejections == 0 || acceptable != 234 {
         return Err(AuditError::NoExecutableVectors);
     }
     Ok(())

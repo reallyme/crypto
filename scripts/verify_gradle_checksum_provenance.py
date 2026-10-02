@@ -61,6 +61,8 @@ def entries():
                 if key in result and result[key] != expected:
                     raise ValueError(f"conflicting metadata: {key}")
                 result[key] = expected
+    if not result:
+        raise ValueError("Gradle verification metadata has no artifact hashes")
     return result
 
 

@@ -17,7 +17,10 @@ mod types;
 mod native;
 
 #[cfg(any(feature = "native", feature = "wasm"))]
-pub use native::{decrypt, decrypt_xchacha20_poly1305, encrypt, encrypt_xchacha20_poly1305};
+pub use native::{
+    decrypt, decrypt_xchacha20_poly1305, decrypt_xchacha20_poly1305_zeroizing, decrypt_zeroizing,
+    encrypt, encrypt_xchacha20_poly1305,
+};
 
 pub use types::{
     ChaCha20Poly1305Key, ChaCha20Poly1305Nonce, CiphertextWithTag, DecryptRequest, EncryptRequest,

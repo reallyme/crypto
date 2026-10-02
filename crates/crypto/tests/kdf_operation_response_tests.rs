@@ -176,6 +176,32 @@ fn operation_response_rejects_excessive_pbkdf2_work_before_derivation() {
     );
 }
 
+#[test]
+fn operation_response_preserves_pbkdf2_resource_limit_reason() {
+    let response = process_response(CryptoOperation::KdfDeriveKey(Box::new(
+        CryptoKdfDeriveKeyRequest {
+            algorithm: MessageField::some(kdf_identifier(
+                ProtoKdf::KDF_ALGORITHM_PBKDF2_HMAC_SHA256,
+            )),
+            password: b"KDF password".to_vec(),
+            salt: b"KDF salt".to_vec(),
+            iterations: reallyme_crypto::pbkdf2::PBKDF2_MAX_ITERATIONS,
+            output_length: 96,
+            __buffa_unknown_fields: Default::default(),
+        },
+    )));
+    let Some(CryptoOperationOutcome::Error(error)) = response.outcome else {
+        panic!("operation response did not contain an error");
+    };
+    let Some(CryptoErrorBranch::Primitive(error)) = error.error else {
+        panic!("operation error did not contain the primitive branch");
+    };
+    assert_eq!(
+        error.reason.as_known(),
+        Some(CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_RESOURCE_LIMIT_EXCEEDED)
+    );
+}
+
 fn assert_result_branch(
     operation: CryptoOperation,
     assertion: impl FnOnce(&CryptoOperationResultBranch) -> bool,

@@ -12,6 +12,7 @@ use crate::key_agreement_error::{
     crypto_error_from_key_generation_operation_error,
 };
 
+#[cfg(any(feature = "native", feature = "wasm"))]
 pub use crypto_x25519::{decode_public_key, encode_public_key};
 
 /// Generate an X25519 keypair through the key-agreement operation owner.

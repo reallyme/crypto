@@ -14,7 +14,7 @@ use ml_kem::{Seed, B32};
 use shake::digest::{ExtendableOutput, Update, XofReader};
 use shake::Shake256;
 use subtle::{Choice, ConstantTimeEq};
-use zeroize::{Zeroize, ZeroizeOnDrop};
+use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 const KEM_ID: u16 = 0x0040;
 const PRIVATE_KEY_LEN: usize = 64;
@@ -117,7 +117,7 @@ impl Kem for MlKem512 {
     }
 
     fn derive_keypair(input_key_material: &[u8]) -> (Self::PrivateKey, Self::PublicKey) {
-        let mut seed = [0_u8; PRIVATE_KEY_LEN];
+        let mut seed = Zeroizing::new([0_u8; PRIVATE_KEY_LEN]);
         let mut hasher = Shake256::default();
         hasher.update(input_key_material);
         hasher.update(VERSION_LABEL);
@@ -126,10 +126,10 @@ impl Kem for MlKem512 {
         hasher.update(DERIVE_KEYPAIR_LABEL);
         hasher.update(&PRIVATE_KEY_LEN_U16);
         hasher.update(EMPTY_CONTEXT);
-        hasher.finalize_xof().read(&mut seed);
+        hasher.finalize_xof().read(seed.as_mut_slice());
 
         let public_key = public_key_from_seed(&seed);
-        (MlKem512PrivateKey(seed), public_key)
+        (MlKem512PrivateKey(*seed), public_key)
     }
 
     fn decap(
@@ -177,9 +177,9 @@ impl Kem for MlKem512 {
 }
 
 fn decapsulation_key_from_seed(seed: &[u8; PRIVATE_KEY_LEN]) -> DecapsulationKey {
-    let mut typed_seed = Seed::default();
+    let mut typed_seed = Zeroizing::new(Seed::default());
     typed_seed.copy_from_slice(seed);
-    DecapsulationKey::from_seed(typed_seed)
+    DecapsulationKey::from_seed(*typed_seed)
 }
 
 fn public_key_from_seed(seed: &[u8; PRIVATE_KEY_LEN]) -> MlKem512PublicKey {

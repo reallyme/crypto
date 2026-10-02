@@ -21,9 +21,10 @@
     feature = "x-wing"
 ))]
 
-use crypto_core::Algorithm;
+use crypto_core::{Algorithm, CryptoError};
 use crypto_dispatch::{
     derive_shared_secret, generate_keypair, kem_decapsulate, kem_encapsulate, sign, verify,
+    AlgorithmError,
 };
 
 const MESSAGE: &[u8] = b"dispatch boundary validation";
@@ -36,15 +37,24 @@ fn dispatch_rejects_malformed_signature_key_and_signature_lengths() {
         let signature = sign(algorithm, &secret_key, MESSAGE).expect("signature must succeed");
 
         assert!(
-            sign(algorithm, &[], MESSAGE).is_err(),
+            matches!(
+                sign(algorithm, &[], MESSAGE),
+                Err(AlgorithmError::Crypto(CryptoError::InvalidKey))
+            ),
             "{algorithm:?} must reject an empty signing key"
         );
         assert!(
-            verify(algorithm, &[], MESSAGE, &signature).is_err(),
+            matches!(
+                verify(algorithm, &[], MESSAGE, &signature),
+                Err(AlgorithmError::Crypto(CryptoError::InvalidKey))
+            ),
             "{algorithm:?} must reject an empty verification key"
         );
         assert!(
-            verify(algorithm, &public_key, MESSAGE, &[]).is_err(),
+            matches!(
+                verify(algorithm, &public_key, MESSAGE, &[]),
+                Err(AlgorithmError::SignatureInvalid(found)) if found == algorithm
+            ),
             "{algorithm:?} must reject an empty signature"
         );
     }
@@ -57,11 +67,17 @@ fn dispatch_rejects_malformed_key_agreement_lengths() {
             generate_keypair(algorithm).expect("key agreement keypair generation must succeed");
 
         assert!(
-            derive_shared_secret(algorithm, &[], &public_key).is_err(),
+            matches!(
+                derive_shared_secret(algorithm, &[], &public_key),
+                Err(AlgorithmError::Crypto(CryptoError::InvalidKey))
+            ),
             "{algorithm:?} must reject an empty secret key"
         );
         assert!(
-            derive_shared_secret(algorithm, &secret_key, &[]).is_err(),
+            matches!(
+                derive_shared_secret(algorithm, &secret_key, &[]),
+                Err(AlgorithmError::Crypto(CryptoError::InvalidKey))
+            ),
             "{algorithm:?} must reject an empty public key"
         );
     }
@@ -76,15 +92,26 @@ fn dispatch_rejects_malformed_kem_key_and_ciphertext_lengths() {
             kem_encapsulate(algorithm, &public_key).expect("KEM encapsulation must succeed");
 
         assert!(
-            kem_encapsulate(algorithm, &[]).is_err(),
+            matches!(
+                kem_encapsulate(algorithm, &[]),
+                Err(AlgorithmError::Crypto(CryptoError::InvalidKey))
+            ),
             "{algorithm:?} must reject an empty public key"
         );
         assert!(
-            kem_decapsulate(algorithm, &[], &secret_key).is_err(),
+            matches!(
+                kem_decapsulate(algorithm, &[], &secret_key),
+                Err(AlgorithmError::Crypto(
+                    CryptoError::InvalidCiphertextLength { .. }
+                ))
+            ),
             "{algorithm:?} must reject an empty ciphertext"
         );
         assert!(
-            kem_decapsulate(algorithm, &ciphertext, &[]).is_err(),
+            matches!(
+                kem_decapsulate(algorithm, &ciphertext, &[]),
+                Err(AlgorithmError::Crypto(CryptoError::InvalidKey))
+            ),
             "{algorithm:?} must reject an empty secret key"
         );
     }

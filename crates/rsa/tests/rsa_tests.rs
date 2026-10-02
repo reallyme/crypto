@@ -5,7 +5,7 @@
 //! RSA verification tests.
 
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
-use crypto_core::CryptoError;
+use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
 use crypto_rsa::{
     verify_rsa_pkcs1v15, verify_rsa_pss, RsaHash, RsaPssParams, RsaPublicKeyDerEncoding,
 };
@@ -20,6 +20,17 @@ const PSS_SHA1: &str = "rM_td9L0bEnDyo8_7wxbYy2R7b-td3ZB69TFvaoFfm3VLBBELVOpYjHz
 const PSS_SHA256: &str = "bYeyCHaW_4vy7QDQlAtm7fY5CV9XH4Kt0eINKPRd9E1YFrvI2KLaVgG7-T0uGPu8P_t3BV0n_FJJBRxMlSySqFqT_VllgzXuBJ3A7fC_pFyMPK6A3XZ0Y_3rWShvjeZnBf_doMSjoGuWFSaB0K4IOAiyjyoJ3RGea6ikt-5nGPvaiFb6K3YXZTJXavH8AKu3J19V2kTrUGHZ6Lf5RuqWHFyzFsEzNPcp13ezECkVMZHQEwLxt9Li_mWqXDhPF4bpPCUpGljfmsgqo0RBYogEau7YxqaS15-HhLhWTaJYGEcvWBL9burCgU4nlqfEt9gU0m2EDhhUGR38CS86RSiwEw";
 const PSS_SHA384: &str = "MEnKhv7atsfMZOREi-0Ta-jDTPNHW6U1lz0_WgIkvWLJ2fohqgy2nwyBBfU-JtSZrVEaPEbIElu15F0NKHyoNUGU1WY_bwZVVSPCKWIHjbrQwK8whZw3H8NCP9G5zRJhzpFtIYBdG6H4oOzIYHSNvk7_-suOgiaTsSg0eg-ZxXypXYCGBp-mE1iJ4hRYnOVv-_Sbje00qbFCGL6WwP7Jxnucp11p4Plli25GBkggZu1gTGEhGRnU2j9NTZKxbT2Q-MTZ3mTuQohsVvUNMfF6r2ns9FEQIrsApAu2bryJcPVZkulkyBmVTW2XopOFXI-MlkQpmekoLB7ZHP6enlefBQ";
 const PSS_SHA512: &str = "rzU-aGeM1kEp6mvkQgaJ9myGNXyGtP6r18iBfZNEXf0viVvOjL_ebVE2nD3MUEtiPbxD7TAH-4JXfD-STG3BaGDjH0uVu5KCgSPjKRcskEZuOSzhmJ485fP5oc8yRnrl9lIy-RD0ItX5NWU6g40otuC7LmsrH2vWB2KoOKeWQFgCQD_KP8mssSWVuhwml-S3egN8-S6cprMbwHvJsn1KDpWn_pp0gM9FWyNoHqivekcgGJKz0iVcLzHUbxI5lhj51djBuw32bNrU7jB8dQwf847J9ZDr4cAz_vbP5oCTdXOibPG2J0joYR4mpbRgeernoZGxIf44p7HJX75J-WxE0Q";
+
+fn assert_invalid_signature(result: Result<(), CryptoError>) {
+    assert!(matches!(
+        result,
+        Err(CryptoError::Signature {
+            backend: SignatureBackend::Native,
+            operation: SignatureOperation::Verify,
+            kind: SignatureFailureKind::InvalidSignature,
+        })
+    ));
+}
 
 #[test]
 fn pkcs1v15_known_answer_signatures_verify() -> Result<(), CryptoError> {
@@ -93,25 +104,23 @@ fn pkcs1v15_rejects_tampered_message_and_signature() -> Result<(), CryptoError> 
     let message = decode(MESSAGE)?;
     let mut signature = decode(PKCS1V15_SHA384)?;
 
-    assert!(verify_rsa_pkcs1v15(
+    assert_invalid_signature(verify_rsa_pkcs1v15(
         &public_der,
         RsaPublicKeyDerEncoding::Pkcs1,
         RsaHash::Sha384,
         b"tampered",
         &signature,
-    )
-    .is_err());
+    ));
 
     let first = signature.first_mut().ok_or(CryptoError::InvalidKey)?;
     *first ^= 0x01;
-    assert!(verify_rsa_pkcs1v15(
+    assert_invalid_signature(verify_rsa_pkcs1v15(
         &public_der,
         RsaPublicKeyDerEncoding::Pkcs1,
         RsaHash::Sha384,
         &message,
         &signature,
-    )
-    .is_err());
+    ));
 
     Ok(())
 }
@@ -127,14 +136,13 @@ fn pss_rejects_wrong_salt_length_and_tampering() -> Result<(), CryptoError> {
         salt_len: 31,
     };
 
-    assert!(verify_rsa_pss(
+    assert_invalid_signature(verify_rsa_pss(
         &public_der,
         RsaPublicKeyDerEncoding::Pkcs1,
         params,
         &message,
         &signature,
-    )
-    .is_err());
+    ));
 
     let last = signature.last_mut().ok_or(CryptoError::InvalidKey)?;
     *last ^= 0x01;
@@ -142,14 +150,13 @@ fn pss_rejects_wrong_salt_length_and_tampering() -> Result<(), CryptoError> {
         salt_len: 32,
         ..params
     };
-    assert!(verify_rsa_pss(
+    assert_invalid_signature(verify_rsa_pss(
         &public_der,
         RsaPublicKeyDerEncoding::Pkcs1,
         correct_params,
         &message,
         &signature,
-    )
-    .is_err());
+    ));
 
     Ok(())
 }
@@ -160,16 +167,18 @@ fn invalid_key_and_signature_lengths_are_rejected() -> Result<(), CryptoError> {
     let message = decode(MESSAGE)?;
     let signature = decode(PKCS1V15_SHA256)?;
 
-    assert!(verify_rsa_pkcs1v15(
-        public_der.get(..8).ok_or(CryptoError::InvalidKey)?,
-        RsaPublicKeyDerEncoding::Pkcs1,
-        RsaHash::Sha256,
-        &message,
-        &signature,
-    )
-    .is_err());
+    assert!(matches!(
+        verify_rsa_pkcs1v15(
+            public_der.get(..8).ok_or(CryptoError::InvalidKey)?,
+            RsaPublicKeyDerEncoding::Pkcs1,
+            RsaHash::Sha256,
+            &message,
+            &signature,
+        ),
+        Err(CryptoError::InvalidKey)
+    ));
 
-    assert!(verify_rsa_pkcs1v15(
+    assert_invalid_signature(verify_rsa_pkcs1v15(
         &public_der,
         RsaPublicKeyDerEncoding::Pkcs1,
         RsaHash::Sha256,
@@ -177,8 +186,7 @@ fn invalid_key_and_signature_lengths_are_rejected() -> Result<(), CryptoError> {
         signature
             .get(..signature.len().saturating_sub(1))
             .ok_or(CryptoError::InvalidKey)?,
-    )
-    .is_err());
+    ));
 
     Ok(())
 }
@@ -201,15 +209,14 @@ fn signature_equal_to_modulus_is_rejected_before_rsa_verification() -> Result<()
         .get(MODULUS_OFFSET..modulus_end)
         .ok_or(CryptoError::InvalidKey)?;
     let message = decode(MESSAGE)?;
-    assert!(verify_rsa_pkcs1v15(
+    assert_invalid_signature(verify_rsa_pkcs1v15(
         &public_der,
         RsaPublicKeyDerEncoding::Pkcs1,
         RsaHash::Sha256,
         &message,
         signature,
-    )
-    .is_err());
-    assert!(verify_rsa_pss(
+    ));
+    assert_invalid_signature(verify_rsa_pss(
         &public_der,
         RsaPublicKeyDerEncoding::Pkcs1,
         RsaPssParams {
@@ -219,8 +226,7 @@ fn signature_equal_to_modulus_is_rejected_before_rsa_verification() -> Result<()
         },
         &message,
         signature,
-    )
-    .is_err());
+    ));
     Ok(())
 }
 

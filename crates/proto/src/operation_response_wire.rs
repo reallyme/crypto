@@ -8,11 +8,12 @@
 //! Executable adapters return this contract directly; no opaque alternate
 //! result envelope is part of the API.
 
-use buffa::DecodeOptions;
+use buffa::{DecodeOptions, Enumeration};
 
 use crate::generated::proto::reallyme::crypto::v1::{
     __buffa::oneof::crypto_operation_response::Outcome as CryptoOperationOutcome,
-    CryptoErrorReason, CryptoOperationResponse,
+    __buffa::oneof::crypto_operation_result::Result as CryptoOperationResultBranch,
+    CryptoErrorReason, CryptoOperationResponse, CryptoVerificationResult, CryptoVerificationStatus,
 };
 use crate::wire::{encode_protobuf, CryptoWireError, MAX_CRYPTO_PROTO_MESSAGE_BYTES};
 use zeroize::Zeroizing;
@@ -76,13 +77,45 @@ pub fn decode_operation_response(bytes: &[u8]) -> Result<CryptoOperationResponse
 
 fn validate_operation_response(response: &CryptoOperationResponse) -> Result<(), CryptoWireError> {
     match response.outcome.as_ref() {
-        Some(CryptoOperationOutcome::Result(result)) if result.result.is_some() => Ok(()),
+        Some(CryptoOperationOutcome::Result(result)) => match result.result.as_ref() {
+            Some(CryptoOperationResultBranch::MacVerify(verification))
+            | Some(CryptoOperationResultBranch::SignatureVerify(verification))
+            | Some(CryptoOperationResultBranch::RsaVerify(verification)) => {
+                validate_verification_result(verification)
+            }
+            Some(_) => Ok(()),
+            None => Err(CryptoWireError::malformed_protobuf()),
+        },
         Some(CryptoOperationOutcome::Error(error)) => CryptoWireError::try_from_proto(error)
             .map(|_| ())
             .map_err(|_| CryptoWireError::malformed_protobuf()),
-        Some(CryptoOperationOutcome::Result(_)) | None => {
-            Err(CryptoWireError::malformed_protobuf())
+        None => Err(CryptoWireError::malformed_protobuf()),
+    }
+}
+
+fn validate_verification_result(
+    verification: &CryptoVerificationResult,
+) -> Result<(), CryptoWireError> {
+    if !verification.algorithm.is_set() {
+        return Err(CryptoWireError::malformed_protobuf());
+    }
+    match CryptoVerificationStatus::from_i32(verification.status.to_i32()) {
+        Some(CryptoVerificationStatus::CRYPTO_VERIFICATION_STATUS_VALID)
+        | Some(CryptoVerificationStatus::CRYPTO_VERIFICATION_STATUS_INVALID)
+            if !verification.error.is_set() =>
+        {
+            Ok(())
         }
+        Some(CryptoVerificationStatus::CRYPTO_VERIFICATION_STATUS_ERROR) => verification
+            .error
+            .as_option()
+            .ok_or_else(CryptoWireError::malformed_protobuf)
+            .and_then(|error| {
+                CryptoWireError::try_from_proto(error)
+                    .map(|_| ())
+                    .map_err(|_| CryptoWireError::malformed_protobuf())
+            }),
+        _ => Err(CryptoWireError::malformed_protobuf()),
     }
 }
 

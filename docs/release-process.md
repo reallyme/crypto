@@ -36,7 +36,7 @@ Release workflows require:
 - exact-SHA workflow-success evidence for `rust-ci`, `dependency-security`, and the matching versioned
   package preflight, including the Swift preflight run that owns the promoted
   XCFramework artifact;
-- release environment protection before credentials are provisioned;
+- review of live release environment protection before credentials are used;
 - refusal to overwrite an existing Swift tag or release asset;
 - Maven credential preflight and signing evidence;
 - crates.io publish retry tests with terminal failure on exhausted retries, and
@@ -108,7 +108,7 @@ libraries with the pinned NDK, verifies the AAR contents and integrity manifest,
 and publishes the signed artifact. Missing repository or signing credentials
 terminate the release.
 
-Run `npm-package-release.yml` to build an immutable tarball, transfer it between
+Run `npm-package-release.yml` to build a fixed tarball, transfer it between
 jobs with a SHA-256 sidecar, bind it to an independent producer job output, and
 publish those exact bytes with npm provenance when the registry accepts the
 OIDC attestation. Confirm that the resulting registry package has provenance.

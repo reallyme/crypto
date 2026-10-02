@@ -77,6 +77,9 @@ fn ec_public_key_bytes(ec: &EcJwk) -> Result<Vec<u8>, JwtError> {
     if ec.alg.as_deref().is_some_and(|value| value != alg) {
         return Err(JwtError::UnsupportedKeyFormat);
     }
+    if ec.use_.as_deref().is_some_and(|value| value != "sig") {
+        return Err(JwtError::UnsupportedKeyFormat);
+    }
     let x = decode_fixed_public_key(&ec.x, BASE64URL_LEN_32_BYTES, 32, invalid_error)?;
     let y = decode_fixed_public_key(&ec.y, BASE64URL_LEN_32_BYTES, 32, invalid_error)?;
     let last_y = y.last().copied().ok_or(invalid_error)?;

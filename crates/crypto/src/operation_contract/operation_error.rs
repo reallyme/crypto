@@ -150,6 +150,12 @@ pub(super) fn map_operation_error(error: OperationError) -> CryptoWireError {
             CryptoWireErrorBranch::Primitive,
             CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SHARED_SECRET,
         ),
+        OperationError::Primitive {
+            reason: PrimitiveErrorReason::ResourceLimitExceeded,
+        } => wire_error(
+            CryptoWireErrorBranch::Primitive,
+            CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
+        ),
         OperationError::Primitive { .. } => invalid_parameter(),
         OperationError::Backend {
             reason: BackendErrorReason::InvalidOutput,

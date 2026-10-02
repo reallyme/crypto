@@ -144,7 +144,7 @@ impl ProviderDecision {
 #[must_use]
 pub fn provider_decision(operation: ProviderOperation, algorithm: Algorithm) -> ProviderDecision {
     let operation_supported = operation_supports_algorithm(operation, algorithm);
-    let implementation_compiled = implementation_is_compiled(algorithm);
+    let implementation_compiled = implementation_is_compiled(operation, algorithm);
     let (disposition, reason) = if !operation_supported {
         (
             ProviderDisposition::Rejected,
@@ -250,7 +250,21 @@ const fn operation_supports_algorithm(operation: ProviderOperation, algorithm: A
     }
 }
 
-const fn implementation_is_compiled(algorithm: Algorithm) -> bool {
+const fn implementation_is_compiled(operation: ProviderOperation, algorithm: Algorithm) -> bool {
+    let lane_compiled =
+        cfg!(feature = "native") || cfg!(all(feature = "wasm", target_arch = "wasm32"));
+    if !lane_compiled {
+        return false;
+    }
+    if matches!(operation, ProviderOperation::DeriveKeyPair)
+        && matches!(
+            algorithm,
+            Algorithm::P384 | Algorithm::P521 | Algorithm::Secp256k1
+        )
+        && !cfg!(feature = "native")
+    {
+        return false;
+    }
     match algorithm {
         Algorithm::Ed25519 => cfg!(feature = "ed25519"),
         Algorithm::X25519 => cfg!(feature = "x25519"),

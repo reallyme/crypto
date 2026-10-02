@@ -128,7 +128,10 @@ fn canonicalize_sec1_public_key(
     compress: fn(&[u8]) -> Result<Vec<u8>, AlgorithmError>,
 ) -> Result<Vec<u8>, AlgorithmError> {
     match public_key.len() {
-        len if len == compressed_len => Ok(public_key.to_vec()),
+        len if len == compressed_len => {
+            crate::sec1_identity::validate_compressed_public_key(alg, public_key)?;
+            Ok(public_key.to_vec())
+        }
         len if len == uncompressed_len => compress(public_key),
         len if len == raw_len => {
             let capacity = raw_len
@@ -210,6 +213,7 @@ pub fn public_key_to_multikey(alg: Algorithm, public_key: &[u8]) -> Result<Strin
         Algorithm::Secp256k1 => {
             #[cfg(feature = "secp256k1")]
             {
+                crate::sec1_identity::validate_compressed_public_key(alg, public_key)?;
                 ("secp256k1-pub", public_key.to_vec())
             }
             #[cfg(not(feature = "secp256k1"))]

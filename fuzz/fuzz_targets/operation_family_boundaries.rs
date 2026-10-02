@@ -98,7 +98,7 @@ fn exercise_kdf_boundaries(data: &[u8]) {
     let _ = Pbkdf2Password::from_slice(left, prf);
     let _ = Pbkdf2Salt::from_slice(middle, prf);
     if let Some(iterations) = read_u32(data, 0) {
-        let _ = Pbkdf2Iterations::from_u32(iterations, prf);
+        let _ = Pbkdf2Iterations::from_u32_conformance_only(iterations, prf);
         let _ = Pbkdf2Iterations::from_u32_modern(iterations, prf);
     }
 
