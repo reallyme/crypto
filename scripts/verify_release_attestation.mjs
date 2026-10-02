@@ -26,6 +26,36 @@ const REQUIRED_EVENTS = Object.freeze({
   "kotlin-android-package-preflight.yml": "workflow_dispatch",
   "npm-package-preflight.yml": "workflow_dispatch",
 });
+const REQUIRED_JOB_NAMES = Object.freeze({
+  [CODE_CHECK_WORKFLOW]: [
+    "fmt, lint, test, wasm, package",
+    "native sanitizer lanes",
+    "FFI release artifact and C sanitizer",
+    "FFI pointer and panic boundary Miri tests",
+    "swift package + vector conformance",
+    "kotlin package + vector conformance",
+  ],
+  [DEPENDENCY_SECURITY_WORKFLOW]: [
+    "Verify published Gradle runtime dependencies",
+    "Verify publisher bytes for Gradle checksums",
+    "Gate published runtime dependencies / osv-scan",
+  ],
+  "crates-package-preflight.yml": ["verify source SHA", "crates.io package preflight"],
+  "swift-package-preflight.yml": ["verify source SHA", "swift package preflight"],
+  "kotlin-android-package-preflight.yml": [
+    "verify source SHA",
+    "kotlin maven preflight",
+    "android aar preflight",
+    "jvm native preflight linux-x86_64",
+    "jvm native preflight linux-aarch64",
+    "jvm native preflight macos-x86_64",
+    "jvm native preflight macos-aarch64",
+    "jvm native preflight windows-x86_64",
+    "android instrumented preflight api 26",
+    "android instrumented preflight api 36",
+  ],
+  "npm-package-preflight.yml": ["verify source SHA", "npm package preflight"],
+});
 const MAX_COMMAND_OUTPUT_BYTES = 1_048_576;
 const MAX_WAIT_SECONDS = 7_200;
 const DEFAULT_POLL_SECONDS = 20;
@@ -168,6 +198,30 @@ export const requireLatestSuccessfulRun = (rawRuns, releaseSha, workflow, releas
   return latest;
 };
 
+export const requireSuccessfulJobs = (rawJobs, workflow) => {
+  const required = REQUIRED_JOB_NAMES[workflow];
+  if (!Array.isArray(rawJobs) || required === undefined) {
+    fail("invalid-workflow-jobs-response");
+  }
+  const names = new Set();
+  for (const job of rawJobs) {
+    if (job === null || typeof job !== "object" || Array.isArray(job) ||
+        typeof job.name !== "string" || typeof job.status !== "string" ||
+        typeof job.conclusion !== "string") {
+      fail("invalid-workflow-jobs-response");
+    }
+    if (job.status !== "completed" || job.conclusion !== "success") {
+      fail(`required-${workflow}-job-not-successful`);
+    }
+    names.add(job.name);
+  }
+  for (const name of required) {
+    if (!names.has(name)) {
+      fail(`missing-${workflow}-job`);
+    }
+  }
+};
+
 const isWaitableWorkflowFailure = (error, workflow) =>
   error instanceof ReleaseAttestationError &&
   (error.code === `missing-${workflow}-run` ||
@@ -196,6 +250,24 @@ const queryWorkflowRuns = ({ cwd, env, releaseSha, repository, workflow }) => {
     return JSON.parse(encoded);
   } catch {
     fail("invalid-workflow-run-response");
+  }
+};
+
+const queryWorkflowJobs = ({ cwd, env, repository, workflow, successfulRun }) => {
+  const encoded = run(
+    "gh",
+    [
+      "run", "view", String(successfulRun.databaseId),
+      "--repo", repository,
+      "--attempt", String(successfulRun.attempt),
+      "--json", "jobs",
+    ],
+    { cwd, env, errorCode: `query-${workflow}-jobs-failed` },
+  );
+  try {
+    return JSON.parse(encoded).jobs;
+  } catch {
+    fail("invalid-workflow-jobs-response");
   }
 };
 
@@ -290,6 +362,9 @@ export const verifyReleaseAttestation = ({ cwd = process.cwd(), env = process.en
       waitSeconds,
       pollSeconds,
     });
+    requireSuccessfulJobs(
+      queryWorkflowJobs({ cwd, env, repository, workflow, successfulRun }), workflow,
+    );
     if (workflow === preflightWorkflow) {
       preflightRunId = successfulRun.databaseId;
     }

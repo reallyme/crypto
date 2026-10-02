@@ -136,6 +136,65 @@ fn hpke_ffi_rejects_cross_output_length_aliases_before_writing() {
 }
 
 #[test]
+fn hpke_ffi_rejects_identical_cross_output_length_ranges() {
+    let mut shared = usize::MAX;
+    let shared_ptr = &mut shared as *mut usize;
+    let mut encapsulated_key = [0xA5_u8; 128];
+    let mut ciphertext_len = 0_usize;
+    let status = unsafe {
+        hpke::rm_crypto_hpke_seal_base(
+            hpke::HPKE_SUITE_P256_SHA256_AES256GCM,
+            core::ptr::null(),
+            0,
+            core::ptr::null(),
+            0,
+            core::ptr::null(),
+            0,
+            core::ptr::null(),
+            0,
+            encapsulated_key.as_mut_ptr(),
+            encapsulated_key.len(),
+            shared_ptr,
+            shared_ptr.cast::<u8>(),
+            core::mem::size_of::<usize>(),
+            &mut ciphertext_len,
+        )
+    };
+    assert_eq!(status, status::CRYPTO_INVALID_ARGUMENT);
+    assert_eq!(shared, usize::MAX);
+    assert_eq!(encapsulated_key, [0xA5_u8; 128]);
+    assert_eq!(ciphertext_len, 0);
+
+    let mut shared = usize::MAX;
+    let shared_ptr = &mut shared as *mut usize;
+    let mut encapsulated_key_len = 0_usize;
+    let mut ciphertext = [0xA5_u8; 128];
+    let status = unsafe {
+        hpke::rm_crypto_hpke_seal_base(
+            hpke::HPKE_SUITE_P256_SHA256_AES256GCM,
+            core::ptr::null(),
+            0,
+            core::ptr::null(),
+            0,
+            core::ptr::null(),
+            0,
+            core::ptr::null(),
+            0,
+            shared_ptr.cast::<u8>(),
+            core::mem::size_of::<usize>(),
+            &mut encapsulated_key_len,
+            ciphertext.as_mut_ptr(),
+            ciphertext.len(),
+            shared_ptr,
+        )
+    };
+    assert_eq!(status, status::CRYPTO_INVALID_ARGUMENT);
+    assert_eq!(shared, usize::MAX);
+    assert_eq!(encapsulated_key_len, 0);
+    assert_eq!(ciphertext, [0xA5_u8; 128]);
+}
+
+#[test]
 fn variable_length_ffis_reject_missing_length_output_before_writing_bytes() {
     let kek = [
         0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e,

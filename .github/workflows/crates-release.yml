@@ -126,16 +126,9 @@ jobs:
       - name: Cache Cargo
         uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
 
-      - name: Publish crates in dependency order
-        run: |
-          if [ -z "${CARGO_REGISTRY_TOKEN}" ]; then
-            echo "::error::CARGO_REGISTRY_TOKEN is required"
-            exit 1
-          fi
-          node scripts/verify_release_attestation.mjs
-          node scripts/publish_crates_in_order.mjs publish
+      - name: Reverify release attestation without registry credentials
+        run: node scripts/verify_release_attestation.mjs
         env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           RELEASE_SHA: ${{ needs.verify-release-sha.outputs.release_sha }}
@@ -143,3 +136,14 @@ jobs:
           RELEASE_ATTESTATION_PREFLIGHT_WORKFLOW: crates-package-preflight.yml
           RELEASE_ATTESTATION_WAIT_SECONDS: "3600"
           RELEASE_ATTESTATION_POLL_SECONDS: "20"
+
+      - name: Publish crates in dependency order
+        run: |
+          if [ -z "${CARGO_REGISTRY_TOKEN}" ]; then
+            echo "::error::CARGO_REGISTRY_TOKEN is required"
+            exit 1
+          fi
+          node scripts/publish_crates_in_order.mjs publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          RELEASE_VERSION: ${{ needs.verify-release-sha.outputs.release_version }}

@@ -11,12 +11,13 @@
 )]
 #![cfg(all(feature = "native", not(all(feature = "wasm", target_arch = "wasm32"))))]
 
-use crypto_core::CryptoError;
+use crypto_core::{CryptoError, SignatureFailureKind};
 use crypto_secp256k1::{
     decompress_secp256k1_public_key, derive_bip340_schnorr_public_key, generate_secp256k1_keypair,
     generate_secp256k1_keypair_from_secret_key, sign_bip340_schnorr, sign_secp256k1,
     verify_bip340_schnorr, verify_secp256k1,
 };
+use k256::elliptic_curve::ff::PrimeField;
 use zeroize::Zeroizing;
 
 type TestKeypair = (Vec<u8>, Zeroizing<Vec<u8>>);
@@ -132,6 +133,31 @@ fn signature_is_low_s() -> Result<(), CryptoError> {
         hex_literal::hex!("7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0");
 
     assert!(s <= half_n.as_slice(), "signature S value is not low-S");
+    Ok(())
+}
+
+#[test]
+fn high_s_twin_is_rejected_with_typed_signature_error() -> Result<(), CryptoError> {
+    let (public_key, secret_key) = generate_secp256k1_keypair().into_test_result()?;
+    let message = b"high-S malleability boundary";
+    let signature = sign_secp256k1(&secret_key, message)?;
+    verify_secp256k1(&signature, message, &public_key)?;
+
+    let scalar_bytes: [u8; 32] = signature[32..]
+        .try_into()
+        .map_err(|_| CryptoError::InvalidKey)?;
+    let scalar = Option::<k256::Scalar>::from(k256::Scalar::from_repr(scalar_bytes.into()))
+        .ok_or(CryptoError::InvalidKey)?;
+    let mut malleated = signature.clone();
+    malleated[32..].copy_from_slice(&(-scalar).to_bytes());
+
+    assert!(matches!(
+        verify_secp256k1(&malleated, message, &public_key),
+        Err(CryptoError::Signature {
+            kind: SignatureFailureKind::InvalidSignature,
+            ..
+        })
+    ));
     Ok(())
 }
 

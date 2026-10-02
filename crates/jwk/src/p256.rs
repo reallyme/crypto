@@ -35,7 +35,7 @@ pub fn p256_public_key_to_jwk(
 
             #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
             {
-                return Err(JwtError::UnsupportedKeyFormat);
+                return Err(JwtError::BackendUnavailable);
             }
         }
 

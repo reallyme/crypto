@@ -31,7 +31,7 @@ pub fn secp256k1_public_key_to_jwk(
     #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
     {
         let _ = options;
-        return Err(JwtError::UnsupportedKeyFormat);
+        return Err(JwtError::BackendUnavailable);
     }
 
     #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]

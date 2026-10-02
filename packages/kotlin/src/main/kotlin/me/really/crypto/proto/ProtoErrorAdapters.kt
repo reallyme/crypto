@@ -71,8 +71,10 @@ public interface ReallyMeCryptoProtoErrorAdapters {
 
     public fun wireErrorFromProtoBytes(bytes: ByteArray): ReallyMeCryptoWireError =
         try {
-            wireErrorFromProto(CryptoError.parseFrom(bytes))
+            wireErrorFromProto(CryptoError.parseFrom(checkedProtoBytes(bytes)))
         } catch (_: InvalidProtocolBufferException) {
+            malformedCryptoErrorEnvelope()
+        } catch (_: ReallyMeCryptoException.InvalidInput) {
             malformedCryptoErrorEnvelope()
         }
 

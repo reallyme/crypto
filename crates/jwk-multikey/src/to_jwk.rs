@@ -6,7 +6,7 @@ use envelopes_jwk::{
     ed25519_public_key_to_jwk, mldsa44_public_key_to_jwk, mldsa65_public_key_to_jwk,
     mldsa87_public_key_to_jwk, mlkem1024_public_key_to_jwk, mlkem512_public_key_to_jwk,
     mlkem768_public_key_to_jwk, p256_public_key_to_jwk, secp256k1_public_key_to_jwk,
-    x25519_public_key_to_jwk, Jwk, JwkOptions,
+    x25519_public_key_to_jwk, Jwk, JwkOptions, JwtError,
 };
 
 use crate::error::JwkMultikeyError;
@@ -31,13 +31,13 @@ pub fn multikey_to_jwk(multikey: &str, options: JwkOptions) -> Result<Jwk, JwkMu
 
         "P-256" | "ES256" => {
             let j = p256_public_key_to_jwk(parsed.public_key(), options)
-                .map_err(|_| JwkMultikeyError::EncodingError)?;
+                .map_err(map_jwk_encoding_error)?;
             Jwk::Ec(j)
         }
 
         "secp256k1" | "ES256K" => {
             let j = secp256k1_public_key_to_jwk(parsed.public_key(), options)
-                .map_err(|_| JwkMultikeyError::EncodingError)?;
+                .map_err(map_jwk_encoding_error)?;
             Jwk::Ec(j)
         }
 
@@ -75,4 +75,11 @@ pub fn multikey_to_jwk(multikey: &str, options: JwkOptions) -> Result<Jwk, JwkMu
     };
 
     Ok(jwk)
+}
+
+fn map_jwk_encoding_error(error: JwtError) -> JwkMultikeyError {
+    match error {
+        JwtError::BackendUnavailable => JwkMultikeyError::UnsupportedAlgorithm,
+        _ => JwkMultikeyError::EncodingError,
+    }
 }

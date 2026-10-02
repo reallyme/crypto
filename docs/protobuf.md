@@ -75,6 +75,12 @@ apply the same one-megabyte protobuf limit, recursion limit, strict
 unknown-field policy, provider policy, and no-fallback behavior as the local
 operation lane.
 
+Swift and Kotlin value-envelope byte adapters also reject messages larger than
+one megabyte. Their generated protobuf messages retain unknown fields for
+schema evolution, and facade projections ignore those fields. The stricter
+zero-unknown-field rule above applies to executable operation requests and
+responses; callers must not encode security policy in unknown envelope fields.
+
 Platform-resident private keys use typed, opaque handles rather than raw
 private-key bytes. A handle records its provider, purpose, algorithm, requested
 security level, and actual security level; the requested level is never proof

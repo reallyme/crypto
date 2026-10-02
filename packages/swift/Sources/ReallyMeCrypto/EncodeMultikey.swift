@@ -10,6 +10,11 @@ public enum ReallyMeMultikey {
     _ algorithm: ReallyMeMulticodecKeyAlgorithm,
     publicKey: [UInt8]
   ) throws(ReallyMeCryptoError) -> String {
+    if algorithm == .x25519PublicKey
+      && (publicKey.count != 32 || publicKey[31] & 0x80 != 0)
+    {
+      throw ReallyMeCryptoError.invalidInput
+    }
     do {
       return
         try ReallyMeCryptoCodecProvider
@@ -27,6 +32,11 @@ public enum ReallyMeMultikey {
     do {
       let parsed = try codec.multikeyParse(multikey)
       guard let algorithm = ReallyMeMulticodecKeyAlgorithm(rawValue: parsed.codecName) else {
+        throw ReallyMeCryptoError.invalidInput
+      }
+      if algorithm == .x25519PublicKey
+        && (parsed.publicKey.count != 32 || parsed.publicKey[31] & 0x80 != 0)
+      {
         throw ReallyMeCryptoError.invalidInput
       }
       let expectedPublicKeyLength: Int?

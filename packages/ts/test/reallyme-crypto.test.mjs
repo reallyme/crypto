@@ -1082,6 +1082,42 @@ test("proto adapters round-trip verification and provider capability envelopes",
   assert.equal(CryptoProviderSupportStatus.SUPPORTED, 1);
 });
 
+test("proto verification decoder rejects absent and contradictory outcomes", () => {
+  const algorithm = signatureKeyPairToProto("Ed25519", {
+    publicKey: new Uint8Array([1]),
+    secretKey: new Uint8Array([2]),
+  }).algorithm;
+  assert.ok(algorithm);
+
+  const cases = [new Uint8Array()];
+  const absentAlgorithm = verificationResultToProto(algorithm, true);
+  absentAlgorithm.algorithm = undefined;
+  cases.push(verificationResultToProtoBytes(absentAlgorithm));
+
+  const unspecified = verificationResultToProto(algorithm, true);
+  unspecified.status = CryptoVerificationStatus.UNSPECIFIED;
+  cases.push(verificationResultToProtoBytes(unspecified));
+
+  const contradictory = verificationErrorToProto(
+    algorithm, new ReallyMeCryptoError("invalid-signature"),
+  );
+  contradictory.status = CryptoVerificationStatus.VALID;
+  cases.push(verificationResultToProtoBytes(contradictory));
+
+  const missingError = verificationResultToProto(algorithm, true);
+  missingError.status = CryptoVerificationStatus.ERROR;
+  cases.push(verificationResultToProtoBytes(missingError));
+
+  const emptyError = verificationResultToProto(algorithm, true);
+  emptyError.status = CryptoVerificationStatus.ERROR;
+  emptyError.error = create(CryptoErrorSchema);
+  cases.push(verificationResultToProtoBytes(emptyError));
+
+  for (const wire of cases) {
+    assertReallyMeError(() => verificationResultFromProtoBytes(wire), "invalid-input");
+  }
+});
+
 const vectorString = (object, name) => {
   const value = object[name];
   assert.equal(typeof value, "string");
@@ -1539,6 +1575,17 @@ test("JWK vectors match the TypeScript package facade", () => {
     assert.deepEqual(parsed.publicKey, publicKey);
     assert.equal(ReallyMeJwk.toJcs(parsed.jwk), expectedJcs);
   }
+});
+
+test("X25519 JWK identity rejects the masked high-bit alias", () => {
+  const vector = jwkVector.vectors.find((entry) => entry.alg === "X25519");
+  assert.ok(vector);
+  const aliased = base64UrlBytes(vectorString(vector, "public_key"));
+  aliased[31] |= 0x80;
+  assertReallyMeError(() => ReallyMeJwk.toJwk("X25519", aliased), "invalid-input");
+  const jwk = JSON.parse(vectorString(vector, "jwk_jcs"));
+  jwk.x = Buffer.from(aliased).toString("base64url");
+  assertReallyMeError(() => ReallyMeJwk.fromJwk(jwk), "invalid-input");
 });
 
 test("JWK vectors canonicalize through the published Codec package", () => {

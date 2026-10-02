@@ -8,6 +8,15 @@ import ReallyMeCryptoProtoAdapters
 import XCTest
 
 extension ReallyMeCryptoTests {
+  func testProtoValueDecodersRejectOversizedInput() {
+    let oversized = [UInt8](repeating: 0, count: 1_048_577)
+    XCTAssertThrowsError(
+      try ReallyMeCryptoProtoAdapters.signatureKeyPair(fromProtoBytes: oversized)
+    ) { error in
+      XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+    }
+  }
+
   func testProtoAlgorithmAdaptersRoundTripSupportedValues() throws {
     XCTAssertEqual(
       try ReallyMeCryptoProtoAdapters.fromProto(
@@ -393,5 +402,45 @@ extension ReallyMeCryptoTests {
       ReallyMeCryptoProto.ReallyMeProtoCryptoProviderSupportStatus.supported
     )
     XCTAssertTrue(decodedCapabilities[0].usesRust)
+  }
+
+  func testProtoVerificationDecoderRejectsAbsentAndContradictoryOutcomes() throws {
+    var algorithm = ReallyMeCryptoProto.ReallyMeProtoCryptoAlgorithmIdentifier()
+    algorithm.signature = .ed25519
+
+    var absentAlgorithm = ReallyMeCryptoProtoAdapters.verificationResultToProto(
+      algorithm: algorithm, valid: true)
+    absentAlgorithm.clearAlgorithm()
+
+    var unspecified = ReallyMeCryptoProtoAdapters.verificationResultToProto(
+      algorithm: algorithm, valid: true)
+    unspecified.status = .unspecified
+
+    var contradictory = ReallyMeCryptoProtoAdapters.verificationErrorToProto(
+      algorithm: algorithm, error: .invalidSignature)
+    contradictory.status = .valid
+
+    var missingError = ReallyMeCryptoProtoAdapters.verificationResultToProto(
+      algorithm: algorithm, valid: true)
+    missingError.status = .error
+
+    var emptyError = missingError
+    emptyError.error = ReallyMeCryptoProto.ReallyMeProtoCryptoError()
+
+    let malformed: [[UInt8]] = [
+      [],
+      try ReallyMeCryptoProtoAdapters.verificationResultToProtoBytes(absentAlgorithm),
+      try ReallyMeCryptoProtoAdapters.verificationResultToProtoBytes(unspecified),
+      try ReallyMeCryptoProtoAdapters.verificationResultToProtoBytes(contradictory),
+      try ReallyMeCryptoProtoAdapters.verificationResultToProtoBytes(missingError),
+      try ReallyMeCryptoProtoAdapters.verificationResultToProtoBytes(emptyError),
+    ]
+    for wire in malformed {
+      XCTAssertThrowsError(try ReallyMeCryptoProtoAdapters.verificationResult(fromProtoBytes: wire))
+      {
+        error in
+        XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+      }
+    }
   }
 }

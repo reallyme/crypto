@@ -8,6 +8,15 @@ import ReallyMeCryptoProto
 import SwiftProtobuf
 
 extension ReallyMeCryptoProtoAdapters {
+  private static let maxProtoMessageBytes = 1_048_576
+
+  static func checkedProtoBytes(_ bytes: [UInt8]) throws(ReallyMeCryptoError) -> [UInt8] {
+    guard bytes.count <= maxProtoMessageBytes else {
+      throw ReallyMeCryptoError.invalidInput
+    }
+    return bytes
+  }
+
   static func serialized<T: SwiftProtobuf.Message>(_ value: T) throws(ReallyMeCryptoError)
     -> [UInt8]
   {

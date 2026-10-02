@@ -61,7 +61,9 @@ pub fn x25519_public_key_to_jwk(
     public_key: &[u8],
     options: JwkOptions,
 ) -> Result<X25519Jwk, JwtError> {
-    if public_key.len() != 32 {
+    // RFC 7748 masks bit 255 during X25519, so accepting it in an identity
+    // encoding would give one key two distinct JWK or multikey identifiers.
+    if public_key.len() != 32 || public_key[31] & 0x80 != 0 {
         return Err(JwtError::InvalidX25519Key);
     }
 

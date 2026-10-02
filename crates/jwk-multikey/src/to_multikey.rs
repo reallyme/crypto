@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use codec_multikey::encode_multikey;
-use envelopes_jwk::Jwk;
+use envelopes_jwk::{Jwk, JwtError};
 
 use crate::JwkMultikeyError;
 
@@ -36,8 +36,9 @@ pub fn jwk_to_multikey(jwk: &Jwk) -> Result<String, JwkMultikeyError> {
     // The JWK crate owns key-shape, metadata, length, and exact-coordinate
     // validation. Reusing that boundary prevents this adapter from drifting
     // into a second envelope parser with weaker policy.
-    let public_key = jwk
-        .public_key_bytes()
-        .map_err(|_| JwkMultikeyError::InvalidJwk)?;
+    let public_key = jwk.public_key_bytes().map_err(|error| match error {
+        JwtError::BackendUnavailable => JwkMultikeyError::UnsupportedAlgorithm,
+        _ => JwkMultikeyError::InvalidJwk,
+    })?;
     encode_multikey(codec_name, &public_key).map_err(|_| JwkMultikeyError::EncodingError)
 }

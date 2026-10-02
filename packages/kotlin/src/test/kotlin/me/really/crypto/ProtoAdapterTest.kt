@@ -17,6 +17,7 @@ import me.really.crypto.v1.CryptoPrimitiveError
 import me.really.crypto.v1.CryptoProviderError
 import me.really.crypto.v1.CryptoProviderSupportStatus
 import me.really.crypto.v1.CryptoSignatureDeriveKeyPairRequest
+import me.really.crypto.v1.CryptoVerificationResult
 import me.really.crypto.v1.CryptoVerificationStatus
 import me.really.crypto.v1.HashAlgorithm
 import me.really.crypto.v1.MulticodecKeyAlgorithm
@@ -29,6 +30,17 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class ProtoAdapterTest {
+    @Test
+    fun protoValueDecodersRejectOversizedInput() {
+        val oversized = ByteArray(1_048_577)
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeCryptoProtoAdapters.signatureKeyPairFromProtoBytes(oversized)
+        }
+        assertTrue(
+            ReallyMeCryptoProtoAdapters.fromProtoErrorBytes(oversized) is ReallyMeCryptoException.InvalidInput,
+        )
+    }
+
     @Test
     fun supportedProtoAlgorithmsRoundTripToFacadeEnums() {
         assertEquals(
@@ -412,6 +424,41 @@ class ProtoAdapterTest {
             decodedCapabilities[0].status,
         )
         assertTrue(decodedCapabilities[0].usesRust)
+    }
+
+    @Test
+    fun verificationDecoderRejectsAbsentAndContradictoryOutcomes() {
+        val algorithm = CryptoAlgorithmIdentifier.newBuilder()
+            .setSignature(SignatureAlgorithm.SIGNATURE_ALGORITHM_ED25519)
+            .build()
+        val valid = ReallyMeCryptoProtoAdapters.verificationResultToProto(algorithm, true)
+        val error = ReallyMeCryptoProtoAdapters.verificationErrorToProto(
+            algorithm,
+            ReallyMeCryptoException.InvalidSignature(),
+        )
+        val malformed = listOf(
+            byteArrayOf(),
+            valid.toBuilder().clearAlgorithm().build().toByteArray(),
+            valid.toBuilder()
+                .setStatus(CryptoVerificationStatus.CRYPTO_VERIFICATION_STATUS_UNSPECIFIED)
+                .build().toByteArray(),
+            error.toBuilder()
+                .setStatus(CryptoVerificationStatus.CRYPTO_VERIFICATION_STATUS_VALID)
+                .build().toByteArray(),
+            valid.toBuilder()
+                .setStatus(CryptoVerificationStatus.CRYPTO_VERIFICATION_STATUS_ERROR)
+                .build().toByteArray(),
+            CryptoVerificationResult.newBuilder()
+                .setAlgorithm(algorithm)
+                .setStatus(CryptoVerificationStatus.CRYPTO_VERIFICATION_STATUS_ERROR)
+                .setError(CryptoError.getDefaultInstance())
+                .build().toByteArray(),
+        )
+        malformed.forEach { wire ->
+            assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+                ReallyMeCryptoProtoAdapters.verificationResultFromProtoBytes(wire)
+            }
+        }
     }
 
 }

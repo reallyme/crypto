@@ -30,6 +30,23 @@ final class ReallyMeCryptoJwkTests: XCTestCase {
     }
   }
 
+  func testX25519JwkRejectsMaskedHighBitAlias() throws {
+    try installReallyMeCodecProviderForTest()
+    let data = try Data(contentsOf: reallyMeVectorURL("jwk.json"))
+    let vectors = try JSONDecoder().decode(JwkVectorFile.self, from: data)
+    let vector = try XCTUnwrap(vectors.vectors.first { $0.alg == "X25519" })
+    var aliased = try Self.base64UrlBytes(vector.publicKey)
+    aliased[31] |= 0x80
+
+    XCTAssertThrowsError(try ReallyMeJwk.toJwk(algorithm: .x25519, publicKey: aliased)) { error in
+      XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+    }
+    XCTAssertThrowsError(try ReallyMeMultikey.encode(.x25519PublicKey, publicKey: aliased)) {
+      error in
+      XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+    }
+  }
+
   func testJwkParserRejectsPrivateKeyMembers() throws {
     try installReallyMeCodecProviderForTest()
     let publicX = String(repeating: "A", count: 43)

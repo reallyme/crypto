@@ -74,4 +74,8 @@ pub enum JwtError {
     /// JSON or canonicalization failed.
     #[error("encoding error")]
     EncodingError,
+
+    /// The selected key format needs a cryptographic backend in this build.
+    #[error("key backend unavailable")]
+    BackendUnavailable,
 }

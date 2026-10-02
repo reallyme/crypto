@@ -304,6 +304,14 @@ export const ReallyMeJwk = {
   toJwk(algorithm: ReallyMeJwkAlgorithm, publicKey: Uint8Array): ReallyMeJwk {
     const spec = jwkSpec(algorithm);
     ensureLength(publicKey, spec.publicKeyLength);
+    // X25519 masks the top bit during agreement; identity encodings must
+    // reject that alias so two identifiers cannot name the same key.
+    if (algorithm === "X25519") {
+      const lastByte = publicKey.at(31);
+      if (lastByte === undefined || (lastByte & 0x80) !== 0) {
+        throw new ReallyMeCryptoError("invalid-input");
+      }
+    }
     if (spec.kty === "EC") {
       const ecAlgorithm = spec.crv === "P-256" ? "P-256" : "secp256k1";
       const uncompressed = decompressEc(ecAlgorithm, publicKey);
