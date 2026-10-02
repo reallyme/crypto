@@ -47,6 +47,28 @@ final class ReallyMeCryptoJwkTests: XCTestCase {
     }
   }
 
+  func testX25519EnvelopesRejectNonCanonicalFieldAliases() throws {
+    try installReallyMeCodecProviderForTest()
+    var publicKey = [UInt8](repeating: 0xff, count: 32)
+    publicKey[31] = 0x7f
+    publicKey[0] = 0xec
+    XCTAssertEqual(
+      try ReallyMeJwk.toJwk(algorithm: .x25519, publicKey: publicKey).crv,
+      "X25519")
+
+    for lowByte in 0xed...0xff {
+      publicKey[0] = UInt8(lowByte)
+      XCTAssertThrowsError(try ReallyMeJwk.toJwk(algorithm: .x25519, publicKey: publicKey)) {
+        error in
+        XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+      }
+      XCTAssertThrowsError(try ReallyMeMultikey.encode(.x25519PublicKey, publicKey: publicKey)) {
+        error in
+        XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+      }
+    }
+  }
+
   func testJwkParserRejectsPrivateKeyMembers() throws {
     try installReallyMeCodecProviderForTest()
     let publicX = String(repeating: "A", count: 43)

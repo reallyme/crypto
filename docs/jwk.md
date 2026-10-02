@@ -23,8 +23,9 @@ OKP `alg` and `use` members are optional for public-byte JWKs, but they are
 enforced when present. Ed25519 accepts only `alg: "EdDSA"`
 and `use: "sig"`; X25519 accepts only `alg: "ECDH-ES"` and `use: "enc"`.
 Conflicting metadata is rejected instead of being treated as advisory.
-X25519 public-key identities also reject bit 255, which RFC 7748 masks during
-agreement and would otherwise give the same key two JWK or multikey encodings.
+X25519 public-key identities require canonical field-element encodings below
+2²⁵⁵ − 19. RFC 7748 agreement accepts non-canonical inputs, but those inputs
+would give the same key multiple JWK or multikey identifiers.
 
 Deserialization dispatches on `kty` explicitly. Duplicate members, private-key
 members, mixed JWK shapes, and unknown non-extension members are rejected before

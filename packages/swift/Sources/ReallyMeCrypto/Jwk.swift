@@ -104,9 +104,7 @@ public enum ReallyMeJwk {
     guard publicKey.count == spec.publicKeyLength else {
       throw ReallyMeCryptoError.invalidInput
     }
-    // The high bit is masked by X25519 agreement and cannot distinguish
-    // public-key identities in a JWK.
-    if algorithm == .x25519 && publicKey[31] & 0x80 != 0 {
+    if algorithm == .x25519 && !ReallyMeX25519Identity.isCanonical(publicKey) {
       throw ReallyMeCryptoError.invalidInput
     }
 

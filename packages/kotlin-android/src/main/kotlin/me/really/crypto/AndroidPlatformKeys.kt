@@ -160,6 +160,11 @@ public object ReallyMeAndroidPlatformKeys {
         agreement: KeyAgreement,
         peerPublicKey: ByteArray,
     ): ByteArray {
+        // Only an Android Keystore operation can carry the non-exportable key
+        // across BiometricPrompt. A software JCA agreement is not equivalent.
+        if (agreement.provider.name != ANDROID_KEYSTORE) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
         val peer = decodeCompressedPublicKey(peerPublicKey)
         return withMappedPlatformErrors {
             agreement.doPhase(peer, true)

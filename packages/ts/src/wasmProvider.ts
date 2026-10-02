@@ -4,11 +4,7 @@
 
 import { ReallyMeCryptoError } from "./errors.js";
 import type { ReallyMeCryptoErrorCode } from "./errors.js";
-
-// Type checking runs before artifact generation in CI. Resolve the exact
-// package-owned module at runtime, then keep its namespace as an opaque token.
-const bundledWasmModulePath = "../dist/wasm/reallyme_crypto_wasm.js";
-const bundledWasm: unknown = await import(bundledWasmModulePath);
+import { bundledWasmFunctions, verifyBundledWasmModule } from "./verifyBundledWasmModule.js";
 
 type GenerateKeypairFn = () => unknown;
 type GenerateKeypairFromSeedFn = (seed: Uint8Array) => unknown;
@@ -167,7 +163,8 @@ const requireObject = (module: unknown): object => {
 const requireFunction = (module: object, name: string): WasmCallable => {
   let candidate: unknown;
   try {
-    candidate = Object.getOwnPropertyDescriptor(module, name)?.value;
+    const descriptor = Object.getOwnPropertyDescriptor(module, name);
+    candidate = descriptor?.get === undefined ? descriptor?.value : Reflect.get(module, name);
   } catch {
     throw new ReallyMeCryptoError("provider-failure");
   }
@@ -399,16 +396,17 @@ export const installReallyMeWasmProvider = (module: unknown): void => {
   if (installedProvider !== undefined) {
     throw new ReallyMeCryptoError("provider-failure");
   }
-  // The generated ES module namespace has stable identity across imports.
-  // Global installation must use this package's own provider, rather than a
-  // structurally compatible object that can make verification hooks no-ops.
-  if (module !== bundledWasm) {
+  const providerModule = requireObject(module);
+  // Static named imports keep the package-owned glue in the bundler graph.
+  // Compare every callable before global installation so a structural copy
+  // cannot replace a verification hook with a no-op.
+  if (!verifyBundledWasmModule(providerModule)) {
     throw new ReallyMeCryptoError("provider-failure");
   }
   try {
     // A data-independent call rejects an uninitialized WASM instance before
     // the install-once slot becomes visible to package-global facades.
-    requireFunction(requireObject(module), "aes128GcmOpen")(
+    requireFunction(bundledWasmFunctions, "aes128GcmOpen")(
       new Uint8Array(0),
       new Uint8Array(0),
       new Uint8Array(0),
@@ -416,7 +414,7 @@ export const installReallyMeWasmProvider = (module: unknown): void => {
     );
   } catch (error: unknown) {
     if (error instanceof ReallyMeCryptoError && error.code === "invalid-input") {
-      installedProvider = createReallyMeWasmProvider(module);
+      installedProvider = createReallyMeWasmProvider(bundledWasmFunctions);
       return;
     }
     throw new ReallyMeCryptoError("provider-failure");

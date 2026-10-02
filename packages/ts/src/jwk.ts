@@ -300,17 +300,28 @@ const toJcs = (jwk: ReallyMeJwk): string => {
   }
 };
 
+const isCanonicalX25519Identity = (publicKey: Uint8Array): boolean => {
+  if (publicKey.length !== 32) {
+    return false;
+  }
+  const highByte = publicKey[31];
+  const lowByte = publicKey[0];
+  if (highByte === undefined || lowByte === undefined || highByte > 0x7f) {
+    return false;
+  }
+  // RFC 7748 agreement accepts non-canonical u-coordinates. JWK identifiers
+  // reject p through 2^255-1 so one field element has one encoding.
+  return highByte !== 0x7f
+    || publicKey.subarray(1, 31).some((byte) => byte !== 0xff)
+    || lowByte < 0xed;
+};
+
 export const ReallyMeJwk = {
   toJwk(algorithm: ReallyMeJwkAlgorithm, publicKey: Uint8Array): ReallyMeJwk {
     const spec = jwkSpec(algorithm);
     ensureLength(publicKey, spec.publicKeyLength);
-    // X25519 masks the top bit during agreement; identity encodings must
-    // reject that alias so two identifiers cannot name the same key.
-    if (algorithm === "X25519") {
-      const lastByte = publicKey.at(31);
-      if (lastByte === undefined || (lastByte & 0x80) !== 0) {
-        throw new ReallyMeCryptoError("invalid-input");
-      }
+    if (algorithm === "X25519" && !isCanonicalX25519Identity(publicKey)) {
+      throw new ReallyMeCryptoError("invalid-input");
     }
     if (spec.kty === "EC") {
       const ecAlgorithm = spec.crv === "P-256" ? "P-256" : "secp256k1";

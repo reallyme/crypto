@@ -556,6 +556,28 @@ class ReallyMeCryptoTest : ReallyMeCryptoTestSupport() {
     }
 
     @Test
+    fun x25519EnvelopesRejectNonCanonicalFieldAliases() {
+        val publicKey = ByteArray(32) { 0xff.toByte() }
+        publicKey[31] = 0x7f
+        publicKey[0] = 0xec.toByte()
+        assertEquals("X25519", ReallyMeJwk.toJwk(ReallyMeJwkAlgorithm.X25519, publicKey).crv)
+
+        for (lowByte in 0xed..0xff) {
+            publicKey[0] = lowByte.toByte()
+            assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+                ReallyMeJwk.toJwk(ReallyMeJwkAlgorithm.X25519, publicKey)
+            }
+            assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+                ReallyMeMultikey.encode(ReallyMeMulticodecKeyAlgorithm.X25519_PUBLIC_KEY, publicKey)
+            }
+            val x = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(publicKey)
+            assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+                ReallyMeJwk.fromJwkJson("""{"kty":"OKP","crv":"X25519","x":"$x"}""")
+            }
+        }
+    }
+
+    @Test
     fun jwkParserRejectsPrivateKeyMembers() {
         val publicX = "A".repeat(43)
         listOf("d", "p", "q", "dp", "dq", "qi", "oth", "k", "priv", "privateKey", "secretKey")

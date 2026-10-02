@@ -33,6 +33,9 @@ fn crypto_error_from_operation_error(
         crate::operations::OperationError::Primitive {
             reason: crate::operations::PrimitiveErrorReason::LengthOverflow,
         } => KdfFailureKind::InvalidOutputLength,
+        crate::operations::OperationError::Primitive {
+            reason: crate::operations::PrimitiveErrorReason::ResourceLimitExceeded,
+        } => KdfFailureKind::ResourceLimitExceeded,
         crate::operations::OperationError::Provider {
             reason: crate::operations::ProviderErrorReason::UnsupportedAlgorithm,
         } => return CryptoError::Unsupported,

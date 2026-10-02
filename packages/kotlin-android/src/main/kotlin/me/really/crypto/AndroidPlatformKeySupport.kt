@@ -56,8 +56,18 @@ private val handleMagic: ByteArray = byteArrayOf(0x52, 0x4d, 0x41, 0x4b)
 private val aliasDomain: ByteArray =
     "me.really.crypto.android-platform-key.v1".toByteArray(Charsets.US_ASCII)
 
-@Synchronized
 internal fun generateKeyPair(
+    purpose: ReallyMeAndroidPlatformKeyPurpose,
+    applicationTag: ByteArray,
+    policy: ReallyMeAndroidPlatformKeyPolicy,
+    overwriteExisting: Boolean,
+): ReallyMeAndroidPlatformKeyPair = synchronized(ReallyMeAndroidPlatformKeys) {
+    // deleteKey is synchronized on the facade singleton. Share that monitor
+    // so generation and deletion cannot race on the same Keystore alias.
+    generateKeyPairUnderLock(purpose, applicationTag, policy, overwriteExisting)
+}
+
+private fun generateKeyPairUnderLock(
     purpose: ReallyMeAndroidPlatformKeyPurpose,
     applicationTag: ByteArray,
     policy: ReallyMeAndroidPlatformKeyPolicy,

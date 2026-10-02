@@ -24,6 +24,9 @@ import java.io.ByteArrayInputStream
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.util.UUID
+import java.security.KeyPairGenerator
+import java.security.spec.ECGenParameterSpec
+import javax.crypto.KeyAgreement
 
 @RunWith(AndroidJUnit4::class)
 class ReallyMeCryptoAndroidInstrumentedTest {
@@ -271,6 +274,16 @@ class ReallyMeCryptoAndroidInstrumentedTest {
         }
 
         val peer = ReallyMeP256Ecdh.generateKeyPair()
+        val softwareGenerator = KeyPairGenerator.getInstance("EC")
+        softwareGenerator.initialize(ECGenParameterSpec("secp256r1"))
+        val softwareAgreement = KeyAgreement.getInstance("ECDH")
+        softwareAgreement.init(softwareGenerator.generateKeyPair().private)
+        assertTypedFailure<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeAndroidPlatformKeys.completeKeyAgreementOperation(
+                agreement = softwareAgreement,
+                peerPublicKey = peer.first,
+            )
+        }
         var platformSecret = ByteArray(0)
         var peerSecret = ByteArray(0)
         try {

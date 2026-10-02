@@ -11,6 +11,12 @@ use crate::JwkMultikeyError;
 ///
 /// Guarantees byte-for-byte round-trip equivalence.
 pub fn jwk_to_multikey(jwk: &Jwk) -> Result<String, JwkMultikeyError> {
+    #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
+    if matches!(jwk, Jwk::Ec(_)) {
+        // Cargo can unify the JWK dependency's backend feature through a
+        // sibling crate. This adapter's own feature contract remains closed.
+        return Err(JwkMultikeyError::UnsupportedAlgorithm);
+    }
     let codec_name = match jwk {
         Jwk::Okp(okp) => match okp.crv.as_str() {
             "Ed25519" => "ed25519-pub",

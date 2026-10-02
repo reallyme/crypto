@@ -3,10 +3,12 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import assert from "node:assert/strict";
+import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 const bundledWasm = await import("../dist/wasm/reallyme_crypto_wasm.js");
 import { create, toBinary } from "@bufbuild/protobuf";
+import { ed25519 as nobleEd25519 } from "@noble/curves/ed25519.js";
 import {
   aes128GcmOpen,
   aes128GcmSeal,
@@ -213,6 +215,13 @@ import {
   verificationResultToProtoBytes,
 } from "../dist/proto.js";
 
+test("package entry point supports synchronous CommonJS loading", () => {
+  const require = createRequire(import.meta.url);
+  const packageApi = require("@reallyme/crypto");
+  assert.equal(typeof packageApi.ReallyMeCrypto, "object");
+  assert.equal(typeof packageApi.createReallyMeWasmProvider, "function");
+});
+
 const hex = (bytes) => Buffer.from(bytes).toString("hex");
 const bytes = (hexString) => Uint8Array.from(Buffer.from(hexString, "hex"));
 const base64UrlBytes = (base64url) =>
@@ -298,7 +307,10 @@ const wasmProviderModule = {
   xWing768GenerateKeypair,
 };
 const installedWasmProvider = createReallyMeWasmProvider(wasmProviderModule);
-assertReallyMeError(() => installReallyMeWasmProvider(wasmProviderModule), "provider-failure");
+assertReallyMeError(
+  () => installReallyMeWasmProvider({ ...wasmProviderModule, mlDsa44Verify: () => undefined }),
+  "provider-failure",
+);
 installReallyMeWasmProvider(bundledWasm);
 
 test("package-global WASM provider is frozen after first install", () => {
@@ -1586,6 +1598,22 @@ test("X25519 JWK identity rejects the masked high-bit alias", () => {
   const jwk = JSON.parse(vectorString(vector, "jwk_jcs"));
   jwk.x = Buffer.from(aliased).toString("base64url");
   assertReallyMeError(() => ReallyMeJwk.fromJwk(jwk), "invalid-input");
+});
+
+test("X25519 JWK identity rejects field elements at or above p", () => {
+  const publicKey = new Uint8Array(32).fill(0xff);
+  publicKey[31] = 0x7f;
+  publicKey[0] = 0xec;
+  assert.equal(ReallyMeJwk.toJwk("X25519", publicKey).crv, "X25519");
+
+  for (let lowByte = 0xed; lowByte <= 0xff; lowByte += 1) {
+    publicKey[0] = lowByte;
+    assertReallyMeError(() => ReallyMeJwk.toJwk("X25519", publicKey), "invalid-input");
+    assertReallyMeError(
+      () => ReallyMeJwk.fromJwk({ kty: "OKP", crv: "X25519", x: Buffer.from(publicKey).toString("base64url") }),
+      "invalid-input",
+    );
+  }
 });
 
 test("JWK vectors canonicalize through the published Codec package", () => {
@@ -3278,6 +3306,20 @@ test("ed25519 rejects small-order and mixed-order signature points", () => {
       "invalid-signature",
     );
   }
+
+  // CCTV vector 4 is accepted by the ordinary cofactored equation. Its
+  // low-order R must still be rejected by the package's strict verifier.
+  const cofactoredPublicKey = bytes("10eb7c3acfb2bed3e0d6ab89bf5a3d6afddd1176ce4812e38d9fd485058fdb1f");
+  const cofactoredSignature = bytes("00000000000000000000000000000000000000000000000000000000000000005e176f12cfb0d4e6eb6929b19ae4c998ef05c1c2cf628a9b1fa1c21312627108");
+  const cofactoredMessage = new TextEncoder().encode("ed25519vectors 7");
+  assert.equal(
+    nobleEd25519.verify(cofactoredSignature, cofactoredMessage, cofactoredPublicKey, { zip215: false }),
+    true,
+  );
+  assertReallyMeError(
+    () => ReallyMeEd25519.verify(cofactoredSignature, cofactoredMessage, cofactoredPublicKey),
+    "invalid-signature",
+  );
 });
 
 test("ed25519 matches the strict CCTV acceptance set", () => {

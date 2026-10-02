@@ -92,9 +92,7 @@ public object ReallyMeJwk {
         if (publicKey.size != spec.publicKeyLength) {
             throw ReallyMeCryptoException.InvalidInput()
         }
-        // X25519 masks bit 255 during agreement; reject the alternate
-        // identity encoding before it becomes a second JWK identifier.
-        if (algorithm == ReallyMeJwkAlgorithm.X25519 && (publicKey[31].toInt() and 0x80) != 0) {
+        if (algorithm == ReallyMeJwkAlgorithm.X25519 && !isCanonicalX25519Identity(publicKey)) {
             throw ReallyMeCryptoException.InvalidInput()
         }
 

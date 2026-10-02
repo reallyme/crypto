@@ -42,6 +42,23 @@ fn x25519_verification_method_rejects_masked_high_bit_alias() {
 }
 
 #[test]
+fn x25519_verification_method_rejects_noncanonical_field_aliases() {
+    let mut field_boundary = [0xff_u8; 32];
+    field_boundary[31] = 0x7f;
+    field_boundary[0] = 0xec;
+    assert!(public_key_to_multikey(Algorithm::X25519, &field_boundary).is_ok());
+
+    for low_byte in 0xed..=0xff {
+        field_boundary[0] = low_byte;
+        assert!(public_key_to_multikey(Algorithm::X25519, &field_boundary).is_err());
+        let alias = encode_multikey("x25519-pub", &field_boundary).unwrap();
+        assert!(
+            validate_verification_method_multikey(Algorithm::X25519, "Multikey", &alias).is_err()
+        );
+    }
+}
+
+#[test]
 fn ml_kem_verification_method_is_valid() {
     let (public, _) = generate_keypair(Algorithm::MlKem1024).unwrap();
     let mk = public_key_to_multikey(Algorithm::MlKem1024, &public).unwrap();

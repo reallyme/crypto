@@ -15,6 +15,7 @@
 //! Operation-owner tests for KDF routes.
 
 use reallyme_crypto::operations::{OperationError, PrimitiveErrorReason};
+use reallyme_crypto::{core::CryptoError, core::KdfFailureKind};
 
 #[test]
 fn pbkdf2_operation_matches_root_facade_and_rejects_invalid_input() {
@@ -86,6 +87,40 @@ fn pbkdf2_operation_matches_root_facade_and_rejects_invalid_input() {
         ),
         Err(OperationError::Primitive {
             reason: PrimitiveErrorReason::InvalidLength,
+        })
+    ));
+}
+
+#[test]
+fn pbkdf2_root_facade_preserves_resource_limit_errors() {
+    let prf = reallyme_crypto::pbkdf2::Pbkdf2Prf::HmacSha256;
+    let password =
+        reallyme_crypto::pbkdf2::Pbkdf2Password::from_slice(b"password", prf).expect("password");
+    let salt = reallyme_crypto::pbkdf2::Pbkdf2Salt::from_slice(b"salt", prf).expect("salt");
+    let iterations = reallyme_crypto::pbkdf2::Pbkdf2Iterations::from_u32_modern(
+        reallyme_crypto::pbkdf2::PBKDF2_MAX_ITERATIONS,
+        prf,
+    )
+    .expect("bounded iterations");
+    let request = reallyme_crypto::pbkdf2::Pbkdf2Request {
+        prf,
+        password: &password,
+        salt: &salt,
+        iterations,
+        output_len: reallyme_crypto::pbkdf2::PBKDF2_MAX_OUTPUT_LENGTH,
+    };
+
+    assert!(matches!(
+        reallyme_crypto::pbkdf2::derive_key(&request),
+        Err(CryptoError::Kdf {
+            kind: KdfFailureKind::ResourceLimitExceeded,
+            ..
+        })
+    ));
+    assert!(matches!(
+        reallyme_crypto::operations::kdf::derive_pbkdf2(&request),
+        Err(OperationError::Primitive {
+            reason: PrimitiveErrorReason::ResourceLimitExceeded,
         })
     ));
 }
