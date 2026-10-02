@@ -6,6 +6,7 @@ package me.really.crypto
 
 import java.security.GeneralSecurityException
 import java.security.PublicKey
+import java.security.interfaces.RSAPublicKey as JcaRsaPublicKey
 import java.security.spec.MGF1ParameterSpec
 import java.security.spec.PSSParameterSpec
 import java.security.spec.RSAPublicKeySpec
@@ -35,6 +36,11 @@ private data class RsaPssSuite(
  * semantics across Android and JVM deployments.
  */
 public object ReallyMeRsa {
+    private const val MIN_MODULUS_BITS = 1024
+    private const val MAX_MODULUS_BITS = 8192
+    private const val MIN_EXPONENT_BITS = 2
+    private const val MAX_EXPONENT_BITS = 64
+
     public fun verify(
         algorithm: ReallyMeSignatureAlgorithm,
         signature: ByteArray,
@@ -115,7 +121,7 @@ public object ReallyMeRsa {
         }
 
         return try {
-            when (encoding) {
+            val key = when (encoding) {
                 ReallyMeRsaPublicKeyDerEncoding.PKCS1 -> {
                     val parsed = RSAPublicKey.getInstance(publicKeyDer)
                     keyFactory.generatePublic(RSAPublicKeySpec(parsed.modulus, parsed.publicExponent))
@@ -123,6 +129,17 @@ public object ReallyMeRsa {
                 ReallyMeRsaPublicKeyDerEncoding.SPKI ->
                     keyFactory.generatePublic(X509EncodedKeySpec(publicKeyDer))
             }
+            val rsaKey = key as? JcaRsaPublicKey ?: throw ReallyMeCryptoException.InvalidInput()
+            // Match the Rust verifier's public-key policy before any signature
+            // operation; e=1 makes a PKCS#1 v1.5 signature trivial to forge.
+            if (rsaKey.modulus.bitLength() !in MIN_MODULUS_BITS..MAX_MODULUS_BITS ||
+                !rsaKey.modulus.testBit(0) ||
+                rsaKey.publicExponent.bitLength() !in MIN_EXPONENT_BITS..MAX_EXPONENT_BITS ||
+                !rsaKey.publicExponent.testBit(0)
+            ) {
+                throw ReallyMeCryptoException.InvalidInput()
+            }
+            key
         } catch (_: IllegalArgumentException) {
             throw ReallyMeCryptoException.InvalidInput()
         } catch (_: GeneralSecurityException) {

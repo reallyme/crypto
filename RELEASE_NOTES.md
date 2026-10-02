@@ -6,6 +6,8 @@
   parameters, length framing, input bound, and canonical output encoding used
   by ReallyMe ZK circuits. Cross-checks full and partial blocks against the ZK
   fixture oracle.
+- Adds canonical P-256 prehashed ECDSA helpers in Rust and exposes typed
+  `throws(ReallyMeCryptoError)` across the Swift public API.
 - Updates the ReallyMe Codec dependency to `0.3.0` across Rust, Swift,
   TypeScript, Kotlin/JVM, and Android, including the new multikey accessor,
   Swift error mapping, and TypeScript WASM provider contract.
@@ -26,6 +28,20 @@
   multi-language CodeQL analysis, browser WASM execution, and C ABI sanitizer
   and Miri checks. Manual Maven bundles now use the attested versioned
   Kotlin/Android preflight artifacts for the release commit.
+- Aligns Kotlin RSA public-key limits with the Rust verifier, gives decoded
+  TypeScript protobuf byte fields independent ownership, and limits global
+  WASM provider installation to the package's initialized module.
+- Requires prime-subgroup public and signature points for Ed25519 verification
+  across Rust, TypeScript, and Kotlin, with shared rejection cases for
+  torsion-bearing signatures. Failed WASM HPKE opens now return a typed
+  authentication error.
+- Bounds PBKDF2's combined iteration and output-block work before derivation
+  in Rust, Swift, Kotlin, and TypeScript. Over-limit requests fail with typed
+  errors before provider dispatch.
+- Aligns Secure Enclave ECDH provider errors with signing and reserves the
+  handle-owned Keychain tag namespace from caller-owned references.
+- Redacts Swift key material from reflection and keeps Kotlin's Android key
+  alias domain and protobuf error sets private to their implementations.
 
 ## 0.3.9
 

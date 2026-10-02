@@ -109,6 +109,20 @@ fn invalid_key_size_fails() {
 }
 
 #[test]
+fn strict_verify_rejects_small_and_mixed_order_points() {
+    const CASES: [(&str, &str); 3] = [
+        ("ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c", "01000000000000000000000000000000000000000000000000000000000000003a50d26c7814a5fcb34c4ea20adafbadb92b9c07f44469adfefb9e2ac15fa806"),
+        ("1f4f580e73ac208f06760190e9edc6f5916775dabd9c1cdca393175c2d6d1083", "ef4f62f8479733ad879cfaced3c89a9c39dd4fc795ef2efa1c3eafe4d729a0819283168b8f73c6b5a427b62c816c659fff3b0404fbbe2bebe86344da2b95fd03"),
+        ("ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c", "37156422280c0dcab41e93fdf9b1a740fc984b3cd62c56a44bf59943120d20fbfc3b9d88fb1a799780803c1758fd35e5581539a1e51ef466206bf5e1926a2c09"),
+    ];
+    for (public_key, signature) in CASES {
+        let public_key = hex::decode(public_key).expect("fixed public key hex");
+        let signature = hex::decode(signature).expect("fixed signature hex");
+        assert!(verify_ed25519(&public_key, b"reallyme-challenge", &signature).is_err());
+    }
+}
+
+#[test]
 fn signature_does_not_verify_under_different_key() -> Result<(), CryptoError> {
     let (_pk1, sk1) = generate_ed25519_keypair().into_test_result()?;
     let (pk2, _sk2) = generate_ed25519_keypair().into_test_result()?;

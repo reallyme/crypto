@@ -25,9 +25,32 @@ import me.really.crypto.v1.CryptoOperationResponse
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERSequence
+import org.bouncycastle.asn1.pkcs.RSAPublicKey
 import org.junit.jupiter.api.Assumptions.assumeTrue
 
 class ReallyMeCryptoSignatureTest : ReallyMeCryptoTestSupport() {
+    @Test
+    fun rsaRejectsWeakModuliAndPublicExponents() {
+        val weakModulus = BigInteger.ONE.shiftLeft(511).add(BigInteger.ONE)
+        val acceptableModulus = BigInteger.ONE.shiftLeft(1023).add(BigInteger.ONE)
+        val keys = listOf(
+            RSAPublicKey(weakModulus, BigInteger.valueOf(65537)),
+            RSAPublicKey(acceptableModulus, BigInteger.ONE),
+            RSAPublicKey(acceptableModulus, BigInteger.TWO),
+        )
+        for (key in keys) {
+            assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+                ReallyMeRsa.verify(
+                    ReallyMeSignatureAlgorithm.RSA_PKCS1V15_SHA256,
+                    ByteArray(128),
+                    byteArrayOf(1),
+                    key.encoded,
+                    ReallyMeRsaPublicKeyDerEncoding.PKCS1,
+                )
+            }
+        }
+    }
+
     @Test
     fun genericFacadeRemainingFamiliesReturnTypedUnsupportedAlgorithm() {
         val empty = ByteArray(0)
@@ -200,6 +223,22 @@ class ReallyMeCryptoSignatureTest : ReallyMeCryptoTestSupport() {
             "69d360b839583ce3632021e8ca6b382533f68e8c53f4996cd84dfda548273659" +
                 "3646588752e7d8d22a84cdccdc4cb84e6b8c781e672745aca5ace2443cccde03",
         )
+
+    @Test
+    fun ed25519RejectsSmallOrderAndMixedOrderPoints() {
+        val message = bytes("7265616c6c796d652d6368616c6c656e6765")
+        val cases = listOf(
+            Pair("ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c", "01000000000000000000000000000000000000000000000000000000000000003a50d26c7814a5fcb34c4ea20adafbadb92b9c07f44469adfefb9e2ac15fa806"),
+            Pair("1f4f580e73ac208f06760190e9edc6f5916775dabd9c1cdca393175c2d6d1083", "ef4f62f8479733ad879cfaced3c89a9c39dd4fc795ef2efa1c3eafe4d729a0819283168b8f73c6b5a427b62c816c659fff3b0404fbbe2bebe86344da2b95fd03"),
+            Pair("ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c", "37156422280c0dcab41e93fdf9b1a740fc984b3cd62c56a44bf59943120d20fbfc3b9d88fb1a799780803c1758fd35e5581539a1e51ef466206bf5e1926a2c09"),
+        )
+        for ((index, testCase) in cases.withIndex()) {
+            val (publicKey, signature) = testCase
+            assertFailsWith<ReallyMeCryptoException.InvalidSignature>(message = "case $index") {
+                ReallyMeEd25519.verify(bytes(signature), message, bytes(publicKey))
+            }
+        }
+    }
 
     @Test
     fun ed25519DerivePublicKeyKnownAnswer() {

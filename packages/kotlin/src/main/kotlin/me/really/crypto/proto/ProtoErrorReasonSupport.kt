@@ -77,7 +77,7 @@ internal fun reasonCodeMatchesBranch(
         ReallyMeCryptoWireErrorBranch.BACKEND -> reasonCode in 300..399
     }
 
-internal val primitiveCryptoErrorReasons: Set<CryptoErrorReason> = setOf(
+private val primitiveCryptoErrorReasons: Set<CryptoErrorReason> = setOf(
     CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PARAMETER,
     CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH,
     CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY,
@@ -99,7 +99,7 @@ internal val primitiveCryptoErrorReasons: Set<CryptoErrorReason> = setOf(
     CryptoErrorReason.CRYPTO_ERROR_REASON_PRIMITIVE_MISSING_OPERATION,
 )
 
-internal val providerCryptoErrorReasons: Set<CryptoErrorReason> = setOf(
+private val providerCryptoErrorReasons: Set<CryptoErrorReason> = setOf(
     CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_ALGORITHM,
     CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_BACKEND,
     CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_UNAVAILABLE,
@@ -113,7 +113,7 @@ internal val providerCryptoErrorReasons: Set<CryptoErrorReason> = setOf(
     CryptoErrorReason.CRYPTO_ERROR_REASON_PROVIDER_HARDWARE_REJECTED_KEY,
 )
 
-internal val backendCryptoErrorReasons: Set<CryptoErrorReason> = setOf(
+private val backendCryptoErrorReasons: Set<CryptoErrorReason> = setOf(
     CryptoErrorReason.CRYPTO_ERROR_REASON_BACKEND_INVALID_STATE,
     CryptoErrorReason.CRYPTO_ERROR_REASON_BACKEND_INTERNAL,
 )

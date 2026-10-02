@@ -18,6 +18,9 @@ export const PBKDF2_MIN_ITERATIONS = 100_000;
 export const PBKDF2_MAX_ITERATIONS = 10_000_000;
 export const PBKDF2_MIN_OUTPUT_LENGTH = 1;
 export const PBKDF2_MAX_OUTPUT_LENGTH = 4096;
+const PBKDF2_SHA256_OUTPUT_LENGTH = 32;
+const PBKDF2_SHA512_OUTPUT_LENGTH = 64;
+const PBKDF2_MAX_HMAC_EVALUATIONS = 20_000_000;
 
 /**
  * OWASP Password Storage Cheat Sheet minimum iteration counts for deriving a
@@ -39,7 +42,7 @@ export const ReallyMePbkdf2 = {
     iterations: number,
     outputLength: number,
   ): Uint8Array {
-    validate(password, salt, iterations, outputLength);
+    validate(password, salt, iterations, outputLength, PBKDF2_SHA256_OUTPUT_LENGTH);
     return pbkdf2(sha256, password, salt, { c: iterations, dkLen: outputLength });
   },
 
@@ -53,7 +56,7 @@ export const ReallyMePbkdf2 = {
     iterations: number,
     outputLength: number,
   ): Uint8Array {
-    validate(password, salt, iterations, outputLength);
+    validate(password, salt, iterations, outputLength, PBKDF2_SHA512_OUTPUT_LENGTH);
     return pbkdf2(sha512, password, salt, { c: iterations, dkLen: outputLength });
   },
 } as const;
@@ -63,6 +66,7 @@ function validate(
   salt: Uint8Array,
   iterations: number,
   outputLength: number,
+  digestLength: number,
 ): void {
   ensureByteArray(password);
   ensureByteArray(salt);
@@ -78,6 +82,11 @@ function validate(
     outputLength < PBKDF2_MIN_OUTPUT_LENGTH ||
     outputLength > PBKDF2_MAX_OUTPUT_LENGTH
   ) {
+    throw new ReallyMeCryptoError("invalid-input");
+  }
+  const blockCount = Math.ceil(outputLength / digestLength);
+  const evaluations = iterations * blockCount;
+  if (!Number.isSafeInteger(evaluations) || evaluations > PBKDF2_MAX_HMAC_EVALUATIONS) {
     throw new ReallyMeCryptoError("invalid-input");
   }
 }

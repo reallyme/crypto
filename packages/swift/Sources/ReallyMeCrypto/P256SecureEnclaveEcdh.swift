@@ -20,17 +20,25 @@ public struct ReallyMeKeyAgreementHandleKeyPair: Sendable {
 public struct ReallyMeP256SecureEnclaveEcdhKeyReference: Sendable {
   public static let minimumApplicationTagLength = 1
   public static let maximumApplicationTagLength = 512
+  private static let reservedStoragePrefix = Array("me.really.crypto.secure-enclave.".utf8)
 
   fileprivate let applicationTag: [UInt8]
 
   public init(applicationTag: [UInt8]) throws(ReallyMeCryptoError) {
     guard
       (Self.minimumApplicationTagLength...Self.maximumApplicationTagLength).contains(
-        applicationTag.count)
+        applicationTag.count),
+      !applicationTag.starts(with: Self.reservedStoragePrefix)
     else {
       throw ReallyMeCryptoError.invalidInput
     }
     self.applicationTag = applicationTag
+  }
+
+  // Handle APIs derive this reserved, purpose-bound tag internally. Callers
+  // must not use the reference API to overwrite a handle-owned key's policy.
+  fileprivate init(storageTag: [UInt8]) {
+    self.applicationTag = storageTag
   }
 }
 
@@ -183,9 +191,7 @@ public enum ReallyMeP256SecureEnclaveEcdh {
     -> [UInt8]
   {
     let tag = try decodePrivateKeyHandle(privateKeyHandle)
-    let reference = try ReallyMeP256SecureEnclaveEcdhKeyReference(
-      applicationTag: storageTag(for: tag)
-    )
+    let reference = ReallyMeP256SecureEnclaveEcdhKeyReference(storageTag: storageTag(for: tag))
     return try derivePublicKey(reference: reference)
   }
 
@@ -210,9 +216,7 @@ public enum ReallyMeP256SecureEnclaveEcdh {
     authenticationContext: LAContext? = nil
   ) throws(ReallyMeCryptoError) -> [UInt8] {
     let tag = try decodePrivateKeyHandle(privateKeyHandle)
-    let reference = try ReallyMeP256SecureEnclaveEcdhKeyReference(
-      applicationTag: storageTag(for: tag)
-    )
+    let reference = ReallyMeP256SecureEnclaveEcdhKeyReference(storageTag: storageTag(for: tag))
     return try deriveSharedSecret(
       publicKey: publicKey,
       reference: reference,
@@ -257,9 +261,7 @@ public enum ReallyMeP256SecureEnclaveEcdh {
 
   public static func deleteKey(privateKeyHandle: [UInt8]) throws(ReallyMeCryptoError) {
     let tag = try decodePrivateKeyHandle(privateKeyHandle)
-    let reference = try ReallyMeP256SecureEnclaveEcdhKeyReference(
-      applicationTag: storageTag(for: tag)
-    )
+    let reference = ReallyMeP256SecureEnclaveEcdhKeyReference(storageTag: storageTag(for: tag))
     try deleteKey(reference: reference)
   }
 
@@ -467,12 +469,12 @@ public enum ReallyMeP256SecureEnclaveEcdh {
     return ReallyMeCryptoError.providerFailure
   }
 
-  private static func mapSecurityStatus(_ status: OSStatus) -> ReallyMeCryptoError {
+  internal static func mapSecurityStatus(_ status: OSStatus) -> ReallyMeCryptoError {
     switch status {
     case errSecUnimplemented:
       return ReallyMeCryptoError.unsupportedPlatform
     case errSecAuthFailed, errSecInteractionNotAllowed, errSecUserCanceled:
-      return ReallyMeCryptoError.authenticationFailed
+      return ReallyMeCryptoError.providerFailure
     case errSecParam, errSecItemNotFound, errSecDuplicateItem:
       return ReallyMeCryptoError.invalidInput
     default:

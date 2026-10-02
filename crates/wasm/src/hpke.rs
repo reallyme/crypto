@@ -15,7 +15,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
 use zeroize::{Zeroize, Zeroizing};
 
-use crate::map_error::{invalid_input, provider_failure};
+use crate::map_error::{authentication_failed, invalid_input, provider_failure};
 use crate::validate_bytes::{
     copy_bounded, copy_exact, MAX_WASM_CIPHERTEXT_LENGTH, MAX_WASM_INPUT_LENGTH,
 };
@@ -57,9 +57,8 @@ fn map_hpke_error(error: HpkeError) -> JsValue {
         | HpkeError::InvalidPublicKey
         | HpkeError::InvalidRandomness
         | HpkeError::UnsupportedSuite => invalid_input(),
-        HpkeError::LengthOverflow | HpkeError::OpenFailed | HpkeError::SealFailed => {
-            provider_failure()
-        }
+        HpkeError::OpenFailed => authentication_failed(),
+        HpkeError::LengthOverflow | HpkeError::SealFailed => provider_failure(),
         _ => provider_failure(),
     }
 }

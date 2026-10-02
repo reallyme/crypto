@@ -5,6 +5,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+const bundledWasm = await import("../dist/wasm/reallyme_crypto_wasm.js");
 import { create, toBinary } from "@bufbuild/protobuf";
 import {
   aes128GcmOpen,
@@ -297,13 +298,30 @@ const wasmProviderModule = {
   xWing768GenerateKeypair,
 };
 const installedWasmProvider = createReallyMeWasmProvider(wasmProviderModule);
-installReallyMeWasmProvider(wasmProviderModule);
+assertReallyMeError(() => installReallyMeWasmProvider(wasmProviderModule), "provider-failure");
+installReallyMeWasmProvider(bundledWasm);
 
 test("package-global WASM provider is frozen after first install", () => {
   assertReallyMeError(
     () => installReallyMeWasmProvider(wasmProviderModule),
     "provider-failure",
   );
+});
+
+test("a WASM trap poisons all wrappers from the same provider module", () => {
+  const module = {
+    ...wasmProviderModule,
+    argon2idDeriveKey: () => {
+      throw new WebAssembly.RuntimeError("trap");
+    },
+  };
+  const first = createReallyMeWasmProvider(module);
+  const second = createReallyMeWasmProvider(module);
+  assertReallyMeError(
+    () => first.argon2idDeriveKey(1, new Uint8Array(), new Uint8Array()),
+    "provider-failure",
+  );
+  assertReallyMeError(() => second.mlDsa44GenerateKeypair(), "provider-failure");
 });
 
 test("explicit crypto provider instances isolate WASM-backed routes", () => {
@@ -1006,6 +1024,25 @@ test("proto adapters round-trip multi-field crypto envelopes", () => {
   );
   assert.deepEqual(sealedMessage.sealedMessage.encapsulatedKey, new Uint8Array([13, 14]));
   assert.deepEqual(sealedMessage.sealedMessage.ciphertext, new Uint8Array([15, 16]));
+});
+
+test("proto decoders own their byte fields after the wire buffer is cleared", () => {
+  const cases = [
+    [signatureKeyPairToProtoBytes("Ed25519", { publicKey: new Uint8Array([1]), secretKey: new Uint8Array([2]) }), signatureKeyPairFromProtoBytes, (value) => [value.keyPair.publicKey, value.keyPair.secretKey]],
+    [keyAgreementKeyPairToProtoBytes("X25519", { publicKey: new Uint8Array([3]), secretKey: new Uint8Array([4]) }), keyAgreementKeyPairFromProtoBytes, (value) => [value.keyPair.publicKey, value.keyPair.secretKey]],
+    [kemKeyPairToProtoBytes("ML-KEM-768", { publicKey: new Uint8Array([5]), secretKey: new Uint8Array([6]) }), kemKeyPairFromProtoBytes, (value) => [value.keyPair.publicKey, value.keyPair.secretKey]],
+    [kemEncapsulationToProtoBytes("ML-KEM-768", { ciphertext: new Uint8Array([7]), sharedSecret: new Uint8Array([8]) }), kemEncapsulationFromProtoBytes, (value) => [value.encapsulation.ciphertext, value.encapsulation.sharedSecret]],
+    [hpkeSealedMessageToProtoBytes("DHKEM-X25519-HKDF-SHA256-HKDF-SHA256-CHACHA20-POLY1305", { encapsulatedKey: new Uint8Array([9]), ciphertext: new Uint8Array([10]) }), hpkeSealedMessageFromProtoBytes, (value) => [value.sealedMessage.encapsulatedKey, value.sealedMessage.ciphertext]],
+  ];
+  for (const [wire, decode, fields] of cases) {
+    const values = fields(decode(wire));
+    const originals = values.map((field) => new Uint8Array(field));
+    for (const value of values) {
+      assert.notEqual(value.buffer, wire.buffer);
+    }
+    wire.fill(0);
+    values.forEach((value, index) => assert.deepEqual(value, originals[index]));
+  }
 });
 
 test("proto adapters round-trip verification and provider capability envelopes", () => {
@@ -1862,6 +1899,12 @@ test("generic facade PBKDF2 rejects invalid inputs and unsupported KDF", () => {
     () => ReallyMeCrypto.deriveKey("PBKDF2-HMAC-SHA-512", password, salt, 10_000_001, 32),
     (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
   );
+  for (const algorithm of ["PBKDF2-HMAC-SHA-256", "PBKDF2-HMAC-SHA-512"]) {
+    assert.throws(
+      () => ReallyMeCrypto.deriveKey(algorithm, password, salt, 10_000_000, 4096),
+      (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
+    );
+  }
   assert.throws(
     () => ReallyMeCrypto.deriveKey("HKDF-SHA256", password, salt, 1, 32),
     (error) => error instanceof ReallyMeCryptoError && error.code === "unsupported-algorithm",
@@ -2525,7 +2568,7 @@ test("hpke rejects malformed and tampered inputs through typed errors", () => {
         aad,
         tamperedCiphertext,
       ),
-    (error) => error instanceof ReallyMeCryptoError && error.code === "provider-failure",
+    (error) => error instanceof ReallyMeCryptoError && error.code === "authentication-failed",
   );
 });
 
@@ -3173,6 +3216,46 @@ test("ed25519 rejects tampered signature and message", () => {
     () => ReallyMeEd25519.verify(flipped, ed25519Message, ed25519PublicKey),
     "invalid-signature",
   );
+});
+
+test("ed25519 rejects small-order and mixed-order signature points", () => {
+  const message = bytes("7265616c6c796d652d6368616c6c656e6765");
+  const cases = [
+    ["ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c", "01000000000000000000000000000000000000000000000000000000000000003a50d26c7814a5fcb34c4ea20adafbadb92b9c07f44469adfefb9e2ac15fa806"],
+    ["1f4f580e73ac208f06760190e9edc6f5916775dabd9c1cdca393175c2d6d1083", "ef4f62f8479733ad879cfaced3c89a9c39dd4fc795ef2efa1c3eafe4d729a0819283168b8f73c6b5a427b62c816c659fff3b0404fbbe2bebe86344da2b95fd03"],
+    ["ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c", "37156422280c0dcab41e93fdf9b1a740fc984b3cd62c56a44bf59943120d20fbfc3b9d88fb1a799780803c1758fd35e5581539a1e51ef466206bf5e1926a2c09"],
+  ];
+  for (const [publicKey, signature] of cases) {
+    assertReallyMeError(
+      () => ReallyMeEd25519.verify(bytes(signature), message, bytes(publicKey)),
+      "invalid-signature",
+    );
+  }
+});
+
+test("ed25519 matches the strict CCTV acceptance set", () => {
+  const vectors = JSON.parse(
+    readFileSync(new URL("../../../vectors/external/cctv/ed25519/ed25519vectors.json", import.meta.url), "utf8"),
+  );
+  assert.ok(Array.isArray(vectors));
+  assert.equal(vectors.length, 914);
+  for (const vector of vectors) {
+    assert.ok(vector !== null && typeof vector === "object");
+    assert.ok(typeof vector.key === "string" && /^[0-9a-f]{64}$/u.test(vector.key));
+    assert.ok(typeof vector.sig === "string" && /^[0-9a-f]{128}$/u.test(vector.sig));
+    assert.equal(typeof vector.msg, "string");
+    const flags = vector.flags ?? [];
+    assert.ok(Array.isArray(flags) && flags.every((flag) => typeof flag === "string"));
+    let accepted = false;
+    try {
+      ReallyMeEd25519.verify(bytes(vector.sig), new TextEncoder().encode(vector.msg), bytes(vector.key));
+      accepted = true;
+    } catch (error) {
+      assert.ok(error instanceof ReallyMeCryptoError);
+      assert.ok(error.code === "invalid-input" || error.code === "invalid-signature");
+    }
+    assert.equal(accepted, flags.length === 0, `CCTV vector ${vector.number}`);
+  }
 });
 
 test("ed25519 rejects malformed inputs", () => {

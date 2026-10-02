@@ -22,6 +22,7 @@ default = [ ]
 native = [
     "crypto-csprng/native",
     "dep:ed25519-dalek",
+    "dep:curve25519-dalek",
     "dep:crypto-csprng",
 ]
 
@@ -29,6 +30,7 @@ native = [
 wasm = [
     "crypto-csprng/wasm",
     "dep:ed25519-dalek",
+    "dep:curve25519-dalek",
     "dep:crypto-csprng",
 ]
 
@@ -39,9 +41,10 @@ crypto-csprng = { package = "reallyme-crypto-csprng", version = "=0.3.10", path 
 zeroize = { workspace = true }
 
 # -----------------------------
-# Native-only crypto deps
+# Backend crypto deps
 # -----------------------------
 ed25519-dalek = { workspace = true, features = ["zeroize"], optional = true }
+curve25519-dalek = { workspace = true, optional = true }
 
 [dev-dependencies]
 hex = { workspace = true }

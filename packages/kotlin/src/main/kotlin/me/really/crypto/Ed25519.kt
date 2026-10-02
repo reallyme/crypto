@@ -8,6 +8,7 @@ import java.security.SecureRandom
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters
 import org.bouncycastle.crypto.signers.Ed25519Signer
+import org.bouncycastle.math.ec.rfc8032.Ed25519
 
 /**
  * Ed25519 signatures backed by BouncyCastle.
@@ -21,6 +22,7 @@ public object ReallyMeEd25519 {
     public const val SECRET_KEY_LENGTH: Int = 32
     public const val PUBLIC_KEY_LENGTH: Int = 32
     public const val SIGNATURE_LENGTH: Int = 64
+    private val identityPoint: ByteArray = ByteArray(PUBLIC_KEY_LENGTH).also { it[0] = 1 }
 
     /** Generates a random Ed25519 keypair: 32-byte public key, 32-byte seed. */
     public fun generateKeyPair(): Pair<ByteArray, ByteArray> {
@@ -62,10 +64,32 @@ public object ReallyMeEd25519 {
         if (signature.size != SIGNATURE_LENGTH || publicKey.size != PUBLIC_KEY_LENGTH) {
             throw ReallyMeCryptoException.InvalidInput()
         }
+        if (!Ed25519.validatePublicKeyPartial(publicKey, 0)) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
+        if (!Ed25519.validatePublicKeyPartial(signature, 0) ||
+            !Ed25519.validatePublicKeyFull(publicKey, 0) ||
+            !Ed25519.validatePublicKeyFull(signature, 0) ||
+            publicKey.contentEquals(identityPoint) ||
+            signature.copyOfRange(0, PUBLIC_KEY_LENGTH).contentEquals(identityPoint)
+        ) {
+            // BC accepts some torsion-bearing signatures rejected by the
+            // Rust lane. Subgroup validation gives every lane one policy.
+            throw ReallyMeCryptoException.InvalidSignature()
+        }
         val verifier = Ed25519Signer()
-        verifier.init(false, Ed25519PublicKeyParameters(publicKey, 0))
+        try {
+            verifier.init(false, Ed25519PublicKeyParameters(publicKey, 0))
+        } catch (_: IllegalArgumentException) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
         verifier.update(message, 0, message.size)
-        if (!verifier.verifySignature(signature)) {
+        val valid = try {
+            verifier.verifySignature(signature)
+        } catch (_: IllegalArgumentException) {
+            false
+        }
+        if (!valid) {
             throw ReallyMeCryptoException.InvalidSignature()
         }
     }

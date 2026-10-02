@@ -18,6 +18,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlin.test.fail
 import me.really.crypto.proto.ReallyMeCryptoProtoAdapters
 import me.really.crypto.proto.ReallyMeCryptoWireErrorBranch
 import me.really.crypto.v1.CryptoErrorReason
@@ -46,6 +47,9 @@ abstract class ReallyMeCryptoTestSupport {
     protected fun loadCryptoProviderForTestOrReturn(): String? {
         val libraryPath = System.getenv("REALLYME_CRYPTO_FFI_LIBRARY_PATH")
         if (libraryPath.isNullOrEmpty()) {
+            if (System.getenv("CI") == "true") {
+                fail("CI requires the built Rust FFI library for native boundary tests")
+            }
             return null
         }
         ReallyMeRustNativeProvider.loadLibrary(libraryPath)

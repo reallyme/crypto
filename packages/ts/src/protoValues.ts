@@ -118,8 +118,8 @@ export const signatureKeyPairFromProto = (
 ): ReallyMeSignatureKeyPairProtoValue => ({
   algorithm: signatureAlgorithmFromIdentifier(value.algorithm),
   keyPair: {
-    publicKey: value.publicKey,
-    secretKey: value.secretKey,
+    publicKey: new Uint8Array(value.publicKey),
+    secretKey: new Uint8Array(value.secretKey),
   },
 });
 
@@ -151,8 +151,8 @@ export const keyAgreementKeyPairFromProto = (
 ): ReallyMeKeyAgreementKeyPairProtoValue => ({
   algorithm: keyAgreementAlgorithmFromIdentifier(value.algorithm),
   keyPair: {
-    publicKey: value.publicKey,
-    secretKey: value.secretKey,
+    publicKey: new Uint8Array(value.publicKey),
+    secretKey: new Uint8Array(value.secretKey),
   },
 });
 
@@ -182,8 +182,8 @@ export const kemKeyPairToProtoBytes = (
 export const kemKeyPairFromProto = (value: CryptoKeyPair): ReallyMeKemKeyPairProtoValue => ({
   algorithm: kemAlgorithmFromIdentifier(value.algorithm),
   keyPair: {
-    publicKey: value.publicKey,
-    secretKey: value.secretKey,
+    publicKey: new Uint8Array(value.publicKey),
+    secretKey: new Uint8Array(value.secretKey),
   },
 });
 
@@ -221,8 +221,8 @@ export const kemEncapsulationFromProto = (
 ): ReallyMeKemEncapsulationProtoValue => ({
   algorithm: kemAlgorithmFromIdentifier(value.algorithm),
   encapsulation: {
-    ciphertext: value.ciphertext,
-    sharedSecret: value.sharedSecret,
+    ciphertext: new Uint8Array(value.ciphertext),
+    sharedSecret: new Uint8Array(value.sharedSecret),
   },
 });
 
@@ -260,8 +260,8 @@ export const hpkeSealedMessageFromProto = (
 ): ReallyMeHpkeSealedMessageProtoValue => ({
   suite: hpkeSuiteFromIdentifier(value.algorithm),
   sealedMessage: {
-    encapsulatedKey: value.encapsulatedKey,
-    ciphertext: value.ciphertext,
+    encapsulatedKey: new Uint8Array(value.encapsulatedKey),
+    ciphertext: new Uint8Array(value.ciphertext),
   },
 });
 

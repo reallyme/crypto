@@ -61,7 +61,8 @@ published artifacts from the reviewed source commit.
   provenance. The build job records its SHA-256 digest as a job output outside
   the artifact transport; the credentialed job verifies the downloaded bytes
   against that independent digest instead of rebuilding the package.
-- Publishable Rust crates must pass package inspection before release.
+- Publishable Rust crates must pass package inspection and a workspace-wide
+  `cargo publish --workspace --dry-run --locked` before release.
 - Every publishable Rust crate and workspace path dependency must resolve to
   the requested release version before the crates.io workflow can publish.
 - Provider policy, generated matrices, protobuf files, and conformance vectors

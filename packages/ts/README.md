@@ -42,9 +42,10 @@ Classical primitives are backed by pinned `@noble` packages. The primitives that
 must stay identical to Rust — ML-KEM, ML-DSA, SLH-DSA, X-Wing, Argon2id, HPKE,
 and others — are backed by a WASM module that ships prebuilt with the package.
 
-Applications may either install the WASM provider once for the package-level
-`ReallyMeCrypto` convenience API, or build isolated facade instances with an
-explicit provider object. Missing WASM providers fail closed with
+Applications may install the package's initialized WASM module once for the
+package-level `ReallyMeCrypto` convenience API, or build isolated facade
+instances with an explicit, caller-trusted provider object. The global installer
+accepts only this package's module namespace. Missing WASM providers fail closed with
 `provider-failure`. JWK/JWKS helpers delegate base64url and JCS canonicalization
 to the published `@reallyme/codec` package, so applications that use those
 helpers should also install the Codec WASM provider.
@@ -66,8 +67,8 @@ import {
 } from "@reallyme/crypto";
 import { initSync as initCryptoWasm } from "@reallyme/crypto/wasm/reallyme_crypto_wasm.js";
 
-// Provider constructors validate the dynamically imported module as `unknown`
-// against the package's explicit required-export list.
+// The global installer binds to this package's own module namespace. An
+// explicit facade can instead accept a trusted provider after shape checks.
 const wasmProvider: unknown = await import(
   "@reallyme/crypto/wasm/reallyme_crypto_wasm.js"
 );

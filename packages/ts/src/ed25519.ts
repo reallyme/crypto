@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { ed25519 } from "@noble/curves/ed25519.js";
+import { bytesToNumberLE, concatBytes } from "@noble/curves/utils.js";
+import { sha512 } from "@noble/hashes/sha2.js";
 import { ReallyMeCryptoError } from "./errors.js";
 import { ensureByteArray } from "./validateBytes.js";
 
@@ -89,12 +91,33 @@ export const ReallyMeEd25519 = {
     ) {
       throw new ReallyMeCryptoError("invalid-input");
     }
+    let point: ReturnType<typeof ed25519.Point.fromBytes>;
     try {
-      ed25519.Point.fromBytes(publicKey, false);
+      point = ed25519.Point.fromBytes(publicKey, false);
     } catch {
       throw new ReallyMeCryptoError("invalid-input");
     }
-    if (!ed25519.verify(signature, message, publicKey, { zip215: false })) {
+    try {
+      const rBytes = signature.subarray(0, ED25519_PUBLIC_KEY_LENGTH);
+      const rPoint = ed25519.Point.fromBytes(rBytes, false);
+      const scalar = bytesToNumberLE(signature.subarray(ED25519_PUBLIC_KEY_LENGTH));
+      const order = ed25519.Point.Fn.ORDER;
+      if (
+        scalar >= order ||
+        !point.isTorsionFree() ||
+        !rPoint.isTorsionFree() ||
+        point.isSmallOrder() ||
+        rPoint.isSmallOrder()
+      ) {
+        throw new ReallyMeCryptoError("invalid-signature");
+      }
+      // Noble's ordinary verify uses a cofactored equation. Rust's verify_strict
+      // compares the full Edwards equation, including any torsion component.
+      const challenge = bytesToNumberLE(sha512(concatBytes(rBytes, publicKey, message))) % order;
+      if (!ed25519.Point.BASE.multiplyUnsafe(scalar).equals(rPoint.add(point.multiplyUnsafe(challenge)))) {
+        throw new ReallyMeCryptoError("invalid-signature");
+      }
+    } catch {
       throw new ReallyMeCryptoError("invalid-signature");
     }
   },

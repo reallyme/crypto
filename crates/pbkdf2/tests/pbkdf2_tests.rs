@@ -154,6 +154,28 @@ fn modern_iteration_constructor_enforces_public_policy_bounds() {
 }
 
 #[test]
+fn combined_iteration_and_output_work_is_bounded_before_derivation() {
+    let prf = Pbkdf2Prf::HmacSha256;
+    let password = Pbkdf2Password::from_slice(b"password", prf).unwrap();
+    let salt = Pbkdf2Salt::from_slice(b"salt", prf).unwrap();
+    let iterations = Pbkdf2Iterations::from_u32(PBKDF2_MAX_ITERATIONS, prf).unwrap();
+    let result = derive_key(&Pbkdf2Request {
+        prf,
+        password: &password,
+        salt: &salt,
+        iterations,
+        output_len: PBKDF2_MAX_OUTPUT_LENGTH,
+    });
+    assert!(matches!(
+        result,
+        Err(CryptoError::Kdf {
+            kind: KdfFailureKind::ResourceLimitExceeded,
+            ..
+        })
+    ));
+}
+
+#[test]
 fn derived_key_ownership_transfer_reuses_the_zeroizing_allocation() {
     let prf = Pbkdf2Prf::HmacSha256;
     let password = Pbkdf2Password::from_slice(b"password", prf).unwrap();

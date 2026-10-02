@@ -33,6 +33,29 @@ final class Pbkdf2SecurityTests: XCTestCase {
     }
   }
 
+  func testCombinedIterationAndOutputWorkIsBoundedBeforeProviderDispatch() {
+    XCTAssertThrowsError(
+      try ReallyMePbkdf2.deriveHmacSha256(
+        password: Array("password".utf8),
+        salt: Array("salt".utf8),
+        iterations: ReallyMePbkdf2.maxIterations,
+        outputLength: ReallyMePbkdf2.maxOutputLength
+      )
+    ) { error in
+      XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+    }
+    XCTAssertThrowsError(
+      try ReallyMePbkdf2.deriveHmacSha512(
+        password: Array("password".utf8),
+        salt: Array("salt".utf8),
+        iterations: ReallyMePbkdf2.maxIterations,
+        outputLength: ReallyMePbkdf2.maxOutputLength
+      )
+    ) { error in
+      XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+    }
+  }
+
   func testProviderFailureClearsPreviouslyAccumulatedOutput() {
     let sentinel = [UInt8](repeating: 0xa5, count: 32)
     let iterations = ReallyMePbkdf2.minIterations + 1

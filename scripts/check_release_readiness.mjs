@@ -6,7 +6,10 @@
 import { readdirSync } from "node:fs";
 
 import { assertCryptoOperationRouteReadiness } from "./crypto_operation_route_readiness.mjs";
-import { createReleaseReadinessContext } from "./release-readiness/core.mjs";
+// The package runner supplies the exact upstream module URL and verifies its
+// version. Direct local checks use the reviewed vendored copy.
+const coreUrl = process.env.RELEASE_READINESS_CORE_URL ?? "./release-readiness/core.mjs";
+const { createReleaseReadinessContext } = await import(coreUrl);
 
 // The checker parses Cargo's registry output. Rust setup actions export
 // CARGO_TERM_COLOR=always, which otherwise inserts ANSI escapes into crate names
@@ -43,6 +46,14 @@ const {
 const assertDocumented = (path, phrase) => {
   if (!readText(path).includes(phrase)) {
     fail(`${path} must document ${phrase}`);
+  }
+};
+
+const assertUnconditionalRequiredWorkflow = (path) => {
+  // Gate jobs must not turn a missing test or failed command into a green run.
+  // Release attestation trusts the workflow conclusion for this exact SHA.
+  if (/^\s*(?:if|continue-on-error):/mu.test(readText(path))) {
+    fail(`${path} conditionally skips or tolerates a required release gate`);
   }
 };
 
@@ -115,7 +126,7 @@ const kotlinPackageVersion = "0.3.10";
 const kotlinAndroidPackageVersion = "0.3.10";
 const rustCodecVersion = "0.3.0";
 const sdkCodecVersion = "0.3.0";
-const rustSemverBaselineCommit = "5b8928f10777d0ce44561bb966b9425a281a05d7";
+const rustSemverBaselineCommit = "fbd30bcc205eec791bc8df70bccd75397ee40664";
 const rustSemverBaselinePath = ".semver-baseline";
 const cargoSemverChecksVersion = "0.49.0";
 const buffaVersion = "0.9.2";
@@ -207,6 +218,7 @@ runNodeCheck("scripts/check_provider_routing.mjs");
 runNodeCheck("scripts/check_negative_vectors.mjs");
 runNodeCheck("scripts/crypto_operation_route_readiness.test.mjs");
 runNodeCheck("scripts/prepare_semver_baseline.test.mjs");
+runNodeCheck("scripts/release_notes.test.mjs");
 runNodeCheck("scripts/native_build_scripts.test.mjs");
 runNodeCheck("scripts/proto_hardening.test.mjs");
 runNodeCheck("scripts/publish_retry_policy.test.mjs");
@@ -461,7 +473,7 @@ assertContains(
 );
 assertContains(
   "SECURITY.md",
-  "creates the immutable `v<version>` GitHub release and tag",
+  "creates the `v<version>` GitHub release and tag",
 );
 
 for (const primitivePolicy of [
@@ -477,7 +489,7 @@ for (const primitivePolicy of [
   {
     crateRoot: "crates/ed25519",
     manifestNeedles: [
-      'wasm = [\n    "crypto-csprng/wasm",\n    "dep:ed25519-dalek",\n    "dep:crypto-csprng",\n]',
+      'wasm = [\n    "crypto-csprng/wasm",\n    "dep:ed25519-dalek",\n    "dep:curve25519-dalek",\n    "dep:crypto-csprng",\n]',
     ],
   },
   ...["44", "65", "87"].map((parameterSet) => ({
@@ -1685,6 +1697,24 @@ assertContains(".github/workflows/rust-ci.yml", "!PROVIDER_POLICY.md");
 assertContains(".github/workflows/rust-ci.yml", "!CONTRACT.md");
 assertContains(".github/workflows/rust-ci.yml", "cargo package --locked -p reallyme-crypto --list");
 assertContains(".github/workflows/rust-ci.yml", "Verify OpenMLS HPKE dependency isolation");
+for (const path of [
+  ".github/workflows/rust-ci.yml",
+  ".github/workflows/swift-package-preflight.yml",
+  ".github/workflows/crates-package-preflight.yml",
+  ".github/workflows/npm-package-preflight.yml",
+  ".github/workflows/kotlin-android-package-preflight.yml",
+]) {
+  assertUnconditionalRequiredWorkflow(path);
+}
+for (const command of [
+  "cargo clippy --locked --workspace --all-targets --all-features -- -D warnings",
+  "cargo nextest run --locked --workspace --no-default-features --features native",
+  "cargo nextest run --locked --workspace --all-features",
+  "cargo deny check",
+  "RUSTFLAGS=-Dwarnings cargo check --locked --workspace --all-features",
+]) {
+  assertContains(".github/workflows/rust-ci.yml", command);
+}
 assertContains(
   ".github/workflows/rust-ci.yml",
   "--no-default-features --features native,hpke-openmls -e normal,build",
@@ -2902,7 +2932,7 @@ const assertReleaseWorkflowCredentialGates = () => {
   assertContains("scripts/verify_release_attestation.mjs", 'latest.conclusion !== "success"');
   assertContains(
     ".github/workflows/crates-package-preflight.yml",
-    `ref: ${rustSemverBaselineCommit}`,
+    "ref: v0.3.9",
   );
   assertContains(
     "scripts/prepare_semver_baseline.mjs",
@@ -3315,10 +3345,11 @@ assertContains(".github/workflows/npm-package-release.yml", "npm run pack:check"
 assertContains(".github/workflows/npm-package-release.yml", "npm pack --ignore-scripts");
 assertContains(".github/workflows/npm-package-release.yml", "reallyme-crypto-${RELEASE_VERSION}.tgz");
 
-assertContains(".github/workflows/crates-package-preflight.yml", "cargo semver-checks --workspace");
+assertContains(".github/workflows/crates-package-preflight.yml", "node scripts/check_rust_semver.mjs");
 assertContains(".github/workflows/crates-package-preflight.yml", "tool: cargo-audit@0.22.2");
 assertContains(".github/workflows/crates-package-preflight.yml", "scripts/audit_committed_lockfiles.sh");
 assertContains(".github/workflows/crates-package-preflight.yml", "node scripts/publish_crates_in_order.mjs inspect");
+assertContains(".github/workflows/crates-package-preflight.yml", "cargo publish --workspace --dry-run --locked");
 assertContains("deny.toml", 'yanked = "deny"');
 assertContains(".github/workflows/crates-release.yml", "verify_release_attestation.mjs");
 assertContains(".github/workflows/crates-release.yml", "node scripts/publish_crates_in_order.mjs order");
@@ -3329,7 +3360,10 @@ assertContains(
 assertNotContains("scripts/publish_crates_in_order.mjs", "REALLYME_CRATES_ALLOW_ALREADY_PUBLISHED");
 assertContains("scripts/publish_crates_in_order.mjs", "RELEASE_VERSION must be set when publishing crates");
 assertContains("scripts/publish_crates_in_order.mjs", "publishWithRetries");
-assertContains("scripts/publish_crates_in_order.mjs", "continuing release resume");
+assertContains(
+  "scripts/publish_crates_in_order.mjs",
+  "verify its packaged contents and dependency lock before any manual resume",
+);
 assertContains("scripts/publish_retry_policy.mjs", "RateLimitExhausted");
 assertContains("scripts/publish_retry_policy.mjs", "IndexLagExhausted");
 assertContains("scripts/publish_retry_policy.test.mjs", "permanent rate limiting fails terminally");

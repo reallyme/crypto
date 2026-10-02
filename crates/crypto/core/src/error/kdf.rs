@@ -76,6 +76,8 @@ pub enum KdfFailureKind {
     InvalidParams,
     /// The derivation itself did not succeed.
     DerivationFailed,
+    /// The combined iteration and output-block work exceeds the public bound.
+    ResourceLimitExceeded,
 }
 
 impl core::fmt::Display for KdfFailureKind {
@@ -86,6 +88,7 @@ impl core::fmt::Display for KdfFailureKind {
             KdfFailureKind::InvalidOutputLength => "invalid output length",
             KdfFailureKind::InvalidIterationCount => "invalid iteration count",
             KdfFailureKind::InvalidParams => "invalid parameters",
+            KdfFailureKind::ResourceLimitExceeded => "resource limit exceeded",
             KdfFailureKind::DerivationFailed => "derivation failed",
         };
         write!(f, "{detail}")

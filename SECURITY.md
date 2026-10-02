@@ -76,8 +76,9 @@ GitHub releases and security advisories.
 
 Version install examples describe published releases. Before publication, the
 corresponding tag is intentionally absent. The Swift package release workflow
-creates the immutable `v<version>` GitHub release and tag only after the release
-commit and XCFramework artifact have passed their verification gates.
+creates the `v<version>` GitHub release and tag only after the release commit
+and XCFramework artifact have passed their verification gates. The workflow
+refuses to replace a conflicting tag or release asset.
 
 ## Cryptography And Assurance
 

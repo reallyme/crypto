@@ -72,10 +72,8 @@ fn cctv_ed25519_vectors_match_strict_public_verifier() -> Result<(), AuditError>
 }
 
 fn strict_verifier_accepts(flags: &[Ed25519Flag]) -> bool {
-    flags.iter().all(|flag| {
-        matches!(
-            flag,
-            Ed25519Flag::LowOrderComponentA | Ed25519Flag::LowOrderComponentR
-        )
-    })
+    // The cross-lane policy requires prime-subgroup points for A and R.
+    // CCTV's low-order-component cases are valid under some full-equation
+    // verifiers, but their torsion component is deliberately excluded here.
+    flags.is_empty()
 }

@@ -27,3 +27,10 @@ pub const PBKDF2_MAX_ITERATIONS: u32 = 10_000_000;
 pub const PBKDF2_MIN_OUTPUT_LENGTH: usize = 1;
 /// Maximum derived output length in bytes.
 pub const PBKDF2_MAX_OUTPUT_LENGTH: usize = 4096;
+/// Limit total HMAC evaluations, since output blocks multiply iteration work.
+#[cfg(any(feature = "native", feature = "wasm"))]
+pub(crate) const PBKDF2_MAX_HMAC_EVALUATIONS: u64 = 20_000_000;
+#[cfg(any(feature = "native", feature = "wasm"))]
+pub(crate) const PBKDF2_SHA256_OUTPUT_LENGTH: usize = 32;
+#[cfg(any(feature = "native", feature = "wasm"))]
+pub(crate) const PBKDF2_SHA512_OUTPUT_LENGTH: usize = 64;

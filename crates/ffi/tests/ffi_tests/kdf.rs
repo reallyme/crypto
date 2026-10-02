@@ -209,6 +209,20 @@ fn pbkdf2_ffi_derives_known_answers_and_rejects_invalid_inputs() {
     };
     assert_eq!(excessive_iterations_status, status::CRYPTO_INVALID_ARGUMENT);
 
+    let mut excessive_work_output = [0u8; pbkdf2::PBKDF2_OUTPUT_MAX_LEN];
+    let excessive_work_status = unsafe {
+        pbkdf2::rm_crypto_pbkdf2_hmac_sha256_derive_key(
+            password.as_ptr(),
+            password.len(),
+            salt.as_ptr(),
+            salt.len(),
+            pbkdf2::PBKDF2_ITERATIONS_MAX,
+            excessive_work_output.as_mut_ptr(),
+            excessive_work_output.len(),
+        )
+    };
+    assert_eq!(excessive_work_status, status::CRYPTO_INVALID_ARGUMENT);
+
     let invalid_output_status = unsafe {
         pbkdf2::rm_crypto_pbkdf2_hmac_sha256_derive_key(
             password.as_ptr(),
