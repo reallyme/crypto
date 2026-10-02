@@ -427,19 +427,19 @@ public object ReallyMeRustNativeProvider {
         }
     }
 
-    internal fun isAndroidRuntime(
-        runtimeName: String? = System.getProperty("java.runtime.name"),
-        vmName: String? = System.getProperty("java.vm.name"),
-        vmVendor: String? = System.getProperty("java.vm.vendor"),
-    ): Boolean {
-        return containsAndroidMarker(runtimeName) ||
-            containsAndroidMarker(vmName) ||
-            containsAndroidMarker(vmVendor)
-    }
-
-    private fun containsAndroidMarker(value: String?): Boolean {
-        val normalized = value?.lowercase(Locale.ROOT) ?: return false
-        return normalized.contains("android") || normalized.contains("dalvik")
+    internal fun isAndroidRuntime(): Boolean = try {
+        // Android framework classes live on the boot class path. The null
+        // loader cannot see application classes, unlike mutable JVM system
+        // properties or the thread context loader. A desktop process must not
+        // select System.loadLibrary and bypass the bundled manifest check.
+        Class.forName("android.os.Build", false, null)
+        true
+    } catch (_: ClassNotFoundException) {
+        false
+    } catch (_: LinkageError) {
+        false
+    } catch (_: SecurityException) {
+        false
     }
 
     private fun nativeLibraryFileName(os: String): String =

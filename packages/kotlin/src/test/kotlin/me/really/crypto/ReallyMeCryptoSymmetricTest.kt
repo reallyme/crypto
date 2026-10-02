@@ -246,12 +246,7 @@ class ReallyMeCryptoSymmetricTest : ReallyMeCryptoTestSupport() {
 
     @Test
     fun rustAeadProviderKnownAnswersWhenLoaded() {
-        val libraryPath = System.getenv("REALLYME_CRYPTO_FFI_LIBRARY_PATH")
-        if (libraryPath.isNullOrEmpty()) {
-            return
-        }
-
-        ReallyMeRustNativeProvider.loadLibrary(libraryPath)
+        loadCryptoProviderForTest()
         assertRustAeadRoundTrip(
             algorithm = ReallyMeAeadAlgorithm.AES_256_GCM_SIV,
             key = base64UrlBytes("MDEyMzQ1Njc4OTo7PD0-P0BBQkNERUZHSElKS0xNTk8"),
@@ -368,9 +363,7 @@ class ReallyMeCryptoSymmetricTest : ReallyMeCryptoTestSupport() {
 
     @Test
     fun kmac256RustNativeProviderKnownAnswerWhenLoaded() {
-        if (loadCryptoProviderForTestOrReturn() == null) {
-            return
-        }
+        loadCryptoProviderForTest()
         val key = vectorField("kmac256.json", "key")
         val context = vectorField("kmac256.json", "context")
         val customization = vectorField("kmac256.json", "customization")
@@ -548,12 +541,7 @@ class ReallyMeCryptoSymmetricTest : ReallyMeCryptoTestSupport() {
 
     @Test
     fun argon2idRustNativeProviderKnownAnswerWhenLoaded() {
-        val libraryPath = System.getenv("REALLYME_CRYPTO_FFI_LIBRARY_PATH")
-        if (libraryPath.isNullOrEmpty()) {
-            return
-        }
-
-        ReallyMeRustNativeProvider.loadLibrary(libraryPath)
+        loadCryptoProviderForTest()
         val secret = "password".toByteArray()
         val salt = "somesaltvalue1234".toByteArray()
         val expected = bytes("53334265f014b5a46f2b3fce4de2c965669b6cd3a4879366385dfc301c234757")

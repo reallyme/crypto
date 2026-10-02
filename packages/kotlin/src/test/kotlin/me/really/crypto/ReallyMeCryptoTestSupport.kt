@@ -18,7 +18,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import kotlin.test.fail
 import me.really.crypto.proto.ReallyMeCryptoProtoAdapters
 import me.really.crypto.proto.ReallyMeCryptoWireErrorBranch
 import me.really.crypto.v1.CryptoErrorReason
@@ -44,16 +43,15 @@ abstract class ReallyMeCryptoTestSupport {
     protected val x25519SharedSecret: ByteArray =
         bytes("e00c4d62a8beeeedc0d7d0aca78e4c94395a063539a8204ce8fc11120e8dbc18")
 
-    protected fun loadCryptoProviderForTestOrReturn(): String? {
+    protected fun loadCryptoProviderForTest() {
         val libraryPath = System.getenv("REALLYME_CRYPTO_FFI_LIBRARY_PATH")
         if (libraryPath.isNullOrEmpty()) {
-            if (System.getenv("CI") == "true") {
-                fail("CI requires the built Rust FFI library for native boundary tests")
-            }
-            return null
+            // Gradle stages and hashes the host library in the test JAR. The
+            // packaged path exercises the same provider consumers receive.
+            ReallyMeRustNativeProvider.loadBundledLibrary()
+        } else {
+            ReallyMeRustNativeProvider.loadLibrary(libraryPath)
         }
-        ReallyMeRustNativeProvider.loadLibrary(libraryPath)
-        return libraryPath
     }
 
     protected fun nativeAeadMethod(name: String): java.lang.reflect.Method =
