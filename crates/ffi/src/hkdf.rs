@@ -30,6 +30,8 @@ fn derive_to_output<const N: usize>(
         Ok(value) => value,
         Err(_) => return CRYPTO_INVALID_ARGUMENT,
     };
+    // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+    // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
     let status = unsafe { write_fixed(output_out, output_out_len, output.as_bytes()) };
     // `HkdfOutput` zeroizes on drop, but wipe the derived key material
     // explicitly here so its lifetime ends at the copy-out, matching the
@@ -79,15 +81,21 @@ pub unsafe extern "C" fn rm_crypto_hkdf_derive(
             return output_status;
         }
 
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let ikm = match unsafe { read_slice(ikm, ikm_len) } {
             Ok(value) => HkdfInputKeyMaterial::from_slice(value),
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let salt_value = match unsafe { read_slice(salt, salt_len) } {
             Ok([]) => None,
             Ok(value) => Some(HkdfSalt::from_slice(value)),
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let info = match unsafe { read_slice(info, info_len) } {
             Ok(value) => HkdfInfo::from_slice(value),
             Err(status) => return status,

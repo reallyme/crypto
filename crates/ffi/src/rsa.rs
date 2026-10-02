@@ -37,14 +37,20 @@ pub unsafe extern "C" fn rm_crypto_rsa_verify_pkcs1v15(
     signature_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let public_key_der = match unsafe { read_slice(public_key_der, public_key_der_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let message = match unsafe { read_slice(message, message_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let signature = match unsafe { read_slice(signature, signature_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -85,14 +91,20 @@ pub unsafe extern "C" fn rm_crypto_rsa_verify_pss(
     signature_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let public_key_der = match unsafe { read_slice(public_key_der, public_key_der_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let message = match unsafe { read_slice(message, message_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let signature = match unsafe { read_slice(signature, signature_len) } {
             Ok(value) => value,
             Err(status) => return status,

@@ -179,16 +179,15 @@ supply-chain event:
 ./gradlew --write-verification-metadata sha256 help
 ```
 
-Release and CI workflows run Gradle with strict dependency verification and
-validate all checked-in Gradle wrapper jars before invoking `gradlew`.
+Gradle builds use strict dependency verification and validate the checked-in
+wrapper jars.
 
 The JVM package and Kotlin conformance lane intentionally use Gradle 9.7.1.
 The Android package remains independently pinned to Gradle 8.14.4 because that
 is the reviewed wrapper line for Android Gradle Plugin 8.13.2. Each lane pins
 its distribution checksum, validates its wrapper jar, and uses strict
-dependency verification; release readiness rejects unreviewed version or
-checksum drift instead of treating the version difference as an implicit
-shared version range.
+dependency verification. The version difference is intentional and does not
+create an implicit shared version range.
 
 ## More Examples
 
@@ -221,22 +220,10 @@ cd packages/kotlin
 ./gradlew test
 ```
 
-## Publish
+## Package
 
-The build configures `maven-publish` with coordinates
-`me.really:crypto`, a sources jar, a javadoc jar, Maven
-Central-ready POM metadata, and optional PGP artifact signing.
-
-Inspect the generated Maven repository locally:
-
-```sh
-cd packages/kotlin
-./gradlew publishMavenPublicationToLocalReleaseRepository
-```
-
-Publish to a Maven-compatible remote repository by supplying repository and
-signing secrets. The release workflow decides the repository URL; the package
-does not hard-code Maven Central, GitHub Packages, or a staging endpoint.
+The published `me.really:crypto` artifact includes a sources jar, a javadoc
+jar, and Maven POM metadata.
 
 This package is the SDK API. The Kotlin conformance harness under
 `crates/conformance/platform/kotlin` remains a test harness.

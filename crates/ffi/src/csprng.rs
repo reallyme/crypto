@@ -34,6 +34,8 @@ pub unsafe extern "C" fn rm_crypto_csprng_generate_bytes(
         if output_out_len == 0 {
             return CRYPTO_INVALID_ARGUMENT;
         }
+        // SAFETY: The C caller keeps this output exclusively writable for the stated length until the call
+        // returns. write_slice bounds it and excludes borrowed input ranges; ownership stays with the caller.
         if let Err(status) = unsafe { write_slice(output_out, output_out_len) } {
             return status;
         }
@@ -53,6 +55,8 @@ pub unsafe extern "C" fn rm_crypto_csprng_generate_bytes(
         {
             return CRYPTO_INTERNAL_ERROR;
         }
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         unsafe { write_fixed(output_out, output_out_len, &generated) }
     })
 }
@@ -75,6 +79,8 @@ pub unsafe extern "C" fn rm_crypto_csprng_generate_aead_nonce_12(
             Ok(value) => value,
             Err(_) => return CRYPTO_INTERNAL_ERROR,
         };
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         unsafe { write_fixed(output_out, output_out_len, nonce.as_bytes()) }
     })
 }
@@ -97,6 +103,8 @@ pub unsafe extern "C" fn rm_crypto_csprng_generate_argon2_salt_16(
             Ok(value) => value,
             Err(_) => return CRYPTO_INTERNAL_ERROR,
         };
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         unsafe { write_fixed(output_out, output_out_len, salt.as_bytes()) }
     })
 }
@@ -119,6 +127,8 @@ pub unsafe extern "C" fn rm_crypto_csprng_generate_argon2_salt_32(
             Ok(value) => value,
             Err(_) => return CRYPTO_INTERNAL_ERROR,
         };
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         unsafe { write_fixed(output_out, output_out_len, salt.as_bytes()) }
     })
 }

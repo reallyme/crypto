@@ -36,7 +36,8 @@ where
     // rejected (fail closed).
     verify(&pk, &message, &expected_signature)?;
     let mut tampered = expected_signature.clone();
-    tampered[0] ^= 0x01;
+    let last = tampered.len() - 1;
+    tampered[last] ^= 0x01;
     if verify(&pk, &message, &tampered).is_ok() {
         return Err(VectorTestError::MlDsaTamperAccepted);
     }
@@ -111,6 +112,18 @@ fn slh_dsa_sha2_128s_vector_known_answer() -> Result<(), VectorTestError> {
     }
     verify_slh_dsa_sha2_128s(&public_key, &message, &expected_signature)
         .map_err(|_| VectorTestError::SlhDsaOperation)?;
+    assert!(matches!(
+        verify_slh_dsa_sha2_128s(
+            &public_key,
+            &message,
+            &expected_signature[..expected_signature.len() - 1],
+        ),
+        Err(CryptoError::Signature {
+            backend: SignatureBackend::Native,
+            operation: SignatureOperation::Verify,
+            kind: SignatureFailureKind::InvalidSignature,
+        })
+    ));
 
     let mut tampered = expected_signature.clone();
     tampered[0] ^= 0x01;

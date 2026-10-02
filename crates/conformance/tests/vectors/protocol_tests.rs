@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crypto_hpke::{
-    open_base, HpkeOpenRequest, HpkeSuite, HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM,
+    open_base, HpkeError, HpkeOpenRequest, HpkeSuite, HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM,
     HPKE_DHKEM_X25519_HKDF_SHA256_CHACHA20POLY1305,
 };
 use serde_json::Value;
@@ -78,6 +78,37 @@ fn verify_hpke_case(
     .map_err(|_| VectorTestError::HpkeOperation)?;
     if opened.plaintext.as_slice() != plaintext {
         return Err(VectorTestError::HpkeMismatch);
+    }
+
+    if suite == HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM {
+        assert_eq!(
+            open_base(&HpkeOpenRequest {
+                suite,
+                encapsulated_key: &encapsulated_key[..encapsulated_key.len() - 1],
+                recipient_private_key: &secret_key,
+                info: &info,
+                aad: &aad,
+                ciphertext: &ciphertext,
+            })
+            .err(),
+            Some(HpkeError::InvalidEncapsulatedKey)
+        );
+    }
+    if suite == HPKE_DHKEM_X25519_HKDF_SHA256_CHACHA20POLY1305 {
+        let mut wrong_aad = aad.clone();
+        wrong_aad[0] ^= 0x01;
+        assert_eq!(
+            open_base(&HpkeOpenRequest {
+                suite,
+                encapsulated_key: &encapsulated_key,
+                recipient_private_key: &secret_key,
+                info: &info,
+                aad: &wrong_aad,
+                ciphertext: &ciphertext,
+            })
+            .err(),
+            Some(HpkeError::OpenFailed)
+        );
     }
 
     if open_base(&HpkeOpenRequest {

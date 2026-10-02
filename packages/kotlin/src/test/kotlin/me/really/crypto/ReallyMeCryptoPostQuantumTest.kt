@@ -90,6 +90,15 @@ class ReallyMeCryptoPostQuantumTest : ReallyMeCryptoTestSupport() {
 
     @Test
     fun mlKemRejectsMalformedInputs() {
+        val ciphertext = vectorField("mlkem768.json", "ciphertext")
+        val secretKey = vectorField("mlkem768.json", "secret_key")
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeCrypto.decapsulate(
+                ReallyMeKemAlgorithm.ML_KEM_768,
+                ciphertext.copyOf(ciphertext.size - 1),
+                secretKey,
+            )
+        }
         assertFailsWith<ReallyMeCryptoException.InvalidInput> {
             ReallyMeCrypto.encapsulate(ReallyMeKemAlgorithm.ML_KEM_512, ByteArray(799))
         }
@@ -299,6 +308,14 @@ class ReallyMeCryptoPostQuantumTest : ReallyMeCryptoTestSupport() {
             message,
             publicKey,
         )
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeCrypto.verify(
+                ReallyMeSignatureAlgorithm.SLH_DSA_SHA2_128S,
+                signature.copyOf(signature.size - 1),
+                message,
+                publicKey,
+            )
+        }
 
         val tamperedSignature = signature.copyOf()
         tamperedSignature[0] = (tamperedSignature[0].toInt() xor 0x01).toByte()
@@ -464,7 +481,8 @@ class ReallyMeCryptoPostQuantumTest : ReallyMeCryptoTestSupport() {
         val message = vectorField(vectorName, "message")
         val signature = vectorField(vectorName, "signature")
         val tamperedSignature = signature.copyOf()
-        tamperedSignature[0] = (tamperedSignature[0].toInt() xor 0x01).toByte()
+        tamperedSignature[tamperedSignature.lastIndex] =
+            (tamperedSignature.last().toInt() xor 0x01).toByte()
 
         assertContentEquals(publicKey, ReallyMeMlDsa.derivePublicKey(algorithm, secretSeed))
         assertContentEquals(signature, ReallyMeCrypto.sign(algorithm, message, secretSeed))
@@ -499,6 +517,24 @@ class ReallyMeCryptoPostQuantumTest : ReallyMeCryptoTestSupport() {
             plaintext,
             ReallyMeCrypto.openHpke(suite, recipientSecretKey, encapsulatedKey, info, aad, ciphertext),
         )
+        if (caseName == "p256_sha256_aes256gcm") {
+            assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+                ReallyMeCrypto.openHpke(
+                    suite, recipientSecretKey,
+                    encapsulatedKey.copyOf(encapsulatedKey.size - 1),
+                    info, aad, ciphertext,
+                )
+            }
+        }
+        if (caseName == "x25519_sha256_chacha20poly1305") {
+            val wrongAad = aad.copyOf()
+            wrongAad[0] = (wrongAad[0].toInt() xor 0x01).toByte()
+            assertFailsWith<ReallyMeCryptoException.AuthenticationFailed> {
+                ReallyMeCrypto.openHpke(
+                    suite, recipientSecretKey, encapsulatedKey, info, wrongAad, ciphertext,
+                )
+            }
+        }
         assertFailsWith<ReallyMeCryptoException.AuthenticationFailed> {
             ReallyMeCrypto.openHpke(suite, recipientSecretKey, encapsulatedKey, info, aad, tamperedCiphertext)
         }

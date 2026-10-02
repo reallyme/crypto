@@ -554,6 +554,18 @@ class ReallyMeCryptoSignatureTest : ReallyMeCryptoTestSupport() {
             publicKeyDer,
             ReallyMeRsaPublicKeyDerEncoding.PKCS1,
         )
+        val tamperedPssSha256 = pssSha256Signature.copyOf()
+        tamperedPssSha256[tamperedPssSha256.lastIndex] =
+            (tamperedPssSha256.last().toInt() xor 0x01).toByte()
+        assertFailsWith<ReallyMeCryptoException.InvalidSignature> {
+            ReallyMeCrypto.verify(
+                ReallyMeSignatureAlgorithm.RSA_PSS_SHA256_MGF1_SHA256,
+                tamperedPssSha256,
+                message,
+                publicKeyDer,
+                ReallyMeRsaPublicKeyDerEncoding.PKCS1,
+            )
+        }
         val additionalRsaCases = listOf(
             ReallyMeSignatureAlgorithm.RSA_PKCS1V15_SHA384 to pkcs1v15Sha384Signature,
             ReallyMeSignatureAlgorithm.RSA_PKCS1V15_SHA512 to pkcs1v15Sha512Signature,

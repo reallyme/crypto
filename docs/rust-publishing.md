@@ -40,43 +40,9 @@ ML-KEM retains its required SHAKE primitive dependency for KEM-internal use.
 The `wasm` lane is a `wasm32-unknown-unknown` lane. Host checks should use
 `native`; wasm checks should include `--target wasm32-unknown-unknown`.
 
-## Order
+## Package Contents
 
-The dependency order matters. Core leaves must exist on crates.io before
-primitives and umbrellas can package cleanly.
-`reallyme-crypto-proto` is a separately published public crate and must be
-published before `reallyme-crypto`, because the umbrella crate exposes the
-optional `operation-response` feature through that package.
-
-Use the manual **Crates.io Release** workflow for Rust publishing. Its preflight
-job inspects every publishable crate tarball in workspace dependency order and
-verifies the entire workspace with `cargo publish --workspace --dry-run --locked`. The
-publish job is assigned to the `crates-io-release` environment and requires
-`CARGO_REGISTRY_TOKEN`. Check environment reviewers and deployment branch
-restrictions in GitHub settings before publication; the workflow file does not
-create those protections. The repository-level token remains available to the
-workflow even when the named environment has no protection rules.
-
-Individual crate dry runs can stop while Cargo resolves unpublished workspace
-dependencies from crates.io. The workspace-wide dry run verifies all candidate
-packages together before publication. The workflow still uses
-`scripts/publish_crates_in_order.mjs` to inspect tarballs and publish crates in
-topological order.
-
-If a version already exists during a partial publish, the workflow stops. A
-matching crate name and version do not establish that the published archive
-came from the release commit. Before a manual resume, compare its packaged
-files and resolved dependency versions with the reviewed candidate; account
-for Cargo's generated lockfile separately. Resume only the remaining crates
-after that review.
-
-## Local Inspection
-
-```sh
-cargo package -p reallyme-crypto --list --allow-dirty
-node scripts/publish_crates_in_order.mjs inspect
-cargo publish --workspace --dry-run --locked
-```
-
-Before publishing, inspect the package list and make sure the umbrella crate
-ships only source, README, license, and notice files.
+`reallyme-crypto-proto` is a separately versioned public crate. The umbrella
+crate exposes its optional `operation-response` feature through that package.
+Published crates contain their source, README, license, and notice files. Their
+workspace dependency versions agree with the release version.

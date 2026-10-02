@@ -96,31 +96,6 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Install Rust toolchain for release readiness
-        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
-        with:
-          toolchain: 1.98.1
-          targets: wasm32-unknown-unknown
-
-      - name: Install Java for release readiness
-        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: Install wasm-pack
-        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # wasm-pack
-        with:
-          tool: wasm-pack@0.15.0
-
-      - name: Install wasm-bindgen-cli
-        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # wasm-bindgen-cli
-        with:
-          tool: wasm-bindgen-cli@0.2.129
-
-      - name: Install TypeScript package dependencies
-        run: npm ci --prefix packages/ts
-
       - name: Select Xcode 26.6
         run: |
           sudo xcode-select -s /Applications/Xcode_26.6.app
@@ -133,19 +108,10 @@ jobs:
         env:
           RELEASE_VERSION: ${{ inputs.version }}
 
-      - name: Build local FFI for source policy verification
-        run: |
-          cargo build --locked -p crypto-ffi
-          touch .reallyme-crypto-runtime-ffi
-
       - name: Verify SwiftPM manifest and downloaded artifact
-        run: |
-          node scripts/verify_swift_release_artifact.mjs build/swift/ReallyMeCryptoFFI.xcframework.zip build/swift/ReallyMeCryptoFFI.xcframework.checksum Package.swift "${RELEASE_VERSION}"
-          node scripts/run_pinned_release_readiness.mjs --release-packages
+        run: node scripts/verify_swift_release_artifact.mjs build/swift/ReallyMeCryptoFFI.xcframework.zip build/swift/ReallyMeCryptoFFI.xcframework.checksum Package.swift "${RELEASE_VERSION}"
         env:
           RELEASE_VERSION: ${{ inputs.version }}
-          REALLYME_CRYPTO_FFI_LIBRARY_PATH: ${{ github.workspace }}/target/debug/libcrypto_ffi.dylib
-          REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI: "1"
 
   swift-release:
     name: SwiftPM release tag

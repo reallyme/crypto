@@ -1198,6 +1198,9 @@ const aes192GcmVector = JSON.parse(
 const aes256GcmVector = JSON.parse(
   readFileSync(new URL("../../../vectors/aes256gcm.json", import.meta.url), "utf8"),
 );
+const pbkdf2Vector = JSON.parse(
+  readFileSync(new URL("../../../vectors/pbkdf2.json", import.meta.url), "utf8"),
+);
 const aes256GcmSivVector = JSON.parse(
   readFileSync(new URL("../../../vectors/aes256gcmsiv.json", import.meta.url), "utf8"),
 );
@@ -2199,6 +2202,20 @@ test("argon2id known answer derives through WASM", () => {
   assert.deepEqual(ReallyMeCrypto.deriveArgon2id(ARGON2ID_V1, secret, salt), expected);
 });
 
+test("pbkdf2 rejects a work factor below the public minimum", () => {
+  const vector = pbkdf2Vector.pbkdf2_hmac_sha256;
+  assertReallyMeError(
+    () => ReallyMeCrypto.deriveKey(
+      "PBKDF2-HMAC-SHA-256",
+      base64UrlBytes(vectorString(vector, "password")),
+      base64UrlBytes(vectorString(vector, "salt")),
+      vectorNumber(vector, "iterations") - 1,
+      vectorNumber(vector, "output_len"),
+    ),
+    "invalid-input",
+  );
+});
+
 test("argon2id shared vector derives through WASM", () => {
   const secret = base64UrlBytes(vectorString(argon2idVector, "secret"));
   const salt = base64UrlBytes(vectorString(argon2idVector, "salt"));
@@ -2710,6 +2727,18 @@ test("hpke rejects malformed and tampered inputs through typed errors", () => {
 
   assert.throws(
     () =>
+      ReallyMeCrypto.openHpke(
+        "DHKEM-P256-HKDF-SHA256-HKDF-SHA256-AES-256-GCM",
+        recipientSecretKey,
+        encapsulatedKey.subarray(0, encapsulatedKey.length - 1),
+        info,
+        aad,
+        base64UrlBytes(vectorString(vector, "ciphertext")),
+      ),
+    (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
+  );
+  assert.throws(
+    () =>
       ReallyMeCrypto.sealHpke(
         "DHKEM-P256-HKDF-SHA256-HKDF-SHA256-AES-256-GCM",
         new Uint8Array(64),
@@ -2742,6 +2771,21 @@ test("hpke rejects malformed and tampered inputs through typed errors", () => {
         tamperedCiphertext,
       ),
     (error) => error instanceof ReallyMeCryptoError && error.code === "authentication-failed",
+  );
+
+  const x25519 = hpkeCase("x25519_sha256_chacha20poly1305");
+  const wrongAad = base64UrlBytes(vectorString(x25519, "aad"));
+  wrongAad[0] ^= 0x01;
+  assertReallyMeError(
+    () => ReallyMeCrypto.openHpke(
+      "DHKEM-X25519-HKDF-SHA256-HKDF-SHA256-CHACHA20-POLY1305",
+      base64UrlBytes(vectorString(x25519, "recipient_secret_key")),
+      base64UrlBytes(vectorString(x25519, "encapsulated_key")),
+      base64UrlBytes(vectorString(x25519, "info")),
+      wrongAad,
+      base64UrlBytes(vectorString(x25519, "ciphertext")),
+    ),
+    "authentication-failed",
   );
 });
 
@@ -2800,7 +2844,7 @@ test("x-wing rejects malformed inputs through typed errors", () => {
     (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
   );
   assert.throws(
-    () => ReallyMeCrypto.decapsulate("X-Wing-768", new Uint8Array(1_119), secretKey),
+    () => ReallyMeCrypto.decapsulate("X-Wing-768", ciphertext.subarray(0, ciphertext.length - 1), secretKey),
     (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
   );
   assert.throws(
@@ -2884,7 +2928,7 @@ test("ml-kem rejects malformed inputs through typed errors", () => {
     (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
   );
   assert.throws(
-    () => ReallyMeCrypto.decapsulate("ML-KEM-768", new Uint8Array(1_087), secretKey),
+    () => ReallyMeCrypto.decapsulate("ML-KEM-768", ciphertext.subarray(0, ciphertext.length - 1), secretKey),
     (error) => error instanceof ReallyMeCryptoError && error.code === "invalid-input",
   );
   assert.throws(
@@ -3052,7 +3096,7 @@ test("ml-dsa rejects tampered and malformed inputs through typed errors", () => 
   const message = base64UrlBytes(vectorString(vector, "message"));
   const signature = base64UrlBytes(vectorString(vector, "signature"));
   const tamperedSignature = Uint8Array.from(signature);
-  tamperedSignature[0] ^= 0x01;
+  tamperedSignature[tamperedSignature.length - 1] ^= 0x01;
 
   assertReallyMeError(
     () => ReallyMeMlDsa.verify("ML-DSA-65", tamperedSignature, message, publicKey),
@@ -3158,7 +3202,7 @@ test("slh-dsa rejects tampered and malformed inputs through typed errors", () =>
     () =>
       ReallyMeCrypto.verify(
         "SLH-DSA-SHA2-128s",
-        new Uint8Array(7_855),
+        signature.subarray(0, signature.length - 1),
         message,
         publicKey,
       ),
@@ -3952,6 +3996,21 @@ test("rsa verify rejects tampering and malformed inputs through typed errors", (
         publicKeyDer,
         "PKCS1",
       ),
+    "invalid-signature",
+  );
+
+  const pssSignature = base64UrlBytes(
+    vectorString(rsaVector, "pss_sha256_mgf1_sha256_signature"),
+  );
+  pssSignature[pssSignature.length - 1] ^= 0x01;
+  assertReallyMeError(
+    () => ReallyMeRsa.verify(
+      "RSA-PSS-SHA256-MGF1-SHA256",
+      pssSignature,
+      message,
+      publicKeyDer,
+      "PKCS1",
+    ),
     "invalid-signature",
   );
 

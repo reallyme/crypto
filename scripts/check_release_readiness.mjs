@@ -479,7 +479,7 @@ assertContains(
 );
 assertContains(
   "SECURITY.md",
-  "creates the `v<version>` GitHub release and tag",
+  "published Swift package tag binds",
 );
 
 for (const primitivePolicy of [
@@ -1698,12 +1698,11 @@ assertContains("RELEASE_NOTES.md", "## 0.3.10");
 assertContains("RELEASE_NOTES.md", "legacy `reallyme.codec.v1` protobuf/package surface was removed");
 assertContains("RELEASE_NOTES.md", "not a `reallyme.crypto.v1` wire break");
 assertContains("RELEASE_NOTES.md", "permanently retired in this repository");
-assertContains("RELEASE_CHECKLIST.md", "# Release Checklist");
-assertContains("RELEASE_CHECKLIST.md", "Public SwiftPM releases ship `ReallyMeCryptoFFI`");
-assertContains("RELEASE_CHECKLIST.md", "manifest-only child commit");
-assertContains("RELEASE_CHECKLIST.md", "force-pushes `main`");
-assertContains("RELEASE_CHECKLIST.md", "`me.really:crypto-android` as an AAR");
-assertContains("RELEASE_CHECKLIST.md", "`npm run pack:check`");
+assertContains("RELEASE_CHECKLIST.md", "# Release Integrity");
+assertContains("RELEASE_CHECKLIST.md", "its exact\n  checksum");
+assertContains("RELEASE_CHECKLIST.md", "`me.really:crypto-android`");
+assertContains("RELEASE_CHECKLIST.md", "`@reallyme/crypto`");
+assertContains("RELEASE_CHECKLIST.md", "artifact bytes");
 assertContains(".github/workflows/rust-ci.yml", "workflow_dispatch:");
 assertContains(".github/workflows/rust-ci.yml", "!PROVIDER_POLICY.md");
 assertContains(".github/workflows/rust-ci.yml", "!CONTRACT.md");
@@ -1747,10 +1746,8 @@ assertContains(".github/workflows/codeql.yml", "javascript-typescript");
 assertContains(".github/workflows/codeql.yml", "java-kotlin");
 assertContains(".github/workflows/codeql.yml", "swift");
 for (const workflow of [
-  ".github/workflows/crates-package-preflight.yml",
   ".github/workflows/kotlin-android-package-preflight.yml",
   ".github/workflows/swift-package-preflight.yml",
-  ".github/workflows/swift-package-release.yml",
 ]) {
   assertContains(workflow, "wasm-pack@0.15.0");
   assertContains(workflow, "wasm-bindgen-cli@0.2.129");
@@ -2638,14 +2635,14 @@ const repositoryPolicy = {
     },
     verification: [
       {
-        roles: ["typecheck", "lint"],
-        command: "npm",
-        args: ["--prefix", "packages/ts", "run", "typecheck"],
-      },
-      {
         roles: ["test"],
         command: "npm",
         args: ["--prefix", "packages/ts", "test"],
+      },
+      {
+        roles: ["typecheck", "lint"],
+        command: "npm",
+        args: ["--prefix", "packages/ts", "run", "build:ts", "--", "--noEmit"],
       },
     ],
   },
@@ -3180,7 +3177,7 @@ assertContains(
 );
 assertContains(
   "scripts/vendor_external_vectors.mjs",
-  "committed supplementary corpora match pinned upstream bytes",
+  "await checkCommittedCorpus(provenance, requested.map((name) => SOURCES[name].source_id))",
 );
 assertContains(
   ".github/workflows/kotlin-android-package-release.yml",
@@ -3233,8 +3230,8 @@ assertContains("scripts/build_swift_xcframework.sh", "Headers/module.modulemap")
 assertContains("scripts/prepare_swift_release_candidate.sh", "build_swift_xcframework.sh");
 assertContains("scripts/prepare_swift_release_candidate.sh", "prepare_swift_binary_manifest.mjs");
 assertContains("scripts/prepare_swift_release_candidate.sh", "verify_swift_release_artifact.mjs");
-assertContains("RELEASE_CHECKLIST.md", "retains that exact archive as the release candidate");
-assertContains("docs/release-process.md", "prepare_swift_release_candidate.sh 0.3.10");
+assertContains("RELEASE_CHECKLIST.md", "published manifest and binary artifact must agree");
+assertContains("docs/release-process.md", "reviewed source commit must agree across published");
 assertContains(
   "packages/kotlin/src/main/kotlin/me/really/crypto/OperationResponse.kt",
   "processOperationResponseNative(request: ByteArray): ByteArray?",
@@ -3343,8 +3340,7 @@ assertContains(swiftReleaseWorkflow, "run-id: ${{ needs.verify-release-sha.outpu
 assertContains(swiftReleaseWorkflow, "RELEASE_ATTESTATION_PREFLIGHT_RUN_ID");
 assertContains(swiftReleaseWorkflow, "Bind release manifest to verified Swift artifact");
 assertContains(swiftReleaseWorkflow, "Verify SwiftPM manifest and downloaded artifact");
-assertContains(swiftReleaseWorkflow, "Build local FFI for source policy verification");
-assertContains(swiftReleaseWorkflow, "REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI: \"1\"");
+assertNotContains(swiftReleaseWorkflow, "run_pinned_release_readiness.mjs --release-packages");
 assertContains(swiftReleaseWorkflow, "Create immutable GitHub release with Swift artifact");
 assertContains(swiftReleaseWorkflow, "verify_swift_release_artifact.mjs");
 assertContains(swiftReleaseWorkflow, 'git show "${tag_target}:Package.swift"');
@@ -3383,13 +3379,13 @@ assertContains(".github/workflows/npm-package-release.yml", "npm pack --ignore-s
 assertContains(".github/workflows/npm-package-release.yml", "reallyme-crypto-${RELEASE_VERSION}.tgz");
 
 assertContains(".github/workflows/crates-package-preflight.yml", "node scripts/check_rust_semver.mjs");
-assertContains(".github/workflows/crates-package-preflight.yml", "tool: cargo-audit@0.22.2");
-assertContains(".github/workflows/crates-package-preflight.yml", "scripts/audit_committed_lockfiles.sh");
-assertContains(".github/workflows/crates-package-preflight.yml", "node scripts/publish_crates_in_order.mjs inspect");
+assertContains(".github/workflows/crates-package-preflight.yml", "node scripts/publish_crates_in_order.mjs order");
 assertContains(".github/workflows/crates-package-preflight.yml", "cargo publish --workspace --dry-run --locked");
+assertNotContains(".github/workflows/crates-package-preflight.yml", "node scripts/publish_crates_in_order.mjs inspect");
+assertNotContains(".github/workflows/crates-package-preflight.yml", "run_pinned_release_readiness.mjs");
 assertContains("deny.toml", 'yanked = "deny"');
 assertContains(".github/workflows/crates-release.yml", "verify_release_attestation.mjs");
-assertContains(".github/workflows/crates-release.yml", "node scripts/publish_crates_in_order.mjs order");
+assertNotContains(".github/workflows/crates-release.yml", "node scripts/publish_crates_in_order.mjs inspect");
 assertContains(
   ".github/workflows/crates-release.yml",
   "RELEASE_VERSION: ${{ needs.verify-release-sha.outputs.release_version }}",

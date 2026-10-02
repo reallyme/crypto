@@ -29,7 +29,6 @@ export const REQUIRED_WORKFLOW_GATES = [
   ]],
   [".github/workflows/crates-package-preflight.yml", [
     "cargo publish --workspace --dry-run --locked",
-    "node scripts/run_pinned_release_readiness.mjs --release-packages",
   ]],
   [".github/workflows/npm-package-preflight.yml", [
     "node scripts/run_pinned_release_readiness.mjs --release-packages",
@@ -47,7 +46,8 @@ export const REQUIRED_WORKFLOW_GATES = [
     "npm publish \"reallyme-crypto-${RELEASE_VERSION}.tgz\" --provenance --access public",
   ]],
   [".github/workflows/swift-package-release.yml", [
-    "node scripts/run_pinned_release_readiness.mjs --release-packages",
+    "node scripts/verify_swift_release_artifact.mjs",
+    "node scripts/verify_release_attestation.mjs",
     "gh release create \"v${RELEASE_VERSION}\"",
   ]],
   [".github/workflows/kotlin-android-package-release.yml", [

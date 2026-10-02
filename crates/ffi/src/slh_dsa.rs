@@ -53,10 +53,14 @@ pub unsafe extern "C" fn rm_crypto_slh_dsa_sha2_128s_generate_keypair(
             Ok(value) => value,
             Err(error) => return key_management_status(error),
         };
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         let status = unsafe { write_fixed(public_out, public_out_len, &key_pair.public_key) };
         if status != CRYPTO_OK {
             return status;
         }
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         unsafe { write_fixed(secret_key_out, secret_key_out_len, &key_pair.secret_key) }
     })
 }
@@ -90,14 +94,20 @@ pub unsafe extern "C" fn rm_crypto_slh_dsa_sha2_128s_derive_keypair(
         if output_status != CRYPTO_OK {
             return output_status;
         }
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let sk_seed = match unsafe { read_slice(sk_seed, sk_seed_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let sk_prf = match unsafe { read_slice(sk_prf, sk_prf_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let pk_seed = match unsafe { read_slice(pk_seed, pk_seed_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -125,10 +135,14 @@ pub unsafe extern "C" fn rm_crypto_slh_dsa_sha2_128s_derive_keypair(
             Ok(value) => value,
             Err(error) => return key_management_status(error),
         };
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         let status = unsafe { write_fixed(public_out, public_out_len, &key_pair.public_key) };
         if status != CRYPTO_OK {
             return status;
         }
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         unsafe { write_fixed(secret_key_out, secret_key_out_len, &key_pair.secret_key) }
     })
 }
@@ -150,6 +164,8 @@ pub unsafe extern "C" fn rm_crypto_slh_dsa_sha2_128s_sign(
     signature_out_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let secret_key = match unsafe { read_slice(secret_key, secret_key_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -157,6 +173,8 @@ pub unsafe extern "C" fn rm_crypto_slh_dsa_sha2_128s_sign(
         if secret_key.len() != SLH_DSA_SHA2_128S_SECRET_KEY_LEN {
             return CRYPTO_INVALID_KEY;
         }
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let message = match unsafe { read_slice(message, message_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -166,6 +184,8 @@ pub unsafe extern "C" fn rm_crypto_slh_dsa_sha2_128s_sign(
             secret_key,
             message,
         ) {
+            // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+            // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(signature) => unsafe { write_fixed(signature_out, signature_out_len, &signature) },
             Err(error) => sign_status(error),
         }
@@ -188,6 +208,8 @@ pub unsafe extern "C" fn rm_crypto_slh_dsa_sha2_128s_verify(
     signature_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let public_key = match unsafe { read_slice(public_key, public_key_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -195,10 +217,14 @@ pub unsafe extern "C" fn rm_crypto_slh_dsa_sha2_128s_verify(
         if public_key.len() != SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN {
             return CRYPTO_INVALID_KEY;
         }
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let message = match unsafe { read_slice(message, message_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let signature = match unsafe { read_slice(signature, signature_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -232,11 +258,15 @@ pub unsafe extern "C" fn rm_crypto_slh_dsa_sha2_128s_encode_public_key(
     out_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let public_key = match unsafe { read_slice(public_key, public_key_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
         match key_encoding::copy_fixed_public_key(public_key, SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN) {
+            // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+            // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(value) => unsafe { write_fixed(out, out_len, &value) },
             Err(_) => CRYPTO_INVALID_KEY,
         }
@@ -257,11 +287,15 @@ pub unsafe extern "C" fn rm_crypto_slh_dsa_sha2_128s_decode_public_key(
     out_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let public_key = match unsafe { read_slice(public_key, public_key_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
         match key_encoding::copy_fixed_public_key(public_key, SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN) {
+            // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+            // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(value) => unsafe { write_fixed(out, out_len, &value) },
             Err(_) => CRYPTO_INVALID_KEY,
         }

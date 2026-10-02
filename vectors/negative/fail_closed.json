@@ -13,7 +13,34 @@
         "wireBranch": "primitive",
         "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH"
       },
-      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+      "lanes": [
+        "rust-native",
+        "swift-native",
+        "kotlin-jvm-native",
+        "typescript-wasm"
+      ],
+      "evidence": {
+        "rust-native": {
+          "path": "crates/conformance/tests/vectors/protocol_tests.rs",
+          "test": "hpke_vector_invariants",
+          "status": "executable"
+        },
+        "swift-native": {
+          "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoRustCAbiClassicalTests.swift",
+          "test": "testRustCAbiHpkeVectorsWhenLibraryConfigured",
+          "status": "executable"
+        },
+        "kotlin-jvm-native": {
+          "path": "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoPostQuantumTest.kt",
+          "test": "hpkeVectorsOpenAndDeterministicallySeal",
+          "status": "executable"
+        },
+        "typescript-wasm": {
+          "path": "packages/ts/test/reallyme-crypto.test.mjs",
+          "test": "hpke rejects malformed and tampered inputs through typed errors",
+          "status": "executable"
+        }
+      }
     },
     {
       "id": "hpke-x25519-wrong-aad",
@@ -26,7 +53,34 @@
         "wireBranch": "primitive",
         "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED"
       },
-      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+      "lanes": [
+        "rust-native",
+        "swift-native",
+        "kotlin-jvm-native",
+        "typescript-wasm"
+      ],
+      "evidence": {
+        "rust-native": {
+          "path": "crates/conformance/tests/vectors/protocol_tests.rs",
+          "test": "hpke_vector_invariants",
+          "status": "executable"
+        },
+        "swift-native": {
+          "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoRustCAbiClassicalTests.swift",
+          "test": "testRustCAbiHpkeVectorsWhenLibraryConfigured",
+          "status": "executable"
+        },
+        "kotlin-jvm-native": {
+          "path": "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoPostQuantumTest.kt",
+          "test": "hpkeVectorsOpenAndDeterministicallySeal",
+          "status": "executable"
+        },
+        "typescript-wasm": {
+          "path": "packages/ts/test/reallyme-crypto.test.mjs",
+          "test": "hpke rejects malformed and tampered inputs through typed errors",
+          "status": "executable"
+        }
+      }
     },
     {
       "id": "ml-kem-768-short-ciphertext",
@@ -39,7 +93,34 @@
         "wireBranch": "primitive",
         "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH"
       },
-      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+      "lanes": [
+        "rust-native",
+        "swift-native",
+        "kotlin-jvm-native",
+        "typescript-wasm"
+      ],
+      "evidence": {
+        "rust-native": {
+          "path": "crates/conformance/tests/vectors/public_key_tests/ml_kem.rs",
+          "test": "mlkem768_vector_known_answer",
+          "status": "executable"
+        },
+        "swift-native": {
+          "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoRustCAbiPostQuantumTests.swift",
+          "test": "testRustCAbiMlKemVectorsWhenLibraryConfigured",
+          "status": "executable"
+        },
+        "kotlin-jvm-native": {
+          "path": "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoPostQuantumTest.kt",
+          "test": "mlKemRejectsMalformedInputs",
+          "status": "executable"
+        },
+        "typescript-wasm": {
+          "path": "packages/ts/test/reallyme-crypto.test.mjs",
+          "test": "ml-kem rejects malformed inputs through typed errors",
+          "status": "executable"
+        }
+      }
     },
     {
       "id": "ml-dsa-65-tampered-signature",
@@ -52,7 +133,34 @@
         "wireBranch": "primitive",
         "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SIGNATURE"
       },
-      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+      "lanes": [
+        "rust-native",
+        "swift-native",
+        "kotlin-jvm-native",
+        "typescript-wasm"
+      ],
+      "evidence": {
+        "rust-native": {
+          "path": "crates/conformance/tests/vectors/public_key_tests/pq_signature.rs",
+          "test": "ml_dsa_65_vector_known_answer",
+          "status": "executable"
+        },
+        "swift-native": {
+          "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoRustCAbiPostQuantumTests.swift",
+          "test": "testRustCAbiMlDsaVectorsWhenLibraryConfigured",
+          "status": "executable"
+        },
+        "kotlin-jvm-native": {
+          "path": "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoPostQuantumTest.kt",
+          "test": "mlDsaVectorsVerifyCommittedSignatures",
+          "status": "executable"
+        },
+        "typescript-wasm": {
+          "path": "packages/ts/test/reallyme-crypto.test.mjs",
+          "test": "ml-dsa rejects tampered and malformed inputs through typed errors",
+          "status": "executable"
+        }
+      }
     },
     {
       "id": "slh-dsa-short-signature",
@@ -65,7 +173,34 @@
         "wireBranch": "primitive",
         "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH"
       },
-      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+      "lanes": [
+        "rust-native",
+        "swift-native",
+        "kotlin-jvm-native",
+        "typescript-wasm"
+      ],
+      "evidence": {
+        "rust-native": {
+          "path": "crates/conformance/tests/vectors/public_key_tests/pq_signature.rs",
+          "test": "slh_dsa_sha2_128s_vector_known_answer",
+          "status": "executable"
+        },
+        "swift-native": {
+          "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoRustCAbiPostQuantumTests.swift",
+          "test": "testRustCAbiSlhDsaVectorWhenLibraryConfigured",
+          "status": "executable"
+        },
+        "kotlin-jvm-native": {
+          "path": "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoPostQuantumTest.kt",
+          "test": "slhDsaVectorDerivesSignsAndVerifies",
+          "status": "executable"
+        },
+        "typescript-wasm": {
+          "path": "packages/ts/test/reallyme-crypto.test.mjs",
+          "test": "slh-dsa rejects tampered and malformed inputs through typed errors",
+          "status": "executable"
+        }
+      }
     },
     {
       "id": "x-wing-768-short-ciphertext",
@@ -78,7 +213,34 @@
         "wireBranch": "primitive",
         "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH"
       },
-      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+      "lanes": [
+        "rust-native",
+        "swift-native",
+        "kotlin-jvm-native",
+        "typescript-wasm"
+      ],
+      "evidence": {
+        "rust-native": {
+          "path": "crates/conformance/tests/vectors/public_key_tests/agreement_hybrid.rs",
+          "test": "x_wing_vectors_match_workspace_primitives",
+          "status": "executable"
+        },
+        "swift-native": {
+          "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoRustCAbiPostQuantumTests.swift",
+          "test": "testRustCAbiXWingVectorsWhenLibraryConfigured",
+          "status": "executable"
+        },
+        "kotlin-jvm-native": {
+          "path": "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoPostQuantumTest.kt",
+          "test": "xWingRejectsMalformedInputs",
+          "status": "executable"
+        },
+        "typescript-wasm": {
+          "path": "packages/ts/test/reallyme-crypto.test.mjs",
+          "test": "x-wing rejects malformed inputs through typed errors",
+          "status": "executable"
+        }
+      }
     },
     {
       "id": "aes-256-gcm-tampered-tag",
@@ -91,7 +253,34 @@
         "wireBranch": "primitive",
         "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED"
       },
-      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+      "lanes": [
+        "rust-native",
+        "swift-native",
+        "kotlin-jvm-native",
+        "typescript-wasm"
+      ],
+      "evidence": {
+        "rust-native": {
+          "path": "crates/conformance/tests/vectors/symmetric_codec_tests/aead_aes_gcm.rs",
+          "test": "aes256gcm_vector_round_trips",
+          "status": "executable"
+        },
+        "swift-native": {
+          "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoGenericFacadeTests.swift",
+          "test": "testGenericFacadeAes256GcmKnownAnswerAndTampering",
+          "status": "executable"
+        },
+        "kotlin-jvm-native": {
+          "path": "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoSymmetricTest.kt",
+          "test": "genericFacadeAes256GcmKnownAnswerAndTampering",
+          "status": "executable"
+        },
+        "typescript-wasm": {
+          "path": "packages/ts/test/reallyme-crypto.test.mjs",
+          "test": "aead vectors seal and open through WASM",
+          "status": "executable"
+        }
+      }
     },
     {
       "id": "aes-256-kw-short-wrapped-key",
@@ -104,7 +293,34 @@
         "wireBranch": "primitive",
         "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH"
       },
-      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+      "lanes": [
+        "rust-native",
+        "swift-native",
+        "kotlin-jvm-native",
+        "typescript-wasm"
+      ],
+      "evidence": {
+        "rust-native": {
+          "path": "crates/conformance/tests/vectors/symmetric_codec_tests/key_wrap.rs",
+          "test": "aes_kw_vectors_wrap_unwrap_and_reject_tampering",
+          "status": "executable"
+        },
+        "swift-native": {
+          "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoRustCAbiClassicalTests.swift",
+          "test": "testRustCAbiAesKwKnownAnswerWhenLibraryConfigured",
+          "status": "executable"
+        },
+        "kotlin-jvm-native": {
+          "path": "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoSymmetricTest.kt",
+          "test": "genericFacadeAesKwKnownAnswersAndTampering",
+          "status": "executable"
+        },
+        "typescript-wasm": {
+          "path": "packages/ts/test/reallyme-crypto.test.mjs",
+          "test": "aes-kw rejects malformed and tampered inputs through typed errors",
+          "status": "executable"
+        }
+      }
     },
     {
       "id": "x25519-all-zero-peer-public-key",
@@ -117,7 +333,34 @@
         "wireBranch": "primitive",
         "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SHARED_SECRET"
       },
-      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+      "lanes": [
+        "rust-native",
+        "swift-native",
+        "kotlin-jvm-native",
+        "typescript-wasm"
+      ],
+      "evidence": {
+        "rust-native": {
+          "path": "crates/conformance/tests/vectors/public_key_tests/agreement_hybrid.rs",
+          "test": "x25519_vector_invariants",
+          "status": "executable"
+        },
+        "swift-native": {
+          "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoNativeKeyAgreementTests.swift",
+          "test": "testX25519RejectsMalformedInputs",
+          "status": "executable"
+        },
+        "kotlin-jvm-native": {
+          "path": "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoKeyAgreementTest.kt",
+          "test": "x25519RejectsMalformedInputs",
+          "status": "executable"
+        },
+        "typescript-wasm": {
+          "path": "packages/ts/test/reallyme-crypto.test.mjs",
+          "test": "x25519 rejects malformed inputs",
+          "status": "executable"
+        }
+      }
     },
     {
       "id": "pbkdf2-hmac-sha256-below-public-minimum",
@@ -130,7 +373,34 @@
         "wireBranch": "primitive",
         "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PARAMETER"
       },
-      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+      "lanes": [
+        "rust-native",
+        "swift-native",
+        "kotlin-jvm-native",
+        "typescript-wasm"
+      ],
+      "evidence": {
+        "rust-native": {
+          "path": "crates/conformance/tests/vectors/symmetric_codec_tests/kdf.rs",
+          "test": "pbkdf2_vectors_match_workspace_primitives",
+          "status": "executable"
+        },
+        "swift-native": {
+          "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoGenericFacadeAdditionalTests.swift",
+          "test": "testGenericFacadePbkdf2RejectsInvalidInputsAndUnsupportedKdf",
+          "status": "executable"
+        },
+        "kotlin-jvm-native": {
+          "path": "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoSymmetricTest.kt",
+          "test": "genericFacadePbkdf2RejectsInvalidInputsAndUnsupportedKdf",
+          "status": "executable"
+        },
+        "typescript-wasm": {
+          "path": "packages/ts/test/reallyme-crypto.test.mjs",
+          "test": "pbkdf2 rejects a work factor below the public minimum",
+          "status": "executable"
+        }
+      }
     },
     {
       "id": "rsa-pss-sha256-tampered-signature",
@@ -143,7 +413,34 @@
         "wireBranch": "primitive",
         "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SIGNATURE"
       },
-      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+      "lanes": [
+        "rust-native",
+        "swift-native",
+        "kotlin-jvm-native",
+        "typescript-wasm"
+      ],
+      "evidence": {
+        "rust-native": {
+          "path": "crates/conformance/tests/vectors/public_key_tests/rsa.rs",
+          "test": "rsa_vector_invariants",
+          "status": "executable"
+        },
+        "swift-native": {
+          "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoRustCAbiClassicalTests.swift",
+          "test": "testRustCAbiRsaVectorWhenLibraryConfigured",
+          "status": "executable"
+        },
+        "kotlin-jvm-native": {
+          "path": "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoSignatureTest.kt",
+          "test": "rsaVerifyKnownAnswers",
+          "status": "executable"
+        },
+        "typescript-wasm": {
+          "path": "packages/ts/test/reallyme-crypto.test.mjs",
+          "test": "rsa verify rejects tampering and malformed inputs through typed errors",
+          "status": "executable"
+        }
+      }
     },
     {
       "id": "jwk-ec-mismatched-y-same-parity",
@@ -156,7 +453,34 @@
         "wireBranch": "primitive",
         "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PUBLIC_KEY"
       },
-      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+      "lanes": [
+        "rust-native",
+        "swift-native",
+        "kotlin-jvm-native",
+        "typescript-wasm"
+      ],
+      "evidence": {
+        "rust-native": {
+          "path": "crates/jwk/tests/public_jwk_envelope_tests.rs",
+          "test": "ec_jwk_rejects_mismatched_same_parity_y_coordinates",
+          "status": "executable"
+        },
+        "swift-native": {
+          "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoJwkTests.swift",
+          "test": "testJwkParserRejectsMismatchedEcCoordinates",
+          "status": "executable"
+        },
+        "kotlin-jvm-native": {
+          "path": "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoTest.kt",
+          "test": "jwkParserRejectsMismatchedEcCoordinates",
+          "status": "executable"
+        },
+        "typescript-wasm": {
+          "path": "packages/ts/test/reallyme-crypto.test.mjs",
+          "test": "JWK facade rejects mismatched EC coordinates in both parity classes",
+          "status": "executable"
+        }
+      }
     },
     {
       "id": "jwk-ec-mismatched-y-opposite-parity",
@@ -169,7 +493,34 @@
         "wireBranch": "primitive",
         "reason": "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PUBLIC_KEY"
       },
-      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+      "lanes": [
+        "rust-native",
+        "swift-native",
+        "kotlin-jvm-native",
+        "typescript-wasm"
+      ],
+      "evidence": {
+        "rust-native": {
+          "path": "crates/jwk/tests/public_jwk_envelope_tests.rs",
+          "test": "ec_jwk_rejects_mismatched_opposite_parity_y_coordinates",
+          "status": "executable"
+        },
+        "swift-native": {
+          "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoJwkTests.swift",
+          "test": "testJwkParserRejectsMismatchedEcCoordinates",
+          "status": "executable"
+        },
+        "kotlin-jvm-native": {
+          "path": "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoTest.kt",
+          "test": "jwkParserRejectsMismatchedEcCoordinates",
+          "status": "executable"
+        },
+        "typescript-wasm": {
+          "path": "packages/ts/test/reallyme-crypto.test.mjs",
+          "test": "JWK facade rejects mismatched EC coordinates in both parity classes",
+          "status": "executable"
+        }
+      }
     },
     {
       "id": "platform-key-secure-enclave-duplicate-tag",
@@ -182,7 +533,34 @@
         "wireBranch": "provider",
         "reason": "CRYPTO_ERROR_REASON_PROVIDER_KEY_EXISTS"
       },
-      "lanes": ["rust-native", "swift-native", "kotlin-jvm-native", "typescript-wasm"]
+      "lanes": [
+        "rust-native",
+        "swift-native",
+        "kotlin-jvm-native",
+        "typescript-wasm"
+      ],
+      "evidence": {
+        "rust-native": {
+          "path": "crates/crypto/tests/provider_manifest_tests.rs",
+          "test": "hardware_backed_providers_are_explicit_handle_backed_routes_only",
+          "status": "guarded"
+        },
+        "swift-native": {
+          "path": "packages/swift/Tests/ReallyMeCryptoTests/ReallyMeCryptoSecureEnclaveSigningTests.swift",
+          "test": "testP256SecureEnclaveSigningRejectsDuplicateTagWhenAvailable",
+          "status": "hardware-skip-aware"
+        },
+        "kotlin-jvm-native": {
+          "path": "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoTest.kt",
+          "test": "providerCatalogIsExplicit",
+          "status": "guarded"
+        },
+        "typescript-wasm": {
+          "path": "packages/ts/test/reallyme-crypto.test.mjs",
+          "test": "provider catalog is explicit",
+          "status": "guarded"
+        }
+      }
     }
   ]
 }

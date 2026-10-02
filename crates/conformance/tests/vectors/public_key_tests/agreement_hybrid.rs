@@ -23,6 +23,12 @@ fn x25519_vector_invariants() -> Result<(), VectorTestError> {
         derive_x25519_shared_secret(&peer_sk, &pk).map_err(|_| VectorTestError::X25519Derive)?;
     assert_eq!(*ss, expected_shared_secret);
     assert_eq!(*peer_ss, expected_shared_secret);
+    assert!(matches!(
+        derive_x25519_shared_secret(&sk, &[0_u8; 32]),
+        Err(crypto_core::CryptoError::KeyAgreementFailure {
+            kind: crypto_core::KeyAgreementFailureKind::DeriveSharedSecretFailed,
+        })
+    ));
     Ok(())
 }
 
@@ -73,6 +79,11 @@ where
     if decapsulated.as_slice() != shared_secret {
         return Err(VectorTestError::XWingMismatch);
     }
+    assert!(matches!(
+        decapsulate(&ciphertext[..ciphertext.len() - 1], &secret_key),
+        Err(crypto_core::CryptoError::InvalidCiphertextLength { actual, .. })
+            if actual == ciphertext.len() - 1
+    ));
     Ok(())
 }
 

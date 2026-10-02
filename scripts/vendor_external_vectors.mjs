@@ -29,6 +29,7 @@ const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const EXTERNAL_DIR = join(REPO_ROOT, "vectors", "external");
 const PROVENANCE_PATH = join(EXTERNAL_DIR, "provenance.json");
 const RETRIEVED_AT = new Date().toISOString().slice(0, 10);
+const MAX_UPSTREAM_FILE_BYTES = 64 * 1024 * 1024;
 
 const SOURCES = {
   wycheproof: {
@@ -194,7 +195,19 @@ async function fetchBytes(url) {
   if (!response.ok) {
     throw new Error(`fetch failed (${response.status}) for ${url}`);
   }
-  return Buffer.from(await response.arrayBuffer());
+  if (response.body === null) {
+    throw new Error(`empty upstream response for ${url}`);
+  }
+  const parts = [];
+  let length = 0;
+  for await (const part of response.body) {
+    length += part.length;
+    if (length > MAX_UPSTREAM_FILE_BYTES) {
+      throw new Error(`upstream file exceeds the per-file limit for ${url}`);
+    }
+    parts.push(part);
+  }
+  return Buffer.concat(parts, length);
 }
 
 function upsert(list, keyName, keyValue, entry) {
@@ -270,46 +283,72 @@ async function vendorSource(source, provenance) {
   }
 }
 
-async function checkSource(source, provenance) {
-  const provenanceSource = provenance.sources.find(
-    (candidate) => candidate.source_id === source.source_id,
-  );
-  if (provenanceSource === undefined) {
-    throw new Error(`missing provenance source for "${source.source_id}"`);
-  }
-  const commit = provenanceSource.commit;
-  if (typeof commit !== "string" || !/^[0-9a-f]{40}$/.test(commit)) {
-    throw new Error(`provenance source "${source.source_id}" has an invalid commit`);
-  }
-  const expectedSourceTreeUrl = `https://github.com/${source.repo}/tree/${commit}`;
-  if (provenanceSource.source_tree_url !== expectedSourceTreeUrl) {
-    throw new Error(`provenance source tree URL does not match "${source.source_id}"`);
-  }
-
-  for (const file of source.files) {
-    const provenanceFile = provenance.files.find(
-      (candidate) => candidate.local_path === file.local,
+// The manifest is the authority for the complete committed corpus. Keeping
+// this check source-driven prevents a new ACVP or CCTV file from silently
+// escaping upstream verification when the vendoring list grows.
+async function checkCommittedCorpus(provenance, requestedNames) {
+  const sourceById = new Map();
+  for (const source of provenance.sources) {
+    if (sourceById.has(source.source_id)) {
+      throw new Error(`duplicate provenance source "${source.source_id}"`);
+    }
+    const match = /^https:\/\/github\.com\/([^/]+\/[^/]+)\/tree\/([0-9a-f]{40})(?:\/.*)?$/u.exec(
+      source.source_tree_url,
     );
-    if (provenanceFile === undefined || provenanceFile.source_id !== source.source_id) {
-      throw new Error(`missing provenance file entry for "${file.local}"`);
+    if (match === null || source.commit !== match[2]) {
+      throw new Error(`invalid pinned source tree for "${source.source_id}"`);
     }
-    const expectedUrl = rawUrl(source.repo, commit, file.upstream);
-    if (provenanceFile.upstream_url !== expectedUrl) {
-      throw new Error(`provenance URL does not match "${file.local}"`);
-    }
-
-    const upstreamRaw = await fetchBytes(expectedUrl);
-    const upstreamBytes = file.gunzip ? gunzipSync(upstreamRaw) : upstreamRaw;
-    const committedBytes = await readFile(join(EXTERNAL_DIR, file.local));
-    const upstreamDigest = sha256Hex(upstreamBytes);
-    if (
-      provenanceFile.sha256 !== upstreamDigest ||
-      !committedBytes.equals(upstreamBytes)
-    ) {
-      throw new Error(`committed corpus does not match pinned upstream bytes for "${file.local}"`);
-    }
-    process.stdout.write(`verified ${file.local} against ${commit}\n`);
+    sourceById.set(source.source_id, { repo: match[1], commit: match[2] });
   }
+
+  const seenPaths = new Set();
+  const files = provenance.files.filter((file) => {
+    if (typeof file.local_path !== "string" ||
+        !/^[a-zA-Z0-9_.-]+(?:\/[a-zA-Z0-9_.-]+)*$/u.test(file.local_path) ||
+        file.local_path.split("/").includes("..") ||
+        seenPaths.has(file.local_path)) {
+      throw new Error(`invalid or duplicate local provenance path "${file.local_path}"`);
+    }
+    seenPaths.add(file.local_path);
+    if (!sourceById.has(file.source_id)) {
+      throw new Error(`unknown provenance source for "${file.local_path}"`);
+    }
+    return requestedNames.length === 0 || requestedNames.includes(file.source_id);
+  });
+  if (files.length === 0) {
+    throw new Error("no provenance files selected for verification");
+  }
+
+  // Four bounded requests keep the occasional full vector check practical without
+  // making normal package checks download the large upstream corpora.
+  const workerCount = Math.min(4, files.length);
+  let next = 0;
+  await Promise.all(Array.from({ length: workerCount }, async () => {
+    while (next < files.length) {
+      const file = files[next];
+      next += 1;
+      const source = sourceById.get(file.source_id);
+      const prefix = `https://raw.githubusercontent.com/${source.repo}/${source.commit}/`;
+      if (typeof file.upstream_url !== "string" ||
+          !file.upstream_url.startsWith(prefix) ||
+          !/^[a-zA-Z0-9_.\/-]+$/u.test(file.upstream_url.slice(prefix.length)) ||
+          file.upstream_url.slice(prefix.length).split("/").includes("..") ||
+          !/^[0-9a-f]{64}$/u.test(file.sha256)) {
+        throw new Error(`invalid pinned provenance for "${file.local_path}"`);
+      }
+      const raw = await fetchBytes(file.upstream_url);
+      const bytes = file.source_id === "rfc8032" &&
+        file.local_path === "rfc8032/ed25519_sign_input.txt"
+        ? gunzipSync(raw)
+        : raw;
+      const committed = await readFile(join(EXTERNAL_DIR, file.local_path));
+      if (sha256Hex(bytes) !== file.sha256 || !committed.equals(bytes)) {
+        throw new Error(`committed corpus does not match pinned upstream bytes for "${file.local_path}"`);
+      }
+      process.stdout.write(`verified ${file.local_path}\n`);
+    }
+  }));
+  process.stdout.write(`verified ${files.length} committed files against pinned upstream bytes\n`);
 }
 
 async function main() {
@@ -333,10 +372,7 @@ async function main() {
   }
 
   if (checkMode) {
-    for (const name of names) {
-      await checkSource(SOURCES[name], provenance);
-    }
-    process.stdout.write("committed supplementary corpora match pinned upstream bytes\n");
+    await checkCommittedCorpus(provenance, requested.map((name) => SOURCES[name].source_id));
     return;
   }
 

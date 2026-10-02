@@ -7,9 +7,9 @@ name: External Vector Audit
 
 # Optional, mostly-manual audit of the vendored third-party conformance corpora.
 #
-#   integrity   cheap SHA-256 + marker sweep. Runs on dispatch, weekly, and on
-#               PRs that touch the external vectors or harness, so vendored-file
-#               drift is caught continuously without loading the main PR wall.
+#   integrity   re-downloads every pinned corpus and verifies committed bytes.
+#               Runs on dispatch, weekly, and vector/harness PRs without adding
+#               network work to the main PR wall.
 #   deep-audit  the enormous ignored ACVP/CCTV sweeps run on dispatch/schedule.
 #               Supplementary adapters also run against committed corpora.
 #   kani        bounded formal proofs of the reference DER encoder. Dispatch or
@@ -75,13 +75,11 @@ jobs:
         uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
 
       - name: Install Node
-        if: github.event_name == 'schedule'
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: '24'
 
-      - name: Re-derive supplementary corpora from pinned upstream commits
-        if: github.event_name == 'schedule'
+      - name: Verify every committed corpus against pinned upstream bytes
         run: node scripts/vendor_external_vectors.mjs --check
 
       - name: Verify vendored external-vector SHA-256 hashes

@@ -47,6 +47,8 @@ pub unsafe extern "C" fn rm_crypto_aes128_gcm_decrypt(
         if len_status != CRYPTO_OK {
             return len_status;
         }
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let key = match unsafe { read_slice(key, key_len) } {
             Ok(value) => match Aes128GcmKey::from_slice(value) {
                 Ok(key) => key,
@@ -54,6 +56,8 @@ pub unsafe extern "C" fn rm_crypto_aes128_gcm_decrypt(
             },
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let nonce = match unsafe { read_slice(nonce, nonce_len) } {
             Ok(value) => match Aes128GcmNonce::from_slice(value) {
                 Ok(nonce) => nonce,
@@ -61,10 +65,14 @@ pub unsafe extern "C" fn rm_crypto_aes128_gcm_decrypt(
             },
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let aad = match unsafe { read_slice(aad, aad_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let ciphertext_bytes = match unsafe { read_slice(ciphertext, ciphertext_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -89,10 +97,14 @@ pub unsafe extern "C" fn rm_crypto_aes128_gcm_decrypt(
             Ok(value) => value,
             Err(_) => return CRYPTO_AUTHENTICATION_FAILED,
         };
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         let status = unsafe { write_fixed(plaintext_out, plaintext_out_len, &plaintext) };
         if status != CRYPTO_OK {
             return status;
         }
+        // SAFETY: The C caller provides an aligned, writable length slot for this call. write_len validates the
+        // slot before writing; the caller retains ownership.
         unsafe { write_len(plaintext_len_out, plaintext.len()) }
     })
 }
@@ -129,6 +141,8 @@ pub unsafe extern "C" fn rm_crypto_aes192_gcm_decrypt(
         if len_status != CRYPTO_OK {
             return len_status;
         }
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let key = match unsafe { read_slice(key, key_len) } {
             Ok(value) => match Aes192GcmKey::from_slice(value) {
                 Ok(key) => key,
@@ -136,6 +150,8 @@ pub unsafe extern "C" fn rm_crypto_aes192_gcm_decrypt(
             },
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let nonce = match unsafe { read_slice(nonce, nonce_len) } {
             Ok(value) => match Aes192GcmNonce::from_slice(value) {
                 Ok(nonce) => nonce,
@@ -143,10 +159,14 @@ pub unsafe extern "C" fn rm_crypto_aes192_gcm_decrypt(
             },
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let aad = match unsafe { read_slice(aad, aad_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let ciphertext_bytes = match unsafe { read_slice(ciphertext, ciphertext_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -171,10 +191,14 @@ pub unsafe extern "C" fn rm_crypto_aes192_gcm_decrypt(
             Ok(value) => value,
             Err(_) => return CRYPTO_AUTHENTICATION_FAILED,
         };
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         let status = unsafe { write_fixed(plaintext_out, plaintext_out_len, &plaintext) };
         if status != CRYPTO_OK {
             return status;
         }
+        // SAFETY: The C caller provides an aligned, writable length slot for this call. write_len validates the
+        // slot before writing; the caller retains ownership.
         unsafe { write_len(plaintext_len_out, plaintext.len()) }
     })
 }
@@ -215,6 +239,8 @@ pub unsafe extern "C" fn rm_crypto_aes256_gcm_decrypt(
         if len_status != CRYPTO_OK {
             return len_status;
         }
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let key = match unsafe { read_slice(key, key_len) } {
             Ok(value) => match Aes256GcmKey::from_slice(value) {
                 Ok(key) => key,
@@ -222,6 +248,8 @@ pub unsafe extern "C" fn rm_crypto_aes256_gcm_decrypt(
             },
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let nonce = match unsafe { read_slice(nonce, nonce_len) } {
             Ok(value) => match Aes256GcmNonce::from_slice(value) {
                 Ok(nonce) => nonce,
@@ -229,10 +257,14 @@ pub unsafe extern "C" fn rm_crypto_aes256_gcm_decrypt(
             },
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let aad = match unsafe { read_slice(aad, aad_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let ciphertext_bytes = match unsafe { read_slice(ciphertext, ciphertext_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -257,10 +289,14 @@ pub unsafe extern "C" fn rm_crypto_aes256_gcm_decrypt(
             Ok(value) => value,
             Err(_) => return CRYPTO_AUTHENTICATION_FAILED,
         };
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         let status = unsafe { write_fixed(plaintext_out, plaintext_out_len, &plaintext) };
         if status != CRYPTO_OK {
             return status;
         }
+        // SAFETY: The C caller provides an aligned, writable length slot for this call. write_len validates the
+        // slot before writing; the caller retains ownership.
         unsafe { write_len(plaintext_len_out, plaintext.len()) }
     })
 }

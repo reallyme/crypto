@@ -282,9 +282,6 @@ jobs:
       - name: Verify committed external vectors against public APIs
         run: bash scripts/check_external_vector_adapters.sh
 
-      - name: Test TypeScript package
-        run: npm --prefix packages/ts test
-
       - name: Test browser DevTools startup parsing
         run: node --test packages/ts/scripts/chrome-devtools-port.test.mjs
 

@@ -171,18 +171,17 @@ API boundaries or exposing secret material solely for tests.
 
 ## CI Gating
 
-The external-vector work is split across CI tiers deliberately, because the
-executable corpora are large and do not belong on the per-PR wall:
+The committed corpora have different validation costs. Practical adapters run
+with the normal code checks; larger exhaustive sweeps run separately:
 
 | Check | Where it runs |
 |---|---|
 | Executable default adapters (`acvp_*`, `cctv_*` non-ignored) | Every PR, via `cargo nextest run --workspace` in [rust-ci.yml](../.github/workflows/rust-ci.yml). |
 | Provenance structure, completeness, and commit-pinning (`external_vector_provenance_declares_sources`, `every_external_corpus_file_has_provenance`, `external_vector_urls_are_pinned_to_commits`, `external_vector_coverage_tracks_supported_families`) | Every PR, via the workspace test run. The completeness check also runs in the vector-specific integrity job. |
-| Provenance SHA-256 sweep and CCTV marker sweep (both `#[ignore]`, cheap — hashing only) | The `integrity` job of [external-vectors-audit.yml](../.github/workflows/external-vectors-audit.yml): on dispatch, weekly, and on PRs that touch `vectors/external/**` or the harness. |
-| Re-download and byte-for-byte comparison of supplementary corpora with their pinned upstream commits | The `integrity` job on the weekly schedule. This is a lightweight provenance check; it does not execute the slow adapters. |
-| Ignored heavy ACVP/CCTV sweeps and the deep audit | The `deep-audit` job — manual dispatch or weekly schedule only. |
-| Wycheproof / BIP-340 / RFC 8032 / X-Wing / HPKE / PBKDF2 supplementary adapters | The `deep-audit` job — deliberate manual dispatch with the corresponding reviewed source ref only. These slow adapters do not run on the weekly schedule. |
-| Kani proofs of the reference encoder | The `kani` job — dispatch or weekly schedule only. |
+| Committed corpus hashes and CCTV markers | Vector integrity checks. |
+| Re-download and byte-for-byte comparison of every committed file with its pinned upstream commit | Vector changes and the scheduled integrity check. |
+| Wycheproof / BIP-340 / RFC 8032 / X-Wing / HPKE / PBKDF2 adapters | Normal code checks against the committed corpora. |
+| Exhaustive ACVP/CCTV sweeps and bounded Kani proofs | Separate scheduled or explicitly requested checks. |
 
 The pinned SHA-256 provenance check is what turns the manifest from
 documentation into an enforced invariant: it is cheap enough to run on every
@@ -205,17 +204,11 @@ RFC8032_REF=<reviewed-commit> \
   node scripts/vendor_external_vectors.mjs
 ```
 
-The `deep-audit` job accepts the same commits as `workflow_dispatch` inputs and
-executes each supplementary adapter only when its ref is supplied. The vendor
-step must reproduce the already-reviewed committed corpus with no diff before
-any adapter executes. Updating a source therefore requires committing and
-reviewing its refreshed corpus and provenance first, then dispatching the
-workflow on that commit with the same source ref.
-
-The weekly provenance check independently re-downloads every supplementary
-source from the commit recorded in `provenance.json`, applies the declared
-transformation where required (currently RFC 8032 gzip decompression), and
-compares those bytes with the committed corpus without rewriting either file:
+The adapters consume committed corpora and do not require a source-ref input.
+The provenance check re-downloads each file from the commit recorded in
+`provenance.json`, applies its declared transformation where required
+(currently RFC 8032 gzip decompression), and compares it with the committed
+bytes without rewriting either file:
 
 ```sh
 node scripts/vendor_external_vectors.mjs --check

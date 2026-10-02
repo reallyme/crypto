@@ -24,6 +24,7 @@
 // (whose return types differ) into this native-only surface.
 #![cfg(not(target_arch = "wasm32"))]
 #![deny(unsafe_code)]
+#![deny(clippy::undocumented_unsafe_blocks)]
 // Foreign pointer access and fixed export names are permitted only in the
 // boundary modules below. Shared validation lives in `pointer` and JNI guards.
 // The public FFI safety contract is maintained in `abi/reallyme_crypto_ffi.h`

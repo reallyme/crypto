@@ -129,9 +129,17 @@ test("exact-version registry index lag retries and then succeeds", () => {
 test("already-published output is never accepted without artifact identity proof", () => {
   assert.throws(
     () =>
-      runSequence([result(1, "crate version already uploaded")]),
+      runSequence([result(1, "error: crate version 0.3.10 already uploaded")]),
     (error) =>
       error instanceof PublishRetryError && error.code === PublishFailureCode.AlreadyPublished,
+  );
+});
+
+test("unrelated build output cannot masquerade as an already-published crate", () => {
+  assert.throws(
+    () => runSequence([result(1, "src/operations/error.rs:100: already exists")]),
+    (error) => error instanceof PublishRetryError &&
+      error.code === PublishFailureCode.CargoPublishFailed,
   );
 });
 

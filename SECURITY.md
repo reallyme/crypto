@@ -75,10 +75,8 @@ For source-based consumption, pin a release tag or exact commit and watch
 GitHub releases and security advisories.
 
 Version install examples describe published releases. Before publication, the
-corresponding tag is intentionally absent. The Swift package release workflow
-creates the `v<version>` GitHub release and tag only after the release commit
-and XCFramework artifact have passed their verification gates. The workflow
-refuses to replace a conflicting tag or release asset.
+corresponding tag is intentionally absent. A published Swift package tag binds
+the package manifest to the matching XCFramework artifact.
 
 ## Cryptography And Assurance
 

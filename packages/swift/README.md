@@ -24,9 +24,7 @@ by Git URL; the source lives under `packages/swift` with the other language SDKs
 .product(name: "ReallyMeCrypto", package: "crypto")
 ```
 
-The `from:` version resolves after publication. The verified Swift package
-release workflow creates the corresponding `v<version>` tag together
-with the XCFramework-backed GitHub release; an unreleased version has no tag.
+The `from:` version resolves after publication; an unreleased version has no tag.
 Crypto 0.3.10 requires Swift 6.3 or later because its Codec 0.3.0 dependency
 declares that tools version.
 
@@ -310,10 +308,7 @@ library. Hardware-dependent tests may skip when their requirements are absent.
 The SwiftPM runtime-FFI override is development-only and requires both
 `REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI=1` and the repo-local
 `.reallyme-crypto-runtime-ffi` marker; the environment variable alone is ignored
-so normal consumers keep the reviewed binary target. Release preflight builds
-`ReallyMeCryptoFFI.xcframework`, patches the SwiftPM manifest, and reruns the
-Swift suite against the linked binary target so the published package path is
-tested without `REALLYME_CRYPTO_FFI_LIBRARY_PATH`.
+so normal consumers keep the reviewed binary target.
 
 This package is the SDK API. The Swift conformance harness under
 `crates/conformance/platform/swift` remains a test harness.

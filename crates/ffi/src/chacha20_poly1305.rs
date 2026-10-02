@@ -185,10 +185,14 @@ fn encrypt_chacha20_poly1305(
         Ok(value) => value,
         Err(status) => return status,
     };
+    // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+    // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
     let aad = match unsafe { read_slice(aad, aad_len) } {
         Ok(value) => value,
         Err(status) => return status,
     };
+    // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+    // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
     let plaintext = match unsafe { read_slice(plaintext, plaintext_len) } {
         Ok(value) => value,
         Err(status) => return status,
@@ -233,10 +237,14 @@ fn encrypt_chacha20_poly1305(
         Ok(value) => value,
         Err(_) => return CRYPTO_INTERNAL_ERROR,
     };
+    // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+    // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
     let status = unsafe { write_fixed(ciphertext_out, ciphertext_out_len, &ciphertext) };
     if status != CRYPTO_OK {
         return status;
     }
+    // SAFETY: The C caller provides an aligned, writable length slot for this call. write_len validates the
+    // slot before writing; the caller retains ownership.
     unsafe { write_len(ciphertext_len_out, ciphertext.len()) }
 }
 
@@ -263,10 +271,14 @@ fn decrypt_chacha20_poly1305(
         Ok(value) => value,
         Err(status) => return status,
     };
+    // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+    // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
     let aad = match unsafe { read_slice(aad, aad_len) } {
         Ok(value) => value,
         Err(status) => return status,
     };
+    // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+    // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
     let ciphertext_bytes = match unsafe { read_slice(ciphertext, ciphertext_len) } {
         Ok(value) => value,
         Err(status) => return status,
@@ -316,14 +328,20 @@ fn decrypt_chacha20_poly1305(
         Ok(value) => value,
         Err(_) => return CRYPTO_AUTHENTICATION_FAILED,
     };
+    // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+    // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
     let status = unsafe { write_fixed(plaintext_out, plaintext_out_len, &plaintext) };
     if status != CRYPTO_OK {
         return status;
     }
+    // SAFETY: The C caller provides an aligned, writable length slot for this call. write_len validates the
+    // slot before writing; the caller retains ownership.
     unsafe { write_len(plaintext_len_out, plaintext.len()) }
 }
 
 fn read_key(ptr: *const u8, len: usize) -> Result<ChaCha20Poly1305Key, CryptoStatus> {
+    // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+    // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
     match unsafe { read_slice(ptr, len) } {
         Ok(value) => ChaCha20Poly1305Key::from_slice(value).map_err(|_| CRYPTO_INVALID_KEY),
         Err(status) => Err(status),
@@ -331,6 +349,8 @@ fn read_key(ptr: *const u8, len: usize) -> Result<ChaCha20Poly1305Key, CryptoSta
 }
 
 fn read_chacha_nonce(ptr: *const u8, len: usize) -> Result<ChaCha20Poly1305Nonce, CryptoStatus> {
+    // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+    // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
     match unsafe { read_slice(ptr, len) } {
         Ok(value) => ChaCha20Poly1305Nonce::from_slice(value).map_err(|_| CRYPTO_INVALID_ARGUMENT),
         Err(status) => Err(status),
@@ -338,6 +358,8 @@ fn read_chacha_nonce(ptr: *const u8, len: usize) -> Result<ChaCha20Poly1305Nonce
 }
 
 fn read_xchacha_nonce(ptr: *const u8, len: usize) -> Result<XChaCha20Poly1305Nonce, CryptoStatus> {
+    // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+    // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
     match unsafe { read_slice(ptr, len) } {
         Ok(value) => XChaCha20Poly1305Nonce::from_slice(value).map_err(|_| CRYPTO_INVALID_ARGUMENT),
         Err(status) => Err(status),

@@ -93,11 +93,15 @@ fn process_request(
     {
         return CRYPTO_INVALID_ARGUMENT;
     }
+    // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+    // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
     let request = match unsafe { read_slice(request_ptr, request_len) } {
         Ok(value) => value,
         Err(status) => return status,
     };
     let mut result = process(request);
+    // SAFETY: The C caller provides an aligned, writable length slot for this call. write_len validates the
+    // slot before writing; the caller retains ownership.
     let len_status = unsafe { write_len(len_out, result.len()) };
     if len_status != CRYPTO_OK {
         result.zeroize();
@@ -107,6 +111,8 @@ fn process_request(
         result.zeroize();
         return CRYPTO_BUFFER_TOO_SMALL;
     }
+    // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+    // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
     let write_status = unsafe { write_fixed(output_ptr, output_len, result.as_slice()) };
     if write_status != CRYPTO_OK {
         result.zeroize();

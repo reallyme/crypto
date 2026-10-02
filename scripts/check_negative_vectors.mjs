@@ -36,6 +36,13 @@ const requiredLanes = new Set([
   "kotlin-jvm-native",
   "typescript-wasm",
 ]);
+const evidencePrefixes = Object.freeze({
+  "rust-native": "crates/",
+  "swift-native": "packages/swift/Tests/",
+  "kotlin-jvm-native": "packages/kotlin/src/test/",
+  "typescript-wasm": "packages/ts/test/",
+});
+const evidenceStatuses = new Set(["executable", "guarded", "hardware-skip-aware"]);
 
 const failures = [];
 
@@ -46,6 +53,50 @@ const fail = (message) => {
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), "utf8"));
 
 const isNonEmptyString = (value) => typeof value === "string" && value.length !== 0;
+
+function validateCaseEvidence(testCase) {
+  const evidence = testCase.evidence;
+  if (typeof evidence !== "object" || evidence === null || Array.isArray(evidence)) {
+    fail(`${testCase.id} must bind each lane to an executable test or guard`);
+    return;
+  }
+  if (Object.keys(evidence).length !== requiredLanes.size) {
+    fail(`${testCase.id} has missing or unexpected lane evidence`);
+  }
+  for (const lane of requiredLanes) {
+    const item = evidence[lane];
+    if (typeof item !== "object" || item === null || Array.isArray(item) ||
+        !isNonEmptyString(item.path) || !isNonEmptyString(item.test) ||
+        !evidenceStatuses.has(item.status)) {
+      fail(`${testCase.id} has invalid ${lane} test evidence`);
+      continue;
+    }
+    if (!item.path.startsWith(evidencePrefixes[lane]) ||
+        !/^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*$/u.test(item.path) ||
+        item.path.split("/").includes("..")) {
+      fail(`${testCase.id} has an unsafe ${lane} evidence path`);
+      continue;
+    }
+    const path = resolve(root, item.path);
+    if (!existsSync(path)) {
+      fail(`${testCase.id} ${lane} evidence file is missing`);
+      continue;
+    }
+    const source = readFileSync(path, "utf8");
+    const declaration = lane === "typescript-wasm"
+      ? `test("${item.test}"`
+      : `${lane === "rust-native" ? "fn" : lane === "swift-native" ? "func" : "fun"} ${item.test}(`;
+    if (!source.includes(declaration)) {
+      fail(`${testCase.id} ${lane} evidence does not identify a declared test`);
+    }
+    if (item.status === "hardware-skip-aware" && lane !== "swift-native") {
+      fail(`${testCase.id} uses a hardware skip outside Swift`);
+    }
+    if (item.status === "guarded" && testCase.id !== "platform-key-secure-enclave-duplicate-tag") {
+      fail(`${testCase.id} claims a guard for an executable primitive`);
+    }
+  }
+}
 
 const protoSource = readFileSync(
   resolve(root, "crates/proto/proto/reallyme/crypto/v1/crypto.proto"),
@@ -155,6 +206,7 @@ for (const vectorPath of manifest.negative_vectors ?? []) {
         fail(`${testCase.id} must declare ${lane} lane coverage or an explicit guard`);
       }
     }
+    validateCaseEvidence(testCase);
   }
 }
 

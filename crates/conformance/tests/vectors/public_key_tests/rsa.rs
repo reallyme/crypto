@@ -83,7 +83,8 @@ fn rsa_vector_invariants() -> Result<(), VectorTestError> {
         verify_rsa_pss(&public_key, encoding, params, &message, &signature)
             .map_err(|_| VectorTestError::RsaVerify)?;
         let mut tampered = signature;
-        tampered[0] ^= 0x01;
+        let last = tampered.len() - 1;
+        tampered[last] ^= 0x01;
         if verify_rsa_pss(&public_key, encoding, params, &message, &tampered).is_ok() {
             return Err(VectorTestError::RsaVerify);
         }

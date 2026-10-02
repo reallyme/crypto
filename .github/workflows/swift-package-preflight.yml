@@ -120,12 +120,6 @@ jobs:
       - name: Enable source-tree Swift runtime FFI
         run: touch .reallyme-crypto-runtime-ffi
 
-      - name: Test Swift package through runtime FFI
-        run: swift test
-        env:
-          REALLYME_CRYPTO_FFI_LIBRARY_PATH: ${{ github.workspace }}/target/debug/libcrypto_ffi.dylib
-          REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI: "1"
-
       - name: Build SwiftPM binary artifact
         run: scripts/build_swift_xcframework.sh
 

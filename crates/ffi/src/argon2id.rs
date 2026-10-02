@@ -68,6 +68,8 @@ pub unsafe extern "C" fn rm_crypto_argon2id_derive_key(
             Ok(version) => Argon2Profile::from(version),
             Err(_) => return CRYPTO_INVALID_ARGUMENT,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let secret = match unsafe { read_slice(secret, secret_len) } {
             Ok(value) => match Argon2Secret::from_slice(value, profile) {
                 Ok(secret) => secret,
@@ -75,6 +77,8 @@ pub unsafe extern "C" fn rm_crypto_argon2id_derive_key(
             },
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let salt = match unsafe { read_slice(salt, salt_len) } {
             Ok(value) => match Argon2Salt::from_slice(value, profile) {
                 Ok(salt) => salt,
@@ -93,6 +97,8 @@ pub unsafe extern "C" fn rm_crypto_argon2id_derive_key(
             Err(error) => return map_operation_error(error),
         };
         let status =
+            // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+            // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             unsafe { write_fixed(derived_key_out, derived_key_out_len, derived.as_bytes()) };
         // Wipe the derived key explicitly at the copy-out (it also zeroizes
         // on drop), matching the AEAD path and bounding the secret's window.

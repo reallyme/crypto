@@ -56,7 +56,9 @@ export function publishWithRetries({
     const stdout = typeof result.stdout === "string" ? result.stdout : "";
     const stderr = typeof result.stderr === "string" ? result.stderr : "";
     const combined = `${stdout}\n${stderr}`;
-    if (combined.includes("already uploaded") || combined.includes("already exists")) {
+    // Only Cargo's diagnostic line is authoritative. Build output can include
+    // these words in unrelated source or dependency messages.
+    if (/^error(?:\[[A-Z0-9]+\])?:[^\n]*\b(?:already uploaded|already exists)\b/imu.test(combined)) {
       throw new PublishRetryError(PublishFailureCode.AlreadyPublished, status);
     }
 

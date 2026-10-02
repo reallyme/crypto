@@ -116,18 +116,26 @@ pub unsafe extern "C" fn rm_crypto_hpke_seal_base(
             Err(status) => return status,
         };
         let recipient_public_key =
+            // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+            // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
             match unsafe { read_slice(recipient_public_key, recipient_public_key_len) } {
                 Ok(value) => value,
                 Err(status) => return status,
             };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let info = match unsafe { read_slice(info, info_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let aad = match unsafe { read_slice(aad, aad_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let plaintext = match unsafe { read_slice(plaintext, plaintext_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -158,6 +166,8 @@ pub unsafe extern "C" fn rm_crypto_hpke_seal_base(
             Err(error) => return hpke_status(error),
         };
 
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         let status = unsafe {
             write_fixed(
                 encapsulated_key_out,
@@ -168,14 +178,20 @@ pub unsafe extern "C" fn rm_crypto_hpke_seal_base(
         if status != CRYPTO_OK {
             return status;
         }
+        // SAFETY: The C caller provides an aligned, writable length slot for this call. write_len validates the
+        // slot before writing; the caller retains ownership.
         let status = unsafe { write_len(encapsulated_key_len_out, sealed.encapsulated_key.len()) };
         if status != CRYPTO_OK {
             return status;
         }
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         let status = unsafe { write_fixed(ciphertext_out, ciphertext_out_len, &sealed.ciphertext) };
         if status != CRYPTO_OK {
             return status;
         }
+        // SAFETY: The C caller provides an aligned, writable length slot for this call. write_len validates the
+        // slot before writing; the caller retains ownership.
         unsafe { write_len(ciphertext_len_out, sealed.ciphertext.len()) }
     })
 }
@@ -215,23 +231,33 @@ pub unsafe extern "C" fn rm_crypto_hpke_open_base(
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let encapsulated_key = match unsafe { read_slice(encapsulated_key, encapsulated_key_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
         let recipient_private_key =
+            // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+            // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
             match unsafe { read_slice(recipient_private_key, recipient_private_key_len) } {
                 Ok(value) => value,
                 Err(status) => return status,
             };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let info = match unsafe { read_slice(info, info_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let aad = match unsafe { read_slice(aad, aad_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let ciphertext = match unsafe { read_slice(ciphertext, ciphertext_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -256,11 +282,15 @@ pub unsafe extern "C" fn rm_crypto_hpke_open_base(
             Err(error) => return hpke_status(error),
         };
 
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         let status = unsafe { write_fixed(plaintext_out, plaintext_out_len, &opened.plaintext) };
         if status != CRYPTO_OK {
             opened.plaintext.zeroize();
             return status;
         }
+        // SAFETY: The C caller provides an aligned, writable length slot for this call. write_len validates the
+        // slot before writing; the caller retains ownership.
         let status = unsafe { write_len(plaintext_len_out, opened.plaintext.len()) };
         opened.plaintext.zeroize();
         status
