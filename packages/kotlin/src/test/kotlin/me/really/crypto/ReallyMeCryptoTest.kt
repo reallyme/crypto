@@ -327,6 +327,26 @@ class ReallyMeCryptoTest : ReallyMeCryptoTestSupport() {
     }
 
     @Test
+    fun desktopNativeLoaderIgnoresSpoofedAndroidRuntimeProperties() {
+        assertFalse(ReallyMeRustNativeProvider.isAndroidRuntime())
+        val names = listOf("java.runtime.name", "java.vm.name", "java.vm.vendor")
+        val originalValues = names.associateWith(System::getProperty)
+        try {
+            names.forEach { System.setProperty(it, "Android Dalvik") }
+            assertFalse(ReallyMeRustNativeProvider.isAndroidRuntime())
+            assertNotNull(ReallyMeRustNativeProvider.platformNativeResource())
+        } finally {
+            originalValues.forEach { (name, value) ->
+                if (value == null) {
+                    System.clearProperty(name)
+                } else {
+                    System.setProperty(name, value)
+                }
+            }
+        }
+    }
+
+    @Test
     fun classpathNativeExtractionUsesPrivateDirectoryAndRehashesOnDiskFile() {
         val resource = ReallyMeRustNativeProvider.platformNativeResource()
         assumeTrue(resource != null)
@@ -440,7 +460,7 @@ class ReallyMeCryptoTest : ReallyMeCryptoTestSupport() {
 
     @Test
     fun rustNativeJniBoundaryRejectsNullArraysWhenLoaded() {
-        loadCryptoProviderForTestOrReturn() ?: return
+        loadCryptoProviderForTest()
 
         val aeadSeal = nativeAeadMethod("aes256GcmSivSealNative")
         val aeadNullKey = aeadSeal.invoke(
@@ -468,7 +488,7 @@ class ReallyMeCryptoTest : ReallyMeCryptoTestSupport() {
 
     @Test
     fun rustNativeJniBoundaryPreservesInvalidLengthAndAuthenticationWhenLoaded() {
-        loadCryptoProviderForTestOrReturn() ?: return
+        loadCryptoProviderForTest()
 
         val key = base64UrlBytes("MDEyMzQ1Njc4OTo7PD0-P0BBQkNERUZHSElKS0xNTk8")
         val nonce = base64UrlBytes("0NHS09TV1tfY2drb")
