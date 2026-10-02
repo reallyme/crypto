@@ -11,6 +11,7 @@ const FULL_SHA_PATTERN = /^[0-9a-f]{40}$/u;
 const REPOSITORY_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u;
 const VERSION_PATTERN = /^(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)$/u;
 const CODE_CHECK_WORKFLOW = "rust-ci.yml";
+const DEPENDENCY_SECURITY_WORKFLOW = "dependency-security.yml";
 const PREFLIGHT_WORKFLOW_TITLES = Object.freeze({
   "crates-package-preflight.yml": "Crates package preflight",
   "swift-package-preflight.yml": "Swift package preflight",
@@ -19,6 +20,7 @@ const PREFLIGHT_WORKFLOW_TITLES = Object.freeze({
 });
 const REQUIRED_EVENTS = Object.freeze({
   [CODE_CHECK_WORKFLOW]: "push",
+  [DEPENDENCY_SECURITY_WORKFLOW]: "push",
   "crates-package-preflight.yml": "workflow_dispatch",
   "swift-package-preflight.yml": "workflow_dispatch",
   "kotlin-android-package-preflight.yml": "workflow_dispatch",
@@ -74,6 +76,12 @@ const parsePreflightWorkflow = (value) => {
   }
   return value;
 };
+
+export const requiredWorkflowsForRelease = (preflightWorkflow) => [
+  CODE_CHECK_WORKFLOW,
+  DEPENDENCY_SECURITY_WORKFLOW,
+  parsePreflightWorkflow(preflightWorkflow),
+];
 
 const expectedDisplayTitle = (workflow, releaseVersion) => {
   const preflightTitle = PREFLIGHT_WORKFLOW_TITLES[workflow];
@@ -271,7 +279,7 @@ export const verifyReleaseAttestation = ({ cwd = process.cwd(), env = process.en
   }
 
   let preflightRunId;
-  for (const workflow of [CODE_CHECK_WORKFLOW, preflightWorkflow]) {
+  for (const workflow of requiredWorkflowsForRelease(preflightWorkflow)) {
     const successfulRun = requireWorkflowWithOptionalWait({
       cwd,
       env,

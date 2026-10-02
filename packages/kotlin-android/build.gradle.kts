@@ -22,6 +22,10 @@ plugins {
 group = "me.really"
 version = "0.3.10"
 
+dependencyLocking {
+    lockAllConfigurations()
+}
+
 kotlin {
     compilerOptions {
         allWarningsAsErrors.set(true)

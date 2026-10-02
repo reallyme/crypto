@@ -1,0 +1,18 @@
+# Derived from the Gradle lockfile for the published runtime classpath.
+# Regenerate with: python3 scripts/gradle_runtime_lockfiles.py --write
+com.google.code.gson:gson:2.14.0=runtimeClasspath
+com.google.errorprone:error_prone_annotations:2.48.0=runtimeClasspath
+com.google.protobuf:protobuf-javalite:4.36.2=runtimeClasspath
+com.google.protobuf:protobuf-kotlin-lite:4.36.2=runtimeClasspath
+fr.acinq.secp256k1:secp256k1-kmp-jni-common:0.24.0=runtimeClasspath
+fr.acinq.secp256k1:secp256k1-kmp-jni-jvm-darwin:0.24.0=runtimeClasspath
+fr.acinq.secp256k1:secp256k1-kmp-jni-jvm-extract:0.24.0=runtimeClasspath
+fr.acinq.secp256k1:secp256k1-kmp-jni-jvm-linux:0.24.0=runtimeClasspath
+fr.acinq.secp256k1:secp256k1-kmp-jni-jvm-mingw:0.24.0=runtimeClasspath
+fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.24.0=runtimeClasspath
+fr.acinq.secp256k1:secp256k1-kmp-jvm:0.24.0=runtimeClasspath
+fr.acinq.secp256k1:secp256k1-kmp:0.24.0=runtimeClasspath
+me.really:codec:0.3.0=runtimeClasspath
+org.bouncycastle:bcprov-jdk18on:1.85.2=runtimeClasspath
+org.jetbrains.kotlin:kotlin-stdlib:2.4.20=runtimeClasspath
+org.jetbrains:annotations:13.0=runtimeClasspath
