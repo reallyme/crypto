@@ -4,7 +4,7 @@
 
 //! Semantic owner for public-key byte encoding helpers.
 
-use super::{BackendErrorReason, OperationError, PrimitiveErrorReason};
+use super::{OperationError, PrimitiveErrorReason};
 use crate::secret_material::{bind_operation_policy, SecretMaterialOperation};
 
 /// Validates a fixed-width public key and returns its canonical byte form.
@@ -19,14 +19,14 @@ pub fn copy_fixed_public_key(
     Ok(public_key.to_vec())
 }
 
-#[cfg(feature = "ed25519")]
+#[cfg(all(feature = "ed25519", any(feature = "native", feature = "wasm")))]
 /// Validates and returns canonical Ed25519 public-key bytes.
 pub fn encode_ed25519_public_key(public_key: &[u8]) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::PublicKeyEncoding);
     crypto_ed25519::encode_public_key(public_key).map_err(map_public_key_error)
 }
 
-#[cfg(feature = "ed25519")]
+#[cfg(all(feature = "ed25519", any(feature = "native", feature = "wasm")))]
 /// Decodes Ed25519 public-key bytes into the canonical raw representation.
 pub fn decode_ed25519_public_key(public_key: &[u8]) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::PublicKeyEncoding);
@@ -126,6 +126,14 @@ pub fn decode_x25519_public_key(public_key: &[u8]) -> Result<Vec<u8>, OperationE
     crypto_x25519::decode_public_key(public_key).map_err(map_public_key_error)
 }
 
+#[cfg(any(
+    all(feature = "ed25519", any(feature = "native", feature = "wasm")),
+    feature = "p256",
+    feature = "p384",
+    feature = "p521",
+    feature = "secp256k1",
+    feature = "x25519"
+))]
 fn map_public_key_error(error: crypto_core::CryptoError) -> OperationError {
     match error {
         crypto_core::CryptoError::InvalidKey => invalid_public_key(),
@@ -137,7 +145,7 @@ fn map_public_key_error(error: crypto_core::CryptoError) -> OperationError {
             reason: super::ProviderErrorReason::UnsupportedAlgorithm,
         },
         _ => OperationError::Backend {
-            reason: BackendErrorReason::Internal,
+            reason: super::BackendErrorReason::Internal,
         },
     }
 }

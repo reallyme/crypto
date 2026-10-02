@@ -6,6 +6,9 @@
   parameters, length framing, input bound, and canonical output encoding used
   by ReallyMe ZK circuits. Cross-checks full and partial blocks against the ZK
   fixture oracle.
+- Fixes Ed25519 feature-only builds by exposing public-key encoding helpers
+  only when a Rust backend is selected. Backendless signature operations
+  continue to fail with typed unsupported errors.
 - Upgrades release-readiness to `0.6.6` and refreshes compatible Cargo and npm
   lockfile dependencies, including wasm-bindgen `0.2.129` and
   `@bufbuild/protobuf` `2.16.0`.

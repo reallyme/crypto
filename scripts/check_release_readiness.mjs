@@ -895,7 +895,7 @@ assertContains(
 );
 assertContains("packages/ts/scripts/check-pack.mjs", "package/LICENSE");
 assertContains("packages/ts/scripts/build-wasm.mjs", "const REQUIRED_WASM_PACK_VERSION = [0, 15, 0]");
-assertContains("packages/ts/scripts/build-wasm.mjs", "const REQUIRED_WASM_BINDGEN_VERSION = [0, 2, 127]");
+assertContains("packages/ts/scripts/build-wasm.mjs", "const REQUIRED_WASM_BINDGEN_VERSION = [0, 2, 129]");
 assertContains("packages/ts/scripts/build-wasm.mjs", '"--release"');
 assertContains("packages/ts/scripts/build-wasm.mjs", "versionText(wasmPackVersion) !== versionText(REQUIRED_WASM_PACK_VERSION)");
 assertContains("packages/ts/scripts/build-wasm.mjs", "versionText(wasmBindgenVersion) !== versionText(REQUIRED_WASM_BINDGEN_VERSION)");

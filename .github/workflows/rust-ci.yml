@@ -150,6 +150,15 @@ jobs:
           cargo test --locked -p reallyme-crypto-hpke --no-default-features --features openmls
           cargo check --locked -p reallyme-crypto --no-default-features --features native,hpke-openmls
 
+      # SSI selects these algorithms without a Rust backend. Encoding helpers
+      # must remain gated, and the operation facade must fail closed.
+      - name: Check backendless Ed25519 feature build
+        env:
+          RUSTFLAGS: -Dwarnings
+        run: |
+          cargo check --locked --offline -p reallyme-crypto --no-default-features --features ed25519,sha2
+          cargo test --locked --offline -p reallyme-crypto --no-default-features --features ed25519,sha2 --test ed25519_backendless_tests
+
       - name: Clippy
         run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
 

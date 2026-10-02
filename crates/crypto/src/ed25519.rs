@@ -9,6 +9,8 @@ use zeroize::Zeroizing;
 
 use crate::signature_error::crypto_error_from_operation_error;
 
+// The primitive only defines these encoding helpers when a backend is present.
+#[cfg(any(feature = "native", feature = "wasm"))]
 pub use crypto_ed25519::{assert_public_key, decode_public_key, encode_public_key};
 
 /// Generate a standard Ed25519 keypair through the signature operation owner.
