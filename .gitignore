@@ -31,6 +31,8 @@ target/
 
 # Local developer state
 /AGENTS.md
+/.claude/
+/.codex/
 /.reallyme-crypto-runtime-ffi
 /.release-readiness/
 /.agents/

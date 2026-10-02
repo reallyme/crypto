@@ -9,7 +9,7 @@
 - Fixes Ed25519 feature-only builds by exposing public-key encoding helpers
   only when a Rust backend is selected. Backendless signature operations
   continue to fail with typed unsupported errors.
-- Upgrades release-readiness to `0.6.6` and refreshes compatible Cargo and npm
+- Upgrades release-readiness to `0.6.7` and refreshes compatible Cargo and npm
   lockfile dependencies, including wasm-bindgen `0.2.129` and
   `@bufbuild/protobuf` `2.16.0`.
 - Updates Kotlin to `2.4.20`, JVM and Android protobuf libraries to `4.36.2`,

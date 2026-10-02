@@ -194,7 +194,7 @@ jobs:
         run: node scripts/generate_provider_matrix.mjs --check
 
       - name: Release readiness
-        run: npm exec --yes --package=github:reallyme/release-readiness#bdedc88f3f25fcc14242730d4dec6ce6a0c75531 -- reallyme-release-readiness
+        run: npm exec --yes --package=github:reallyme/release-readiness#5c2da5e5d5795c2c895d0dca0819287ee7101207 -- reallyme-release-readiness
 
       - name: Check native lane
         run: cargo check --locked --workspace --no-default-features --features native
