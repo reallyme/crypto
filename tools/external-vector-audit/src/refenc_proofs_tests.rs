@@ -77,7 +77,12 @@ fn der_integer_is_well_formed() {
     let value: [u8; 3] = kani::any();
     let encoded = match der_integer(&value) {
         Ok(encoded) => encoded,
-        Err(_) => return,
+        Err(_) => {
+            // Every three-byte input is valid here. An encoder regression must
+            // fail the proof rather than remove the input from its domain.
+            assert!(false, "bounded integer encoding must succeed");
+            return;
+        }
     };
     // Tag is INTEGER.
     assert!(encoded[0] == ASN1_INTEGER_TAG);
