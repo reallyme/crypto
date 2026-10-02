@@ -86,8 +86,8 @@ fn run_case(case: &Case, executed: usize) -> Result<usize, AuditError> {
         let pbkdf2_password =
             Pbkdf2Password::from_slice(password, prf).map_err(|_| AuditError::Shape)?;
         let pbkdf2_salt = Pbkdf2Salt::from_slice(salt, prf).map_err(|_| AuditError::Shape)?;
-        let iteration_count =
-            Pbkdf2Iterations::from_u32(iterations, prf).map_err(|_| AuditError::Shape)?;
+        let iteration_count = Pbkdf2Iterations::from_u32_conformance_only(iterations, prf)
+            .map_err(|_| AuditError::Shape)?;
         let output = derive_key(&Pbkdf2Request {
             prf,
             password: &pbkdf2_password,

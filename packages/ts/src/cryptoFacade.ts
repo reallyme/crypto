@@ -45,7 +45,7 @@ export type ReallyMeCryptoProviders = Readonly<{
  */
 export const createReallyMeCryptoFacade = (
   resolveWasmProvider: () => ReallyMeWasmProvider,
-) => ({
+) => Object.freeze({
   ...createReallyMeSymmetricFacade(resolveWasmProvider),
   ...createReallyMeAsymmetricFacade(resolveWasmProvider),
 });

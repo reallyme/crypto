@@ -176,6 +176,7 @@ pub fn validate_verification_method_multikey(
     if parsed.public_key().len() != expected_len {
         return Err(AlgorithmError::InvalidKey(algorithm));
     }
+    crate::sec1_identity::validate_compressed_public_key(algorithm, parsed.public_key())?;
     #[cfg(feature = "ed25519")]
     if algorithm == Algorithm::Ed25519
         && crypto_ed25519::validate_public_key_identity(parsed.public_key()).is_err()

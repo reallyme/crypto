@@ -142,7 +142,7 @@ pub unsafe extern "C" fn rm_crypto_x25519_derive_shared_secret(
 /// unchanged.
 ///
 /// An X25519 public key is the raw 32-byte Montgomery u-coordinate, already
-/// its canonical encoding, so this is a length check and byte-for-byte copy
+/// its canonical encoding, so this validates the field element and copies
 /// — it does not transform the key. It exists so every key type presents
 /// the same explicit encode/decode surface across the C ABI.
 ///
@@ -152,7 +152,7 @@ pub unsafe extern "C" fn rm_crypto_x25519_derive_shared_secret(
 /// when `public_key_len == 0`). `out` must be non-null and point to at least
 /// `out_len` writable bytes (32). Returns [`CryptoStatus`] via the return
 /// value: [`CRYPTO_OK`] on success, or [`CRYPTO_INVALID_KEY`] for a key that
-/// is not exactly 32 bytes.
+/// is not a canonical 32-byte field element.
 #[no_mangle]
 pub unsafe extern "C" fn rm_crypto_x25519_encode_public_key(
     public_key: *const u8,

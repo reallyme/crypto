@@ -547,6 +547,16 @@ impl ::core::ops::Drop for __ReallyMeZeroizingUnknownFields {
     }
 }
 `;
+  const rejectSecretJsonHelper = `
+fn __reallyme_reject_secret_json<S: ::serde::Serializer>(
+    _secret: &::buffa::alloc::vec::Vec<u8>,
+    _serializer: S,
+) -> ::core::result::Result<S::Ok, S::Error> {
+    ::core::result::Result::Err(<S::Error as ::serde::ser::Error>::custom(
+        "ProtoJSON serialization of secret key material is disabled",
+    ))
+}
+`;
   if (!source.includes(generatedHeader)) {
     fail(`${rustGeneratedPath} is missing the generated header`);
   }
@@ -554,6 +564,12 @@ impl ::core::ops::Drop for __ReallyMeZeroizingUnknownFields {
     source = source.replace(
       generatedHeader,
       `${generatedHeader}${unknownFieldZeroizeHelpers}`,
+    );
+  }
+  if (!source.includes("__reallyme_reject_secret_json")) {
+    source = source.replace(
+      generatedHeader,
+      `${generatedHeader}${rejectSecretJsonHelper}`,
     );
   }
   for (const messageName of byteBearingMessageNames) {
@@ -642,6 +658,64 @@ impl ::core::ops::Drop for __ReallyMeZeroizingUnknownFields {
       const inserted = `${dropImpl(messageName, fields)}${deserializeImpl(messageName, fields)}`;
       source = `${source.slice(0, implIndex)}${inserted}${source.slice(implIndex)}`;
     }
+  }
+
+  const keyPairMarker = "pub struct CryptoKeyPair {";
+  const keyPairIndex = source.indexOf(keyPairMarker);
+  if (keyPairIndex < 0) {
+    fail("generated CryptoKeyPair is missing");
+  }
+  const keyPairHeaderStart = Math.max(0, keyPairIndex - 256);
+  let keyPairHeader = source.slice(keyPairHeaderStart, keyPairIndex);
+  if (keyPairHeader.includes("#[derive(Clone, PartialEq, Default)]")) {
+    keyPairHeader = keyPairHeader.replace(
+      "#[derive(Clone, PartialEq, Default)]",
+      "#[derive(Clone, Default)]",
+    );
+    source = source.slice(0, keyPairHeaderStart) + keyPairHeader + source.slice(keyPairIndex);
+  } else if (!keyPairHeader.includes("#[derive(Clone, Default)]")) {
+    fail("CryptoKeyPair has an unexpected derive form");
+  }
+  const keyPairBodyStart = source.indexOf(keyPairMarker);
+  const secretComment = "    /// Secret-bearing exportable private key material.";
+  const secretStart = source.indexOf(secretComment, keyPairBodyStart);
+  const secretEnd = source.indexOf("    pub secret_key:", secretStart);
+  if (secretStart < 0 || secretEnd < 0) {
+    fail("CryptoKeyPair secret field is missing");
+  }
+  const secretFieldHeader = source.slice(secretStart, secretEnd);
+  const rawSecretSerializer = 'with = "::buffa::json_helpers::bytes",';
+  const hardenedSecretSerializer = 'serialize_with = "__reallyme_reject_secret_json",';
+  if (secretFieldHeader.includes(rawSecretSerializer)) {
+    source = source.slice(0, secretStart) +
+      secretFieldHeader.replace(rawSecretSerializer, hardenedSecretSerializer) +
+      source.slice(secretEnd);
+  } else if (!secretFieldHeader.includes(hardenedSecretSerializer)) {
+    fail("CryptoKeyPair secret field has an unexpected serializer");
+  }
+
+  const keyPairEqMarker = "impl ::core::cmp::PartialEq for CryptoKeyPair {";
+  if (!source.includes(keyPairEqMarker)) {
+    const debugMarker = "impl ::core::fmt::Debug for CryptoKeyPair {";
+    if (!source.includes(debugMarker)) {
+      fail("CryptoKeyPair debug implementation is missing");
+    }
+    const constantTimeEquality = `${keyPairEqMarker}
+    fn eq(&self, other: &Self) -> bool {
+        // The key length is public for its algorithm. Compare the secret bytes
+        // in constant time even when other envelope fields differ.
+        let secret_equal = ::subtle::ConstantTimeEq::ct_eq(
+            self.secret_key.as_slice(),
+            other.secret_key.as_slice(),
+        );
+        bool::from(secret_equal)
+            & (self.algorithm == other.algorithm)
+            & (self.public_key == other.public_key)
+            & (self.__buffa_unknown_fields == other.__buffa_unknown_fields)
+    }
+}
+`;
+    source = source.replace(debugMarker, `${constantTimeEquality}${debugMarker}`);
   }
 
   // The operation wrappers transitively own private keys, plaintext, and

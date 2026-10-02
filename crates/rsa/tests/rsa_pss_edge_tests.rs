@@ -7,7 +7,19 @@
 #![allow(clippy::expect_used)]
 
 use base64::{engine::general_purpose::STANDARD, Engine as _};
+use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
 use crypto_rsa::{verify_rsa_pss, RsaHash, RsaPssParams, RsaPublicKeyDerEncoding};
+
+fn assert_invalid_signature(result: Result<(), CryptoError>) {
+    assert!(matches!(
+        result,
+        Err(CryptoError::Signature {
+            backend: SignatureBackend::Native,
+            operation: SignatureOperation::Verify,
+            kind: SignatureFailureKind::InvalidSignature,
+        })
+    ));
+}
 
 // Independently generated with OpenSSL from a 1025-bit RSA key. For this key,
 // RFC 8017 defines emBits = 1024 and emLen = 128 while the RSA signature and
@@ -36,15 +48,14 @@ fn pss_non_byte_aligned_fixture_rejects_wrong_message_salt_and_signature() {
     let public_key = decode(PUBLIC_KEY_PKCS1_DER);
     let signature = decode(EMPTY_MESSAGE_PSS_SHA256_SIGNATURE);
 
-    assert!(verify_rsa_pss(
+    assert_invalid_signature(verify_rsa_pss(
         &public_key,
         RsaPublicKeyDerEncoding::Pkcs1,
         sha256_pss_params(),
         b"wrong message",
         &signature,
-    )
-    .is_err());
-    assert!(verify_rsa_pss(
+    ));
+    assert_invalid_signature(verify_rsa_pss(
         &public_key,
         RsaPublicKeyDerEncoding::Pkcs1,
         RsaPssParams {
@@ -53,19 +64,17 @@ fn pss_non_byte_aligned_fixture_rejects_wrong_message_salt_and_signature() {
         },
         &[],
         &signature,
-    )
-    .is_err());
+    ));
 
     let mut tampered = signature;
     tampered[1] ^= 1;
-    assert!(verify_rsa_pss(
+    assert_invalid_signature(verify_rsa_pss(
         &public_key,
         RsaPublicKeyDerEncoding::Pkcs1,
         sha256_pss_params(),
         &[],
         &tampered,
-    )
-    .is_err());
+    ));
 }
 
 fn sha256_pss_params() -> RsaPssParams {

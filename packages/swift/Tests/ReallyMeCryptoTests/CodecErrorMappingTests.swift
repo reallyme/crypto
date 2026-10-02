@@ -17,7 +17,7 @@ final class CodecErrorMappingTests: XCTestCase {
       (.nonCanonical, .invalidInput),
       (.unsupportedIpldValue, .invalidInput),
       (.providerUnavailable, .unsupportedAlgorithm),
-      (.unsupportedCodec, .unsupportedAlgorithm),
+      (.unsupportedCodec, .invalidInput),
       (.providerFailure, .providerFailure),
     ]
 

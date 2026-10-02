@@ -38,6 +38,9 @@ pub fn derive_secp256k1_shared_secret(
     private_key: &[u8],
     public_key: &[u8],
 ) -> Result<Secp256k1SharedSecret, CryptoError> {
+    if private_key.len() != SECP256K1_SHARED_SECRET_LEN {
+        return Err(CryptoError::InvalidKey);
+    }
     if public_key.len() != SECP256K1_UNCOMPRESSED_PUBLIC_KEY_LEN
         || public_key.first().copied() != Some(SEC1_UNCOMPRESSED_POINT_TAG)
     {

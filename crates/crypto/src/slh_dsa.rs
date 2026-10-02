@@ -14,9 +14,13 @@ use crate::signature_error::{
 const SLH_DSA_KEYGEN_SEED_PART_COUNT: usize = 3;
 
 pub use crypto_slh_dsa::{
-    decode_slh_dsa_sha2_128s_public_key, encode_slh_dsa_sha2_128s_public_key,
     SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN, SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN,
     SLH_DSA_SHA2_128S_SECRET_KEY_LEN, SLH_DSA_SHA2_128S_SIGNATURE_LEN,
+};
+
+#[cfg(any(feature = "native", feature = "wasm"))]
+pub use crypto_slh_dsa::{
+    decode_slh_dsa_sha2_128s_public_key, encode_slh_dsa_sha2_128s_public_key,
 };
 
 /// Generate an SLH-DSA-SHA2-128s keypair through the signature operation owner.

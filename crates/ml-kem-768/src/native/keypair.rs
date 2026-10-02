@@ -43,8 +43,8 @@ pub fn generate_ml_kem_768_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), Cr
 pub fn generate_ml_kem_768_keypair_from_seed(
     seed: &[u8; ML_KEM_768_SECRET_KEY_LEN],
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
-    let ml_seed = Seed::try_from(&seed[..]).map_err(|_| CryptoError::InvalidKey)?;
-    let decapsulation_key = DecapsulationKey::from_seed(ml_seed);
+    let ml_seed = Zeroizing::new(Seed::try_from(&seed[..]).map_err(|_| CryptoError::InvalidKey)?);
+    let decapsulation_key = DecapsulationKey::from_seed(*ml_seed);
     let encapsulation_key = decapsulation_key.encapsulation_key();
     let secret = Zeroizing::new(seed.to_vec());
     Ok((encapsulation_key.to_bytes().to_vec(), secret))

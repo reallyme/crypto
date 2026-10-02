@@ -86,8 +86,17 @@ pub struct Pbkdf2Iterations {
 }
 
 impl Pbkdf2Iterations {
-    /// Constructs an iteration count.
+    /// Constructs an iteration count using the standards-level minimum.
+    ///
+    /// Use [`Self::from_u32_modern`] for new protocol profiles. This legacy
+    /// constructor remains for source compatibility with conformance callers.
+    #[deprecated(note = "use from_u32_modern, or from_u32_conformance_only for fixed vectors")]
     pub fn from_u32(value: u32, prf: Pbkdf2Prf) -> Result<Self, CryptoError> {
+        Self::from_u32_conformance_only(value, prf)
+    }
+
+    /// Constructs the standards-level count for fixed interoperability vectors.
+    pub fn from_u32_conformance_only(value: u32, prf: Pbkdf2Prf) -> Result<Self, CryptoError> {
         if !(PBKDF2_STANDARD_MIN_ITERATIONS..=PBKDF2_MAX_ITERATIONS).contains(&value) {
             return Err(kdf_error(prf, KdfFailureKind::InvalidIterationCount));
         }

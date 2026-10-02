@@ -4,7 +4,7 @@
 
 #![allow(missing_docs)]
 
-use crypto_core::CryptoError;
+use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
 use crypto_slh_dsa::{
     decode_slh_dsa_sha2_128s_public_key, derive_slh_dsa_sha2_128s_keypair,
     encode_slh_dsa_sha2_128s_public_key, generate_slh_dsa_sha2_128s_keypair,
@@ -60,7 +60,14 @@ fn verification_rejects_modified_message() -> Result<(), CryptoError> {
     let (public_key, secret_key) = deterministic_keypair()?;
     let signature = sign_slh_dsa_sha2_128s(&secret_key, MESSAGE)?;
 
-    assert!(verify_slh_dsa_sha2_128s(&public_key, b"modified message", &signature).is_err());
+    assert!(matches!(
+        verify_slh_dsa_sha2_128s(&public_key, b"modified message", &signature),
+        Err(CryptoError::Signature {
+            backend: SignatureBackend::Native,
+            operation: SignatureOperation::Verify,
+            kind: SignatureFailureKind::InvalidSignature,
+        })
+    ));
 
     Ok(())
 }
@@ -71,7 +78,14 @@ fn verification_rejects_modified_signature() -> Result<(), CryptoError> {
     let mut signature = sign_slh_dsa_sha2_128s(&secret_key, MESSAGE)?;
     signature[0] ^= 0x80;
 
-    assert!(verify_slh_dsa_sha2_128s(&public_key, MESSAGE, &signature).is_err());
+    assert!(matches!(
+        verify_slh_dsa_sha2_128s(&public_key, MESSAGE, &signature),
+        Err(CryptoError::Signature {
+            backend: SignatureBackend::Native,
+            operation: SignatureOperation::Verify,
+            kind: SignatureFailureKind::InvalidSignature,
+        })
+    ));
 
     Ok(())
 }
@@ -82,7 +96,14 @@ fn verification_rejects_wrong_public_key() -> Result<(), CryptoError> {
     let signature = sign_slh_dsa_sha2_128s(&secret_key, MESSAGE)?;
     let (wrong_public_key, _wrong_secret_key) = generate_slh_dsa_sha2_128s_keypair()?;
 
-    assert!(verify_slh_dsa_sha2_128s(&wrong_public_key, MESSAGE, &signature).is_err());
+    assert!(matches!(
+        verify_slh_dsa_sha2_128s(&wrong_public_key, MESSAGE, &signature),
+        Err(CryptoError::Signature {
+            backend: SignatureBackend::Native,
+            operation: SignatureOperation::Verify,
+            kind: SignatureFailureKind::InvalidSignature,
+        })
+    ));
 
     Ok(())
 }
@@ -99,8 +120,14 @@ fn public_key_encode_decode_validate_lengths() -> Result<(), CryptoError> {
         decode_slh_dsa_sha2_128s_public_key(&public_key)?,
         public_key
     );
-    assert!(encode_slh_dsa_sha2_128s_public_key(&public_key[1..]).is_err());
-    assert!(decode_slh_dsa_sha2_128s_public_key(&public_key[1..]).is_err());
+    assert!(matches!(
+        encode_slh_dsa_sha2_128s_public_key(&public_key[1..]),
+        Err(CryptoError::InvalidKey)
+    ));
+    assert!(matches!(
+        decode_slh_dsa_sha2_128s_public_key(&public_key[1..]),
+        Err(CryptoError::InvalidKey)
+    ));
 
     Ok(())
 }
@@ -110,10 +137,30 @@ fn malformed_inputs_are_rejected() -> Result<(), CryptoError> {
     let (public_key, secret_key) = deterministic_keypair()?;
     let signature = sign_slh_dsa_sha2_128s(&secret_key, MESSAGE)?;
 
-    assert!(derive_slh_dsa_sha2_128s_keypair(&[], &[0u8; 16], &[0u8; 16]).is_err());
-    assert!(sign_slh_dsa_sha2_128s(&secret_key[1..], MESSAGE).is_err());
-    assert!(verify_slh_dsa_sha2_128s(&public_key[1..], MESSAGE, &signature).is_err());
-    assert!(verify_slh_dsa_sha2_128s(&public_key, MESSAGE, &signature[1..]).is_err());
+    assert!(matches!(
+        derive_slh_dsa_sha2_128s_keypair(&[], &[0u8; 16], &[0u8; 16]),
+        Err(CryptoError::Signature {
+            backend: SignatureBackend::Native,
+            operation: SignatureOperation::KeyManagement,
+            kind: SignatureFailureKind::InvalidPrivateKey,
+        })
+    ));
+    assert!(matches!(
+        sign_slh_dsa_sha2_128s(&secret_key[1..], MESSAGE),
+        Err(CryptoError::InvalidKey)
+    ));
+    assert!(matches!(
+        verify_slh_dsa_sha2_128s(&public_key[1..], MESSAGE, &signature),
+        Err(CryptoError::InvalidKey)
+    ));
+    assert!(matches!(
+        verify_slh_dsa_sha2_128s(&public_key, MESSAGE, &signature[1..]),
+        Err(CryptoError::Signature {
+            backend: SignatureBackend::Native,
+            operation: SignatureOperation::Verify,
+            kind: SignatureFailureKind::InvalidSignature,
+        })
+    ));
 
     Ok(())
 }

@@ -186,6 +186,28 @@ fn x25519_ffi_covers_keygen_derive_and_encoding() {
     };
     assert_eq!(decode_status, status::CRYPTO_OK);
     assert_eq!(decoded, alice_public);
+
+    let mut noncanonical = [0xff_u8; x25519::X25519_PUBLIC_KEY_LEN];
+    noncanonical[0] = 0xed;
+    noncanonical[31] = 0x7f;
+    for input in [noncanonical, {
+        let mut high_bit = [0_u8; x25519::X25519_PUBLIC_KEY_LEN];
+        high_bit[31] = 0x80;
+        high_bit
+    }] {
+        let encode_status = unsafe {
+            x25519::rm_crypto_x25519_encode_public_key(
+                input.as_ptr(), input.len(), encoded.as_mut_ptr(), encoded.len(),
+            )
+        };
+        let decode_status = unsafe {
+            x25519::rm_crypto_x25519_decode_public_key(
+                input.as_ptr(), input.len(), decoded.as_mut_ptr(), decoded.len(),
+            )
+        };
+        assert_eq!(encode_status, status::CRYPTO_INVALID_KEY);
+        assert_eq!(decode_status, status::CRYPTO_INVALID_KEY);
+    }
 }
 
 #[test]

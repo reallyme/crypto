@@ -152,6 +152,28 @@ fn strict_verify_rejects_small_and_mixed_order_points() {
 }
 
 #[test]
+fn valid_length_cctv_keys_and_signatures_report_signature_failure() {
+    use crypto_core::{SignatureBackend, SignatureFailureKind, SignatureOperation};
+
+    const CASES: [(&str, &str, &str); 2] = [
+        ("edffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "fa9dde274f4820efb19a890f8ba2d8791710a4303ceef4aedf9dddc4e81a1f1105ba9a796274d80437afa36f1236563f2f3b0aa84cecddc3d20914615ba4fe02", "ed25519vectors 10"),
+        ("26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc85", "edffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000000000000000000000000000", "ed25519vectors 2"),
+    ];
+    for (public_key, signature, message) in CASES {
+        let public_key = hex::decode(public_key).expect("fixed public key hex");
+        let signature = hex::decode(signature).expect("fixed signature hex");
+        assert_eq!(
+            verify_ed25519(&public_key, message.as_bytes(), &signature),
+            Err(CryptoError::Signature {
+                backend: SignatureBackend::Native,
+                operation: SignatureOperation::Verify,
+                kind: SignatureFailureKind::InvalidSignature,
+            })
+        );
+    }
+}
+
+#[test]
 fn signature_does_not_verify_under_different_key() -> Result<(), CryptoError> {
     let (_pk1, sk1) = generate_ed25519_keypair().into_test_result()?;
     let (pk2, _sk2) = generate_ed25519_keypair().into_test_result()?;

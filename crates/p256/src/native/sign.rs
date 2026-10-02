@@ -13,6 +13,12 @@ use sha2::{Digest, Sha256};
 ///
 /// - SHA-256 prehash
 /// - DER-encoded signature
+///
+/// This message-signing API preserves the ECDSA signature produced by the
+/// backend, including a possible high-S value. Callers requiring canonical
+/// low-S signatures should hash the message once and use
+/// [`crate::sign_p256_digest_der`]. The canonical digest verifier rejects
+/// high-S signatures, so these two APIs must not be paired indiscriminately.
 pub fn sign_p256_der_prehash(secret_key: &[u8], message: &[u8]) -> Result<Vec<u8>, CryptoError> {
     if secret_key.len() != 32 {
         return Err(CryptoError::InvalidKey);

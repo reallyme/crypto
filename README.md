@@ -104,9 +104,8 @@ messages, arbitrary-length IKM key derivation through each KEM's registered
 `DeriveKeyPair` construction, and named aliases for the MLS 192/256-bit
 ML-KEM-1024 and MLKEM1024-P384 draft profiles. Live sender contexts remain
 in-process, non-exportable state and are not exposed through protobuf or SDK
-transport adapters. Raw Rust derivation accepts the selected KEM's non-empty
-input contract; operation and serialized SDK boundaries require at least 32
-bytes of caller-owned high-entropy IKM.
+transport adapters. Raw Rust derivation, operations, and serialized SDK
+boundaries require at least 32 bytes of caller-owned high-entropy IKM.
 
 Every provider route must implement identical input validation and
 normalization, output encodings, typed failure semantics, and edge-case
@@ -204,9 +203,12 @@ scalar and is not random key generation. Keystore and protocol boundaries that
 already own SHA-256 hashing use `p256::sign_p256_digest_der`; it accepts exactly
 one 32-byte digest, signs that digest without hashing it again, and returns a
 deterministic low-S DER signature. `p256::verify_p256_digest_der` verifies that
-same canonical representation. P-384 and P-521 ECDH are available
-in both Rust lanes; the Swift, Kotlin, and TypeScript facades expose their
-manifest-declared provider-backed P-384/P-521 ECDH surfaces.
+same canonical representation. The message API `p256::sign_p256_der_prehash`
+may produce a high-S signature, which the canonical digest verifier rejects;
+use the digest signing API when pairing with that verifier. P-384 and P-521
+ECDH are available in both Rust lanes; the Swift, Kotlin, and TypeScript
+facades expose their manifest-declared provider-backed P-384/P-521 ECDH
+surfaces.
 
 For standalone X25519 and secp256k1 random key generation, prefer
 `try_generate_x25519_keypair` and `try_generate_secp256k1_keypair`. These

@@ -80,7 +80,7 @@ public object ReallyMeEd25519 {
             throw ReallyMeCryptoException.InvalidInput()
         }
         if (!Ed25519.validatePublicKeyPartial(publicKey, 0)) {
-            throw ReallyMeCryptoException.InvalidInput()
+            throw ReallyMeCryptoException.InvalidSignature()
         }
         if (!Ed25519.validatePublicKeyPartial(signature, 0) ||
             !Ed25519.validatePublicKeyFull(publicKey, 0) ||

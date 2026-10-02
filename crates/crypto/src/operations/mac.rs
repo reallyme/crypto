@@ -5,10 +5,10 @@
 //! Semantic owner for MAC operations.
 
 use crypto_core::MacAlgorithm;
-#[cfg(feature = "hmac")]
+#[cfg(all(feature = "hmac", any(feature = "native", feature = "wasm")))]
 use crypto_core::{CryptoError, MacFailureKind};
 
-#[cfg(feature = "hmac")]
+#[cfg(all(feature = "hmac", any(feature = "native", feature = "wasm")))]
 use super::{BackendErrorReason, PrimitiveErrorReason};
 use super::{OperationError, ProviderErrorReason};
 use crate::secret_material::{bind_operation_policy, SecretMaterialOperation};
@@ -23,12 +23,12 @@ pub fn authenticate(
     message: &[u8],
 ) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::MacAuthenticate);
-    #[cfg(feature = "hmac")]
+    #[cfg(all(feature = "hmac", any(feature = "native", feature = "wasm")))]
     {
         authenticate_tag(algorithm, key, message).map(crypto_hmac::HmacTag::into_vec)
     }
 
-    #[cfg(not(feature = "hmac"))]
+    #[cfg(not(all(feature = "hmac", any(feature = "native", feature = "wasm"))))]
     {
         let _ = (algorithm, key, message);
         unsupported_mac()
@@ -43,20 +43,20 @@ pub fn verify(
     tag: &[u8],
 ) -> Result<(), OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::MacVerify);
-    #[cfg(feature = "hmac")]
+    #[cfg(all(feature = "hmac", any(feature = "native", feature = "wasm")))]
     {
         let key = hmac_key_from_slice(key)?;
         crypto_hmac::verify(algorithm, &key, message, tag).map_err(map_hmac_error)
     }
 
-    #[cfg(not(feature = "hmac"))]
+    #[cfg(not(all(feature = "hmac", any(feature = "native", feature = "wasm"))))]
     {
         let _ = (algorithm, key, message, tag);
         unsupported_mac()
     }
 }
 
-#[cfg(feature = "hmac")]
+#[cfg(all(feature = "hmac", any(feature = "native", feature = "wasm")))]
 /// Computes a MAC tag while preserving the historical HMAC tag wrapper.
 pub fn authenticate_tag(
     algorithm: MacAlgorithm,
@@ -68,12 +68,12 @@ pub fn authenticate_tag(
     crypto_hmac::authenticate(algorithm, &key, message).map_err(map_hmac_error)
 }
 
-#[cfg(feature = "hmac")]
+#[cfg(all(feature = "hmac", any(feature = "native", feature = "wasm")))]
 fn hmac_key_from_slice(key: &[u8]) -> Result<crypto_hmac::HmacKey, OperationError> {
     crypto_hmac::HmacKey::from_slice(key).map_err(map_hmac_error)
 }
 
-#[cfg(feature = "hmac")]
+#[cfg(all(feature = "hmac", any(feature = "native", feature = "wasm")))]
 fn map_hmac_error(error: CryptoError) -> OperationError {
     match error {
         CryptoError::Mac {
@@ -109,7 +109,7 @@ fn map_hmac_error(error: CryptoError) -> OperationError {
     }
 }
 
-#[cfg(not(feature = "hmac"))]
+#[cfg(not(all(feature = "hmac", any(feature = "native", feature = "wasm"))))]
 fn unsupported_mac<T>() -> Result<T, OperationError> {
     Err(OperationError::Provider {
         reason: ProviderErrorReason::UnsupportedAlgorithm,

@@ -4,7 +4,7 @@
 
 //! JOSE ECDSA signature transcoding tests for secp256k1.
 
-use crypto_core::CryptoError;
+use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
 use crypto_secp256k1::{
     secp256k1_ecdsa_der_to_jose_signature, secp256k1_ecdsa_jose_signature_to_der,
     SECP256K1_ECDSA_JOSE_SIGNATURE_LEN,
@@ -39,6 +39,17 @@ fn scalar_with_last(last: u8) -> [u8; 32] {
     let mut scalar = [0u8; 32];
     scalar[31] = last;
     scalar
+}
+
+fn assert_invalid_signature<T>(result: Result<T, CryptoError>) {
+    assert!(matches!(
+        result,
+        Err(CryptoError::Signature {
+            backend: SignatureBackend::Native,
+            operation: SignatureOperation::Verify,
+            kind: SignatureFailureKind::InvalidSignature,
+        })
+    ));
 }
 
 fn boundary_jose_signatures() -> [[u8; SECP256K1_ECDSA_JOSE_SIGNATURE_LEN]; 6] {
@@ -133,7 +144,7 @@ fn rejects_redundant_positive_integer_padding() {
          00007f0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
          020101"
     );
-    assert!(secp256k1_ecdsa_der_to_jose_signature(&der).is_err());
+    assert_invalid_signature(secp256k1_ecdsa_der_to_jose_signature(&der));
 }
 
 #[test]
@@ -141,15 +152,15 @@ fn rejects_noncanonical_der_long_form_lengths() {
     let outer_long_form = hex!("308106020101020102");
     let integer_long_form = hex!("300702810101020102");
 
-    assert!(secp256k1_ecdsa_der_to_jose_signature(&outer_long_form).is_err());
-    assert!(secp256k1_ecdsa_der_to_jose_signature(&integer_long_form).is_err());
+    assert_invalid_signature(secp256k1_ecdsa_der_to_jose_signature(&outer_long_form));
+    assert_invalid_signature(secp256k1_ecdsa_der_to_jose_signature(&integer_long_form));
 }
 
 #[test]
 fn rejects_wrong_jose_length() {
     let raw = [0u8; SECP256K1_ECDSA_JOSE_SIGNATURE_LEN + 1];
 
-    assert!(secp256k1_ecdsa_jose_signature_to_der(&raw).is_err());
+    assert_invalid_signature(secp256k1_ecdsa_jose_signature_to_der(&raw));
 }
 
 #[test]
@@ -162,7 +173,7 @@ fn rejects_zero_and_out_of_range_secp256k1_scalars() {
         raw_signature_from_scalars(order, one),
         raw_signature_from_scalars(one, order),
     ] {
-        assert!(secp256k1_ecdsa_jose_signature_to_der(&raw).is_err());
+        assert_invalid_signature(secp256k1_ecdsa_jose_signature_to_der(&raw));
     }
 
     let zero_r = hex!("3006020100020101");
@@ -177,7 +188,7 @@ fn rejects_zero_and_out_of_range_secp256k1_scalars() {
         order_r.as_slice(),
         order_s.as_slice(),
     ] {
-        assert!(secp256k1_ecdsa_der_to_jose_signature(der).is_err());
+        assert_invalid_signature(secp256k1_ecdsa_der_to_jose_signature(der));
     }
 
     #[cfg(all(feature = "native", not(all(feature = "wasm", target_arch = "wasm32"))))]
@@ -198,10 +209,10 @@ fn rejects_malformed_der_signature() {
         0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x02, 0x01, 0x01,
     ];
 
-    assert!(secp256k1_ecdsa_der_to_jose_signature(&wrong_tag).is_err());
-    assert!(secp256k1_ecdsa_der_to_jose_signature(&trailing).is_err());
-    assert!(secp256k1_ecdsa_der_to_jose_signature(&negative_integer).is_err());
-    assert!(secp256k1_ecdsa_der_to_jose_signature(&oversized_scalar).is_err());
+    assert_invalid_signature(secp256k1_ecdsa_der_to_jose_signature(&wrong_tag));
+    assert_invalid_signature(secp256k1_ecdsa_der_to_jose_signature(&trailing));
+    assert_invalid_signature(secp256k1_ecdsa_der_to_jose_signature(&negative_integer));
+    assert_invalid_signature(secp256k1_ecdsa_der_to_jose_signature(&oversized_scalar));
 }
 
 #[test]
@@ -209,8 +220,10 @@ fn rejects_invalid_der_length_forms() {
     let indefinite_length = hex!("3080020101020102");
     let too_many_length_octets = hex!("3083000006020101020102");
 
-    assert!(secp256k1_ecdsa_der_to_jose_signature(&indefinite_length).is_err());
-    assert!(secp256k1_ecdsa_der_to_jose_signature(&too_many_length_octets).is_err());
+    assert_invalid_signature(secp256k1_ecdsa_der_to_jose_signature(&indefinite_length));
+    assert_invalid_signature(secp256k1_ecdsa_der_to_jose_signature(
+        &too_many_length_octets,
+    ));
 }
 
 #[cfg(all(feature = "native", not(all(feature = "wasm", target_arch = "wasm32"))))]

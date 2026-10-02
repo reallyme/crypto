@@ -35,3 +35,8 @@ pub fn decrypt(request: &DecryptRequest<'_>) -> Result<Vec<u8>, CryptoError> {
             kind: AeadFailureKind::AuthenticationFailed,
         })
 }
+
+/// Decrypts AES-256-GCM-SIV and owns plaintext in a buffer wiped on drop.
+pub fn decrypt_zeroizing(request: &DecryptRequest<'_>) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
+    decrypt(request).map(Zeroizing::new)
+}

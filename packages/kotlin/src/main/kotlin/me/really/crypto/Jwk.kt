@@ -193,15 +193,12 @@ public object ReallyMeJwk {
             "AKP" -> setOf("alg", "kty", "pub", "use")
             else -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
         }
-        if (!allowedMembers.containsAll(objectMap.keys)) {
+        if (objectMap.size > 16 || objectMap.keys.any { it !in allowedMembers && it != "kid" }) {
             throw ReallyMeCryptoException.InvalidInput()
         }
-        val metadataMatches = if (spec.kty == "OKP") {
+        val metadataMatches =
             (objectMap["alg"] == null || objectMap["alg"] == spec.alg) &&
                 (objectMap["use"] == null || objectMap["use"] == spec.keyUse)
-        } else {
-            objectMap["alg"] == spec.alg && objectMap["use"] == spec.keyUse
-        }
         if (
             kty != spec.kty ||
             !metadataMatches
@@ -232,9 +229,6 @@ public object ReallyMeJwk {
 
     public fun fromJwksJson(json: String): List<ReallyMeJwkKey> {
         val root = parseJsonObject(json)
-        if (root.entrySet().map { it.key }.toSet() != setOf("keys")) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
         val keys = root.get("keys")
         if (keys == null || !keys.isJsonArray || keys.asJsonArray.size() > MAX_JWKS_KEYS) {
             throw ReallyMeCryptoException.InvalidInput()
@@ -335,7 +329,15 @@ public object ReallyMeJwk {
 
     private fun stringMembers(jsonObject: JsonObject): Map<String, String> =
         buildMap {
+            if (jsonObject.size() > 16) {
+                throw ReallyMeCryptoException.InvalidInput()
+            }
             jsonObject.entrySet().forEach { (name, value) ->
+                // Private members must remain visible to the public-only guard;
+                // registered extensions do not participate in key identity.
+                if (name.startsWith("x-")) {
+                    return@forEach
+                }
                 if (!value.isJsonPrimitive || !value.asJsonPrimitive.isString) {
                     throw ReallyMeCryptoException.InvalidInput()
                 }

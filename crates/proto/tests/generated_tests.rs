@@ -19,9 +19,10 @@ use reallyme_crypto_proto::generated::{
         CryptoError, CryptoErrorReason, CryptoHashRequest, CryptoKeyPair,
         CryptoKmac256DeriveRequest, CryptoKmac256DeriveRequestOwnedView, CryptoOperationResponse,
         CryptoOperationResponseOwnedView, CryptoOperationResult, CryptoPrimitiveError,
-        CryptoProviderError, HashAlgorithm, HpkeAeadId, HpkeKdfId, HpkeKemId, HpkeSuiteIdentifier,
-        KdfAlgorithm, KemAlgorithm, KeyAgreementAlgorithm, KeyWrapAlgorithm, MacAlgorithm,
-        MulticodecKeyAlgorithm, SignatureAlgorithm,
+        CryptoProviderError, CryptoVerificationResult, CryptoVerificationStatus, HashAlgorithm,
+        HpkeAeadId, HpkeKdfId, HpkeKemId, HpkeSuiteIdentifier, KdfAlgorithm, KemAlgorithm,
+        KeyAgreementAlgorithm, KeyWrapAlgorithm, MacAlgorithm, MulticodecKeyAlgorithm,
+        SignatureAlgorithm,
     },
     CRYPTO_PROTO_PACKAGE,
 };
@@ -281,6 +282,49 @@ fn operation_response_codec_rejects_absent_semantic_oneofs() {
 }
 
 #[test]
+fn operation_response_codec_rejects_inconsistent_verification_status() {
+    use buffa::MessageField;
+    use reallyme_crypto_proto::operation_response_wire::{
+        decode_operation_response, encode_operation_response,
+    };
+    use reallyme_crypto_proto::wire::CryptoWireError;
+
+    let algorithm = algorithm_identifier(Algorithm::Signature(EnumValue::from(
+        SignatureAlgorithm::SIGNATURE_ALGORITHM_ED25519,
+    )));
+    for status in [
+        CryptoVerificationStatus::CRYPTO_VERIFICATION_STATUS_UNSPECIFIED,
+        CryptoVerificationStatus::CRYPTO_VERIFICATION_STATUS_ERROR,
+    ] {
+        let verification = CryptoVerificationResult {
+            algorithm: MessageField::some(algorithm.clone()),
+            status: EnumValue::from(status),
+            error: MessageField::none(),
+            __buffa_unknown_fields: Default::default(),
+        };
+        let response = CryptoOperationResponse {
+            outcome: Some(CryptoOperationOutcome::Result(Box::new(
+                CryptoOperationResult {
+                    result: Some(CryptoOperationResultBranch::SignatureVerify(Box::new(
+                        verification,
+                    ))),
+                    __buffa_unknown_fields: Default::default(),
+                },
+            ))),
+            __buffa_unknown_fields: Default::default(),
+        };
+        assert_eq!(
+            encode_operation_response(&response).err(),
+            Some(CryptoWireError::malformed_protobuf())
+        );
+        assert_eq!(
+            decode_operation_response(&response.encode_to_vec()).err(),
+            Some(CryptoWireError::malformed_protobuf())
+        );
+    }
+}
+
+#[test]
 fn crypto_error_oneof_wire_contract_is_stable() -> Result<(), buffa::DecodeError> {
     let primitive = CryptoError {
         error: Some(CryptoErrorBranch::Primitive(Box::new(
@@ -440,6 +484,14 @@ fn multi_field_crypto_output_wire_contract_is_stable() -> Result<(), buffa::Deco
         secret_key: vec![0x03, 0x04],
         __buffa_unknown_fields: Default::default(),
     };
+
+    // Exportable key bytes remain available on the binary wire, but the
+    // generic JSON serializer must not copy them into a loggable String.
+    assert!(serde_json::to_string(&keypair).is_err());
+    let mut different_keypair = keypair.clone();
+    assert_eq!(keypair, different_keypair);
+    different_keypair.secret_key[0] ^= 1;
+    assert_ne!(keypair, different_keypair);
 
     assert_golden_wire(
         &keypair,

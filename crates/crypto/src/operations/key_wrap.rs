@@ -4,9 +4,13 @@
 
 //! Semantic owner for AES-KW wrap and unwrap operations.
 
-use crypto_core::{CryptoError, KeyWrapAlgorithm, KeyWrapFailureKind};
+use crypto_core::KeyWrapAlgorithm;
+#[cfg(any(feature = "native", feature = "wasm"))]
+use crypto_core::{CryptoError, KeyWrapFailureKind};
 
-use super::{BackendErrorReason, OperationError, PrimitiveErrorReason};
+use super::OperationError;
+#[cfg(any(feature = "native", feature = "wasm"))]
+use super::{BackendErrorReason, PrimitiveErrorReason};
 use crate::secret_material::{bind_operation_policy, SecretMaterialOperation};
 
 /// Wraps plaintext key material with the selected RFC 3394 AES-KW suite.
@@ -20,6 +24,7 @@ pub fn wrap_key(
     key_data: &[u8],
 ) -> Result<crypto_aes_kw::AesKwWrappedKey, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::KeyWrap);
+    #[cfg(any(feature = "native", feature = "wasm"))]
     match algorithm {
         KeyWrapAlgorithm::Aes128Kw => {
             let kek = crypto_aes_kw::Aes128KwKek::from_slice(kek).map_err(map_key_wrap_error)?;
@@ -37,6 +42,14 @@ pub fn wrap_key(
             reason: super::ProviderErrorReason::UnsupportedAlgorithm,
         }),
     }
+
+    #[cfg(not(any(feature = "native", feature = "wasm")))]
+    {
+        let _ = (algorithm, kek, key_data);
+        Err(OperationError::Provider {
+            reason: super::ProviderErrorReason::UnsupportedAlgorithm,
+        })
+    }
 }
 
 /// Unwraps RFC 3394 AES-KW wrapped key material with the selected suite.
@@ -49,6 +62,7 @@ pub fn unwrap_key(
     wrapped_key: &[u8],
 ) -> Result<crypto_aes_kw::AesKwKeyData, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::KeyUnwrap);
+    #[cfg(any(feature = "native", feature = "wasm"))]
     match algorithm {
         KeyWrapAlgorithm::Aes128Kw => {
             let kek = crypto_aes_kw::Aes128KwKek::from_slice(kek).map_err(map_key_wrap_error)?;
@@ -66,8 +80,17 @@ pub fn unwrap_key(
             reason: super::ProviderErrorReason::UnsupportedAlgorithm,
         }),
     }
+
+    #[cfg(not(any(feature = "native", feature = "wasm")))]
+    {
+        let _ = (algorithm, kek, wrapped_key);
+        Err(OperationError::Provider {
+            reason: super::ProviderErrorReason::UnsupportedAlgorithm,
+        })
+    }
 }
 
+#[cfg(any(feature = "native", feature = "wasm"))]
 fn map_key_wrap_error(error: CryptoError) -> OperationError {
     match error {
         CryptoError::KeyWrap {

@@ -221,9 +221,8 @@ the 12-byte AEAD nonce internally.
 `CryptoHpkeDeriveKeyPairRequest.input_key_material` accepts arbitrary-length
 IKM of at least 32 bytes. The operation owner invokes the selected KEM's
 registered HPKE `DeriveKeyPair` procedure; serialized adapters must not invent
-a KEM-specific normalization step. The raw Rust primitive retains the
-KEM-defined non-empty contract for conformance and protocol-specific callers,
-while operation, protobuf, FFI, JNI, and WASM routes apply the 256-bit floor.
+a KEM-specific normalization step. The raw Rust primitive and operation,
+protobuf, FFI, JNI, and WASM routes all apply the 256-bit floor.
 
 For in-process OpenMLS targeted messages, the Rust API additionally exposes a
 split PSK sender setup that returns the encapsulated key beside a live opaque

@@ -19,7 +19,7 @@
 use codec_multikey::encode_multikey;
 use crypto_core::Algorithm;
 use crypto_dispatch::{
-    generate_keypair, public_key_to_multikey, validate_verification_method_multikey,
+    generate_keypair, public_key_to_multikey, validate_verification_method_multikey, AlgorithmError,
 };
 
 #[test]
@@ -35,10 +35,16 @@ fn x25519_verification_method_is_valid() {
 fn x25519_verification_method_rejects_masked_high_bit_alias() {
     let (mut public, _) = generate_keypair(Algorithm::X25519).unwrap();
     public[31] |= 0x80;
-    assert!(public_key_to_multikey(Algorithm::X25519, &public).is_err());
+    assert!(matches!(
+        public_key_to_multikey(Algorithm::X25519, &public),
+        Err(AlgorithmError::InvalidKey(Algorithm::X25519))
+    ));
 
     let alias = encode_multikey("x25519-pub", &public).unwrap();
-    assert!(validate_verification_method_multikey(Algorithm::X25519, "Multikey", &alias).is_err());
+    assert!(matches!(
+        validate_verification_method_multikey(Algorithm::X25519, "Multikey", &alias),
+        Err(AlgorithmError::InvalidKey(Algorithm::X25519))
+    ));
 }
 
 #[test]
@@ -50,11 +56,15 @@ fn x25519_verification_method_rejects_noncanonical_field_aliases() {
 
     for low_byte in 0xed..=0xff {
         field_boundary[0] = low_byte;
-        assert!(public_key_to_multikey(Algorithm::X25519, &field_boundary).is_err());
+        assert!(matches!(
+            public_key_to_multikey(Algorithm::X25519, &field_boundary),
+            Err(AlgorithmError::InvalidKey(Algorithm::X25519))
+        ));
         let alias = encode_multikey("x25519-pub", &field_boundary).unwrap();
-        assert!(
-            validate_verification_method_multikey(Algorithm::X25519, "Multikey", &alias).is_err()
-        );
+        assert!(matches!(
+            validate_verification_method_multikey(Algorithm::X25519, "Multikey", &alias),
+            Err(AlgorithmError::InvalidKey(Algorithm::X25519))
+        ));
     }
 }
 
@@ -84,12 +94,15 @@ fn ed25519_verification_method_rejects_invalid_points() {
     aliased_identity[0] = 0xee;
     aliased_identity[31] = 0x7f;
     for invalid in [identity, aliased_identity, [0_u8; 32]] {
-        assert!(public_key_to_multikey(Algorithm::Ed25519, &invalid).is_err());
+        assert!(matches!(
+            public_key_to_multikey(Algorithm::Ed25519, &invalid),
+            Err(AlgorithmError::InvalidKey(Algorithm::Ed25519))
+        ));
         let multikey = encode_multikey("ed25519-pub", &invalid).unwrap();
-        assert!(
-            validate_verification_method_multikey(Algorithm::Ed25519, "Multikey", &multikey)
-                .is_err()
-        );
+        assert!(matches!(
+            validate_verification_method_multikey(Algorithm::Ed25519, "Multikey", &multikey),
+            Err(AlgorithmError::InvalidKey(Algorithm::Ed25519))
+        ));
     }
 }
 
@@ -99,7 +112,10 @@ fn invalid_multikey_string_is_rejected() {
 
     let err = validate_verification_method_multikey(Algorithm::X25519, "Multikey", bad);
 
-    assert!(err.is_err());
+    assert!(matches!(
+        err,
+        Err(AlgorithmError::InvalidKey(Algorithm::X25519))
+    ));
 }
 
 #[test]
@@ -109,7 +125,10 @@ fn wrong_algorithm_is_rejected() {
 
     let err = validate_verification_method_multikey(Algorithm::X25519, "Multikey", &mk);
 
-    assert!(err.is_err());
+    assert!(matches!(
+        err,
+        Err(AlgorithmError::InvalidKey(Algorithm::X25519))
+    ));
 }
 
 #[test]
@@ -119,7 +138,10 @@ fn wrong_binding_type_is_rejected() {
 
     let err = validate_verification_method_multikey(Algorithm::Ed25519, "SomeOtherKeyType", &mk);
 
-    assert!(err.is_err());
+    assert!(matches!(
+        err,
+        Err(AlgorithmError::InvalidKey(Algorithm::Ed25519))
+    ));
 }
 
 #[test]
@@ -129,5 +151,8 @@ fn wrong_key_length_is_rejected() {
 
     let err = validate_verification_method_multikey(Algorithm::X25519, "Multikey", bad);
 
-    assert!(err.is_err());
+    assert!(matches!(
+        err,
+        Err(AlgorithmError::InvalidKey(Algorithm::X25519))
+    ));
 }

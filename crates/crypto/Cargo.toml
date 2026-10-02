@@ -76,7 +76,6 @@ default = [
     "p384",
     "p521",
     "pbkdf2",
-    "poseidon2",
     "rsa",
     "secp256k1",
     "x25519",

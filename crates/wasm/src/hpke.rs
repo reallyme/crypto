@@ -22,9 +22,6 @@ use crate::validate_bytes::{
 
 const HPKE_SUITE_P256_SHA256_AES256GCM: u32 = 1;
 const HPKE_SUITE_X25519_SHA256_CHACHA20POLY1305: u32 = 2;
-// RFC 9180's labeled key-schedule context is bounded by a two-byte length;
-// five fixed label bytes leave this many caller-controlled `info` bytes.
-const HPKE_INFO_MAX_LENGTH: usize = 65_530;
 
 #[derive(Clone, Copy)]
 struct HpkeSuiteConfig {
@@ -91,7 +88,7 @@ pub fn hpke_seal_base(
 ) -> Result<JsValue, JsValue> {
     let config = hpke_suite(suite)?;
     let recipient_public_key = copy_exact(recipient_public_key, config.public_key_length)?;
-    let info = Zeroizing::new(copy_bounded(info, HPKE_INFO_MAX_LENGTH)?);
+    let info = Zeroizing::new(copy_bounded(info, MAX_WASM_INPUT_LENGTH)?);
     let aad = Zeroizing::new(copy_bounded(aad, MAX_WASM_INPUT_LENGTH)?);
     let plaintext = Zeroizing::new(copy_bounded(plaintext, MAX_WASM_INPUT_LENGTH)?);
     let output = seal_base(&HpkeSealRequest {
@@ -122,7 +119,7 @@ pub fn hpke_seal_base_derand(
         encapsulation_randomness,
         config.private_key_length,
     )?);
-    let info = Zeroizing::new(copy_bounded(info, HPKE_INFO_MAX_LENGTH)?);
+    let info = Zeroizing::new(copy_bounded(info, MAX_WASM_INPUT_LENGTH)?);
     let aad = Zeroizing::new(copy_bounded(aad, MAX_WASM_INPUT_LENGTH)?);
     let plaintext = Zeroizing::new(copy_bounded(plaintext, MAX_WASM_INPUT_LENGTH)?);
     let output = seal_base_derand(&HpkeDerandSealRequest {
@@ -151,7 +148,7 @@ pub fn hpke_open_base(
     let recipient_secret_key =
         Zeroizing::new(copy_exact(recipient_secret_key, config.private_key_length)?);
     let encapsulated_key = copy_exact(encapsulated_key, config.public_key_length)?;
-    let info = Zeroizing::new(copy_bounded(info, HPKE_INFO_MAX_LENGTH)?);
+    let info = Zeroizing::new(copy_bounded(info, MAX_WASM_INPUT_LENGTH)?);
     let aad = Zeroizing::new(copy_bounded(aad, MAX_WASM_INPUT_LENGTH)?);
     let ciphertext = Zeroizing::new(copy_bounded(ciphertext, MAX_WASM_CIPHERTEXT_LENGTH)?);
     let mut plaintext = open_base(&HpkeOpenRequest {

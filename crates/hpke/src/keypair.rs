@@ -10,6 +10,8 @@ use crate::identifiers::HpkeSuite;
 use crate::types::{HpkeKeyPair, HpkePrivateKeyBytes};
 use crate::validation::{kem_parameters, require_executable_suite};
 
+const MIN_INPUT_KEY_MATERIAL_LEN: usize = 32;
+
 /// Generates a fresh HPKE KEM keypair using operating-system randomness.
 pub fn keygen(suite: HpkeSuite) -> Result<HpkeKeyPair, HpkeError> {
     require_executable_suite(suite)?;
@@ -34,19 +36,23 @@ pub fn derive_keypair(
     derive_keypair_from_ikm(suite, input_key_material)
 }
 
-/// Deterministically derives an HPKE KEM keypair from arbitrary-length input
-/// keying material.
+/// Deterministically derives an HPKE KEM keypair from input keying material
+/// containing at least 32 bytes.
 ///
 /// Each KEM applies its registered HPKE `DeriveKeyPair` procedure to the caller
 /// input, including any KEM-specific draft normalization. This is the
 /// OpenMLS-friendly entry point for MLS secrets whose length does not match the
 /// KEM's serialized private-key length.
+///
+/// The caller must supply secret IKM with at least 256 bits of entropy. Length
+/// alone cannot establish entropy, but rejecting shorter inputs prevents
+/// trivially enumerable keypairs even at this primitive boundary.
 pub fn derive_keypair_from_ikm(
     suite: HpkeSuite,
     input_key_material: &[u8],
 ) -> Result<HpkeKeyPair, HpkeError> {
     require_executable_suite(suite)?;
-    if input_key_material.is_empty() {
+    if input_key_material.len() < MIN_INPUT_KEY_MATERIAL_LEN {
         return Err(HpkeError::InvalidInputKeyMaterial);
     }
 

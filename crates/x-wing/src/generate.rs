@@ -55,6 +55,8 @@ pub fn generate_x_wing_768_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), Cr
 }
 
 /// Generate an X-Wing keypair from a caller-supplied 32-byte seed.
+/// The seed must be secret and contain at least 256 bits of entropy; a repeated
+/// seed deterministically recreates the same private key.
 pub fn generate_x_wing_768_keypair_derand(
     secret_key: &[u8],
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {

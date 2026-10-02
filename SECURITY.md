@@ -93,8 +93,11 @@ refuses to replace a conflicting tag or release asset.
   JWK/multikey, RSA DER, and P-256 SEC1/ECDSA DER boundaries. The complete
   current coverage and gap inventory is in `fuzz/README.md`; we do not claim
   that every parser and platform decoder is fuzzed yet.
-- The HPKE Base composition has a machine-checked Tamarin model in `formal/`
-  proving plaintext confidentiality against a network adversary.
+- The symbolic HPKE Base composition in `formal/` has a Tamarin secrecy proof
+  against a network adversary under idealized primitive and static-key secrecy
+  assumptions. This model does not prove the implementation or every HPKE
+  suite. Run `tamarin-prover --prove formal/tamarin/hpke_base.spthy` to check
+  the current model.
 - Provider choice is part of the security contract. The generated backend
   matrix in `PROVIDER_POLICY.md` records each Swift, Kotlin/JVM,
   Kotlin/Android, and TypeScript/WASM lane; unsupported lanes must fail with a

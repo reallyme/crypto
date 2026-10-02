@@ -5,12 +5,16 @@
 - Adds support for BN254 Poseidon2 byte hashing in Rust, with the fixed
   parameters, length framing, input bound, and canonical output encoding used
   by ReallyMe ZK circuits. Cross-checks full and partial blocks against the ZK
-  fixture oracle.
+  fixture oracle. The umbrella crate exposes it through the explicit
+  `poseidon2` feature; the default feature set does not select it.
 - Adds canonical P-256 prehashed ECDSA helpers in Rust and exposes typed
-  `throws(ReallyMeCryptoError)` across the Swift public API.
+  `throws(ReallyMeCryptoError)` across the Swift public API. The already-hashed
+  SHA-256 entry points are `sign_p256_digest_der` and
+  `verify_p256_digest_der`; callers must pass exactly 32 digest bytes.
 - Updates the ReallyMe Codec dependency to `0.3.0` across Rust, Swift,
   TypeScript, Kotlin/JVM, and Android, including the new multikey accessor,
   Swift error mapping, and TypeScript WASM provider contract.
+- Requires Swift 6.3 or later for the Swift package, matching Codec 0.3.0.
 - Fixes Ed25519 feature-only builds by exposing public-key encoding helpers
   only when a Rust backend is selected. Backendless signature operations
   continue to fail with typed unsupported errors.
@@ -35,13 +39,19 @@
   across Rust, TypeScript, and Kotlin, with shared rejection cases for
   torsion-bearing signatures. JWK and multikey encoding and parsing reject
   noncanonical, low-order, and non-prime-subgroup Ed25519 public keys in every
-  package lane. Failed WASM HPKE opens now return a typed authentication error.
+  package lane. This also tightens the raw Rust Ed25519 public-key
+  encode/decode functions and their C ABI: previously accepted small-order,
+  mixed-order, and noncanonical encodings now return invalid-key errors.
+  Failed WASM HPKE opens now return a typed authentication error.
 - Bounds PBKDF2's combined iteration and output-block work before derivation
   in Rust, Swift, Kotlin, and TypeScript. Over-limit requests fail with typed
   errors before provider dispatch; the Rust umbrella facade preserves the
   resource-limit error kind.
 - Aligns Secure Enclave ECDH provider errors with signing and reserves the
-  handle-owned Keychain tag namespace from caller-owned references.
+  handle-owned Keychain tag namespace from caller-owned references. Swift adds
+  `ReallyMeP256SecureEnclaveEcdhKeyReference` for caller-owned Keychain tags;
+  Android exposes `generateKeyAgreementKeyPair` and
+  `completeKeyAgreementOperation` for hardware-backed ECDH completion.
 - Redacts Swift key material from reflection and keeps Kotlin's Android key
   alias domain and protobuf error sets private to their implementations.
 - Separates unavailable EC backends from malformed JWK metadata, rejects
@@ -51,13 +61,27 @@
 - Keeps the TypeScript package synchronously loadable through Node's CommonJS
   bridge and uses a static reference to its package-owned WASM module.
 - Restricts explicit TypeScript facade providers to the initialized package
-  WASM module. MAC verification in Swift, Kotlin, and TypeScript now returns
-  without a value on success and throws a typed authentication error for an
-  invalid tag, so an ignored result cannot authorize a forged message.
+  WASM module and freezes the returned facade against method replacement.
+  **Breaking SDK API change:** MAC verification in Swift, Kotlin, and
+  TypeScript now returns without a value on success and throws a typed
+  authentication error for an invalid tag. Callers that branch on a boolean
+  must use exception handling instead.
 - Serializes Android Keystore key generation and deletion on one lock and
   rejects software JCA objects at the hardware key-agreement completion API.
-- Caps Swift and Kotlin protobuf value-envelope byte decoders at one megabyte,
+- Caps Swift, Kotlin, and TypeScript protobuf value-envelope byte decoders at one megabyte,
   matching the Rust wire-size boundary.
+- Restores the JWK/multikey adapter's native default so P-256 and secp256k1
+  conversions remain available without an explicit backend feature. JWK
+  parsers now accept optional, matching EC and AKP metadata, public `kid` and
+  `x-*` extensions, and additional JWKS metadata across all package lanes;
+  conflicting key use and private members remain rejected.
+- Requires canonical X25519 field elements in raw public-key encode/decode
+  paths, including the C ABI. RFC 7748 key agreement continues to accept its
+  specified input representations.
+- Requires at least 32 bytes of HPKE input keying material at the raw Rust
+  derivation boundary, matching the existing operation and serialized routes.
+  This rejects previously accepted short inputs; callers must supply secret
+  IKM with at least 256 bits of entropy.
 - Rejects exact-range cross-output aliasing in the HPKE C ABI before any
   produced-length pointer or output buffer is written.
 - Requires the scheduled external-vector integrity checks to execute their

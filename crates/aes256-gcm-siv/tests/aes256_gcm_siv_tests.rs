@@ -55,6 +55,16 @@ fn encrypt_then_decrypt_roundtrip() {
     };
 
     assert_eq!(decrypted, b"top secret payload");
+    let owned = crypto_aes256_gcm_siv::decrypt_zeroizing(&DecryptRequest {
+        key: &key,
+        nonce,
+        aad: b"associated-data",
+        ciphertext: &encrypted,
+    });
+    assert!(owned.is_ok());
+    if let Ok(plaintext) = owned {
+        assert_eq!(plaintext.as_slice(), b"top secret payload");
+    }
 }
 
 #[test]

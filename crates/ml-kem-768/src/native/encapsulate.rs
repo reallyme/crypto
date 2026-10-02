@@ -56,6 +56,8 @@ fn encapsulate_with_rng(
 /// deterministic test vectors, or a caller-controlled entropy source. The same
 /// public key and 32 randomness bytes always yield the same ciphertext and
 /// shared secret.
+/// Production callers should use [`ml_kem_768_encapsulate`] unless their
+/// protocol supplies fresh, unpredictable randomness for every encapsulation.
 ///
 /// Returns (ciphertext, shared_secret); the shared secret is returned in a
 /// zeroizing wrapper. Errors if the key or randomness is malformed.
@@ -84,8 +86,9 @@ pub fn ml_kem_768_decapsulate(
     ciphertext: &[u8],
     secret_key: &[u8],
 ) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
-    let secret_seed = Seed::try_from(secret_key).map_err(|_| CryptoError::InvalidKey)?;
-    let sk = DecapsulationKey::from_seed(secret_seed);
+    let secret_seed =
+        Zeroizing::new(Seed::try_from(secret_key).map_err(|_| CryptoError::InvalidKey)?);
+    let sk = DecapsulationKey::from_seed(*secret_seed);
     let ciphertext =
         Ciphertext::try_from(ciphertext).map_err(|_| CryptoError::InvalidCiphertextLength {
             minimum: ML_KEM_768_CIPHERTEXT_LEN,

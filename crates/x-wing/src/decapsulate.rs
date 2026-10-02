@@ -43,8 +43,9 @@ fn ml_kem_768_decapsulate(
     seed_bytes: &[u8; ML_KEM_SECRET_SEED_LEN],
     ciphertext: &[u8],
 ) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
-    let seed = Seed::try_from(&seed_bytes[..]).map_err(|_| CryptoError::InvalidKey)?;
-    let decapsulation_key = MlKem768DecapsulationKey::from_seed(seed);
+    let seed =
+        Zeroizing::new(Seed::try_from(&seed_bytes[..]).map_err(|_| CryptoError::InvalidKey)?);
+    let decapsulation_key = MlKem768DecapsulationKey::from_seed(*seed);
     let ciphertext = MlKem768Ciphertext::try_from(ciphertext).map_err(|_| {
         CryptoError::InvalidCiphertextLength {
             minimum: XWingSuite::MlKem768.ml_kem_ciphertext_len(),

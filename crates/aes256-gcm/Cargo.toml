@@ -13,6 +13,14 @@ repository.workspace = true
 publish = true
 description = "AES-256-GCM authenticated encryption primitive for ReallyMe Crypto."
 
+[package.metadata.cargo-machete]
+ignored = [
+    # Enables AES round-key zeroization for standalone consumers.
+    "aes",
+    # The transitive RustCrypto stack requires browser entropy on wasm32.
+    "getrandom",
+]
+
 [lib]
 name = "crypto_aes256_gcm"
 
@@ -27,6 +35,7 @@ native = [
 wasm = [
     "dep:aes",
     "dep:aes-gcm",
+    "dep:getrandom",
 ]
 
 [dependencies]
@@ -36,6 +45,7 @@ zeroize = { workspace = true, features = ["zeroize_derive"] }
 # Package-owned Rust implementation dependencies for both backend lanes.
 aes = { workspace = true, features = ["zeroize"], optional = true }
 aes-gcm = { workspace = true, optional = true }
+getrandom = { workspace = true, features = ["wasm_js"], optional = true }
 
 [dev-dependencies]
 hex = { workspace = true }

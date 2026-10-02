@@ -185,6 +185,114 @@ fn exported_ffi_symbols_route_through_panic_guard() {
 }
 
 #[test]
+fn exported_jni_symbols_have_a_panic_boundary() {
+    const JNI_EXPORT_PREFIX: &str = "pub extern \"system\" fn";
+    const EXPECTED_JNI_EXPORTS: usize = 11;
+    let mut inspected = 0_usize;
+
+    for source_path in ffi_source_files() {
+        let source = fs::read_to_string(&source_path).expect("source file should be readable");
+        let mut search_from = 0_usize;
+        while let Some(relative_start) = source[search_from..].find(JNI_EXPORT_PREFIX) {
+            let start = search_from
+                .checked_add(relative_start)
+                .expect("search offset should not overflow");
+            let declaration_start = start
+                .checked_add(JNI_EXPORT_PREFIX.len())
+                .expect("JNI export declaration offset should not overflow");
+            let declaration = &source[declaration_start..];
+            let name = declaration
+                .split(['<', '('])
+                .next()
+                .expect("JNI export should have a name")
+                .trim();
+            let body = exported_function_body(&source, start)
+                .expect("JNI export body should have balanced braces");
+
+            let guarded = if name.ends_with("_probeNative") {
+                // A constant symbol probe has no fallible work or unwind path.
+                body.trim() == "{\n    1\n}"
+            } else if name.ends_with("_processOperationResponseNative")
+                || name.ends_with("_processOperationResponseJsonNative")
+            {
+                let helper_start = source
+                    .find("fn process_operation_response<'local>(")
+                    .expect("JNI operation helper should exist");
+                let helper = exported_function_body(&source, helper_start)
+                    .expect("JNI operation helper body should have balanced braces");
+                body.contains("process_operation_response(") && helper.contains("env.with_env(")
+            } else if name.ends_with("SealNative") || name.ends_with("OpenNative") {
+                let helper_name = if name.ends_with("SealNative") {
+                    "seal_native"
+                } else {
+                    "open_native"
+                };
+                let helper_declaration = format!("fn {helper_name}<'local>(");
+                let helper_start = source
+                    .find(&helper_declaration)
+                    .expect("JNI AEAD helper should exist");
+                let helper = exported_function_body(&source, helper_start)
+                    .expect("JNI AEAD helper body should have balanced braces");
+                body.contains(&format!("{helper_name}(")) && helper.contains("env.with_env(")
+            } else {
+                body.contains("env.with_env(")
+            };
+            assert!(
+                guarded,
+                "{} JNI export {name} must have a panic boundary",
+                source_path.display()
+            );
+            inspected = inspected
+                .checked_add(1)
+                .expect("JNI export count should not overflow");
+            search_from = start
+                .checked_add(body.len())
+                .expect("search offset should not overflow");
+        }
+    }
+    assert_eq!(inspected, EXPECTED_JNI_EXPORTS);
+}
+
+#[test]
+fn exported_jni_symbols_route_through_the_jni_panic_boundary() {
+    for source_path in ffi_source_files() {
+        let source = fs::read_to_string(&source_path).expect("source file should be readable");
+        let mut search_from = 0_usize;
+        while let Some(relative_start) = source[search_from..].find(JNI_EXPORT_PREFIX) {
+            let start = search_from
+                .checked_add(relative_start)
+                .expect("search offset should not overflow");
+            let body = exported_function_body(&source, start)
+                .expect("JNI export body should have balanced braces");
+            let routes_through_guard = body.contains("env.with_env(")
+                || ["seal_native", "open_native", "process_operation_response"]
+                    .iter()
+                    .any(|helper| {
+                        body.contains(&format!("{helper}("))
+                            && source
+                                .find(&format!("fn {helper}<"))
+                                .and_then(|helper_start| {
+                                    exported_function_body(&source, helper_start)
+                                })
+                                .is_some_and(|helper_body| helper_body.contains("env.with_env("))
+                    });
+            let is_infallible_probe = source[start..].starts_with(
+                "pub extern \"system\" fn Java_me_really_crypto_ReallyMeRustNativeProvider_probeNative",
+            ) && body.trim() == "{\n    1\n}";
+            assert!(
+                routes_through_guard || is_infallible_probe,
+                "{} JNI export at byte {} must use the JNI panic boundary",
+                source_path.display(),
+                start
+            );
+            search_from = start
+                .checked_add(body.len())
+                .expect("search offset should not overflow");
+        }
+    }
+}
+
+#[test]
 fn release_packaging_requires_the_unwind_capable_profile() {
     let workspace_manifest = include_str!("../../../Cargo.toml");
     let ffi_manifest = include_str!("../Cargo.toml");
@@ -266,6 +374,7 @@ fn header_declares_every_exported_ffi_symbol() {
 }
 
 const EXTERN_EXPORT_PREFIX: &str = "pub unsafe extern \"C\" fn";
+const JNI_EXPORT_PREFIX: &str = "pub extern \"system\" fn Java_";
 
 fn ffi_source_files() -> Vec<PathBuf> {
     let src_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("src");

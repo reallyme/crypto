@@ -5,6 +5,7 @@
 //! AES-256-GCM-SIV facade routes backed by the semantic AEAD operation owner.
 
 use crypto_core::{AeadAlgorithm, CryptoError};
+use zeroize::Zeroizing;
 
 use crate::aead_error::{crypto_error_from_operation_error, invalid_output_error, AeadOperation};
 
@@ -38,6 +39,11 @@ pub fn encrypt(request: &EncryptRequest<'_>) -> Result<CiphertextWithTag, Crypto
 
 /// Decrypts with AES-256-GCM-SIV through the operation layer.
 pub fn decrypt(request: &DecryptRequest<'_>) -> Result<Vec<u8>, CryptoError> {
+    decrypt_zeroizing(request).map(|plaintext| plaintext.to_vec())
+}
+
+/// Decrypts with AES-256-GCM-SIV and wipes plaintext on drop.
+pub fn decrypt_zeroizing(request: &DecryptRequest<'_>) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
     let algorithm = AeadAlgorithm::Aes256GcmSiv;
     crate::operations::aead::open(
         algorithm,
@@ -46,7 +52,6 @@ pub fn decrypt(request: &DecryptRequest<'_>) -> Result<Vec<u8>, CryptoError> {
         request.aad,
         request.ciphertext.as_bytes(),
     )
-    .map(|plaintext| plaintext.to_vec())
     .map_err(|error| {
         crypto_error_from_operation_error(
             algorithm,

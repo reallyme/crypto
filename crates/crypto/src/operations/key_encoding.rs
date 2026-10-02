@@ -33,63 +33,63 @@ pub fn decode_ed25519_public_key(public_key: &[u8]) -> Result<Vec<u8>, Operation
     crypto_ed25519::decode_public_key(public_key).map_err(map_public_key_error)
 }
 
-#[cfg(feature = "p256")]
+#[cfg(all(feature = "p256", any(feature = "native", feature = "wasm")))]
 /// Compresses an uncompressed P-256 SEC1 public key.
 pub fn compress_p256_public_key(public_key: &[u8]) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::PublicKeyEncoding);
     crypto_p256::compress_p256(public_key).map_err(map_public_key_error)
 }
 
-#[cfg(feature = "p256")]
+#[cfg(all(feature = "p256", any(feature = "native", feature = "wasm")))]
 /// Decompresses a compressed P-256 SEC1 public key.
 pub fn decompress_p256_public_key(public_key: &[u8]) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::PublicKeyEncoding);
     crypto_p256::decompress_p256(public_key).map_err(map_public_key_error)
 }
 
-#[cfg(feature = "p384")]
+#[cfg(all(feature = "p384", any(feature = "native", feature = "wasm")))]
 /// Compresses an uncompressed P-384 SEC1 public key.
 pub fn compress_p384_public_key(public_key: &[u8]) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::PublicKeyEncoding);
     crypto_p384::compress_p384(public_key).map_err(map_public_key_error)
 }
 
-#[cfg(feature = "p384")]
+#[cfg(all(feature = "p384", any(feature = "native", feature = "wasm")))]
 /// Decompresses a compressed P-384 SEC1 public key.
 pub fn decompress_p384_public_key(public_key: &[u8]) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::PublicKeyEncoding);
     crypto_p384::decompress_p384(public_key).map_err(map_public_key_error)
 }
 
-#[cfg(feature = "p521")]
+#[cfg(all(feature = "p521", any(feature = "native", feature = "wasm")))]
 /// Compresses an uncompressed P-521 SEC1 public key.
 pub fn compress_p521_public_key(public_key: &[u8]) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::PublicKeyEncoding);
     crypto_p521::compress_p521(public_key).map_err(map_public_key_error)
 }
 
-#[cfg(feature = "p521")]
+#[cfg(all(feature = "p521", any(feature = "native", feature = "wasm")))]
 /// Decompresses a compressed P-521 SEC1 public key.
 pub fn decompress_p521_public_key(public_key: &[u8]) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::PublicKeyEncoding);
     crypto_p521::decompress_p521(public_key).map_err(map_public_key_error)
 }
 
-#[cfg(feature = "secp256k1")]
+#[cfg(all(feature = "secp256k1", any(feature = "native", feature = "wasm")))]
 /// Validates and returns canonical compressed secp256k1 public-key bytes.
 pub fn encode_secp256k1_public_key(public_key: &[u8]) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::PublicKeyEncoding);
     crypto_secp256k1::encode_public_key(public_key).map_err(map_public_key_error)
 }
 
-#[cfg(feature = "secp256k1")]
+#[cfg(all(feature = "secp256k1", any(feature = "native", feature = "wasm")))]
 /// Decodes secp256k1 public-key bytes into the canonical compressed representation.
 pub fn decode_secp256k1_public_key(public_key: &[u8]) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::PublicKeyEncoding);
     crypto_secp256k1::decode_public_key(public_key).map_err(map_public_key_error)
 }
 
-#[cfg(feature = "secp256k1")]
+#[cfg(all(feature = "secp256k1", any(feature = "native", feature = "wasm")))]
 /// Decompresses a secp256k1 public key into affine coordinate bytes.
 pub fn decompress_secp256k1_public_key(
     public_key: &[u8],
@@ -98,28 +98,28 @@ pub fn decompress_secp256k1_public_key(
     crypto_secp256k1::decompress_public_key(public_key).map_err(map_public_key_error)
 }
 
-#[cfg(feature = "secp256k1")]
+#[cfg(all(feature = "secp256k1", any(feature = "native", feature = "wasm")))]
 /// Validates and returns canonical BIP-340 x-only public-key bytes.
 pub fn encode_bip340_schnorr_public_key(public_key: &[u8]) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::PublicKeyEncoding);
     crypto_secp256k1::encode_bip340_schnorr_public_key(public_key).map_err(map_public_key_error)
 }
 
-#[cfg(feature = "secp256k1")]
+#[cfg(all(feature = "secp256k1", any(feature = "native", feature = "wasm")))]
 /// Decodes BIP-340 x-only public-key bytes into the canonical representation.
 pub fn decode_bip340_schnorr_public_key(public_key: &[u8]) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::PublicKeyEncoding);
     crypto_secp256k1::decode_bip340_schnorr_public_key(public_key).map_err(map_public_key_error)
 }
 
-#[cfg(feature = "x25519")]
+#[cfg(all(feature = "x25519", any(feature = "native", feature = "wasm")))]
 /// Validates and returns canonical X25519 public-key bytes.
 pub fn encode_x25519_public_key(public_key: &[u8]) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::PublicKeyEncoding);
     crypto_x25519::encode_public_key(public_key).map_err(map_public_key_error)
 }
 
-#[cfg(feature = "x25519")]
+#[cfg(all(feature = "x25519", any(feature = "native", feature = "wasm")))]
 /// Decodes X25519 public-key bytes into the canonical raw representation.
 pub fn decode_x25519_public_key(public_key: &[u8]) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::PublicKeyEncoding);
@@ -128,11 +128,11 @@ pub fn decode_x25519_public_key(public_key: &[u8]) -> Result<Vec<u8>, OperationE
 
 #[cfg(any(
     all(feature = "ed25519", any(feature = "native", feature = "wasm")),
-    feature = "p256",
-    feature = "p384",
-    feature = "p521",
-    feature = "secp256k1",
-    feature = "x25519"
+    all(feature = "p256", any(feature = "native", feature = "wasm")),
+    all(feature = "p384", any(feature = "native", feature = "wasm")),
+    all(feature = "p521", any(feature = "native", feature = "wasm")),
+    all(feature = "secp256k1", any(feature = "native", feature = "wasm")),
+    all(feature = "x25519", any(feature = "native", feature = "wasm"))
 ))]
 fn map_public_key_error(error: crypto_core::CryptoError) -> OperationError {
     match error {

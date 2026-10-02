@@ -19,6 +19,7 @@ use zeroize::{Zeroize, Zeroizing};
 ///
 /// The legacy infallible API inherits the provider panic on entropy failure.
 /// Use [`try_generate_secp256k1_keypair`] for typed failure handling.
+#[deprecated(note = "use try_generate_secp256k1_keypair for typed entropy failures")]
 pub fn generate_secp256k1_keypair() -> (Vec<u8>, Zeroizing<Vec<u8>>) {
     let sk = SecretKey::generate();
 

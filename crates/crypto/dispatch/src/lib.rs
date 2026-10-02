@@ -44,6 +44,7 @@ pub mod multikey;
 pub mod provider;
 /// Runtime dispatch entry points for sign/verify, key agreement, and KEM.
 pub mod registry;
+mod sec1_identity;
 /// Structural validation of verification-method multikeys.
 pub mod validation;
 #[cfg(feature = "x25519")]

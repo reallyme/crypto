@@ -10,6 +10,7 @@ pub use derive::derive_x25519_shared_secret;
 pub use encoding::{
     assert_public_key, decode_public_key, encode_public_key, X25519_PUBLIC_KEY_LEN,
 };
+#[allow(deprecated)] // The compatibility export remains available for existing callers.
 pub use keypair::{
     generate_x25519_keypair, generate_x25519_keypair_from_seed, try_generate_x25519_keypair,
 };

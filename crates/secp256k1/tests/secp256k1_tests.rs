@@ -11,16 +11,31 @@
 )]
 #![cfg(all(feature = "native", not(all(feature = "wasm", target_arch = "wasm32"))))]
 
-use crypto_core::{CryptoError, SignatureFailureKind};
+use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
 use crypto_secp256k1::{
-    decompress_secp256k1_public_key, derive_bip340_schnorr_public_key, generate_secp256k1_keypair,
+    decompress_secp256k1_public_key, derive_bip340_schnorr_public_key,
     generate_secp256k1_keypair_from_secret_key, sign_bip340_schnorr, sign_secp256k1,
-    verify_bip340_schnorr, verify_secp256k1,
+    try_generate_secp256k1_keypair, verify_bip340_schnorr, verify_secp256k1,
 };
 use k256::elliptic_curve::ff::PrimeField;
 use zeroize::Zeroizing;
 
 type TestKeypair = (Vec<u8>, Zeroizing<Vec<u8>>);
+
+fn assert_signature_error<T>(
+    result: Result<T, CryptoError>,
+    operation: SignatureOperation,
+    kind: SignatureFailureKind,
+) {
+    assert!(matches!(
+        result,
+        Err(CryptoError::Signature {
+            backend: SignatureBackend::Native,
+            operation: actual_operation,
+            kind: actual_kind,
+        }) if actual_operation == operation && actual_kind == kind
+    ));
+}
 
 trait IntoTestKeypairResult {
     fn into_test_result(self) -> Result<TestKeypair, CryptoError>;
@@ -40,7 +55,7 @@ impl IntoTestKeypairResult for Result<TestKeypair, CryptoError> {
 
 #[test]
 fn key_sizes_are_correct() -> Result<(), CryptoError> {
-    let (pk, sk) = generate_secp256k1_keypair().into_test_result()?;
+    let (pk, sk) = try_generate_secp256k1_keypair().into_test_result()?;
     assert_eq!(sk.len(), 32);
     assert_eq!(pk.len(), 33);
     Ok(())
@@ -58,7 +73,10 @@ fn secret_key_constructor_is_deterministic_and_rejects_zero() -> Result<(), Cryp
     assert_eq!(public_a, public_b);
     assert_eq!(secret_a, secret_b);
     assert_eq!(secret_a.as_slice(), secret.as_slice());
-    assert!(generate_secp256k1_keypair_from_secret_key(&[0u8; 32]).is_err());
+    assert!(matches!(
+        generate_secp256k1_keypair_from_secret_key(&[0u8; 32]),
+        Err(CryptoError::InvalidKey)
+    ));
 
     let signature = sign_secp256k1(&secret_a, b"seeded secp256k1")?;
     verify_secp256k1(&signature, b"seeded secp256k1", &public_a)?;
@@ -67,7 +85,7 @@ fn secret_key_constructor_is_deterministic_and_rejects_zero() -> Result<(), Cryp
 
 #[test]
 fn sign_and_verify_roundtrip() -> Result<(), CryptoError> {
-    let (pk, sk) = generate_secp256k1_keypair().into_test_result()?;
+    let (pk, sk) = try_generate_secp256k1_keypair().into_test_result()?;
     let msg = b"secp256k1 test";
 
     let sig = sign_secp256k1(&sk, msg)?;
@@ -77,40 +95,52 @@ fn sign_and_verify_roundtrip() -> Result<(), CryptoError> {
 
 #[test]
 fn verification_fails_on_modified_message() -> Result<(), CryptoError> {
-    let (pk, sk) = generate_secp256k1_keypair().into_test_result()?;
+    let (pk, sk) = try_generate_secp256k1_keypair().into_test_result()?;
     let sig = sign_secp256k1(&sk, b"hello")?;
 
-    assert!(verify_secp256k1(&sig, b"hell0", &pk).is_err());
+    assert_signature_error(
+        verify_secp256k1(&sig, b"hell0", &pk),
+        SignatureOperation::Verify,
+        SignatureFailureKind::InvalidSignature,
+    );
     Ok(())
 }
 
 #[test]
 fn verification_fails_on_modified_signature() -> Result<(), CryptoError> {
-    let (pk, sk) = generate_secp256k1_keypair().into_test_result()?;
+    let (pk, sk) = try_generate_secp256k1_keypair().into_test_result()?;
     let msg = b"test message";
 
     let mut sig = sign_secp256k1(&sk, msg)?;
     sig[0] ^= 0x01;
-    assert!(verify_secp256k1(&sig, msg, &pk).is_err());
+    assert_signature_error(
+        verify_secp256k1(&sig, msg, &pk),
+        SignatureOperation::Verify,
+        SignatureFailureKind::InvalidSignature,
+    );
     Ok(())
 }
 
 #[test]
 fn signature_does_not_verify_under_different_key() -> Result<(), CryptoError> {
-    let (_pk1, sk1) = generate_secp256k1_keypair().into_test_result()?;
-    let (pk2, _sk2) = generate_secp256k1_keypair().into_test_result()?;
+    let (_pk1, sk1) = try_generate_secp256k1_keypair().into_test_result()?;
+    let (pk2, _sk2) = try_generate_secp256k1_keypair().into_test_result()?;
 
     let msg = b"test message";
     let sig = sign_secp256k1(&sk1, msg)?;
 
-    assert!(verify_secp256k1(&sig, msg, &pk2).is_err());
+    assert_signature_error(
+        verify_secp256k1(&sig, msg, &pk2),
+        SignatureOperation::Verify,
+        SignatureFailureKind::InvalidSignature,
+    );
     Ok(())
 }
 
 #[test]
 #[cfg(feature = "native")]
 fn decompression_roundtrip() -> Result<(), CryptoError> {
-    let (pk, _sk) = generate_secp256k1_keypair().into_test_result()?;
+    let (pk, _sk) = try_generate_secp256k1_keypair().into_test_result()?;
     let (x, y) = decompress_secp256k1_public_key(&pk)?;
 
     assert_eq!(x.len(), 32);
@@ -120,7 +150,7 @@ fn decompression_roundtrip() -> Result<(), CryptoError> {
 
 #[test]
 fn signature_is_low_s() -> Result<(), CryptoError> {
-    let (_pk, sk) = generate_secp256k1_keypair().into_test_result()?;
+    let (_pk, sk) = try_generate_secp256k1_keypair().into_test_result()?;
     let msg = b"low-s test";
 
     let sig = sign_secp256k1(&sk, msg)?;
@@ -138,7 +168,7 @@ fn signature_is_low_s() -> Result<(), CryptoError> {
 
 #[test]
 fn high_s_twin_is_rejected_with_typed_signature_error() -> Result<(), CryptoError> {
-    let (public_key, secret_key) = generate_secp256k1_keypair().into_test_result()?;
+    let (public_key, secret_key) = try_generate_secp256k1_keypair().into_test_result()?;
     let message = b"high-S malleability boundary";
     let signature = sign_secp256k1(&secret_key, message)?;
     verify_secp256k1(&signature, message, &public_key)?;
@@ -163,11 +193,15 @@ fn high_s_twin_is_rejected_with_typed_signature_error() -> Result<(), CryptoErro
 
 #[test]
 fn invalid_signature_length_is_rejected() -> Result<(), CryptoError> {
-    let (pk, _sk) = generate_secp256k1_keypair().into_test_result()?;
+    let (pk, _sk) = try_generate_secp256k1_keypair().into_test_result()?;
     let msg = b"test";
 
     let bad_sig = vec![0u8; 10];
-    assert!(verify_secp256k1(&bad_sig, msg, &pk).is_err());
+    assert_signature_error(
+        verify_secp256k1(&bad_sig, msg, &pk),
+        SignatureOperation::Verify,
+        SignatureFailureKind::InvalidSignature,
+    );
     Ok(())
 }
 
@@ -178,18 +212,27 @@ fn invalid_public_key_is_rejected() {
 
     // wrong length
     let bad_pk = vec![0x02; 10];
-    assert!(verify_secp256k1(&sig, msg, &bad_pk).is_err());
+    assert!(matches!(
+        verify_secp256k1(&sig, msg, &bad_pk),
+        Err(CryptoError::InvalidKey)
+    ));
 
     // wrong prefix
     let mut bad_prefix = vec![0x04; 33];
     bad_prefix[0] = 0x04;
-    assert!(verify_secp256k1(&sig, msg, &bad_prefix).is_err());
+    assert!(matches!(
+        verify_secp256k1(&sig, msg, &bad_prefix),
+        Err(CryptoError::InvalidKey)
+    ));
 }
 
 #[test]
 fn invalid_secret_key_length_is_rejected() {
     let bad_sk = vec![0x11; 31];
-    assert!(sign_secp256k1(&bad_sk, b"msg").is_err());
+    assert!(matches!(
+        sign_secp256k1(&bad_sk, b"msg"),
+        Err(CryptoError::InvalidKey)
+    ));
 }
 
 #[test]
@@ -250,11 +293,19 @@ fn bip340_schnorr_rejects_tampering() -> Result<(), CryptoError> {
 
     let mut tampered_message = message;
     tampered_message[0] ^= 0x01;
-    assert!(verify_bip340_schnorr(&signature, &tampered_message, &public).is_err());
+    assert_signature_error(
+        verify_bip340_schnorr(&signature, &tampered_message, &public),
+        SignatureOperation::Verify,
+        SignatureFailureKind::InvalidSignature,
+    );
 
     let mut tampered_signature = signature;
     tampered_signature[0] ^= 0x01;
-    assert!(verify_bip340_schnorr(&tampered_signature, &message, &public).is_err());
+    assert_signature_error(
+        verify_bip340_schnorr(&tampered_signature, &message, &public),
+        SignatureOperation::Verify,
+        SignatureFailureKind::InvalidSignature,
+    );
 
     Ok(())
 }
@@ -267,12 +318,34 @@ fn bip340_schnorr_rejects_malformed_lengths() -> Result<(), CryptoError> {
     let public = derive_bip340_schnorr_public_key(&secret)?;
     let signature = sign_bip340_schnorr(&secret, &message, &aux_rand)?;
 
-    assert!(derive_bip340_schnorr_public_key(&secret[1..]).is_err());
-    assert!(sign_bip340_schnorr(&secret, &message[1..], &aux_rand).is_err());
-    assert!(sign_bip340_schnorr(&secret, &message, &aux_rand[1..]).is_err());
-    assert!(verify_bip340_schnorr(&signature[1..], &message, &public).is_err());
-    assert!(verify_bip340_schnorr(&signature, &message[1..], &public).is_err());
-    assert!(verify_bip340_schnorr(&signature, &message, &public[1..]).is_err());
+    assert!(matches!(
+        derive_bip340_schnorr_public_key(&secret[1..]),
+        Err(CryptoError::InvalidKey)
+    ));
+    assert_signature_error(
+        sign_bip340_schnorr(&secret, &message[1..], &aux_rand),
+        SignatureOperation::Sign,
+        SignatureFailureKind::InvalidMessage,
+    );
+    assert_signature_error(
+        sign_bip340_schnorr(&secret, &message, &aux_rand[1..]),
+        SignatureOperation::Sign,
+        SignatureFailureKind::InvalidMessage,
+    );
+    assert_signature_error(
+        verify_bip340_schnorr(&signature[1..], &message, &public),
+        SignatureOperation::Verify,
+        SignatureFailureKind::InvalidSignature,
+    );
+    assert_signature_error(
+        verify_bip340_schnorr(&signature, &message[1..], &public),
+        SignatureOperation::Verify,
+        SignatureFailureKind::InvalidMessage,
+    );
+    assert!(matches!(
+        verify_bip340_schnorr(&signature, &message, &public[1..]),
+        Err(CryptoError::InvalidKey)
+    ));
 
     Ok(())
 }

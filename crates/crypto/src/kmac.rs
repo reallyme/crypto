@@ -4,6 +4,7 @@
 
 //! KMAC facade routes backed by the semantic KDF operation owner.
 
+#[cfg(any(feature = "native", feature = "wasm"))]
 use crypto_core::{CryptoError, KdfAlgorithm, KdfFailureKind, KdfProfile};
 
 pub use crypto_kmac::{
@@ -12,6 +13,7 @@ pub use crypto_kmac::{
 };
 
 /// Derives KMAC256 output through the operation layer.
+#[cfg(any(feature = "native", feature = "wasm"))]
 pub fn derive_kmac256(
     key: &Kmac256Key,
     context: &[u8],
@@ -22,6 +24,7 @@ pub fn derive_kmac256(
         .map_err(crypto_error_from_operation_error)
 }
 
+#[cfg(any(feature = "native", feature = "wasm"))]
 fn crypto_error_from_operation_error(error: crate::operations::OperationError) -> CryptoError {
     let kind = match error {
         crate::operations::OperationError::Primitive {

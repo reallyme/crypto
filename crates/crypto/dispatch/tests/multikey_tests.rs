@@ -20,7 +20,7 @@
 ))]
 
 use crypto_core::Algorithm;
-use crypto_dispatch::{generate_keypair, public_key_to_multikey};
+use crypto_dispatch::{generate_keypair, public_key_to_multikey, AlgorithmError};
 
 #[test]
 fn ed25519_multikey_encoding_is_correct() {
@@ -54,7 +54,10 @@ fn multikey_encoding_rejects_invalid_key_length() {
     let fake_key = vec![0u8; 10];
 
     let err = public_key_to_multikey(Algorithm::MlKem1024, &fake_key);
-    assert!(err.is_err());
+    assert!(matches!(
+        err,
+        Err(AlgorithmError::InvalidKey(Algorithm::MlKem1024))
+    ));
 }
 
 #[test]

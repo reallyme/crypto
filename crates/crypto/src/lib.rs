@@ -234,4 +234,4 @@ pub mod sha3;
 
 /// BN254 Poseidon2 byte hashing compatible with ReallyMe ZK circuits.
 #[cfg(feature = "poseidon2")]
-pub use crypto_poseidon2 as poseidon2;
+pub mod poseidon2;

@@ -52,9 +52,10 @@ Use the manual **Crates.io Release** workflow for Rust publishing. Its preflight
 job inspects every publishable crate tarball in workspace dependency order and
 verifies the entire workspace with `cargo publish --workspace --dry-run --locked`. The
 publish job is assigned to the `crates-io-release` environment and requires
-`CARGO_REGISTRY_TOKEN`. Environment reviewers and deployment branch restrictions
-must be configured in GitHub settings before publication; the workflow file
-does not create those protections.
+`CARGO_REGISTRY_TOKEN`. Check environment reviewers and deployment branch
+restrictions in GitHub settings before publication; the workflow file does not
+create those protections. The repository-level token remains available to the
+workflow even when the named environment has no protection rules.
 
 Individual crate dry runs can stop while Cargo resolves unpublished workspace
 dependencies from crates.io. The workspace-wide dry run verifies all candidate

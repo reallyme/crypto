@@ -15,7 +15,7 @@ include = ["/proto/**/*.proto", "/src/**/*.rs", "/Cargo.toml", "/README.md", "/L
 
 [features]
 default = []
-generated = ["dep:buffa", "buffa/json", "dep:crypto-core", "dep:serde", "dep:serde_json", "dep:thiserror", "dep:zeroize"]
+generated = ["dep:buffa", "buffa/json", "dep:crypto-core", "dep:serde", "dep:serde_json", "dep:subtle", "dep:thiserror", "dep:zeroize"]
 
 [dependencies]
 buffa = { workspace = true, optional = true }
@@ -24,6 +24,7 @@ buffa = { workspace = true, optional = true }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.3.10", path = "../crypto/core", optional = true }
 serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
+subtle = { workspace = true, optional = true }
 thiserror = { workspace = true, optional = true }
 zeroize = { workspace = true, optional = true }
 

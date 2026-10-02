@@ -6,7 +6,7 @@
 #![allow(clippy::expect_used)]
 #![cfg(feature = "native")]
 
-use crypto_core::CryptoError;
+use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
 use crypto_p521::{
     compress_p521, compress_public_key, decompress_p521, decompress_public_key,
     derive_p521_shared_secret, generate_p521_keypair, generate_p521_keypair_from_secret_key,
@@ -32,7 +32,10 @@ fn secret_key_constructor_is_deterministic_and_rejects_zero() -> Result<(), Cryp
     assert_eq!(public_a, public_b);
     assert_eq!(secret_a, secret_b);
     assert_eq!(secret_a.as_slice(), secret.as_slice());
-    assert!(generate_p521_keypair_from_secret_key(&[0u8; 66]).is_err());
+    assert!(matches!(
+        generate_p521_keypair_from_secret_key(&[0u8; 66]),
+        Err(CryptoError::InvalidKey)
+    ));
 
     let signature = sign_p521_der_prehash(&secret_a, b"seeded p521")?;
     verify_p521_der_prehash(&signature, b"seeded p521", &public_a)?;
@@ -54,7 +57,14 @@ fn verification_fails_on_modified_message() -> Result<(), CryptoError> {
     let (public_key, secret_key) = generate_p521_keypair()?;
     let signature = sign_p521_der_prehash(&secret_key, b"hello")?;
 
-    assert!(verify_p521_der_prehash(&signature, b"hell0", &public_key).is_err());
+    assert!(matches!(
+        verify_p521_der_prehash(&signature, b"hell0", &public_key),
+        Err(CryptoError::Signature {
+            backend: SignatureBackend::Native,
+            operation: SignatureOperation::Verify,
+            kind: SignatureFailureKind::InvalidSignature,
+        })
+    ));
     Ok(())
 }
 
@@ -74,16 +84,28 @@ fn compression_helpers_reject_wrong_sec1_shapes() -> Result<(), CryptoError> {
     let (compressed, _secret_key) = generate_p521_keypair()?;
     let uncompressed = decompress_p521(&compressed)?;
 
-    assert!(compress_p521(&compressed).is_err());
-    assert!(decompress_p521(&uncompressed).is_err());
+    assert!(matches!(
+        compress_p521(&compressed),
+        Err(CryptoError::InvalidKey)
+    ));
+    assert!(matches!(
+        decompress_p521(&uncompressed),
+        Err(CryptoError::InvalidKey)
+    ));
 
     let mut wrong_compressed_prefix = compressed;
     wrong_compressed_prefix[0] = 0x04;
-    assert!(decompress_p521(&wrong_compressed_prefix).is_err());
+    assert!(matches!(
+        decompress_p521(&wrong_compressed_prefix),
+        Err(CryptoError::InvalidKey)
+    ));
 
     let mut wrong_uncompressed_prefix = uncompressed;
     wrong_uncompressed_prefix[0] = 0x02;
-    assert!(compress_p521(&wrong_uncompressed_prefix).is_err());
+    assert!(matches!(
+        compress_p521(&wrong_uncompressed_prefix),
+        Err(CryptoError::InvalidKey)
+    ));
     Ok(())
 }
 
@@ -139,13 +161,31 @@ fn ecdh_accepts_uncompressed_public_key() -> Result<(), CryptoError> {
 
 #[test]
 fn invalid_inputs_are_rejected() -> Result<(), CryptoError> {
-    assert!(sign_p521_der_prehash(&[0u8; 10], b"message").is_err());
-    assert!(verify_p521_der_prehash(&[0x30, 0x00], b"message", &[0x04; 10]).is_err());
-    assert!(compress_p521(&[0x04; 10]).is_err());
-    assert!(decompress_p521(&[0x02; 10]).is_err());
+    assert!(matches!(
+        sign_p521_der_prehash(&[0u8; 10], b"message"),
+        Err(CryptoError::InvalidKey)
+    ));
+    assert!(matches!(
+        verify_p521_der_prehash(&[0x30, 0x00], b"message", &[0x04; 10]),
+        Err(CryptoError::InvalidKey)
+    ));
+    assert!(matches!(
+        compress_p521(&[0x04; 10]),
+        Err(CryptoError::InvalidKey)
+    ));
+    assert!(matches!(
+        decompress_p521(&[0x02; 10]),
+        Err(CryptoError::InvalidKey)
+    ));
     let (public, secret) = generate_p521_keypair()?;
-    assert!(derive_p521_shared_secret(&[0u8; 10], &public).is_err());
-    assert!(derive_p521_shared_secret(&secret, &[0x02; 10]).is_err());
+    assert!(matches!(
+        derive_p521_shared_secret(&[0u8; 10], &public),
+        Err(CryptoError::InvalidKey)
+    ));
+    assert!(matches!(
+        derive_p521_shared_secret(&secret, &[0x02; 10]),
+        Err(CryptoError::InvalidKey)
+    ));
     Ok(())
 }
 
@@ -156,7 +196,14 @@ fn signature_does_not_verify_under_different_key() -> Result<(), CryptoError> {
     let message = b"p521 wrong key";
     let signature = sign_p521_der_prehash(&secret_key_1, message)?;
 
-    assert!(verify_p521_der_prehash(&signature, message, &public_key_2).is_err());
+    assert!(matches!(
+        verify_p521_der_prehash(&signature, message, &public_key_2),
+        Err(CryptoError::Signature {
+            backend: SignatureBackend::Native,
+            operation: SignatureOperation::Verify,
+            kind: SignatureFailureKind::InvalidSignature,
+        })
+    ));
     Ok(())
 }
 
@@ -166,6 +213,13 @@ fn verification_fails_on_modified_signature() -> Result<(), CryptoError> {
     let message = b"p521 tamper";
     let mut signature = sign_p521_der_prehash(&secret_key, message)?;
     signature[0] ^= 0x01;
-    assert!(verify_p521_der_prehash(&signature, message, &public_key).is_err());
+    assert!(matches!(
+        verify_p521_der_prehash(&signature, message, &public_key),
+        Err(CryptoError::Signature {
+            backend: SignatureBackend::Native,
+            operation: SignatureOperation::Verify,
+            kind: SignatureFailureKind::InvalidSignature,
+        })
+    ));
     Ok(())
 }

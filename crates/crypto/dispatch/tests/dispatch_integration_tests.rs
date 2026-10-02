@@ -26,11 +26,34 @@
     feature = "x-wing"
 ))]
 
+use codec_multikey::encode_multikey;
 use crypto_core::Algorithm;
 use crypto_dispatch::{
     derive_shared_secret, generate_keypair, kem_decapsulate, kem_encapsulate,
-    public_key_to_multikey, sign, validate_verification_method_multikey, verify,
+    public_key_to_multikey, sign, validate_verification_method_multikey, verify, AlgorithmError,
 };
+
+#[test]
+fn compressed_sec1_multikeys_reject_off_curve_points() {
+    for (algorithm, codec, length) in [
+        (Algorithm::P256, "p256-pub", 33),
+        (Algorithm::P384, "p384-pub", 49),
+        (Algorithm::P521, "p521-pub", 67),
+        (Algorithm::Secp256k1, "secp256k1-pub", 33),
+    ] {
+        let mut off_curve = vec![0xff_u8; length];
+        off_curve[0] = 0x02;
+        assert!(matches!(
+            public_key_to_multikey(algorithm, &off_curve),
+            Err(crypto_dispatch::AlgorithmError::InvalidKey(found)) if found == algorithm
+        ));
+        let encoded = encode_multikey(codec, &off_curve).expect("valid multikey envelope");
+        assert!(matches!(
+            validate_verification_method_multikey(algorithm, "Multikey", &encoded),
+            Err(crypto_dispatch::AlgorithmError::InvalidKey(found)) if found == algorithm
+        ));
+    }
+}
 
 //
 // -----------------------------------------------------------------------------
@@ -97,7 +120,13 @@ fn signing_rejects_non_signing_algorithms() {
         Algorithm::XWing768,
     ] {
         let (_pk, sk) = generate_keypair(alg).unwrap();
-        assert!(sign(alg, &sk, msg).is_err(), "{alg:?} should not sign");
+        assert!(
+            matches!(
+                sign(alg, &sk, msg),
+                Err(AlgorithmError::UnsupportedAlgorithm(found)) if found == alg
+            ),
+            "{alg:?} should not sign"
+        );
     }
 }
 
@@ -133,7 +162,10 @@ fn x25519_shared_secret_matches() {
 fn dh_rejects_non_key_agreement_algorithms() {
     let (pk, sk) = generate_keypair(Algorithm::Ed25519).unwrap();
 
-    assert!(derive_shared_secret(Algorithm::Ed25519, &sk, &pk).is_err());
+    assert!(matches!(
+        derive_shared_secret(Algorithm::Ed25519, &sk, &pk),
+        Err(AlgorithmError::UnsupportedAlgorithm(Algorithm::Ed25519))
+    ));
 }
 
 //
@@ -161,7 +193,10 @@ fn ml_kem_encapsulation_roundtrip() {
 #[test]
 fn kem_rejects_non_kem_algorithms() {
     let (pk, _sk) = generate_keypair(Algorithm::Ed25519).unwrap();
-    assert!(kem_encapsulate(Algorithm::Ed25519, &pk).is_err());
+    assert!(matches!(
+        kem_encapsulate(Algorithm::Ed25519, &pk),
+        Err(AlgorithmError::UnsupportedAlgorithm(Algorithm::Ed25519))
+    ));
 }
 
 //
@@ -197,7 +232,10 @@ fn multikey_validation_rejects_algorithm_mismatch() {
     let (public, _) = generate_keypair(Algorithm::Ed25519).unwrap();
     let mk = public_key_to_multikey(Algorithm::Ed25519, &public).unwrap();
 
-    assert!(validate_verification_method_multikey(Algorithm::X25519, "Multikey", &mk,).is_err());
+    assert!(matches!(
+        validate_verification_method_multikey(Algorithm::X25519, "Multikey", &mk),
+        Err(AlgorithmError::InvalidKey(Algorithm::X25519))
+    ));
 }
 
 #[test]
@@ -205,10 +243,10 @@ fn multikey_validation_rejects_bad_binding() {
     let (public, _) = generate_keypair(Algorithm::Ed25519).unwrap();
     let mk = public_key_to_multikey(Algorithm::Ed25519, &public).unwrap();
 
-    assert!(
-        validate_verification_method_multikey(Algorithm::Ed25519, "SomeOtherBinding", &mk,)
-            .is_err()
-    );
+    assert!(matches!(
+        validate_verification_method_multikey(Algorithm::Ed25519, "SomeOtherBinding", &mk),
+        Err(AlgorithmError::InvalidKey(Algorithm::Ed25519))
+    ));
 }
 
 #[test]

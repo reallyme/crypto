@@ -8,6 +8,7 @@ use subtle::ConstantTimeEq;
 /// Compares two byte slices for equality in constant time (no early exit on the
 /// first differing byte). Unequal lengths short-circuit to `false`; when lengths
 /// match, the byte comparison itself does not leak content via timing.
+#[must_use = "the comparison result must be checked"]
 pub fn ct_eq(left: &[u8], right: &[u8]) -> bool {
     if left.len() != right.len() {
         return false;
@@ -18,6 +19,7 @@ pub fn ct_eq(left: &[u8], right: &[u8]) -> bool {
 
 /// Compares two equal-length (`N`-byte) arrays for equality in constant time
 /// (non-short-circuiting comparison that does not leak content via timing).
+#[must_use = "the comparison result must be checked"]
 pub fn ct_eq_fixed<const N: usize>(left: &[u8; N], right: &[u8; N]) -> bool {
     left.ct_eq(right).into()
 }

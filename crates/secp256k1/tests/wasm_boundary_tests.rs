@@ -6,6 +6,7 @@
 
 #![cfg(all(feature = "wasm", target_arch = "wasm32"))]
 
+use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
 use crypto_secp256k1::{
     derive_bip340_schnorr_public_key, sign_bip340_schnorr, verify_bip340_schnorr,
 };
@@ -23,5 +24,12 @@ fn wasm_lane_uses_package_owned_rust_bip340() {
     let signature = sign_bip340_schnorr(&SECRET_KEY, &MESSAGE32, &AUX_RAND32).unwrap();
 
     verify_bip340_schnorr(&signature, &MESSAGE32, &public_key).unwrap();
-    assert!(verify_bip340_schnorr(&signature, &[0x24; 32], &public_key).is_err());
+    assert!(matches!(
+        verify_bip340_schnorr(&signature, &[0x24; 32], &public_key),
+        Err(CryptoError::Signature {
+            backend: SignatureBackend::Native,
+            operation: SignatureOperation::Verify,
+            kind: SignatureFailureKind::InvalidSignature,
+        })
+    ));
 }

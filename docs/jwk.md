@@ -23,6 +23,12 @@ OKP `alg` and `use` members are optional for public-byte JWKs, but they are
 enforced when present. Ed25519 accepts only `alg: "EdDSA"`
 and `use: "sig"`; X25519 accepts only `alg: "ECDH-ES"` and `use: "enc"`.
 Conflicting metadata is rejected instead of being treated as advisory.
+EC `alg` and `use` are also optional on import; when supplied, P-256 requires
+`ES256` and `sig`, and secp256k1 requires `ES256K` and `sig`. AKP requires
+`alg`, while its `use` is optional and must match the algorithm when supplied.
+Public `kid` and `x-*` extension members are accepted but do not change the
+extracted key bytes. JWKS may carry additional set-level metadata. The shared
+metadata policy is pinned in [../vectors/jwk_policy.json](../vectors/jwk_policy.json).
 X25519 public-key identities require canonical field-element encodings below
 2²⁵⁵ − 19. RFC 7748 agreement accepts non-canonical inputs, but those inputs
 would give the same key multiple JWK or multikey identifiers.

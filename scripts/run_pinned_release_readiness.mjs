@@ -13,7 +13,13 @@ const RELEASE_READINESS_COMMIT = "5c2da5e5d5795c2c895d0dca0819287ee7101207";
 const RELEASE_READINESS_CORE_SHA256 =
   "d3434554901ea5438bb0dd64f4f7214b9050e95cd1e3d579cc2992f4c662e85a";
 const LOCAL_CHECKER_SHA256 =
-  "f65e83faa720c658023d9d03a86257ba333978b3903726ebfefa7b14ffbba10e";
+  "6d83db2afab7bd4b0527e82a0478a036de886c092151d94353126aa6f48106f6";
+// The checker imports both local policy modules. Pinning only its entry file
+// would let an unreviewed dependency change the release decision.
+const LOCAL_CHECKER_DEPENDENCIES = [
+  ["scripts/crypto_operation_route_readiness.mjs", "afa3f7d12db706033700b503e3289ff116668d54ff62af7e2f2e08e651a453fc"],
+  ["scripts/workflow_gate_policy.mjs", "46b3b16dc2806102863fa572ca343634ed3da07d0483dd5a1bf64ade52eb58f6"],
+];
 const RELEASE_READINESS_CORE_URL =
   `https://raw.githubusercontent.com/reallyme/release-readiness/${RELEASE_READINESS_COMMIT}/core.mjs`;
 const VENDORED_CORE_PATH = "scripts/release-readiness/core.mjs";
@@ -65,6 +71,25 @@ if (!timingSafeEqual(sha256(localChecker), expectedCheckerDigest)) {
 }
 if (!timingSafeEqual(sha256(localCore), expectedDigest)) {
   fail("vendored core does not match the reviewed upstream pin");
+}
+for (const [path, digestHex] of LOCAL_CHECKER_DEPENDENCIES) {
+  const expected = Buffer.from(digestHex, "hex");
+  if (expected.length !== 32) {
+    fail(`configured local dependency digest is invalid: ${path}`);
+  }
+  let source;
+  try {
+    const status = lstatSync(path);
+    if (status.isSymbolicLink() || !status.isFile() || status.size === 0 || status.size > MAX_CHECKER_BYTES) {
+      fail(`local checker dependency is not a bounded regular file: ${path}`);
+    }
+    source = readFileSync(path);
+  } catch {
+    fail(`local checker dependency is missing or inaccessible: ${path}`);
+  }
+  if (!timingSafeEqual(sha256(source), expected)) {
+    fail(`local checker dependency does not match the reviewed pin: ${path}`);
+  }
 }
 
 let response;

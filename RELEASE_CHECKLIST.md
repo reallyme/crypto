@@ -1,7 +1,7 @@
 # Release Checklist
 
-Every ReallyMe Crypto release is built and verified from one immutable,
-reviewed source commit. A Swift tag may add one deterministic manifest-only
+Every ReallyMe Crypto release is built and verified from one reviewed source
+commit. A Swift tag may add one deterministic manifest-only
 child commit that binds the attested XCFramework checksum; it never changes
 production source. This checklist defines the package-specific gates for Swift
 Package Manager, Maven Central, npm, and crates.io. Automated readiness checks
@@ -23,6 +23,9 @@ published artifacts from the reviewed source commit.
   force-pushes `main`, and no production source differs from the attested SHA.
 - A partial release can be resumed only when an existing version tag targets
   the same deterministic manifest commit. A conflicting tag fails closed.
+- Verify the remote tag and release assets after publication. Workflow checks
+  prevent an ordinary release run from replacing them; repository-level
+  immutable-release and tag-protection settings require separate configuration.
 - Source-tree tests may use `REALLYME_CRYPTO_FFI_LIBRARY_PATH` for a freshly
   built local dylib, but release preflight must also test the linked
   `ReallyMeCryptoFFI.xcframework` path without that environment variable.

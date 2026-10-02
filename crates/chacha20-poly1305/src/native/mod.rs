@@ -5,5 +5,7 @@
 mod decrypt;
 mod encrypt;
 
-pub use decrypt::{decrypt, decrypt_xchacha20_poly1305};
+pub use decrypt::{
+    decrypt, decrypt_xchacha20_poly1305, decrypt_xchacha20_poly1305_zeroizing, decrypt_zeroizing,
+};
 pub use encrypt::{encrypt, encrypt_xchacha20_poly1305};

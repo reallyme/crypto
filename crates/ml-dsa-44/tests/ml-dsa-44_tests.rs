@@ -11,6 +11,7 @@
 )]
 #![cfg(any(feature = "native", feature = "wasm"))]
 
+use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
 use crypto_ml_dsa_44::{
     generate_ml_dsa_44_keypair, generate_ml_dsa_44_keypair_from_seed, sign_ml_dsa_44,
     verify_ml_dsa_44,
@@ -110,7 +111,14 @@ fn verification_fails_on_modified_message() {
     let sig = sign_ml_dsa_44(&sk, msg).unwrap();
 
     let tampered = b"original messagf";
-    assert!(verify_ml_dsa_44(&pk, tampered, &sig).is_err());
+    assert!(matches!(
+        verify_ml_dsa_44(&pk, tampered, &sig),
+        Err(CryptoError::Signature {
+            backend: SignatureBackend::Native,
+            operation: SignatureOperation::Verify,
+            kind: SignatureFailureKind::InvalidSignature,
+        })
+    ));
 }
 
 #[test]
@@ -121,7 +129,14 @@ fn verification_fails_on_modified_signature() {
     let mut sig = sign_ml_dsa_44(&sk, msg).unwrap();
     sig[0] ^= 0x01;
 
-    assert!(verify_ml_dsa_44(&pk, msg, &sig).is_err());
+    assert!(matches!(
+        verify_ml_dsa_44(&pk, msg, &sig),
+        Err(CryptoError::Signature {
+            backend: SignatureBackend::Native,
+            operation: SignatureOperation::Verify,
+            kind: SignatureFailureKind::InvalidSignature,
+        })
+    ));
 }
 
 #[test]
@@ -132,7 +147,14 @@ fn signature_does_not_verify_under_different_key() {
     let msg = b"test message";
     let sig = sign_ml_dsa_44(&sk1, msg).unwrap();
 
-    assert!(verify_ml_dsa_44(&pk2, msg, &sig).is_err());
+    assert!(matches!(
+        verify_ml_dsa_44(&pk2, msg, &sig),
+        Err(CryptoError::Signature {
+            backend: SignatureBackend::Native,
+            operation: SignatureOperation::Verify,
+            kind: SignatureFailureKind::InvalidSignature,
+        })
+    ));
 }
 
 #[test]
@@ -141,6 +163,12 @@ fn malformed_lengths_are_rejected() {
     let bad_pk = vec![0u8; ML_DSA_44_PUBLIC_KEY_LEN - 1];
     let bad_sig = vec![0u8; ML_DSA_44_SIGNATURE_LEN - 1];
 
-    assert!(sign_ml_dsa_44(&bad_sk, b"msg").is_err());
-    assert!(verify_ml_dsa_44(&bad_pk, b"msg", &bad_sig).is_err());
+    assert!(matches!(
+        sign_ml_dsa_44(&bad_sk, b"msg"),
+        Err(CryptoError::InvalidKey)
+    ));
+    assert!(matches!(
+        verify_ml_dsa_44(&bad_pk, b"msg", &bad_sig),
+        Err(CryptoError::InvalidKey)
+    ));
 }

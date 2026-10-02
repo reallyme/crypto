@@ -245,7 +245,11 @@ fn facade_exposes_explicit_raw_and_operation_error_boundaries() {
         reallyme_crypto::hpke::derive_keypair_from_ikm_operation(suite, &[]).map(|_| ()),
         Err(primitive(PrimitiveErrorReason::InvalidLength))
     );
-    assert!(reallyme_crypto::hpke::derive_keypair_from_ikm_raw(suite, &[0x4d]).is_ok());
+    assert_eq!(
+        reallyme_crypto::hpke::derive_keypair_from_ikm_raw(suite, &[0x4d]).map(|_| ()),
+        Err(HpkeError::InvalidInputKeyMaterial)
+    );
+    assert!(reallyme_crypto::hpke::derive_keypair_from_ikm_raw(suite, &[0x4d; 32]).is_ok());
     assert_eq!(
         reallyme_crypto::hpke::derive_keypair_from_ikm_operation(suite, &[0x4d]).map(|_| ()),
         Err(primitive(PrimitiveErrorReason::InvalidLength))

@@ -9,6 +9,7 @@ use zeroize::Zeroizing;
 
 use crate::signature_error::crypto_error_from_operation_error;
 
+#[cfg(any(feature = "native", feature = "wasm"))]
 pub use crypto_ml_dsa_65::{
     decode_public_key, encode_public_key, ML_DSA_65_PUBLIC_KEY_LEN, ML_DSA_65_SECRET_SEED_LEN,
     ML_DSA_65_SIGNATURE_LEN,
@@ -24,6 +25,7 @@ pub fn generate_ml_dsa_65_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), Cry
 }
 
 /// Reconstruct an ML-DSA-65 keypair from a 32-byte FIPS 204 seed.
+#[cfg(any(feature = "native", feature = "wasm"))]
 pub fn generate_ml_dsa_65_keypair_from_seed(
     seed: &[u8; ML_DSA_65_SECRET_SEED_LEN],
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {

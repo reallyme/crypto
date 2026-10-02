@@ -17,10 +17,13 @@ pub fn verify_ed25519(public: &[u8], message: &[u8], signature: &[u8]) -> Result
     let pubkey: &[u8; ED25519_POINT_LENGTH] =
         public.try_into().map_err(|_| CryptoError::InvalidKey)?;
 
-    let vk = VerifyingKey::from_bytes(pubkey).map_err(|_| CryptoError::InvalidKey)?;
     let public_point = CompressedEdwardsY(*pubkey)
         .decompress()
-        .ok_or(CryptoError::InvalidKey)?;
+        .ok_or_else(invalid_signature)?;
+    if !crate::validate_public_key::is_canonical_point_encoding(&public_point, pubkey) {
+        return Err(invalid_signature());
+    }
+    let vk = VerifyingKey::from_bytes(pubkey).map_err(|_| invalid_signature())?;
 
     let sig_bytes: &[u8; 64] = signature.try_into().map_err(|_| CryptoError::Signature {
         backend: crypto_core::SignatureBackend::Native,

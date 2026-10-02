@@ -34,6 +34,14 @@ fn encrypt_then_decrypt_roundtrip() {
     .expect("decryption should succeed");
 
     assert_eq!(decrypted, plaintext);
+    let owned = crypto_aes256_gcm::decrypt_zeroizing(&DecryptRequest {
+        key: &key,
+        nonce,
+        aad,
+        ciphertext: &encrypted,
+    })
+    .expect("zeroizing decryption should succeed");
+    assert_eq!(owned.as_slice(), plaintext);
 }
 
 #[test]

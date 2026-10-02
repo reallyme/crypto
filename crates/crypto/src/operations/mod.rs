@@ -20,8 +20,8 @@ pub mod hpke;
     feature = "argon2id",
     feature = "concat-kdf",
     feature = "hkdf",
-    feature = "kmac",
-    feature = "pbkdf2"
+    all(feature = "kmac", any(feature = "native", feature = "wasm")),
+    all(feature = "pbkdf2", any(feature = "native", feature = "wasm"))
 ))]
 pub mod kdf;
 #[cfg(all(

@@ -14,8 +14,11 @@
 
 use crate::{EcJwk, JwkOptions, JwtError};
 
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use codec_base64url::bytes_to_base64url;
 use codec_jcs::canonicalize_trusted_json_value;
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
+use crypto_p256::compress_public_key;
 #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use crypto_p256::decompress_public_key;
 
@@ -24,53 +27,63 @@ pub fn p256_public_key_to_jwk(
     public_key_sec1: &[u8],
     options: JwkOptions,
 ) -> Result<EcJwk, JwtError> {
-    // Normalize to uncompressed SEC1
-    let uncompressed = match public_key_sec1.len() {
-        // compressed SEC1
-        33 => {
-            #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
-            {
-                decompress_public_key(public_key_sec1).map_err(|_| JwtError::InvalidP256Key)?
+    #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
+    return {
+        let _ = (public_key_sec1, options);
+        Err(JwtError::BackendUnavailable)
+    };
+
+    #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
+    {
+        // Normalize to uncompressed SEC1
+        let uncompressed = match public_key_sec1.len() {
+            // compressed SEC1
+            33 => {
+                #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
+                {
+                    decompress_public_key(public_key_sec1).map_err(|_| JwtError::InvalidP256Key)?
+                }
             }
 
-            #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
-            {
-                return Err(JwtError::BackendUnavailable);
+            // already uncompressed
+            65 => {
+                #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
+                {
+                    compress_public_key(public_key_sec1).map_err(|_| JwtError::InvalidP256Key)?;
+                    public_key_sec1.to_vec()
+                }
             }
+
+            _ => return Err(JwtError::InvalidP256Key),
+        };
+
+        // SEC1 uncompressed format: 0x04 || X || Y
+        if uncompressed.len() != 65 || uncompressed[0] != 0x04 {
+            return Err(JwtError::InvalidP256Key);
         }
 
-        // already uncompressed
-        65 => public_key_sec1.to_vec(),
+        let x = &uncompressed[1..33];
+        let y = &uncompressed[33..65];
 
-        _ => return Err(JwtError::InvalidP256Key),
-    };
+        let mut jwk = EcJwk {
+            kty: "EC".to_string(),
+            crv: "P-256".to_string(),
+            x: bytes_to_base64url(x),
+            y: bytes_to_base64url(y),
+            alg: None,
+            use_: None,
+            kid: options.kid,
+        };
 
-    // SEC1 uncompressed format: 0x04 || X || Y
-    if uncompressed.len() != 65 || uncompressed[0] != 0x04 {
-        return Err(JwtError::InvalidP256Key);
+        if options.alg {
+            jwk.alg = Some("ES256".into());
+        }
+        if options.use_sig {
+            jwk.use_ = Some("sig".into());
+        }
+
+        Ok(jwk)
     }
-
-    let x = &uncompressed[1..33];
-    let y = &uncompressed[33..65];
-
-    let mut jwk = EcJwk {
-        kty: "EC".to_string(),
-        crv: "P-256".to_string(),
-        x: bytes_to_base64url(x),
-        y: bytes_to_base64url(y),
-        alg: None,
-        use_: None,
-        kid: options.kid,
-    };
-
-    if options.alg {
-        jwk.alg = Some("ES256".into());
-    }
-    if options.use_sig {
-        jwk.use_ = Some("sig".into());
-    }
-
-    Ok(jwk)
 }
 
 /// Convert P-256 public key → JCS-canonicalized JWK string (RFC 8785).

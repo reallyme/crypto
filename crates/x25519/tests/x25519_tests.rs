@@ -13,7 +13,8 @@
 
 use crypto_core::CryptoError;
 use crypto_x25519::{
-    derive_x25519_shared_secret, generate_x25519_keypair, generate_x25519_keypair_from_seed,
+    decode_public_key, derive_x25519_shared_secret, encode_public_key,
+    generate_x25519_keypair_from_seed, try_generate_x25519_keypair,
 };
 use zeroize::Zeroizing;
 
@@ -37,16 +38,35 @@ impl IntoTestKeypairResult for Result<TestKeypair, CryptoError> {
 
 #[test]
 fn keypair_sizes_are_correct() -> Result<(), CryptoError> {
-    let (pk, sk) = generate_x25519_keypair().into_test_result()?;
+    let (pk, sk) = try_generate_x25519_keypair().into_test_result()?;
     assert_eq!(pk.len(), 32);
     assert_eq!(sk.len(), 32);
     Ok(())
 }
 
 #[test]
+fn identity_encoding_rejects_noncanonical_field_elements() {
+    let (canonical, _) = generate_x25519_keypair_from_seed(&[7_u8; 32]);
+    assert_eq!(encode_public_key(&canonical), Ok(canonical.clone()));
+    assert_eq!(decode_public_key(&canonical), Ok(canonical));
+
+    let mut prime = [0xff_u8; 32];
+    prime[0] = 0xed;
+    prime[31] = 0x7f;
+    let mut high_bit = [0_u8; 32];
+    high_bit[31] = 0x80;
+    let mut above_prime = prime;
+    above_prime[0] = 0xee;
+    for invalid in [prime, above_prime, high_bit] {
+        assert_eq!(encode_public_key(&invalid), Err(CryptoError::InvalidKey));
+        assert_eq!(decode_public_key(&invalid), Err(CryptoError::InvalidKey));
+    }
+}
+
+#[test]
 fn shared_secret_matches_both_sides() -> Result<(), CryptoError> {
-    let (pk_a, sk_a) = generate_x25519_keypair().into_test_result()?;
-    let (pk_b, sk_b) = generate_x25519_keypair().into_test_result()?;
+    let (pk_a, sk_a) = try_generate_x25519_keypair().into_test_result()?;
+    let (pk_b, sk_b) = try_generate_x25519_keypair().into_test_result()?;
 
     let ss1 = derive_x25519_shared_secret(&sk_a, &pk_b)?;
     let ss2 = derive_x25519_shared_secret(&sk_b, &pk_a)?;
@@ -58,7 +78,7 @@ fn shared_secret_matches_both_sides() -> Result<(), CryptoError> {
 
 #[test]
 fn invalid_key_size_fails() -> Result<(), CryptoError> {
-    let (pk, sk) = generate_x25519_keypair().into_test_result()?;
+    let (pk, sk) = try_generate_x25519_keypair().into_test_result()?;
 
     for bad_len in [0usize, 1, 10, 31, 33] {
         let bad = vec![0u8; bad_len];
@@ -70,8 +90,8 @@ fn invalid_key_size_fails() -> Result<(), CryptoError> {
 
 #[test]
 fn shared_secret_is_not_all_zero() -> Result<(), CryptoError> {
-    let (_pk_a, sk_a) = generate_x25519_keypair().into_test_result()?;
-    let (pk_b, _sk_b) = generate_x25519_keypair().into_test_result()?;
+    let (_pk_a, sk_a) = try_generate_x25519_keypair().into_test_result()?;
+    let (pk_b, _sk_b) = try_generate_x25519_keypair().into_test_result()?;
 
     let ss = derive_x25519_shared_secret(&sk_a, &pk_b)?;
 
@@ -84,7 +104,7 @@ fn shared_secret_is_not_all_zero() -> Result<(), CryptoError> {
 
 #[test]
 fn low_order_public_key_is_rejected() -> Result<(), CryptoError> {
-    let (_pk, sk) = generate_x25519_keypair().into_test_result()?;
+    let (_pk, sk) = try_generate_x25519_keypair().into_test_result()?;
 
     // The all-zero point is low-order: it drives the shared secret to zero
     // (a world-known value). Derivation must fail closed rather than return

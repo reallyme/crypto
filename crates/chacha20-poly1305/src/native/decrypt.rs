@@ -42,6 +42,11 @@ pub fn decrypt(request: &DecryptRequest<'_>) -> Result<Vec<u8>, CryptoError> {
         })
 }
 
+/// Decrypts ChaCha20-Poly1305 and owns plaintext in a buffer wiped on drop.
+pub fn decrypt_zeroizing(request: &DecryptRequest<'_>) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
+    decrypt(request).map(Zeroizing::new)
+}
+
 /// Decrypts and authenticates an XChaCha20-Poly1305 `ciphertext || tag`.
 pub fn decrypt_xchacha20_poly1305(
     request: &XChaCha20Poly1305DecryptRequest<'_>,
@@ -59,4 +64,11 @@ pub fn decrypt_xchacha20_poly1305(
             backend: AeadBackend::Native,
             kind: AeadFailureKind::AuthenticationFailed,
         })
+}
+
+/// Decrypts XChaCha20-Poly1305 and wipes the plaintext on drop.
+pub fn decrypt_xchacha20_poly1305_zeroizing(
+    request: &XChaCha20Poly1305DecryptRequest<'_>,
+) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
+    decrypt_xchacha20_poly1305(request).map(Zeroizing::new)
 }

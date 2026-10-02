@@ -147,10 +147,27 @@ const ensureExactMembers = (
   if (typeof value !== "object" || value === null) {
     throw new ReallyMeCryptoError("invalid-input");
   }
-  for (const name of Reflect.ownKeys(value)) {
-    if (typeof name !== "string" || !allowedNames.includes(name)) {
+  const names = Reflect.ownKeys(value);
+  if (names.length > 16) {
+    throw new ReallyMeCryptoError("invalid-input");
+  }
+  for (const name of names) {
+    if (typeof name !== "string" ||
+      (!allowedNames.includes(name) && name !== "kid" && !name.startsWith("x-"))) {
       throw new ReallyMeCryptoError("invalid-input");
     }
+  }
+  optionalString(value, "kid");
+};
+
+const optionalString = (value: unknown, name: string): void => {
+  if (typeof value !== "object" || value === null) {
+    throw new ReallyMeCryptoError("invalid-input");
+  }
+  const descriptor = Object.getOwnPropertyDescriptor(value, name);
+  if (descriptor !== undefined &&
+    (!("value" in descriptor) || typeof descriptor.value !== "string")) {
+    throw new ReallyMeCryptoError("invalid-input");
   }
 };
 
@@ -375,12 +392,8 @@ export const ReallyMeJwk = {
 
       if (spec.kty === "EC") {
         ensureExactMembers(value, ["alg", "crv", "kty", "use", "x", "y"]);
-        if (
-          readString(value, "alg") !== spec.alg ||
-          readString(value, "use") !== spec.use
-        ) {
-          throw new ReallyMeCryptoError("invalid-input");
-        }
+        optionalStringMatches(value, "alg", spec.alg);
+        optionalStringMatches(value, "use", spec.use);
         const ecAlgorithm = spec.crv === "P-256" ? "P-256" : "secp256k1";
         const x = codecBase64urlDecodeCanonical(readString(value, "x"));
         const y = codecBase64urlDecodeCanonical(readString(value, "y"));
@@ -406,9 +419,7 @@ export const ReallyMeJwk = {
 
       const algorithm = readString(value, "alg");
       ensureExactMembers(value, ["alg", "kty", "pub", "use"]);
-      if (readString(value, "use") !== spec.use) {
-        throw new ReallyMeCryptoError("invalid-input");
-      }
+      optionalStringMatches(value, "use", spec.use);
       const akpSpec = specFromAlgorithm(algorithm);
       const publicKey = codecBase64urlDecodeCanonical(readString(value, "pub"));
       ensureLength(publicKey, akpSpec.publicKeyLength);
@@ -436,7 +447,8 @@ export const ReallyMeJwk = {
 
   fromJwks(value: unknown): ReallyMeJwksKeySet {
     return withJwkBoundaryErrors(() => {
-      ensureExactMembers(value, ["keys"]);
+      // RFC 7517 permits additional set-level members. They do not alter the
+      // public-key identities extracted from the required keys array.
       if (typeof value !== "object" || value === null) {
         throw new ReallyMeCryptoError("invalid-input");
       }

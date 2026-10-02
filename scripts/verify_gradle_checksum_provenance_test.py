@@ -15,6 +15,19 @@ from scripts import verify_gradle_checksum_provenance as provenance
 
 
 class ProvenanceTests(unittest.TestCase):
+    def test_metadata_rejects_empty_artifact_set(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "metadata.xml").write_text(
+                '<verification-metadata xmlns="https://schema.gradle.org/dependency-verification">'
+                '<components/></verification-metadata>'
+            )
+            with patch.object(provenance, "REPOSITORY_ROOT", root), patch.object(
+                provenance, "FILES", ("metadata.xml",)
+            ):
+                with self.assertRaisesRegex(ValueError, "no artifact hashes"):
+                    provenance.entries()
+
     def test_metadata_rejects_missing_digest_and_unsafe_coordinate(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

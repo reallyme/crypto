@@ -13,9 +13,9 @@ use crate::operations::{
 };
 use crate::secret_material::{bind_operation_policy, SecretMaterialOperation};
 
-#[cfg(feature = "slh-dsa")]
+#[cfg(all(feature = "slh-dsa", any(feature = "native", feature = "wasm")))]
 const SLH_DSA_SEED_COMPONENT_LEN: usize = crypto_slh_dsa::SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN;
-#[cfg(feature = "slh-dsa")]
+#[cfg(all(feature = "slh-dsa", any(feature = "native", feature = "wasm")))]
 const SLH_DSA_DERIVE_INPUT_LEN: usize = SLH_DSA_SEED_COMPONENT_LEN * 3;
 
 /// Raw public/secret keypair returned by a signature key-management operation.
@@ -85,7 +85,7 @@ pub fn verify(
 /// Generates a BIP-340 keypair with an x-only public key.
 pub fn generate_bip340_key_pair() -> Result<SignatureKeyPair, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::SignatureKeyGeneration);
-    #[cfg(feature = "secp256k1")]
+    #[cfg(all(feature = "secp256k1", any(feature = "native", feature = "wasm")))]
     {
         let key_pair = generate_key_pair(Algorithm::Secp256k1)?;
         let public_key = derive_bip340_public_key(&key_pair.secret_key)?;
@@ -95,7 +95,7 @@ pub fn generate_bip340_key_pair() -> Result<SignatureKeyPair, OperationError> {
         })
     }
 
-    #[cfg(not(feature = "secp256k1"))]
+    #[cfg(not(all(feature = "secp256k1", any(feature = "native", feature = "wasm"))))]
     {
         Err(OperationError::Provider {
             reason: ProviderErrorReason::UnsupportedAlgorithm,
@@ -116,12 +116,12 @@ pub fn derive_bip340_key_pair(secret_key: &[u8]) -> Result<SignatureKeyPair, Ope
 /// Derives a BIP-340 x-only public key from a secp256k1 secret scalar.
 pub fn derive_bip340_public_key(secret_key: &[u8]) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::SignatureKeyDerivation);
-    #[cfg(feature = "secp256k1")]
+    #[cfg(all(feature = "secp256k1", any(feature = "native", feature = "wasm")))]
     {
         crypto_secp256k1::derive_bip340_schnorr_public_key(secret_key).map_err(map_crypto_error)
     }
 
-    #[cfg(not(feature = "secp256k1"))]
+    #[cfg(not(all(feature = "secp256k1", any(feature = "native", feature = "wasm"))))]
     {
         let _ = secret_key;
         Err(OperationError::Provider {
@@ -137,13 +137,13 @@ pub fn sign_bip340(
     aux_rand32: &[u8],
 ) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::SignatureSign);
-    #[cfg(feature = "secp256k1")]
+    #[cfg(all(feature = "secp256k1", any(feature = "native", feature = "wasm")))]
     {
         crypto_secp256k1::sign_bip340_schnorr(secret_key, message32, aux_rand32)
             .map_err(map_crypto_error)
     }
 
-    #[cfg(not(feature = "secp256k1"))]
+    #[cfg(not(all(feature = "secp256k1", any(feature = "native", feature = "wasm"))))]
     {
         let _ = (secret_key, message32, aux_rand32);
         Err(OperationError::Provider {
@@ -159,13 +159,13 @@ pub fn verify_bip340(
     public_key_xonly: &[u8],
 ) -> Result<(), OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::SignatureVerify);
-    #[cfg(feature = "secp256k1")]
+    #[cfg(all(feature = "secp256k1", any(feature = "native", feature = "wasm")))]
     {
         crypto_secp256k1::verify_bip340_schnorr(signature, message32, public_key_xonly)
             .map_err(map_crypto_error)
     }
 
-    #[cfg(not(feature = "secp256k1"))]
+    #[cfg(not(all(feature = "secp256k1", any(feature = "native", feature = "wasm"))))]
     {
         let _ = (signature, message32, public_key_xonly);
         Err(OperationError::Provider {
@@ -228,14 +228,14 @@ fn ensure_supported_signature_algorithm(algorithm: Algorithm) -> Result<(), Oper
 }
 
 fn generate_slh_dsa_sha2_128s_key_pair() -> Result<SignatureKeyPair, OperationError> {
-    #[cfg(feature = "slh-dsa")]
+    #[cfg(all(feature = "slh-dsa", any(feature = "native", feature = "wasm")))]
     {
         crypto_slh_dsa::generate_slh_dsa_sha2_128s_keypair()
             .map(signature_key_pair)
             .map_err(map_crypto_error)
     }
 
-    #[cfg(not(feature = "slh-dsa"))]
+    #[cfg(not(all(feature = "slh-dsa", any(feature = "native", feature = "wasm"))))]
     {
         Err(OperationError::Provider {
             reason: ProviderErrorReason::UnsupportedAlgorithm,
@@ -246,7 +246,7 @@ fn generate_slh_dsa_sha2_128s_key_pair() -> Result<SignatureKeyPair, OperationEr
 fn derive_slh_dsa_sha2_128s_key_pair(
     secret_key: &[u8],
 ) -> Result<SignatureKeyPair, OperationError> {
-    #[cfg(feature = "slh-dsa")]
+    #[cfg(all(feature = "slh-dsa", any(feature = "native", feature = "wasm")))]
     {
         if secret_key.len() != SLH_DSA_DERIVE_INPUT_LEN {
             return Err(OperationError::Primitive {
@@ -260,7 +260,7 @@ fn derive_slh_dsa_sha2_128s_key_pair(
             .map_err(map_crypto_error)
     }
 
-    #[cfg(not(feature = "slh-dsa"))]
+    #[cfg(not(all(feature = "slh-dsa", any(feature = "native", feature = "wasm"))))]
     {
         let _ = secret_key;
         Err(OperationError::Provider {
@@ -270,12 +270,12 @@ fn derive_slh_dsa_sha2_128s_key_pair(
 }
 
 fn sign_slh_dsa_sha2_128s(secret_key: &[u8], message: &[u8]) -> Result<Vec<u8>, OperationError> {
-    #[cfg(feature = "slh-dsa")]
+    #[cfg(all(feature = "slh-dsa", any(feature = "native", feature = "wasm")))]
     {
         crypto_slh_dsa::sign_slh_dsa_sha2_128s(secret_key, message).map_err(map_crypto_error)
     }
 
-    #[cfg(not(feature = "slh-dsa"))]
+    #[cfg(not(all(feature = "slh-dsa", any(feature = "native", feature = "wasm"))))]
     {
         let _ = (secret_key, message);
         Err(OperationError::Provider {
@@ -289,13 +289,13 @@ fn verify_slh_dsa_sha2_128s(
     message: &[u8],
     signature: &[u8],
 ) -> Result<(), OperationError> {
-    #[cfg(feature = "slh-dsa")]
+    #[cfg(all(feature = "slh-dsa", any(feature = "native", feature = "wasm")))]
     {
         crypto_slh_dsa::verify_slh_dsa_sha2_128s(public_key, message, signature)
             .map_err(map_crypto_error)
     }
 
-    #[cfg(not(feature = "slh-dsa"))]
+    #[cfg(not(all(feature = "slh-dsa", any(feature = "native", feature = "wasm"))))]
     {
         let _ = (public_key, message, signature);
         Err(OperationError::Provider {

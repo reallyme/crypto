@@ -228,9 +228,9 @@ fn expand_private_key(seed: &[u8; PRIVATE_KEY_LEN]) -> (DecapsulationKey, P384Se
     reader.read(ml_kem_seed.as_mut_slice());
     reader.read(p384_seed.as_mut_slice());
 
-    let mut typed_seed = Seed::default();
+    let mut typed_seed = Zeroizing::new(Seed::default());
     typed_seed.copy_from_slice(ml_kem_seed.as_slice());
-    let decapsulation_key = DecapsulationKey::from_seed(typed_seed);
+    let decapsulation_key = DecapsulationKey::from_seed(*typed_seed);
     let p384_secret_key = scalar_from_candidate(&p384_seed);
     (decapsulation_key, p384_secret_key)
 }

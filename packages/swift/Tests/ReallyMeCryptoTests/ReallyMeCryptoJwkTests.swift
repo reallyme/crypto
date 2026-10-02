@@ -8,6 +8,45 @@ import ReallyMeCodec
 import XCTest
 
 final class ReallyMeCryptoJwkTests: XCTestCase {
+  func testSharedJwkMetadataPolicy() throws {
+    try installReallyMeCodecProviderForTest()
+    let data = try Data(contentsOf: reallyMeVectorURL("jwk_policy.json"))
+    let decoded = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    let valid = try XCTUnwrap(decoded["valid_jwk"] as? [[String: Any]])
+    let invalid = try XCTUnwrap(decoded["invalid_jwk"] as? [[String: Any]])
+    let validSets = try XCTUnwrap(decoded["valid_jwks"] as? [[String: Any]])
+    for value in valid {
+      let json = try JSONSerialization.data(withJSONObject: value)
+      XCTAssertFalse(try ReallyMeJwk.fromJwkJson(json).publicKey.isEmpty)
+    }
+    for value in invalid {
+      let json = try JSONSerialization.data(withJSONObject: value)
+      XCTAssertThrowsError(try ReallyMeJwk.fromJwkJson(json)) { error in
+        XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+      }
+    }
+    for value in validSets {
+      let json = try JSONSerialization.data(withJSONObject: value)
+      XCTAssertEqual(try ReallyMeJwk.fromJwksJson(json).count, 1)
+    }
+  }
+
+  func testToJcsPreservesMalformedDocumentError() {
+    let malformed = ReallyMeJwkDocument(
+      algorithm: .p256,
+      kty: "EC",
+      alg: "ES256",
+      keyUse: "sig",
+      crv: nil,
+      x: nil,
+      y: nil,
+      publicKey: nil
+    )
+
+    XCTAssertThrowsError(try ReallyMeJwk.toJcs(malformed)) { error in
+      XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+    }
+  }
   func testJwkVectorsMatchPackageFacade() throws {
     try installReallyMeCodecProviderForTest()
     let data = try Data(contentsOf: reallyMeVectorURL("jwk.json"))
@@ -129,9 +168,7 @@ final class ReallyMeCryptoJwkTests: XCTestCase {
       }
     }
     let jwksWithUnknownMember = #"{"keys":[\#(valid)],"unknown":"value"}"#
-    XCTAssertThrowsError(try ReallyMeJwk.fromJwksJson(Data(jwksWithUnknownMember.utf8))) { error in
-      XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
-    }
+    XCTAssertEqual(try ReallyMeJwk.fromJwksJson(Data(jwksWithUnknownMember.utf8)).count, 1)
   }
 
   func testJwkParserRejectsMismatchedEcCoordinates() throws {

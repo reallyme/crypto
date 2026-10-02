@@ -18,6 +18,7 @@ import type {
   ReallyMeSignatureKeyPair,
 } from "./cryptoFacade.js";
 import { ReallyMeCryptoError } from "./errors.js";
+import { ensureByteArrayAtMost, MAX_CRYPTO_INPUT_LENGTH } from "./validateBytes.js";
 import { cryptoErrorToProto } from "./protoErrors.js";
 import {
   hpkeSuiteFromIdentifier,
@@ -127,6 +128,7 @@ export const signatureKeyPairFromProtoBytes = (
   bytes: Uint8Array,
 ): ReallyMeSignatureKeyPairProtoValue => {
   try {
+    ensureByteArrayAtMost(bytes, MAX_CRYPTO_INPUT_LENGTH);
     return signatureKeyPairFromProto(fromBinary(CryptoKeyPairSchema, bytes));
   } catch (error) {
     if (error instanceof ReallyMeCryptoError) {
@@ -160,6 +162,7 @@ export const keyAgreementKeyPairFromProtoBytes = (
   bytes: Uint8Array,
 ): ReallyMeKeyAgreementKeyPairProtoValue => {
   try {
+    ensureByteArrayAtMost(bytes, MAX_CRYPTO_INPUT_LENGTH);
     return keyAgreementKeyPairFromProto(fromBinary(CryptoKeyPairSchema, bytes));
   } catch (error) {
     if (error instanceof ReallyMeCryptoError) {
@@ -191,6 +194,7 @@ export const kemKeyPairFromProtoBytes = (
   bytes: Uint8Array,
 ): ReallyMeKemKeyPairProtoValue => {
   try {
+    ensureByteArrayAtMost(bytes, MAX_CRYPTO_INPUT_LENGTH);
     return kemKeyPairFromProto(fromBinary(CryptoKeyPairSchema, bytes));
   } catch (error) {
     if (error instanceof ReallyMeCryptoError) {
@@ -230,6 +234,7 @@ export const kemEncapsulationFromProtoBytes = (
   bytes: Uint8Array,
 ): ReallyMeKemEncapsulationProtoValue => {
   try {
+    ensureByteArrayAtMost(bytes, MAX_CRYPTO_INPUT_LENGTH);
     return kemEncapsulationFromProto(fromBinary(CryptoKemEncapsulationSchema, bytes));
   } catch (error) {
     if (error instanceof ReallyMeCryptoError) {
@@ -269,6 +274,7 @@ export const hpkeSealedMessageFromProtoBytes = (
   bytes: Uint8Array,
 ): ReallyMeHpkeSealedMessageProtoValue => {
   try {
+    ensureByteArrayAtMost(bytes, MAX_CRYPTO_INPUT_LENGTH);
     return hpkeSealedMessageFromProto(fromBinary(CryptoHpkeSealedMessageSchema, bytes));
   } catch (error) {
     if (error instanceof ReallyMeCryptoError) {
@@ -305,6 +311,7 @@ export const verificationResultFromProtoBytes = (
   bytes: Uint8Array,
 ): CryptoVerificationResult => {
   try {
+    ensureByteArrayAtMost(bytes, MAX_CRYPTO_INPUT_LENGTH);
     const value = fromBinary(CryptoVerificationResultSchema, bytes);
     if (value.algorithm?.algorithm.case === undefined) {
       throw new ReallyMeCryptoError("invalid-input");

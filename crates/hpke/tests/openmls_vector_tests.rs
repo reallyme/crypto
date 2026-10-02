@@ -22,7 +22,7 @@ use crypto_hpke::{
     MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87,
 };
 
-const IKM: &[u8] = b"fixed OpenMLS vector IKM";
+const IKM: &[u8] = b"fixed OpenMLS vector IKM with 32 bytes";
 const INFO: &[u8] = b"fixed OpenMLS vector info";
 const AAD: &[u8] = b"fixed OpenMLS vector aad";
 const PLAINTEXT: &[u8] = b"fixed OpenMLS vector plaintext";

@@ -139,8 +139,9 @@ public enum ReallyMeJwk {
   }
 
   public static func toJcs(_ jwk: ReallyMeJwkDocument) throws(ReallyMeCryptoError) -> String {
+    let json = try jwkJson(jwk)
     do {
-      return try ReallyMeCryptoCodecProvider.requireCodec().canonicalizeJson(jwkJson(jwk))
+      return try ReallyMeCryptoCodecProvider.requireCodec().canonicalizeJson(json)
     } catch {
       throw mapCodecError(error)
     }
@@ -189,7 +190,6 @@ public enum ReallyMeJwk {
   public static func fromJwksJson(_ data: Data) throws(ReallyMeCryptoError) -> [ReallyMeJwkKey] {
     let object = try canonicalJsonObject(data)
     guard
-      Set(object.keys) == Set(["keys"]),
       let keys = object["keys"] as? [[String: Any]],
       keys.count <= maxJwksKeys
     else {
@@ -243,19 +243,17 @@ public enum ReallyMeJwk {
     default:
       throw ReallyMeCryptoError.unsupportedAlgorithm
     }
-    guard Set(object.keys).isSubset(of: allowedMemberNames) else {
+    guard object.count <= 16,
+      Set(object.keys).allSatisfy({
+        allowedMemberNames.contains($0) || $0 == "kid" || $0.hasPrefix("x-")
+      }),
+      object["kid"] == nil || object["kid"] is String
+    else {
       throw ReallyMeCryptoError.invalidInput
     }
-    let metadataMatches: Bool
-    if spec.kty == "OKP" {
-      metadataMatches =
-        optionalStringMemberMatches(object, name: "alg", expected: spec.alg)
-        && optionalStringMemberMatches(object, name: "use", expected: spec.keyUse)
-    } else {
-      metadataMatches =
-        object["alg"] as? String == spec.alg
-        && object["use"] as? String == spec.keyUse
-    }
+    let metadataMatches =
+      optionalStringMemberMatches(object, name: "alg", expected: spec.alg)
+      && optionalStringMemberMatches(object, name: "use", expected: spec.keyUse)
     guard
       let algorithm = ReallyMeJwkAlgorithm(rawValue: algorithmName),
       kty == spec.kty,

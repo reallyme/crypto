@@ -80,6 +80,7 @@ use crypto_proto::wire::CryptoWireErrorBranch;
 
 use super::error::error_response;
 #[cfg(all(
+    any(feature = "native", feature = "wasm"),
     feature = "dispatch",
     any(
         feature = "ml-kem-512",
@@ -93,6 +94,7 @@ use super::operations::{
     process_kem_generate_key_pair,
 };
 #[cfg(all(
+    any(feature = "native", feature = "wasm"),
     feature = "dispatch",
     any(
         feature = "x25519",
@@ -191,6 +193,7 @@ pub(crate) fn process_operation_request(
         CryptoOperation::RsaVerify(request) => process_rsa_verify_request(*request),
         CryptoOperation::KeyAgreementDeriveSharedSecret(request) => {
             #[cfg(all(
+                any(feature = "native", feature = "wasm"),
                 feature = "dispatch",
                 any(
                     feature = "x25519",
@@ -207,6 +210,7 @@ pub(crate) fn process_operation_request(
                 )
             }
             #[cfg(not(all(
+                any(feature = "native", feature = "wasm"),
                 feature = "dispatch",
                 any(
                     feature = "x25519",
@@ -222,6 +226,7 @@ pub(crate) fn process_operation_request(
         }
         CryptoOperation::KeyAgreementDeriveKeyPair(request) => {
             #[cfg(all(
+                any(feature = "native", feature = "wasm"),
                 feature = "dispatch",
                 any(
                     feature = "x25519",
@@ -238,6 +243,7 @@ pub(crate) fn process_operation_request(
                 )
             }
             #[cfg(not(all(
+                any(feature = "native", feature = "wasm"),
                 feature = "dispatch",
                 any(
                     feature = "x25519",
@@ -253,6 +259,7 @@ pub(crate) fn process_operation_request(
         }
         CryptoOperation::KemGenerateKeyPair(request) => {
             #[cfg(all(
+                any(feature = "native", feature = "wasm"),
                 feature = "dispatch",
                 any(
                     feature = "ml-kem-512",
@@ -269,6 +276,7 @@ pub(crate) fn process_operation_request(
                 )
             }
             #[cfg(not(all(
+                any(feature = "native", feature = "wasm"),
                 feature = "dispatch",
                 any(
                     feature = "ml-kem-512",
@@ -284,6 +292,7 @@ pub(crate) fn process_operation_request(
         }
         CryptoOperation::KemDeriveKeyPair(request) => {
             #[cfg(all(
+                any(feature = "native", feature = "wasm"),
                 feature = "dispatch",
                 any(
                     feature = "ml-kem-512",
@@ -300,6 +309,7 @@ pub(crate) fn process_operation_request(
                 )
             }
             #[cfg(not(all(
+                any(feature = "native", feature = "wasm"),
                 feature = "dispatch",
                 any(
                     feature = "ml-kem-512",
@@ -315,6 +325,7 @@ pub(crate) fn process_operation_request(
         }
         CryptoOperation::KemEncapsulate(request) => {
             #[cfg(all(
+                any(feature = "native", feature = "wasm"),
                 feature = "dispatch",
                 any(
                     feature = "ml-kem-512",
@@ -331,6 +342,7 @@ pub(crate) fn process_operation_request(
                 )
             }
             #[cfg(not(all(
+                any(feature = "native", feature = "wasm"),
                 feature = "dispatch",
                 any(
                     feature = "ml-kem-512",
@@ -346,6 +358,7 @@ pub(crate) fn process_operation_request(
         }
         CryptoOperation::KemDecapsulate(request) => {
             #[cfg(all(
+                any(feature = "native", feature = "wasm"),
                 feature = "dispatch",
                 any(
                     feature = "ml-kem-512",
@@ -362,6 +375,7 @@ pub(crate) fn process_operation_request(
                 )
             }
             #[cfg(not(all(
+                any(feature = "native", feature = "wasm"),
                 feature = "dispatch",
                 any(
                     feature = "ml-kem-512",

@@ -11,10 +11,12 @@ use crate::key_agreement_error::crypto_error_from_derive_shared_secret_operation
 use crate::signature_error::crypto_error_from_operation_error;
 
 pub use crypto_p521::{
-    compress_p521, compress_public_key, decompress_p521, decompress_public_key,
     P521_PUBLIC_KEY_COMPRESSED_LEN, P521_PUBLIC_KEY_RAW_LEN, P521_PUBLIC_KEY_UNCOMPRESSED_LEN,
     P521_SECRET_KEY_LEN, P521_SHARED_SECRET_LEN, P521_SIGNATURE_DER_MAX_LEN,
 };
+
+#[cfg(any(feature = "native", feature = "wasm"))]
+pub use crypto_p521::{compress_p521, compress_public_key, decompress_p521, decompress_public_key};
 
 /// Generate a P-521 ECDSA keypair through the signature operation owner.
 pub fn generate_p521_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {

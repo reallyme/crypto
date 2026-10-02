@@ -17,7 +17,7 @@ fn pbkdf2_hmac_sha256_matches_known_answer() {
     let prf = Pbkdf2Prf::HmacSha256;
     let password = Pbkdf2Password::from_slice(b"password", prf).unwrap();
     let salt = Pbkdf2Salt::from_slice(b"salt", prf).unwrap();
-    let iterations = Pbkdf2Iterations::from_u32(1, prf).unwrap();
+    let iterations = Pbkdf2Iterations::from_u32_conformance_only(1, prf).unwrap();
 
     let output = derive_key(&Pbkdf2Request {
         prf,
@@ -39,7 +39,7 @@ fn pbkdf2_hmac_sha512_matches_known_answer() {
     let prf = Pbkdf2Prf::HmacSha512;
     let password = Pbkdf2Password::from_slice(b"password", prf).unwrap();
     let salt = Pbkdf2Salt::from_slice(b"salt", prf).unwrap();
-    let iterations = Pbkdf2Iterations::from_u32(1, prf).unwrap();
+    let iterations = Pbkdf2Iterations::from_u32_conformance_only(1, prf).unwrap();
 
     let output = derive_key(&Pbkdf2Request {
         prf,
@@ -77,14 +77,14 @@ fn invalid_inputs_are_rejected() {
         })
     ));
     assert!(matches!(
-        Pbkdf2Iterations::from_u32(0, prf),
+        Pbkdf2Iterations::from_u32_conformance_only(0, prf),
         Err(CryptoError::Kdf {
             kind: KdfFailureKind::InvalidIterationCount,
             ..
         })
     ));
     assert!(matches!(
-        Pbkdf2Iterations::from_u32(PBKDF2_MAX_ITERATIONS + 1, prf),
+        Pbkdf2Iterations::from_u32_conformance_only(PBKDF2_MAX_ITERATIONS + 1, prf),
         Err(CryptoError::Kdf {
             kind: KdfFailureKind::InvalidIterationCount,
             ..
@@ -93,7 +93,7 @@ fn invalid_inputs_are_rejected() {
 
     let password = Pbkdf2Password::from_slice(b"password", prf).unwrap();
     let salt = Pbkdf2Salt::from_slice(b"salt", prf).unwrap();
-    let iterations = Pbkdf2Iterations::from_u32(1, prf).unwrap();
+    let iterations = Pbkdf2Iterations::from_u32_conformance_only(1, prf).unwrap();
     assert!(matches!(
         derive_key(&Pbkdf2Request {
             prf,
@@ -158,7 +158,8 @@ fn combined_iteration_and_output_work_is_bounded_before_derivation() {
     let prf = Pbkdf2Prf::HmacSha256;
     let password = Pbkdf2Password::from_slice(b"password", prf).unwrap();
     let salt = Pbkdf2Salt::from_slice(b"salt", prf).unwrap();
-    let iterations = Pbkdf2Iterations::from_u32(PBKDF2_MAX_ITERATIONS, prf).unwrap();
+    let iterations =
+        Pbkdf2Iterations::from_u32_conformance_only(PBKDF2_MAX_ITERATIONS, prf).unwrap();
     let result = derive_key(&Pbkdf2Request {
         prf,
         password: &password,
@@ -180,7 +181,7 @@ fn derived_key_ownership_transfer_reuses_the_zeroizing_allocation() {
     let prf = Pbkdf2Prf::HmacSha256;
     let password = Pbkdf2Password::from_slice(b"password", prf).unwrap();
     let salt = Pbkdf2Salt::from_slice(b"salt", prf).unwrap();
-    let iterations = Pbkdf2Iterations::from_u32(1, prf).unwrap();
+    let iterations = Pbkdf2Iterations::from_u32_conformance_only(1, prf).unwrap();
     let output = derive_key(&Pbkdf2Request {
         prf,
         password: &password,

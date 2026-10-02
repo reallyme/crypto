@@ -38,6 +38,7 @@ jobs:
       - name: Checkout main for release SHA resolution
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
+          persist-credentials: false
           ref: main
           fetch-depth: 0
 
@@ -75,6 +76,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
+          persist-credentials: false
           ref: ${{ needs.verify-source-sha.outputs.release_sha }}
 
       - name: Install Node
@@ -83,6 +85,12 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: packages/ts/package-lock.json
+
+      - name: Install Java for release readiness
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5
+        with:
+          distribution: temurin
+          java-version: '21'
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master

@@ -126,6 +126,8 @@ pub fn x_wing_768_encapsulate(
 }
 
 /// Deterministically encapsulate to an X-Wing public key using a 64-byte seed.
+/// A repeated seed for the same public key repeats the shared secret. Use
+/// [`x_wing_768_encapsulate`] for production-generated randomness.
 pub fn x_wing_768_encapsulate_derand(
     public_key: &[u8],
     seed: &[u8],
