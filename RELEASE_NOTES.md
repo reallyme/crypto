@@ -6,6 +6,9 @@
   parameters, length framing, input bound, and canonical output encoding used
   by ReallyMe ZK circuits. Cross-checks full and partial blocks against the ZK
   fixture oracle.
+- Updates the ReallyMe Codec dependency to `0.3.0` across Rust, Swift,
+  TypeScript, Kotlin/JVM, and Android, including the new multikey accessor,
+  Swift error mapping, and TypeScript WASM provider contract.
 - Fixes Ed25519 feature-only builds by exposing public-key encoding helpers
   only when a Rust backend is selected. Backendless signature operations
   continue to fail with typed unsupported errors.

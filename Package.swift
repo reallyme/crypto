@@ -38,7 +38,6 @@ var cryptoTargetDependencies: [Target.Dependency] = [
   .product(name: "CSecp256k1", package: "CSecp256k1"),
   .product(name: "Digest", package: "Digest"),
   .product(name: "ReallyMeCodec", package: "codec"),
-  .product(name: "ReallyMeCodecProto", package: "codec"),
 ]
 var cryptoSwiftSettings: [SwiftSetting] = []
 var packageTargets: [Target] = []
@@ -128,7 +127,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/reallyme/codec",
-      from: "0.2.3"
+      from: "0.3.0"
     ),
     .package(
       url: "https://github.com/reallyme/CSecp256k1",

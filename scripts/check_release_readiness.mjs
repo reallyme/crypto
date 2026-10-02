@@ -113,8 +113,8 @@ const cryptoProtoPackageVersion = "0.3.10";
 const typescriptPackageVersion = "0.3.10";
 const kotlinPackageVersion = "0.3.10";
 const kotlinAndroidPackageVersion = "0.3.10";
-const rustCodecVersion = "0.2.3";
-const sdkCodecVersion = "0.2.3";
+const rustCodecVersion = "0.3.0";
+const sdkCodecVersion = "0.3.0";
 const rustSemverBaselineCommit = "5b8928f10777d0ce44561bb966b9425a281a05d7";
 const rustSemverBaselinePath = ".semver-baseline";
 const cargoSemverChecksVersion = "0.49.0";
@@ -398,12 +398,12 @@ const assertCodecDependencyProvenance = () => {
   }
 
   const registryCodecChecksums = new Map([
-    ["reallyme-codec-base64url", "f6bf7a30f229edf6e3236df0b2b11c522da128cfbdcc3b0dfca4912b7f6463a0"],
-    ["reallyme-codec-jcs", "4e8f5718cd2bdbcdc6b6b9eb91ac77ea35aaec6051c7222367090ad52b1fc551"],
-    ["reallyme-codec-multibase", "e38491c026515d692ac863bd277eba813a399053bc3740550f0cb3e6206bd003"],
-    ["reallyme-codec-multicodec", "9400a5df3a8bc8e66e87be32a2563dd631f923c29418ce582949ac6ba4fcfa8f"],
-    ["reallyme-codec-multikey", "86018a0dd6bad08ad4f48f5a1d62c8db722f2f4407bd0991824fdd8ca1744e0f"],
-    ["reallyme-codec-pem", "7bcaf67e2614ae686fab132732937779dfaaa93bc527c0f1dea0637791432b81"],
+    ["reallyme-codec-base64url", "25318a052c3216e06840561e830540d72d5c5891202bc28f46ac7a1a4b80608d"],
+    ["reallyme-codec-jcs", "2be4e9db86812ceef2b5666a20e9089a3532e172fd0a14270a3d7b34b072cdfc"],
+    ["reallyme-codec-multibase", "a72c1edcbcd9acfa3776d829507cc2c9793c252c64ef2b6c1746d8affbab819a"],
+    ["reallyme-codec-multicodec", "7b4576f9bbe6011c9efd215e595e882ab5dd2518ceabb51f8ae9530119d4e5b8"],
+    ["reallyme-codec-multikey", "4be655fa8af73a8ed0ad551aa153a8a950c6ffc542bac9f2666315d65afd89f8"],
+    ["reallyme-codec-pem", "584d367a74c2cec746d697d3c43ac33099b06bb4ee141c81a37b332cd2af9c58"],
   ]);
   for (const lockPath of ["Cargo.lock", "fuzz/Cargo.lock"]) {
     for (const [packageName, checksum] of registryCodecChecksums) {
@@ -1483,15 +1483,15 @@ for (const metadataPath of [
 }
 assertContains(
   "docs/maven-provenance.md",
-  "a85f18da11b207f7a675d5cee19b295f090e647a5d0483517b036c32d89a73da",
+  "e2cdfb2c2e3081878567617656e89dcfffba840a9c7e94209bfbe859dfe50ac5",
 );
 assertContains(
   "docs/maven-provenance.md",
-  "d71f6481d903e88fdf7a58def6ab3b81b15f4666f8acc7dcedbd02b5e523676a",
+  "a6b1d56312641f1db1299d96a46e17eb416386ede0f5732bcb9c027a1e7575ba",
 );
 assertContains(
   "docs/maven-provenance.md",
-  "50e7053b683ef54155fa794d1a84a7db67a4ab57",
+  "e0b5e100f81043d33afcdb9bc7a1bf5f8edab9ba",
 );
 assertContains("packages/kotlin/README.md", "intentionally use Gradle 9.7.1");
 assertContains("packages/kotlin/README.md", "independently pinned to Gradle 8.14.4");

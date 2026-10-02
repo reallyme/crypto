@@ -13,7 +13,7 @@ dependencies {
 ```
 
 The package reuses the audited Kotlin facade sources from `packages/kotlin`,
-depends on the published `me.really:codec-android:0.2.3` artifact, and bundles
+requires `me.really:codec-android:0.3.0`, and bundles
 `libcrypto_ffi.so` for the standard Android ABIs:
 
 - `arm64-v8a`

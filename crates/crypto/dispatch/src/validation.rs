@@ -173,7 +173,7 @@ pub fn validate_verification_method_multikey(
     )
     .map_err(|_| AlgorithmError::InvalidKey(algorithm))?;
 
-    if parsed.public_key.len() != expected_len {
+    if parsed.public_key().len() != expected_len {
         return Err(AlgorithmError::InvalidKey(algorithm));
     }
 
