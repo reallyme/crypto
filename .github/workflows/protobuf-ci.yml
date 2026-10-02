@@ -101,4 +101,4 @@ jobs:
           cargo test -p crypto-conformance-vectors --test vectors_tests --all-features contract_tests::every_public_algorithm_has_exactly_one_proto_selector
 
       - name: Check release readiness generated freshness
-        run: npm exec --yes --package=github:reallyme/release-readiness#bdedc88f3f25fcc14242730d4dec6ce6a0c75531 -- reallyme-release-readiness --generated-freshness
+        run: npm exec --yes --package=github:reallyme/release-readiness#5c2da5e5d5795c2c895d0dca0819287ee7101207 -- reallyme-release-readiness --generated-freshness
