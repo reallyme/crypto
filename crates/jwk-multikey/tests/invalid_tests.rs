@@ -35,7 +35,13 @@ fn rejects_wrong_length_ec_coordinates() {
         kid: None,
     });
 
+    #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
     assert_eq!(jwk_to_multikey(&jwk), Err(JwkMultikeyError::InvalidJwk));
+    #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
+    assert_eq!(
+        jwk_to_multikey(&jwk),
+        Err(JwkMultikeyError::UnsupportedAlgorithm)
+    );
 }
 
 #[test]
@@ -54,12 +60,10 @@ fn rejects_coordinates_that_are_not_a_curve_point() {
     assert_eq!(jwk_to_multikey(&jwk), Err(JwkMultikeyError::InvalidJwk));
 
     #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
-    // Workspace test selection can unify the JWK dependency's native feature
-    // even when this crate's own native feature is off. Both paths fail closed.
-    assert!(matches!(
+    assert_eq!(
         jwk_to_multikey(&jwk),
-        Err(JwkMultikeyError::UnsupportedAlgorithm | JwkMultikeyError::InvalidJwk)
-    ));
+        Err(JwkMultikeyError::UnsupportedAlgorithm)
+    );
 }
 
 #[test]
@@ -102,8 +106,8 @@ fn rejects_mismatched_ec_coordinates_through_shared_jwk_validator() {
     assert_eq!(jwk_to_multikey(&jwk), Err(JwkMultikeyError::InvalidJwk));
 
     #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
-    assert!(matches!(
+    assert_eq!(
         jwk_to_multikey(&jwk),
-        Err(JwkMultikeyError::UnsupportedAlgorithm | JwkMultikeyError::InvalidJwk)
-    ));
+        Err(JwkMultikeyError::UnsupportedAlgorithm)
+    );
 }

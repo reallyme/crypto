@@ -11,7 +11,7 @@ public enum ReallyMeMultikey {
     publicKey: [UInt8]
   ) throws(ReallyMeCryptoError) -> String {
     if algorithm == .x25519PublicKey
-      && (publicKey.count != 32 || publicKey[31] & 0x80 != 0)
+      && !ReallyMeX25519Identity.isCanonical(publicKey)
     {
       throw ReallyMeCryptoError.invalidInput
     }
@@ -35,7 +35,7 @@ public enum ReallyMeMultikey {
         throw ReallyMeCryptoError.invalidInput
       }
       if algorithm == .x25519PublicKey
-        && (parsed.publicKey.count != 32 || parsed.publicKey[31] & 0x80 != 0)
+        && !ReallyMeX25519Identity.isCanonical(parsed.publicKey)
       {
         throw ReallyMeCryptoError.invalidInput
       }

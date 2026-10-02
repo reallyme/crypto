@@ -107,6 +107,31 @@ fn x25519_jwk_rejects_masked_high_bit_alias() {
 }
 
 #[test]
+fn x25519_jwk_rejects_noncanonical_field_aliases() {
+    let mut public_key = [0xff_u8; 32];
+    public_key[31] = 0x7f;
+    public_key[0] = 0xec;
+    assert!(x25519_public_key_to_jwk(&public_key, JwkOptions::default()).is_ok());
+
+    for low_byte in 0xed..=0xff {
+        public_key[0] = low_byte;
+        assert_eq!(
+            x25519_public_key_to_jwk(&public_key, JwkOptions::default()).err(),
+            Some(JwtError::InvalidX25519Key)
+        );
+        let jwk = Jwk::Okp(envelopes_jwk::OkpJwk {
+            kty: "OKP".to_owned(),
+            crv: "X25519".to_owned(),
+            x: bytes_to_base64url(&public_key),
+            alg: None,
+            use_: None,
+            kid: None,
+        });
+        assert_eq!(jwk.public_key_bytes(), Err(JwtError::InvalidX25519Key));
+    }
+}
+
+#[test]
 fn akp_jwk_rejects_public_key_use_conflicts() {
     for (algorithm, key_len, conflicting_use) in
         [("ML-DSA-44", 1312, "enc"), ("ML-KEM-512", 800, "sig")]

@@ -36,7 +36,7 @@ public object ReallyMeMultikey {
     ): String {
         if (
             algorithm == ReallyMeMulticodecKeyAlgorithm.X25519_PUBLIC_KEY &&
-            (publicKey.size != 32 || (publicKey[31].toInt() and 0x80) != 0)
+            !isCanonicalX25519Identity(publicKey)
         ) {
             throw ReallyMeCryptoException.InvalidInput()
         }
@@ -55,7 +55,7 @@ public object ReallyMeMultikey {
         val publicKey = parsed.publicKey()
         if (
             algorithm == ReallyMeMulticodecKeyAlgorithm.X25519_PUBLIC_KEY &&
-            (publicKey.size != 32 || (publicKey[31].toInt() and 0x80) != 0)
+            !isCanonicalX25519Identity(publicKey)
         ) {
             throw ReallyMeCryptoException.InvalidInput()
         }

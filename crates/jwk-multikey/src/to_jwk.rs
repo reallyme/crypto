@@ -5,9 +5,10 @@
 use envelopes_jwk::{
     ed25519_public_key_to_jwk, mldsa44_public_key_to_jwk, mldsa65_public_key_to_jwk,
     mldsa87_public_key_to_jwk, mlkem1024_public_key_to_jwk, mlkem512_public_key_to_jwk,
-    mlkem768_public_key_to_jwk, p256_public_key_to_jwk, secp256k1_public_key_to_jwk,
-    x25519_public_key_to_jwk, Jwk, JwkOptions, JwtError,
+    mlkem768_public_key_to_jwk, x25519_public_key_to_jwk, Jwk, JwkOptions,
 };
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
+use envelopes_jwk::{p256_public_key_to_jwk, secp256k1_public_key_to_jwk, JwtError};
 
 use crate::error::JwkMultikeyError;
 use codec_multikey::parse_multikey;
@@ -30,15 +31,29 @@ pub fn multikey_to_jwk(multikey: &str, options: JwkOptions) -> Result<Jwk, JwkMu
         }
 
         "P-256" | "ES256" => {
-            let j = p256_public_key_to_jwk(parsed.public_key(), options)
-                .map_err(map_jwk_encoding_error)?;
-            Jwk::Ec(j)
+            #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
+            {
+                return Err(JwkMultikeyError::UnsupportedAlgorithm);
+            }
+            #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
+            {
+                let j = p256_public_key_to_jwk(parsed.public_key(), options)
+                    .map_err(map_jwk_encoding_error)?;
+                Jwk::Ec(j)
+            }
         }
 
         "secp256k1" | "ES256K" => {
-            let j = secp256k1_public_key_to_jwk(parsed.public_key(), options)
-                .map_err(map_jwk_encoding_error)?;
-            Jwk::Ec(j)
+            #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
+            {
+                return Err(JwkMultikeyError::UnsupportedAlgorithm);
+            }
+            #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
+            {
+                let j = secp256k1_public_key_to_jwk(parsed.public_key(), options)
+                    .map_err(map_jwk_encoding_error)?;
+                Jwk::Ec(j)
+            }
         }
 
         "ML-DSA-87" => {
@@ -77,6 +92,7 @@ pub fn multikey_to_jwk(multikey: &str, options: JwkOptions) -> Result<Jwk, JwkMu
     Ok(jwk)
 }
 
+#[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 fn map_jwk_encoding_error(error: JwtError) -> JwkMultikeyError {
     match error {
         JwtError::BackendUnavailable => JwkMultikeyError::UnsupportedAlgorithm,

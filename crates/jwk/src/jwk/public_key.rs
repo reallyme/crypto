@@ -55,7 +55,7 @@ fn okp_public_key_bytes(okp: &OkpJwk) -> Result<Vec<u8>, JwtError> {
         return Err(JwtError::UnsupportedKeyFormat);
     }
     let public_key = decode_fixed_public_key(&okp.x, BASE64URL_LEN_32_BYTES, 32, invalid_error)?;
-    if okp.crv == "X25519" && public_key[31] & 0x80 != 0 {
+    if okp.crv == "X25519" && !crate::x25519::is_canonical_identity(&public_key) {
         return Err(JwtError::InvalidX25519Key);
     }
     Ok(public_key)

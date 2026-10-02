@@ -46,6 +46,8 @@ pub mod provider;
 pub mod registry;
 /// Structural validation of verification-method multikeys.
 pub mod validation;
+#[cfg(feature = "x25519")]
+mod x25519_identity;
 
 // Re-export error type
 pub use error::AlgorithmError;

@@ -30,6 +30,21 @@ use codec_jcs::canonicalize_trusted_json_value;
 
 use serde::Serialize;
 
+const PUBLIC_KEY_LENGTH: usize = 32;
+const FIELD_PRIME_LOW_BYTE: u8 = 0xed;
+const FIELD_PRIME_HIGH_BYTE: u8 = 0x7f;
+
+pub(crate) fn is_canonical_identity(public_key: &[u8]) -> bool {
+    if public_key.len() != PUBLIC_KEY_LENGTH || public_key[31] > FIELD_PRIME_HIGH_BYTE {
+        return false;
+    }
+    // Agreement accepts non-canonical u-coordinates, but an envelope is a key
+    // identifier. Reject p through 2^255-1 as aliases of smaller field values.
+    public_key[31] != FIELD_PRIME_HIGH_BYTE
+        || public_key[1..31].iter().any(|&byte| byte != 0xff)
+        || public_key[0] < FIELD_PRIME_LOW_BYTE
+}
+
 /// RFC 8037 X25519 public JWK.
 ///
 /// This encoder output is serialization-only. Parse untrusted JWK JSON through
@@ -61,9 +76,7 @@ pub fn x25519_public_key_to_jwk(
     public_key: &[u8],
     options: JwkOptions,
 ) -> Result<X25519Jwk, JwtError> {
-    // RFC 7748 masks bit 255 during X25519, so accepting it in an identity
-    // encoding would give one key two distinct JWK or multikey identifiers.
-    if public_key.len() != 32 || public_key[31] & 0x80 != 0 {
+    if !is_canonical_identity(public_key) {
         return Err(JwtError::InvalidX25519Key);
     }
 

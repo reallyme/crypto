@@ -37,15 +37,20 @@
   authentication error.
 - Bounds PBKDF2's combined iteration and output-block work before derivation
   in Rust, Swift, Kotlin, and TypeScript. Over-limit requests fail with typed
-  errors before provider dispatch.
+  errors before provider dispatch; the Rust umbrella facade preserves the
+  resource-limit error kind.
 - Aligns Secure Enclave ECDH provider errors with signing and reserves the
   handle-owned Keychain tag namespace from caller-owned references.
 - Redacts Swift key material from reflection and keeps Kotlin's Android key
   alias domain and protobuf error sets private to their implementations.
 - Separates unavailable EC backends from malformed JWK metadata, rejects
-  non-canonical X25519 public-key identities and conflicting AKP key use in
+  X25519 field-element aliases at or above the field prime and conflicting AKP key use in
   JWK and multikey adapters, and validates verification-result status and error
   consistency in all SDKs.
+- Keeps the TypeScript package synchronously loadable through Node's CommonJS
+  bridge and uses a static reference to its package-owned WASM module.
+- Serializes Android Keystore key generation and deletion on one lock and
+  rejects software JCA objects at the hardware key-agreement completion API.
 - Caps Swift and Kotlin protobuf value-envelope byte decoders at one megabyte,
   matching the Rust wire-size boundary.
 - Rejects exact-range cross-output aliasing in the HPKE C ABI before any
