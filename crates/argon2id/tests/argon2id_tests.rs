@@ -15,6 +15,34 @@ use crypto_core::{CryptoError, KdfAlgorithm, KdfFailureKind, KdfProfile};
 use zeroize::Zeroizing;
 
 #[test]
+fn rfc9106_argon2id_known_answer_matches_backend() -> Result<(), argon2::Error> {
+    // RFC 9106 section 5.3 exercises the backend with secret and associated
+    // data inputs that the fixed ReallyMe password profile does not expose.
+    let associated_data = argon2::AssociatedData::new(&[4_u8; 12])?;
+    let params = argon2::ParamsBuilder::new()
+        .m_cost(32)
+        .t_cost(3)
+        .p_cost(4)
+        .data(associated_data)
+        .output_len(32)
+        .build()?;
+    let secret = [3_u8; 8];
+    let argon2 = argon2::Argon2::new_with_secret(
+        &secret,
+        argon2::Algorithm::Argon2id,
+        argon2::Version::V0x13,
+        params,
+    )?;
+    let mut actual = [0_u8; 32];
+    argon2.hash_password_into(&[1_u8; 32], &[2_u8; 16], &mut actual)?;
+    assert_eq!(
+        hex::encode(actual),
+        "0d640df58d78766c08c037a34a8b53c9d01ef0452d75b65eb52520e96b01e659"
+    );
+    Ok(())
+}
+
+#[test]
 fn caller_owned_zeroizing_memory_matches_upstream_argon2_output() -> Result<(), argon2::Error> {
     let params = argon2::Params::new(32, 1, 1, Some(ARGON2ID_DERIVED_KEY_LENGTH))?;
     let block_count = params.block_count();

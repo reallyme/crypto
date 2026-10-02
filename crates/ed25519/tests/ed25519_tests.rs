@@ -13,7 +13,8 @@
 
 use crypto_core::CryptoError;
 use crypto_ed25519::{
-    generate_ed25519_keypair, generate_ed25519_keypair_from_seed, sign_ed25519, verify_ed25519,
+    generate_ed25519_keypair, generate_ed25519_keypair_from_seed, sign_ed25519,
+    validate_public_key_identity, verify_ed25519,
 };
 use zeroize::Zeroizing;
 
@@ -41,6 +42,34 @@ fn parse_vector_hex(contents: &str) -> String {
         .filter(|line| !line.trim_start().starts_with("//"))
         .map(str::trim)
         .collect::<String>()
+}
+
+#[test]
+fn identity_validation_rejects_torsion_and_noncanonical_encodings() {
+    let (public_key, _) = generate_ed25519_keypair_from_seed(&[7_u8; 32])
+        .into_test_result()
+        .expect("valid seed");
+    assert_eq!(validate_public_key_identity(&public_key), Ok(()));
+
+    let mut identity = [0_u8; 32];
+    identity[0] = 1;
+    let mut aliased_identity = [0xff_u8; 32];
+    aliased_identity[0] = 0xee;
+    aliased_identity[31] = 0x7f;
+    for invalid in [identity, aliased_identity, [0_u8; 32], [0xff_u8; 32]] {
+        assert_eq!(
+            validate_public_key_identity(&invalid),
+            Err(CryptoError::InvalidKey)
+        );
+        assert_eq!(
+            crypto_ed25519::decode_public_key(&invalid),
+            Err(CryptoError::InvalidKey)
+        );
+    }
+    assert_eq!(
+        validate_public_key_identity(&public_key[..31]),
+        Err(CryptoError::InvalidKey)
+    );
 }
 
 #[test]

@@ -176,6 +176,12 @@ pub fn validate_verification_method_multikey(
     if parsed.public_key().len() != expected_len {
         return Err(AlgorithmError::InvalidKey(algorithm));
     }
+    #[cfg(feature = "ed25519")]
+    if algorithm == Algorithm::Ed25519
+        && crypto_ed25519::validate_public_key_identity(parsed.public_key()).is_err()
+    {
+        return Err(AlgorithmError::InvalidKey(algorithm));
+    }
     #[cfg(feature = "x25519")]
     if algorithm == Algorithm::X25519 && !crate::x25519_identity::is_canonical(parsed.public_key())
     {

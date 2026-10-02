@@ -143,6 +143,7 @@ export type ReallyMeWasmProvider = Readonly<{
 
 let installedProvider: ReallyMeWasmProvider | undefined;
 const poisonedModules = new WeakSet<object>();
+const trustedProviders = new WeakSet<object>();
 
 const isWasmRuntimeError = (error: unknown): boolean => {
   const wasm: unknown = Reflect.get(globalThis, "WebAssembly");
@@ -319,7 +320,8 @@ const rsaPssVerifyFunction = (module: object, name: string): RsaPssVerifyFn => {
     );
 };
 
-export const createReallyMeWasmProvider = (module: unknown): ReallyMeWasmProvider => {
+/** Bind callables after the caller establishes module ownership; tests exercise this boundary directly. */
+export const createWasmProviderFromModule = (module: unknown): ReallyMeWasmProvider => {
   const providerModule = requireObject(module);
   return {
     processOperationResponse: function1(providerModule, "processOperationResponse"),
@@ -392,10 +394,8 @@ export const createReallyMeWasmProvider = (module: unknown): ReallyMeWasmProvide
   };
 };
 
-export const installReallyMeWasmProvider = (module: unknown): void => {
-  if (installedProvider !== undefined) {
-    throw new ReallyMeCryptoError("provider-failure");
-  }
+/** Build a provider only from the package-owned and initialized WASM module. */
+export const createReallyMeWasmProvider = (module: unknown): ReallyMeWasmProvider => {
   const providerModule = requireObject(module);
   // Static named imports keep the package-owned glue in the bundler graph.
   // Compare every callable before global installation so a structural copy
@@ -414,12 +414,30 @@ export const installReallyMeWasmProvider = (module: unknown): void => {
     );
   } catch (error: unknown) {
     if (error instanceof ReallyMeCryptoError && error.code === "invalid-input") {
-      installedProvider = createReallyMeWasmProvider(bundledWasmFunctions);
-      return;
+      const provider = Object.freeze(createWasmProviderFromModule(bundledWasmFunctions));
+      trustedProviders.add(provider);
+      return provider;
     }
     throw new ReallyMeCryptoError("provider-failure");
   }
   throw new ReallyMeCryptoError("provider-failure");
+};
+
+/** A structural copy cannot be used as an explicit facade provider. */
+export const requireTrustedReallyMeWasmProvider = (
+  provider: ReallyMeWasmProvider,
+): ReallyMeWasmProvider => {
+  if (!trustedProviders.has(provider)) {
+    throw new ReallyMeCryptoError("provider-failure");
+  }
+  return provider;
+};
+
+export const installReallyMeWasmProvider = (module: unknown): void => {
+  if (installedProvider !== undefined) {
+    throw new ReallyMeCryptoError("provider-failure");
+  }
+  installedProvider = createReallyMeWasmProvider(module);
 };
 
 export const requireReallyMeWasmProvider = (): ReallyMeWasmProvider => {

@@ -15,6 +15,7 @@ use external_vector_audit::support::{
     assert_bytes_eq, hex_array, hex_bytes, load_json, AuditError,
 };
 use serde::Deserialize;
+use slh_dsa::{Sha2_128s, Signature, VerifyingKey};
 
 const PRACTICAL_SUBSET_PER_PARAMETER_SET: usize = 8;
 const ML_DSA_PUBLIC_SIGVER_CASES: usize = 3;
@@ -184,6 +185,46 @@ fn acvp_slh_dsa_sigver_vectors_record_current_public_boundary_status() -> Result
     }
 
     counts.require_rejected_only()
+}
+
+#[test]
+fn acvp_slh_dsa_internal_positive_known_answers_verify_backend() -> Result<(), AuditError> {
+    // The public API uses FIPS 205's external message domain with an empty
+    // context. ACVP's available positive SHA2-128s cases use the internal
+    // interface, so validate that independently supplied corpus at the
+    // backend's explicit KAT boundary instead of mislabeling it public API
+    // coverage.
+    let file: SlhDsaSigverFile = load_json("nist-acvp/slh-dsa/sigver/internalProjection.json")?;
+    let mut counts = SigverOutcomeCounts::default();
+
+    for group in &file.test_groups {
+        if !matches!(group.parameter_set, SlhDsaParameterSet::SlhDsaSha2_128s)
+            || group.signature_interface != SignatureInterface::Internal
+            || group.pre_hash != PreHashMode::None
+        {
+            continue;
+        }
+        for case in &group.tests {
+            let public_key = hex_bytes(&case.pk)?;
+            let message = hex_bytes(&case.message)?;
+            let signature = hex_bytes(&case.signature)?;
+            let accepted = match (
+                VerifyingKey::<Sha2_128s>::try_from(public_key.as_slice()),
+                Signature::<Sha2_128s>::try_from(signature.as_slice()),
+            ) {
+                (Ok(verifying_key), Ok(signature)) => verifying_key
+                    .slh_verify_internal(&[message.as_slice()], &signature)
+                    .is_ok(),
+                _ => false,
+            };
+            if accepted != case.test_passed {
+                return Err(AuditError::Mismatch);
+            }
+            counts.increment(case.test_passed)?;
+        }
+    }
+
+    counts.require_minimum(1)
 }
 
 fn execute_ml_dsa_keygen_case(

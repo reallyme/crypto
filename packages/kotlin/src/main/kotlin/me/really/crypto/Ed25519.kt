@@ -24,6 +24,21 @@ public object ReallyMeEd25519 {
     public const val SIGNATURE_LENGTH: Int = 64
     private val identityPoint: ByteArray = ByteArray(PUBLIC_KEY_LENGTH).also { it[0] = 1 }
 
+    /** Identity envelopes require the same canonical prime-subgroup key as verification. */
+    internal fun validatePublicKeyIdentity(publicKey: ByteArray) {
+        if (publicKey.size != PUBLIC_KEY_LENGTH || publicKey.contentEquals(identityPoint)) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
+        val valid = try {
+            Ed25519.validatePublicKeyFull(publicKey, 0)
+        } catch (_: IllegalArgumentException) {
+            false
+        }
+        if (!valid) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
+    }
+
     /** Generates a random Ed25519 keypair: 32-byte public key, 32-byte seed. */
     public fun generateKeyPair(): Pair<ByteArray, ByteArray> {
         val secretKey = ByteArray(SECRET_KEY_LENGTH)

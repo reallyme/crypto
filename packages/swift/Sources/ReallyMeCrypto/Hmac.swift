@@ -48,45 +48,58 @@ public enum ReallyMeHmac {
   }
 
   public static func verifySha256(tag: [UInt8], key: [UInt8], message: [UInt8])
-    throws(ReallyMeCryptoError) -> Bool
+    throws(ReallyMeCryptoError)
   {
     try validateKey(key)
     guard tag.count == sha256TagLength else {
       throw ReallyMeCryptoError.invalidInput
     }
-    return HMAC<SHA256>.isValidAuthenticationCode(
-      tag,
-      authenticating: Data(message),
-      using: SymmetricKey(data: Data(key))
-    )
+    guard
+      HMAC<SHA256>.isValidAuthenticationCode(
+        tag,
+        authenticating: Data(message),
+        using: SymmetricKey(data: Data(key))
+      )
+    else {
+      // Invalid authentication must fail even if the caller ignores the result.
+      throw ReallyMeCryptoError.authenticationFailed
+    }
   }
 
   public static func verifySha512(tag: [UInt8], key: [UInt8], message: [UInt8])
-    throws(ReallyMeCryptoError) -> Bool
+    throws(ReallyMeCryptoError)
   {
     try validateKey(key)
     guard tag.count == sha512TagLength else {
       throw ReallyMeCryptoError.invalidInput
     }
-    return HMAC<SHA512>.isValidAuthenticationCode(
-      tag,
-      authenticating: Data(message),
-      using: SymmetricKey(data: Data(key))
-    )
+    guard
+      HMAC<SHA512>.isValidAuthenticationCode(
+        tag,
+        authenticating: Data(message),
+        using: SymmetricKey(data: Data(key))
+      )
+    else {
+      throw ReallyMeCryptoError.authenticationFailed
+    }
   }
 
   public static func verifySha384(tag: [UInt8], key: [UInt8], message: [UInt8])
-    throws(ReallyMeCryptoError) -> Bool
+    throws(ReallyMeCryptoError)
   {
     try validateKey(key)
     guard tag.count == sha384TagLength else {
       throw ReallyMeCryptoError.invalidInput
     }
-    return HMAC<SHA384>.isValidAuthenticationCode(
-      tag,
-      authenticating: Data(message),
-      using: SymmetricKey(data: Data(key))
-    )
+    guard
+      HMAC<SHA384>.isValidAuthenticationCode(
+        tag,
+        authenticating: Data(message),
+        using: SymmetricKey(data: Data(key))
+      )
+    else {
+      throw ReallyMeCryptoError.authenticationFailed
+    }
   }
 
   private static func validateKey(_ key: [UInt8]) throws(ReallyMeCryptoError) {

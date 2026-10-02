@@ -119,19 +119,22 @@ class ReallyMeCryptoSymmetricTest : ReallyMeCryptoTestSupport() {
             ),
             sha512Tag,
         )
-        assertTrue(ReallyMeCrypto.verifyMac(ReallyMeMacAlgorithm.HMAC_SHA256, sha256Tag, key, message))
-        assertTrue(ReallyMeCrypto.verifyMac(ReallyMeMacAlgorithm.HMAC_SHA384, sha384Tag, key, message))
-        assertTrue(ReallyMeCrypto.verifyMac(ReallyMeMacAlgorithm.HMAC_SHA512, sha512Tag, key, message))
+        ReallyMeCrypto.verifyMac(ReallyMeMacAlgorithm.HMAC_SHA256, sha256Tag, key, message)
+        ReallyMeCrypto.verifyMac(ReallyMeMacAlgorithm.HMAC_SHA384, sha384Tag, key, message)
+        ReallyMeCrypto.verifyMac(ReallyMeMacAlgorithm.HMAC_SHA512, sha512Tag, key, message)
     }
 
     @Test
     fun genericFacadeHmacRejectsInvalidInputAndTampering() {
         val key = bytes("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b")
         val message = bytes("4869205468657265")
-        val tag = ReallyMeCrypto.authenticate(ReallyMeMacAlgorithm.HMAC_SHA256, key, message)
-        tag[0] = (tag[0].toInt() xor 0x01).toByte()
-
-        assertFalse(ReallyMeCrypto.verifyMac(ReallyMeMacAlgorithm.HMAC_SHA256, tag, key, message))
+        for (algorithm in ReallyMeMacAlgorithm.entries) {
+            val tag = ReallyMeCrypto.authenticate(algorithm, key, message)
+            tag[0] = (tag[0].toInt() xor 0x01).toByte()
+            assertFailsWith<ReallyMeCryptoException.AuthenticationFailed> {
+                ReallyMeCrypto.verifyMac(algorithm, tag, key, message)
+            }
+        }
         assertFailsWith<ReallyMeCryptoException.InvalidInput> {
             ReallyMeCrypto.authenticate(ReallyMeMacAlgorithm.HMAC_SHA256, ByteArray(0), message)
         }

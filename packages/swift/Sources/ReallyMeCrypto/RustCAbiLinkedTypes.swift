@@ -51,6 +51,11 @@ import Foundation
       UnsafePointer<UInt8>?, Int,
       UnsafePointer<UInt8>?, Int
     ) -> Int32
+  typealias LinkedDecodePublicKeyFunction =
+    @convention(c) (
+      UnsafePointer<UInt8>?, Int,
+      UnsafeMutablePointer<UInt8>?, Int
+    ) -> Int32
   typealias LinkedEcdsaSignFunction =
     @convention(c) (
       UnsafePointer<UInt8>?, Int,
@@ -159,6 +164,7 @@ import Foundation
     case ed25519GenerateKeypairFromSeed = "rm_crypto_ed25519_generate_keypair_from_seed"
     case ed25519Sign = "rm_crypto_ed25519_sign"
     case ed25519Verify = "rm_crypto_ed25519_verify"
+    case ed25519DecodePublicKey = "rm_crypto_ed25519_decode_public_key"
     case p256GenerateKeypair = "rm_crypto_p256_generate_keypair"
     case p256GenerateKeypairFromSecretKey = "rm_crypto_p256_generate_keypair_from_secret_key"
     case p256SignDerPrehash = "rm_crypto_p256_sign_der_prehash"

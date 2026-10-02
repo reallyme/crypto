@@ -81,6 +81,11 @@ import Foundation
     _: UnsafePointer<UInt8>?, _: Int,
     _: UnsafePointer<UInt8>?, _: Int
   ) -> Int32
+  @_silgen_name("rm_crypto_ed25519_decode_public_key")
+  func rmCryptoEd25519DecodePublicKeyLinked(
+    _: UnsafePointer<UInt8>?, _: Int,
+    _: UnsafeMutablePointer<UInt8>?, _: Int
+  ) -> Int32
 
   @_silgen_name("rm_crypto_p256_generate_keypair")
   func rmCryptoP256GenerateKeypairLinked(

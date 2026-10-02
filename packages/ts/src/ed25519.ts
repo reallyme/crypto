@@ -21,6 +21,27 @@ export const ED25519_SECRET_KEY_LENGTH = 32;
 export const ED25519_PUBLIC_KEY_LENGTH = 32;
 export const ED25519_SIGNATURE_LENGTH = 64;
 
+/** Require one canonical prime-subgroup encoding for an Ed25519 identity. */
+export const validateEd25519PublicKeyIdentity = (publicKey: Uint8Array): void => {
+  ensureByteArray(publicKey);
+  if (publicKey.length !== ED25519_PUBLIC_KEY_LENGTH) {
+    throw new ReallyMeCryptoError("invalid-input");
+  }
+  try {
+    const point = ed25519.Point.fromBytes(publicKey, false);
+    const canonical = point.toBytes();
+    if (
+      !point.isTorsionFree() ||
+      point.isSmallOrder() ||
+      canonical.some((byte, index) => byte !== publicKey[index])
+    ) {
+      throw new ReallyMeCryptoError("invalid-input");
+    }
+  } catch {
+    throw new ReallyMeCryptoError("invalid-input");
+  }
+};
+
 export const ReallyMeEd25519 = {
   /** Generates a random Ed25519 keypair: 32-byte public key, 32-byte seed. */
   generateKeyPair(): { publicKey: Uint8Array; secretKey: Uint8Array } {

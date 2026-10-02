@@ -49,9 +49,8 @@ pub fn ed25519_public_key_to_jwk(
     public_key: &[u8],
     options: JwkOptions,
 ) -> Result<Ed25519Jwk, JwtError> {
-    if public_key.len() != 32 {
-        return Err(JwtError::InvalidEd25519Key);
-    }
+    crypto_ed25519::validate_public_key_identity(public_key)
+        .map_err(|_| JwtError::InvalidEd25519Key)?;
 
     let mut jwk = Ed25519Jwk {
         kty: "OKP",

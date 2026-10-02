@@ -489,7 +489,8 @@ for (const primitivePolicy of [
   {
     crateRoot: "crates/ed25519",
     manifestNeedles: [
-      'wasm = [\n    "crypto-csprng/wasm",\n    "dep:ed25519-dalek",\n    "dep:curve25519-dalek",\n    "dep:crypto-csprng",\n]',
+      'wasm = [\n    "crypto-csprng/wasm",\n    "dep:ed25519-dalek",\n    "dep:crypto-csprng",\n]',
+      'curve25519-dalek = { workspace = true }',
     ],
   },
   ...["44", "65", "87"].map((parameterSet) => ({
@@ -881,7 +882,7 @@ assertNotContains(
 );
 assertContains(
   "crates/conformance/package.json",
-  "npm run --prefix ../../packages/ts build:ts",
+  "npm run --prefix ../../packages/ts build",
 );
 assertContains(
   "crates/conformance/scripts/verify-ts-native-vectors.mjs",
@@ -973,6 +974,7 @@ assertContains("packages/ts/src/protoErrors.ts", "invalidInputReasons");
 assertContains("packages/ts/src/cryptoFacade.ts", "createReallyMeCrypto");
 assertContains("packages/ts/src/cryptoFacade.ts", "ReallyMeCryptoProviders");
 assertContains("packages/ts/src/cryptoFacade.ts", "resolveWasmProvider");
+assertContains("packages/ts/src/cryptoFacade.ts", "requireTrustedReallyMeWasmProvider(configuredProvider)");
 assertContains("packages/ts/src/cryptoFacadeSymmetric.ts", "deriveArgon2id");
 assertContains("packages/ts/src/cryptoFacadeAsymmetric.ts", "deriveKemKeyPair");
 assertContains("packages/ts/src/index.ts", "createReallyMeCrypto");
@@ -986,6 +988,10 @@ assertContains("packages/ts/src/p521Ecdh.ts", "bestEffortClear(uncompressed)");
 assertContains(
   "packages/ts/test/reallyme-crypto.test.mjs",
   "explicit crypto provider instances isolate WASM-backed routes",
+);
+assertContains(
+  "packages/ts/test/reallyme-crypto.test.mjs",
+  "explicit facades reject untrusted WASM verification providers",
 );
 assertContains(
   "packages/ts/test/reallyme-crypto.test.mjs",
@@ -1024,10 +1030,10 @@ assertContains(
   "best-effort memory cleanup overwrites caller-owned TypeScript bytes",
 );
 assertContains("packages/ts/README.md", "createReallyMeCrypto");
-assertContains("packages/ts/README.md", "package-global mutable state");
+assertContains("packages/ts/README.md", "Both paths reject replacement verification functions");
 assertContains("packages/ts/README.md", "bestEffortClear(secretBytes)");
 assertContains("packages/ts/README.md", "Direct raw WASM calls are unsupported for application logic.");
-assertContains("packages/ts/README.md", "Custom provider objects are trusted providers");
+assertContains("packages/ts/README.md", "Explicit facades reject");
 assertContains(
   "packages/ts/test/wasm-boundary.test.mjs",
   "custom seed-derived providers have an explicit correspondence trust boundary",

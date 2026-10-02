@@ -86,5 +86,8 @@ reallyme-crypto-x25519 = { version = "=0.3.10", path = "../../crates/x25519", de
 reallyme-crypto-x448 = { version = "=0.3.10", path = "../../crates/x448", default-features = false }
 reallyme-crypto-x-wing = { version = "=0.3.10", path = "../../crates/x-wing", default-features = false }
 
+[dev-dependencies]
+slh-dsa = { workspace = true }
+
 [lints]
 workspace = true

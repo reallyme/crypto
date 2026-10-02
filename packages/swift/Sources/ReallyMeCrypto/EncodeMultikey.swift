@@ -10,6 +10,9 @@ public enum ReallyMeMultikey {
     _ algorithm: ReallyMeMulticodecKeyAlgorithm,
     publicKey: [UInt8]
   ) throws(ReallyMeCryptoError) -> String {
+    if algorithm == .ed25519PublicKey {
+      try ReallyMeEd25519Identity.validate(publicKey)
+    }
     if algorithm == .x25519PublicKey
       && !ReallyMeX25519Identity.isCanonical(publicKey)
     {
@@ -38,6 +41,9 @@ public enum ReallyMeMultikey {
         && !ReallyMeX25519Identity.isCanonical(parsed.publicKey)
       {
         throw ReallyMeCryptoError.invalidInput
+      }
+      if algorithm == .ed25519PublicKey {
+        try ReallyMeEd25519Identity.validate(parsed.publicKey)
       }
       let expectedPublicKeyLength: Int?
       if let codecExpectedLength = parsed.expectedPublicKeyLength {

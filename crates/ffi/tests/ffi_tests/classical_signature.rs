@@ -80,6 +80,23 @@ fn ed25519_ffi_covers_keygen_sign_verify_and_encoding() {
     };
     assert_eq!(decode_status, status::CRYPTO_OK);
     assert_eq!(decoded, public);
+
+    let mut identity = [0_u8; ed25519::ED25519_PUBLIC_KEY_LEN];
+    identity[0] = 1;
+    let mut aliased_identity = [0xff_u8; ed25519::ED25519_PUBLIC_KEY_LEN];
+    aliased_identity[0] = 0xee;
+    aliased_identity[31] = 0x7f;
+    for invalid in [identity, aliased_identity, [0_u8; ed25519::ED25519_PUBLIC_KEY_LEN]] {
+        let status = unsafe {
+            ed25519::rm_crypto_ed25519_decode_public_key(
+                invalid.as_ptr(),
+                invalid.len(),
+                decoded.as_mut_ptr(),
+                decoded.len(),
+            )
+        };
+        assert_eq!(status, status::CRYPTO_INVALID_KEY);
+    }
 }
 
 #[test]

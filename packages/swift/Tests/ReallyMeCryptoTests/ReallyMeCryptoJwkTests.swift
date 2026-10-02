@@ -4,6 +4,7 @@
 
 import Foundation
 import ReallyMeCrypto
+import ReallyMeCodec
 import XCTest
 
 final class ReallyMeCryptoJwkTests: XCTestCase {
@@ -47,6 +48,38 @@ final class ReallyMeCryptoJwkTests: XCTestCase {
     }
   }
 
+  func testEd25519EnvelopesRejectInvalidPointIdentities() throws {
+    try installReallyMeCodecProviderForTest()
+    var identity = [UInt8](repeating: 0, count: 32)
+    identity[0] = 1
+    var aliasedIdentity = [UInt8](repeating: 0xff, count: 32)
+    aliasedIdentity[0] = 0xee
+    aliasedIdentity[31] = 0x7f
+    for publicKey in [identity, aliasedIdentity, [UInt8](repeating: 0, count: 32)] {
+      XCTAssertThrowsError(try ReallyMeJwk.toJwk(algorithm: .ed25519, publicKey: publicKey)) {
+        error in
+        XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+      }
+      XCTAssertThrowsError(try ReallyMeMultikey.encode(.ed25519PublicKey, publicKey: publicKey)) {
+        error in
+        XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+      }
+      let rawMultikey = try ReallyMeCodec().multikeyEncode(
+        codecName: "ed25519-pub", publicKey: publicKey)
+      XCTAssertThrowsError(try ReallyMeMultikey.parse(rawMultikey)) { error in
+        XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+      }
+      let encoded = Data(publicKey).base64EncodedString()
+        .replacingOccurrences(of: "+", with: "-")
+        .replacingOccurrences(of: "/", with: "_")
+        .replacingOccurrences(of: "=", with: "")
+      let json = #"{"crv":"Ed25519","kty":"OKP","x":"\#(encoded)"}"#
+      XCTAssertThrowsError(try ReallyMeJwk.fromJwkJson(Data(json.utf8))) { error in
+        XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+      }
+    }
+  }
+
   func testX25519EnvelopesRejectNonCanonicalFieldAliases() throws {
     try installReallyMeCodecProviderForTest()
     var publicKey = [UInt8](repeating: 0xff, count: 32)
@@ -71,7 +104,7 @@ final class ReallyMeCryptoJwkTests: XCTestCase {
 
   func testJwkParserRejectsPrivateKeyMembers() throws {
     try installReallyMeCodecProviderForTest()
-    let publicX = String(repeating: "A", count: 43)
+    let publicX = "bd_77DacquIWpfuZCAps4BN5nYvqANOYBNepDXNQLYI"
     for name in ["d", "p", "q", "dp", "dq", "qi", "oth", "k", "priv", "privateKey", "secretKey"] {
       let json =
         #"{"alg":"EdDSA","crv":"Ed25519","kty":"OKP","use":"sig","x":"\#(publicX)","\#(name)":"redacted-test-value"}"#
@@ -83,7 +116,7 @@ final class ReallyMeCryptoJwkTests: XCTestCase {
 
   func testJwkParserRejectsDuplicateUnknownAndMixedShapeMembers() throws {
     try installReallyMeCodecProviderForTest()
-    let publicX = String(repeating: "A", count: 43)
+    let publicX = "bd_77DacquIWpfuZCAps4BN5nYvqANOYBNepDXNQLYI"
     let valid = #"{"alg":"EdDSA","crv":"Ed25519","kty":"OKP","use":"sig","x":"\#(publicX)"}"#
     let malformed = [
       #"{"alg":"EdDSA","crv":"Ed25519","kty":"OKP","kty":"OKP","use":"sig","x":"\#(publicX)"}"#,
@@ -119,7 +152,7 @@ final class ReallyMeCryptoJwkTests: XCTestCase {
 
   func testOkpMetadataIsOptionalButConflictsAreRejected() throws {
     try installReallyMeCodecProviderForTest()
-    let publicX = String(repeating: "A", count: 43)
+    let publicX = "bd_77DacquIWpfuZCAps4BN5nYvqANOYBNepDXNQLYI"
     let omitted = #"{"crv":"Ed25519","kty":"OKP","x":"\#(publicX)"}"#
     XCTAssertEqual(
       try ReallyMeJwk.fromJwkJson(Data(omitted.utf8)).algorithm,

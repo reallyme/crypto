@@ -185,6 +185,8 @@ pub fn public_key_to_multikey(alg: Algorithm, public_key: &[u8]) -> Result<Strin
         Algorithm::Ed25519 => {
             #[cfg(feature = "ed25519")]
             {
+                crypto_ed25519::validate_public_key_identity(public_key)
+                    .map_err(|_| AlgorithmError::InvalidKey(alg))?;
                 ("ed25519-pub", public_key.to_vec())
             }
             #[cfg(not(feature = "ed25519"))]

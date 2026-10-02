@@ -5,7 +5,7 @@
 import { createReallyMeAsymmetricFacade } from "./cryptoFacadeAsymmetric.js";
 import { createReallyMeSymmetricFacade } from "./cryptoFacadeSymmetric.js";
 import { ReallyMeCryptoError } from "./errors.js";
-import { requireReallyMeWasmProvider } from "./wasmProvider.js";
+import { requireReallyMeWasmProvider, requireTrustedReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 
 export type ReallyMeSignatureKeyPair = Readonly<{
@@ -43,7 +43,7 @@ export type ReallyMeCryptoProviders = Readonly<{
  * stable typed route and rejects algorithm/operation combinations that the
  * selected method does not define.
  */
-const createReallyMeCryptoFacade = (
+export const createReallyMeCryptoFacade = (
   resolveWasmProvider: () => ReallyMeWasmProvider,
 ) => ({
   ...createReallyMeSymmetricFacade(resolveWasmProvider),
@@ -56,11 +56,14 @@ export const createReallyMeCrypto = (
   providers: ReallyMeCryptoProviders = {},
 ): ReallyMeCryptoFacade => {
   const configuredProvider = providers.wasmProvider;
+  const trustedProvider = configuredProvider === undefined
+    ? undefined
+    : requireTrustedReallyMeWasmProvider(configuredProvider);
   return createReallyMeCryptoFacade(() => {
-    if (configuredProvider === undefined) {
+    if (trustedProvider === undefined) {
       throw new ReallyMeCryptoError("provider-failure");
     }
-    return configuredProvider;
+    return trustedProvider;
   });
 };
 

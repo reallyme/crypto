@@ -31,28 +31,28 @@ export const ReallyMeHmac = {
     return hmac(sha512, key, message);
   },
 
-  verifySha256(tag: Uint8Array, key: Uint8Array, message: Uint8Array): boolean {
+  verifySha256(tag: Uint8Array, key: Uint8Array, message: Uint8Array): void {
     ensureByteArray(tag);
     if (tag.length !== HMAC_SHA256_TAG_LENGTH) {
       throw new ReallyMeCryptoError("invalid-input");
     }
-    return verifyAndClearExpectedTag(tag, ReallyMeHmac.authenticateSha256(key, message));
+    verifyAndClearExpectedTag(tag, ReallyMeHmac.authenticateSha256(key, message));
   },
 
-  verifySha384(tag: Uint8Array, key: Uint8Array, message: Uint8Array): boolean {
+  verifySha384(tag: Uint8Array, key: Uint8Array, message: Uint8Array): void {
     ensureByteArray(tag);
     if (tag.length !== HMAC_SHA384_TAG_LENGTH) {
       throw new ReallyMeCryptoError("invalid-input");
     }
-    return verifyAndClearExpectedTag(tag, ReallyMeHmac.authenticateSha384(key, message));
+    verifyAndClearExpectedTag(tag, ReallyMeHmac.authenticateSha384(key, message));
   },
 
-  verifySha512(tag: Uint8Array, key: Uint8Array, message: Uint8Array): boolean {
+  verifySha512(tag: Uint8Array, key: Uint8Array, message: Uint8Array): void {
     ensureByteArray(tag);
     if (tag.length !== HMAC_SHA512_TAG_LENGTH) {
       throw new ReallyMeCryptoError("invalid-input");
     }
-    return verifyAndClearExpectedTag(tag, ReallyMeHmac.authenticateSha512(key, message));
+    verifyAndClearExpectedTag(tag, ReallyMeHmac.authenticateSha512(key, message));
   },
 } as const;
 
@@ -79,9 +79,12 @@ function constantTimeEquals(left: Uint8Array, right: Uint8Array): boolean {
   return difference === 0;
 }
 
-function verifyAndClearExpectedTag(tag: Uint8Array, expectedTag: Uint8Array): boolean {
+function verifyAndClearExpectedTag(tag: Uint8Array, expectedTag: Uint8Array): void {
   try {
-    return constantTimeEquals(tag, expectedTag);
+    if (!constantTimeEquals(tag, expectedTag)) {
+      // Verification must fail even when a caller ignores the return value.
+      throw new ReallyMeCryptoError("authentication-failed");
+    }
   } finally {
     // Noble returns a new typed array. Clear it immediately so verification
     // does not retain key-derived authentication material until a GC cycle.

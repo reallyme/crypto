@@ -184,8 +184,8 @@ pub unsafe extern "C" fn rm_crypto_ed25519_verify(
 /// unchanged.
 ///
 /// An Ed25519 public key is a compressed Edwards point that is already its
-/// own canonical 32-byte encoding, so this performs a length check and a
-/// byte-for-byte copy — it does not transform the key. It exists so every
+/// own canonical 32-byte encoding. This rejects noncanonical, small-order,
+/// and non-prime-subgroup points, then copies the key unchanged. It exists so every
 /// key type presents the same explicit encode/decode surface across the C
 /// ABI.
 ///
@@ -195,7 +195,7 @@ pub unsafe extern "C" fn rm_crypto_ed25519_verify(
 /// when `public_key_len == 0`). `out` must be non-null and point to at least
 /// `out_len` writable bytes (32). Returns [`CryptoStatus`] via the return
 /// value: [`CRYPTO_OK`] on success, or [`CRYPTO_INVALID_KEY`] for a key that
-/// is not exactly 32 bytes.
+/// is not a canonical prime-subgroup point of exactly 32 bytes.
 #[no_mangle]
 pub unsafe extern "C" fn rm_crypto_ed25519_encode_public_key(
     public_key: *const u8,
@@ -218,8 +218,8 @@ pub unsafe extern "C" fn rm_crypto_ed25519_encode_public_key(
 /// Validates an encoded Ed25519 `public_key` and writes the raw 32-byte key
 /// to `out`.
 ///
-/// The Ed25519 encoding is the raw 32-byte key, so decoding is a length
-/// check plus a byte-for-byte copy — the inverse of
+/// The Ed25519 encoding is the raw 32-byte key, so decoding validates the
+/// canonical prime-subgroup point and copies the bytes unchanged — the inverse of
 /// [`rm_crypto_ed25519_encode_public_key`] and, for this key type,
 /// identical to it.
 ///
@@ -229,7 +229,7 @@ pub unsafe extern "C" fn rm_crypto_ed25519_encode_public_key(
 /// when `public_key_len == 0`). `out` must be non-null and point to at least
 /// `out_len` writable bytes (32). Returns [`CryptoStatus`] via the return
 /// value: [`CRYPTO_OK`] on success, or [`CRYPTO_INVALID_KEY`] for a key that
-/// is not exactly 32 bytes.
+/// is not a canonical prime-subgroup point of exactly 32 bytes.
 #[no_mangle]
 pub unsafe extern "C" fn rm_crypto_ed25519_decode_public_key(
     public_key: *const u8,

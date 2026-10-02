@@ -72,7 +72,7 @@ extension ReallyMeCrypto {
     tag: [UInt8],
     key: [UInt8],
     message: [UInt8]
-  ) throws(ReallyMeCryptoError) -> Bool {
+  ) throws(ReallyMeCryptoError) {
     try Self.verifyMac(algorithm, tag: tag, key: key, message: message)
   }
 

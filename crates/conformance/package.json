@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "verify:noble-pq": "node scripts/verify-noble-pq-vectors.mjs",
-    "verify:ts-native": "npm run --prefix ../../packages/ts build:ts && node scripts/verify-ts-native-vectors.mjs",
+    "verify:ts-native": "npm run --prefix ../../packages/ts build && node scripts/verify-ts-native-vectors.mjs",
     "verify:all": "npm run verify:ts-native && npm run verify:noble-pq"
   },
   "dependencies": {

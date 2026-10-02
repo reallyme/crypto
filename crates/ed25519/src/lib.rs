@@ -4,6 +4,10 @@
 
 //! Ed25519 (RFC 8032) signatures. Verification rejects malleable signatures and non-canonical public keys.
 
+mod validate_public_key;
+
+pub use validate_public_key::validate_public_key_identity;
+
 #[cfg(any(feature = "native", feature = "wasm"))]
 mod native;
 

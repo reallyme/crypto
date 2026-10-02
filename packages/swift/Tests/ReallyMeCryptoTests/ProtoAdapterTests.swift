@@ -277,7 +277,7 @@ extension ReallyMeCryptoTests {
 
   func testProtoJsonWebKeyBytesRoundTripThroughCodecPackage() throws {
     try installReallyMeCodecProviderForTest()
-    let publicKey = (0..<32).map { UInt8($0) }
+    let publicKey = try Self.base64UrlBytes("bd_77DacquIWpfuZCAps4BN5nYvqANOYBNepDXNQLYI")
     let jwk = try ReallyMeJwk.toJwk(algorithm: .ed25519, publicKey: publicKey)
     let key = ReallyMeJwkKey(algorithm: .ed25519, publicKey: publicKey, jwk: jwk)
 

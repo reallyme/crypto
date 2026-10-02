@@ -32,10 +32,11 @@ members, mixed JWK shapes, and unknown non-extension members are rejected before
 key extraction. Public members are length-checked before base64url decoding so
 oversized values cannot trigger a second attacker-proportional allocation.
 
-An Ed25519 OKP envelope validates the byte encoding and length. Importing it
-does not establish that the bytes are a usable verification point; signature
-verification applies the prime-subgroup and canonical-point checks. Callers
-must not treat a parsed Ed25519 JWK or multikey as proof of possession.
+An Ed25519 OKP envelope accepts only a canonical, nonidentity prime-subgroup
+point. The same point policy applies to JWK and multikey parsing and encoding
+in each package lane. Swift uses the bundled Rust C ABI validator for this
+boundary because CryptoKit's public-key constructor does not enforce the point
+policy. A valid point does not prove possession of its secret key.
 
 EC JWK import treats both coordinates as identity-bearing input. The parser
 reconstructs the compressed SEC1 key, decompresses it through the reviewed curve

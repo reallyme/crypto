@@ -109,14 +109,14 @@ extension ReallyMeCrypto {
     tag: [UInt8],
     key: [UInt8],
     message: [UInt8]
-  ) throws(ReallyMeCryptoError) -> Bool {
+  ) throws(ReallyMeCryptoError) {
     switch algorithm {
     case .hmacSha256:
-      return try ReallyMeHmac.verifySha256(tag: tag, key: key, message: message)
+      try ReallyMeHmac.verifySha256(tag: tag, key: key, message: message)
     case .hmacSha384:
-      return try ReallyMeHmac.verifySha384(tag: tag, key: key, message: message)
+      try ReallyMeHmac.verifySha384(tag: tag, key: key, message: message)
     case .hmacSha512:
-      return try ReallyMeHmac.verifySha512(tag: tag, key: key, message: message)
+      try ReallyMeHmac.verifySha512(tag: tag, key: key, message: message)
     }
   }
 

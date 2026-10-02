@@ -85,6 +85,59 @@ fn invalid_public_key_length_is_rejected() {
 }
 
 #[test]
+fn rfc9180_section_7_1_4_rejects_invalid_dhkem_points() {
+    let invalid_p256_point = [0x04_u8; 65];
+    let p256_seal_error = seal_base(&HpkeSealRequest {
+        suite: HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM,
+        recipient_public_key: &invalid_p256_point,
+        info: b"info",
+        aad: b"aad",
+        plaintext: b"plaintext",
+    })
+    .err()
+    .expect("off-curve recipient point must fail");
+    assert_eq!(p256_seal_error, HpkeError::InvalidPublicKey);
+
+    let p256_open_error = open_base(&HpkeOpenRequest {
+        suite: HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM,
+        encapsulated_key: &invalid_p256_point,
+        recipient_private_key: &P256_PRIVATE_KEY,
+        info: b"info",
+        aad: b"aad",
+        ciphertext: &[0_u8; 16],
+    })
+    .err()
+    .expect("off-curve encapsulated point must fail");
+    assert_eq!(p256_open_error, HpkeError::InvalidEncapsulatedKey);
+
+    let low_order_x25519 = [0_u8; 32];
+    let x25519_seal_error = seal_base(&HpkeSealRequest {
+        suite: HPKE_DHKEM_X25519_HKDF_SHA256_CHACHA20POLY1305,
+        recipient_public_key: &low_order_x25519,
+        info: b"info",
+        aad: b"aad",
+        plaintext: b"plaintext",
+    })
+    .err()
+    .expect("low-order recipient point must fail");
+    // The HPKE engine reports a low-order X25519 key during encapsulation,
+    // after byte decoding, so the wrapper preserves its typed seal failure.
+    assert_eq!(x25519_seal_error, HpkeError::SealFailed);
+
+    let x25519_open_error = open_base(&HpkeOpenRequest {
+        suite: HPKE_DHKEM_X25519_HKDF_SHA256_CHACHA20POLY1305,
+        encapsulated_key: &low_order_x25519,
+        recipient_private_key: &X25519_PRIVATE_KEY,
+        info: b"info",
+        aad: b"aad",
+        ciphertext: &[0_u8; 16],
+    })
+    .err()
+    .expect("low-order encapsulated point must fail");
+    assert_eq!(x25519_open_error, HpkeError::OpenFailed);
+}
+
+#[test]
 fn invalid_private_key_length_is_rejected() {
     let sealed = seal_base(&HpkeSealRequest {
         suite: HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM,

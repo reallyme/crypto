@@ -22,7 +22,6 @@ default = [ ]
 native = [
     "crypto-csprng/native",
     "dep:ed25519-dalek",
-    "dep:curve25519-dalek",
     "dep:crypto-csprng",
 ]
 
@@ -30,7 +29,6 @@ native = [
 wasm = [
     "crypto-csprng/wasm",
     "dep:ed25519-dalek",
-    "dep:curve25519-dalek",
     "dep:crypto-csprng",
 ]
 
@@ -44,7 +42,7 @@ zeroize = { workspace = true }
 # Backend crypto deps
 # -----------------------------
 ed25519-dalek = { workspace = true, features = ["zeroize"], optional = true }
-curve25519-dalek = { workspace = true, optional = true }
+curve25519-dalek = { workspace = true }
 
 [dev-dependencies]
 hex = { workspace = true }
