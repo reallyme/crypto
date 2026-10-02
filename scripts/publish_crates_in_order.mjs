@@ -340,10 +340,12 @@ function publishPackage(pkg) {
   } catch (error) {
     if (error instanceof PublishRetryError) {
       if (error.code === PublishFailureCode.AlreadyPublished) {
-        console.log(
-          `${pkg.name} ${pkg.version} is already published on crates.io; continuing release resume.`,
+        // A version match alone cannot prove the published crate has this
+        // release commit's packaged files or resolved dependencies.
+        console.error(
+          `${pkg.name} ${pkg.version} already exists on crates.io; verify its packaged contents and dependency lock before any manual resume.`,
         );
-        return;
+        process.exit(error.status);
       }
       console.error(`${pkg.name} ${pkg.version} publish failed: ${error.code}.`);
       process.exit(error.status);

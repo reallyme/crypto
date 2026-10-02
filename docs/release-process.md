@@ -1,7 +1,9 @@
 # Release Process
 
-ReallyMe Crypto releases are reviewed-source releases. Package credentials are
-available only after the exact release SHA has passed the required checks.
+ReallyMe Crypto releases use a reviewed source commit. The release workflows
+check that the exact source SHA passed the required runs before invoking a
+credentialed publish step. Repository environment protection and credentials
+must be configured separately before publication.
 
 ## Required Local Validation
 
@@ -34,26 +36,27 @@ Release workflows require:
 - exact-SHA workflow-success evidence for `rust-ci`, `dependency-security`, and the matching versioned
   package preflight, including the Swift preflight run that owns the promoted
   XCFramework artifact;
-- protected environments or equivalent approval gates before credentials;
-- immutable Swift release-asset behavior;
+- release environment protection before credentials are provisioned;
+- refusal to overwrite an existing Swift tag or release asset;
 - Maven credential preflight and signing evidence;
 - crates.io publish retry tests with terminal failure on exhausted retries, and
-  release-runner resume behavior for crate versions that are already present on
-  crates.io from an interrupted ordered publish.
+  a fail-closed stop when a crate version is already present during an
+  interrupted ordered publish.
 
 ## Publishing Credentials
 
-- The protected `npm-release` environment provides `NPM_TOKEN` for the
-  `@reallyme/crypto` scope. GitHub's OIDC token supplies npm provenance; no OIDC
-  credential is stored as a repository secret.
-- The protected `crates-io-release` environment provides
-  `CARGO_REGISTRY_TOKEN` for the approved ReallyMe crate owners.
-- The protected `maven-release` environment provides the HTTPS repository URL,
-  repository credentials, and in-memory PGP signing key used for both the JVM
-  and Android publications.
-- The protected `github-release` environment approves creation of the SwiftPM
-  tag and immutable XCFramework release asset; it uses the scoped GitHub token
-  rather than a long-lived repository credential.
+The workflows name `npm-release`, `crates-io-release`, `maven-release`, and
+`github-release` environments. An environment name alone does not enforce
+review or restrict branches. Before starting publication, verify the live
+protection rules and provision the required secrets for that environment:
+
+- `npm-release` needs `NPM_TOKEN` for `@reallyme/crypto`; the workflow requests
+  npm provenance using GitHub OIDC. Verify provenance on the published package.
+- `crates-io-release` needs `CARGO_REGISTRY_TOKEN` for the approved crate owners.
+- `maven-release` needs the repository URL, credentials, and signing key for the
+  JVM and Android publications.
+- `github-release` uses the scoped GitHub token to create the SwiftPM tag and
+  XCFramework release asset.
 
 Do not place registry tokens in source, workflow inputs, build artifacts, or
 local configuration committed to the repository.
@@ -84,11 +87,11 @@ cancelled, queued, or in-progress run invalidates an older success.
 Run `swift-package-release.yml` after the Swift preflight succeeds. The release
 resolves that attested preflight run and downloads its retained zip and checksum
 sidecar; it never recompiles the XCFramework. A separate macOS job recomputes
-the SwiftPM checksum and verifies the generated manifest binding. The protected
+the SwiftPM checksum and verifies the generated manifest binding. The
 release job repeats that verification and, when necessary, creates a
 deterministic `Package.swift`-only child of the reviewed source SHA before
-creating the immutable tag and GitHub release. `main` is never rewritten or
-force-pushed for a Swift checksum.
+creating the tag and GitHub release. It refuses a conflicting tag or asset.
+`main` is never rewritten or force-pushed for a Swift checksum.
 
 Immediately before tag publication, the release job reads `Package.swift`
 back from the proposed tag commit and verifies it against the retained
@@ -107,7 +110,8 @@ terminate the release.
 
 Run `npm-package-release.yml` to build an immutable tarball, transfer it between
 jobs with a SHA-256 sidecar, bind it to an independent producer job output, and
-publish those exact bytes with npm provenance.
+publish those exact bytes with npm provenance when the registry accepts the
+OIDC attestation. Confirm that the resulting registry package has provenance.
 Run `crates-release.yml` independently for crates.io; it derives the version
 from the umbrella crate, reinspects every publishable tarball, and publishes in
 dependency order. Starting any release workflow is an authorization to publish.

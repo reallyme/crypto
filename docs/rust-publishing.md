@@ -49,23 +49,32 @@ published before `reallyme-crypto`, because the umbrella crate exposes the
 optional `operation-response` feature through that package.
 
 Use the manual **Crates.io Release** workflow for Rust publishing. Its preflight
-job inspects every publishable crate tarball in workspace dependency order. The
-publish job runs after the protected `crates-io-release` environment approves
-the credentialed step and the repository has `CARGO_REGISTRY_TOKEN` configured.
+job inspects every publishable crate tarball in workspace dependency order and
+verifies the entire workspace with `cargo publish --workspace --dry-run --locked`. The
+publish job is assigned to the `crates-io-release` environment and requires
+`CARGO_REGISTRY_TOKEN`. Environment reviewers and deployment branch restrictions
+must be configured in GitHub settings before publication; the workflow file
+does not create those protections.
 
-The first publish cannot use `cargo publish --dry-run` end-to-end for downstream
-workspace crates, because Cargo resolves already-published dependencies from
-crates.io. Until the lower-level ReallyMe crates actually exist there, a
-simulated downstream publish fails even when the real ordered publish would
-succeed. The workflow therefore uses `scripts/publish_crates_in_order.mjs` to
-inspect tarballs before publishing, then publishes crates in the same
+Individual crate dry runs can stop while Cargo resolves unpublished workspace
+dependencies from crates.io. The workspace-wide dry run verifies all candidate
+packages together before publication. The workflow still uses
+`scripts/publish_crates_in_order.mjs` to inspect tarballs and publish crates in
 topological order.
+
+If a version already exists during a partial publish, the workflow stops. A
+matching crate name and version do not establish that the published archive
+came from the release commit. Before a manual resume, compare its packaged
+files and resolved dependency versions with the reviewed candidate; account
+for Cargo's generated lockfile separately. Resume only the remaining crates
+after that review.
 
 ## Local Inspection
 
 ```sh
 cargo package -p reallyme-crypto --list --allow-dirty
 node scripts/publish_crates_in_order.mjs inspect
+cargo publish --workspace --dry-run --locked
 ```
 
 Before publishing, inspect the package list and make sure the umbrella crate

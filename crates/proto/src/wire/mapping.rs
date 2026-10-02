@@ -168,6 +168,9 @@ fn map_kdf_failure(kind: KdfFailureKind) -> CryptoWireError {
                 CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PARAMETER,
             )
         }
+        KdfFailureKind::ResourceLimitExceeded => CryptoWireError::primitive_internal(
+            CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
+        ),
         KdfFailureKind::DerivationFailed => CryptoWireError::backend_internal(
             CryptoErrorReason::CRYPTO_ERROR_REASON_BACKEND_INTERNAL,
         ),

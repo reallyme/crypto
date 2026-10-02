@@ -405,7 +405,7 @@ public enum ReallyMeP256SecureEnclaveEcdsa {
     return ReallyMeCryptoError.providerFailure
   }
 
-  private static func mapSecurityStatus(_ status: OSStatus) -> ReallyMeCryptoError {
+  internal static func mapSecurityStatus(_ status: OSStatus) -> ReallyMeCryptoError {
     switch status {
     case errSecUnimplemented:
       return ReallyMeCryptoError.unsupportedPlatform

@@ -19,6 +19,9 @@ public object ReallyMePbkdf2 {
     public const val MAX_ITERATIONS: UInt = 10_000_000u
     public const val MIN_OUTPUT_LENGTH: Int = 1
     public const val MAX_OUTPUT_LENGTH: Int = 4096
+    private const val SHA256_OUTPUT_LENGTH: Int = 32
+    private const val SHA512_OUTPUT_LENGTH: Int = 64
+    private const val MAX_HMAC_EVALUATIONS: Long = 20_000_000L
 
     public fun deriveHmacSha256(
         password: ByteArray,
@@ -43,7 +46,11 @@ public object ReallyMePbkdf2 {
         iterations: UInt,
         outputLength: Int,
     ): ByteArray {
-        val providerIterations = validate(password, salt, iterations, outputLength)
+        val digestLength = when (algorithm) {
+            ProviderAlgorithm.PBKDF2_HMAC_SHA256 -> SHA256_OUTPUT_LENGTH
+            ProviderAlgorithm.PBKDF2_HMAC_SHA512 -> SHA512_OUTPUT_LENGTH
+        }
+        val providerIterations = validate(password, salt, iterations, outputLength, digestLength)
         val generator = when (algorithm) {
             ProviderAlgorithm.PBKDF2_HMAC_SHA256 -> PKCS5S2ParametersGenerator(SHA256Digest())
             ProviderAlgorithm.PBKDF2_HMAC_SHA512 -> PKCS5S2ParametersGenerator(SHA512Digest())
@@ -68,6 +75,7 @@ public object ReallyMePbkdf2 {
         salt: ByteArray,
         iterations: UInt,
         outputLength: Int,
+        digestLength: Int,
     ): Int {
         if (password.size !in MIN_INPUT_LENGTH..MAX_INPUT_LENGTH ||
             salt.size !in MIN_INPUT_LENGTH..MAX_INPUT_LENGTH ||
@@ -75,7 +83,17 @@ public object ReallyMePbkdf2 {
         ) {
             throw ReallyMeCryptoException.InvalidInput()
         }
-        return checkedIterationCount(iterations)
+        val providerIterations = checkedIterationCount(iterations)
+        val blockCount = ((outputLength - 1) / digestLength) + 1
+        val evaluations = try {
+            Math.multiplyExact(providerIterations.toLong(), blockCount.toLong())
+        } catch (_: ArithmeticException) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
+        if (evaluations > MAX_HMAC_EVALUATIONS) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
+        return providerIterations
     }
 
     internal fun checkedIterationCount(iterations: UInt): Int {

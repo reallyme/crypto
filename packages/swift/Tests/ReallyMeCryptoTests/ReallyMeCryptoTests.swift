@@ -123,4 +123,22 @@ final class ReallyMeCryptoTests: XCTestCase {
     XCTAssertFalse(String(describing: encapsulation).contains("81"))
     XCTAssertFalse(String(reflecting: encapsulation).contains("81"))
   }
+
+  func testSecretBearingContainersRedactReflection() {
+    let secret: [UInt8] = [91, 92, 93]
+    let containers: [Any] = [
+      ReallyMeSignatureKeyPair(publicKey: [1, 2, 3], secretKey: secret),
+      ReallyMeKemKeyPair(publicKey: [1, 2, 3], secretKey: secret),
+      ReallyMeKeyAgreementKeyPair(publicKey: [1, 2, 3], secretKey: secret),
+      ReallyMeKemEncapsulation(sharedSecret: secret, ciphertext: [1, 2, 3]),
+    ]
+
+    for container in containers {
+      var rendered = ""
+      dump(container, to: &rendered)
+      XCTAssertTrue(rendered.contains("<redacted>"))
+      XCTAssertFalse(rendered.contains("91"))
+      XCTAssertEqual(Array(Mirror(reflecting: container).children).count, 1)
+    }
+  }
 }

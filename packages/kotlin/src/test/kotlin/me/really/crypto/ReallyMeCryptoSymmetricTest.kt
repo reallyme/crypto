@@ -525,6 +525,28 @@ class ReallyMeCryptoSymmetricTest : ReallyMeCryptoTestSupport() {
     }
 
     @Test
+    fun pbkdf2CombinedWorkIsBoundedBeforeProviderDispatch() {
+        val password = "password".toByteArray()
+        val salt = "salt".toByteArray()
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMePbkdf2.deriveHmacSha256(
+                password,
+                salt,
+                ReallyMePbkdf2.MAX_ITERATIONS,
+                ReallyMePbkdf2.MAX_OUTPUT_LENGTH,
+            )
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMePbkdf2.deriveHmacSha512(
+                password,
+                salt,
+                ReallyMePbkdf2.MAX_ITERATIONS,
+                ReallyMePbkdf2.MAX_OUTPUT_LENGTH,
+            )
+        }
+    }
+
+    @Test
     fun argon2idRustNativeProviderKnownAnswerWhenLoaded() {
         val libraryPath = System.getenv("REALLYME_CRYPTO_FFI_LIBRARY_PATH")
         if (libraryPath.isNullOrEmpty()) {

@@ -1735,6 +1735,7 @@ dependencies = [
 name = "reallyme-crypto-ed25519"
 version = "0.3.10"
 dependencies = [
+ "curve25519-dalek",
  "ed25519-dalek",
  "hex",
  "reallyme-crypto-core",

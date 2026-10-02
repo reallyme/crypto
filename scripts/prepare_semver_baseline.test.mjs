@@ -12,20 +12,20 @@ import { prepareSemverBaseline, SemverBaselineError } from "./prepare_semver_bas
 
 const dependencies = [
   ["crates/crypto/dispatch/Cargo.toml", "reallyme-codec-multikey"],
-  ["crates/crypto/primitives/p256/Cargo.toml", "reallyme-codec-pem"],
-  ["crates/envelopes/jwk/Cargo.toml", "reallyme-codec-base64url"],
-  ["crates/envelopes/jwk/Cargo.toml", "reallyme-codec-jcs"],
-  ["crates/envelopes/jwk-multikey/Cargo.toml", "reallyme-codec-multikey"],
-  ["crates/envelopes/jwk-multikey/Cargo.toml", "reallyme-codec-base64url"],
+  ["crates/p256/Cargo.toml", "reallyme-codec-pem"],
+  ["crates/jwk/Cargo.toml", "reallyme-codec-base64url"],
+  ["crates/jwk/Cargo.toml", "reallyme-codec-jcs"],
+  ["crates/jwk-multikey/Cargo.toml", "reallyme-codec-multikey"],
+  ["crates/jwk-multikey/Cargo.toml", "reallyme-codec-base64url"],
 ];
 
 const checksums = {
-  "reallyme-codec-base64url": "8168250ef5dc92702ba9b0e807e80997868097c4a9f80ada75c107e1d529ce8f",
-  "reallyme-codec-jcs": "ba51c2b3e0d25e34165909e7151f78aaa745480ecc7e44ae8bfbd540b78a1f0f",
-  "reallyme-codec-multibase": "b82a83c4711d72ca041ff612ca03651e7b34fa006fa2fc9e597a73dfbf3c0cf4",
-  "reallyme-codec-multicodec": "549fdfaa051c62e9a1ec25bd00cf6f062d1a4d36e8c0cc24feb686da34c85b77",
-  "reallyme-codec-multikey": "ac918ebc04f36646b302be6c3ee923329e972d159a1ecfeba785289cd78f3c12",
-  "reallyme-codec-pem": "81d1d2566a6b6edc797f4c0782ef7baa29daab6c989063f8bbc1df360ece00c6",
+  "reallyme-codec-base64url": "f6bf7a30f229edf6e3236df0b2b11c522da128cfbdcc3b0dfca4912b7f6463a0",
+  "reallyme-codec-jcs": "4e8f5718cd2bdbcdc6b6b9eb91ac77ea35aaec6051c7222367090ad52b1fc551",
+  "reallyme-codec-multibase": "e38491c026515d692ac863bd277eba813a399053bc3740550f0cb3e6206bd003",
+  "reallyme-codec-multicodec": "9400a5df3a8bc8e66e87be32a2563dd631f923c29418ce582949ac6ba4fcfa8f",
+  "reallyme-codec-multikey": "86018a0dd6bad08ad4f48f5a1d62c8db722f2f4407bd0991824fdd8ca1744e0f",
+  "reallyme-codec-pem": "7bcaf67e2614ae686fab132732937779dfaaa93bc527c0f1dea0637791432b81",
 };
 
 const fixture = () => {
@@ -33,7 +33,7 @@ const fixture = () => {
   const byPath = new Map();
   for (const [path, packageName] of dependencies) {
     const entries = byPath.get(path) ?? [];
-    entries.push(`dependency = { package = "${packageName}", version = "0.1.21" }`);
+    entries.push(`dependency = { package = "${packageName}", version = "0.2.3" }`);
     byPath.set(path, entries);
   }
   for (const [path, lines] of byPath) {
@@ -44,7 +44,7 @@ const fixture = () => {
   const lockfile = Object.entries(checksums)
     .map(
       ([packageName, checksum]) =>
-        `[[package]]\nname = "${packageName}"\nversion = "0.1.21"\n` +
+        `[[package]]\nname = "${packageName}"\nversion = "0.2.3"\n` +
         'source = "registry+https://github.com/rust-lang/crates.io-index"\n' +
         `checksum = "${checksum}"\n`,
     )
@@ -60,7 +60,7 @@ test("freezes reviewed baseline codec dependencies to the lockfile patch version
     const manifest = readFileSync(join(root, path), "utf8");
     assert.match(
       manifest,
-      new RegExp(`package = "${packageName}", version = "=0\\.1\\.21"`, "u"),
+      new RegExp(`package = "${packageName}", version = "=0\\.2\\.3"`, "u"),
     );
   }
 });
@@ -80,7 +80,7 @@ test("rejects dependency drift and a repeated preparation", () => {
   const manifestPath = join(root, dependencies[0][0]);
   writeFileSync(
     manifestPath,
-    readFileSync(manifestPath, "utf8").replace('version = "0.1.21"', 'version = "0.1.22"'),
+    readFileSync(manifestPath, "utf8").replace('version = "0.2.3"', 'version = "0.2.4"'),
   );
   assert.throws(
     () => prepareSemverBaseline(root),

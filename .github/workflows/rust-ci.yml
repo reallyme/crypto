@@ -97,7 +97,7 @@ jobs:
       - name: Verify OpenMLS HPKE dependency isolation
         run: |
           openmls_tree="$(cargo tree --locked -p reallyme-crypto --no-default-features --features native,hpke-openmls -e normal,build)"
-          if printf '%s\n' "${openmls_tree}" | rg '\b(p256|p521|k256|x448|reallyme-crypto-secp256k1|reallyme-crypto-x448)\s+v'; then
+          if printf '%s\n' "${openmls_tree}" | grep -E '(^|[^[:alnum:]_])(p256|p521|k256|x448|reallyme-crypto-secp256k1|reallyme-crypto-x448)[[:space:]]+v'; then
             echo "OpenMLS HPKE feature graph contains an unrelated elliptic-curve dependency" >&2
             exit 1
           fi
@@ -114,7 +114,17 @@ jobs:
       - name: Verify production FFI release symbol surface
         run: |
           cargo build --locked -p crypto-ffi --profile release-ffi
-          if nm -D --defined-only target/release-ffi/libcrypto_ffi.so | rg 'rm_crypto_(ml_kem_(512|768|1024)|x_wing_768)_encapsulate_derand$'; then
+          symbol_file="target/release-ffi/libcrypto_ffi.so"
+          if [ ! -f "${symbol_file}" ]; then
+            echo "Production FFI artifact is missing" >&2
+            exit 1
+          fi
+          symbols="$(nm -D --defined-only "${symbol_file}")"
+          if ! printf '%s\n' "${symbols}" | grep -Eq 'rm_crypto_ed25519_verify$'; then
+            echo "Production FFI artifact has no expected Ed25519 export" >&2
+            exit 1
+          fi
+          if printf '%s\n' "${symbols}" | grep -E 'rm_crypto_(ml_kem_(512|768|1024)|x_wing_768)_encapsulate_derand$'; then
             echo "Conformance-only deterministic encapsulation symbols leaked into the production FFI artifact" >&2
             exit 1
           fi

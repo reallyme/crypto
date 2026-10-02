@@ -5,6 +5,11 @@
 import { ReallyMeCryptoError } from "./errors.js";
 import type { ReallyMeCryptoErrorCode } from "./errors.js";
 
+// Type checking runs before artifact generation in CI. Resolve the exact
+// package-owned module at runtime, then keep its namespace as an opaque token.
+const bundledWasmModulePath = "../dist/wasm/reallyme_crypto_wasm.js";
+const bundledWasm: unknown = await import(bundledWasmModulePath);
+
 type GenerateKeypairFn = () => unknown;
 type GenerateKeypairFromSeedFn = (seed: Uint8Array) => unknown;
 type Argon2idFn = (kdfVersion: number, secret: Uint8Array, salt: Uint8Array) => unknown;
@@ -141,6 +146,16 @@ export type ReallyMeWasmProvider = Readonly<{
 }>;
 
 let installedProvider: ReallyMeWasmProvider | undefined;
+const poisonedModules = new WeakSet<object>();
+
+const isWasmRuntimeError = (error: unknown): boolean => {
+  const wasm: unknown = Reflect.get(globalThis, "WebAssembly");
+  if (typeof wasm !== "object" || wasm === null) {
+    return false;
+  }
+  const runtimeError: unknown = Reflect.get(wasm, "RuntimeError");
+  return typeof runtimeError === "function" && error instanceof runtimeError;
+};
 
 const requireObject = (module: unknown): object => {
   if (typeof module !== "object" || module === null) {
@@ -150,14 +165,27 @@ const requireObject = (module: unknown): object => {
 };
 
 const requireFunction = (module: object, name: string): WasmCallable => {
-  const candidate: unknown = Reflect.get(module, name);
+  let candidate: unknown;
+  try {
+    candidate = Object.getOwnPropertyDescriptor(module, name)?.value;
+  } catch {
+    throw new ReallyMeCryptoError("provider-failure");
+  }
   if (typeof candidate !== "function") {
     throw new ReallyMeCryptoError("provider-failure");
   }
   return (...args: ReadonlyArray<WasmArgument>): unknown => {
+    if (poisonedModules.has(module)) {
+      throw new ReallyMeCryptoError("provider-failure");
+    }
     try {
       return candidate(...args);
     } catch (error: unknown) {
+      if (isWasmRuntimeError(error)) {
+        // A trap can leave WASM state inconsistent. All wrappers built from
+        // that module fail closed for the remainder of the process.
+        poisonedModules.add(module);
+      }
       throw new ReallyMeCryptoError(wasmErrorCode(error));
     }
   };
@@ -371,7 +399,29 @@ export const installReallyMeWasmProvider = (module: unknown): void => {
   if (installedProvider !== undefined) {
     throw new ReallyMeCryptoError("provider-failure");
   }
-  installedProvider = createReallyMeWasmProvider(module);
+  // The generated ES module namespace has stable identity across imports.
+  // Global installation must use this package's own provider, rather than a
+  // structurally compatible object that can make verification hooks no-ops.
+  if (module !== bundledWasm) {
+    throw new ReallyMeCryptoError("provider-failure");
+  }
+  try {
+    // A data-independent call rejects an uninitialized WASM instance before
+    // the install-once slot becomes visible to package-global facades.
+    requireFunction(requireObject(module), "aes128GcmOpen")(
+      new Uint8Array(0),
+      new Uint8Array(0),
+      new Uint8Array(0),
+      new Uint8Array(0),
+    );
+  } catch (error: unknown) {
+    if (error instanceof ReallyMeCryptoError && error.code === "invalid-input") {
+      installedProvider = createReallyMeWasmProvider(module);
+      return;
+    }
+    throw new ReallyMeCryptoError("provider-failure");
+  }
+  throw new ReallyMeCryptoError("provider-failure");
 };
 
 export const requireReallyMeWasmProvider = (): ReallyMeWasmProvider => {

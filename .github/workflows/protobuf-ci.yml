@@ -96,9 +96,16 @@ jobs:
       # baseline and run on every protobuf change.
       - name: Check immutable crypto protobuf contracts
         run: |
+          set -euo pipefail
           cargo test -p reallyme-crypto-proto --all-features
-          cargo test -p crypto-conformance-vectors --test vectors_tests --all-features contract_tests::protobuf_algorithm_enum_numbers_are_stable
-          cargo test -p crypto-conformance-vectors --test vectors_tests --all-features contract_tests::every_public_algorithm_has_exactly_one_proto_selector
+          for name in contract_tests::protobuf_algorithm_enum_numbers_are_stable contract_tests::every_public_algorithm_has_exactly_one_proto_selector; do
+            output="$(cargo test -p crypto-conformance-vectors --test vectors_tests --all-features "$name" -- --exact)"
+            printf '%s\n' "$output"
+            if ! grep -Fq 'test result: ok. 1 passed; 0 failed;' <<< "$output"; then
+              echo "::error::protobuf contract test ${name} did not execute exactly once"
+              exit 1
+            fi
+          done
 
       - name: Check release readiness generated freshness
         run: node scripts/run_pinned_release_readiness.mjs --generated-freshness

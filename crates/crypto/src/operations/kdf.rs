@@ -159,6 +159,10 @@ fn map_kdf_error(error: CryptoError) -> OperationError {
             ..
         } => primitive(PrimitiveErrorReason::InvalidParameter),
         CryptoError::Kdf {
+            kind: KdfFailureKind::ResourceLimitExceeded,
+            ..
+        } => primitive(PrimitiveErrorReason::ResourceLimitExceeded),
+        CryptoError::Kdf {
             kind: KdfFailureKind::DerivationFailed,
             ..
         } => backend(BackendErrorReason::Internal),

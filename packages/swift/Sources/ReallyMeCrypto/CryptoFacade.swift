@@ -4,7 +4,7 @@
 
 /// Public/secret keypair returned by generic package facade key generation.
 public struct ReallyMeSignatureKeyPair: Sendable, CustomStringConvertible,
-  CustomDebugStringConvertible
+  CustomDebugStringConvertible, CustomReflectable
 {
   public let publicKey: [UInt8]
   public let secretKey: [UInt8]
@@ -19,9 +19,15 @@ public struct ReallyMeSignatureKeyPair: Sendable, CustomStringConvertible,
   }
 
   public var debugDescription: String { description }
+
+  public var customMirror: Mirror {
+    Mirror(self, children: ["description": description], displayStyle: .struct)
+  }
 }
 
-public struct ReallyMeKemKeyPair: Sendable, CustomStringConvertible, CustomDebugStringConvertible {
+public struct ReallyMeKemKeyPair: Sendable, CustomStringConvertible, CustomDebugStringConvertible,
+  CustomReflectable
+{
   public let publicKey: [UInt8]
   public let secretKey: [UInt8]
 
@@ -35,10 +41,14 @@ public struct ReallyMeKemKeyPair: Sendable, CustomStringConvertible, CustomDebug
   }
 
   public var debugDescription: String { description }
+
+  public var customMirror: Mirror {
+    Mirror(self, children: ["description": description], displayStyle: .struct)
+  }
 }
 
 public struct ReallyMeKeyAgreementKeyPair: Sendable, CustomStringConvertible,
-  CustomDebugStringConvertible
+  CustomDebugStringConvertible, CustomReflectable
 {
   public let publicKey: [UInt8]
   public let secretKey: [UInt8]
@@ -53,10 +63,14 @@ public struct ReallyMeKeyAgreementKeyPair: Sendable, CustomStringConvertible,
   }
 
   public var debugDescription: String { description }
+
+  public var customMirror: Mirror {
+    Mirror(self, children: ["description": description], displayStyle: .struct)
+  }
 }
 
 public struct ReallyMeKemEncapsulation: Sendable, CustomStringConvertible,
-  CustomDebugStringConvertible
+  CustomDebugStringConvertible, CustomReflectable
 {
   public let sharedSecret: [UInt8]
   public let ciphertext: [UInt8]
@@ -71,6 +85,10 @@ public struct ReallyMeKemEncapsulation: Sendable, CustomStringConvertible,
   }
 
   public var debugDescription: String { description }
+
+  public var customMirror: Mirror {
+    Mirror(self, children: ["description": description], displayStyle: .struct)
+  }
 }
 
 public struct ReallyMeHpkeSealedMessage: Sendable {

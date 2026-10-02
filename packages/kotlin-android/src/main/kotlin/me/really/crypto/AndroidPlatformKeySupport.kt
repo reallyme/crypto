@@ -52,8 +52,8 @@ internal const val KEY_AGREEMENT_PURPOSE_CODE: Byte = 2
 internal const val STRONGBOX_UNAVAILABLE_EXCEPTION: String =
     "android.security.keystore.StrongBoxUnavailableException"
 internal const val ALIAS_PREFIX: String = "me.really.crypto.platform-key.v1"
-internal val handleMagic: ByteArray = byteArrayOf(0x52, 0x4d, 0x41, 0x4b)
-internal val aliasDomain: ByteArray =
+private val handleMagic: ByteArray = byteArrayOf(0x52, 0x4d, 0x41, 0x4b)
+private val aliasDomain: ByteArray =
     "me.really.crypto.android-platform-key.v1".toByteArray(Charsets.US_ASCII)
 
 @Synchronized

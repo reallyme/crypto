@@ -107,11 +107,11 @@ if (result.status !== 0) {
 }
 
 // wasm-pack writes metadata for a standalone package. This package owns
-// publishing, so only the loadable JS and .wasm artifact belong in the tarball.
+// publishing. Keep the generated module declaration so the package-owned
+// provider installer can import the exact bundled namespace in strict TS mode.
 for (const generatedFile of [
   ".gitignore",
   "package.json",
-  "reallyme_crypto_wasm.d.ts",
   "reallyme_crypto_wasm_bg.wasm.d.ts",
 ]) {
   rmSync(resolve(outputDirectory, generatedFile), { force: true });

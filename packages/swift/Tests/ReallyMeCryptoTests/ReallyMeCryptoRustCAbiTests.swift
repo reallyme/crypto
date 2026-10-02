@@ -26,6 +26,13 @@ final class ReallyMeCryptoRustCAbiTests: XCTestCase {
     if ReallyMeRustCAbiLibrary.isBundledProviderAvailable {
       return try ReallyMeRustCAbiLibrary.bundledProvider()
     }
+    if ProcessInfo.processInfo.environment["CI"] == "true" {
+      let libraryPath = try XCTUnwrap(
+        ProcessInfo.processInfo.environment["REALLYME_CRYPTO_FFI_LIBRARY_PATH"],
+        "CI requires the built Rust FFI library for vector tests"
+      )
+      return try ReallyMeRustCAbiLibrary(path: libraryPath)
+    }
     guard let libraryPath = ProcessInfo.processInfo.environment["REALLYME_CRYPTO_FFI_LIBRARY_PATH"],
       !libraryPath.isEmpty
     else {

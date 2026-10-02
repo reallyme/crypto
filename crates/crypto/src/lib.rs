@@ -93,7 +93,7 @@ pub mod operation_contract;
 /// Signer/verifier traits and dispatch-backed implementations for producing and
 /// checking detached signatures.
 #[cfg(feature = "signer")]
-pub use crypto_signer as signer;
+pub mod signer;
 
 /// AES-GCM authenticated encryption primitives and their typed key/nonce
 /// wrappers and length constants.
@@ -126,7 +126,7 @@ pub mod argon2id;
 /// OS-backed cryptographically secure randomness and typed generators for AEAD
 /// nonces and Argon2 salts.
 #[cfg(feature = "csprng")]
-pub use crypto_csprng as csprng;
+pub mod csprng;
 
 /// Ed25519 signatures: keypair generation, sign/verify, and public-key encoding.
 #[cfg(feature = "ed25519")]

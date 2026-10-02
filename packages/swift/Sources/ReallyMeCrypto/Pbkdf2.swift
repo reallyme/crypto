@@ -11,6 +11,7 @@ public enum ReallyMePbkdf2 {
   public static let maxIterations: UInt32 = 10_000_000
   public static let minOutputLength = 1
   public static let maxOutputLength = 4096
+  private static let maxHmacEvaluations: UInt64 = 20_000_000
 
   public static func deriveHmacSha256(
     password: [UInt8],
@@ -64,6 +65,13 @@ public enum ReallyMePbkdf2 {
     }
     let blockCount = adjustedLength.partialValue / hashLength
     guard blockCount <= Int(UInt32.max) else {
+      throw ReallyMeCryptoError.invalidInput
+    }
+    guard let blocks = UInt64(exactly: blockCount) else {
+      throw ReallyMeCryptoError.invalidInput
+    }
+    let evaluations = UInt64(iterations).multipliedReportingOverflow(by: blocks)
+    guard evaluations.overflow == false, evaluations.partialValue <= maxHmacEvaluations else {
       throw ReallyMeCryptoError.invalidInput
     }
 

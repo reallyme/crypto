@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import ReallyMeCrypto
+import Security
+@testable import ReallyMeCrypto
 import XCTest
 
 extension ReallyMeCryptoTests {
@@ -23,6 +24,25 @@ extension ReallyMeCryptoTests {
       )
     ) { error in
       XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+    }
+    XCTAssertThrowsError(
+      try ReallyMeP256SecureEnclaveEcdhKeyReference(
+        applicationTag: Array("me.really.crypto.secure-enclave.ecdh.v1:reserved".utf8)
+      )
+    ) { error in
+      XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+    }
+    XCTAssertNoThrow(
+      try ReallyMeP256SecureEnclaveEcdhKeyReference(
+        applicationTag: Array("me.really.crypto.tests.p256.reference".utf8)
+      )
+    )
+  }
+
+  func testSecureEnclaveStatusMappingKeepsProviderFailuresDistinctFromAuthenticationFailure() {
+    for status in [errSecAuthFailed, errSecInteractionNotAllowed, errSecUserCanceled] {
+      XCTAssertEqual(ReallyMeP256SecureEnclaveEcdh.mapSecurityStatus(status), .providerFailure)
+      XCTAssertEqual(ReallyMeP256SecureEnclaveEcdsa.mapSecurityStatus(status), .providerFailure)
     }
   }
 
