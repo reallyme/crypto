@@ -47,10 +47,14 @@ pub unsafe extern "C" fn rm_crypto_x25519_generate_keypair(
             Ok(value) => value,
             Err(_) => return CRYPTO_INTERNAL_ERROR,
         };
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         let status = unsafe { write_fixed(public_out, public_out_len, &key_pair.public_key) };
         if status != CRYPTO_OK {
             return status;
         }
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         unsafe { write_fixed(secret_out, secret_out_len, &key_pair.secret_key) }
     })
 }
@@ -71,6 +75,8 @@ pub unsafe extern "C" fn rm_crypto_x25519_generate_keypair_from_seed(
         if output_status != CRYPTO_OK {
             return output_status;
         }
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let seed = match unsafe { read_slice(seed, seed_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -86,10 +92,14 @@ pub unsafe extern "C" fn rm_crypto_x25519_generate_keypair_from_seed(
             Ok(value) => value,
             Err(_) => return CRYPTO_INVALID_KEY,
         };
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         let status = unsafe { write_fixed(public_out, public_out_len, &key_pair.public_key) };
         if status != CRYPTO_OK {
             return status;
         }
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         unsafe { write_fixed(secret_out, secret_out_len, &key_pair.secret_key) }
     })
 }
@@ -116,10 +126,14 @@ pub unsafe extern "C" fn rm_crypto_x25519_derive_shared_secret(
     shared_secret_out_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let secret_key = match unsafe { read_slice(secret_key, secret_key_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let public_key = match unsafe { read_slice(public_key, public_key_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -132,6 +146,8 @@ pub unsafe extern "C" fn rm_crypto_x25519_derive_shared_secret(
             secret_key,
             public_key,
         ) {
+            // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+            // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(value) => unsafe { write_fixed(shared_secret_out, shared_secret_out_len, &value) },
             Err(error) => crate::key_agreement_status::key_agreement_status(error),
         }
@@ -161,11 +177,15 @@ pub unsafe extern "C" fn rm_crypto_x25519_encode_public_key(
     out_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let public_key = match unsafe { read_slice(public_key, public_key_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
         match key_encoding::encode_x25519_public_key(public_key) {
+            // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+            // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(value) => unsafe { write_fixed(out, out_len, &value) },
             Err(_) => CRYPTO_INVALID_KEY,
         }
@@ -190,11 +210,15 @@ pub unsafe extern "C" fn rm_crypto_x25519_decode_public_key(
     out_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let public_key = match unsafe { read_slice(public_key, public_key_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
         match key_encoding::decode_x25519_public_key(public_key) {
+            // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+            // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(value) => unsafe { write_fixed(out, out_len, &value) },
             Err(_) => CRYPTO_INVALID_KEY,
         }

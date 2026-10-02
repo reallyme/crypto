@@ -77,6 +77,30 @@ fn shared_secret_matches_both_sides() -> Result<(), CryptoError> {
 }
 
 #[test]
+fn agreement_accepts_rfc7748_u_coordinate_aliases_without_accepting_them_as_identifiers(
+) -> Result<(), CryptoError> {
+    let (_public_key, secret_key) = generate_x25519_keypair_from_seed(&[7_u8; 32]);
+    let mut base_point = [0_u8; 32];
+    base_point[0] = 9;
+
+    // RFC 7748 masks bit 255 and accepts noncanonical field elements for
+    // agreement. The identity encoder is stricter so one key has one identifier.
+    let mut high_bit_alias = base_point;
+    high_bit_alias[31] = 0x80;
+    let mut field_alias = [0xff_u8; 32];
+    field_alias[0] = 0xf6; // (2^255 - 19) + 9, in little-endian form.
+    field_alias[31] = 0x7f;
+
+    let expected = derive_x25519_shared_secret(&secret_key, &base_point)?;
+    for alias in [high_bit_alias, field_alias] {
+        assert_eq!(derive_x25519_shared_secret(&secret_key, &alias)?, expected);
+        assert_eq!(encode_public_key(&alias), Err(CryptoError::InvalidKey));
+        assert_eq!(decode_public_key(&alias), Err(CryptoError::InvalidKey));
+    }
+    Ok(())
+}
+
+#[test]
 fn invalid_key_size_fails() -> Result<(), CryptoError> {
     let (pk, sk) = try_generate_x25519_keypair().into_test_result()?;
 

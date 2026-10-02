@@ -117,11 +117,8 @@ packages/kotlin-android/gradlew -p packages/kotlin-android \
   -Preallyme.crypto.requireAndroidJniLibs=true
 ```
 
-The release workflow uses the same staging model before publishing. Native
-libraries are stripped before their checksums are recorded, and AAR verification
-recomputes each packaged size and SHA-256 against the manifest. This keeps
-generated native libraries out of source control while binding every approved
-ABI payload to the reviewed source commit.
+Native libraries are stripped before their checksums are recorded. AAR
+verification recomputes each packaged size and SHA-256 against the manifest.
 
 Dependency verification metadata is committed in
 `gradle/verification-metadata.xml`. Regenerate it only as a reviewed Android

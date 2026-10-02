@@ -50,6 +50,16 @@ fn verify_aes_kw_vector(
         _ => return Err(VectorTestError::AesKw),
     };
     assert_eq!(unwrapped.as_bytes(), key_data);
+    if alg == "AES-256-KW" {
+        let kek = Aes256KwKek::from_slice(&kek_bytes).map_err(|_| VectorTestError::AesKw)?;
+        assert!(matches!(
+            unwrap_key_aes256(&kek, &wrapped_key[..15]),
+            Err(crypto_core::CryptoError::KeyWrap {
+                kind: crypto_core::KeyWrapFailureKind::InvalidWrappedLength,
+                ..
+            })
+        ));
+    }
 
     let mut tampered = wrapped_key;
     tampered[0] ^= 0x01;

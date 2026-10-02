@@ -24,14 +24,12 @@
 - Updates Kotlin to `2.4.20`, JVM and Android protobuf libraries to `4.36.2`,
   and JVM JUnit to `6.1.3`, with refreshed Gradle verification metadata.
 - Sets Rust, npm, Swift, Kotlin/JVM, and Android package metadata to `0.3.10`.
-- The Swift release binds its package checksum to the attested `0.3.10` CI
-  XCFramework and verifies the tagged manifest before publication. Android
-  Gradle Plugin 9 and the compatibility-bound `getrandom` and `sha3` lines
+- The Swift package checksum is bound to the `0.3.10` XCFramework artifact.
+  Android Gradle Plugin 9 and the compatibility-bound `getrandom` and `sha3` lines
   remain separate migrations.
 - Adds published-runtime dependency scanning, publisher checksum provenance,
   multi-language CodeQL analysis, browser WASM execution, and C ABI sanitizer
-  and Miri checks. Manual Maven bundles now use the attested versioned
-  Kotlin/Android preflight artifacts for the release commit.
+  and Miri checks.
 - Aligns Kotlin RSA public-key limits with the Rust verifier, gives decoded
   TypeScript protobuf byte fields independent ownership, and limits global
   WASM provider installation to the package's initialized module.
@@ -84,12 +82,8 @@
   IKM with at least 256 bits of entropy.
 - Rejects exact-range cross-output aliasing in the HPKE C ABI before any
   produced-length pointer or output buffer is written.
-- Requires the scheduled external-vector integrity checks to execute their
-  exact named tests, so a renamed test cannot silently turn the gate green.
-- Keeps registry credentials out of the crates.io attestation check and skips
-  redundant build verification during the credentialed publish step after the
-  exact release commit has passed the workspace package preflight. Release
-  attestation requires the named CI jobs and bounds registry rate-limit waits.
+- Requires external-vector integrity checks to execute their exact named
+  tests, so a renamed test cannot silently turn the gate green.
 
 ## 0.3.9
 
@@ -99,9 +93,7 @@
 - Extends the focused OpenMLS HPKE feature set with ML-KEM-768 and adds
   identifier, draft-vector, round-trip, and OpenMLS compatibility coverage for
   the new profiles.
-- Prepares Rust, npm, Swift, Kotlin/JVM, and Android packages for `0.3.9`,
-  preserving the manual npm and Maven publishing lanes and the two-step Swift
-  artifact binding process.
+- Prepares Rust, npm, Swift, Kotlin/JVM, and Android packages for `0.3.9`.
 
 ## 0.3.8
 
@@ -109,9 +101,7 @@
   inline post-quantum ratchet trees. The original HKDF key schedule and wire
   encoding are unchanged. SHAKE context limits remain enforced, and oversized
   SHAKE pre-shared keys return a typed error before backend setup.
-- Prepares Rust, npm, Swift, Kotlin/JVM, and Android packages for `0.3.8`,
-  preserving the manual npm and Maven publishing lanes and the two-step Swift
-  artifact binding process.
+- Prepares Rust, npm, Swift, Kotlin/JVM, and Android packages for `0.3.8`.
 
 ## 0.3.7
 
@@ -194,10 +184,7 @@
   known-answer coverage from the ML-KEM-1024 and MLKEM1024-P384 vectors in
   `draft-ietf-hpke-pq-05`. Serialized operation and C-FFI matrices now exercise
   both the draft-06 MLS triples and the separately supported SHAKE256 triples.
-- Strengthens release-readiness checks to enforce Swift artifact workflow
-  ordering: the exact XCFramework candidate must be uploaded before its
-  checksum is bound into the manifest, and release jobs must bind and verify
-  the downloaded attested artifact before creating the immutable release.
+- Strengthens Swift artifact checksum verification.
 - Stages the Rust crates, npm package, Swift binary package, Kotlin/JVM package,
   and Android AAR package at version `0.3.3` for coordinated release.
 
@@ -290,9 +277,7 @@ triple. The other two MLS profile aliases listed below are new in `0.3.1`.
   contain raw input or backend exception text. Executable ProtoJSON accepts
   only the eight request selectors without caller-provided key material or
   PSKs; binary protobuf remains the complete operation transport.
-- Publishes dedicated release paths for crates.io, npm, SwiftPM binary
-  artifacts, JVM Maven artifacts, and the Android AAR. Each workflow verifies
-  the package assembled from the tagged commit before publication.
+- Publishes versioned Rust, npm, SwiftPM, JVM, and Android artifacts.
 - This is a breaking Rust API release relative to `0.2.x`. Structured callers
   must construct a generated `CryptoOperationRequest` branch and use
   `operation_contract::process_operation_response` or the SDK

@@ -43,6 +43,15 @@ fn verify_pbkdf2_case(v: &Value, field_name: &str, prf: Pbkdf2Prf) -> Result<(),
     let password =
         Pbkdf2Password::from_slice(&password_bytes, prf).map_err(|_| VectorTestError::Pbkdf2)?;
     let salt = Pbkdf2Salt::from_slice(&salt_bytes, prf).map_err(|_| VectorTestError::Pbkdf2)?;
+    if field_name == "pbkdf2_hmac_sha256" {
+        assert!(matches!(
+            Pbkdf2Iterations::from_u32_modern(iterations - 1, prf),
+            Err(crypto_core::CryptoError::Kdf {
+                kind: crypto_core::KdfFailureKind::InvalidIterationCount,
+                ..
+            })
+        ));
+    }
     let iterations =
         Pbkdf2Iterations::from_u32_conformance_only(iterations, prf).map_err(|_| VectorTestError::Pbkdf2)?;
     let output = derive_pbkdf2_key(&Pbkdf2Request {

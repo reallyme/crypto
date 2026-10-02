@@ -244,6 +244,18 @@ final class ReallyMeCryptoRustCAbiTests: XCTestCase {
       publicKey: publicKey,
       rustCAbiLibrary: library
     )
+    if algorithm == .mlDsa65 {
+      var tamperedSignature = signature
+      tamperedSignature[tamperedSignature.count - 1] ^= 0x01
+      XCTAssertThrowsError(
+        try ReallyMeCrypto.verify(
+          algorithm, signature: tamperedSignature, message: message,
+          publicKey: publicKey, rustCAbiLibrary: library
+        )
+      ) { error in
+        XCTAssertEqual(error as? ReallyMeCryptoError, .invalidSignature)
+      }
+    }
 
     var tamperedMessage = message
     tamperedMessage[0] ^= 0x01
@@ -430,7 +442,7 @@ final class ReallyMeCryptoRustCAbiTests: XCTestCase {
     XCTAssertThrowsError(
       try ReallyMeCrypto.decapsulate(
         algorithm,
-        ciphertext: Array(tampered.dropLast()),
+        ciphertext: Array(ciphertext.dropLast()),
         secretKey: secretKey,
         rustCAbiLibrary: library
       )
@@ -468,6 +480,32 @@ final class ReallyMeCryptoRustCAbiTests: XCTestCase {
       ),
       plaintext
     )
+    if suite == .dhkemP256HkdfSha256HkdfSha256Aes256Gcm {
+      XCTAssertThrowsError(
+        try ReallyMeCrypto.openHpke(
+          suite, recipientSecretKey: secretKey,
+          encapsulatedKey: Array(enc.dropLast()), info: info,
+          aad: aad, ciphertext: sealedCiphertext,
+          rustCAbiLibrary: library
+        )
+      ) { error in
+        XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+      }
+    }
+    if suite == .dhkemX25519HkdfSha256HkdfSha256ChaCha20Poly1305 {
+      var wrongAad = aad
+      wrongAad[0] ^= 0x01
+      XCTAssertThrowsError(
+        try ReallyMeCrypto.openHpke(
+          suite, recipientSecretKey: secretKey,
+          encapsulatedKey: enc, info: info,
+          aad: wrongAad, ciphertext: sealedCiphertext,
+          rustCAbiLibrary: library
+        )
+      ) { error in
+        XCTAssertEqual(error as? ReallyMeCryptoError, .authenticationFailed)
+      }
+    }
 
     XCTAssertThrowsError(
       try ReallyMeCrypto.openHpke(

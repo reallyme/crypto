@@ -238,7 +238,7 @@ class ReallyMeCryptoSymmetricTest : ReallyMeCryptoTestSupport() {
         )
 
         val tampered = ciphertext.copyOf()
-        tampered[0] = (tampered[0].toInt() xor 0x01).toByte()
+        tampered[tampered.lastIndex] = (tampered.last().toInt() xor 0x01).toByte()
         assertFailsWith<ReallyMeCryptoException.AuthenticationFailed> {
             ReallyMeCrypto.open(ReallyMeAeadAlgorithm.AES_256_GCM, key, nonce, aad, tampered)
         }
@@ -341,6 +341,11 @@ class ReallyMeCryptoSymmetricTest : ReallyMeCryptoTestSupport() {
             val producedKeyData = ReallyMeCrypto.unwrapKey(algorithm, kek, wrappedKey)
             assertEquals(wrappedKey.size - ReallyMeAesKw.INTEGRITY_LENGTH, producedKeyData.size)
             assertContentEquals(keyData, producedKeyData)
+            if (algorithm == ReallyMeKeyWrapAlgorithm.AES_256_KW) {
+                assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+                    ReallyMeCrypto.unwrapKey(algorithm, kek, wrappedKey.copyOf(15))
+                }
+            }
 
             val tampered = wrappedKey.copyOf()
             tampered[0] = (tampered[0].toInt() xor 0x01).toByte()
@@ -470,7 +475,7 @@ class ReallyMeCryptoSymmetricTest : ReallyMeCryptoTestSupport() {
                 ReallyMeKdfAlgorithm.PBKDF2_HMAC_SHA256,
                 password,
                 salt,
-                0u,
+                99_999u,
                 32,
             )
         }

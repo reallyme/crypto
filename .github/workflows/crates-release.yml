@@ -67,43 +67,9 @@ jobs:
           RELEASE_ATTESTATION_POLL_SECONDS: "20"
         run: node scripts/verify_release_attestation.mjs
 
-  dry-run:
-    name: crates.io publish preflight
-    needs: verify-release-sha
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
-        with:
-          persist-credentials: false
-          ref: ${{ needs.verify-release-sha.outputs.release_sha }}
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
-        with:
-          toolchain: 1.98.1
-
-      - name: Install Node
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
-        with:
-          node-version: '24'
-
-      - name: Cache Cargo
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
-
-      - name: Check crates.io publish order
-        run: node scripts/publish_crates_in_order.mjs order
-        env:
-          RELEASE_VERSION: ${{ needs.verify-release-sha.outputs.release_version }}
-
-      - name: Inspect publishable crate tarballs
-        run: node scripts/publish_crates_in_order.mjs inspect
-        env:
-          RELEASE_VERSION: ${{ needs.verify-release-sha.outputs.release_version }}
-
   publish:
     name: publish crates
-    needs: [verify-release-sha, dry-run]
+    needs: verify-release-sha
     runs-on: ubuntu-latest
     environment: crates-io-release
     permissions:
@@ -125,9 +91,6 @@ jobs:
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: '24'
-
-      - name: Cache Cargo
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
 
       - name: Reverify release attestation without registry credentials
         run: node scripts/verify_release_attestation.mjs

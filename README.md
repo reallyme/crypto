@@ -367,8 +367,8 @@ policy.
   RFC 8032, plus the optional audit workflow and formal-methods notes.
 - [docs/dependency-updates.md](docs/dependency-updates.md) — dependency update
   policy and manual review requirements.
-- [docs/rust-publishing.md](docs/rust-publishing.md) — publishing the Rust crates.
-- [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) — cross-ecosystem release gates.
+- [docs/rust-publishing.md](docs/rust-publishing.md) — Rust package layout and features.
+- [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) — public artifact integrity requirements.
 - [SECURITY.md](SECURITY.md), [SECURITY_MEMORY_MODEL.md](SECURITY_MEMORY_MODEL.md)
   — reporting security issues and how secret material is handled.
 

@@ -29,11 +29,15 @@ pub unsafe extern "C" fn rm_crypto_sha3_224_digest(
     digest_out_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let message = match unsafe { read_slice(message, message_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
         let digest = reallyme_crypto::operations::hash::sha3_224(message);
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         let status = unsafe { write_fixed(digest_out, digest_out_len, digest.as_bytes()) };
         if status == CRYPTO_OK {
             CRYPTO_OK
@@ -59,11 +63,15 @@ pub unsafe extern "C" fn rm_crypto_sha3_384_digest(
     digest_out_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let message = match unsafe { read_slice(message, message_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
         let digest = reallyme_crypto::operations::hash::sha3_384(message);
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         let status = unsafe { write_fixed(digest_out, digest_out_len, digest.as_bytes()) };
         if status == CRYPTO_OK {
             CRYPTO_OK
@@ -89,11 +97,15 @@ pub unsafe extern "C" fn rm_crypto_sha3_512_digest(
     digest_out_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let message = match unsafe { read_slice(message, message_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
         let digest = reallyme_crypto::operations::hash::sha3_512(message);
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         let status = unsafe { write_fixed(digest_out, digest_out_len, digest.as_bytes()) };
         if status == CRYPTO_OK {
             CRYPTO_OK

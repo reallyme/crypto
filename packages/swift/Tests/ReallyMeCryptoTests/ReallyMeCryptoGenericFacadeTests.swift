@@ -515,7 +515,7 @@ extension ReallyMeCryptoTests {
     )
 
     var tampered = ciphertext
-    tampered[0] ^= 0x01
+    tampered[tampered.count - 1] ^= 0x01
     XCTAssertThrowsError(
       try ReallyMeCrypto.open(
         .aes256Gcm,

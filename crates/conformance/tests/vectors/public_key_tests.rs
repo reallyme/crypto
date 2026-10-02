@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
 use crypto_ed25519::{sign_ed25519, verify_ed25519};
 use crypto_ml_dsa_44::{sign_ml_dsa_44, verify_ml_dsa_44};
 use crypto_ml_dsa_65::{sign_ml_dsa_65, verify_ml_dsa_65};

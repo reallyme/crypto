@@ -35,6 +35,8 @@ pub unsafe extern "C" fn rm_crypto_bip340_schnorr_derive_public_key(
     public_key_out_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let secret_key = match unsafe { read_slice(secret_key, secret_key_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -43,6 +45,8 @@ pub unsafe extern "C" fn rm_crypto_bip340_schnorr_derive_public_key(
             return CRYPTO_INVALID_KEY;
         }
         match reallyme_crypto::operations::signature::derive_bip340_public_key(secret_key) {
+            // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+            // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(public_key) => unsafe {
                 write_fixed(public_key_out, public_key_out_len, &public_key)
             },
@@ -69,6 +73,8 @@ pub unsafe extern "C" fn rm_crypto_bip340_schnorr_sign(
     signature_out_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let secret_key = match unsafe { read_slice(secret_key, secret_key_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -76,10 +82,14 @@ pub unsafe extern "C" fn rm_crypto_bip340_schnorr_sign(
         if secret_key.len() != SECP256K1_SECRET_KEY_LEN {
             return CRYPTO_INVALID_KEY;
         }
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let message32 = match unsafe { read_slice(message32, message32_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let aux_rand32 = match unsafe { read_slice(aux_rand32, aux_rand32_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -91,6 +101,8 @@ pub unsafe extern "C" fn rm_crypto_bip340_schnorr_sign(
         }
         match reallyme_crypto::operations::signature::sign_bip340(secret_key, message32, aux_rand32)
         {
+            // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+            // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(signature) => unsafe { write_fixed(signature_out, signature_out_len, &signature) },
             Err(error) => bip340_sign_status(error),
         }
@@ -113,6 +125,8 @@ pub unsafe extern "C" fn rm_crypto_bip340_schnorr_verify(
     public_key_xonly_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let signature = match unsafe { read_slice(signature, signature_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -120,6 +134,8 @@ pub unsafe extern "C" fn rm_crypto_bip340_schnorr_verify(
         if signature.len() != BIP340_SCHNORR_SIGNATURE_LEN {
             return CRYPTO_INVALID_SIGNATURE;
         }
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let message32 = match unsafe { read_slice(message32, message32_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -127,6 +143,8 @@ pub unsafe extern "C" fn rm_crypto_bip340_schnorr_verify(
         if message32.len() != BIP340_SCHNORR_MESSAGE_LEN {
             return CRYPTO_INVALID_ARGUMENT;
         }
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let public_key_xonly = match unsafe { read_slice(public_key_xonly, public_key_xonly_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -159,11 +177,15 @@ pub unsafe extern "C" fn rm_crypto_bip340_schnorr_encode_public_key(
     out_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let public_key_xonly = match unsafe { read_slice(public_key_xonly, public_key_xonly_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
         match key_encoding::encode_bip340_schnorr_public_key(public_key_xonly) {
+            // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+            // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(public_key) => unsafe { write_fixed(out, out_len, &public_key) },
             Err(_) => CRYPTO_INVALID_KEY,
         }
@@ -184,11 +206,15 @@ pub unsafe extern "C" fn rm_crypto_bip340_schnorr_decode_public_key(
     out_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let public_key_xonly = match unsafe { read_slice(public_key_xonly, public_key_xonly_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
         match key_encoding::decode_bip340_schnorr_public_key(public_key_xonly) {
+            // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+            // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(public_key) => unsafe { write_fixed(out, out_len, &public_key) },
             Err(_) => CRYPTO_INVALID_KEY,
         }

@@ -69,6 +69,16 @@ extension ReallyMeCryptoRustCAbiTests {
       )
       XCTAssertEqual(unwrapped.count, wrapped.count - 8)
       XCTAssertEqual(unwrapped, keyData)
+      if algorithm == .aes256Kw {
+        XCTAssertThrowsError(
+          try ReallyMeCrypto.unwrapKey(
+            algorithm, wrappingKey: kek,
+            wrappedKey: Array(wrapped.prefix(15)), rustCAbiLibrary: library
+          )
+        ) { error in
+          XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+        }
+      }
 
       var tampered = wrapped
       tampered[0] ^= 0x01
@@ -383,6 +393,17 @@ extension ReallyMeCryptoRustCAbiTests {
       publicKeyEncoding: .pkcs1,
       rustCAbiLibrary: library
     )
+    var tamperedPssSha256 = pssSha256Signature
+    tamperedPssSha256[tamperedPssSha256.count - 1] ^= 0x01
+    XCTAssertThrowsError(
+      try ReallyMeCrypto.verify(
+        .rsaPssSha256Mgf1Sha256, signature: tamperedPssSha256,
+        message: message, publicKeyDer: publicKeyDer,
+        publicKeyEncoding: .pkcs1, rustCAbiLibrary: library
+      )
+    ) { error in
+      XCTAssertEqual(error as? ReallyMeCryptoError, .invalidSignature)
+    }
 
     // Remaining committed RSA digests from vectors/rsa.json. Each must
     // verify through the ABI and reject a one-bit tamper.

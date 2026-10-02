@@ -32,7 +32,15 @@ fn mlkem768_vector_known_answer() -> Result<(), VectorTestError> {
     assert_eq!(b64u_to_bytes(field_string(&v, "secret_key")?)?.len(), 64);
     verify_mlkem_known_answer(&v, |ct, sk| {
         ml_kem_768_decapsulate(ct, sk).map_err(|_| VectorTestError::MlKemOperation)
-    })
+    })?;
+    let ciphertext = b64u_to_bytes(field_string(&v, "ciphertext")?)?;
+    let secret_key = b64u_to_bytes(field_string(&v, "secret_key")?)?;
+    assert!(matches!(
+        ml_kem_768_decapsulate(&ciphertext[..ciphertext.len() - 1], &secret_key),
+        Err(crypto_core::CryptoError::InvalidCiphertextLength { actual, .. })
+            if actual == ciphertext.len() - 1
+    ));
+    Ok(())
 }
 
 /// Shared ML-KEM known-answer check, parameterized by the variant's

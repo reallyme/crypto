@@ -24,10 +24,14 @@ pub unsafe extern "C" fn rm_crypto_constant_time_equal(
     equal_out: *mut i32,
 ) -> CryptoStatus {
     ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let left = match unsafe { read_slice(left, left_len) } {
             Ok(value) => value,
             Err(status) => return status,
         };
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
         let right = match unsafe { read_slice(right, right_len) } {
             Ok(value) => value,
             Err(status) => return status,
@@ -37,6 +41,8 @@ pub unsafe extern "C" fn rm_crypto_constant_time_equal(
         } else {
             0
         };
+        // SAFETY: The C caller provides an aligned, writable status slot for this call. write_i32 validates the
+        // slot before writing; the caller retains ownership.
         let status = unsafe { write_i32(equal_out, equal) };
         if status == CRYPTO_OK {
             CRYPTO_OK

@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 
 const script = fileURLToPath(new URL("./verify_swift_release_artifact.mjs", import.meta.url));
 
-const writeFixture = (root, { bound = true, sidecarOverride } = {}) => {
+const writeFixture = (root, { bound = true, formattedUrl = false, sidecarOverride } = {}) => {
   const archive = join(root, "artifact.zip");
   const sidecar = join(root, "artifact.checksum");
   const manifest = join(root, "Package.swift");
@@ -29,7 +29,7 @@ let ffiArtifactVersion = "0.3.0"
 let ffiArtifactLocalPathOverride = ""
 .binaryTarget(
     name: "ReallyMeCryptoFFI",
-    url: "https://github.com/reallyme/crypto/releases/download/${bound ? "v\\(ffiArtifactVersion)" : "v0.3.0"}/ReallyMeCryptoFFI.xcframework.zip",
+    url:${formattedUrl ? "\n      " : " "}"https://github.com/reallyme/crypto/releases/download/${bound ? "v\\(ffiArtifactVersion)" : "v0.3.0"}/ReallyMeCryptoFFI.xcframework.zip",
     checksum: ${bound ? "ffiArtifactChecksum" : `"${checksum}"`}
 )
 `,
@@ -41,6 +41,22 @@ test("Swift release verifier accepts matching archive, sidecar, manifest, and ve
   const root = mkdtempSync(join(tmpdir(), "reallyme-swift-release-"));
   try {
     const fixture = writeFixture(root);
+    assert.doesNotThrow(() => {
+      execFileSync(
+        process.execPath,
+        [script, fixture.archive, fixture.sidecar, fixture.manifest, "0.3.0"],
+        { stdio: "pipe" },
+      );
+    });
+  } finally {
+    rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("Swift release verifier accepts the formatted two-line binary URL", () => {
+  const root = mkdtempSync(join(tmpdir(), "reallyme-swift-release-"));
+  try {
+    const fixture = writeFixture(root, { formattedUrl: true });
     assert.doesNotThrow(() => {
       execFileSync(
         process.execPath,

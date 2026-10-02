@@ -119,7 +119,7 @@ extension ReallyMeCryptoTests {
         .pbkdf2HmacSha256,
         password: Array("password".utf8),
         salt: salt,
-        iterations: 0,
+        iterations: 99_999,
         outputLength: 32
       )
     ) { error in

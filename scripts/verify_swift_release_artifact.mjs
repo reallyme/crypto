@@ -93,15 +93,11 @@ if (
 if (exactAssignment("ffiArtifactLocalPathOverride", "") !== "") {
   fail("Package.swift local artifact override must be empty for release verification");
 }
-if (
-  !manifest.includes(
-    'url: "https://github.com/reallyme/crypto/releases/download/v\\(ffiArtifactVersion)/ReallyMeCryptoFFI.xcframework.zip"',
-  )
-) {
-  fail("Package.swift binary target URL is not bound to ffiArtifactVersion");
-}
-if (!/^\s*checksum:\s*ffiArtifactChecksum\s*$/mu.test(manifest)) {
-  fail("Package.swift binary target checksum is not bound to ffiArtifactChecksum");
+// Bind both fields to the same binary target. Swift Format may put the URL on
+// the line after `url:`, so whitespace here must not affect verification.
+const boundTarget = /^\s*\.binaryTarget\(\s*name:\s*"ReallyMeCryptoFFI",\s*url:\s*"https:\/\/github\.com\/reallyme\/crypto\/releases\/download\/v\\\(ffiArtifactVersion\)\/ReallyMeCryptoFFI\.xcframework\.zip",\s*checksum:\s*ffiArtifactChecksum\s*\)/gmu;
+if ([...manifest.matchAll(boundTarget)].length !== 1) {
+  fail("Package.swift binary target URL and checksum must use the artifact binding variables");
 }
 
 console.log("Swift release archive, sidecar, and Package.swift are byte-bound and consistent");
