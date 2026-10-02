@@ -22,6 +22,10 @@
   XCFramework and verifies the tagged manifest before publication. Android
   Gradle Plugin 9 and the compatibility-bound `getrandom` and `sha3` lines
   remain separate migrations.
+- Adds published-runtime dependency scanning, publisher checksum provenance,
+  multi-language CodeQL analysis, browser WASM execution, and C ABI sanitizer
+  and Miri checks. Manual Maven bundles now use the attested versioned
+  Kotlin/Android preflight artifacts for the release commit.
 
 ## 0.3.9
 

@@ -7,14 +7,19 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { lstatSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
+// The upstream core and this repository's policy checker are separate inputs.
+// Pinning both makes an unreviewed policy edit fail before the checker runs.
 const RELEASE_READINESS_COMMIT = "5c2da5e5d5795c2c895d0dca0819287ee7101207";
 const RELEASE_READINESS_CORE_SHA256 =
   "d3434554901ea5438bb0dd64f4f7214b9050e95cd1e3d579cc2992f4c662e85a";
+const LOCAL_CHECKER_SHA256 =
+  "ccb8dea099151fbac5c2a4cedd94ee83ea953058d43af770a93251c747a9e58e";
 const RELEASE_READINESS_CORE_URL =
   `https://raw.githubusercontent.com/reallyme/release-readiness/${RELEASE_READINESS_COMMIT}/core.mjs`;
 const VENDORED_CORE_PATH = "scripts/release-readiness/core.mjs";
 const LOCAL_CHECKER_PATH = "scripts/check_release_readiness.mjs";
 const MAX_CORE_BYTES = 262_144;
+const MAX_CHECKER_BYTES = 524_288;
 const FETCH_TIMEOUT_MILLISECONDS = 30_000;
 
 const fail = (message) => {
@@ -28,12 +33,20 @@ const expectedDigest = Buffer.from(RELEASE_READINESS_CORE_SHA256, "hex");
 if (expectedDigest.length !== 32) {
   fail("configured core digest is invalid");
 }
+const expectedCheckerDigest = Buffer.from(LOCAL_CHECKER_SHA256, "hex");
+if (expectedCheckerDigest.length !== 32) {
+  fail("configured local checker digest is invalid");
+}
 
 let localCore;
+let localChecker;
 try {
   const checkerStatus = lstatSync(LOCAL_CHECKER_PATH);
   if (checkerStatus.isSymbolicLink() || !checkerStatus.isFile()) {
     fail("local checker must be a regular file");
+  }
+  if (checkerStatus.size === 0 || checkerStatus.size > MAX_CHECKER_BYTES) {
+    fail("local checker size is outside the accepted boundary");
   }
   const status = lstatSync(VENDORED_CORE_PATH);
   if (status.isSymbolicLink() || !status.isFile()) {
@@ -42,9 +55,13 @@ try {
   if (status.size === 0 || status.size > MAX_CORE_BYTES) {
     fail("vendored core size is outside the accepted boundary");
   }
+  localChecker = readFileSync(LOCAL_CHECKER_PATH);
   localCore = readFileSync(VENDORED_CORE_PATH);
 } catch {
-  fail("vendored core is missing or inaccessible");
+  fail("release readiness inputs are missing or inaccessible");
+}
+if (!timingSafeEqual(sha256(localChecker), expectedCheckerDigest)) {
+  fail("local checker does not match the reviewed repository policy pin");
 }
 if (!timingSafeEqual(sha256(localCore), expectedDigest)) {
   fail("vendored core does not match the reviewed upstream pin");

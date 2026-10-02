@@ -8,6 +8,7 @@ import test from "node:test";
 
 import {
   ReleaseAttestationError,
+  requiredWorkflowsForRelease,
   requireLatestSuccessfulRun,
   run,
 } from "./verify_release_attestation.mjs";
@@ -23,6 +24,21 @@ const workflowRun = (overrides = {}) => ({
   headSha: releaseSha,
   status: "completed",
   ...overrides,
+});
+
+test("release evidence includes dependency security for every package lane", () => {
+  for (const preflight of [
+    "crates-package-preflight.yml",
+    "swift-package-preflight.yml",
+    "kotlin-android-package-preflight.yml",
+    "npm-package-preflight.yml",
+  ]) {
+    assert.deepEqual(requiredWorkflowsForRelease(preflight), [
+      "rust-ci.yml",
+      "dependency-security.yml",
+      preflight,
+    ]);
+  }
 });
 
 test("package preflight attestation is bound to the requested version", () => {
@@ -82,6 +98,22 @@ test("pull-request success cannot substitute for a main push check", () => {
       [workflowRun({ databaseId: 101, event: "pull_request", headBranch: "feature" })],
       releaseSha,
       "rust-ci.yml",
+    );
+  }, ReleaseAttestationError);
+});
+
+test("dependency security must pass on the release commit", () => {
+  const latest = requireLatestSuccessfulRun(
+    [workflowRun({ displayTitle: "Dependency Security" })],
+    releaseSha,
+    "dependency-security.yml",
+  );
+  assert.equal(latest.headSha, releaseSha);
+  assert.throws(() => {
+    requireLatestSuccessfulRun(
+      [workflowRun({ displayTitle: "Dependency Security", event: "pull_request" })],
+      releaseSha,
+      "dependency-security.yml",
     );
   }, ReleaseAttestationError);
 });

@@ -120,9 +120,7 @@ const rustSemverBaselinePath = ".semver-baseline";
 const cargoSemverChecksVersion = "0.49.0";
 const buffaVersion = "0.9.2";
 const releaseReadinessCommit = "5c2da5e5d5795c2c895d0dca0819287ee7101207";
-const releaseReadinessCommand =
-  `npm exec --yes --package=github:reallyme/release-readiness#${releaseReadinessCommit} -- ` +
-  "reallyme-release-readiness";
+const releaseReadinessCommand = "node scripts/run_pinned_release_readiness.mjs";
 const checkoutAction = "actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd";
 const gradleWrapperValidationAction =
   "gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92";
@@ -1698,6 +1696,20 @@ assertContains(
 assertContains(".github/workflows/rust-ci.yml", "node scripts/generate_provider_matrix.mjs --check");
 assertContains(".github/workflows/rust-ci.yml", releaseReadinessCommand);
 assertContains(".github/workflows/rust-ci.yml", "REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI");
+assertContains(".github/workflows/rust-ci.yml", "npm --prefix packages/ts run test:browser");
+assertContains(".github/workflows/rust-ci.yml", "bash scripts/test_native_sanitizers.sh");
+assertContains(".github/workflows/rust-ci.yml", "bash scripts/test_ffi_abi_release_artifact.sh");
+assertContains(".github/workflows/rust-ci.yml", "miri test --locked -p crypto-ffi --lib pointer::tests");
+assertContains(".github/workflows/dependency-security.yml", "packages/kotlin/runtime/gradle.lockfile");
+assertContains(".github/workflows/dependency-security.yml", "packages/kotlin-android/runtime/gradle.lockfile");
+assertContains(".github/workflows/dependency-security.yml", "verify_gradle_checksum_provenance.py");
+assertContains(".github/workflows/codeql.yml", "javascript-typescript");
+assertContains(".github/workflows/codeql.yml", "java-kotlin");
+assertContains(".github/workflows/codeql.yml", "swift");
+assertContains("scripts/maven-central-bundle.local.sh", "verify_release_preflight");
+assertContains("scripts/maven-central-bundle.local.sh", "NATIVE_RESOURCE_RUN_ID");
+assertContains("scripts/maven-central-bundle.local.sh", "RELEASE_ATTESTATION_WRITE_GITHUB_OUTPUT=1");
+assertContains("scripts/maven-central-bundle.local.sh", "gh run download \"$run_id\" --repo reallyme/crypto");
 assertContains(".github/workflows/fuzz.yml", "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
 assertContains(".github/workflows/fuzz.yml", "cargo install cargo-fuzz --version 0.13.2 --locked");
 assertContains(".github/workflows/fuzz.yml", "crates/crypto/src/operation_contract/**");
@@ -2805,6 +2817,7 @@ const repositoryPolicy = {
         required: [
           `const RELEASE_READINESS_COMMIT = "${releaseReadinessCommit}";`,
           'const RELEASE_READINESS_CORE_SHA256 =\n  "d3434554901ea5438bb0dd64f4f7214b9050e95cd1e3d579cc2992f4c662e85a";',
+          "const LOCAL_CHECKER_SHA256 =",
         ],
         forbidden: [
           "RELEASE_READINESS_COMMIT = \"main\"",
@@ -2880,6 +2893,7 @@ const assertReleaseWorkflowCredentialGates = () => {
   }
 
   assertContains("scripts/verify_release_attestation.mjs", 'const CODE_CHECK_WORKFLOW = "rust-ci.yml"');
+  assertContains("scripts/verify_release_attestation.mjs", '"dependency-security.yml"');
   assertContains("scripts/verify_release_attestation.mjs", '"crates-package-preflight.yml"');
   assertContains("scripts/verify_release_attestation.mjs", '"swift-package-preflight.yml"');
   assertContains("scripts/verify_release_attestation.mjs", '"kotlin-android-package-preflight.yml"');

@@ -1,0 +1,83 @@
+# SPDX-FileCopyrightText: 2026 ReallyMe LLC
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+name: Dependency Security
+
+on:
+  pull_request:
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - "!docs/maven-provenance.md"
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - "!docs/maven-provenance.md"
+  schedule:
+    - cron: '30 12 * * 1'
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  verify-runtime-lockfiles:
+    name: Verify published Gradle runtime dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Verify runtime lockfiles match Gradle locks
+        run: |
+          python3 -m unittest scripts.gradle_runtime_lockfiles_test
+          python3 scripts/gradle_runtime_lockfiles.py --check
+
+  verify-gradle-publisher-provenance:
+    name: Verify publisher bytes for Gradle checksums
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Test checksum verifier
+        run: python3 -m unittest scripts.verify_gradle_checksum_provenance_test
+
+      - name: Verify checksum provenance
+        run: python3 scripts/verify_gradle_checksum_provenance.py
+
+  scan:
+    name: Gate published runtime dependencies
+    needs: verify-runtime-lockfiles
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@a345acffa64b0eaede81a3d9aae6141214d9c8fc # v2.6.0
+    with:
+      upload-sarif: false
+      fail-on-vuln: true
+      scan-args: |-
+        --lockfile=./Cargo.lock
+        --lockfile=./packages/ts/package-lock.json
+        --lockfile=./packages/kotlin/runtime/gradle.lockfile
+        --lockfile=./packages/kotlin-android/runtime/gradle.lockfile
+
+  scan-build-tooling:
+    name: Report Gradle build tooling advisories
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@a345acffa64b0eaede81a3d9aae6141214d9c8fc # v2.6.0
+    with:
+      upload-sarif: false
+      # AGP's lint and test tools resolve versions that are not shipped in the
+      # Maven artifacts. Keep their advisories visible without blocking a
+      # release whose published runtime dependencies scan cleanly.
+      fail-on-vuln: false
+      scan-args: |-
+        --lockfile=./packages/kotlin/gradle.lockfile
+        --lockfile=./packages/kotlin-android/gradle.lockfile

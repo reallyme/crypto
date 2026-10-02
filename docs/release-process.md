@@ -26,8 +26,12 @@ Release workflows require:
 - npm `pack:check` evidence for the package file list and raw WASM
   import/export surface;
 - Gradle dependency verification for Kotlin/JVM, Android, and conformance;
+- derived JVM and Android runtime dependency locks, dependency scanning, and
+  publisher checksum provenance for Gradle artifacts;
 - C ABI, JNI, Swift, Kotlin, TypeScript, and WASM package tests;
-- exact-SHA workflow-success evidence for `rust-ci` and the matching versioned
+- browser execution of the built WASM package, C ABI sanitizer, and focused
+  FFI Miri checks;
+- exact-SHA workflow-success evidence for `rust-ci`, `dependency-security`, and the matching versioned
   package preflight, including the Swift preflight run that owns the promoted
   XCFramework artifact;
 - protected environments or equivalent approval gates before credentials;
@@ -73,8 +77,8 @@ workflow run title binds the successful evidence to that version:
 - `npm-package-preflight.yml`.
 
 The corresponding release workflows resolve the current `main` SHA again and
-fail closed unless the newest `Code Checks` push run and newest matching
-preflight run both succeeded for that SHA and version. A newer failed,
+fail closed unless the newest `Code Checks` and `Dependency Security` push runs
+and newest matching preflight run all succeeded for that SHA and version. A newer failed,
 cancelled, queued, or in-progress run invalidates an older success.
 
 Run `swift-package-release.yml` after the Swift preflight succeeds. The release
@@ -152,8 +156,9 @@ The public `scripts/` directory contains the tools used by CI and maintainers:
 
 `maven-central-bundle.local.sh` is an optional maintainer tool for manual Central
 Portal submission. It builds and signs a local bundle; it does not upload it.
-When JVM resources are absent, it may dispatch the public native-resource
-workflow and download its artifacts for the current commit. It requires the
+It requires the latest successful Kotlin/Android package preflight for the
+current `origin/main` commit and version, then downloads that run's attested
+JVM native artifacts. It requires the
 local GPG key, signing environment variables, GitHub CLI authentication, and
 Android build tools. Load passphrases through a secret manager or a non-echoing
 prompt, not literal commands saved in shell history. Output/resource overrides

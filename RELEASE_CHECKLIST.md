@@ -40,6 +40,9 @@ published artifacts from the reviewed source commit.
   into one signed Central Portal upload bundle. It accepts the signing key id
   and passphrase only through the documented environment variables and never
   writes those credentials into the bundle or repository.
+- The manual bundle must use the latest successful versioned Kotlin/Android
+  preflight for the current `origin/main` commit. Its JVM native libraries
+  must come from that exact run.
 - JVM and Android artifacts include native checksum manifests so package tests
   can verify the bundled native resources.
 - Each JVM matrix producer records its native-library digest as an independent

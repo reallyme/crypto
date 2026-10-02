@@ -190,11 +190,17 @@ jobs:
       - name: Test TypeScript package
         run: npm --prefix packages/ts test
 
+      - name: Test browser DevTools startup parsing
+        run: node --test packages/ts/scripts/chrome-devtools-port.test.mjs
+
+      - name: Test TypeScript package in Chromium
+        run: npm --prefix packages/ts run test:browser
+
       - name: Check generated provider matrix
         run: node scripts/generate_provider_matrix.mjs --check
 
       - name: Release readiness
-        run: npm exec --yes --package=github:reallyme/release-readiness#5c2da5e5d5795c2c895d0dca0819287ee7101207 -- reallyme-release-readiness
+        run: node scripts/run_pinned_release_readiness.mjs
 
       - name: Check native lane
         run: cargo check --locked --workspace --no-default-features --features native
@@ -207,6 +213,54 @@ jobs:
 
       - name: Security advisory audit
         run: scripts/audit_committed_lockfiles.sh
+
+  native-sanitizers:
+    name: native sanitizer lanes
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Install pinned Rust nightly
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: nightly-2026-07-01
+
+      - name: Test FFI with address sanitizer and checked UB
+        run: bash scripts/test_native_sanitizers.sh
+
+  ffi-abi-artifact:
+    name: FFI release artifact and C sanitizer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: 1.98.1
+
+      - name: Verify release artifact through C sanitizer
+        run: bash scripts/test_ffi_abi_release_artifact.sh
+
+  ffi-miri:
+    name: FFI pointer and panic boundary Miri tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Install pinned Miri toolchain
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: nightly-2026-07-01
+          components: miri
+
+      - name: Test FFI pointer and panic boundaries
+        run: |
+          cargo +nightly-2026-07-01 miri test --locked -p crypto-ffi --lib pointer::tests
+          cargo +nightly-2026-07-01 miri test --locked -p crypto-ffi --lib guard::tests
 
   swift:
     name: swift package + vector conformance

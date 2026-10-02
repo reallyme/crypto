@@ -10,7 +10,6 @@ IFS=$'\n\t'
 # before running; do not put the passphrase in shell history.
 # Usage:
 #   MAVEN_SIGNING_KEY_ID=<long-gpg-key-id-or-fingerprint> \
-#   KOTLIN_NATIVE_RESOURCES_DIR=/path/to/full/jvm-native-resources \
 #   ANDROID_NDK_HOME=/path/to/android-ndk \
 #   ./scripts/maven-central-bundle.local.sh
 #
@@ -19,9 +18,9 @@ IFS=$'\n\t'
 #
 # Upload the printed zip in Central Portal as a deployment bundle. The bundle is
 # assembled in Maven repository layout and includes the JVM jar and Android AAR.
-# If KOTLIN_NATIVE_RESOURCES_DIR is incomplete, this script populates it from
-# the JVM Native Resources GitHub Actions matrix for the current commit,
-# dispatching that workflow and waiting for it when necessary.
+# The JVM libraries come from the latest successful versioned Kotlin/Android
+# package preflight for the current main commit. This script never dispatches
+# a workflow or substitutes locally built release libraries.
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORK_DIR="${MAVEN_CENTRAL_WORK_DIR:-${ROOT_DIR}/build/maven-central-upload}"
@@ -29,18 +28,14 @@ BUNDLE_ROOT="${WORK_DIR}/bundle-root"
 OUTPUT_DIR="${WORK_DIR}/out"
 GRADLE="${ROOT_DIR}/packages/kotlin/gradlew"
 ANDROID_GRADLE="${ROOT_DIR}/packages/kotlin-android/gradlew"
-KOTLIN_NATIVE_RESOURCES_DIR="${KOTLIN_NATIVE_RESOURCES_DIR:-${ROOT_DIR}/build/kotlin-native-resources}"
+KOTLIN_NATIVE_RESOURCES_DIR="${WORK_DIR}/kotlin-native-resources"
 ANDROID_JNI_LIBS_DIR_WAS_SET="${ANDROID_JNI_LIBS_DIR+x}"
 ANDROID_JNI_LIBS_DIR="${ANDROID_JNI_LIBS_DIR:-${WORK_DIR}/android-jniLibs}"
 ANDROID_NATIVE_ASSETS_DIR="${WORK_DIR}/android-native-assets"
 ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION:-29.0.14206865}"
-NATIVE_RESOURCE_WORKFLOW="${MAVEN_NATIVE_RESOURCE_WORKFLOW:-jvm-native-resources.yml}"
-NATIVE_RESOURCE_ARTIFACT_PATTERN="${MAVEN_NATIVE_RESOURCE_ARTIFACT_PATTERN:-kotlin-native-*}"
+NATIVE_RESOURCE_ARTIFACT_PATTERN="kotlin-native-*"
 NATIVE_RESOURCE_DOWNLOAD_DIR="${WORK_DIR}/kotlin-native-artifacts"
-NATIVE_RESOURCE_WORKFLOW_TIMEOUT_SECONDS="${MAVEN_NATIVE_RESOURCE_WORKFLOW_TIMEOUT_SECONDS:-3600}"
 NATIVE_RESOURCE_RUN_ID="${MAVEN_NATIVE_RESOURCE_RUN_ID:-}"
-NATIVE_RESOURCE_COMMIT_MARKER="${KOTLIN_NATIVE_RESOURCES_DIR%/}.reallyme-crypto-source-commit"
-NATIVE_RESOURCE_LEGACY_COMMIT_MARKER="${KOTLIN_NATIVE_RESOURCES_DIR}/.reallyme-crypto-source-commit"
 
 fail() {
   printf 'maven central bundle failed: %s\n' "$1" >&2
@@ -85,6 +80,9 @@ validate_work_dir() {
   case "$WORK_DIR" in
     /|"$ROOT_DIR"|"$ROOT_DIR"/) fail "MAVEN_CENTRAL_WORK_DIR must name a dedicated build directory" ;;
   esac
+  if [ -L "$WORK_DIR" ]; then
+    fail "MAVEN_CENTRAL_WORK_DIR must not be a symbolic link"
+  fi
 }
 
 require_zip_entry() {
@@ -126,207 +124,72 @@ kotlin_native_resources_are_complete() {
   return 0
 }
 
-current_git_ref() {
-  local branch
-  branch="$(git -C "$ROOT_DIR" rev-parse --abbrev-ref HEAD)"
-  if [ "$branch" = "HEAD" ]; then
-    git -C "$ROOT_DIR" rev-parse HEAD
-  else
-    printf '%s\n' "$branch"
-  fi
-}
-
-find_successful_native_resource_run() {
-  local head_sha="$1"
-  gh run list \
-    --workflow "$NATIVE_RESOURCE_WORKFLOW" \
-    --commit "$head_sha" \
-    --status success \
-    --limit 20 \
-    --json databaseId,headSha \
-    --jq ".[] | select(.headSha == \"${head_sha}\") | .databaseId" \
-    | head -n 1
-}
-
-latest_native_resource_run_for_head() {
-  local head_sha="$1"
-  gh run list \
-    --workflow "$NATIVE_RESOURCE_WORKFLOW" \
-    --commit "$head_sha" \
-    --limit 20 \
-    --json databaseId,headSha \
-    --jq ".[] | select(.headSha == \"${head_sha}\") | .databaseId" \
-    | head -n 1
-}
-
-native_resource_run_status() {
-  local run_id="$1"
-  gh run view "$run_id" \
-    --json status,conclusion \
-    --jq '[.status, (.conclusion // "")] | @tsv'
-}
-
-validate_native_resource_run() {
-  local run_id="$1"
-  local expected_head_sha="$2"
-  local expected_workflow_id
-  local run_metadata
-  local run_head_sha
-  local run_status
-  local run_conclusion
-  local run_workflow_id
-
-  case "$run_id" in
-    ''|0|*[!0-9]*)
-      fail "JVM native resource run id must be a positive GitHub Actions run id"
-      ;;
-  esac
-
-  expected_workflow_id="$(
-    gh api "repos/{owner}/{repo}/actions/workflows/${NATIVE_RESOURCE_WORKFLOW}" --jq '.id'
-  )"
-  run_metadata="$(
-    gh run view "$run_id" \
-      --json headSha,status,conclusion,workflowDatabaseId \
-      --jq '[.headSha, .status, (.conclusion // ""), (.workflowDatabaseId | tostring)] | @tsv'
-  )"
-  IFS=$'\t' read -r run_head_sha run_status run_conclusion run_workflow_id <<<"$run_metadata"
-
-  if [ "$run_workflow_id" != "$expected_workflow_id" ]; then
-    fail "GitHub Actions run ${run_id} was not produced by ${NATIVE_RESOURCE_WORKFLOW}"
-  fi
-  if [ "$run_head_sha" != "$expected_head_sha" ]; then
-    fail "GitHub Actions run ${run_id} does not belong to the current commit"
-  fi
-  if [ "$run_status" != "completed" ] || [ "$run_conclusion" != "success" ]; then
-    fail "GitHub Actions run ${run_id} has not completed successfully"
-  fi
-}
-
-native_resources_match_commit() {
-  local expected_head_sha="$1"
-  local recorded_head_sha
-
-  if ! kotlin_native_resources_are_complete || [ ! -f "$NATIVE_RESOURCE_COMMIT_MARKER" ]; then
-    return 1
-  fi
-  IFS= read -r recorded_head_sha <"$NATIVE_RESOURCE_COMMIT_MARKER" || return 1
-  [ "$recorded_head_sha" = "$expected_head_sha" ]
-}
-
-record_native_resource_commit() {
-  local head_sha="$1"
-  mkdir -p "$(dirname "$NATIVE_RESOURCE_COMMIT_MARKER")"
-  printf '%s\n' "$head_sha" >"$NATIVE_RESOURCE_COMMIT_MARKER"
-  rm -f "$NATIVE_RESOURCE_LEGACY_COMMIT_MARKER"
-}
-
-wait_for_native_resource_run_id() {
-  local head_sha="$1"
-  local excluded_run_id="${2:-}"
-  local deadline
-  local run_id
-  deadline=$((SECONDS + NATIVE_RESOURCE_WORKFLOW_TIMEOUT_SECONDS))
-
-  while [ "$SECONDS" -lt "$deadline" ]; do
-    run_id="$(latest_native_resource_run_for_head "$head_sha")"
-    if [ -n "$run_id" ] && [ "$run_id" != "$excluded_run_id" ]; then
-      printf '%s\n' "$run_id"
-      return
-    fi
-    sleep 5
-  done
-
-  fail "timed out waiting for ${NATIVE_RESOURCE_WORKFLOW} to start for ${head_sha}"
-}
-
 download_kotlin_native_resources_from_run() {
   local run_id="$1"
-  local artifact_dir
+  local artifact_name
 
-  rm -rf "$NATIVE_RESOURCE_DOWNLOAD_DIR" "$(kotlin_native_resource_root)"
-  rm -f "$NATIVE_RESOURCE_COMMIT_MARKER" "$NATIVE_RESOURCE_LEGACY_COMMIT_MARKER"
+  rm -rf "$NATIVE_RESOURCE_DOWNLOAD_DIR" "$KOTLIN_NATIVE_RESOURCES_DIR"
   mkdir -p "$NATIVE_RESOURCE_DOWNLOAD_DIR" "$KOTLIN_NATIVE_RESOURCES_DIR"
   info "Downloading JVM native resource artifacts from GitHub Actions run ${run_id}"
-  gh run download "$run_id" \
+  gh run download "$run_id" --repo reallyme/crypto \
     --pattern "$NATIVE_RESOURCE_ARTIFACT_PATTERN" \
     --dir "$NATIVE_RESOURCE_DOWNLOAD_DIR"
 
-  while IFS= read -r artifact_dir; do
-    cp -R "${artifact_dir}/." "$KOTLIN_NATIVE_RESOURCES_DIR/"
-  done < <(find "$NATIVE_RESOURCE_DOWNLOAD_DIR" -mindepth 1 -maxdepth 1 -type d | sort)
+  for artifact_name in \
+    kotlin-native-linux-x86_64 \
+    kotlin-native-linux-aarch64 \
+    kotlin-native-macos-x86_64 \
+    kotlin-native-macos-aarch64 \
+    kotlin-native-windows-x86_64; do
+    require_dir "${NATIVE_RESOURCE_DOWNLOAD_DIR}/${artifact_name}"
+    cp -R "${NATIVE_RESOURCE_DOWNLOAD_DIR}/${artifact_name}/." "$KOTLIN_NATIVE_RESOURCES_DIR/"
+  done
+}
+
+verify_release_preflight() {
+  local output_file
+  local run_id
+  local output_line
+
+  require_tool gh
+  require_tool git
+  if [ -n "$(git -C "$ROOT_DIR" status --porcelain)" ]; then
+    fail "release checkout has uncommitted changes"
+  fi
+
+  RELEASE_SHA="$(git -C "$ROOT_DIR" rev-parse HEAD)"
+  if [[ ! "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+    fail "release checkout does not have a valid commit SHA"
+  fi
+  output_file="$(mktemp "${WORK_DIR}/release-attestation.XXXXXX")"
+  if ! GH_TOKEN="${GH_TOKEN:-$(gh auth token)}" \
+    GITHUB_REPOSITORY="reallyme/crypto" \
+    RELEASE_SHA="$RELEASE_SHA" \
+    RELEASE_VERSION="$VERSION" \
+    RELEASE_ATTESTATION_PREFLIGHT_WORKFLOW="kotlin-android-package-preflight.yml" \
+    RELEASE_ATTESTATION_WRITE_GITHUB_OUTPUT=1 \
+    GITHUB_OUTPUT="$output_file" \
+      node "${ROOT_DIR}/scripts/verify_release_attestation.mjs"; then
+    rm -f "$output_file"
+    fail "current main commit lacks successful release and package preflight evidence"
+  fi
+  output_line="$(cat "$output_file")"
+  rm -f "$output_file"
+  if [[ ! "$output_line" =~ ^preflight_run_id=([1-9][0-9]*)$ ]]; then
+    fail "release attestation did not return a valid preflight run id"
+  fi
+  run_id="${BASH_REMATCH[1]}"
+  if [ -n "$NATIVE_RESOURCE_RUN_ID" ] && [ "$NATIVE_RESOURCE_RUN_ID" != "$run_id" ]; then
+    fail "selected native-resource run is not the latest attested package preflight"
+  fi
+  NATIVE_RESOURCE_RUN_ID="$run_id"
 }
 
 ensure_kotlin_native_resources() {
-  local head_sha
-  local git_ref
-  local run_id
-  local run_state
-  local run_status
-  local run_conclusion
-  local stale_run_id=""
-
-  mkdir -p "$KOTLIN_NATIVE_RESOURCES_DIR"
-  require_tool git
-  head_sha="$(git -C "$ROOT_DIR" rev-parse HEAD)"
-
-  if [ -n "$NATIVE_RESOURCE_RUN_ID" ]; then
-    require_tool gh
-    validate_native_resource_run "$NATIVE_RESOURCE_RUN_ID" "$head_sha"
-    download_kotlin_native_resources_from_run "$NATIVE_RESOURCE_RUN_ID"
-    if ! kotlin_native_resources_are_complete; then
-      fail "downloaded JVM native resources are incomplete; check GitHub Actions run ${NATIVE_RESOURCE_RUN_ID}"
-    fi
-    record_native_resource_commit "$head_sha"
-    return
-  fi
-
-  if native_resources_match_commit "$head_sha"; then
-    info "Reusing JVM native resources verified for current commit ${head_sha}"
-    return
-  fi
-
-  require_tool gh
-  git_ref="$(current_git_ref)"
-  run_id="$(find_successful_native_resource_run "$head_sha")"
-  if [ -z "$run_id" ]; then
-    run_id="$(latest_native_resource_run_for_head "$head_sha")"
-    if [ -n "$run_id" ]; then
-      run_state="$(native_resource_run_status "$run_id")"
-      run_status="${run_state%%$'\t'*}"
-      run_conclusion="${run_state#*$'\t'}"
-      if [ "$run_status" = "completed" ] && [ "$run_conclusion" != "success" ]; then
-        info "Latest ${NATIVE_RESOURCE_WORKFLOW} run ${run_id} for ${head_sha} concluded ${run_conclusion}; dispatching a fresh run"
-        stale_run_id="$run_id"
-        run_id=""
-      else
-        info "Waiting for existing ${NATIVE_RESOURCE_WORKFLOW} run ${run_id} for ${head_sha}"
-        gh run watch "$run_id" --exit-status
-      fi
-    fi
-  fi
-  if [ -z "$run_id" ]; then
-    info "No successful or running ${NATIVE_RESOURCE_WORKFLOW} native-resource run found for ${head_sha}"
-    info "JVM native resources are absent or stale; staging the current host library while the cross-platform run is prepared"
-    rm -rf "$(kotlin_native_resource_root)"
-    rm -f "$NATIVE_RESOURCE_COMMIT_MARKER" "$NATIVE_RESOURCE_LEGACY_COMMIT_MARKER"
-    "${ROOT_DIR}/scripts/build_kotlin_native_resource.sh" "$KOTLIN_NATIVE_RESOURCES_DIR"
-    if kotlin_native_resources_are_complete; then
-      record_native_resource_commit "$head_sha"
-      return
-    fi
-    info "Dispatching ${NATIVE_RESOURCE_WORKFLOW} on ${git_ref} to build cross-platform JVM native resources"
-    gh workflow run "$NATIVE_RESOURCE_WORKFLOW" --ref "$git_ref"
-    run_id="$(wait_for_native_resource_run_id "$head_sha" "$stale_run_id")"
-    gh run watch "$run_id" --exit-status
-  fi
-
-  validate_native_resource_run "$run_id" "$head_sha"
-  download_kotlin_native_resources_from_run "$run_id"
+  download_kotlin_native_resources_from_run "$NATIVE_RESOURCE_RUN_ID"
   if ! kotlin_native_resources_are_complete; then
-    fail "downloaded JVM native resources are incomplete; check GitHub Actions run ${run_id}"
+    fail "attested preflight ${NATIVE_RESOURCE_RUN_ID} has incomplete JVM native resources"
   fi
-  record_native_resource_commit "$head_sha"
 }
 
 prepare_android_ndk_home() {
@@ -527,7 +390,9 @@ fi
 
 require_file "$GRADLE"
 require_file "$ANDROID_GRADLE"
+mkdir -p "$WORK_DIR"
 info "Using version ${VERSION}"
+verify_release_preflight
 info "Using JVM native resources from ${KOTLIN_NATIVE_RESOURCES_DIR}"
 ensure_kotlin_native_resources
 info "Writing JVM native checksum manifest"
