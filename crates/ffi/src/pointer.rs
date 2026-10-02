@@ -399,6 +399,30 @@ pub fn validate_disjoint_input_len_pair(
     }
 }
 
+/// Validates a byte output against a distinct produced-length output.
+///
+/// Multi-output calls validate each buffer/length pair separately. This
+/// cross-pair check prevents an output buffer from aliasing the other pair's
+/// length pointer, including when both ranges have the same start and size.
+pub fn validate_disjoint_output_len_cross_pair(
+    output_ptr: *mut u8,
+    output_len: usize,
+    len_out: *mut usize,
+) -> CryptoStatus {
+    if validate_len_output(len_out) != crate::status::CRYPTO_OK {
+        return CRYPTO_INVALID_ARGUMENT;
+    }
+    match validate_disjoint_ranges(
+        output_ptr.cast_const(),
+        output_len,
+        len_out.cast::<u8>(),
+        core::mem::size_of::<usize>(),
+    ) {
+        Ok(()) => crate::status::CRYPTO_OK,
+        Err(status) => status,
+    }
+}
+
 /// Validates that two produced-length output pointers are valid and disjoint.
 pub fn validate_disjoint_len_outputs(first: *mut usize, second: *mut usize) -> CryptoStatus {
     let first_status = validate_len_output(first);

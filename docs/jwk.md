@@ -23,11 +23,18 @@ OKP `alg` and `use` members are optional for public-byte JWKs, but they are
 enforced when present. Ed25519 accepts only `alg: "EdDSA"`
 and `use: "sig"`; X25519 accepts only `alg: "ECDH-ES"` and `use: "enc"`.
 Conflicting metadata is rejected instead of being treated as advisory.
+X25519 public-key identities also reject bit 255, which RFC 7748 masks during
+agreement and would otherwise give the same key two JWK or multikey encodings.
 
 Deserialization dispatches on `kty` explicitly. Duplicate members, private-key
 members, mixed JWK shapes, and unknown non-extension members are rejected before
 key extraction. Public members are length-checked before base64url decoding so
 oversized values cannot trigger a second attacker-proportional allocation.
+
+An Ed25519 OKP envelope validates the byte encoding and length. Importing it
+does not establish that the bytes are a usable verification point; signature
+verification applies the prime-subgroup and canonical-point checks. Callers
+must not treat a parsed Ed25519 JWK or multikey as proof of possession.
 
 EC JWK import treats both coordinates as identity-bearing input. The parser
 reconstructs the compressed SEC1 key, decompresses it through the reviewed curve
@@ -50,6 +57,8 @@ Post-quantum and hybrid keys use this package's asymmetric-key-pair profile:
 
 In this contract, AKP means an algorithm-bound asymmetric key pair. The
 algorithm name, not a curve name, identifies the public-key byte format.
+If `use` is present, signature algorithms require `sig` and KEM algorithms
+require `enc`.
 
 ## Why AKP
 

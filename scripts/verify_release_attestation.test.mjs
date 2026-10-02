@@ -10,6 +10,7 @@ import {
   ReleaseAttestationError,
   requiredWorkflowsForRelease,
   requireLatestSuccessfulRun,
+  requireSuccessfulJobs,
   run,
 } from "./verify_release_attestation.mjs";
 
@@ -72,6 +73,47 @@ test("latest successful workflow attempt authorizes release", () => {
   );
   assert.equal(latest.databaseId, 100);
   assert.equal(latest.attempt, 2);
+});
+
+test("release evidence requires every named code-check job", () => {
+  const names = [
+    "fmt, lint, test, wasm, package",
+    "native sanitizer lanes",
+    "FFI release artifact and C sanitizer",
+    "FFI pointer and panic boundary Miri tests",
+    "swift package + vector conformance",
+    "kotlin package + vector conformance",
+  ];
+  const jobs = names.map((name) => ({ name, status: "completed", conclusion: "success" }));
+  assert.doesNotThrow(() => requireSuccessfulJobs(jobs, "rust-ci.yml"));
+  assert.throws(
+    () => requireSuccessfulJobs(jobs.slice(1), "rust-ci.yml"),
+    (error) => error instanceof ReleaseAttestationError && error.code === "missing-rust-ci.yml-job",
+  );
+  assert.throws(
+    () => requireSuccessfulJobs([{ ...jobs[0], conclusion: "skipped" }, ...jobs.slice(1)], "rust-ci.yml"),
+    (error) => error instanceof ReleaseAttestationError && error.code === "required-rust-ci.yml-job-not-successful",
+  );
+});
+
+test("package preflight attestation requires matrix and publication jobs", () => {
+  const jobs = [
+    "verify source SHA",
+    "jvm native preflight linux-x86_64",
+    "jvm native preflight linux-aarch64",
+    "jvm native preflight macos-x86_64",
+    "jvm native preflight macos-aarch64",
+    "jvm native preflight windows-x86_64",
+    "kotlin maven preflight",
+    "android aar preflight",
+    "android instrumented preflight api 26",
+    "android instrumented preflight api 36",
+  ].map((name) => ({ name, status: "completed", conclusion: "success" }));
+  assert.doesNotThrow(() => requireSuccessfulJobs(jobs, "kotlin-android-package-preflight.yml"));
+  assert.throws(
+    () => requireSuccessfulJobs(jobs.slice(0, -1), "kotlin-android-package-preflight.yml"),
+    ReleaseAttestationError,
+  );
 });
 
 test("newer failed or in-progress runs invalidate an older success", () => {

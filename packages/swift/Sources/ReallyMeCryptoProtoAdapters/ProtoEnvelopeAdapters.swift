@@ -39,7 +39,8 @@ extension ReallyMeCryptoProtoAdapters {
     -> ReallyMeSignatureKeyPairProtoValue
   {
     do {
-      return try signatureKeyPair(fromProto: ReallyMeProtoCryptoKeyPair(serializedBytes: bytes))
+      return try signatureKeyPair(
+        fromProto: ReallyMeProtoCryptoKeyPair(serializedBytes: try checkedProtoBytes(bytes)))
     } catch let error as ReallyMeCryptoError {
       throw error
     } catch {
@@ -78,7 +79,8 @@ extension ReallyMeCryptoProtoAdapters {
     -> ReallyMeKeyAgreementKeyPairProtoValue
   {
     do {
-      return try keyAgreementKeyPair(fromProto: ReallyMeProtoCryptoKeyPair(serializedBytes: bytes))
+      return try keyAgreementKeyPair(
+        fromProto: ReallyMeProtoCryptoKeyPair(serializedBytes: try checkedProtoBytes(bytes)))
     } catch let error as ReallyMeCryptoError {
       throw error
     } catch {
@@ -116,7 +118,8 @@ extension ReallyMeCryptoProtoAdapters {
     -> ReallyMeKemKeyPairProtoValue
   {
     do {
-      return try kemKeyPair(fromProto: ReallyMeProtoCryptoKeyPair(serializedBytes: bytes))
+      return try kemKeyPair(
+        fromProto: ReallyMeProtoCryptoKeyPair(serializedBytes: try checkedProtoBytes(bytes)))
     } catch let error as ReallyMeCryptoError {
       throw error
     } catch {
@@ -157,7 +160,8 @@ extension ReallyMeCryptoProtoAdapters {
   {
     do {
       return try kemEncapsulation(
-        fromProto: ReallyMeProtoCryptoKemEncapsulation(serializedBytes: bytes))
+        fromProto: ReallyMeProtoCryptoKemEncapsulation(
+          serializedBytes: try checkedProtoBytes(bytes)))
     } catch let error as ReallyMeCryptoError {
       throw error
     } catch {
@@ -198,7 +202,8 @@ extension ReallyMeCryptoProtoAdapters {
   {
     do {
       return try hpkeSealedMessage(
-        fromProto: ReallyMeProtoCryptoHpkeSealedMessage(serializedBytes: bytes))
+        fromProto: ReallyMeProtoCryptoHpkeSealedMessage(
+          serializedBytes: try checkedProtoBytes(bytes)))
     } catch let error as ReallyMeCryptoError {
       throw error
     } catch {
@@ -237,7 +242,24 @@ extension ReallyMeCryptoProtoAdapters {
     -> ReallyMeCryptoProto.ReallyMeProtoCryptoVerificationResult
   {
     do {
-      return try ReallyMeProtoCryptoVerificationResult(serializedBytes: bytes)
+      let value = try ReallyMeProtoCryptoVerificationResult(
+        serializedBytes: try checkedProtoBytes(bytes))
+      guard value.hasAlgorithm, value.algorithm.algorithm != nil else {
+        throw ReallyMeCryptoError.invalidInput
+      }
+      // The wire status must be explicit. An ERROR requires a structured
+      // reason, while VALID and INVALID must not carry a contradictory one.
+      switch value.status {
+      case .valid, .invalid:
+        guard value.hasError == false else { throw ReallyMeCryptoError.invalidInput }
+      case .error:
+        guard value.hasError, value.error.error != nil else {
+          throw ReallyMeCryptoError.invalidInput
+        }
+      case .unspecified, .UNRECOGNIZED:
+        throw ReallyMeCryptoError.invalidInput
+      }
+      return value
     } catch {
       throw ReallyMeCryptoError.invalidInput
     }
@@ -310,7 +332,8 @@ extension ReallyMeCryptoProtoAdapters {
   {
     do {
       return try providerCapabilitySet(
-        fromProto: ReallyMeProtoCryptoProviderCapabilitySet(serializedBytes: bytes))
+        fromProto: ReallyMeProtoCryptoProviderCapabilitySet(
+          serializedBytes: try checkedProtoBytes(bytes)))
     } catch let error as ReallyMeCryptoError {
       throw error
     } catch {

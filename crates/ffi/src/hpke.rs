@@ -4,8 +4,8 @@
 
 use crate::guard::ffi_guard;
 use crate::pointer::{
-    read_slice, validate_disjoint_len_outputs, validate_disjoint_output_pair,
-    validate_output_len_pair, write_fixed, write_len,
+    read_slice, validate_disjoint_len_outputs, validate_disjoint_output_len_cross_pair,
+    validate_disjoint_output_pair, validate_output_len_pair, write_fixed, write_len,
 };
 use crate::status::{
     CryptoStatus, CRYPTO_AUTHENTICATION_FAILED, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INTERNAL_ERROR,
@@ -80,6 +80,22 @@ pub unsafe extern "C" fn rm_crypto_hpke_seal_base(
             validate_output_len_pair(ciphertext_out, ciphertext_out_len, ciphertext_len_out);
         if ciphertext_len_status != CRYPTO_OK {
             return ciphertext_len_status;
+        }
+        let cross_output_status = validate_disjoint_output_len_cross_pair(
+            ciphertext_out,
+            ciphertext_out_len,
+            encapsulated_key_len_out,
+        );
+        if cross_output_status != CRYPTO_OK {
+            return cross_output_status;
+        }
+        let cross_len_status = validate_disjoint_output_len_cross_pair(
+            encapsulated_key_out,
+            encapsulated_key_out_len,
+            ciphertext_len_out,
+        );
+        if cross_len_status != CRYPTO_OK {
+            return cross_len_status;
         }
         let output_status = validate_disjoint_output_pair(
             encapsulated_key_out,

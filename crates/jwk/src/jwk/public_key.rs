@@ -54,7 +54,11 @@ fn okp_public_key_bytes(okp: &OkpJwk) -> Result<Vec<u8>, JwtError> {
     {
         return Err(JwtError::UnsupportedKeyFormat);
     }
-    decode_fixed_public_key(&okp.x, BASE64URL_LEN_32_BYTES, 32, invalid_error)
+    let public_key = decode_fixed_public_key(&okp.x, BASE64URL_LEN_32_BYTES, 32, invalid_error)?;
+    if okp.crv == "X25519" && public_key[31] & 0x80 != 0 {
+        return Err(JwtError::InvalidX25519Key);
+    }
+    Ok(public_key)
 }
 
 fn ec_public_key_bytes(ec: &EcJwk) -> Result<Vec<u8>, JwtError> {
@@ -80,7 +84,7 @@ fn ec_public_key_bytes(ec: &EcJwk) -> Result<Vec<u8>, JwtError> {
     #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
     {
         let _ = compressed;
-        return Err(JwtError::UnsupportedKeyFormat);
+        return Err(JwtError::BackendUnavailable);
     }
 
     #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
@@ -114,49 +118,64 @@ fn akp_public_key_bytes(akp: &AkpJwk) -> Result<Vec<u8>, JwtError> {
     if akp.kty != "AKP" {
         return Err(JwtError::UnsupportedKeyFormat);
     }
-    let (expected_encoded_len, expected_len, invalid_error) = match akp.alg.as_str() {
+    let (expected_encoded_len, expected_len, invalid_error, expected_use) = match akp.alg.as_str() {
         "ML-DSA-44" => (
             BASE64URL_LEN_ML_DSA_44_PUBLIC_KEY,
             1312,
             JwtError::InvalidMlDsa44Key,
+            "sig",
         ),
         "ML-DSA-65" => (
             BASE64URL_LEN_ML_DSA_65_PUBLIC_KEY,
             1952,
             JwtError::InvalidMlDsa65Key,
+            "sig",
         ),
         "ML-DSA-87" => (
             BASE64URL_LEN_ML_DSA_87_PUBLIC_KEY,
             2592,
             JwtError::InvalidMlDsa87Key,
+            "sig",
         ),
         "ML-KEM-512" => (
             BASE64URL_LEN_ML_KEM_512_PUBLIC_KEY,
             800,
             JwtError::InvalidMlKem512Key,
+            "enc",
         ),
         "ML-KEM-768" => (
             BASE64URL_LEN_ML_KEM_768_PUBLIC_KEY,
             1184,
             JwtError::InvalidMlKem768Key,
+            "enc",
         ),
         "ML-KEM-1024" => (
             BASE64URL_LEN_ML_KEM_1024_PUBLIC_KEY,
             1568,
             JwtError::InvalidMlKem1024Key,
+            "enc",
         ),
         "SLH-DSA-SHA2-128s" => (
             BASE64URL_LEN_32_BYTES,
             32,
             JwtError::InvalidSlhDsaSha2128sKey,
+            "sig",
         ),
         "X-Wing-768" => (
             BASE64URL_LEN_X_WING_768_PUBLIC_KEY,
             1216,
             JwtError::InvalidXWing768Key,
+            "enc",
         ),
         _ => return Err(JwtError::UnsupportedKeyFormat),
     };
+    if akp
+        .use_
+        .as_deref()
+        .is_some_and(|value| value != expected_use)
+    {
+        return Err(JwtError::UnsupportedKeyFormat);
+    }
     decode_fixed_public_key(
         &akp.public_key,
         expected_encoded_len,

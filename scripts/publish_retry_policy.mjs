@@ -14,6 +14,8 @@ export const PublishRetryKind = Object.freeze({
   RateLimit: "rate-limit",
 });
 
+const MAX_RATE_LIMIT_WAIT_MS = 5 * 60 * 1_000;
+
 export class PublishRetryError extends Error {
   constructor(code, status) {
     super(code);
@@ -60,7 +62,9 @@ export function publishWithRetries({
 
     const rateLimitDelayMs = retryAfterMs(combined, nowMs());
     if (combined.toLowerCase().includes("too many requests") && rateLimitDelayMs !== null) {
-      if (attempt === maxAttempts) {
+      // A registry-supplied date must not hold a credentialed release runner
+      // for hours after some crates have already been published.
+      if (attempt === maxAttempts || rateLimitDelayMs > MAX_RATE_LIMIT_WAIT_MS) {
         throw new PublishRetryError(PublishFailureCode.RateLimitExhausted, status);
       }
       onRetry(PublishRetryKind.RateLimit, rateLimitDelayMs, attempt);

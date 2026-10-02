@@ -28,7 +28,7 @@ extension ReallyMeCryptoProtoAdapters {
   {
     do {
       let error = try ReallyMeCryptoProto.ReallyMeProtoCryptoError(
-        serializedBytes: bytes
+        serializedBytes: try checkedProtoBytes(bytes)
       )
       return wireError(fromProto: error)
     } catch {
@@ -289,7 +289,8 @@ extension ReallyMeCryptoProtoAdapters {
     -> ReallyMeJwkKey
   {
     do {
-      let key = try ReallyMeCryptoProto.ReallyMeProtoJsonWebKey(serializedBytes: bytes)
+      let key = try ReallyMeCryptoProto.ReallyMeProtoJsonWebKey(
+        serializedBytes: try checkedProtoBytes(bytes))
       return try fromProto(key)
     } catch let error as ReallyMeCryptoError {
       throw error
@@ -334,7 +335,7 @@ extension ReallyMeCryptoProtoAdapters {
   {
     do {
       let keySet = try ReallyMeCryptoProto.ReallyMeProtoJsonWebKeySet(
-        serializedBytes: bytes
+        serializedBytes: try checkedProtoBytes(bytes)
       )
       return try fromProto(keySet)
     } catch let error as ReallyMeCryptoError {

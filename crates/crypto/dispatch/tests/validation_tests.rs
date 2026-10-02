@@ -16,6 +16,7 @@
     feature = "x25519"
 ))]
 
+use codec_multikey::encode_multikey;
 use crypto_core::Algorithm;
 use crypto_dispatch::{
     generate_keypair, public_key_to_multikey, validate_verification_method_multikey,
@@ -28,6 +29,16 @@ fn x25519_verification_method_is_valid() {
 
     validate_verification_method_multikey(Algorithm::X25519, "Multikey", &mk)
         .expect("valid X25519 multikey");
+}
+
+#[test]
+fn x25519_verification_method_rejects_masked_high_bit_alias() {
+    let (mut public, _) = generate_keypair(Algorithm::X25519).unwrap();
+    public[31] |= 0x80;
+    assert!(public_key_to_multikey(Algorithm::X25519, &public).is_err());
+
+    let alias = encode_multikey("x25519-pub", &public).unwrap();
+    assert!(validate_verification_method_multikey(Algorithm::X25519, "Multikey", &alias).is_err());
 }
 
 #[test]

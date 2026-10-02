@@ -1699,6 +1699,8 @@ assertContains(".github/workflows/rust-ci.yml", "cargo package --locked -p reall
 assertContains(".github/workflows/rust-ci.yml", "Verify OpenMLS HPKE dependency isolation");
 for (const path of [
   ".github/workflows/rust-ci.yml",
+  ".github/workflows/dependency-security.yml",
+  ".github/workflows/protobuf-ci.yml",
   ".github/workflows/swift-package-preflight.yml",
   ".github/workflows/crates-package-preflight.yml",
   ".github/workflows/npm-package-preflight.yml",
@@ -2930,6 +2932,7 @@ const assertReleaseWorkflowCredentialGates = () => {
   assertContains("scripts/verify_release_attestation.mjs", '"npm-package-preflight.yml"');
   assertContains("scripts/verify_release_attestation.mjs", 'latest.status !== "completed"');
   assertContains("scripts/verify_release_attestation.mjs", 'latest.conclusion !== "success"');
+  assertContains("scripts/verify_release_attestation.mjs", "requireSuccessfulJobs(");
   assertContains(
     ".github/workflows/crates-package-preflight.yml",
     "ref: v0.3.9",
@@ -2942,6 +2945,15 @@ const assertReleaseWorkflowCredentialGates = () => {
   assertContains(".github/workflows/crates-release.yml", "environment: crates-io-release");
   assertContains(".github/workflows/crates-release.yml", "CARGO_REGISTRY_TOKEN is required");
   assertContains(".github/workflows/crates-release.yml", "CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}");
+  assertContains("scripts/publish_crates_in_order.mjs", '"--no-verify"');
+  assertContains(".github/workflows/crates-release.yml", "Reverify release attestation without registry credentials");
+  const cratesRelease = readText(".github/workflows/crates-release.yml");
+  const attestationStep = cratesRelease.indexOf("- name: Reverify release attestation without registry credentials");
+  const publishStep = cratesRelease.indexOf("- name: Publish crates in dependency order", attestationStep);
+  if (attestationStep < 0 || publishStep < 0 ||
+      cratesRelease.slice(attestationStep, publishStep).includes("CARGO_REGISTRY_TOKEN")) {
+    fail("the crates release attestation must run before the credentialed publish step without a registry token");
+  }
 
   assertContains(".github/workflows/npm-package-release.yml", "environment: npm-release");
   assertContains(".github/workflows/npm-package-release.yml", "NPM_TOKEN is required");

@@ -195,6 +195,9 @@ pub fn public_key_to_multikey(alg: Algorithm, public_key: &[u8]) -> Result<Strin
         Algorithm::X25519 => {
             #[cfg(feature = "x25519")]
             {
+                if public_key.len() != 32 || public_key[31] & 0x80 != 0 {
+                    return Err(AlgorithmError::InvalidKey(alg));
+                }
                 ("x25519-pub", public_key.to_vec())
             }
             #[cfg(not(feature = "x25519"))]

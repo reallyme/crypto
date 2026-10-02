@@ -523,6 +523,19 @@ class ReallyMeCryptoTest : ReallyMeCryptoTestSupport() {
     }
 
     @Test
+    fun x25519JwkRejectsMaskedHighBitAlias() {
+        val vector = jwkVectors().first { it.alg == "X25519" }
+        val aliased = base64UrlBytes(vector.publicKey)
+        aliased[31] = (aliased[31].toInt() or 0x80).toByte()
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeJwk.toJwk(ReallyMeJwkAlgorithm.X25519, aliased)
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeMultikey.encode(ReallyMeMulticodecKeyAlgorithm.X25519_PUBLIC_KEY, aliased)
+        }
+    }
+
+    @Test
     fun jwkParserRejectsPrivateKeyMembers() {
         val publicX = "A".repeat(43)
         listOf("d", "p", "q", "dp", "dq", "qi", "oth", "k", "priv", "privateKey", "secretKey")

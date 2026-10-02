@@ -87,6 +87,42 @@ fn okp_jwk_allows_matching_or_omitted_alg_and_use() {
 }
 
 #[test]
+fn x25519_jwk_rejects_masked_high_bit_alias() {
+    let mut aliased = [0x22_u8; 32];
+    aliased[31] |= 0x80;
+    assert_eq!(
+        x25519_public_key_to_jwk(&aliased, JwkOptions::default()).err(),
+        Some(JwtError::InvalidX25519Key)
+    );
+
+    let jwk = Jwk::Okp(envelopes_jwk::OkpJwk {
+        kty: "OKP".to_owned(),
+        crv: "X25519".to_owned(),
+        x: bytes_to_base64url(&aliased),
+        alg: None,
+        use_: None,
+        kid: None,
+    });
+    assert_eq!(jwk.public_key_bytes(), Err(JwtError::InvalidX25519Key));
+}
+
+#[test]
+fn akp_jwk_rejects_public_key_use_conflicts() {
+    for (algorithm, key_len, conflicting_use) in
+        [("ML-DSA-44", 1312, "enc"), ("ML-KEM-512", 800, "sig")]
+    {
+        let jwk = Jwk::Akp(envelopes_jwk::AkpJwk {
+            kty: "AKP".to_owned(),
+            alg: algorithm.to_owned(),
+            public_key: bytes_to_base64url(&vec![0_u8; key_len]),
+            use_: Some(conflicting_use.to_owned()),
+            kid: None,
+        });
+        assert_eq!(jwk.public_key_bytes(), Err(JwtError::UnsupportedKeyFormat));
+    }
+}
+
+#[test]
 fn jwk_deserialization_uses_explicit_kty_dispatch() {
     let okp_with_ec_y = json!({
         "kty": "OKP",

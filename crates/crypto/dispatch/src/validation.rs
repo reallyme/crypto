@@ -176,6 +176,9 @@ pub fn validate_verification_method_multikey(
     if parsed.public_key().len() != expected_len {
         return Err(AlgorithmError::InvalidKey(algorithm));
     }
+    if algorithm == Algorithm::X25519 && parsed.public_key()[31] & 0x80 != 0 {
+        return Err(AlgorithmError::InvalidKey(algorithm));
+    }
 
     Ok(())
 }

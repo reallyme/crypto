@@ -57,6 +57,15 @@ import me.really.crypto.v1.MacAlgorithm
 import me.really.crypto.v1.MulticodecKeyAlgorithm
 import me.really.crypto.v1.SignatureAlgorithm
 
+private const val MAX_CRYPTO_PROTO_MESSAGE_BYTES: Int = 1_048_576
+
+internal fun checkedProtoBytes(bytes: ByteArray): ByteArray {
+    if (bytes.size > MAX_CRYPTO_PROTO_MESSAGE_BYTES) {
+        throw ReallyMeCryptoException.InvalidInput()
+    }
+    return bytes
+}
+
 internal fun jwkAlgorithmToProto(
     value: ReallyMeJwkAlgorithm,
 ): CryptoAlgorithmIdentifier =

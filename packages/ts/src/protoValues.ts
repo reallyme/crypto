@@ -305,7 +305,28 @@ export const verificationResultFromProtoBytes = (
   bytes: Uint8Array,
 ): CryptoVerificationResult => {
   try {
-    return fromBinary(CryptoVerificationResultSchema, bytes);
+    const value = fromBinary(CryptoVerificationResultSchema, bytes);
+    if (value.algorithm?.algorithm.case === undefined) {
+      throw new ReallyMeCryptoError("invalid-input");
+    }
+    // Require an explicit outcome, and prevent a success or invalid result
+    // from masking a structured processing error.
+    switch (value.status) {
+      case CryptoVerificationStatus.VALID:
+      case CryptoVerificationStatus.INVALID:
+        if (value.error !== undefined) {
+          throw new ReallyMeCryptoError("invalid-input");
+        }
+        break;
+      case CryptoVerificationStatus.ERROR:
+        if (value.error?.error.case === undefined) {
+          throw new ReallyMeCryptoError("invalid-input");
+        }
+        break;
+      default:
+        throw new ReallyMeCryptoError("invalid-input");
+    }
+    return value;
   } catch {
     throw new ReallyMeCryptoError("invalid-input");
   }

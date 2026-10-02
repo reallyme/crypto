@@ -33,8 +33,14 @@ public object ReallyMeMultikey {
     public fun encode(
         algorithm: ReallyMeMulticodecKeyAlgorithm,
         publicKey: ByteArray,
-    ): String = codecOperation {
-        ReallyMeCodec.multikeyEncode(algorithm.codecName, publicKey)
+    ): String {
+        if (
+            algorithm == ReallyMeMulticodecKeyAlgorithm.X25519_PUBLIC_KEY &&
+            (publicKey.size != 32 || (publicKey[31].toInt() and 0x80) != 0)
+        ) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
+        return codecOperation { ReallyMeCodec.multikeyEncode(algorithm.codecName, publicKey) }
     }
 
     public fun parse(multikey: String): ReallyMeParsedMultikey {
@@ -44,6 +50,13 @@ public object ReallyMeMultikey {
         val algorithm = try {
             ReallyMeMulticodec.algorithmForCodecName(parsed.codecName)
         } catch (_: ReallyMeCryptoException.UnsupportedAlgorithm) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
+        val publicKey = parsed.publicKey()
+        if (
+            algorithm == ReallyMeMulticodecKeyAlgorithm.X25519_PUBLIC_KEY &&
+            (publicKey.size != 32 || (publicKey[31].toInt() and 0x80) != 0)
+        ) {
             throw ReallyMeCryptoException.InvalidInput()
         }
         val expectedPublicKeyLength = parsed.expectedPublicKeyLength?.let { length ->
@@ -58,7 +71,7 @@ public object ReallyMeMultikey {
         return ReallyMeParsedMultikey(
             algorithm = algorithm,
             algorithmName = parsed.algorithmName,
-            publicKey = parsed.publicKey(),
+            publicKey = publicKey,
             expectedPublicKeyLength = expectedPublicKeyLength,
         )
     }

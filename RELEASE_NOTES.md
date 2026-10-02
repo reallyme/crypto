@@ -42,6 +42,20 @@
   handle-owned Keychain tag namespace from caller-owned references.
 - Redacts Swift key material from reflection and keeps Kotlin's Android key
   alias domain and protobuf error sets private to their implementations.
+- Separates unavailable EC backends from malformed JWK metadata, rejects
+  non-canonical X25519 public-key identities and conflicting AKP key use in
+  JWK and multikey adapters, and validates verification-result status and error
+  consistency in all SDKs.
+- Caps Swift and Kotlin protobuf value-envelope byte decoders at one megabyte,
+  matching the Rust wire-size boundary.
+- Rejects exact-range cross-output aliasing in the HPKE C ABI before any
+  produced-length pointer or output buffer is written.
+- Requires the scheduled external-vector integrity checks to execute their
+  exact named tests, so a renamed test cannot silently turn the gate green.
+- Keeps registry credentials out of the crates.io attestation check and skips
+  redundant build verification during the credentialed publish step after the
+  exact release commit has passed the workspace package preflight. Release
+  attestation requires the named CI jobs and bounds registry rate-limit waits.
 
 ## 0.3.9
 

@@ -50,6 +50,7 @@ on:
       - "tools/external-vector-audit/**"
       - "scripts/vendor_external_vectors.mjs"
       - "scripts/run_external_cctv_deep_audit.mjs"
+      - "scripts/run_exact_cargo_test.sh"
       - "crates/conformance/tests/vectors/external_vector_tests/**"
       - ".github/workflows/external-vectors-audit.yml"
 
@@ -84,18 +85,21 @@ jobs:
 
       - name: Verify vendored external-vector SHA-256 hashes
         run: >-
-          cargo test --locked -p crypto-conformance-vectors --test vectors_tests --all-features
-          external_vector_tests::provenance::external_vector_files_match_pinned_sha256 -- --ignored
+          bash scripts/run_exact_cargo_test.sh --ignored
+          external_vector_tests::provenance::external_vector_files_match_pinned_sha256
+          --locked -p crypto-conformance-vectors --test vectors_tests --all-features
 
       - name: Verify every vendored corpus file is provenance-listed
         run: >-
-          cargo test --locked -p crypto-conformance-vectors --test vectors_tests --all-features
+          bash scripts/run_exact_cargo_test.sh
           external_vector_tests::provenance::every_external_corpus_file_has_provenance
+          --locked -p crypto-conformance-vectors --test vectors_tests --all-features
 
       - name: Verify vendored CCTV file markers
         run: >-
-          cargo test --locked -p crypto-conformance-vectors --test vectors_tests --all-features
-          external_vector_tests::cctv::all_vendored_cctv_files_have_expected_markers -- --ignored
+          bash scripts/run_exact_cargo_test.sh --ignored
+          external_vector_tests::cctv::all_vendored_cctv_files_have_expected_markers
+          --locked -p crypto-conformance-vectors --test vectors_tests --all-features
 
   deep-audit:
     name: deep external-vector audit
@@ -190,8 +194,9 @@ jobs:
       - name: Re-verify provenance hashes after vendoring
         if: ${{ github.event.inputs.wycheproof_ref != '' || github.event.inputs.bip340_ref != '' || github.event.inputs.rfc8032_ref != '' || github.event.inputs.xwing_ref != '' || github.event.inputs.hpke_ref != '' || github.event.inputs.brycx_ref != '' }}
         run: >-
-          cargo test --locked -p crypto-conformance-vectors --test vectors_tests --all-features
-          external_vector_tests::provenance::external_vector_files_match_pinned_sha256 -- --ignored
+          bash scripts/run_exact_cargo_test.sh --ignored
+          external_vector_tests::provenance::external_vector_files_match_pinned_sha256
+          --locked -p crypto-conformance-vectors --test vectors_tests --all-features
 
   kani:
     name: kani proofs (reference encoder)

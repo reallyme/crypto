@@ -320,7 +320,10 @@ function inspectPackage(pkg) {
 }
 
 function publishPackage(pkg) {
-  const args = ["publish", "-p", pkg.name, "--locked"];
+  // The exact release SHA has already passed the tokenless workspace publish
+  // dry run. Do not rerun dependency build scripts or proc macros with a
+  // registry credential in this process.
+  const args = ["publish", "-p", pkg.name, "--locked", "--no-verify"];
   try {
     publishWithRetries({
       attemptPublish: () => run("cargo", args, { capture: true }),

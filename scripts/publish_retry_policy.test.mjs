@@ -52,6 +52,26 @@ test("transient rate limiting retries and then succeeds", () => {
   ]);
 });
 
+test("distant retry-after fails without sleeping during a partial release", () => {
+  let attempts = 0;
+  let slept = false;
+  assert.throws(
+    () => publishWithRetries({
+      attemptPublish() {
+        attempts += 1;
+        return result(29, "too many requests; try again after Tue, 21 Jul 2026 04:00:00 GMT");
+      },
+      sleep() { slept = true; },
+      onRetry() {},
+      nowMs: () => now,
+    }),
+    (error) => error instanceof PublishRetryError &&
+      error.code === PublishFailureCode.RateLimitExhausted,
+  );
+  assert.equal(attempts, 1);
+  assert.equal(slept, false);
+});
+
 test("permanent rate limiting fails terminally", () => {
   let attempts = 0;
   assert.throws(

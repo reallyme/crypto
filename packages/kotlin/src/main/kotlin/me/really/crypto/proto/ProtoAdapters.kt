@@ -78,7 +78,7 @@ public object ReallyMeCryptoProtoAdapters :
 
     public fun fromProtoJsonWebKeyBytes(bytes: ByteArray): ReallyMeJwkKey =
         try {
-            fromProto(JsonWebKey.parseFrom(bytes))
+            fromProto(JsonWebKey.parseFrom(checkedProtoBytes(bytes)))
         } catch (error: ReallyMeCryptoException) {
             throw error
         } catch (_: InvalidProtocolBufferException) {
@@ -100,7 +100,7 @@ public object ReallyMeCryptoProtoAdapters :
 
     public fun fromProtoJsonWebKeySetBytes(bytes: ByteArray): List<ReallyMeJwkKey> =
         try {
-            fromProto(JsonWebKeySet.parseFrom(bytes))
+            fromProto(JsonWebKeySet.parseFrom(checkedProtoBytes(bytes)))
         } catch (error: ReallyMeCryptoException) {
             throw error
         } catch (_: InvalidProtocolBufferException) {
@@ -137,7 +137,7 @@ public object ReallyMeCryptoProtoAdapters :
     @JvmStatic
     public fun signatureKeyPairFromProtoBytes(bytes: ByteArray): ReallyMeSignatureKeyPairProtoValue =
         try {
-            signatureKeyPairFromProto(CryptoKeyPair.parseFrom(bytes))
+            signatureKeyPairFromProto(CryptoKeyPair.parseFrom(checkedProtoBytes(bytes)))
         } catch (error: ReallyMeCryptoException) {
             throw error
         } catch (_: InvalidProtocolBufferException) {
@@ -166,7 +166,7 @@ public object ReallyMeCryptoProtoAdapters :
     @JvmStatic
     public fun keyAgreementKeyPairFromProtoBytes(bytes: ByteArray): ReallyMeKeyAgreementKeyPairProtoValue =
         try {
-            keyAgreementKeyPairFromProto(CryptoKeyPair.parseFrom(bytes))
+            keyAgreementKeyPairFromProto(CryptoKeyPair.parseFrom(checkedProtoBytes(bytes)))
         } catch (error: ReallyMeCryptoException) {
             throw error
         } catch (_: InvalidProtocolBufferException) {
@@ -195,7 +195,7 @@ public object ReallyMeCryptoProtoAdapters :
     @JvmStatic
     public fun kemKeyPairFromProtoBytes(bytes: ByteArray): ReallyMeKemKeyPairProtoValue =
         try {
-            kemKeyPairFromProto(CryptoKeyPair.parseFrom(bytes))
+            kemKeyPairFromProto(CryptoKeyPair.parseFrom(checkedProtoBytes(bytes)))
         } catch (error: ReallyMeCryptoException) {
             throw error
         } catch (_: InvalidProtocolBufferException) {
@@ -229,7 +229,7 @@ public object ReallyMeCryptoProtoAdapters :
     @JvmStatic
     public fun kemEncapsulationFromProtoBytes(bytes: ByteArray): ReallyMeKemEncapsulationProtoValue =
         try {
-            kemEncapsulationFromProto(CryptoKemEncapsulation.parseFrom(bytes))
+            kemEncapsulationFromProto(CryptoKemEncapsulation.parseFrom(checkedProtoBytes(bytes)))
         } catch (error: ReallyMeCryptoException) {
             throw error
         } catch (_: InvalidProtocolBufferException) {
@@ -263,7 +263,7 @@ public object ReallyMeCryptoProtoAdapters :
     @JvmStatic
     public fun hpkeSealedMessageFromProtoBytes(bytes: ByteArray): ReallyMeHpkeSealedMessageProtoValue =
         try {
-            hpkeSealedMessageFromProto(CryptoHpkeSealedMessage.parseFrom(bytes))
+            hpkeSealedMessageFromProto(CryptoHpkeSealedMessage.parseFrom(checkedProtoBytes(bytes)))
         } catch (error: ReallyMeCryptoException) {
             throw error
         } catch (_: InvalidProtocolBufferException) {
@@ -304,7 +304,30 @@ public object ReallyMeCryptoProtoAdapters :
     @JvmStatic
     public fun verificationResultFromProtoBytes(bytes: ByteArray): CryptoVerificationResult =
         try {
-            CryptoVerificationResult.parseFrom(bytes)
+            val value = CryptoVerificationResult.parseFrom(checkedProtoBytes(bytes))
+            if (
+                !value.hasAlgorithm() ||
+                value.algorithm.algorithmCase == CryptoAlgorithmIdentifier.AlgorithmCase.ALGORITHM_NOT_SET
+            ) {
+                throw ReallyMeCryptoException.InvalidInput()
+            }
+            // An absent or unknown status cannot be interpreted as a failed
+            // verification; keep the error branch distinct from both outcomes.
+            when (value.status) {
+                CryptoVerificationStatus.CRYPTO_VERIFICATION_STATUS_VALID,
+                CryptoVerificationStatus.CRYPTO_VERIFICATION_STATUS_INVALID -> {
+                    if (value.hasError()) {
+                        throw ReallyMeCryptoException.InvalidInput()
+                    }
+                }
+                CryptoVerificationStatus.CRYPTO_VERIFICATION_STATUS_ERROR -> {
+                    if (!value.hasError() || value.error.errorCase == CryptoError.ErrorCase.ERROR_NOT_SET) {
+                        throw ReallyMeCryptoException.InvalidInput()
+                    }
+                }
+                else -> throw ReallyMeCryptoException.InvalidInput()
+            }
+            value
         } catch (_: InvalidProtocolBufferException) {
             throw ReallyMeCryptoException.InvalidInput()
         }
@@ -372,7 +395,7 @@ public object ReallyMeCryptoProtoAdapters :
     @JvmStatic
     public fun providerCapabilitySetFromProtoBytes(bytes: ByteArray): List<ReallyMeProviderCapabilityProtoValue> =
         try {
-            providerCapabilitySetFromProto(CryptoProviderCapabilitySet.parseFrom(bytes))
+            providerCapabilitySetFromProto(CryptoProviderCapabilitySet.parseFrom(checkedProtoBytes(bytes)))
         } catch (error: ReallyMeCryptoException) {
             throw error
         } catch (_: InvalidProtocolBufferException) {
