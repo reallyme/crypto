@@ -69,6 +69,13 @@ func mapCodecError(_ error: Error) -> ReallyMeCryptoError {
     return .symbolNotFound
   case .invalidInput:
     return .invalidInput
+  // Crypto does not expose Codec's finer input taxonomy; keep the public
+  // failure stable without leaking the rejected representation.
+  case .nonCanonical, .unsupportedIpldValue:
+    return .invalidInput
+  // Unsupported Codec capabilities have no safe fallback in this facade.
+  case .providerUnavailable, .unsupportedCodec:
+    return .unsupportedAlgorithm
   case .providerFailure:
     return .providerFailure
   }

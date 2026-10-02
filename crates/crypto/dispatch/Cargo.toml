@@ -72,7 +72,7 @@ thiserror = { workspace = true }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.3.10", path = "../core" }
 
 # --- Codec bindings ---
-codec-multikey = { package = "reallyme-codec-multikey", version = "0.2.3" }
+codec-multikey = { package = "reallyme-codec-multikey", version = "0.3.0" }
 
 # --- Algorithm primitives (ALL mandatory, gated by features) ---
 crypto-ed25519 = { package = "reallyme-crypto-ed25519", version = "=0.3.10", path = "../../ed25519", optional = true, default-features = false }
