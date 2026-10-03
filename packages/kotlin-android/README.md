@@ -8,12 +8,12 @@ libraries required by Rust-backed routes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto-android:0.3.11")
+    implementation("me.really:crypto-android:0.3.12")
 }
 ```
 
 The package reuses the audited Kotlin facade sources from `packages/kotlin`,
-requires `me.really:codec-android:0.3.0`, and bundles
+requires `me.really:codec-android:0.3.1`, and bundles
 `libcrypto_ffi.so` for the standard Android ABIs:
 
 - `arm64-v8a`

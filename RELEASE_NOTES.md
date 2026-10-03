@@ -1,5 +1,12 @@
 # Release Notes
 
+## 0.3.12
+
+- Updates the Rust, Swift, TypeScript, Kotlin/JVM, and Android package versions
+  to `0.3.12` and targets ReallyMe Codec `0.3.1` in every supported lane.
+- Refreshes dependency locks, Maven artifact provenance, and release checks for
+  the Codec update. Advances the Rust API compatibility baseline to `0.3.11`.
+
 ## 0.3.11
 
 - Updates all published ReallyMe Crypto crate and SDK package versions to

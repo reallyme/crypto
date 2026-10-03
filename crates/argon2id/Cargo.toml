@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-argon2id"
-version = "0.3.11"
+version = "0.3.12"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -28,7 +28,7 @@ native = []
 wasm = ["dep:getrandom"]
 
 [dependencies]
-crypto-core = { package = "reallyme-crypto-core", version = "=0.3.11", path = "../crypto/core" }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.3.12", path = "../crypto/core" }
 argon2 = { workspace = true, features = ["alloc", "zeroize"] }
 getrandom = { workspace = true, features = ["wasm_js"], optional = true }
 zeroize = { workspace = true, features = ["derive"] }

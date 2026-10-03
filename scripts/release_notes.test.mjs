@@ -29,9 +29,9 @@ test("rejects malformed, missing, duplicate, and empty sections", () => {
   }
 });
 
-test("current 0.3.11 notes describe the dependency update", () => {
+test("current 0.3.12 notes describe the Codec update", () => {
   const path = fileURLToPath(new URL("../RELEASE_NOTES.md", import.meta.url));
-  const notes = extractReleaseNotes(readFileSync(path, "utf8"), "0.3.11");
+  const notes = extractReleaseNotes(readFileSync(path, "utf8"), "0.3.12");
   assert.match(notes, /dependency locks/u);
-  assert.match(notes, /Android Gradle Plugin `9\.4\.1`/u);
+  assert.match(notes, /Codec `0\.3\.1`/u);
 });
