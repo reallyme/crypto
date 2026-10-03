@@ -27,7 +27,7 @@ for (const script of ["build_android_native_resources.sh", "build_kotlin_native_
       // exercises real shell argument handling without needing Apple/NDK tools.
       writeFileSync(join(bin, "cargo"), '#!/usr/bin/env bash\nprintf "%s\\0" "$@" > "$BUILD_ARGUMENTS"\nexit 73\n', { mode: 0o755 });
       writeFileSync(join(bin, "uname"), '#!/usr/bin/env bash\nprintf "Darwin\\n"\n', { mode: 0o755 });
-      for (const command of ["rustup", "xcodebuild", "lipo", "swift"]) {
+      for (const command of ["rustup", "xcodebuild", "lipo", "install_name_tool", "otool", "swift"]) {
         writeFileSync(join(bin, command), "#!/usr/bin/env bash\nexit 0\n", { mode: 0o755 });
       }
       const result = spawnSync("bash", [join(repository, "scripts", script)], {
