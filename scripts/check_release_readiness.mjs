@@ -3227,7 +3227,9 @@ assertContains("scripts/build_swift_xcframework.sh", "Modules/module.modulemap")
 assertNotContains("scripts/build_swift_xcframework.sh", "HEADERS_DIR}/module.modulemap");
 assertContains("scripts/build_swift_xcframework.sh", "verify_xcframework_layout");
 assertContains("scripts/build_swift_xcframework.sh", "normalize_xcframework_info_plist");
-assertContains("scripts/build_swift_xcframework.sh", "Headers/module.modulemap");
+assertContains("scripts/build_swift_xcframework.sh", "framework module ReallyMeCryptoFFI");
+assertContains("scripts/build_swift_xcframework.sh", "install_name_tool -id");
+assertContains("scripts/build_swift_xcframework.sh", "@rpath/ReallyMeCryptoFFI.framework/ReallyMeCryptoFFI");
 assertContains("scripts/prepare_swift_release_candidate.sh", "build_swift_xcframework.sh");
 assertContains("scripts/prepare_swift_release_candidate.sh", "prepare_swift_binary_manifest.mjs");
 assertContains("scripts/prepare_swift_release_candidate.sh", "verify_swift_release_artifact.mjs");

@@ -21,6 +21,7 @@ for (const script of ["build_android_native_resources.sh", "build_kotlin_native_
         mkdirSync(path, { recursive: true });
       }
       copyFileSync(new URL(script, import.meta.url), join(repository, "scripts", script));
+      copyFileSync(new URL("../crates/ffi/Cargo.toml", import.meta.url), join(repository, "crates/ffi/Cargo.toml"));
       writeFileSync(join(repository, "crates/ffi/abi/reallyme_crypto_ffi.h"), "test header\n");
       // Stop at Cargo, before any native compiler or package operation. This
       // exercises real shell argument handling without needing Apple/NDK tools.

@@ -16,6 +16,13 @@ HEADERS_DIR="${BUILD_DIR}/headers"
 FRAMEWORK_DIR="${BUILD_DIR}/ReallyMeCryptoFFI.xcframework"
 ZIP_PATH="${BUILD_DIR}/ReallyMeCryptoFFI.xcframework.zip"
 CHECKSUM_PATH="${BUILD_DIR}/ReallyMeCryptoFFI.xcframework.checksum"
+DYLIB_INSTALL_NAME="@rpath/ReallyMeCryptoFFI.framework/ReallyMeCryptoFFI"
+PACKAGE_VERSION="$(sed -n 's/^version = "\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)"$/\1/p' "${ROOT_DIR}/crates/ffi/Cargo.toml")"
+
+if [[ ! "${PACKAGE_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  printf 'could not read the crypto-ffi package version\n' >&2
+  exit 1
+fi
 
 require_tool() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -45,19 +52,34 @@ copy_or_lipo() {
   fi
 }
 
-install_modulemaps() {
-  local slice
-  for slice in "${FRAMEWORK_DIR}"/*; do
-    if [ -d "${slice}/Headers" ]; then
-      mkdir -p "${slice}/Modules"
-      cat >"${slice}/Modules/module.modulemap" <<'MODULEMAP'
-module ReallyMeCryptoFFI {
+make_framework() {
+  local platform="$1"
+  local library="$2"
+  local framework="${BUILD_DIR}/frameworks/${platform}/ReallyMeCryptoFFI.framework"
+  mkdir -p "${framework}/Headers" "${framework}/Modules"
+  cp "${library}" "${framework}/ReallyMeCryptoFFI"
+  install_name_tool -id "${DYLIB_INSTALL_NAME}" "${framework}/ReallyMeCryptoFFI"
+  cp "${HEADERS_DIR}/reallyme_crypto_ffi.h" "${framework}/Headers/"
+  cat >"${framework}/Modules/module.modulemap" <<'MODULEMAP'
+framework module ReallyMeCryptoFFI {
   header "reallyme_crypto_ffi.h"
   export *
 }
 MODULEMAP
-    fi
-  done
+  cat >"${framework}/Info.plist" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleExecutable</key><string>ReallyMeCryptoFFI</string>
+  <key>CFBundleIdentifier</key><string>me.really.crypto.ffi</string>
+  <key>CFBundleName</key><string>ReallyMeCryptoFFI</string>
+  <key>CFBundlePackageType</key><string>FMWK</string>
+  <key>CFBundleShortVersionString</key><string>${PACKAGE_VERSION}</string>
+  <key>CFBundleVersion</key><string>${PACKAGE_VERSION}</string>
+</dict>
+</plist>
+PLIST
 }
 
 normalize_xcframework_info_plist() {
@@ -72,13 +94,11 @@ normalize_xcframework_info_plist() {
 	<array>
 		<dict>
 			<key>BinaryPath</key>
-			<string>libcrypto_ffi_macos.a</string>
-			<key>HeadersPath</key>
-			<string>Headers</string>
+			<string>ReallyMeCryptoFFI.framework/ReallyMeCryptoFFI</string>
 			<key>LibraryIdentifier</key>
 			<string>macos-arm64_x86_64</string>
 			<key>LibraryPath</key>
-			<string>libcrypto_ffi_macos.a</string>
+			<string>ReallyMeCryptoFFI.framework</string>
 			<key>SupportedArchitectures</key>
 			<array>
 				<string>arm64</string>
@@ -89,13 +109,11 @@ normalize_xcframework_info_plist() {
 		</dict>
 		<dict>
 			<key>BinaryPath</key>
-			<string>libcrypto_ffi_ios.a</string>
-			<key>HeadersPath</key>
-			<string>Headers</string>
+			<string>ReallyMeCryptoFFI.framework/ReallyMeCryptoFFI</string>
 			<key>LibraryIdentifier</key>
 			<string>ios-arm64</string>
 			<key>LibraryPath</key>
-			<string>libcrypto_ffi_ios.a</string>
+			<string>ReallyMeCryptoFFI.framework</string>
 			<key>SupportedArchitectures</key>
 			<array>
 				<string>arm64</string>
@@ -105,13 +123,11 @@ normalize_xcframework_info_plist() {
 		</dict>
 		<dict>
 			<key>BinaryPath</key>
-			<string>libcrypto_ffi_ios_simulator.a</string>
-			<key>HeadersPath</key>
-			<string>Headers</string>
+			<string>ReallyMeCryptoFFI.framework/ReallyMeCryptoFFI</string>
 			<key>LibraryIdentifier</key>
 			<string>ios-arm64_x86_64-simulator</string>
 			<key>LibraryPath</key>
-			<string>libcrypto_ffi_ios_simulator.a</string>
+			<string>ReallyMeCryptoFFI.framework</string>
 			<key>SupportedArchitectures</key>
 			<array>
 				<string>arm64</string>
@@ -133,19 +149,29 @@ PLIST
 }
 
 verify_xcframework_layout() {
-  local header_modulemap
-  header_modulemap="$(find "${FRAMEWORK_DIR}" -path '*/Headers/module.modulemap' -print -quit)"
-  if [ -n "${header_modulemap}" ]; then
-    printf 'invalid SwiftPM artifact layout: module map must not be exported from Headers: %s\n' \
-      "${header_modulemap}" >&2
-    exit 1
-  fi
+  local slice framework binary install_name
+  for slice in macos-arm64_x86_64 ios-arm64 ios-arm64_x86_64-simulator; do
+    framework="${FRAMEWORK_DIR}/${slice}/ReallyMeCryptoFFI.framework"
+    binary="${framework}/ReallyMeCryptoFFI"
+    if [ ! -f "${binary}" ] || [ ! -f "${framework}/Headers/reallyme_crypto_ffi.h" ] || \
+      [ ! -f "${framework}/Modules/module.modulemap" ]; then
+      printf 'incomplete SwiftPM dynamic framework slice: %s\n' "${slice}" >&2
+      exit 1
+    fi
+    install_name="$(otool -D "${binary}" | tail -n 1)"
+    if [ "${install_name}" != "${DYLIB_INSTALL_NAME}" ]; then
+      printf 'unexpected dynamic framework install name: %s\n' "${slice}" >&2
+      exit 1
+    fi
+  done
 }
 
 require_tool cargo
 require_tool rustup
 require_tool xcodebuild
 require_tool lipo
+require_tool install_name_tool
+require_tool otool
 require_tool find
 require_tool sort
 require_tool swift
@@ -164,27 +190,33 @@ build_target aarch64-apple-ios-sim
 build_target x86_64-apple-ios
 
 copy_or_lipo \
-  "${BUILD_DIR}/libs/libcrypto_ffi_macos.a" \
-  "${ROOT_DIR}/target/aarch64-apple-darwin/release-ffi/libcrypto_ffi.a" \
-  "${ROOT_DIR}/target/x86_64-apple-darwin/release-ffi/libcrypto_ffi.a"
+  "${BUILD_DIR}/libs/libcrypto_ffi_macos.dylib" \
+  "${ROOT_DIR}/target/aarch64-apple-darwin/release-ffi/libcrypto_ffi.dylib" \
+  "${ROOT_DIR}/target/x86_64-apple-darwin/release-ffi/libcrypto_ffi.dylib"
 
 copy_or_lipo \
-  "${BUILD_DIR}/libs/libcrypto_ffi_ios.a" \
-  "${ROOT_DIR}/target/aarch64-apple-ios/release-ffi/libcrypto_ffi.a"
+  "${BUILD_DIR}/libs/libcrypto_ffi_ios.dylib" \
+  "${ROOT_DIR}/target/aarch64-apple-ios/release-ffi/libcrypto_ffi.dylib"
 
 copy_or_lipo \
-  "${BUILD_DIR}/libs/libcrypto_ffi_ios_simulator.a" \
-  "${ROOT_DIR}/target/aarch64-apple-ios-sim/release-ffi/libcrypto_ffi.a" \
-  "${ROOT_DIR}/target/x86_64-apple-ios/release-ffi/libcrypto_ffi.a"
+  "${BUILD_DIR}/libs/libcrypto_ffi_ios_simulator.dylib" \
+  "${ROOT_DIR}/target/aarch64-apple-ios-sim/release-ffi/libcrypto_ffi.dylib" \
+  "${ROOT_DIR}/target/x86_64-apple-ios/release-ffi/libcrypto_ffi.dylib"
+
+# Codec ships its own Rust static library. Keeping Crypto in a separate
+# dynamically linked framework prevents the two Rust runtimes from defining
+# the same process-level exception personality symbol at the final link.
+make_framework macos "${BUILD_DIR}/libs/libcrypto_ffi_macos.dylib"
+make_framework ios "${BUILD_DIR}/libs/libcrypto_ffi_ios.dylib"
+make_framework ios-simulator "${BUILD_DIR}/libs/libcrypto_ffi_ios_simulator.dylib"
 
 xcodebuild -create-xcframework \
-  -library "${BUILD_DIR}/libs/libcrypto_ffi_macos.a" -headers "${HEADERS_DIR}" \
-  -library "${BUILD_DIR}/libs/libcrypto_ffi_ios.a" -headers "${HEADERS_DIR}" \
-  -library "${BUILD_DIR}/libs/libcrypto_ffi_ios_simulator.a" -headers "${HEADERS_DIR}" \
+  -framework "${BUILD_DIR}/frameworks/macos/ReallyMeCryptoFFI.framework" \
+  -framework "${BUILD_DIR}/frameworks/ios/ReallyMeCryptoFFI.framework" \
+  -framework "${BUILD_DIR}/frameworks/ios-simulator/ReallyMeCryptoFFI.framework" \
   -output "${FRAMEWORK_DIR}"
 
 normalize_xcframework_info_plist
-install_modulemaps
 verify_xcframework_layout
 
 rm -f "${ZIP_PATH}" "${CHECKSUM_PATH}"
