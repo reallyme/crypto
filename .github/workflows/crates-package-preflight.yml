@@ -19,7 +19,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.3.10
+        default: 0.3.11
 
 permissions:
   contents: read
@@ -82,7 +82,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
         with:
-          toolchain: 1.98.1
+          toolchain: 1.99.0
 
       - name: Install Node
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
@@ -92,7 +92,7 @@ jobs:
       - name: Checkout Rust semver baseline
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
-          ref: v0.3.9
+          ref: v0.3.10
           path: .semver-baseline
           persist-credentials: false
 

@@ -8,7 +8,7 @@ libraries required by Rust-backed routes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto-android:0.3.10")
+    implementation("me.really:crypto-android:0.3.11")
 }
 ```
 
@@ -30,7 +30,7 @@ ReallyMeRustNativeProvider.loadBundledLibrary()
 
 The AAR declares `minSdk = 26`. `compileSdk` is a build-time API level and does
 not limit newer Android runtimes. Because the package is built with Android
-Gradle Plugin 8.13.2 and Java 21, consuming builds need a toolchain that can
+Gradle Plugin 9.4.1 and Java 21, consuming builds need a toolchain that can
 compile against `compileSdk = 36` and Java 21 bytecode. The release artifact is
 the supported consumption boundary for app developers; local source builds should use
 the same Android SDK/NDK versions as CI.

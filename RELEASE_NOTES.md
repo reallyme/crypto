@@ -1,5 +1,18 @@
 # Release Notes
 
+## 0.3.11
+
+- Updates all published ReallyMe Crypto crate and SDK package versions to
+  `0.3.11` and refreshes their dependency locks.
+- Updates compatible Rust dependencies, including `cc`, `libc`, and `x-wing`, and
+  updates the Kotlin and Android Bouncy Castle runtime dependency to `1.86`.
+- Updates the pinned Rust toolchain to `1.99.0` and migrates the Android build
+  to Android Gradle Plugin `9.4.1` with Gradle `9.8.0` and built-in Kotlin.
+- Updates Buf to `1.73.0` and regenerates Java and Kotlin protobuf bindings
+  with the `v36.2` generators.
+- Adds grouped weekly dependency update proposals for Rust, npm, Gradle,
+  Swift, GitHub Actions, and the Rust toolchain.
+
 ## 0.3.10
 
 - Adds support for BN254 Poseidon2 byte hashing in Rust, with the fixed

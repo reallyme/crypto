@@ -18,7 +18,7 @@ kotlin {
 
 dependencies {
     testImplementation(kotlin("test"))
-    testImplementation("org.bouncycastle:bcprov-jdk18on:1.85.2")
+    testImplementation("org.bouncycastle:bcprov-jdk18on:1.86")
     testImplementation("fr.acinq.secp256k1:secp256k1-kmp-jvm:0.24.0")
     testImplementation("fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.24.0")
 }

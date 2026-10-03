@@ -93,7 +93,6 @@ message CryptoOperationRequest {
     CryptoHpkeReceiverExportRequest hpke_receiver_export = 65;
     CryptoHpkePskSealRequest hpke_psk_seal = 66;
     CryptoHpkePskOpenRequest hpke_psk_open = 67;
-
   }
 }
 
@@ -155,7 +154,6 @@ message CryptoOperationResult {
     CryptoHpkeReceiverExportResult hpke_receiver_export = 65;
     CryptoHpkeSealedMessage hpke_psk_seal = 66;
     CryptoHpkeOpenResult hpke_psk_open = 67;
-
   }
 }
 

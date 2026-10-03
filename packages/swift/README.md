@@ -16,7 +16,7 @@ by Git URL; the source lives under `packages/swift` with the other language SDKs
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.3.10"
+    from: "0.3.11"
 )
 ```
 
@@ -25,7 +25,7 @@ by Git URL; the source lives under `packages/swift` with the other language SDKs
 ```
 
 The `from:` version resolves after publication; an unreleased version has no tag.
-Crypto 0.3.10 requires Swift 6.3 or later because its Codec 0.3.0 dependency
+Crypto 0.3.11 requires Swift 6.3 or later because its Codec 0.3.0 dependency
 declares that tools version.
 
 Applications that process structured operations or store ReallyMe Crypto

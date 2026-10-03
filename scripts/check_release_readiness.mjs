@@ -124,14 +124,14 @@ for (const path of ["packages/kotlin/build.gradle.kts", "packages/kotlin-android
   assertContains(path, 'name.set("Apache License, Version 2.0")');
 }
 
-const rustRootVersion = "0.3.10";
-const cryptoProtoPackageVersion = "0.3.10";
-const typescriptPackageVersion = "0.3.10";
-const kotlinPackageVersion = "0.3.10";
-const kotlinAndroidPackageVersion = "0.3.10";
+const rustRootVersion = "0.3.11";
+const cryptoProtoPackageVersion = "0.3.11";
+const typescriptPackageVersion = "0.3.11";
+const kotlinPackageVersion = "0.3.11";
+const kotlinAndroidPackageVersion = "0.3.11";
 const rustCodecVersion = "0.3.0";
 const sdkCodecVersion = "0.3.0";
-const rustSemverBaselineCommit = "fbd30bcc205eec791bc8df70bccd75397ee40664";
+const rustSemverBaselineCommit = "80bc7b710cc5de7b5c847a17ed5d10de3231158f";
 const rustSemverBaselinePath = ".semver-baseline";
 const cargoSemverChecksVersion = "0.49.0";
 const buffaVersion = "0.9.2";
@@ -215,7 +215,7 @@ const assertZeroizingGeneratedUnknownFieldOwner = (generatedPath, messageName) =
 };
 
 if (releaseVersionEnv !== undefined && !/^[0-9]+[.][0-9]+[.][0-9]+$/.test(releaseVersionEnv)) {
-  fail("RELEASE_VERSION must be an exact semver release such as 0.3.10");
+  fail("RELEASE_VERSION must be an exact semver release such as 0.3.11");
 }
 
 const manifest = readJson("provider_manifest.json");
@@ -696,8 +696,8 @@ assertNotContains("buf.gen.yaml", "reallyme.crypto.v1.**");
 assertNotContains("buf.gen.yaml", "types:");
 assertContains("buf.gen.yaml", "buf.build/bufbuild/es:v2.14.1");
 assertContains("buf.gen.yaml", "buf.build/apple/swift:v1.38.1");
-assertContains("buf.gen.yaml", "buf.build/protocolbuffers/java:v36.1");
-assertContains("buf.gen.yaml", "buf.build/protocolbuffers/kotlin:v36.1");
+assertContains("buf.gen.yaml", "buf.build/protocolbuffers/java:v36.2");
+assertContains("buf.gen.yaml", "buf.build/protocolbuffers/kotlin:v36.2");
 assertContains("crates/proto/src/generated/buffa/mod.rs", "pub mod crypto");
 assertProtoContract("crates/proto/proto/reallyme/crypto/v1/crypto.proto");
 if (readdirSync("crates/crypto/src").includes("proto_process.rs")) {
@@ -880,7 +880,7 @@ assertContains(
 assertNotContains("packages/ts/scripts/build-wasm.mjs", '"wasm-package"');
 assertContains(
   "crates/wasm/Cargo.toml",
-  'crypto-runtime = { package = "reallyme-crypto", version = "=0.3.10", path = "../crypto", default-features = false, features = ["operation-response", "native"',
+  'crypto-runtime = { package = "reallyme-crypto", version = "=0.3.11", path = "../crypto", default-features = false, features = ["operation-response", "native"',
 );
 assertNotContains(
   "crates/wasm/Cargo.toml",
@@ -1304,15 +1304,15 @@ assertNotContains("packages/kotlin/build.gradle.kts", 'throw GradleException("un
 assertNotContains("packages/kotlin/build.gradle.kts", 'throw GradleException("unsupported host architecture');
 assertContains(
   "packages/kotlin-android/gradle/wrapper/gradle-wrapper.properties",
-  "distributionSha256Sum=f1771298a70f6db5a29daf62378c4e18a17fc33c9ba6b14362e0cdf40610380d",
+  "distributionSha256Sum=bafd5ce9cfaea0fbccfdc8439a1ac42fbd4cd9c89dc9a988228d8a2639a58e6c",
 );
 assertContains(
   "packages/kotlin/gradle/wrapper/gradle-wrapper.properties",
-  "distributionSha256Sum=acd53f1edaf02f1a8ff99879f8a34b302661a057d9b063ae9e35b552f804d20a",
+  "distributionSha256Sum=bafd5ce9cfaea0fbccfdc8439a1ac42fbd4cd9c89dc9a988228d8a2639a58e6c",
 );
 assertContains(
   "crates/conformance/platform/kotlin/gradle/wrapper/gradle-wrapper.properties",
-  "distributionSha256Sum=acd53f1edaf02f1a8ff99879f8a34b302661a057d9b063ae9e35b552f804d20a",
+  "distributionSha256Sum=bafd5ce9cfaea0fbccfdc8439a1ac42fbd4cd9c89dc9a988228d8a2639a58e6c",
 );
 assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/CryptoFacade.kt", "@JvmStatic");
 assertContains(
@@ -1515,8 +1515,8 @@ assertContains(
   "docs/maven-provenance.md",
   "e0b5e100f81043d33afcdb9bc7a1bf5f8edab9ba",
 );
-assertContains("packages/kotlin/README.md", "intentionally use Gradle 9.7.1");
-assertContains("packages/kotlin/README.md", "independently pinned to Gradle 8.14.4");
+assertContains("packages/kotlin/README.md", "Android package use Gradle 9.8.0");
+assertContains("packages/kotlin/README.md", "Android package uses Android Gradle Plugin 9.4.1");
 
 const kotlinAndroidBuild = readText("packages/kotlin-android/build.gradle.kts");
 if (!kotlinAndroidBuild.includes(`version = "${kotlinAndroidPackageVersion}"`)) {
@@ -1534,14 +1534,15 @@ assertContains("packages/kotlin-android/build.gradle.kts", '"name" to "crypto"')
 assertContains("packages/kotlin-android/build.gradle.kts", "releaseVariantReleaseApiPublication");
 assertContains("packages/kotlin-android/build.gradle.kts", "releaseVariantReleaseRuntimePublication");
 assertContains("packages/kotlin-android/build.gradle.kts", "reallyme.crypto.androidJniLibsDir");
-assertContains("packages/kotlin-android/build.gradle.kts", "jniLibs.setSrcDirs(listOf(jniLibsDir.get()))");
+assertContains("packages/kotlin-android/build.gradle.kts", "jniLibs.directories.clear()");
+assertContains("packages/kotlin-android/build.gradle.kts", "jniLibs.directories += jniLibsDir.get().path");
 assertContains("packages/kotlin-android/build.gradle.kts", "verifyReleaseAarContainsJniLibs");
 assertContains("packages/kotlin-android/build.gradle.kts", "verifyAndroidNativeManifest");
 assertContains("packages/kotlin-android/build.gradle.kts", "Android native manifest does not match packaged JNI bytes");
 assertContains("packages/kotlin-android/build.gradle.kts", "release AAR JNI entry set does not match the approved ABI set");
 assertContains("packages/kotlin-android/build.gradle.kts", 'ndkVersion = androidNdkVersion');
 assertContains("packages/kotlin-android/build.gradle.kts", 'keepDebugSymbols.add("**/libcrypto_ffi.so")');
-assertContains("packages/kotlin-android/build.gradle.kts", "assets.srcDir(nativeAssetsDir.get().path)");
+assertContains("packages/kotlin-android/build.gradle.kts", "assets.directories += nativeAssetsDir.get().path");
 assertContains("packages/kotlin-android/build.gradle.kts", "reallyme-crypto/native-manifest.json");
 assertContains("packages/kotlin-android/build.gradle.kts", "buildAndroidJniLibs");
 assertContains("packages/kotlin-android/build.gradle.kts", "androidJniLib64BitLoadAlignments");
@@ -1694,7 +1695,7 @@ assertContains(
   "Generic AEAD primitive and dispatch APIs treat `aad` as caller-provided bytes",
 );
 assertContains("RELEASE_NOTES.md", "## 0.3.0");
-assertContains("RELEASE_NOTES.md", "## 0.3.10");
+assertContains("RELEASE_NOTES.md", "## 0.3.11");
 assertContains("RELEASE_NOTES.md", "legacy `reallyme.codec.v1` protobuf/package surface was removed");
 assertContains("RELEASE_NOTES.md", "not a `reallyme.crypto.v1` wire break");
 assertContains("RELEASE_NOTES.md", "permanently retired in this repository");
@@ -2279,7 +2280,7 @@ assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/proto/ProtoErro
 assertContains("buf.yaml", "modules:");
 assertContains("buf.yaml", "- path: crates/proto/proto");
 assertContains(".github/workflows/protobuf-ci.yml", `BUFFA_VERSION: ${buffaVersion}`);
-assertContains(".github/workflows/protobuf-ci.yml", "BUF_VERSION: 1.72.0");
+assertContains(".github/workflows/protobuf-ci.yml", "BUF_VERSION: 1.73.0");
 assertContains(".github/workflows/protobuf-ci.yml", "setup_only: true");
 assertContains(".github/workflows/protobuf-ci.yml", "scripts/release-readiness/core.mjs");
 assertContains(".github/workflows/protobuf-ci.yml", "scripts/run_pinned_release_readiness.mjs");
@@ -2295,7 +2296,7 @@ assertContains(
 assertContains("scripts/release-readiness/core.mjs", "assertReallyMeProtobufReleasePolicy");
 const protobufReleasePolicy = {
   workflowMode: "delegated",
-  bufVersion: "1.72.0",
+  bufVersion: "1.73.0",
   buffaVersion,
   generatedFreshnessStepRun:
     `${releaseReadinessCommand} --generated-freshness`,
@@ -2955,7 +2956,7 @@ const assertReleaseWorkflowCredentialGates = () => {
   assertContains("scripts/verify_release_attestation.mjs", "requireSuccessfulJobs(");
   assertContains(
     ".github/workflows/crates-package-preflight.yml",
-    "ref: v0.3.9",
+    "ref: v0.3.10",
   );
   assertContains(
     "scripts/prepare_semver_baseline.mjs",
@@ -3369,7 +3370,7 @@ if (swiftReleaseArtifactVerificationCount !== 3) {
 assertContains(".github/workflows/npm-package-preflight.yml", "npm package preflight");
 assertContains(".github/workflows/npm-package-preflight.yml", "npm run pack:check");
 assertContains(".github/workflows/npm-package-release.yml", "npm Package Release");
-assertContains(".github/workflows/npm-package-release.yml", "default: 0.3.10");
+assertContains(".github/workflows/npm-package-release.yml", "default: 0.3.11");
 assertContains(".github/workflows/npm-package-release.yml", "node scripts/run_pinned_release_readiness.mjs --release-packages");
 assertContains(".github/workflows/npm-package-release.yml", "wasm-pack@0.15.0");
 assertContains(".github/workflows/npm-package-release.yml", "wasm-bindgen-cli@0.2.129");

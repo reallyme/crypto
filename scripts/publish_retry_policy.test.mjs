@@ -116,7 +116,7 @@ test("exact-version registry index lag retries and then succeeds", () => {
   const observed = runSequence([
     result(
       1,
-      'failed to select a version for the requirement `reallyme-crypto-x448 = "=0.3.10"`',
+      'failed to select a version for the requirement `reallyme-crypto-x448 = "=0.3.11"`',
     ),
     result(0),
   ]);
@@ -129,7 +129,7 @@ test("exact-version registry index lag retries and then succeeds", () => {
 test("already-published output is never accepted without artifact identity proof", () => {
   assert.throws(
     () =>
-      runSequence([result(1, "error: crate version 0.3.10 already uploaded")]),
+      runSequence([result(1, "error: crate version 0.3.11 already uploaded")]),
     (error) =>
       error instanceof PublishRetryError && error.code === PublishFailureCode.AlreadyPublished,
   );

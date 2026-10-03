@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-poseidon2"
-version = "0.3.10"
+version = "0.3.11"
 include = ["/src/**/*.rs", "/tests/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true

@@ -7,19 +7,18 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { extractReleaseNotes, ReleaseNotesError } from "./release_notes.mjs";
-import { RELEASE_READINESS_VERSION } from "./release-readiness/core.mjs";
 
 test("selects only the requested release section", () => {
-  const notes = extractReleaseNotes("# Notes\n\n## 0.3.10\n\n- New hash\n\n## 0.3.9\n\n- Prior release\n", "0.3.10");
-  assert.equal(notes, "## 0.3.10\n\n- New hash");
+  const notes = extractReleaseNotes("# Notes\n\n## 0.3.11\n\n- New hash\n\n## 0.3.9\n\n- Prior release\n", "0.3.11");
+  assert.equal(notes, "## 0.3.11\n\n- New hash");
 });
 
 test("rejects malformed, missing, duplicate, and empty sections", () => {
   const cases = [
-    ["## 0.3.10\n\n- New hash\n", "v0.3.10", "InvalidVersion"],
-    ["## 0.3.9\n\n- Prior release\n", "0.3.10", "MissingOrDuplicateVersion"],
-    ["## 0.3.10\n\n- First\n\n## 0.3.10\n\n- Second\n", "0.3.10", "MissingOrDuplicateVersion"],
-    ["## 0.3.10\n\n## 0.3.9\n\n- Prior release\n", "0.3.10", "EmptyReleaseNotes"],
+    ["## 0.3.11\n\n- New hash\n", "v0.3.11", "InvalidVersion"],
+    ["## 0.3.9\n\n- Prior release\n", "0.3.11", "MissingOrDuplicateVersion"],
+    ["## 0.3.11\n\n- First\n\n## 0.3.11\n\n- Second\n", "0.3.11", "MissingOrDuplicateVersion"],
+    ["## 0.3.11\n\n## 0.3.9\n\n- Prior release\n", "0.3.11", "EmptyReleaseNotes"],
   ];
   for (const [source, version, code] of cases) {
     assert.throws(() => extractReleaseNotes(source, version), (error) => {
@@ -30,9 +29,9 @@ test("rejects malformed, missing, duplicate, and empty sections", () => {
   }
 });
 
-test("current 0.3.10 notes include the announced changes", () => {
+test("current 0.3.11 notes describe the dependency update", () => {
   const path = fileURLToPath(new URL("../RELEASE_NOTES.md", import.meta.url));
-  const notes = extractReleaseNotes(readFileSync(path, "utf8"), "0.3.10");
-  assert.match(notes, /Poseidon2/u);
-  assert.ok(notes.includes(`release-readiness to \`${RELEASE_READINESS_VERSION}\``));
+  const notes = extractReleaseNotes(readFileSync(path, "utf8"), "0.3.11");
+  assert.match(notes, /dependency locks/u);
+  assert.match(notes, /Android Gradle Plugin `9\.4\.1`/u);
 });
