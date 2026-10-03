@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-jwk"
-version = "0.3.11"
+version = "0.3.12"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -33,11 +33,11 @@ wasm = [
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 
-codec-base64url = { package = "reallyme-codec-base64url", version = "0.3.0" }
-codec-jcs = { package = "reallyme-codec-jcs", version = "0.3.0" }
-crypto-p256 = { package = "reallyme-crypto-p256", version = "=0.3.11", path = "../p256", default-features = false }
-crypto-ed25519 = { package = "reallyme-crypto-ed25519", version = "=0.3.11", path = "../ed25519", default-features = false }
-crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "=0.3.11", path = "../secp256k1", default-features = false }
+codec-base64url = { package = "reallyme-codec-base64url", version = "0.3.1" }
+codec-jcs = { package = "reallyme-codec-jcs", version = "0.3.1" }
+crypto-p256 = { package = "reallyme-crypto-p256", version = "=0.3.12", path = "../p256", default-features = false }
+crypto-ed25519 = { package = "reallyme-crypto-ed25519", version = "=0.3.12", path = "../ed25519", default-features = false }
+crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "=0.3.12", path = "../secp256k1", default-features = false }
 
 thiserror.workspace = true
 

@@ -19,7 +19,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.3.11
+        default: 0.3.12
 
 permissions:
   contents: read
@@ -92,7 +92,7 @@ jobs:
       - name: Checkout Rust semver baseline
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
-          ref: v0.3.10
+          ref: v0.3.11
           path: .semver-baseline
           persist-credentials: false
 
