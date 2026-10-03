@@ -33,7 +33,7 @@ jobs:
       preflight_run_id: ${{ steps.verify-attestation.outputs.preflight_run_id }}
     steps:
       - name: Checkout main for release SHA resolution
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v5
         with:
           persist-credentials: false
           ref: main
@@ -78,7 +78,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v5
         with:
           persist-credentials: false
           ref: ${{ needs.verify-release-sha.outputs.release_sha }}
@@ -123,7 +123,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v5
         with:
           # This job alone pushes the checksum-bound release tag.
           persist-credentials: true
