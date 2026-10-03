@@ -2301,7 +2301,7 @@ const protobufReleasePolicy = {
   generatedFreshnessStepRun:
     `${releaseReadinessCommand} --generated-freshness`,
   installBufUses:
-    "bufbuild/buf-action@8c6a16e16f12ba20b6470afa9c2ba9b5ba8c97c3",
+    "bufbuild/buf-action@85aebf73123b5c15fd5528aaecbf9129cddf7fa7",
   hardeningPolicy: {
     hardeningScript: "scripts/redact_crypto_proto_debug.mjs",
     protoSchema: "crates/proto/proto/reallyme/crypto/v1/crypto.proto",
