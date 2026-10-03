@@ -13,6 +13,9 @@
   with the `v36.2` generators.
 - Adds grouped weekly dependency update proposals for Rust, npm, Gradle,
   Swift conformance dependencies, GitHub Actions, and the Rust toolchain.
+- Packages the Swift FFI as a dynamic XCFramework so Crypto and Codec `0.3.0`
+  can link together without duplicate Rust runtime symbols. Apps that integrate
+  the XCFramework directly must embed and sign it.
 
 ## 0.3.10
 
