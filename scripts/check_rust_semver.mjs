@@ -9,7 +9,7 @@ import { resolve } from "node:path";
 
 const BASELINE_PATH = ".semver-baseline";
 const MAX_METADATA_BYTES = 32 * 1024 * 1024;
-// These crates have known cargo-semver-checks 0.49.0 module-missing false
+// These crates have known cargo-semver-checks module-missing false
 // positives. Their package contents are still inspected by the preflight.
 const TOOL_EXCEPTIONS = ["reallyme-crypto-kmac", "reallyme-crypto-x448"];
 
