@@ -13,14 +13,13 @@ import java.security.MessageDigest
 import java.util.zip.ZipFile
 
 plugins {
-    id("com.android.library") version "8.13.2"
-    kotlin("android") version "2.4.20"
+    id("com.android.library") version "9.4.1"
     `maven-publish`
     signing
 }
 
 group = "me.really"
-version = "0.3.10"
+version = "0.3.11"
 
 dependencyLocking {
     lockAllConfigurations()
@@ -275,16 +274,15 @@ android {
     sourceSets {
         named("main") {
             manifest.srcFile("src/main/AndroidManifest.xml")
-            java.srcDirs(
-                "../kotlin/src/main/kotlin",
-                "../../gen/java",
-                "../../gen/kotlin",
-            )
+            kotlin.directories += "../kotlin/src/main/kotlin"
+            java.directories += "../../gen/java"
+            kotlin.directories += "../../gen/kotlin"
             // An explicit release resource directory is authoritative. Adding
             // it to AGP's default src/main/jniLibs directory makes repeatable
             // local and CI builds fail with duplicate native resources.
-            jniLibs.setSrcDirs(listOf(jniLibsDir.get()))
-            assets.srcDir(nativeAssetsDir.get().path)
+            jniLibs.directories.clear()
+            jniLibs.directories += jniLibsDir.get().path
+            assets.directories += nativeAssetsDir.get().path
         }
     }
 
@@ -311,7 +309,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.14.0")
     api("com.google.protobuf:protobuf-javalite:4.36.2")
     api("com.google.protobuf:protobuf-kotlin-lite:4.36.2")
-    implementation("org.bouncycastle:bcprov-jdk18on:1.85.2")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.86")
     implementation("fr.acinq.secp256k1:secp256k1-kmp:0.24.0")
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.24.0")
     implementation("me.really:codec-android:0.3.0")

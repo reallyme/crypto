@@ -54,7 +54,7 @@ jobs:
       - name: Install Rust toolchain and mobile targets
         uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
         with:
-          toolchain: 1.98.1
+          toolchain: 1.99.0
           targets: aarch64-apple-ios,aarch64-linux-android
 
       - name: Check iOS FFI target
@@ -93,13 +93,13 @@ jobs:
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           persist-credentials: false
-          ref: v0.3.9
+          ref: v0.3.10
           path: .semver-baseline
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
         with:
-          toolchain: 1.98.1
+          toolchain: 1.99.0
 
       - name: Install Node
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
@@ -127,7 +127,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
         with:
-          toolchain: 1.98.1
+          toolchain: 1.99.0
           components: rustfmt, clippy
           targets: wasm32-unknown-unknown
 
@@ -338,7 +338,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
         with:
-          toolchain: 1.98.1
+          toolchain: 1.99.0
 
       - name: Verify release artifact through C sanitizer
         run: bash scripts/test_ffi_abi_release_artifact.sh
@@ -416,7 +416,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
         with:
-          toolchain: 1.98.1
+          toolchain: 1.99.0
 
       - name: Build crypto-ffi dylib
         run: cargo build --locked -p crypto-ffi

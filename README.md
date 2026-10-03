@@ -134,7 +134,7 @@ When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.3.10", default-features = false, features = [
+reallyme-crypto = { version = "0.3.11", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -147,7 +147,7 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.3.10", default-features = false, features = [
+reallyme-crypto = { version = "0.3.11", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }
@@ -162,7 +162,7 @@ OpenMLS adapters can select the narrow HPKE profile without enabling the full
 HPKE compatibility surface:
 
 ```toml
-reallyme-crypto = { version = "0.3.10", default-features = false, features = [
+reallyme-crypto = { version = "0.3.11", default-features = false, features = [
   "native",
   "hpke-openmls",
 ] }
@@ -226,7 +226,7 @@ separate from raw private-key bytes.
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.3.10"
+    from: "0.3.11"
 )
 ```
 
@@ -238,7 +238,7 @@ separate from raw private-key bytes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.3.10")
+    implementation("me.really:crypto:0.3.11")
 }
 ```
 

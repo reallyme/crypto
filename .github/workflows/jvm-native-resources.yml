@@ -42,7 +42,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
         with:
-          toolchain: 1.98.1
+          toolchain: 1.99.0
 
       - name: Stage crypto JNI resource
         run: scripts/build_kotlin_native_resource.sh build/kotlin-native-resources

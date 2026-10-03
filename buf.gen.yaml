@@ -36,13 +36,13 @@ plugins:
       - Visibility=Public
 
   # Java core message classes used by Kotlin.
-  - remote: buf.build/protocolbuffers/java:v36.1
+  - remote: buf.build/protocolbuffers/java:v36.2
     out: gen/java
     opt:
       - lite
 
   # Kotlin DSL/extensions.
-  - remote: buf.build/protocolbuffers/kotlin:v36.1
+  - remote: buf.build/protocolbuffers/kotlin:v36.2
     out: gen/kotlin
     opt:
       - lite

@@ -20,12 +20,12 @@ const dependencies = [
 ];
 
 const checksums = {
-  "reallyme-codec-base64url": "f6bf7a30f229edf6e3236df0b2b11c522da128cfbdcc3b0dfca4912b7f6463a0",
-  "reallyme-codec-jcs": "4e8f5718cd2bdbcdc6b6b9eb91ac77ea35aaec6051c7222367090ad52b1fc551",
-  "reallyme-codec-multibase": "e38491c026515d692ac863bd277eba813a399053bc3740550f0cb3e6206bd003",
-  "reallyme-codec-multicodec": "9400a5df3a8bc8e66e87be32a2563dd631f923c29418ce582949ac6ba4fcfa8f",
-  "reallyme-codec-multikey": "86018a0dd6bad08ad4f48f5a1d62c8db722f2f4407bd0991824fdd8ca1744e0f",
-  "reallyme-codec-pem": "7bcaf67e2614ae686fab132732937779dfaaa93bc527c0f1dea0637791432b81",
+  "reallyme-codec-base64url": "25318a052c3216e06840561e830540d72d5c5891202bc28f46ac7a1a4b80608d",
+  "reallyme-codec-jcs": "2be4e9db86812ceef2b5666a20e9089a3532e172fd0a14270a3d7b34b072cdfc",
+  "reallyme-codec-multibase": "a72c1edcbcd9acfa3776d829507cc2c9793c252c64ef2b6c1746d8affbab819a",
+  "reallyme-codec-multicodec": "7b4576f9bbe6011c9efd215e595e882ab5dd2518ceabb51f8ae9530119d4e5b8",
+  "reallyme-codec-multikey": "4be655fa8af73a8ed0ad551aa153a8a950c6ffc542bac9f2666315d65afd89f8",
+  "reallyme-codec-pem": "584d367a74c2cec746d697d3c43ac33099b06bb4ee141c81a37b332cd2af9c58",
 };
 
 const fixture = () => {
@@ -33,7 +33,7 @@ const fixture = () => {
   const byPath = new Map();
   for (const [path, packageName] of dependencies) {
     const entries = byPath.get(path) ?? [];
-    entries.push(`dependency = { package = "${packageName}", version = "0.2.3" }`);
+    entries.push(`dependency = { package = "${packageName}", version = "0.3.0" }`);
     byPath.set(path, entries);
   }
   for (const [path, lines] of byPath) {
@@ -44,7 +44,7 @@ const fixture = () => {
   const lockfile = Object.entries(checksums)
     .map(
       ([packageName, checksum]) =>
-        `[[package]]\nname = "${packageName}"\nversion = "0.2.3"\n` +
+        `[[package]]\nname = "${packageName}"\nversion = "0.3.0"\n` +
         'source = "registry+https://github.com/rust-lang/crates.io-index"\n' +
         `checksum = "${checksum}"\n`,
     )
@@ -60,7 +60,7 @@ test("freezes reviewed baseline codec dependencies to the lockfile patch version
     const manifest = readFileSync(join(root, path), "utf8");
     assert.match(
       manifest,
-      new RegExp(`package = "${packageName}", version = "=0\\.2\\.3"`, "u"),
+      new RegExp(`package = "${packageName}", version = "=0\\.3\\.0"`, "u"),
     );
   }
 });
@@ -80,7 +80,7 @@ test("rejects dependency drift and a repeated preparation", () => {
   const manifestPath = join(root, dependencies[0][0]);
   writeFileSync(
     manifestPath,
-    readFileSync(manifestPath, "utf8").replace('version = "0.2.3"', 'version = "0.2.4"'),
+    readFileSync(manifestPath, "utf8").replace('version = "0.3.0"', 'version = "0.3.1"'),
   );
   assert.throws(
     () => prepareSemverBaseline(root),

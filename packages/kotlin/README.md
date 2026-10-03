@@ -17,7 +17,7 @@ identical output.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.3.10")
+    implementation("me.really:crypto:0.3.11")
 }
 ```
 
@@ -182,12 +182,10 @@ supply-chain event:
 Gradle builds use strict dependency verification and validate the checked-in
 wrapper jars.
 
-The JVM package and Kotlin conformance lane intentionally use Gradle 9.7.1.
-The Android package remains independently pinned to Gradle 8.14.4 because that
-is the reviewed wrapper line for Android Gradle Plugin 8.13.2. Each lane pins
-its distribution checksum, validates its wrapper jar, and uses strict
-dependency verification. The version difference is intentional and does not
-create an implicit shared version range.
+The JVM package, Kotlin conformance lane, and Android package use Gradle 9.8.0.
+The Android package uses Android Gradle Plugin 9.4.1 with built-in Kotlin. Each
+lane pins its distribution checksum, validates its wrapper jar, and uses strict
+dependency verification.
 
 ## More Examples
 
