@@ -2613,7 +2613,10 @@ const repositoryPolicy = {
     // modules beyond the shared 500-line production ceiling.
     moduleHardLines: 250,
   },
-  typescriptSource: {
+  // Generated freshness is a protobuf-only gate. The full Code Checks workflow
+  // owns SDK source policy and verification, so repeating those suites here
+  // adds several minutes without increasing coverage.
+  typescriptSource: generatedFreshnessMode ? undefined : {
     roots: ["."],
     generatedPrefixes: [
       "gen/es",
@@ -2647,7 +2650,7 @@ const repositoryPolicy = {
       },
     ],
   },
-  swiftSource: {
+  swiftSource: generatedFreshnessMode ? undefined : {
     roots: ["."],
     generatedPrefixes: ["gen/swift"],
     configuration: {
@@ -2686,7 +2689,7 @@ const repositoryPolicy = {
       },
     ],
   },
-  kotlinSource: {
+  kotlinSource: generatedFreshnessMode ? undefined : {
     roots: ["."],
     generatedPrefixes: ["gen/kotlin"],
     configuration: {
@@ -3267,6 +3270,24 @@ assertContains("scripts/verify_swift_release_artifact.test.mjs", "rejects a forg
 assertContains(".github/workflows/rust-ci.yml", "tool: nextest@0.9.140");
 assertContains(".github/workflows/rust-ci.yml", "cargo install cargo-deny --version 0.20.2 --locked");
 assertContains(".github/workflows/rust-ci.yml", "tool: cargo-audit@0.22.2");
+for (const path of [
+  ".github/workflows/rust-ci.yml",
+  ".github/workflows/protobuf-ci.yml",
+  ".github/workflows/fuzz.yml",
+  ".github/workflows/dependency-security.yml",
+  ".github/workflows/codeql.yml",
+]) {
+  assertContains(path, 'group: ${{ github.workflow }}-${{ github.ref }}');
+  assertContains(path, "cancel-in-progress: true");
+}
+for (const path of [
+  ".github/workflows/rust-ci.yml",
+  ".github/workflows/crates-package-preflight.yml",
+]) {
+  assertContains(path, `tool: cargo-semver-checks@${cargoSemverChecksVersion}`);
+  assertContains(path, "fallback: none");
+  assertNotContains(path, "cargo install cargo-semver-checks");
+}
 assertContains(".github/workflows/rust-ci.yml", "scripts/audit_committed_lockfiles.sh");
 assertContains(".github/workflows/rust-ci.yml", "cargo metadata --locked --format-version 1 --no-deps");
 assertContains(
