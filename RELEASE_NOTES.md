@@ -1,5 +1,21 @@
 # Release Notes
 
+## 0.3.13
+
+- Adds strict, backend-independent P-256 ECDSA low-S normalization for both
+  canonical DER and fixed-width 64-byte `r || s` signatures. Invalid lengths,
+  non-canonical DER, zero scalars, and scalars outside the P-256 subgroup are
+  rejected with typed errors.
+- Exposes the normalization contract through the Rust facade, C ABI, Swift,
+  Kotlin, Android, and TypeScript SDKs. DER normalization delegates to the same
+  fixed-width scalar policy so every lane produces identical output.
+- Normalizes signatures returned by the Swift Secure Enclave and Android
+  Keystore signing paths. Caller-managed Android biometric signing operations
+  can normalize their completed result through the public SDK helper.
+- Adds positive, negative, boundary, idempotence, ABI, and cross-SDK tests for
+  low-S behavior while preserving the general P-256 verifier's existing
+  interoperability contract.
+
 ## 0.3.12
 
 - Updates the Rust, Swift, TypeScript, Kotlin/JVM, and Android package versions

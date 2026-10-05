@@ -7,7 +7,7 @@ use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, Signature
 /// Length in bytes of an ES256 JOSE signature (`r || s`).
 pub const P256_ECDSA_JOSE_SIGNATURE_LEN: usize = 64;
 
-const SCALAR_LEN: usize = 32;
+pub(crate) const SCALAR_LEN: usize = 32;
 const DER_SEQUENCE_TAG: u8 = 0x30;
 const DER_INTEGER_TAG: u8 = 0x02;
 const DER_LONG_FORM_MASK: u8 = 0x80;
@@ -17,7 +17,7 @@ const DER_MAX_LEN_OCTETS: usize = 2;
 // without a native provider feature, so scalar validation cannot depend on the
 // optional `p256` backend. Signature scalars are public, making an ordinary
 // big-endian comparison appropriate here.
-const P256_CURVE_ORDER: [u8; SCALAR_LEN] = [
+pub(crate) const P256_CURVE_ORDER: [u8; SCALAR_LEN] = [
     0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     0xbc, 0xe6, 0xfa, 0xad, 0xa7, 0x17, 0x9e, 0x84, 0xf3, 0xb9, 0xca, 0xc2, 0xfc, 0x63, 0x25, 0x51,
 ];
@@ -40,7 +40,7 @@ pub fn p256_ecdsa_jose_signature_to_der(raw: &[u8]) -> Result<Vec<u8>, CryptoErr
     jose_signature_to_der(raw)
 }
 
-fn signature_encoding_error() -> CryptoError {
+pub(crate) fn signature_encoding_error() -> CryptoError {
     CryptoError::Signature {
         backend: SignatureBackend::Native,
         operation: SignatureOperation::Verify,
@@ -90,7 +90,7 @@ fn strip_leading_zero(mut bytes: &[u8]) -> &[u8] {
     bytes
 }
 
-fn validate_scalar(bytes: &[u8]) -> Result<(), CryptoError> {
+pub(crate) fn validate_scalar(bytes: &[u8]) -> Result<(), CryptoError> {
     if bytes.len() != SCALAR_LEN
         || bytes.iter().all(|byte| *byte == 0)
         || bytes >= P256_CURVE_ORDER.as_slice()

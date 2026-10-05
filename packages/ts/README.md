@@ -31,6 +31,10 @@ const digest = ReallyMeCrypto.hash(
 The API is synchronous. Signature verification throws `ReallyMeCryptoError` on
 invalid input rather than returning a boolean that can be accidentally ignored.
 
+`ReallyMeP256Ecdsa` normalizes canonical DER or fixed-width 64-byte `r || s`
+signatures to low-S form for HSM and platform-keystore integrations. The helper
+does not replace verification against the signed message.
+
 KDF facade selectors are family-specific: `deriveKey` accepts only PBKDF2,
 `deriveHkdf` accepts only HKDF, and the JWA Concat KDF and KMAC methods accept
 their exact selectors. Argon2id uses the dedicated `deriveArgon2id` route with

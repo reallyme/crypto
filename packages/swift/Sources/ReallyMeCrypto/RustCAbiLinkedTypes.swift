@@ -63,6 +63,17 @@ import Foundation
       UnsafeMutablePointer<UInt8>?, Int,
       UnsafeMutablePointer<UInt>?
     ) -> Int32
+  typealias LinkedEcdsaNormalizeFunction =
+    @convention(c) (
+      UnsafePointer<UInt8>?, Int,
+      UnsafeMutablePointer<UInt8>?, Int,
+      UnsafeMutablePointer<UInt>?
+    ) -> Int32
+  typealias LinkedEcdsaNormalizeJoseFunction =
+    @convention(c) (
+      UnsafePointer<UInt8>?, Int,
+      UnsafeMutablePointer<UInt8>?, Int
+    ) -> Int32
   typealias LinkedBip340SignFunction =
     @convention(c) (
       UnsafePointer<UInt8>?, Int,
@@ -169,6 +180,8 @@ import Foundation
     case p256GenerateKeypairFromSecretKey = "rm_crypto_p256_generate_keypair_from_secret_key"
     case p256SignDerPrehash = "rm_crypto_p256_sign_der_prehash"
     case p256VerifyDerPrehash = "rm_crypto_p256_verify_der_prehash"
+    case p256NormalizeEcdsaDerLowS = "rm_crypto_p256_normalize_ecdsa_der_low_s"
+    case p256NormalizeEcdsaJoseLowS = "rm_crypto_p256_normalize_ecdsa_jose_low_s"
     case p384GenerateKeypair = "rm_crypto_p384_generate_keypair"
     case p384GenerateKeypairFromSecretKey = "rm_crypto_p384_generate_keypair_from_secret_key"
     case p384SignDerPrehash = "rm_crypto_p384_sign_der_prehash"

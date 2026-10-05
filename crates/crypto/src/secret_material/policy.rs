@@ -38,6 +38,8 @@ pub enum SecretMaterialOperation {
     SignatureSign,
     /// Signature verification.
     SignatureVerify,
+    /// Public signature representation validation or normalization.
+    SignatureEncoding,
     /// Key-agreement keypair generation.
     KeyAgreementKeyGeneration,
     /// Key-agreement keypair derivation.
@@ -155,9 +157,9 @@ pub const fn operation_secret_material_policy(
         | SecretMaterialOperation::SignatureSign => {
             secret_input_public_output(OutputMaterial::Public)
         }
-        SecretMaterialOperation::SignatureVerify | SecretMaterialOperation::PublicKeyEncoding => {
-            public_operation()
-        }
+        SecretMaterialOperation::SignatureVerify
+        | SecretMaterialOperation::SignatureEncoding
+        | SecretMaterialOperation::PublicKeyEncoding => public_operation(),
     }
 }
 

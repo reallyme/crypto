@@ -130,6 +130,15 @@ fn signature_verification_does_not_invent_secret_material() {
 }
 
 #[test]
+fn signature_encoding_does_not_invent_secret_material() {
+    let policy = operation_secret_material_policy(SecretMaterialOperation::SignatureEncoding);
+
+    assert_eq!(policy.input.sensitivity, SecretSensitivity::Public);
+    assert_eq!(policy.output.sensitivity, SecretSensitivity::Public);
+    assert_eq!(policy.output_material, OutputMaterial::Public);
+}
+
+#[test]
 fn key_generation_does_not_invent_a_secret_input_owner() {
     let policy = operation_secret_material_policy(SecretMaterialOperation::SignatureKeyGeneration);
 

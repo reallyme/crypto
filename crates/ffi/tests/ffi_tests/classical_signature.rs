@@ -205,6 +205,153 @@ fn p256_ffi_covers_keygen_sign_verify_and_sec1_encoding() {
 }
 
 #[test]
+fn p256_ffi_normalizes_canonical_high_s_signatures() {
+    let high_s = hex_literal::hex!(
+        "304502206e3038666f0655a681c1636c9191509227335c61527ff220426809a695e07ed7\
+         022100a37377a349087a2446d5839c0db705caf20b9e42edc4b819892e4bbe866754c6"
+    );
+    let expected = hex_literal::hex!(
+        "304402206e3038666f0655a681c1636c9191509227335c61527ff220426809a695e07ed7\
+         02205c8c885bb6f785dcb92a7c63f248fa34cadb5c6ab952e66b6a8b7f0475fbd08b"
+    );
+    let mut normalized = [0u8; p256::P256_SIGNATURE_DER_MAX_LEN];
+    let mut normalized_len = 0usize;
+
+    let status = unsafe {
+        p256::rm_crypto_p256_normalize_ecdsa_der_low_s(
+            high_s.as_ptr(),
+            high_s.len(),
+            normalized.as_mut_ptr(),
+            normalized.len(),
+            &mut normalized_len,
+        )
+    };
+    assert_eq!(status, status::CRYPTO_OK);
+    assert_eq!(&normalized[..normalized_len], expected.as_slice());
+
+    let mut idempotent = [0u8; p256::P256_SIGNATURE_DER_MAX_LEN];
+    let mut idempotent_len = 0usize;
+    let status = unsafe {
+        p256::rm_crypto_p256_normalize_ecdsa_der_low_s(
+            normalized.as_ptr(),
+            normalized_len,
+            idempotent.as_mut_ptr(),
+            idempotent.len(),
+            &mut idempotent_len,
+        )
+    };
+    assert_eq!(status, status::CRYPTO_OK);
+    assert_eq!(&idempotent[..idempotent_len], expected.as_slice());
+
+    let high_jose = hex_literal::hex!(
+        "6e3038666f0655a681c1636c9191509227335c61527ff220426809a695e07ed7\
+         a37377a349087a2446d5839c0db705caf20b9e42edc4b819892e4bbe866754c6"
+    );
+    let expected_jose = hex_literal::hex!(
+        "6e3038666f0655a681c1636c9191509227335c61527ff220426809a695e07ed7\
+         5c8c885bb6f785dcb92a7c63f248fa34cadb5c6ab952e66b6a8b7f0475fbd08b"
+    );
+    let mut normalized_jose = [0u8; p256::P256_SIGNATURE_JOSE_LEN];
+    let status = unsafe {
+        p256::rm_crypto_p256_normalize_ecdsa_jose_low_s(
+            high_jose.as_ptr(),
+            high_jose.len(),
+            normalized_jose.as_mut_ptr(),
+            normalized_jose.len(),
+        )
+    };
+    assert_eq!(status, status::CRYPTO_OK);
+    assert_eq!(normalized_jose, expected_jose);
+}
+
+#[test]
+fn p256_ffi_normalization_rejects_invalid_boundaries() {
+    let malformed = [0x30u8, 0x03, 0x02, 0x01, 0x01];
+    let mut output = [0u8; p256::P256_SIGNATURE_DER_MAX_LEN];
+    let mut output_len = 0usize;
+
+    let invalid_status = unsafe {
+        p256::rm_crypto_p256_normalize_ecdsa_der_low_s(
+            malformed.as_ptr(),
+            malformed.len(),
+            output.as_mut_ptr(),
+            output.len(),
+            &mut output_len,
+        )
+    };
+    assert_eq!(invalid_status, status::CRYPTO_INVALID_SIGNATURE);
+
+    let valid = hex_literal::hex!("3006020101020102");
+    let too_small_status = unsafe {
+        p256::rm_crypto_p256_normalize_ecdsa_der_low_s(
+            valid.as_ptr(),
+            valid.len(),
+            output.as_mut_ptr(),
+            valid.len() - 1,
+            &mut output_len,
+        )
+    };
+    assert_eq!(too_small_status, status::CRYPTO_BUFFER_TOO_SMALL);
+
+    let null_length_status = unsafe {
+        p256::rm_crypto_p256_normalize_ecdsa_der_low_s(
+            valid.as_ptr(),
+            valid.len(),
+            output.as_mut_ptr(),
+            output.len(),
+            core::ptr::null_mut(),
+        )
+    };
+    assert_eq!(null_length_status, status::CRYPTO_INVALID_ARGUMENT);
+
+    let aliased_status = unsafe {
+        p256::rm_crypto_p256_normalize_ecdsa_der_low_s(
+            output.as_ptr(),
+            valid.len(),
+            output.as_mut_ptr(),
+            output.len(),
+            &mut output_len,
+        )
+    };
+    assert_eq!(aliased_status, status::CRYPTO_INVALID_ARGUMENT);
+
+    let invalid_jose_status = unsafe {
+        p256::rm_crypto_p256_normalize_ecdsa_jose_low_s(
+            valid.as_ptr(),
+            valid.len(),
+            output.as_mut_ptr(),
+            output.len(),
+        )
+    };
+    assert_eq!(invalid_jose_status, status::CRYPTO_INVALID_SIGNATURE);
+
+    let zero_jose = [0u8; p256::P256_SIGNATURE_JOSE_LEN];
+    let invalid_zero_status = unsafe {
+        p256::rm_crypto_p256_normalize_ecdsa_jose_low_s(
+            zero_jose.as_ptr(),
+            zero_jose.len(),
+            output.as_mut_ptr(),
+            output.len(),
+        )
+    };
+    assert_eq!(invalid_zero_status, status::CRYPTO_INVALID_SIGNATURE);
+
+    let order_jose = hex_literal::hex!(
+        "0000000000000000000000000000000000000000000000000000000000000001\
+         ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551"
+    );
+    let invalid_order_status = unsafe {
+        p256::rm_crypto_p256_normalize_ecdsa_jose_low_s(
+            order_jose.as_ptr(),
+            order_jose.len(),
+            output.as_mut_ptr(),
+            output.len(),
+        )
+    };
+    assert_eq!(invalid_order_status, status::CRYPTO_INVALID_SIGNATURE);
+}
+
+#[test]
 fn p384_ffi_covers_keygen_sign_verify_and_sec1_encoding() {
     let message = b"p384 ffi";
     let mut public = [0u8; p384::P384_PUBLIC_KEY_COMPRESSED_LEN];

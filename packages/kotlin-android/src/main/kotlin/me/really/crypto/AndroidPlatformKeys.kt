@@ -112,7 +112,7 @@ public object ReallyMeAndroidPlatformKeys {
                 encoded.fill(0)
                 throw ReallyMeCryptoException.ProviderFailure()
             }
-            encoded
+            ReallyMeP256Ecdsa.normalizeDerSignatureLowS(encoded)
         }
     }
 
@@ -135,6 +135,13 @@ public object ReallyMeAndroidPlatformKeys {
             }
         }
     }
+
+    /**
+     * Normalizes a signature completed through [newSigningOperation] after a
+     * biometric prompt or another caller-managed Android Keystore flow.
+     */
+    public fun normalizeSigningResult(signature: ByteArray): ByteArray =
+        ReallyMeP256Ecdsa.normalizeDerSignatureLowS(signature)
 
     public fun verify(signature: ByteArray, message: ByteArray, publicKey: ByteArray) {
         ReallyMeP256Ecdsa.verify(signature, message, publicKey)

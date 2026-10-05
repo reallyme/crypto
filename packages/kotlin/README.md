@@ -17,7 +17,7 @@ identical output.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.3.12")
+    implementation("me.really:crypto:0.3.13")
 }
 ```
 
@@ -86,6 +86,8 @@ lanes are tracked in [PROVIDER_POLICY.md](../../PROVIDER_POLICY.md).
 - Ed25519 uses plain deterministic Ed25519 over the full message.
 - P-256 ECDSA uses deterministic DER/SHA-256 signatures through BouncyCastle so
   it matches the shared vectors.
+- `ReallyMeP256Ecdsa` exposes strict low-S normalization for canonical DER and
+  fixed-width 64-byte `r || s` signatures returned by external signers.
 - secp256k1 ECDSA and BIP-340 Schnorr use libsecp256k1 through
   `secp256k1-kmp`; no secret-scalar elliptic-curve math is hand-rolled in
   Kotlin.

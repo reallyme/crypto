@@ -116,6 +116,7 @@ extension ReallyMeCryptoTests {
     XCTAssertEqual(
       keyPair.publicKey.count, ReallyMeP256SecureEnclaveEcdsa.compressedPublicKeyLength)
     XCTAssertEqual(signature.first, UInt8(0x30))
+    XCTAssertEqual(try ReallyMeP256EcdsaSignature.normalizeDerLowS(signature), signature)
     try ReallyMeCrypto.verifySecureEnclaveSignature(
       .ecdsaP256Sha256,
       signature: signature,

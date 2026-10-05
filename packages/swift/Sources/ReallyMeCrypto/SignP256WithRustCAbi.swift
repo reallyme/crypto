@@ -5,7 +5,7 @@
 private let rustCAbiP256SecretKeyLength = 32
 private let rustCAbiP256CompressedPublicKeyLength = 33
 private let rustCAbiP256UncompressedPublicKeyLength = 65
-private let rustCAbiP256SignatureDerMaxLength = 80
+private let rustCAbiP256SignatureDerMaxLength = 72
 
 private typealias P256GenerateKeyPairFunction =
   @convention(c) (
@@ -46,6 +46,23 @@ private typealias P256VerifyDerPrehashFunction =
     Int
   ) -> Int32
 
+private typealias P256NormalizeEcdsaDerLowSFunction =
+  @convention(c) (
+    UnsafePointer<UInt8>?,
+    Int,
+    UnsafeMutablePointer<UInt8>?,
+    Int,
+    UnsafeMutablePointer<UInt>?
+  ) -> Int32
+
+private typealias P256NormalizeEcdsaJoseLowSFunction =
+  @convention(c) (
+    UnsafePointer<UInt8>?,
+    Int,
+    UnsafeMutablePointer<UInt8>?,
+    Int
+  ) -> Int32
+
 /// P-256 ECDSA operations backed by the ReallyMe Rust C ABI.
 ///
 /// CryptoKit P-256 ECDSA is appropriate for Apple-native verification, but it
@@ -58,6 +75,8 @@ public struct ReallyMeRustCAbiP256Ecdsa: Sendable {
   private let generateKeyPairFromSecretKeyFunction: P256GenerateKeyPairFromSecretKeyFunction
   private let signFunction: P256SignDerPrehashFunction
   private let verifyFunction: P256VerifyDerPrehashFunction
+  private let normalizeFunction: P256NormalizeEcdsaDerLowSFunction
+  private let normalizeJoseFunction: P256NormalizeEcdsaJoseLowSFunction
 
   public init(library: ReallyMeRustCAbiLibrary) throws(ReallyMeCryptoError) {
     self.library = library
@@ -76,6 +95,14 @@ public struct ReallyMeRustCAbiP256Ecdsa: Sendable {
     verifyFunction = try library.loadFunction(
       "rm_crypto_p256_verify_der_prehash",
       as: P256VerifyDerPrehashFunction.self
+    )
+    normalizeFunction = try library.loadFunction(
+      "rm_crypto_p256_normalize_ecdsa_der_low_s",
+      as: P256NormalizeEcdsaDerLowSFunction.self
+    )
+    normalizeJoseFunction = try library.loadFunction(
+      "rm_crypto_p256_normalize_ecdsa_jose_low_s",
+      as: P256NormalizeEcdsaJoseLowSFunction.self
     )
   }
 
@@ -201,5 +228,61 @@ public struct ReallyMeRustCAbiP256Ecdsa: Sendable {
     }
 
     try ReallyMeRustCAbiStatus.throwIfError(status)
+  }
+
+  /// Returns the canonical low-S representation of a canonical DER signature.
+  ///
+  /// This validates the representation but does not verify authenticity
+  /// against a message or public key.
+  public func normalizeDerSignatureLowS(_ signature: [UInt8]) throws(ReallyMeCryptoError)
+    -> [UInt8]
+  {
+    var normalized = [UInt8](repeating: 0, count: rustCAbiP256SignatureDerMaxLength)
+    var normalizedLength: UInt = 0
+    let normalizedCapacity = normalized.count
+    let status = signature.withUnsafeBufferPointer { signatureBuffer in
+      normalized.withUnsafeMutableBufferPointer { normalizedBuffer in
+        normalizeFunction(
+          signatureBuffer.baseAddress,
+          signature.count,
+          normalizedBuffer.baseAddress,
+          normalizedCapacity,
+          &normalizedLength
+        )
+      }
+    }
+
+    try ReallyMeRustCAbiStatus.throwIfError(status)
+    guard let length = Int(exactly: normalizedLength),
+      length > 0,
+      length <= rustCAbiP256SignatureDerMaxLength
+    else {
+      throw ReallyMeCryptoError.providerFailure
+    }
+    return Array(normalized.prefix(length))
+  }
+
+  /// Returns the canonical low-S form of an exact 64-byte JOSE `r || s`
+  /// signature without transcoding through DER.
+  public func normalizeJoseSignatureLowS(_ signature: [UInt8]) throws(ReallyMeCryptoError)
+    -> [UInt8]
+  {
+    guard signature.count == 64 else {
+      throw ReallyMeCryptoError.invalidInput
+    }
+    var normalized = [UInt8](repeating: 0, count: 64)
+    let normalizedCapacity = normalized.count
+    let status = signature.withUnsafeBufferPointer { signatureBuffer in
+      normalized.withUnsafeMutableBufferPointer { normalizedBuffer in
+        normalizeJoseFunction(
+          signatureBuffer.baseAddress,
+          signature.count,
+          normalizedBuffer.baseAddress,
+          normalizedCapacity
+        )
+      }
+    }
+    try ReallyMeRustCAbiStatus.throwIfError(status)
+    return normalized
   }
 }

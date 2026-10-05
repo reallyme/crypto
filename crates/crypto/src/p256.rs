@@ -11,7 +11,8 @@ use crate::key_agreement_error::crypto_error_from_derive_shared_secret_operation
 use crate::signature_error::crypto_error_from_operation_error;
 
 pub use crypto_p256::{
-    decode_se_handle, encode_se_handle, p256_ecdsa_der_to_jose_signature,
+    decode_se_handle, encode_se_handle, normalize_p256_ecdsa_der_low_s,
+    normalize_p256_ecdsa_jose_signature_low_s, p256_ecdsa_der_to_jose_signature,
     p256_ecdsa_jose_signature_to_der, P256_ECDSA_JOSE_SIGNATURE_LEN, P256_SECRET_KEY_LEN,
     P256_SHA256_DIGEST_LEN, P256_SIGNATURE_DER_MAX_LEN, SE_HANDLE_PREFIX,
 };

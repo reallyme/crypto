@@ -82,6 +82,22 @@ pub fn verify(
     crypto_dispatch::verify(algorithm, public_key, message, signature).map_err(map_dispatch_error)
 }
 
+/// Normalizes a canonical DER-encoded P-256 signature to low-S form.
+#[cfg(feature = "p256")]
+pub fn normalize_p256_ecdsa_der_low_s(signature: &[u8]) -> Result<Vec<u8>, OperationError> {
+    let _policy = bind_operation_policy(SecretMaterialOperation::SignatureEncoding);
+    crypto_p256::normalize_p256_ecdsa_der_low_s(signature).map_err(map_crypto_error)
+}
+
+/// Normalizes an exact 64-byte P-256 JOSE `r || s` signature to low-S form.
+#[cfg(feature = "p256")]
+pub fn normalize_p256_ecdsa_jose_low_s(
+    signature: &[u8],
+) -> Result<[u8; crypto_p256::P256_ECDSA_JOSE_SIGNATURE_LEN], OperationError> {
+    let _policy = bind_operation_policy(SecretMaterialOperation::SignatureEncoding);
+    crypto_p256::normalize_p256_ecdsa_jose_signature_low_s(signature).map_err(map_crypto_error)
+}
+
 /// Generates a BIP-340 keypair with an x-only public key.
 pub fn generate_bip340_key_pair() -> Result<SignatureKeyPair, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::SignatureKeyGeneration);

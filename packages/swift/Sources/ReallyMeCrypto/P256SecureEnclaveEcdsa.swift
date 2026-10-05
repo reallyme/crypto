@@ -154,7 +154,7 @@ public enum ReallyMeP256SecureEnclaveEcdsa {
     guard bytes.isEmpty == false, bytes.count <= signatureDerMaxLength else {
       throw ReallyMeCryptoError.providerFailure
     }
-    return bytes
+    return try ReallyMeP256EcdsaSignature.normalizeDerLowS(bytes)
   }
 
   public static func verify(

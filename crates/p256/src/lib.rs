@@ -6,6 +6,7 @@
 
 mod constants;
 mod jose_signature;
+mod normalize_signature;
 mod secure_enclave_handle;
 
 pub use constants::{P256_SECRET_KEY_LEN, P256_SHA256_DIGEST_LEN, P256_SIGNATURE_DER_MAX_LEN};
@@ -21,6 +22,9 @@ pub use import_secret_key::generate_p256_keypair_from_secret_key;
 pub use jose_signature::{
     p256_ecdsa_der_to_jose_signature, p256_ecdsa_jose_signature_to_der,
     P256_ECDSA_JOSE_SIGNATURE_LEN,
+};
+pub use normalize_signature::{
+    normalize_p256_ecdsa_der_low_s, normalize_p256_ecdsa_jose_signature_low_s,
 };
 pub use secure_enclave_handle::{decode_se_handle, encode_se_handle, SE_HANDLE_PREFIX};
 
