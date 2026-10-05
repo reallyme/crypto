@@ -34,7 +34,9 @@ fn ffi_header_uses_the_primitive_p256_der_signature_bound() {
     let header = include_str!("../../abi/reallyme_crypto_ffi.h");
 
     assert_eq!(p256::P256_SIGNATURE_DER_MAX_LEN, 72);
+    assert_eq!(p256::P256_SIGNATURE_JOSE_LEN, 64);
     assert!(header.contains("#define RM_CRYPTO_P256_SIGNATURE_DER_MAX_LEN        72"));
+    assert!(header.contains("#define RM_CRYPTO_P256_SIGNATURE_JOSE_LEN           64"));
 }
 
 #[test]

@@ -47,7 +47,7 @@
     { "id": "operation.hpke.psk_open", "semantic_owner_path": "crates/crypto/src/operations/hpke.rs", "description": "HPKE single-shot PSK-mode open." },
     { "id": "operation.key_encoding.public_key", "semantic_owner_path": "crates/crypto/src/operations/key_encoding.rs", "description": "Public-key byte, multicodec, multikey, JWK, and DER/JOSE conversion helpers." },
     { "id": "operation.key_encoding.private_key", "description": "Validated private-key import and encoding helpers for supported key formats." },
-    { "id": "operation.signature.encoding", "description": "ECDSA DER and JOSE signature conversion helpers." },
+    { "id": "operation.signature.encoding", "semantic_owner_path": "crates/crypto/src/operations/signature.rs", "description": "ECDSA DER and JOSE signature conversion and canonical low-S normalization helpers." },
     { "id": "operation.algorithm_dispatch.key_pair", "description": "Algorithm-selected public keypair and derive-keypair facade routes that dispatch to signature, key-agreement, or KEM semantic operations." },
     { "id": "operation.platform_key.lifecycle", "description": "Provider-neutral platform-key handle encoding, key generation, public-key lookup, deletion, and explicit attestation evidence; Swift uses P-256 Secure Enclave handles and the Android AAR uses purpose-bound Android Keystore / StrongBox handles." },
     { "id": "operation.platform_key.signature", "description": "Handle-backed platform signature creation and verification; Swift uses P-256 Secure Enclave signing keys and the Android AAR uses P-256 Android Keystore / StrongBox signing keys." },
@@ -172,7 +172,7 @@
         "operation.hpke.psk_open": ["hpke::open_psk"],
         "operation.hash.digest": ["sha2::digest", "sha2::digest_sha2_384", "sha2::digest_sha2_512", "sha3::digest", "sha3::digest_sha3_224", "sha3::digest_sha3_384", "sha3::digest_sha3_512"],
         "operation.key_encoding.private_key": ["p256::private_key_from_pem", "p256::private_key_from_pkcs8_der", "p256::private_key_from_pkcs8_pem", "p256::private_key_from_sec1_der", "p256::private_key_from_sec1_pem"],
-        "operation.signature.encoding": ["p256::p256_ecdsa_der_to_jose_signature", "p256::p256_ecdsa_jose_signature_to_der", "secp256k1::secp256k1_ecdsa_der_to_jose_signature", "secp256k1::secp256k1_ecdsa_jose_signature_to_der"],
+        "operation.signature.encoding": ["p256::p256_ecdsa_der_to_jose_signature", "p256::p256_ecdsa_jose_signature_to_der", "p256::normalize_p256_ecdsa_der_low_s", "p256::normalize_p256_ecdsa_jose_signature_low_s", "secp256k1::secp256k1_ecdsa_der_to_jose_signature", "secp256k1::secp256k1_ecdsa_jose_signature_to_der"],
         "operation.platform_key.lifecycle": ["p256::encode_se_handle", "p256::decode_se_handle"],
         "operation.key_encoding.public_key": ["ed25519::assert_public_key", "ed25519::decode_public_key", "ed25519::encode_public_key", "p256::compress_public_key", "p256::decompress_public_key", "p256::public_key_from_spki_der", "p256::public_key_from_spki_pem", "p384::compress_p384", "p384::compress_public_key", "p384::decompress_p384", "p384::decompress_public_key", "p521::compress_p521", "p521::compress_public_key", "p521::decompress_p521", "p521::decompress_public_key", "secp256k1::decode_public_key", "secp256k1::decompress_public_key", "secp256k1::encode_public_key", "secp256k1::decode_bip340_schnorr_public_key", "secp256k1::encode_bip340_schnorr_public_key", "x25519::decode_public_key", "x25519::encode_public_key", "ml_dsa_44::decode_public_key", "ml_dsa_44::encode_public_key", "ml_dsa_65::decode_public_key", "ml_dsa_65::encode_public_key", "ml_dsa_87::decode_public_key", "ml_dsa_87::encode_public_key", "slh_dsa::decode_slh_dsa_sha2_128s_public_key", "slh_dsa::encode_slh_dsa_sha2_128s_public_key", "jwk::Jwks::public_key_bytes", "jwk::public_key_bytes_from_jwk", "jwk::ed25519_public_key_to_jwk", "jwk::ed25519_public_key_to_jwk_jcs", "jwk::mldsa87_public_key_to_jwk", "jwk::mldsa87_public_key_to_jwk_jcs", "jwk::mlkem1024_public_key_to_jwk", "jwk::mlkem1024_public_key_to_jwk_jcs", "jwk::p256_public_key_to_jwk", "jwk::p256_public_key_to_jwk_jcs", "jwk::mldsa44_public_key_to_jwk", "jwk::mldsa44_public_key_to_jwk_jcs", "jwk::mldsa65_public_key_to_jwk", "jwk::mldsa65_public_key_to_jwk_jcs", "jwk::mlkem512_public_key_to_jwk", "jwk::mlkem512_public_key_to_jwk_jcs", "jwk::mlkem768_public_key_to_jwk", "jwk::mlkem768_public_key_to_jwk_jcs", "jwk::slh_dsa_sha2_128s_public_key_to_jwk", "jwk::slh_dsa_sha2_128s_public_key_to_jwk_jcs", "jwk::x_wing_768_public_key_to_jwk", "jwk::x_wing_768_public_key_to_jwk_jcs", "jwk::secp256k1_public_key_to_jwk", "jwk::secp256k1_public_key_to_jwk_jcs", "jwk::x25519_public_key_to_jwk", "jwk::x25519_public_key_to_jwk_jcs", "jwk_multikey::jwk_to_multikey", "jwk_multikey::multikey_to_jwk"]
       },
@@ -285,6 +285,7 @@
         "operation.signature.derive_public_key": ["rm_crypto_bip340_schnorr_derive_public_key"],
         "operation.signature.sign": ["rm_crypto_ed25519_sign", "rm_crypto_p256_sign_der_prehash", "rm_crypto_p384_sign_der_prehash", "rm_crypto_p521_sign_der_prehash", "rm_crypto_secp256k1_sign", "rm_crypto_ml_dsa_44_sign", "rm_crypto_ml_dsa_65_sign", "rm_crypto_ml_dsa_87_sign", "rm_crypto_slh_dsa_sha2_128s_sign"],
         "operation.signature.verify": ["rm_crypto_ed25519_verify", "rm_crypto_p256_verify_der_prehash", "rm_crypto_p384_verify_der_prehash", "rm_crypto_p521_verify_der_prehash", "rm_crypto_secp256k1_verify", "rm_crypto_ml_dsa_44_verify", "rm_crypto_ml_dsa_65_verify", "rm_crypto_ml_dsa_87_verify", "rm_crypto_slh_dsa_sha2_128s_verify"],
+        "operation.signature.encoding": ["rm_crypto_p256_normalize_ecdsa_der_low_s", "rm_crypto_p256_normalize_ecdsa_jose_low_s"],
         "operation.signature.bip340.sign": ["rm_crypto_bip340_schnorr_sign"],
         "operation.signature.bip340.verify": ["rm_crypto_bip340_schnorr_verify"],
         "operation.signature.rsa.verify": ["rm_crypto_rsa_verify_pkcs1v15", "rm_crypto_rsa_verify_pss"],
@@ -679,6 +680,12 @@
           "ReallyMeRustCAbiSlhDsa.instance.verify(_:signature:message:publicKey:)",
           "ReallyMeSecp256k1.static.verify(signature:message:publicKey:)"
         ],
+        "operation.signature.encoding": [
+          "ReallyMeP256EcdsaSignature.static.normalizeDerLowS(_:)",
+          "ReallyMeP256EcdsaSignature.static.normalizeJoseLowS(_:)",
+          "ReallyMeRustCAbiP256Ecdsa.instance.normalizeDerSignatureLowS(_:)",
+          "ReallyMeRustCAbiP256Ecdsa.instance.normalizeJoseSignatureLowS(_:)"
+        ],
         "support.error_mapping": [
           "ReallyMeRustCAbiStatus.static.throwIfError(_:)"
         ],
@@ -745,6 +752,7 @@
         "operation.signature.derive_public_key": ["ReallyMeEd25519.derivePublicKey", "ReallyMeP256Ecdsa.derivePublicKey", "ReallyMeP384Ecdsa.derivePublicKey", "ReallyMeP521Ecdsa.derivePublicKey", "ReallyMeSecp256k1.derivePublicKey", "ReallyMeBip340Schnorr.derivePublicKey", "ReallyMeMlDsa.derivePublicKey"],
         "operation.signature.sign": ["ReallyMeEd25519.sign", "ReallyMeP256Ecdsa.sign", "ReallyMeP384Ecdsa.sign", "ReallyMeP521Ecdsa.sign", "ReallyMeSecp256k1.sign", "ReallyMeMlDsa.sign", "ReallyMeSlhDsa.sign"],
         "operation.signature.verify": ["ReallyMeEd25519.verify", "ReallyMeP256Ecdsa.verify", "ReallyMeP384Ecdsa.verify", "ReallyMeP521Ecdsa.verify", "ReallyMeSecp256k1.verify", "ReallyMeMlDsa.verify", "ReallyMeSlhDsa.verify"],
+        "operation.signature.encoding": ["ReallyMeP256Ecdsa.normalizeDerSignatureLowS", "ReallyMeP256Ecdsa.normalizeJoseSignatureLowS"],
         "operation.signature.bip340.sign": ["ReallyMeBip340Schnorr.sign"],
         "operation.signature.bip340.verify": ["ReallyMeBip340Schnorr.verify"],
         "operation.signature.rsa.verify": ["ReallyMeRsa.verify"],
@@ -774,10 +782,12 @@
       "id": "android.package.routes",
       "lane": "kotlin-android-sdk",
       "path": "packages/kotlin-android",
-      "symbols": [],
+      "symbols_by_owner": {
+        "operation.signature.encoding": ["ReallyMeAndroidPlatformKeys.normalizeSigningResult"]
+      },
       "reused_route_groups": ["kotlin.facade.methods", "kotlin.direct.methods", "jni.exports"],
       "package_controls": ["AndroidManifest package metadata", "jniLibs/native shared-library packaging", "ReallyMeRustNativeProvider Android runtime selection"],
-      "current_status": "android_package_has_no_android-owned_callable_route_and_reuses_kotlin_public_api"
+      "current_status": "validated_kotlin_direct_routes"
     },
     {
       "id": "typescript.protobuf_adapter.exports",
@@ -866,6 +876,7 @@
         "operation.signature.derive_public_key": ["ReallyMeEd25519.derivePublicKey", "ReallyMeP256Ecdsa.derivePublicKey", "ReallyMeP384Ecdsa.derivePublicKey", "ReallyMeP521Ecdsa.derivePublicKey", "ReallyMeSecp256k1.derivePublicKey", "ReallyMeBip340Schnorr.derivePublicKey"],
         "operation.signature.sign": ["ReallyMeEd25519.sign", "ReallyMeP256Ecdsa.sign", "ReallyMeP384Ecdsa.sign", "ReallyMeP521Ecdsa.sign", "ReallyMeSecp256k1.sign", "ReallyMeMlDsa.sign", "ReallyMeMlDsa.signWithProvider", "ReallyMeSlhDsa.sign", "ReallyMeSlhDsa.signWithProvider"],
         "operation.signature.verify": ["ReallyMeEd25519.verify", "ReallyMeP256Ecdsa.verify", "ReallyMeP384Ecdsa.verify", "ReallyMeP521Ecdsa.verify", "ReallyMeSecp256k1.verify", "ReallyMeMlDsa.verify", "ReallyMeMlDsa.verifyWithProvider", "ReallyMeSlhDsa.verify", "ReallyMeSlhDsa.verifyWithProvider"],
+        "operation.signature.encoding": ["ReallyMeP256Ecdsa.normalizeDerSignatureLowS", "ReallyMeP256Ecdsa.normalizeJoseSignatureLowS", "encodeEcdsaDerSignature", "decodeEcdsaDerSignature"],
         "operation.signature.bip340.sign": ["ReallyMeBip340Schnorr.sign"],
         "operation.signature.bip340.verify": ["ReallyMeBip340Schnorr.verify"],
         "operation.signature.rsa.verify": ["ReallyMeRsa.verify"],
@@ -880,7 +891,6 @@
         "operation.kem.decapsulate": ["ReallyMeMlKem.decapsulate", "ReallyMeMlKem.decapsulateWithProvider", "ReallyMeXWing.decapsulate", "ReallyMeXWing.decapsulateWithProvider"],
         "operation.hpke.seal": ["ReallyMeHpke.sealBase", "ReallyMeHpke.sealBaseWithProvider", "sealHpkeBaseDeterministicallyForTest", "sealHpkeBaseDeterministicallyWithProviderForTest"],
         "operation.hpke.open": ["ReallyMeHpke.openBase", "ReallyMeHpke.openBaseWithProvider"],
-        "operation.signature.encoding": ["encodeEcdsaDerSignature", "decodeEcdsaDerSignature"],
         "operation.key_encoding.public_key": ["ReallyMeJwk.toJwk", "ReallyMeJwk.fromJwk", "ReallyMeJwk.toJwks", "ReallyMeJwk.fromJwks", "ReallyMeJwk.publicKeyBytes", "ReallyMeJwk.toJcs"],
         "support.provider_catalog": ["createReallyMeCrypto", "createReallyMeWasmProvider", "installReallyMeWasmProvider", "requireReallyMeWasmProvider"],
         "support.memory_hygiene": ["bestEffortClear"],

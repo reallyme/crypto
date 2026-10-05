@@ -160,6 +160,7 @@ rm_crypto_status_t rm_crypto_process_operation_response_json(
 #define RM_CRYPTO_P256_PUBLIC_KEY_UNCOMPRESSED_LEN  65
 #define RM_CRYPTO_P256_SHARED_SECRET_LEN            32
 #define RM_CRYPTO_P256_SIGNATURE_DER_MAX_LEN        72
+#define RM_CRYPTO_P256_SIGNATURE_JOSE_LEN           64
 #define RM_CRYPTO_P384_SECRET_KEY_LEN       48
 #define RM_CRYPTO_P384_PUBLIC_KEY_COMPRESSED_LEN    49
 #define RM_CRYPTO_P384_PUBLIC_KEY_UNCOMPRESSED_LEN  97
@@ -723,6 +724,26 @@ rm_crypto_status_t rm_crypto_p256_verify_der_prehash(
     size_t message_len,
     const uint8_t* public_key,
     size_t public_key_len
+);
+
+/* Converts a canonical DER P-256 ECDSA signature to canonical low-S form.
+ * This validates representation and scalar ranges but does not verify the
+ * signature against a message or public key. */
+rm_crypto_status_t rm_crypto_p256_normalize_ecdsa_der_low_s(
+    const uint8_t* signature,
+    size_t signature_len,
+    uint8_t* normalized_out,
+    size_t normalized_out_len,
+    size_t* normalized_len_out
+);
+
+/* Converts an exact 64-byte P-256 JOSE signature (r || s) to low-S form.
+ * This validates scalar ranges but does not verify authenticity. */
+rm_crypto_status_t rm_crypto_p256_normalize_ecdsa_jose_low_s(
+    const uint8_t* signature,
+    size_t signature_len,
+    uint8_t* normalized_out,
+    size_t normalized_out_len
 );
 
 rm_crypto_status_t rm_crypto_p256_derive_shared_secret(

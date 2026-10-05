@@ -164,6 +164,12 @@ public final class ReallyMeRustCAbiLibrary: Sendable {
         return try linked(rmCryptoP256SignDerPrehashLinked as LinkedEcdsaSignFunction, as: type)
       case .p256VerifyDerPrehash:
         return try linked(rmCryptoP256VerifyDerPrehashLinked as LinkedVerifyFunction, as: type)
+      case .p256NormalizeEcdsaDerLowS:
+        return try linked(
+          rmCryptoP256NormalizeEcdsaDerLowSLinked as LinkedEcdsaNormalizeFunction, as: type)
+      case .p256NormalizeEcdsaJoseLowS:
+        return try linked(
+          rmCryptoP256NormalizeEcdsaJoseLowSLinked as LinkedEcdsaNormalizeJoseFunction, as: type)
       case .p384GenerateKeypair:
         return try linked(
           rmCryptoP384GenerateKeypairLinked as LinkedGenerateKeyPairFunction, as: type)

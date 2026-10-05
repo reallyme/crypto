@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-aes256-gcm-siv"
-version = "0.3.12"
+version = "0.3.13"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -30,7 +30,7 @@ native = ["dep:aes", "dep:aes-gcm-siv"]
 wasm = ["dep:aes", "dep:aes-gcm-siv", "dep:getrandom"]
 
 [dependencies]
-crypto-core = { package = "reallyme-crypto-core", version = "=0.3.12", path = "../crypto/core" }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.3.13", path = "../crypto/core" }
 zeroize = { workspace = true, features = ["derive"] }
 aes = { workspace = true, features = ["zeroize"], optional = true }
 aes-gcm-siv = { workspace = true, optional = true }

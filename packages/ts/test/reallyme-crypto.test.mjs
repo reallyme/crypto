@@ -3872,6 +3872,63 @@ test("p256 ecdsa rejects tampering and malformed inputs", () => {
   );
 });
 
+test("p256 ecdsa normalizes canonical DER signatures to low-S", () => {
+  const highS = bytes(
+    "304502206e3038666f0655a681c1636c9191509227335c61527ff220426809a695e07ed7" +
+      "022100a37377a349087a2446d5839c0db705caf20b9e42edc4b819892e4bbe866754c6",
+  );
+  const lowS = bytes(
+    "304402206e3038666f0655a681c1636c9191509227335c61527ff220426809a695e07ed7" +
+      "02205c8c885bb6f785dcb92a7c63f248fa34cadb5c6ab952e66b6a8b7f0475fbd08b",
+  );
+
+  const normalized = ReallyMeP256Ecdsa.normalizeDerSignatureLowS(highS);
+  assert.deepEqual(normalized, lowS);
+  assert.deepEqual(ReallyMeP256Ecdsa.normalizeDerSignatureLowS(normalized), lowS);
+
+  const highJose = bytes(
+    "6e3038666f0655a681c1636c9191509227335c61527ff220426809a695e07ed7" +
+      "a37377a349087a2446d5839c0db705caf20b9e42edc4b819892e4bbe866754c6",
+  );
+  const lowJose = bytes(
+    "6e3038666f0655a681c1636c9191509227335c61527ff220426809a695e07ed7" +
+      "5c8c885bb6f785dcb92a7c63f248fa34cadb5c6ab952e66b6a8b7f0475fbd08b",
+  );
+  assert.deepEqual(ReallyMeP256Ecdsa.normalizeJoseSignatureLowS(highJose), lowJose);
+
+  for (const malformed of [
+    bytes("3006020100020101"),
+    bytes("300702020001020101"),
+    bytes(
+      "3026020101022100ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",
+    ),
+    new Uint8Array(P256_ECDSA_DER_SIGNATURE_MAX_LENGTH + 1),
+  ]) {
+    assertReallyMeError(
+      () => ReallyMeP256Ecdsa.normalizeDerSignatureLowS(malformed),
+      "invalid-input",
+    );
+  }
+  assertReallyMeError(
+    () => ReallyMeP256Ecdsa.normalizeJoseSignatureLowS(new Uint8Array(63)),
+    "invalid-input",
+  );
+  assertReallyMeError(
+    () => ReallyMeP256Ecdsa.normalizeJoseSignatureLowS(new Uint8Array(64)),
+    "invalid-input",
+  );
+  assertReallyMeError(
+    () =>
+      ReallyMeP256Ecdsa.normalizeJoseSignatureLowS(
+        bytes(
+          "0000000000000000000000000000000000000000000000000000000000000001" +
+            "ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",
+        ),
+      ),
+    "invalid-input",
+  );
+});
+
 test("p256 ecdsa generate keypair round trip", () => {
   const { publicKey, secretKey } = ReallyMeP256Ecdsa.generateKeyPair();
   const message = new TextEncoder().encode("fresh p256 keypair");

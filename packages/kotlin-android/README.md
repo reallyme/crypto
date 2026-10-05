@@ -8,7 +8,7 @@ libraries required by Rust-backed routes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto-android:0.3.12")
+    implementation("me.really:crypto-android:0.3.13")
 }
 ```
 
@@ -53,6 +53,11 @@ The Android AAR exposes non-exportable P-256 signing and ECDH keys through
 `ReallyMeAndroidPlatformKeys`. This handle-backed API is separate from the
 deterministic raw-byte facade: raw P-256 operations remain BouncyCastle routes
 and never silently fall back to Android Keystore.
+
+Platform signing returns canonical low-S DER. When an initialized signing
+operation is completed outside the SDK—for example through a biometric
+`CryptoObject`—pass its result to
+`ReallyMeAndroidPlatformKeys.normalizeSigningResult`.
 
 ```kotlin
 val keyPair = ReallyMeAndroidPlatformKeys.generateSigningKeyPair(

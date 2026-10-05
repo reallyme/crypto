@@ -63,6 +63,11 @@ General-purpose encoding, serialization, and multiformat codec APIs live in
 | Protocols | HPKE |
 | Key and wire envelopes | JWK and public-key multikey bindings used by the crypto facades |
 
+P-256 includes strict low-S normalization for canonical DER signatures and
+fixed-width 64-byte `r || s` signatures. The helper is intended for signatures
+returned by HSMs and platform keystores; normalization does not replace
+signature verification.
+
 X-Wing-768 follows the IETF CFRG Internet-Draft
 [`draft-connolly-cfrg-xwing-kem`](https://datatracker.ietf.org/doc/draft-connolly-cfrg-xwing-kem/),
 which defines a hybrid KEM built from X25519 and ML-KEM-768.
@@ -134,7 +139,7 @@ When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.3.12", default-features = false, features = [
+reallyme-crypto = { version = "0.3.13", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -147,7 +152,7 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.3.12", default-features = false, features = [
+reallyme-crypto = { version = "0.3.13", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }
@@ -162,7 +167,7 @@ OpenMLS adapters can select the narrow HPKE profile without enabling the full
 HPKE compatibility surface:
 
 ```toml
-reallyme-crypto = { version = "0.3.12", default-features = false, features = [
+reallyme-crypto = { version = "0.3.13", default-features = false, features = [
   "native",
   "hpke-openmls",
 ] }
@@ -226,7 +231,7 @@ separate from raw private-key bytes.
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.3.12"
+    from: "0.3.13"
 )
 ```
 
@@ -238,7 +243,7 @@ separate from raw private-key bytes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.3.12")
+    implementation("me.really:crypto:0.3.13")
 }
 ```
 

@@ -7,6 +7,58 @@ import ReallyMeCrypto
 import XCTest
 
 extension ReallyMeCryptoRustCAbiTests {
+  func testP256LowSNormalizationMatchesSwiftAndRustCAbi() throws {
+    let highS = Self.bytes(
+      "304502206e3038666f0655a681c1636c9191509227335c61527ff220426809a695e07ed7"
+        + "022100a37377a349087a2446d5839c0db705caf20b9e42edc4b819892e4bbe866754c6"
+    )
+    let lowS = Self.bytes(
+      "304402206e3038666f0655a681c1636c9191509227335c61527ff220426809a695e07ed7"
+        + "02205c8c885bb6f785dcb92a7c63f248fa34cadb5c6ab952e66b6a8b7f0475fbd08b"
+    )
+    let swiftNormalized = try ReallyMeP256EcdsaSignature.normalizeDerLowS(highS)
+    XCTAssertEqual(swiftNormalized, lowS)
+    XCTAssertEqual(try ReallyMeP256EcdsaSignature.normalizeDerLowS(swiftNormalized), lowS)
+
+    let library = try Self.configuredRustCAbiLibrary()
+    let provider = try ReallyMeRustCAbiP256Ecdsa(library: library)
+    XCTAssertEqual(try provider.normalizeDerSignatureLowS(highS), lowS)
+    XCTAssertEqual(try provider.normalizeDerSignatureLowS(lowS), lowS)
+
+    let highJose = Self.bytes(
+      "6e3038666f0655a681c1636c9191509227335c61527ff220426809a695e07ed7"
+        + "a37377a349087a2446d5839c0db705caf20b9e42edc4b819892e4bbe866754c6"
+    )
+    let lowJose = Self.bytes(
+      "6e3038666f0655a681c1636c9191509227335c61527ff220426809a695e07ed7"
+        + "5c8c885bb6f785dcb92a7c63f248fa34cadb5c6ab952e66b6a8b7f0475fbd08b"
+    )
+    XCTAssertEqual(try ReallyMeP256EcdsaSignature.normalizeJoseLowS(highJose), lowJose)
+    XCTAssertEqual(try provider.normalizeJoseSignatureLowS(highJose), lowJose)
+
+    let zeroJose = [UInt8](repeating: 0, count: 64)
+    let orderJose = Self.bytes(
+      "0000000000000000000000000000000000000000000000000000000000000001"
+        + "ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551"
+    )
+    for malformed in [zeroJose, orderJose] {
+      XCTAssertThrowsError(try ReallyMeP256EcdsaSignature.normalizeJoseLowS(malformed))
+      XCTAssertThrowsError(try provider.normalizeJoseSignatureLowS(malformed))
+    }
+
+    for malformed in [
+      Self.bytes("3006020100020101"),
+      Self.bytes("300702020001020101"),
+      Self.bytes(
+        "3026020101022100ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551"
+      ),
+      [UInt8](repeating: 0, count: 73),
+    ] {
+      XCTAssertThrowsError(try ReallyMeP256EcdsaSignature.normalizeDerLowS(malformed))
+      XCTAssertThrowsError(try provider.normalizeDerSignatureLowS(malformed))
+    }
+  }
+
   func testRustCAbiP256EcdsaVectorWhenLibraryConfigured() throws {
     let library = try Self.configuredRustCAbiLibrary()
 

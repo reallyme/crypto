@@ -16,6 +16,92 @@ export const P256_ECDSA_COMPRESSED_PUBLIC_KEY_LENGTH = 33;
 export const P256_ECDSA_COMPACT_SIGNATURE_LENGTH = 64;
 export const P256_ECDSA_DER_SIGNATURE_MAX_LENGTH = 72;
 
+const P256_CURVE_ORDER = Uint8Array.from([
+  0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
+  0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+  0xbc, 0xe6, 0xfa, 0xad, 0xa7, 0x17, 0x9e, 0x84,
+  0xf3, 0xb9, 0xca, 0xc2, 0xfc, 0x63, 0x25, 0x51,
+]);
+
+const P256_HALF_CURVE_ORDER = Uint8Array.from([
+  0x7f, 0xff, 0xff, 0xff, 0x80, 0x00, 0x00, 0x00,
+  0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+  0xde, 0x73, 0x7d, 0x56, 0xd3, 0x8b, 0xcf, 0x42,
+  0x79, 0xdc, 0xe5, 0x61, 0x7e, 0x31, 0x92, 0xa8,
+]);
+
+const compareBigEndian = (left: Uint8Array, right: Uint8Array): number => {
+  if (left.length !== right.length) {
+    throw new ReallyMeCryptoError("invalid-input");
+  }
+  for (let index = 0; index < left.length; index += 1) {
+    const leftByte = left[index];
+    const rightByte = right[index];
+    if (leftByte === undefined || rightByte === undefined) {
+      throw new ReallyMeCryptoError("invalid-input");
+    }
+    if (leftByte !== rightByte) {
+      return leftByte < rightByte ? -1 : 1;
+    }
+  }
+  return 0;
+};
+
+const isZeroScalar = (scalar: Uint8Array): boolean => {
+  for (const byte of scalar) {
+    if (byte !== 0) {
+      return false;
+    }
+  }
+  return true;
+};
+
+const subtractBigEndian = (left: Uint8Array, right: Uint8Array): Uint8Array => {
+  if (left.length !== right.length || compareBigEndian(left, right) < 0) {
+    throw new ReallyMeCryptoError("invalid-input");
+  }
+  const result = new Uint8Array(left.length);
+  let borrow = 0;
+  for (let index = left.length - 1; index >= 0; index -= 1) {
+    const leftByte = left[index];
+    const rightByte = right[index];
+    if (leftByte === undefined || rightByte === undefined) {
+      throw new ReallyMeCryptoError("invalid-input");
+    }
+    const difference = leftByte - rightByte - borrow;
+    result[index] = difference < 0 ? difference + 256 : difference;
+    borrow = difference < 0 ? 1 : 0;
+  }
+  if (borrow !== 0) {
+    throw new ReallyMeCryptoError("invalid-input");
+  }
+  return result;
+};
+
+const normalizeP256JoseSignatureLowS = (signature: Uint8Array): Uint8Array => {
+  if (signature.length !== P256_ECDSA_COMPACT_SIGNATURE_LENGTH) {
+    throw new ReallyMeCryptoError("invalid-input");
+  }
+  const normalized = new Uint8Array(signature);
+  const r = normalized.slice(0, P256_ECDSA_SECRET_KEY_LENGTH);
+  const s = normalized.slice(P256_ECDSA_SECRET_KEY_LENGTH);
+  if (
+    isZeroScalar(r) ||
+    isZeroScalar(s) ||
+    compareBigEndian(r, P256_CURVE_ORDER) >= 0 ||
+    compareBigEndian(s, P256_CURVE_ORDER) >= 0
+  ) {
+    throw new ReallyMeCryptoError("invalid-input");
+  }
+  if (compareBigEndian(s, P256_HALF_CURVE_ORDER) > 0) {
+    normalized.set(
+      subtractBigEndian(P256_CURVE_ORDER, s),
+      P256_ECDSA_SECRET_KEY_LENGTH,
+    );
+  }
+  return normalized;
+};
+
 /**
  * P-256 ECDSA backed by @noble/curves.
  *
@@ -25,6 +111,32 @@ export const P256_ECDSA_DER_SIGNATURE_MAX_LENGTH = 72;
  * of applying a TypeScript-only low-S normalization policy.
  */
 export const ReallyMeP256Ecdsa = {
+  /**
+   * Returns the canonical low-S form of a canonical DER signature.
+   *
+   * This is a representation transform for signatures returned by HSMs and
+   * platform keystores. It does not verify authenticity; callers must still
+   * verify the signature against the exact message that was signed.
+   */
+  normalizeDerSignatureLowS(signature: Uint8Array): Uint8Array {
+    ensureByteArray(signature);
+    const compact = decodeEcdsaDerSignature(
+      signature,
+      P256_ECDSA_SECRET_KEY_LENGTH,
+      P256_ECDSA_DER_SIGNATURE_MAX_LENGTH,
+    );
+    return encodeEcdsaDerSignature(
+      normalizeP256JoseSignatureLowS(compact),
+      P256_ECDSA_SECRET_KEY_LENGTH,
+    );
+  },
+
+  /** Returns the low-S form of an exact 64-byte JOSE `r || s` signature. */
+  normalizeJoseSignatureLowS(signature: Uint8Array): Uint8Array {
+    ensureByteArray(signature);
+    return normalizeP256JoseSignatureLowS(signature);
+  },
+
   generateKeyPair(): { publicKey: Uint8Array; secretKey: Uint8Array } {
     const secretKey = p256.utils.randomSecretKey();
     return {

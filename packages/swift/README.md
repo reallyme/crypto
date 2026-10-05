@@ -16,7 +16,7 @@ by Git URL; the source lives under `packages/swift` with the other language SDKs
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.3.12"
+    from: "0.3.13"
 )
 ```
 
@@ -25,7 +25,7 @@ by Git URL; the source lives under `packages/swift` with the other language SDKs
 ```
 
 The `from:` version resolves after publication; an unreleased version has no tag.
-Crypto 0.3.12 requires Swift 6.3 or later because its Codec 0.3.1 dependency
+Crypto 0.3.13 requires Swift 6.3 or later because its Codec 0.3.1 dependency
 declares that tools version.
 
 Applications that process structured operations or store ReallyMe Crypto
@@ -90,6 +90,10 @@ The public API has two layers:
 - algorithm-specific types, such as `ReallyMeX25519`, `ReallyMeP256Ecdh`, and
   `ReallyMeSecp256k1`;
 - `ReallyMeCrypto`, a typed facade keyed by repository-wide algorithm enums.
+
+`ReallyMeP256EcdsaSignature` normalizes canonical DER or 64-byte `r || s`
+signatures to low-S form. Secure Enclave signing applies that policy before
+returning, while external HSM integrations can call the helper explicitly.
 
 Unspecified identifiers and algorithm/operation combinations that a method
 does not define throw `ReallyMeCryptoError.unsupportedAlgorithm`. The Swift package does not

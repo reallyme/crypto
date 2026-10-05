@@ -29,9 +29,10 @@ test("rejects malformed, missing, duplicate, and empty sections", () => {
   }
 });
 
-test("current 0.3.12 notes describe the Codec update", () => {
+test("current 0.3.13 notes describe P-256 low-S normalization", () => {
   const path = fileURLToPath(new URL("../RELEASE_NOTES.md", import.meta.url));
-  const notes = extractReleaseNotes(readFileSync(path, "utf8"), "0.3.12");
-  assert.match(notes, /dependency locks/u);
-  assert.match(notes, /Codec `0\.3\.1`/u);
+  const notes = extractReleaseNotes(readFileSync(path, "utf8"), "0.3.13");
+  assert.match(notes, /fixed-width 64-byte `r \|\| s`/u);
+  assert.match(notes, /Secure Enclave/u);
+  assert.match(notes, /Android/u);
 });

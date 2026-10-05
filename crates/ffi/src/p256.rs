@@ -22,6 +22,8 @@ pub const P256_PUBLIC_KEY_UNCOMPRESSED_LEN: usize = 65;
 pub const P256_SHARED_SECRET_LEN: usize = 32;
 /// Maximum length in bytes of a DER-encoded P-256 ECDSA signature.
 pub const P256_SIGNATURE_DER_MAX_LEN: usize = crypto_p256::P256_SIGNATURE_DER_MAX_LEN;
+/// Exact length in bytes of a P-256 JOSE signature (`r || s`).
+pub const P256_SIGNATURE_JOSE_LEN: usize = crypto_p256::P256_ECDSA_JOSE_SIGNATURE_LEN;
 
 /// Generates a P-256 keypair, writing the SEC1 public key to `public_out` and
 /// the 32-byte secret key to `secret_out`.
@@ -229,6 +231,98 @@ pub unsafe extern "C" fn rm_crypto_p256_verify_der_prehash(
             Ok(()) => CRYPTO_OK,
             Err(error) => verify_status(error),
         }
+    })
+}
+
+/// Converts a canonical DER-encoded P-256 ECDSA signature to canonical low-S
+/// form without changing the signed value.
+///
+/// This operation validates only the DER structure and scalar ranges. It does
+/// not authenticate the signature against a message or public key.
+///
+/// # Safety
+///
+/// `signature` must point to `signature_len` readable bytes and may be null
+/// only when that length is `0`. `normalized_out` must point to
+/// `normalized_out_len` writable bytes and must not overlap `signature`.
+/// `normalized_len_out` must be a non-null, aligned writable `usize`. Returns
+/// [`crate::status::CRYPTO_INVALID_SIGNATURE`] for malformed or non-canonical input and
+/// [`CRYPTO_BUFFER_TOO_SMALL`] when the output buffer cannot hold the result.
+#[no_mangle]
+pub unsafe extern "C" fn rm_crypto_p256_normalize_ecdsa_der_low_s(
+    signature: *const u8,
+    signature_len: usize,
+    normalized_out: *mut u8,
+    normalized_out_len: usize,
+    normalized_len_out: *mut usize,
+) -> CryptoStatus {
+    ffi_guard(|| {
+        let len_status =
+            validate_output_len_pair(normalized_out, normalized_out_len, normalized_len_out);
+        if len_status != CRYPTO_OK {
+            return len_status;
+        }
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
+        let signature = match unsafe { read_slice(signature, signature_len) } {
+            Ok(value) => value,
+            Err(status) => return status,
+        };
+        let normalized =
+            match reallyme_crypto::operations::signature::normalize_p256_ecdsa_der_low_s(signature)
+            {
+                Ok(value) => value,
+                Err(error) => return verify_status(error),
+            };
+        if normalized_out_len < normalized.len() {
+            return CRYPTO_BUFFER_TOO_SMALL;
+        }
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
+        let status = unsafe { write_fixed(normalized_out, normalized_out_len, &normalized) };
+        if status != CRYPTO_OK {
+            return status;
+        }
+        // SAFETY: The C caller provides an aligned, writable length slot for this call. write_len validates the
+        // slot before writing; the caller retains ownership.
+        unsafe { write_len(normalized_len_out, normalized.len()) }
+    })
+}
+
+/// Converts a P-256 JOSE `r || s` signature to canonical low-S form.
+///
+/// This operation validates only the scalar ranges. It does not authenticate
+/// the signature against a message or public key.
+///
+/// # Safety
+///
+/// `signature` must point to `signature_len` readable bytes (exactly 64).
+/// `normalized_out` must point to at least 64 writable bytes and must not
+/// overlap `signature`. Returns [`crate::status::CRYPTO_INVALID_SIGNATURE`] for an invalid
+/// length or scalar.
+#[no_mangle]
+pub unsafe extern "C" fn rm_crypto_p256_normalize_ecdsa_jose_low_s(
+    signature: *const u8,
+    signature_len: usize,
+    normalized_out: *mut u8,
+    normalized_out_len: usize,
+) -> CryptoStatus {
+    ffi_guard(|| {
+        // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
+        // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
+        let signature = match unsafe { read_slice(signature, signature_len) } {
+            Ok(value) => value,
+            Err(status) => return status,
+        };
+        let normalized =
+            match reallyme_crypto::operations::signature::normalize_p256_ecdsa_jose_low_s(signature)
+            {
+                Ok(value) => value,
+                Err(error) => return verify_status(error),
+            };
+        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
+        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
+        unsafe { write_fixed(normalized_out, normalized_out_len, &normalized) }
     })
 }
 

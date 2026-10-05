@@ -111,6 +111,17 @@ import Foundation
     _: UnsafePointer<UInt8>?, _: Int,
     _: UnsafePointer<UInt8>?, _: Int
   ) -> Int32
+  @_silgen_name("rm_crypto_p256_normalize_ecdsa_der_low_s")
+  func rmCryptoP256NormalizeEcdsaDerLowSLinked(
+    _: UnsafePointer<UInt8>?, _: Int,
+    _: UnsafeMutablePointer<UInt8>?, _: Int,
+    _: UnsafeMutablePointer<UInt>?
+  ) -> Int32
+  @_silgen_name("rm_crypto_p256_normalize_ecdsa_jose_low_s")
+  func rmCryptoP256NormalizeEcdsaJoseLowSLinked(
+    _: UnsafePointer<UInt8>?, _: Int,
+    _: UnsafeMutablePointer<UInt8>?, _: Int
+  ) -> Int32
 
   @_silgen_name("rm_crypto_p384_generate_keypair")
   func rmCryptoP384GenerateKeypairLinked(

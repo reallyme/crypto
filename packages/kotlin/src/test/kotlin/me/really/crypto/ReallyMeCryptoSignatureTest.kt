@@ -395,6 +395,60 @@ class ReallyMeCryptoSignatureTest : ReallyMeCryptoTestSupport() {
     }
 
     @Test
+    fun p256EcdsaNormalizesCanonicalDerSignaturesToLowS() {
+        val highS = bytes(
+            "304502206e3038666f0655a681c1636c9191509227335c61527ff220426809a695e07ed7" +
+                "022100a37377a349087a2446d5839c0db705caf20b9e42edc4b819892e4bbe866754c6",
+        )
+        val lowS = bytes(
+            "304402206e3038666f0655a681c1636c9191509227335c61527ff220426809a695e07ed7" +
+                "02205c8c885bb6f785dcb92a7c63f248fa34cadb5c6ab952e66b6a8b7f0475fbd08b",
+        )
+
+        val normalized = ReallyMeP256Ecdsa.normalizeDerSignatureLowS(highS)
+        assertContentEquals(lowS, normalized)
+        assertContentEquals(lowS, ReallyMeP256Ecdsa.normalizeDerSignatureLowS(normalized))
+
+        val highJose = bytes(
+            "6e3038666f0655a681c1636c9191509227335c61527ff220426809a695e07ed7" +
+                "a37377a349087a2446d5839c0db705caf20b9e42edc4b819892e4bbe866754c6",
+        )
+        val lowJose = bytes(
+            "6e3038666f0655a681c1636c9191509227335c61527ff220426809a695e07ed7" +
+                "5c8c885bb6f785dcb92a7c63f248fa34cadb5c6ab952e66b6a8b7f0475fbd08b",
+        )
+        assertContentEquals(lowJose, ReallyMeP256Ecdsa.normalizeJoseSignatureLowS(highJose))
+
+        val malformed = listOf(
+            bytes("3006020100020101"),
+            bytes("300702020001020101"),
+            bytes(
+                "3026020101022100ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",
+            ),
+            ByteArray(ReallyMeP256Ecdsa.DER_SIGNATURE_MAX_LENGTH + 1),
+        )
+        for (signature in malformed) {
+            assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+                ReallyMeP256Ecdsa.normalizeDerSignatureLowS(signature)
+            }
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeP256Ecdsa.normalizeJoseSignatureLowS(ByteArray(63))
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeP256Ecdsa.normalizeJoseSignatureLowS(ByteArray(ReallyMeP256Ecdsa.JOSE_SIGNATURE_LENGTH))
+        }
+        assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+            ReallyMeP256Ecdsa.normalizeJoseSignatureLowS(
+                bytes(
+                    "0000000000000000000000000000000000000000000000000000000000000001" +
+                        "ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",
+                ),
+            )
+        }
+    }
+
+    @Test
     fun p256EcdsaRejectsMalformedInputsAndTampering() {
         assertFailsWith<ReallyMeCryptoException.InvalidSignature> {
             ReallyMeP256Ecdsa.verify(p256EcdsaSignatureDer, p256EcdsaMessage + 0x00, p256EcdsaPublicKey)
