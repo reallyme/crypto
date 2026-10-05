@@ -3284,9 +3284,14 @@ for (const path of [
   ".github/workflows/rust-ci.yml",
   ".github/workflows/crates-package-preflight.yml",
 ]) {
-  assertContains(path, `tool: cargo-semver-checks@${cargoSemverChecksVersion}`);
-  assertContains(path, "fallback: none");
-  assertNotContains(path, "cargo install cargo-semver-checks");
+  assertContains(path, "Cache Rust semver tooling and dependencies");
+  assertContains(path, `shared-key: semver-${cargoSemverChecksVersion}-baseline-0.3.11`);
+  assertContains(path, "cache-bin: true");
+  assertContains(
+    path,
+    `cargo install cargo-semver-checks --version ${cargoSemverChecksVersion} --locked`,
+  );
+  assertNotContains(path, `tool: cargo-semver-checks@${cargoSemverChecksVersion}`);
 }
 assertContains(".github/workflows/rust-ci.yml", "scripts/audit_committed_lockfiles.sh");
 assertContains(".github/workflows/rust-ci.yml", "cargo metadata --locked --format-version 1 --no-deps");
