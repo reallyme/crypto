@@ -41,6 +41,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   mobile-targets:
     name: iOS and Android Rust targets
@@ -110,7 +114,10 @@ jobs:
         run: node scripts/prepare_semver_baseline.mjs .semver-baseline
 
       - name: Install cargo-semver-checks
-        run: cargo install cargo-semver-checks --version 0.50.0 --locked
+        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # v2
+        with:
+          tool: cargo-semver-checks@0.50.0
+          fallback: none
 
       - name: Check public Rust API semver
         run: node scripts/check_rust_semver.mjs

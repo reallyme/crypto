@@ -13,6 +13,48 @@ use reallyme_crypto::secret_material::{
 };
 
 #[test]
+fn secret_material_operation_discriminants_remain_stable() {
+    let established_discriminants = [
+        (SecretMaterialOperation::AeadSeal, 0),
+        (SecretMaterialOperation::AeadOpen, 1),
+        (SecretMaterialOperation::ConstantTimeCompare, 2),
+        (SecretMaterialOperation::Hash, 3),
+        (SecretMaterialOperation::MacAuthenticate, 4),
+        (SecretMaterialOperation::MacVerify, 5),
+        (SecretMaterialOperation::KeyDerivation, 6),
+        (SecretMaterialOperation::KeyWrap, 7),
+        (SecretMaterialOperation::KeyUnwrap, 8),
+        (SecretMaterialOperation::SignatureKeyGeneration, 9),
+        (SecretMaterialOperation::SignatureKeyDerivation, 10),
+        (SecretMaterialOperation::SignatureSign, 11),
+        (SecretMaterialOperation::SignatureVerify, 12),
+        (SecretMaterialOperation::KeyAgreementKeyGeneration, 13),
+        (SecretMaterialOperation::KeyAgreementKeyDerivation, 14),
+        (SecretMaterialOperation::KeyAgreementSharedSecret, 15),
+        (SecretMaterialOperation::KemKeyGeneration, 16),
+        (SecretMaterialOperation::KemKeyDerivation, 17),
+        (SecretMaterialOperation::KemEncapsulate, 18),
+        (SecretMaterialOperation::KemDecapsulate, 19),
+        (SecretMaterialOperation::HpkeKeyGeneration, 20),
+        (SecretMaterialOperation::HpkeKeyDerivation, 21),
+        (SecretMaterialOperation::HpkeSenderSetup, 22),
+        (SecretMaterialOperation::HpkeReceiverSetup, 23),
+        (SecretMaterialOperation::HpkeSeal, 24),
+        (SecretMaterialOperation::HpkeOpen, 25),
+        (SecretMaterialOperation::HpkeExport, 26),
+        (SecretMaterialOperation::RandomFill, 27),
+        (SecretMaterialOperation::RandomNonce, 28),
+        (SecretMaterialOperation::RandomSalt, 29),
+        (SecretMaterialOperation::PublicKeyEncoding, 30),
+    ];
+
+    for (operation, expected) in established_discriminants {
+        assert_eq!(operation as isize, expected);
+    }
+    assert_eq!(SecretMaterialOperation::SignatureEncoding as isize, 31);
+}
+
+#[test]
 fn secret_results_require_zeroizing_owners() {
     let secret_operations = [
         SecretMaterialOperation::AeadOpen,

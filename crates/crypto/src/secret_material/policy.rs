@@ -9,73 +9,77 @@ use super::{
 use crypto_core::RngOutputKind;
 
 /// Semantic operation whose entry point binds a secret-material policy.
+///
+/// Discriminants are explicit because downstream policy tooling may persist or
+/// compare the numeric form. New operations must use a previously unused value
+/// so an additive release cannot silently reinterpret an established operation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum SecretMaterialOperation {
     /// Authenticated encryption.
-    AeadSeal,
+    AeadSeal = 0,
     /// Authenticated decryption.
-    AeadOpen,
+    AeadOpen = 1,
     /// Constant-time comparison.
-    ConstantTimeCompare,
+    ConstantTimeCompare = 2,
     /// Cryptographic hashing.
-    Hash,
+    Hash = 3,
     /// Message authentication tag generation.
-    MacAuthenticate,
+    MacAuthenticate = 4,
     /// Message authentication tag verification.
-    MacVerify,
+    MacVerify = 5,
     /// Password or key derivation.
-    KeyDerivation,
+    KeyDerivation = 6,
     /// Symmetric key wrapping.
-    KeyWrap,
+    KeyWrap = 7,
     /// Symmetric key unwrapping.
-    KeyUnwrap,
+    KeyUnwrap = 8,
     /// Signature keypair generation.
-    SignatureKeyGeneration,
+    SignatureKeyGeneration = 9,
     /// Signature keypair derivation.
-    SignatureKeyDerivation,
+    SignatureKeyDerivation = 10,
     /// Signature creation.
-    SignatureSign,
+    SignatureSign = 11,
     /// Signature verification.
-    SignatureVerify,
+    SignatureVerify = 12,
     /// Public signature representation validation or normalization.
-    SignatureEncoding,
+    SignatureEncoding = 31,
     /// Key-agreement keypair generation.
-    KeyAgreementKeyGeneration,
+    KeyAgreementKeyGeneration = 13,
     /// Key-agreement keypair derivation.
-    KeyAgreementKeyDerivation,
+    KeyAgreementKeyDerivation = 14,
     /// Shared-secret derivation.
-    KeyAgreementSharedSecret,
+    KeyAgreementSharedSecret = 15,
     /// KEM keypair generation.
-    KemKeyGeneration,
+    KemKeyGeneration = 16,
     /// KEM keypair derivation.
-    KemKeyDerivation,
+    KemKeyDerivation = 17,
     /// KEM encapsulation.
-    KemEncapsulate,
+    KemEncapsulate = 18,
     /// KEM decapsulation.
-    KemDecapsulate,
+    KemDecapsulate = 19,
     /// HPKE keypair generation.
-    HpkeKeyGeneration,
+    HpkeKeyGeneration = 20,
     /// HPKE keypair derivation.
-    HpkeKeyDerivation,
+    HpkeKeyDerivation = 21,
     /// Establishment of a live, non-exportable HPKE sender context.
-    HpkeSenderSetup,
+    HpkeSenderSetup = 22,
     /// Establishment of a live, non-exportable HPKE receiver context.
-    HpkeReceiverSetup,
+    HpkeReceiverSetup = 23,
     /// HPKE sealing.
-    HpkeSeal,
+    HpkeSeal = 24,
     /// HPKE opening.
-    HpkeOpen,
+    HpkeOpen = 25,
     /// HPKE exporter-secret derivation.
-    HpkeExport,
+    HpkeExport = 26,
     /// Fill caller-owned storage with cryptographically secure random bytes.
-    RandomFill,
+    RandomFill = 27,
     /// Generate an AEAD nonce.
-    RandomNonce,
+    RandomNonce = 28,
     /// Generate an Argon2 salt.
-    RandomSalt,
+    RandomSalt = 29,
     /// Public-key encoding or decoding.
-    PublicKeyEncoding,
+    PublicKeyEncoding = 30,
 }
 
 /// Ownership, retention, export, and destruction rules for one buffer.
