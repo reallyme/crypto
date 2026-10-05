@@ -105,6 +105,14 @@ jobs:
         with:
           toolchain: 1.99.0
 
+      # Version 0.50.0 has no prebuilt Linux artifact. Cache the audited source
+      # build and its dependencies so later runs do not rebuild the tool.
+      - name: Cache Rust semver tooling and dependencies
+        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2
+        with:
+          shared-key: semver-0.50.0-baseline-0.3.11
+          cache-bin: true
+
       - name: Install Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -114,10 +122,11 @@ jobs:
         run: node scripts/prepare_semver_baseline.mjs .semver-baseline
 
       - name: Install cargo-semver-checks
-        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # v2
-        with:
-          tool: cargo-semver-checks@0.50.0
-          fallback: none
+        run: |
+          if cargo semver-checks --version 2>/dev/null | grep -Fq 'cargo-semver-checks 0.50.0'; then
+            exit 0
+          fi
+          cargo install cargo-semver-checks --version 0.50.0 --locked
 
       - name: Check public Rust API semver
         run: node scripts/check_rust_semver.mjs
