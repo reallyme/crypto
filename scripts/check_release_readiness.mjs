@@ -1302,18 +1302,25 @@ assertContains("packages/kotlin/build.gradle.kts", "me/really/crypto/native/wind
 assertContains("packages/kotlin/build.gradle.kts", "hostNativeSupported");
 assertNotContains("packages/kotlin/build.gradle.kts", 'throw GradleException("unsupported host operating system');
 assertNotContains("packages/kotlin/build.gradle.kts", 'throw GradleException("unsupported host architecture');
-assertContains(
+const gradleWrapperPaths = [
   "packages/kotlin-android/gradle/wrapper/gradle-wrapper.properties",
-  "distributionSha256Sum=bafd5ce9cfaea0fbccfdc8439a1ac42fbd4cd9c89dc9a988228d8a2639a58e6c",
-);
-assertContains(
   "packages/kotlin/gradle/wrapper/gradle-wrapper.properties",
-  "distributionSha256Sum=bafd5ce9cfaea0fbccfdc8439a1ac42fbd4cd9c89dc9a988228d8a2639a58e6c",
-);
-assertContains(
   "crates/conformance/platform/kotlin/gradle/wrapper/gradle-wrapper.properties",
-  "distributionSha256Sum=bafd5ce9cfaea0fbccfdc8439a1ac42fbd4cd9c89dc9a988228d8a2639a58e6c",
-);
+];
+const gradleDistributionSha256 =
+  "dce76f55f8e251a3a1f130eb120f30b3d271de2b76c9b0729d316b5a1b6dc01f";
+const gradleNetworkTimeoutMs = 60_000;
+const gradleDownloadRetries = 3;
+const gradleRetryBackOffMs = 1_000;
+for (const path of gradleWrapperPaths) {
+  assertContains(path, `distributionSha256Sum=${gradleDistributionSha256}`);
+  // Hosted runners start with an empty wrapper cache. A transient publisher or
+  // CDN failure must not turn the supply-chain-verified download into a flaky
+  // build, while the finite retry budget still fails closed on persistent loss.
+  assertContains(path, `networkTimeout=${gradleNetworkTimeoutMs}`);
+  assertContains(path, `retries=${gradleDownloadRetries}`);
+  assertContains(path, `retryBackOffMs=${gradleRetryBackOffMs}`);
+}
 assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/CryptoFacade.kt", "@JvmStatic");
 assertContains(
   "packages/kotlin/src/main/kotlin/me/really/crypto/CryptoFacadeModels.kt",
@@ -1759,7 +1766,7 @@ assertContains("scripts/maven-central-bundle.local.sh", "verify_release_prefligh
 assertContains("scripts/maven-central-bundle.local.sh", "NATIVE_RESOURCE_RUN_ID");
 assertContains("scripts/maven-central-bundle.local.sh", "RELEASE_ATTESTATION_WRITE_GITHUB_OUTPUT=1");
 assertContains("scripts/maven-central-bundle.local.sh", "gh run download \"$run_id\" --repo reallyme/crypto");
-assertContains(".github/workflows/fuzz.yml", "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
+assertContains(".github/workflows/fuzz.yml", "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9");
 assertContains(".github/workflows/fuzz.yml", "cargo install cargo-fuzz --version 0.13.2 --locked");
 assertContains(".github/workflows/fuzz.yml", "crates/crypto/**");
 assertContains(".github/workflows/fuzz.yml", "crates/wasm/**");
@@ -3305,7 +3312,7 @@ assertContains(".github/workflows/jvm-native-resources.yml", "kotlin-native-");
 assertContains(".github/workflows/jvm-native-resources.yml", "build_kotlin_native_resource.sh");
 assertContains(
   ".github/workflows/jvm-native-resources.yml",
-  "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+  "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
 );
 
 const kotlinPreflightWorkflow = ".github/workflows/kotlin-android-package-preflight.yml";
