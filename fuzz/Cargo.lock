@@ -2091,14 +2091,13 @@ dependencies = [
 
 [[package]]
 name = "taceo-poseidon2"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c167df5e799207335a7acfec5404aa8fae59fad877c6cd20205815d690ba7157"
+checksum = "ec520fb3e8be3d68d4e40efc62ae332e129c33df335c35892f25a79e2621626f"
 dependencies = [
  "ark-bn254",
  "ark-ff",
  "ark-std",
- "num-bigint",
  "num-traits",
 ]
 
