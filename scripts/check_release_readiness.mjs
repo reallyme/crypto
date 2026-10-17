@@ -1522,7 +1522,7 @@ assertContains(
   "docs/maven-provenance.md",
   "a3d61910e69398a199ca11305ca555a28f4fa09b",
 );
-assertContains("packages/kotlin/README.md", "Android package use Gradle 9.8.0");
+assertContains("packages/kotlin/README.md", "Android package use Gradle 9.8.1");
 assertContains("packages/kotlin/README.md", "Android package uses Android Gradle Plugin 9.4.1");
 
 const kotlinAndroidBuild = readText("packages/kotlin-android/build.gradle.kts");

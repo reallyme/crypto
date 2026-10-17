@@ -61,7 +61,7 @@
 - Upgrades release-readiness to `0.6.7` and refreshes compatible Cargo and npm
   lockfile dependencies, including wasm-bindgen `0.2.129` and
   `@bufbuild/protobuf` `2.16.0`.
-- Updates Kotlin to `2.4.20`, JVM and Android protobuf libraries to `4.36.2`,
+- Updates Kotlin to `2.4.21`, JVM and Android protobuf libraries to `4.36.2`,
   and JVM JUnit to `6.1.3`, with refreshed Gradle verification metadata.
 - Sets Rust, npm, Swift, Kotlin/JVM, and Android package metadata to `0.3.10`.
 - The Swift package checksum is bound to the `0.3.10` XCFramework artifact.
