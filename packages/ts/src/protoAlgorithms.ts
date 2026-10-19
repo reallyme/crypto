@@ -18,7 +18,6 @@ import type {
 import { ReallyMeCryptoError } from "./errors.js";
 import {
   AeadAlgorithm,
-  CryptoAlgorithmIdentifierSchema,
   HashAlgorithm,
   HpkeAeadId,
   HpkeKdfId,

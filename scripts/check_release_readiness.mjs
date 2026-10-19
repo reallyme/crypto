@@ -132,12 +132,10 @@ const kotlinAndroidPackageVersion = "0.3.13";
 const rustCodecVersion = "0.3.1";
 const sdkCodecVersion = "0.3.1";
 const rustSemverBaselineCommit = "54de2955ebf73e9fd1c306eba207550b3716d767";
-const rustSemverBaselinePath = ".semver-baseline";
 const cargoSemverChecksVersion = "0.50.0";
 const buffaVersion = "0.9.2";
 const releaseReadinessCommit = "5c2da5e5d5795c2c895d0dca0819287ee7101207";
 const releaseReadinessCommand = "node scripts/run_pinned_release_readiness.mjs";
-const checkoutAction = "actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd";
 const gradleWrapperValidationAction =
   "gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92";
 const releasePackagesMode = process.argv.includes("--release-packages");
@@ -2939,6 +2937,8 @@ const assertReleaseWorkflowCredentialGates = () => {
     assertContains(path, "node scripts/verify_release_attestation.mjs");
     assertContains(path, "actions: read");
     assertContains(path, "GH_TOKEN: ${{ github.token }}");
+    assertContains(path, "ref: ${{ github.sha }}");
+    assertNotContains(path, "ref: ${{ needs.verify-release-sha.outputs.release_sha }}");
     assertNotContains(path, "if: inputs.publish");
   }
 
@@ -2952,7 +2952,8 @@ const assertReleaseWorkflowCredentialGates = () => {
     assertContains(path, "resolved release SHA is not the current origin/main tip");
     assertContains(path, '[ "${GITHUB_SHA}" != "${release_sha}" ]');
     assertContains(path, "resolved release SHA does not match the workflow run head SHA");
-    assertContains(path, "ref: ${{ needs.verify-source-sha.outputs.release_sha }}");
+    assertContains(path, "ref: ${{ github.sha }}");
+    assertNotContains(path, "ref: ${{ needs.verify-source-sha.outputs.release_sha }}");
   }
 
   assertContains("scripts/verify_release_attestation.mjs", 'const CODE_CHECK_WORKFLOW = "rust-ci.yml"');
