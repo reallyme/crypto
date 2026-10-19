@@ -445,14 +445,9 @@ export const extractOperationResponseRouteSymbols = (source, fail) => {
     routes.push(`CryptoOperation::${match[1]} => ${semanticHandler}`);
   }
 
-  for (const match of operationMatch.matchAll(
-    /((?:\s*(?:\|\s*)?CryptoOperation::[A-Za-z0-9_]+\([^)]*\)\s*)+)=>\s*unsupported_response\(\)/gu,
-  )) {
-    for (const variant of match[1].matchAll(/CryptoOperation::([A-Za-z0-9_]+)/gu)) {
-      handledVariants.push(variant[1]);
-      routes.push(`CryptoOperation::${variant[1]} => unsupported_algorithm`);
-    }
-  }
+  // Grouped bare `unsupported_response()` arms are deliberately unsupported by
+  // this parser. The set comparison below fails closed if one is introduced,
+  // requiring an explicit bounded parser instead of a backtracking expression.
 
   assertSameSet(
     handledVariants,

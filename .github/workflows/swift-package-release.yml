@@ -81,7 +81,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v5
         with:
           persist-credentials: false
-          ref: ${{ needs.verify-release-sha.outputs.release_sha }}
+          ref: ${{ github.sha }}
 
       - name: Download attested Swift artifact
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -127,7 +127,7 @@ jobs:
         with:
           # This job alone pushes the checksum-bound release tag.
           persist-credentials: true
-          ref: ${{ needs.verify-release-sha.outputs.release_sha }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: Download verified Swift artifact

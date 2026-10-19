@@ -366,7 +366,7 @@ const apiMarkersFor = (algorithmId, api) => {
     if (token.includes(".")) {
       const [owner, member] = token.split(".");
       markers.add(owner);
-      const normalizedMember = member.replace("*", "");
+      const normalizedMember = member.replaceAll("*", "");
       if (normalizedMember.length !== 0 && !normalizedMember.endsWith("_")) {
         markers.add(normalizedMember);
       }

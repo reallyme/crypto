@@ -29,7 +29,7 @@
   `0.3.11` and refreshes their dependency locks.
 - Updates compatible Rust dependencies, including `cc`, `libc`, and `x-wing`, and
   updates the Kotlin and Android Bouncy Castle runtime dependency to `1.86`.
-- Updates the pinned Rust toolchain to `1.99.0` and the Rust API semver checker
+- Updates the pinned Rust toolchain to `1.99.1` and the Rust API semver checker
   to `0.50.0`. Migrates the Android build to Android Gradle Plugin `9.4.1`
   with Gradle `9.8.0` and built-in Kotlin.
 - Updates Buf to `1.73.0` and regenerates Java and Kotlin protobuf bindings
