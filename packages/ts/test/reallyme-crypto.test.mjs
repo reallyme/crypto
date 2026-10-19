@@ -2718,7 +2718,6 @@ test("HPKE accepts HKDF info beyond the former u16-sized boundary", () => {
 test("hpke rejects malformed and tampered inputs through typed errors", () => {
   const vector = hpkeCase("p256_sha256_aes256gcm");
   const recipientSecretKey = base64UrlBytes(vectorString(vector, "recipient_secret_key"));
-  const recipientPublicKey = base64UrlBytes(vectorString(vector, "recipient_public_key"));
   const info = base64UrlBytes(vectorString(vector, "info"));
   const aad = base64UrlBytes(vectorString(vector, "aad"));
   const plaintext = base64UrlBytes(vectorString(vector, "plaintext"));
@@ -2832,7 +2831,6 @@ test("x-wing vectors derive, encapsulate, and decapsulate through WASM", () => {
 test("x-wing rejects malformed inputs through typed errors", () => {
   const vector = xWingCase("x_wing_768");
   const secretKey = base64UrlBytes(vectorString(vector, "secret_key"));
-  const publicKey = base64UrlBytes(vectorString(vector, "public_key"));
   const ciphertext = base64UrlBytes(vectorString(vector, "ciphertext"));
 
   assert.throws(

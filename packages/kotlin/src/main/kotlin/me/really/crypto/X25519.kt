@@ -20,11 +20,12 @@ public object ReallyMeX25519 {
     public const val SECRET_KEY_LENGTH: Int = 32
     public const val PUBLIC_KEY_LENGTH: Int = 32
     public const val SHARED_SECRET_LENGTH: Int = 32
+    private val secureRandom = SecureRandom()
 
     /** Generates a random X25519 keypair: 32-byte public key, 32-byte secret. */
     public fun generateKeyPair(): Pair<ByteArray, ByteArray> {
         val secretKey = ByteArray(SECRET_KEY_LENGTH)
-        SecureRandom().nextBytes(secretKey)
+        secureRandom.nextBytes(secretKey)
         return Pair(derivePublicKey(secretKey), secretKey)
     }
 
