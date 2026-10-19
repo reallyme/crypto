@@ -303,7 +303,7 @@ internal fun inspectPrivateKey(
     val requiredPurpose = keyPurpose(purpose)
     if (keyInfo.keySize != 256 ||
         keyInfo.origin != KeyProperties.ORIGIN_GENERATED ||
-        keyInfo.purposes and requiredPurpose != requiredPurpose
+        (keyInfo.purposes and requiredPurpose) != requiredPurpose
     ) {
         throw ReallyMeCryptoException.HardwareRejectedKey()
     }

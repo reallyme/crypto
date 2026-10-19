@@ -41,10 +41,11 @@ public object ReallyMeXWing {
     private const val ML_KEM_SHARED_SECRET_LENGTH: Int = 32
     private const val EXPANDED_SECRET_LENGTH: Int = ML_KEM_SECRET_SEED_LENGTH + X25519_KEY_LENGTH
     private val xWingLabel = "\\.//^\\".toByteArray(Charsets.US_ASCII)
+    private val secureRandom = SecureRandom()
 
     public fun generateKeyPair(algorithm: ReallyMeKemAlgorithm): Pair<ByteArray, ByteArray> {
         val secretKey = ByteArray(SECRET_KEY_LENGTH)
-        SecureRandom().nextBytes(secretKey)
+        secureRandom.nextBytes(secretKey)
         return Pair(derivePublicKey(algorithm, secretKey), secretKey)
     }
 
@@ -70,7 +71,7 @@ public object ReallyMeXWing {
 
     public fun encapsulate(algorithm: ReallyMeKemAlgorithm, publicKey: ByteArray): ReallyMeKemEncapsulation {
         val seed = ByteArray(ENCAPSULATION_SEED_LENGTH)
-        SecureRandom().nextBytes(seed)
+        secureRandom.nextBytes(seed)
         return try {
             encapsulateDeterministicForTest(algorithm, publicKey, seed)
         } finally {

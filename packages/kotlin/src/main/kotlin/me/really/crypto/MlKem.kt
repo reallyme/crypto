@@ -28,11 +28,11 @@ public object ReallyMeMlKem {
     public const val SECRET_KEY_LENGTH: Int = 64
     public const val ENCAPSULATION_RANDOMNESS_LENGTH: Int = 32
     public const val SHARED_SECRET_LENGTH: Int = 32
+    private val secureRandom = SecureRandom()
 
     public fun generateKeyPair(algorithm: ReallyMeKemAlgorithm): Pair<ByteArray, ByteArray> {
-        val suite = suite(algorithm)
         val secretKey = ByteArray(SECRET_KEY_LENGTH)
-        SecureRandom().nextBytes(secretKey)
+        secureRandom.nextBytes(secretKey)
         val publicKey = try {
             derivePublicKey(algorithm, secretKey)
         } catch (_: ReallyMeCryptoException.InvalidInput) {
@@ -61,7 +61,7 @@ public object ReallyMeMlKem {
         val suite = suite(algorithm)
         validatePublicKey(suite, publicKey)
         val encapsulated = try {
-            MLKEMGenerator(SecureRandom()).generateEncapsulated(
+            MLKEMGenerator(secureRandom).generateEncapsulated(
                 MLKEMPublicKeyParameters(suite.parameters, publicKey),
             )
         } catch (_: IllegalArgumentException) {
