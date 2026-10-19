@@ -3,7 +3,15 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import { lstatSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
+import {
+  closeSync,
+  constants,
+  fstatSync,
+  openSync,
+  readSync,
+  realpathSync,
+  writeFileSync,
+} from "node:fs";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -74,19 +82,47 @@ const fail = (code) => {
 };
 
 const readRegularFile = (path, maximumBytes) => {
-  let status;
-  try {
-    status = lstatSync(path);
-  } catch {
+  if (!Number.isInteger(constants.O_NOFOLLOW)) {
     fail("INVALID_FILE");
   }
-  if (status.isSymbolicLink() || !status.isFile() || status.size === 0 || status.size > maximumBytes) {
-    fail("INVALID_FILE");
-  }
+  let descriptor;
   try {
-    return readFileSync(path, "utf8");
+    descriptor = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW);
+    const status = fstatSync(descriptor);
+    if (!status.isFile() || status.size === 0 || status.size > maximumBytes) {
+      fail("INVALID_FILE");
+    }
+
+    // Keep validation and reads bound to the same descriptor so a baseline
+    // file cannot be replaced with a symlink between the two operations.
+    const buffer = Buffer.alloc(status.size + 1);
+    let totalLength = 0;
+    while (totalLength < buffer.length) {
+      const bytesRead = readSync(
+        descriptor,
+        buffer,
+        totalLength,
+        buffer.length - totalLength,
+        null,
+      );
+      if (bytesRead === 0) {
+        break;
+      }
+      totalLength += bytesRead;
+      if (totalLength > status.size || totalLength > maximumBytes) {
+        fail("INVALID_FILE");
+      }
+    }
+    if (totalLength === 0 || totalLength !== status.size) {
+      fail("INVALID_FILE");
+    }
+    return buffer.subarray(0, totalLength).toString("utf8");
   } catch {
     fail("INVALID_FILE");
+  } finally {
+    if (descriptor !== undefined) {
+      closeSync(descriptor);
+    }
   }
 };
 

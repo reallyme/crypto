@@ -3,7 +3,14 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  symlinkSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
@@ -92,5 +99,25 @@ test("rejects dependency drift and a repeated preparation", () => {
   assert.throws(
     () => prepareSemverBaseline(cleanRoot),
     (error) => error instanceof SemverBaselineError && error.code === "INVALID_DEPENDENCY",
+  );
+});
+
+test("rejects symlinked and oversized baseline inputs", () => {
+  const symlinkRoot = fixture();
+  const lockPath = join(symlinkRoot, "Cargo.lock");
+  const symlinkTarget = join(symlinkRoot, "reviewed-lockfile-copy");
+  writeFileSync(symlinkTarget, readFileSync(lockPath));
+  unlinkSync(lockPath);
+  symlinkSync(symlinkTarget, lockPath);
+  assert.throws(
+    () => prepareSemverBaseline(symlinkRoot),
+    (error) => error instanceof SemverBaselineError && error.code === "INVALID_FILE",
+  );
+
+  const oversizedRoot = fixture();
+  writeFileSync(join(oversizedRoot, dependencies[0][0]), "x".repeat(65_537), "utf8");
+  assert.throws(
+    () => prepareSemverBaseline(oversizedRoot),
+    (error) => error instanceof SemverBaselineError && error.code === "INVALID_FILE",
   );
 });

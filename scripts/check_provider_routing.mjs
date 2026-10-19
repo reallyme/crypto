@@ -3,12 +3,21 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import {
+  closeSync,
+  constants,
+  fstatSync,
+  lstatSync,
+  openSync,
+  readdirSync,
+  readSync,
+} from "node:fs";
 import { spawnSync } from "node:child_process";
 import { relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
+const MAX_SOURCE_FILE_BYTES = 1_048_576;
 
 const requiredLanes = ["swift", "kotlin_jvm", "kotlin_android", "typescript_wasm"];
 const allowedStatuses = new Set(["supported", "provider_aware", "partial", "unsupported"]);
@@ -77,9 +86,6 @@ const approvedCatalogOnlyProviders = {
   typescript_wasm: new Set(),
 };
 
-const readText = (path) => readFileSync(resolve(root, path), "utf8");
-const readJson = (path) => JSON.parse(readText(path));
-
 const failures = [];
 
 const fail = (message) => {
@@ -111,13 +117,19 @@ const assertEqualSets = (label, actual, expected) => {
 };
 
 const assertFileExists = (label, path) => {
+  let descriptor;
   try {
-    const stat = statSync(resolve(root, path));
+    descriptor = openSync(resolve(root, path), constants.O_RDONLY | constants.O_NOFOLLOW);
+    const stat = fstatSync(descriptor);
     if (!stat.isFile()) {
       fail(`${label} must be a file at ${path}`);
     }
   } catch (_error) {
     fail(`${label} must exist at ${path}`);
+  } finally {
+    if (descriptor !== undefined) {
+      closeSync(descriptor);
+    }
   }
 };
 
@@ -143,53 +155,116 @@ const quotedStrings = (text) => {
   return values;
 };
 
+const readRegularSource = (path) => {
+  if (!Number.isInteger(constants.O_NOFOLLOW)) {
+    fail("this platform cannot enforce no-follow source reads");
+    return "";
+  }
+  let descriptor;
+  try {
+    descriptor = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW);
+    const status = fstatSync(descriptor);
+    if (!status.isFile() || status.size === 0 || status.size > MAX_SOURCE_FILE_BYTES) {
+      fail(`source file is not a bounded regular file: ${relative(root, path)}`);
+      return "";
+    }
+    const buffer = Buffer.alloc(status.size + 1);
+    let totalLength = 0;
+    while (totalLength < buffer.length) {
+      const bytesRead = readSync(
+        descriptor,
+        buffer,
+        totalLength,
+        buffer.length - totalLength,
+        null,
+      );
+      if (bytesRead === 0) {
+        break;
+      }
+      totalLength += bytesRead;
+      if (totalLength > status.size || totalLength > MAX_SOURCE_FILE_BYTES) {
+        fail(`source file exceeds the accepted boundary: ${relative(root, path)}`);
+        return "";
+      }
+    }
+    if (totalLength === 0) {
+      fail(`source file is empty: ${relative(root, path)}`);
+      return "";
+    }
+    if (totalLength !== status.size) {
+      fail(`source file changed while being read: ${relative(root, path)}`);
+      return "";
+    }
+    return buffer.subarray(0, totalLength).toString("utf8");
+  } finally {
+    if (descriptor !== undefined) {
+      closeSync(descriptor);
+    }
+  }
+};
+
+const readText = (path) => readRegularSource(resolve(root, path));
+const readJson = (path) => JSON.parse(readText(path));
+
 const sourceFromTree = (path) => {
   const absolute = resolve(root, path);
-  const rootStat = statSync(absolute);
+  const rootStat = lstatSync(absolute);
+  if (rootStat.isSymbolicLink()) {
+    fail(`source path must not be a symbolic link: ${path}`);
+    return "";
+  }
   if (!rootStat.isDirectory()) {
-    return readFileSync(absolute, "utf8");
+    return readRegularSource(absolute);
   }
   const files = [];
   const walk = (directory) => {
-    for (const entry of readdirSync(directory)) {
-      const child = resolve(directory, entry);
-      const stat = statSync(child);
-      if (stat.isDirectory()) {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const child = resolve(directory, entry.name);
+      if (entry.isSymbolicLink()) {
+        fail(`source tree must not contain symbolic links: ${relative(root, child)}`);
+      }
+      if (entry.isDirectory()) {
         walk(child);
-      } else if (/\.(rs|swift|kt|ts|mjs)$/.test(entry)) {
+      } else if (entry.isFile() && /\.(rs|swift|kt|ts|mjs)$/.test(entry.name)) {
         files.push(child);
       }
     }
   };
   walk(absolute);
-  return files.map((file) => readFileSync(file, "utf8")).join("\n");
+  return files.map((file) => readRegularSource(file)).join("\n");
 };
 
 const sourceFilesFromTrees = (paths) => {
   const files = [];
   const walk = (directory) => {
-    for (const entry of readdirSync(directory)) {
-      const child = resolve(directory, entry);
-      const stat = statSync(child);
-      if (stat.isDirectory()) {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const child = resolve(directory, entry.name);
+      if (entry.isSymbolicLink()) {
+        fail(`source tree must not contain symbolic links: ${relative(root, child)}`);
+      }
+      if (entry.isDirectory()) {
         walk(child);
-      } else if (/\.(swift|kt|ts)$/.test(entry)) {
+      } else if (entry.isFile() && /\.(swift|kt|ts)$/.test(entry.name)) {
         files.push({
           path: relative(root, child),
-          source: readFileSync(child, "utf8"),
+          source: readRegularSource(child),
         });
       }
     }
   };
   for (const path of paths) {
     const absolute = resolve(root, path);
-    const stat = statSync(absolute);
+    const stat = lstatSync(absolute);
+    if (stat.isSymbolicLink()) {
+      fail(`source path must not be a symbolic link: ${path}`);
+      continue;
+    }
     if (stat.isDirectory()) {
       walk(absolute);
     } else {
       files.push({
         path: relative(root, absolute),
-        source: readFileSync(absolute, "utf8"),
+        source: readRegularSource(absolute),
       });
     }
   }
