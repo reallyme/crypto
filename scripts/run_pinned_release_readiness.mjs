@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { createHash, timingSafeEqual } from "node:crypto";
-import { lstatSync, readFileSync } from "node:fs";
+import { closeSync, constants, fstatSync, openSync, readSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
 // The upstream core and this repository's policy checker are separate inputs.
@@ -35,6 +35,53 @@ const fail = (message) => {
 
 const sha256 = (value) => createHash("sha256").update(value).digest();
 
+const readBoundedRegularFile = (path, maximumBytes, label) => {
+  if (!Number.isInteger(constants.O_NOFOLLOW)) {
+    fail("this platform cannot enforce no-follow file reads");
+  }
+  let descriptor;
+  try {
+    descriptor = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW);
+    const status = fstatSync(descriptor);
+    if (!status.isFile()) {
+      fail(`${label} must be a regular file`);
+    }
+    if (status.size === 0 || status.size > maximumBytes) {
+      fail(`${label} size is outside the accepted boundary`);
+    }
+
+    // Read through the already-validated descriptor. Besides closing the
+    // check/use race, the extra byte keeps a concurrent growth attempt inside
+    // the same fail-closed size boundary.
+    const buffer = Buffer.alloc(status.size + 1);
+    let totalLength = 0;
+    while (totalLength < buffer.length) {
+      const bytesRead = readSync(
+        descriptor,
+        buffer,
+        totalLength,
+        buffer.length - totalLength,
+        null,
+      );
+      if (bytesRead === 0) {
+        break;
+      }
+      totalLength += bytesRead;
+      if (totalLength > status.size || totalLength > maximumBytes) {
+        fail(`${label} size is outside the accepted boundary`);
+      }
+    }
+    if (totalLength === 0 || totalLength !== status.size) {
+      fail(`${label} size is outside the accepted boundary`);
+    }
+    return buffer.subarray(0, totalLength);
+  } finally {
+    if (descriptor !== undefined) {
+      closeSync(descriptor);
+    }
+  }
+};
+
 const expectedDigest = Buffer.from(RELEASE_READINESS_CORE_SHA256, "hex");
 if (expectedDigest.length !== 32) {
   fail("configured core digest is invalid");
@@ -47,22 +94,8 @@ if (expectedCheckerDigest.length !== 32) {
 let localCore;
 let localChecker;
 try {
-  const checkerStatus = lstatSync(LOCAL_CHECKER_PATH);
-  if (checkerStatus.isSymbolicLink() || !checkerStatus.isFile()) {
-    fail("local checker must be a regular file");
-  }
-  if (checkerStatus.size === 0 || checkerStatus.size > MAX_CHECKER_BYTES) {
-    fail("local checker size is outside the accepted boundary");
-  }
-  const status = lstatSync(VENDORED_CORE_PATH);
-  if (status.isSymbolicLink() || !status.isFile()) {
-    fail("vendored core must be a regular file");
-  }
-  if (status.size === 0 || status.size > MAX_CORE_BYTES) {
-    fail("vendored core size is outside the accepted boundary");
-  }
-  localChecker = readFileSync(LOCAL_CHECKER_PATH);
-  localCore = readFileSync(VENDORED_CORE_PATH);
+  localChecker = readBoundedRegularFile(LOCAL_CHECKER_PATH, MAX_CHECKER_BYTES, "local checker");
+  localCore = readBoundedRegularFile(VENDORED_CORE_PATH, MAX_CORE_BYTES, "vendored core");
 } catch {
   fail("release readiness inputs are missing or inaccessible");
 }
@@ -79,11 +112,7 @@ for (const [path, digestHex] of LOCAL_CHECKER_DEPENDENCIES) {
   }
   let source;
   try {
-    const status = lstatSync(path);
-    if (status.isSymbolicLink() || !status.isFile() || status.size === 0 || status.size > MAX_CHECKER_BYTES) {
-      fail(`local checker dependency is not a bounded regular file: ${path}`);
-    }
-    source = readFileSync(path);
+    source = readBoundedRegularFile(path, MAX_CHECKER_BYTES, `local checker dependency ${path}`);
   } catch {
     fail(`local checker dependency is missing or inaccessible: ${path}`);
   }
