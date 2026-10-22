@@ -1,5 +1,22 @@
 # Release Notes
 
+## 0.3.14
+
+- Corrects Android hardware-backed P-256 key inspection so every required key
+  purpose is checked before an existing Keystore key is accepted.
+- Reuses the platform `SecureRandom` instance for Kotlin Ed25519, X25519,
+  ML-KEM, and X-Wing key generation and encapsulation without changing their
+  public APIs or output formats.
+- Refreshes compatible dependencies, including `taceo-poseidon2` `0.3.1`,
+  Swift Protobuf `1.39.0`, Kotlin `2.4.21`, Gradle `9.8.2`, `ml-kem` `0.3.3`,
+  and the current compatible Cargo lockfile graph.
+- Hardens package and release workflows, preserves authenticated wrapper and
+  action provenance, and aligns the supported Rust toolchain with `1.99.1`.
+- Uses descriptor-bound, size-limited reads for release policy and semver
+  baseline inputs so path replacement cannot change a file after validation.
+- Updates the Rust, Swift, TypeScript, Kotlin/JVM, and Android package versions
+  to `0.3.14` while preserving the `0.3.13` public API contract.
+
 ## 0.3.13
 
 - Adds strict, backend-independent P-256 ECDSA low-S normalization for both

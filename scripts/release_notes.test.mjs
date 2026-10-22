@@ -29,10 +29,10 @@ test("rejects malformed, missing, duplicate, and empty sections", () => {
   }
 });
 
-test("current 0.3.13 notes describe P-256 low-S normalization", () => {
+test("current 0.3.14 notes describe the release hardening", () => {
   const path = fileURLToPath(new URL("../RELEASE_NOTES.md", import.meta.url));
-  const notes = extractReleaseNotes(readFileSync(path, "utf8"), "0.3.13");
-  assert.match(notes, /fixed-width 64-byte `r \|\| s`/u);
-  assert.match(notes, /Secure Enclave/u);
-  assert.match(notes, /Android/u);
+  const notes = extractReleaseNotes(readFileSync(path, "utf8"), "0.3.14");
+  assert.match(notes, /hardware-backed P-256 key inspection/u);
+  assert.match(notes, /Gradle `9[.]8[.]2`/u);
+  assert.match(notes, /descriptor-bound, size-limited reads/u);
 });
