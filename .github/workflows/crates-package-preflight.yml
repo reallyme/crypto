@@ -89,7 +89,7 @@ jobs:
       # Version 0.50.0 has no prebuilt Linux artifact. Cache the audited source
       # build and its dependencies so later runs do not rebuild the tool.
       - name: Cache Rust semver tooling and dependencies
-        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2
+        uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2
         with:
           shared-key: semver-0.50.0-baseline-0.3.11
           cache-bin: true
