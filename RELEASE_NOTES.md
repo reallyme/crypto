@@ -1,5 +1,18 @@
 # Release Notes
 
+## 0.3.15
+
+- Updates `crypto-bigint` from `0.7.5` to `0.7.10` to remediate
+  `RUSTSEC-2026-0387` and updates `ctutils` from `0.4.3` to `0.4.6` to
+  remediate `RUSTSEC-2026-0385`.
+- Refreshes the remaining compatible Cargo lockfile graph, including `cc`
+  `1.10.0`, `der` `0.8.3`, and `elliptic-curve` `0.14.3`.
+- Rebuilds the Rust, Swift, TypeScript, Kotlin/JVM, and Android packages against
+  the patched dependency graph. Applications with an existing Cargo lockfile
+  should update it so the fixed transitive versions are selected.
+- Preserves the `0.3.14` public API and wire contracts; this release contains no
+  intentional API, serialization, or algorithm-policy changes.
+
 ## 0.3.14
 
 - Corrects Android hardware-backed P-256 key inspection so every required key
