@@ -29,10 +29,10 @@ test("rejects malformed, missing, duplicate, and empty sections", () => {
   }
 });
 
-test("current 0.3.14 notes describe the release hardening", () => {
+test("current 0.3.15 notes describe the dependency security update", () => {
   const path = fileURLToPath(new URL("../RELEASE_NOTES.md", import.meta.url));
-  const notes = extractReleaseNotes(readFileSync(path, "utf8"), "0.3.14");
-  assert.match(notes, /hardware-backed P-256 key inspection/u);
-  assert.match(notes, /Gradle `9[.]8[.]2`/u);
-  assert.match(notes, /descriptor-bound, size-limited reads/u);
+  const notes = extractReleaseNotes(readFileSync(path, "utf8"), "0.3.15");
+  assert.match(notes, /RUSTSEC-2026-0387/u);
+  assert.match(notes, /RUSTSEC-2026-0385/u);
+  assert.match(notes, /Preserves the `0[.]3[.]14` public API/u);
 });
