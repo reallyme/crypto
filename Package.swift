@@ -18,7 +18,7 @@
 import Foundation
 import PackageDescription
 
-let ffiArtifactChecksum = "9fe6981f683947ad554391e545b06b9a927bebed80ea132a683178d73513bd0e"
+let ffiArtifactChecksum = "3cc66be547497c5146688bea0facfcc36ac8bf4fd4bb0f23adcd151b756e7f65"
 let ffiArtifactVersion = "0.3.15"
 let ffiArtifactLocalPathOverride = ""
 // Source-tree CI explicitly exercises the runtime loader before testing the
