@@ -18,7 +18,7 @@ plugins {
 }
 
 group = "me.really"
-version = "0.3.15"
+version = "0.3.16"
 
 dependencyLocking {
     lockAllConfigurations()
@@ -220,7 +220,7 @@ val writeHostNativeManifest = tasks.register("writeHostNativeManifest") {
 }
 
 dependencies {
-    implementation("com.google.code.gson:gson:2.14.0")
+    implementation("com.google.code.gson:gson:2.15.0")
     api("com.google.protobuf:protobuf-javalite:4.36.2")
     api("com.google.protobuf:protobuf-kotlin-lite:4.36.2")
     // Same pinned BouncyCastle the Kotlin conformance lane proves vectors

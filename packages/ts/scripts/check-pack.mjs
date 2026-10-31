@@ -169,7 +169,7 @@ const allowedWasmImportNames = [
   /^__wbindgen_cast_[0-9a-f]+$/,
   /^__wbindgen_generic_000000000000000[12]$/,
 ];
-// wasm-bindgen 0.2.129 emits these cast intrinsics. Review their exact glue
+// wasm-bindgen 0.2.130 emits these cast intrinsics. Review their exact glue
 // so the allowlist cannot silently admit a new ambient JavaScript dependency.
 const reviewedCastIntrinsics = [
   {

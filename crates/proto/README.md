@@ -21,7 +21,7 @@ value deserialization and must use binary protobuf.
 
 ```toml
 [dependencies]
-reallyme-crypto-proto = { version = "0.3.15", features = ["generated"] }
+reallyme-crypto-proto = { version = "0.3.16", features = ["generated"] }
 ```
 
 The `generated` feature includes Buffa protobuf bytes and strict ProtoJSON

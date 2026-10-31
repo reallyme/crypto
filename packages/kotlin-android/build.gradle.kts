@@ -13,13 +13,13 @@ import java.security.MessageDigest
 import java.util.zip.ZipFile
 
 plugins {
-    id("com.android.library") version "9.4.1"
+    id("com.android.library") version "9.5.0"
     `maven-publish`
     signing
 }
 
 group = "me.really"
-version = "0.3.15"
+version = "0.3.16"
 
 dependencyLocking {
     lockAllConfigurations()
@@ -306,7 +306,7 @@ kotlin {
 }
 
 dependencies {
-    implementation("com.google.code.gson:gson:2.14.0")
+    implementation("com.google.code.gson:gson:2.15.0")
     api("com.google.protobuf:protobuf-javalite:4.36.2")
     api("com.google.protobuf:protobuf-kotlin-lite:4.36.2")
     implementation("org.bouncycastle:bcprov-jdk18on:1.86")

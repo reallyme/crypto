@@ -1,5 +1,27 @@
 # Release Notes
 
+## 0.3.16
+
+- Updates `ctutils` from `0.4.6` to `0.4.7` for constant-time hardening on
+  Thumb-1 and RISC-V 32-bit targets.
+- Updates `hpke` from `0.14.1` to `0.15.1`, aligns the direct `ml-kem` and
+  `spki` requirements with their current stable releases, and refreshes the
+  compatible Cargo graph with `log` `0.4.35` using Rust `1.99.1`.
+- Updates the WASM dependency family to `wasm-bindgen` `0.2.130` and `js-sys`
+  `0.3.107`, incorporating upstream lifetime-safety, argument-release, and
+  binding-collision fixes.
+- Updates the pinned WASM build tool to `wasm-pack` `0.15.1`, including fixes
+  for modern `wasm-bindgen` package metadata, snippet packaging, and prebuilt
+  tool selection across supported hosts.
+- Updates the Android build to Android Gradle Plugin `9.5.0` and Gson `2.15.0`,
+  including stricter malformed-JSON handling for Kotlin and Android callers.
+- Updates the pinned Gradle Actions security release to `6.4.1` and the pinned
+  installer action to `2.88.0`.
+- Rebuilds every package lane with Rust `1.99.1` while preserving the `1.96`
+  minimum supported Rust version.
+- Preserves the `0.3.15` public API and wire contracts; this release contains no
+  intentional API, serialization, or algorithm-policy changes.
+
 ## 0.3.15
 
 - Updates `crypto-bigint` from `0.7.5` to `0.7.10` to remediate

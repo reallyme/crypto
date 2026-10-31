@@ -124,11 +124,11 @@ for (const path of ["packages/kotlin/build.gradle.kts", "packages/kotlin-android
   assertContains(path, 'name.set("Apache License, Version 2.0")');
 }
 
-const rustRootVersion = "0.3.15";
-const cryptoProtoPackageVersion = "0.3.15";
-const typescriptPackageVersion = "0.3.15";
-const kotlinPackageVersion = "0.3.15";
-const kotlinAndroidPackageVersion = "0.3.15";
+const rustRootVersion = "0.3.16";
+const cryptoProtoPackageVersion = "0.3.16";
+const typescriptPackageVersion = "0.3.16";
+const kotlinPackageVersion = "0.3.16";
+const kotlinAndroidPackageVersion = "0.3.16";
 const rustCodecVersion = "0.3.1";
 const sdkCodecVersion = "0.3.1";
 const rustSemverBaselineCommit = "54de2955ebf73e9fd1c306eba207550b3716d767";
@@ -137,7 +137,7 @@ const buffaVersion = "0.9.2";
 const releaseReadinessCommit = "5c2da5e5d5795c2c895d0dca0819287ee7101207";
 const releaseReadinessCommand = "node scripts/run_pinned_release_readiness.mjs";
 const gradleWrapperValidationAction =
-  "gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92";
+  "gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c";
 const releasePackagesMode = process.argv.includes("--release-packages");
 const generatedFreshnessMode = process.argv.includes("--generated-freshness");
 const requiredLanes = ["swift", "kotlin_jvm", "kotlin_android", "typescript_wasm"];
@@ -213,7 +213,7 @@ const assertZeroizingGeneratedUnknownFieldOwner = (generatedPath, messageName) =
 };
 
 if (releaseVersionEnv !== undefined && !/^[0-9]+[.][0-9]+[.][0-9]+$/.test(releaseVersionEnv)) {
-  fail("RELEASE_VERSION must be an exact semver release such as 0.3.15");
+  fail("RELEASE_VERSION must be an exact semver release such as 0.3.16");
 }
 
 const manifest = readJson("provider_manifest.json");
@@ -878,7 +878,7 @@ assertContains(
 assertNotContains("packages/ts/scripts/build-wasm.mjs", '"wasm-package"');
 assertContains(
   "crates/wasm/Cargo.toml",
-  'crypto-runtime = { package = "reallyme-crypto", version = "=0.3.15", path = "../crypto", default-features = false, features = ["operation-response", "native"',
+  'crypto-runtime = { package = "reallyme-crypto", version = "=0.3.16", path = "../crypto", default-features = false, features = ["operation-response", "native"',
 );
 assertNotContains(
   "crates/wasm/Cargo.toml",
@@ -909,8 +909,8 @@ assertContains(
   '"operation_response.json"',
 );
 assertContains("packages/ts/scripts/check-pack.mjs", "package/LICENSE");
-assertContains("packages/ts/scripts/build-wasm.mjs", "const REQUIRED_WASM_PACK_VERSION = [0, 15, 0]");
-assertContains("packages/ts/scripts/build-wasm.mjs", "const REQUIRED_WASM_BINDGEN_VERSION = [0, 2, 129]");
+assertContains("packages/ts/scripts/build-wasm.mjs", "const REQUIRED_WASM_PACK_VERSION = [0, 15, 1]");
+assertContains("packages/ts/scripts/build-wasm.mjs", "const REQUIRED_WASM_BINDGEN_VERSION = [0, 2, 130]");
 assertContains("packages/ts/scripts/build-wasm.mjs", '"--release"');
 assertContains("packages/ts/scripts/build-wasm.mjs", "versionText(wasmPackVersion) !== versionText(REQUIRED_WASM_PACK_VERSION)");
 assertContains("packages/ts/scripts/build-wasm.mjs", "versionText(wasmBindgenVersion) !== versionText(REQUIRED_WASM_BINDGEN_VERSION)");
@@ -1521,7 +1521,7 @@ assertContains(
   "a3d61910e69398a199ca11305ca555a28f4fa09b",
 );
 assertContains("packages/kotlin/README.md", "Android package use Gradle 9.8.2");
-assertContains("packages/kotlin/README.md", "Android package uses Android Gradle Plugin 9.4.1");
+assertContains("packages/kotlin/README.md", "Android package uses Android Gradle Plugin 9.5.0");
 
 const kotlinAndroidBuild = readText("packages/kotlin-android/build.gradle.kts");
 if (!kotlinAndroidBuild.includes(`version = "${kotlinAndroidPackageVersion}"`)) {
@@ -1700,7 +1700,7 @@ assertContains(
   "Generic AEAD primitive and dispatch APIs treat `aad` as caller-provided bytes",
 );
 assertContains("RELEASE_NOTES.md", "## 0.3.0");
-assertContains("RELEASE_NOTES.md", "## 0.3.15");
+assertContains("RELEASE_NOTES.md", "## 0.3.16");
 assertContains("RELEASE_NOTES.md", "legacy `reallyme.codec.v1` protobuf/package surface was removed");
 assertContains("RELEASE_NOTES.md", "not a `reallyme.crypto.v1` wire break");
 assertContains("RELEASE_NOTES.md", "permanently retired in this repository");
@@ -1755,8 +1755,8 @@ for (const workflow of [
   ".github/workflows/kotlin-android-package-preflight.yml",
   ".github/workflows/swift-package-preflight.yml",
 ]) {
-  assertContains(workflow, "wasm-pack@0.15.0");
-  assertContains(workflow, "wasm-bindgen-cli@0.2.129");
+  assertContains(workflow, "wasm-pack@0.15.1");
+  assertContains(workflow, "wasm-bindgen-cli@0.2.130");
   assertContains(workflow, "npm ci --prefix packages/ts");
   assertContains(workflow, "wasm32-unknown-unknown");
 }
@@ -2894,15 +2894,15 @@ const repositoryPolicy = {
     },
     {
       path: ".github/workflows/protobuf-ci.yml",
-      required: ["wasm-pack@0.15.0", "wasm-bindgen-cli@0.2.129"],
+      required: ["wasm-pack@0.15.1", "wasm-bindgen-cli@0.2.130"],
       usesSteps: [
         {
           name: "Install wasm-pack",
-          uses: "taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c",
+          uses: "taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32",
         },
         {
           name: "Install wasm-bindgen-cli",
-          uses: "taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c",
+          uses: "taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32",
         },
       ],
       runSteps: [
@@ -3418,10 +3418,10 @@ if (swiftReleaseArtifactVerificationCount !== 3) {
 assertContains(".github/workflows/npm-package-preflight.yml", "npm package preflight");
 assertContains(".github/workflows/npm-package-preflight.yml", "npm run pack:check");
 assertContains(".github/workflows/npm-package-release.yml", "npm Package Release");
-assertContains(".github/workflows/npm-package-release.yml", "default: 0.3.15");
+assertContains(".github/workflows/npm-package-release.yml", "default: 0.3.16");
 assertContains(".github/workflows/npm-package-release.yml", "node scripts/run_pinned_release_readiness.mjs --release-packages");
-assertContains(".github/workflows/npm-package-release.yml", "wasm-pack@0.15.0");
-assertContains(".github/workflows/npm-package-release.yml", "wasm-bindgen-cli@0.2.129");
+assertContains(".github/workflows/npm-package-release.yml", "wasm-pack@0.15.1");
+assertContains(".github/workflows/npm-package-release.yml", "wasm-bindgen-cli@0.2.130");
 assertContains(".github/workflows/npm-package-release.yml", "npm test");
 assertContains(".github/workflows/npm-package-release.yml", "npm run pack:check");
 assertContains(".github/workflows/npm-package-release.yml", "npm pack --ignore-scripts");

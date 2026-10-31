@@ -19,7 +19,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.3.15
+        default: 0.3.16
 
 permissions:
   contents: read
@@ -100,14 +100,14 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Install wasm-pack
-        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # wasm-pack
+        uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # wasm-pack
         with:
-          tool: wasm-pack@0.15.0
+          tool: wasm-pack@0.15.1
 
       - name: Install wasm-bindgen-cli
-        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # wasm-bindgen-cli
+        uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # wasm-bindgen-cli
         with:
-          tool: wasm-bindgen-cli@0.2.129
+          tool: wasm-bindgen-cli@0.2.130
 
       - name: Install TypeScript package dependencies
         run: npm ci
