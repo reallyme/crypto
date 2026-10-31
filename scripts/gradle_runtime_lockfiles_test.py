@@ -11,7 +11,7 @@ from scripts.gradle_runtime_lockfiles import runtime_records
 
 
 RUNTIME_DEPENDENCIES = (
-    "com.google.code.gson:gson:2.14.0",
+    "com.google.code.gson:gson:2.15.0",
     "com.google.protobuf:protobuf-javalite:4.36.2",
     "com.google.protobuf:protobuf-kotlin-lite:4.36.2",
     "me.really:codec:0.3.0",

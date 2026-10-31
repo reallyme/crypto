@@ -1,7 +1,7 @@
 # Derived from the Gradle lockfile for the published runtime classpath.
 # Regenerate with: python3 scripts/gradle_runtime_lockfiles.py --write
-com.google.code.gson:gson:2.14.0=runtimeClasspath
-com.google.errorprone:error_prone_annotations:2.48.0=runtimeClasspath
+com.google.code.gson:gson:2.15.0=runtimeClasspath
+com.google.errorprone:error_prone_annotations:2.50.0=runtimeClasspath
 com.google.protobuf:protobuf-javalite:4.36.2=runtimeClasspath
 com.google.protobuf:protobuf-kotlin-lite:4.36.2=runtimeClasspath
 fr.acinq.secp256k1:secp256k1-kmp-jni-common:0.24.0=runtimeClasspath
