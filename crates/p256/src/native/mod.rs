@@ -16,7 +16,15 @@ pub use encoding::{
     decompress_p256,
 };
 pub use keypair::generate_p256_keypair;
+#[allow(deprecated)]
 pub use sign::sign_p256_der_prehash;
+pub use sign::sign_p256_sha256_message_low_s_der;
+#[allow(deprecated)]
 pub use sign_digest::sign_p256_digest_der;
+pub use sign_digest::sign_p256_sha256_digest_low_s_der;
+#[allow(deprecated)]
 pub use verify::verify_p256_der_prehash;
+pub use verify::verify_p256_sha256_message_der_interoperable;
+#[allow(deprecated)]
 pub use verify_digest::verify_p256_digest_der;
+pub use verify_digest::verify_p256_sha256_digest_low_s_der;

@@ -71,7 +71,7 @@ pub struct HpkePskSenderSetupOutput {
     pub context: HpkePskSenderContext,
 }
 
-trait SenderContextBackend {
+trait SenderContextBackend: Send {
     fn seal(&mut self, aad: &[u8], plaintext: &[u8]) -> Result<Vec<u8>, hpke::HpkeError>;
 }
 
@@ -99,6 +99,7 @@ where
     Aead: HpkeAead,
     Kdf: HpkeKdf,
     Kem: HpkeKem,
+    AeadCtxS<Aead, Kdf, Kem>: Send,
 {
     fn seal(&mut self, aad: &[u8], plaintext: &[u8]) -> Result<Vec<u8>, hpke::HpkeError> {
         self.inner.seal(plaintext, aad)
@@ -107,10 +108,19 @@ where
 
 /// Owned HPKE PSK-mode sender context.
 ///
-/// The context is deliberately neither cloneable nor serializable. Its backend
-/// owns the traffic key, base nonce, exporter secret, and sequence counter; the
-/// backend zeroizes those values during destruction. Keeping this owner opaque
-/// prevents adapters from exporting or reconstructing live HPKE state.
+/// The context can move between threads, but is deliberately neither `Sync`,
+/// cloneable, nor serializable. Its backend owns the traffic key, base nonce,
+/// exporter secret, and sequence counter; the backend zeroizes those values
+/// during destruction. Keeping this owner opaque prevents adapters from
+/// exporting or reconstructing live HPKE state.
+///
+/// The single-owner context is intentionally not [`Sync`]:
+///
+/// ```compile_fail
+/// fn require_sync<T: Sync>() {}
+///
+/// require_sync::<crypto_hpke::HpkeSenderContext>();
+/// ```
 pub struct HpkeSenderContext {
     backend: Box<dyn SenderContextBackend>,
     authentication_tag_len: usize,
@@ -194,7 +204,7 @@ fn setup_for_kem<Kem>(
     randomness: &[u8],
 ) -> Result<HpkePskSenderSetupOutput, HpkeError>
 where
-    Kem: HpkeKem + 'static,
+    Kem: HpkeKem + Send + 'static,
 {
     dispatch_kdf!(request.suite.kdf, setup_for_kdf, Kem, request, randomness)
 }
@@ -204,7 +214,7 @@ fn setup_for_kdf<Kem, Kdf>(
     _randomness: &[u8],
 ) -> Result<HpkePskSenderSetupOutput, HpkeError>
 where
-    Kem: HpkeKem + 'static,
+    Kem: HpkeKem + Send + 'static,
     Kdf: HpkeKdf + 'static,
 {
     dispatch_sealing_aead!(
@@ -230,6 +240,7 @@ where
     Aead: HpkeAead + 'static,
     Kdf: HpkeKdf + 'static,
     Kem: HpkeKem + 'static,
+    AeadCtxS<Aead, Kdf, Kem>: Send,
 {
     let recipient_public_key =
         <Kem::PublicKey as Deserializable>::from_bytes(request.recipient_public_key)

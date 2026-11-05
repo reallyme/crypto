@@ -15,7 +15,7 @@ own empty `[workspace]` so it does not inherit lint settings that libFuzzer's
 | Target | Parser under test | Entry point |
 | --- | --- | --- |
 | `rsa_der` | RSA public-key DER (PKCS#1 / SPKI) | `crypto_rsa::{verify_rsa_pkcs1v15, verify_rsa_pss}` |
-| `p256_point` | P-256 SEC1 point + ECDSA DER signature | `crypto_p256::{decompress_p256, verify_p256_der_prehash}` |
+| `p256_point` | P-256 SEC1 point + ECDSA DER signature | `crypto_p256::{decompress_p256, verify_p256_sha256_message_der_interoperable}` |
 | `operation_response` | Crypto operation-response boundary | `reallyme_crypto::operation_contract::process_operation_response` |
 | `jwk_multikey` | Public JWK and multikey parsers | `envelopes_jwk::{Jwk, Jwks}` and `envelopes_jwk_multikey::multikey_to_jwk` |
 | `key_encodings` | NIST/secp256k1 SEC1, ECDSA DER/JOSE, P-256 PKCS#8/SEC1/SPKI DER and PEM, BIP-340 public keys, Secure Enclave handles | Public encoding/import helpers in the P-256, P-384, P-521, and secp256k1 modules |

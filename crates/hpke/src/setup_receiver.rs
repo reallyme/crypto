@@ -42,7 +42,7 @@ pub struct HpkePskReceiverSetupRequest<'a> {
     pub psk_id: HpkePskIdRef<'a>,
 }
 
-trait ReceiverContextBackend {
+trait ReceiverContextBackend: Send {
     fn open(&mut self, aad: &[u8], ciphertext: &[u8]) -> Result<Vec<u8>, hpke::HpkeError>;
 }
 
@@ -70,6 +70,7 @@ where
     Aead: HpkeAead,
     Kdf: HpkeKdf,
     Kem: HpkeKem,
+    AeadCtxR<Aead, Kdf, Kem>: Send,
 {
     fn open(&mut self, aad: &[u8], ciphertext: &[u8]) -> Result<Vec<u8>, hpke::HpkeError> {
         self.inner.open(ciphertext, aad)
@@ -78,9 +79,18 @@ where
 
 /// Owned HPKE receiver context.
 ///
-/// The context is deliberately neither cloneable nor serializable. Its erased
-/// backend owns the traffic key, base nonce, exporter secret, and sequence
-/// counter and zeroizes that state during destruction.
+/// The context can move between threads, but is deliberately neither `Sync`,
+/// cloneable, nor serializable. Its erased backend owns the traffic key, base
+/// nonce, exporter secret, and sequence counter and zeroizes that state during
+/// destruction.
+///
+/// The single-owner context is intentionally not [`Sync`]:
+///
+/// ```compile_fail
+/// fn require_sync<T: Sync>() {}
+///
+/// require_sync::<crypto_hpke::HpkeReceiverContext>();
+/// ```
 pub struct HpkeReceiverContext {
     backend: Box<dyn ReceiverContextBackend>,
     authentication_tag_len: usize,
@@ -131,7 +141,7 @@ fn setup_for_kem<Kem>(
     request: &HpkePskReceiverSetupRequest<'_>,
 ) -> Result<HpkeReceiverContext, HpkeError>
 where
-    Kem: HpkeKem + 'static,
+    Kem: HpkeKem + Send + 'static,
 {
     dispatch_kdf!(request.suite.kdf, setup_for_kdf, Kem, request)
 }
@@ -140,7 +150,7 @@ fn setup_for_kdf<Kem, Kdf>(
     request: &HpkePskReceiverSetupRequest<'_>,
 ) -> Result<HpkeReceiverContext, HpkeError>
 where
-    Kem: HpkeKem + 'static,
+    Kem: HpkeKem + Send + 'static,
     Kdf: HpkeKdf + 'static,
 {
     dispatch_sealing_aead!(request.suite.aead, setup_for, Kdf, Kem, request)
@@ -158,6 +168,7 @@ where
     Aead: HpkeAead + 'static,
     Kdf: HpkeKdf + 'static,
     Kem: HpkeKem + 'static,
+    AeadCtxR<Aead, Kdf, Kem>: Send,
 {
     let recipient_private_key =
         <Kem::PrivateKey as Deserializable>::from_bytes(request.recipient_private_key)

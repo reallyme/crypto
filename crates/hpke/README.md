@@ -14,12 +14,13 @@ OpenMLS integrations can establish PSK mode with suite-generic live contexts.
 `HpkeSenderContext`, allowing the caller to bind the encapsulated key into
 targeted-message AAD before calling `seal`. `setup_receiver_psk` consumes that
 encapsulated key and returns the matching `HpkeReceiverContext` for `open`.
-Both contexts are neither cloneable nor serializable and zeroize traffic state
-on drop. Their setup requests require validated `HpkePskRef` and
-`HpkePskIdRef` values so secret material and its public identifier cannot be
-swapped accidentally. The single-shot PSK APIs remain source-compatible.
-They delegate to these same live context paths and do not maintain a parallel
-PSK key schedule.
+Both contexts are `Send` so native async executors can move their single owner
+between threads. They remain non-`Sync`, neither cloneable nor serializable,
+and zeroize traffic state on drop. Their setup requests require validated
+`HpkePskRef` and `HpkePskIdRef` values so secret material and its public
+identifier cannot be swapped accidentally. The single-shot PSK APIs remain
+source-compatible. They delegate to these same live context paths and do not
+maintain a parallel PSK key schedule.
 
 `derive_keypair_from_ikm` accepts MLS input keying material of at least 32 bytes
 and delegates normalization to the selected KEM's registered HPKE

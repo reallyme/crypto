@@ -14,8 +14,8 @@
 use crypto_core::CryptoError;
 use crypto_p256::{
     compress_p256, decompress_p256, derive_p256_shared_secret, generate_p256_keypair,
-    generate_p256_keypair_from_secret_key, sign_p256_der_prehash, verify_p256_der_prehash,
-    P256_SIGNATURE_DER_MAX_LEN,
+    generate_p256_keypair_from_secret_key, sign_p256_sha256_message_low_s_der,
+    verify_p256_sha256_message_der_interoperable, P256_SIGNATURE_DER_MAX_LEN,
 };
 
 #[test]
@@ -39,8 +39,8 @@ fn secret_key_constructor_is_deterministic_and_rejects_zero() -> Result<(), Cryp
     assert_eq!(secret_a.as_slice(), secret.as_slice());
     assert!(generate_p256_keypair_from_secret_key(&[0u8; 32]).is_err());
 
-    let signature = sign_p256_der_prehash(&secret_a, b"seeded p256")?;
-    verify_p256_der_prehash(&signature, b"seeded p256", &public_a)?;
+    let signature = sign_p256_sha256_message_low_s_der(&secret_a, b"seeded p256")?;
+    verify_p256_sha256_message_der_interoperable(&signature, b"seeded p256", &public_a)?;
     Ok(())
 }
 
@@ -49,28 +49,28 @@ fn sign_and_verify_roundtrip() -> Result<(), CryptoError> {
     let (pk, sk) = generate_p256_keypair()?;
     let msg = b"p256 test";
 
-    let sig = sign_p256_der_prehash(&sk, msg)?;
+    let sig = sign_p256_sha256_message_low_s_der(&sk, msg)?;
     assert!(sig.len() <= P256_SIGNATURE_DER_MAX_LEN);
-    verify_p256_der_prehash(&sig, msg, &pk)?;
+    verify_p256_sha256_message_der_interoperable(&sig, msg, &pk)?;
     Ok(())
 }
 
 #[test]
 fn verification_fails_on_modified_message() -> Result<(), CryptoError> {
     let (pk, sk) = generate_p256_keypair()?;
-    let sig = sign_p256_der_prehash(&sk, b"hello")?;
+    let sig = sign_p256_sha256_message_low_s_der(&sk, b"hello")?;
 
-    assert!(verify_p256_der_prehash(&sig, b"hell0", &pk).is_err());
+    assert!(verify_p256_sha256_message_der_interoperable(&sig, b"hell0", &pk).is_err());
     Ok(())
 }
 
 #[test]
 fn signature_helper_fails_closed_on_modified_message() -> Result<(), CryptoError> {
     let (pk, sk) = generate_p256_keypair()?;
-    let sig = sign_p256_der_prehash(&sk, b"hello")?;
+    let sig = sign_p256_sha256_message_low_s_der(&sk, b"hello")?;
 
-    verify_p256_der_prehash(&sig, b"hello", &pk)?;
-    assert!(verify_p256_der_prehash(&sig, b"hell0", &pk).is_err());
+    verify_p256_sha256_message_der_interoperable(&sig, b"hello", &pk)?;
+    assert!(verify_p256_sha256_message_der_interoperable(&sig, b"hell0", &pk).is_err());
     Ok(())
 }
 
@@ -134,7 +134,7 @@ fn invalid_public_key_is_rejected() {
 
     let sig = vec![0x30, 0x44]; // fake DER header
 
-    assert!(verify_p256_der_prehash(&sig, msg, &bogus_pk).is_err());
+    assert!(verify_p256_sha256_message_der_interoperable(&sig, msg, &bogus_pk).is_err());
 }
 
 #[test]
@@ -156,7 +156,7 @@ fn invalid_der_signature_is_rejected() -> Result<(), CryptoError> {
     // Not valid DER
     let bogus_sig = vec![0x01, 0x02, 0x03, 0x04];
 
-    assert!(verify_p256_der_prehash(&bogus_sig, msg, &pk).is_err());
+    assert!(verify_p256_sha256_message_der_interoperable(&bogus_sig, msg, &pk).is_err());
     Ok(())
 }
 
@@ -165,9 +165,9 @@ fn verification_fails_on_modified_signature() -> Result<(), CryptoError> {
     let (pk, sk) = generate_p256_keypair()?;
     let msg = b"test message";
 
-    let mut sig = sign_p256_der_prehash(&sk, msg)?;
+    let mut sig = sign_p256_sha256_message_low_s_der(&sk, msg)?;
     sig[0] ^= 0x01;
-    assert!(verify_p256_der_prehash(&sig, msg, &pk).is_err());
+    assert!(verify_p256_sha256_message_der_interoperable(&sig, msg, &pk).is_err());
     Ok(())
 }
 
@@ -177,9 +177,9 @@ fn signature_does_not_verify_under_different_key() -> Result<(), CryptoError> {
     let (pk2, _sk2) = generate_p256_keypair()?;
 
     let msg = b"test message";
-    let sig = sign_p256_der_prehash(&sk1, msg)?;
+    let sig = sign_p256_sha256_message_low_s_der(&sk1, msg)?;
 
-    assert!(verify_p256_der_prehash(&sig, msg, &pk2).is_err());
+    assert!(verify_p256_sha256_message_der_interoperable(&sig, msg, &pk2).is_err());
     Ok(())
 }
 
@@ -189,9 +189,9 @@ fn verify_accepts_uncompressed_public_key() -> Result<(), CryptoError> {
     let pk_uncompressed = decompress_p256(&pk_compressed)?;
 
     let msg = b"p256 test";
-    let sig = sign_p256_der_prehash(&sk, msg)?;
+    let sig = sign_p256_sha256_message_low_s_der(&sk, msg)?;
 
-    verify_p256_der_prehash(&sig, msg, &pk_uncompressed)?;
+    verify_p256_sha256_message_der_interoperable(&sig, msg, &pk_uncompressed)?;
     Ok(())
 }
 
@@ -200,7 +200,7 @@ fn invalid_secret_key_is_rejected() {
     let bad_sk = vec![0u8; 10];
     let msg = b"test";
 
-    assert!(sign_p256_der_prehash(&bad_sk, msg).is_err());
+    assert!(sign_p256_sha256_message_low_s_der(&bad_sk, msg).is_err());
 }
 
 #[test]
@@ -215,8 +215,10 @@ fn deterministic_vector_matches() {
     )
     .expect("vector signature must decode");
 
-    let produced = sign_p256_der_prehash(&secret, &message).expect("vector signing must succeed");
+    let produced =
+        sign_p256_sha256_message_low_s_der(&secret, &message).expect("vector signing must succeed");
     assert_eq!(produced, signature);
 
-    verify_p256_der_prehash(&signature, &message, &public).expect("vector verify must succeed");
+    verify_p256_sha256_message_der_interoperable(&signature, &message, &public)
+        .expect("vector verify must succeed");
 }

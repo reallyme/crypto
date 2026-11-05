@@ -1896,6 +1896,7 @@ dependencies = [
  "reallyme-codec-pem",
  "reallyme-crypto-core",
  "sha2",
+ "thiserror",
  "zeroize",
 ]
 

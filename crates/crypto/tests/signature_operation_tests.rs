@@ -78,6 +78,34 @@ fn nist_ecdsa_operations_match_primitive_verifiers() {
 }
 
 #[test]
+fn explicit_p256_facade_distinguishes_messages_from_typed_digests() {
+    let secret = [0x01; 32];
+    let (public_key, _) = reallyme_crypto::p256::generate_p256_keypair_from_secret_key(&secret)
+        .expect("valid P-256 scalar");
+
+    let message_signature =
+        reallyme_crypto::p256::sign_p256_sha256_message_low_s_der(&secret, MESSAGE)
+            .expect("explicit message boundary signs");
+    reallyme_crypto::p256::verify_p256_sha256_message_der_interoperable(
+        &message_signature,
+        MESSAGE,
+        &public_key,
+    )
+    .expect("interoperable message boundary verifies");
+
+    let digest = reallyme_crypto::p256::P256Sha256Digest::new([0x5a; 32]);
+    let digest_signature =
+        reallyme_crypto::p256::sign_p256_sha256_digest_low_s_der(&secret, &digest)
+            .expect("typed digest boundary signs");
+    reallyme_crypto::p256::verify_p256_sha256_digest_low_s_der(
+        &digest_signature,
+        &digest,
+        &public_key,
+    )
+    .expect("canonical digest boundary verifies");
+}
+
+#[test]
 fn secp256k1_ecdsa_operation_matches_primitive_and_rejects_tampering() {
     let secret = [0x05; 32];
     let (public_key, _) = crypto_secp256k1::generate_secp256k1_keypair_from_secret_key(&secret)
@@ -231,7 +259,7 @@ fn p256_round_trip() {
         crypto_p256::generate_p256_keypair_from_secret_key(&secret).expect("valid P-256 scalar");
     let signature = reallyme_crypto::operations::signature::sign(Algorithm::P256, &secret, MESSAGE)
         .expect("operation signs P-256");
-    crypto_p256::verify_p256_der_prehash(&signature, MESSAGE, &public_key)
+    crypto_p256::verify_p256_sha256_message_der_interoperable(&signature, MESSAGE, &public_key)
         .expect("primitive verifies P-256");
 }
 

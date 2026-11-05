@@ -61,6 +61,15 @@ pub struct HpkePskSenderSetupOutput {
 }
 
 /// Operation-layer owner for a live HPKE sender context.
+///
+/// The context is [`Send`] so its single owner can cross thread boundaries,
+/// but it is intentionally not [`Sync`]:
+///
+/// ```compile_fail
+/// fn require_sync<T: Sync>() {}
+///
+/// require_sync::<reallyme_crypto::hpke::HpkeSenderContext>();
+/// ```
 pub struct HpkeSenderContext {
     inner: crypto_hpke::HpkeSenderContext,
 }
@@ -81,6 +90,15 @@ impl HpkeSenderContext {
 pub type HpkePskSenderContext = HpkeSenderContext;
 
 /// Operation-layer owner for a live HPKE receiver context.
+///
+/// The context is [`Send`] so its single owner can cross thread boundaries,
+/// but it is intentionally not [`Sync`]:
+///
+/// ```compile_fail
+/// fn require_sync<T: Sync>() {}
+///
+/// require_sync::<reallyme_crypto::hpke::HpkeReceiverContext>();
+/// ```
 pub struct HpkeReceiverContext {
     inner: crypto_hpke::HpkeReceiverContext,
 }

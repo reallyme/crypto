@@ -24,5 +24,9 @@ fuzz_target!(|data: &[u8]| {
     // Untrusted compressed point → decompression parser.
     let _ = crypto_p256::decompress_p256(data);
     // Untrusted DER signature → ECDSA DER parser (fixed valid key, fixed msg).
-    let _ = crypto_p256::verify_p256_der_prehash(data, b"reallyme-fuzz", &P256_G_COMPRESSED);
+    let _ = crypto_p256::verify_p256_sha256_message_der_interoperable(
+        data,
+        b"reallyme-fuzz",
+        &P256_G_COMPRESSED,
+    );
 });

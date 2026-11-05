@@ -47,8 +47,10 @@ use crypto_hpke::{
     HpkeOpenRequest, HpkeSuite,
 };
 use crypto_kmac::{derive_kmac256, Kmac256Key};
+#[allow(deprecated)]
 use crypto_p256::{
-    decompress_p256, derive_p256_shared_secret, sign_p256_der_prehash, verify_p256_der_prehash,
+    decompress_p256, derive_p256_shared_secret, sign_p256_der_prehash,
+    verify_p256_sha256_message_der_interoperable,
 };
 use crypto_p384::{decompress_p384, derive_p384_shared_secret, sign_p384_der_prehash};
 use crypto_p521::{decompress_p521, derive_p521_shared_secret, sign_p521_der_prehash};

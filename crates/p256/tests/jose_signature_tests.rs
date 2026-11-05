@@ -13,7 +13,8 @@ use hex_literal::hex;
 
 #[cfg(feature = "native")]
 use crypto_p256::{
-    generate_p256_keypair_from_secret_key, sign_p256_der_prehash, verify_p256_der_prehash,
+    generate_p256_keypair_from_secret_key, sign_p256_sha256_message_low_s_der,
+    verify_p256_sha256_message_der_interoperable,
 };
 
 #[cfg(feature = "native")]
@@ -223,13 +224,13 @@ fn native_p256_signature_transcodes_through_jose_and_still_verifies() -> Result<
     let message = b"reallyme p256 jose transcoding";
     let (public_key, secret_key) = generate_p256_keypair_from_secret_key(&secret)?;
 
-    let der = sign_p256_der_prehash(&secret_key, message)?;
-    verify_p256_der_prehash(&der, message, &public_key)?;
+    let der = sign_p256_sha256_message_low_s_der(&secret_key, message)?;
+    verify_p256_sha256_message_der_interoperable(&der, message, &public_key)?;
 
     let raw = p256_ecdsa_der_to_jose_signature(&der)?;
     assert_eq!(raw.len(), P256_ECDSA_JOSE_SIGNATURE_LEN);
 
     let roundtrip_der = p256_ecdsa_jose_signature_to_der(&raw)?;
-    verify_p256_der_prehash(&roundtrip_der, message, &public_key)?;
+    verify_p256_sha256_message_der_interoperable(&roundtrip_der, message, &public_key)?;
     Ok(())
 }

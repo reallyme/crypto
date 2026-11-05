@@ -8,6 +8,7 @@ mod constants;
 mod jose_signature;
 mod normalize_signature;
 mod secure_enclave_handle;
+mod sha256_digest;
 
 pub use constants::{P256_SECRET_KEY_LEN, P256_SHA256_DIGEST_LEN, P256_SIGNATURE_DER_MAX_LEN};
 
@@ -27,6 +28,7 @@ pub use normalize_signature::{
     normalize_p256_ecdsa_der_low_s, normalize_p256_ecdsa_jose_signature_low_s,
 };
 pub use secure_enclave_handle::{decode_se_handle, encode_se_handle, SE_HANDLE_PREFIX};
+pub use sha256_digest::{P256Sha256Digest, P256Sha256DigestError};
 
 #[cfg(any(feature = "native", feature = "wasm"))]
 mod native;
@@ -34,8 +36,14 @@ mod native;
 #[cfg(any(feature = "native", feature = "wasm"))]
 pub use native::{
     compress_p256, compress_public_key, decompress_p256, decompress_public_key,
-    derive_p256_shared_secret, generate_p256_keypair, sign_p256_der_prehash, sign_p256_digest_der,
-    verify_p256_der_prehash, verify_p256_digest_der,
+    derive_p256_shared_secret, generate_p256_keypair, sign_p256_sha256_digest_low_s_der,
+    sign_p256_sha256_message_low_s_der, verify_p256_sha256_digest_low_s_der,
+    verify_p256_sha256_message_der_interoperable,
+};
+#[cfg(any(feature = "native", feature = "wasm"))]
+#[allow(deprecated)]
+pub use native::{
+    sign_p256_der_prehash, sign_p256_digest_der, verify_p256_der_prehash, verify_p256_digest_der,
 };
 
 #[cfg(feature = "native")]
