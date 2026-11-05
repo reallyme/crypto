@@ -76,20 +76,12 @@ operation or SDK provider route.
 Some Rust helper APIs are intentionally lane-scoped. P-256 raw scalar import is
 available in both native and wasm lanes through
 `p256::generate_p256_keypair_from_secret_key`; it validates an existing private
-scalar and is not random key generation. Sign original messages with
-`p256::sign_p256_sha256_message_low_s_der`; it hashes once with SHA-256 and
-returns deterministic canonical low-S DER. Verify message signatures with
-`p256::verify_p256_sha256_message_der_interoperable`, which accepts high-S
-representations for ES256 interoperability.
-
-Keystore and protocol boundaries that already own SHA-256 hashing construct a
-`p256::P256Sha256Digest`, then use
-`p256::sign_p256_sha256_digest_low_s_der` and
-`p256::verify_p256_sha256_digest_low_s_der`. The fixed-size, zeroizing digest
-owner prevents accidental message/digest substitution, and the digest verifier
-requires low-S DER. The former untyped P-256 message and digest functions remain
-behavior-compatible but are deprecated. P-384 and P-521 ECDH are available in
-both Rust lanes; the Swift, Kotlin, and TypeScript facades expose their
+scalar and is not random key generation. Keystore and protocol boundaries that
+already own SHA-256 hashing use `p256::sign_p256_digest_der`; it accepts exactly
+one 32-byte digest, signs that digest without hashing it again, and returns a
+deterministic low-S DER signature. `p256::verify_p256_digest_der` verifies that
+same canonical representation. P-384 and P-521 ECDH are available
+in both Rust lanes; the Swift, Kotlin, and TypeScript facades expose their
 manifest-declared provider-backed P-384/P-521 ECDH surfaces.
 
 For standalone X25519 and secp256k1 random key generation, prefer

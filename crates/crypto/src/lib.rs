@@ -141,8 +141,8 @@ pub mod hmac;
 #[cfg(feature = "concat-kdf")]
 pub mod concat_kdf;
 
-/// NIST P-256 (secp256r1) ECDSA over original messages or typed SHA-256
-/// digests, with explicit canonical and interoperable verification policies.
+/// NIST P-256 (secp256r1) ECDSA message and SHA-256 digest helpers, with
+/// public-key compression and Secure Enclave handle encoding.
 #[cfg(feature = "p256")]
 pub mod p256;
 
