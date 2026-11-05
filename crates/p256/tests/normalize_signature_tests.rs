@@ -13,8 +13,8 @@ use hex_literal::hex;
 
 #[cfg(feature = "native")]
 use crypto_p256::{
-    generate_p256_keypair_from_secret_key, p256_ecdsa_der_to_jose_signature, sign_p256_digest_der,
-    verify_p256_digest_der,
+    generate_p256_keypair_from_secret_key, p256_ecdsa_der_to_jose_signature,
+    sign_p256_sha256_digest_low_s_der, verify_p256_sha256_digest_low_s_der, P256Sha256Digest,
 };
 #[cfg(feature = "native")]
 use sha2::{Digest, Sha256};
@@ -99,8 +99,8 @@ fn normalized_twin_preserves_signature_validity() -> Result<(), CryptoError> {
     let secret = hex!("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
     let message = b"reallyme p256 low-s normalization";
     let (public_key, _) = generate_p256_keypair_from_secret_key(&secret)?;
-    let digest = Sha256::digest(message);
-    let low_der = sign_p256_digest_der(&secret, digest.as_ref())?;
+    let digest = P256Sha256Digest::new(Sha256::digest(message).into());
+    let low_der = sign_p256_sha256_digest_low_s_der(&secret, &digest)?;
     let mut high_raw = p256_ecdsa_der_to_jose_signature(&low_der)?;
     let low_s = <&[u8; 32]>::try_from(&high_raw[32..]).map_err(|_| {
         crypto_core::CryptoError::Signature {
@@ -141,8 +141,8 @@ fn normalized_twin_preserves_signature_validity() -> Result<(), CryptoError> {
 
     // The strict digest verifier rejects the high-S representation and accepts
     // its normalized twin. The general message verifier remains interoperable.
-    assert!(verify_p256_digest_der(&high_der, &digest, &public_key).is_err());
-    verify_p256_digest_der(&normalized, &digest, &public_key)?;
+    assert!(verify_p256_sha256_digest_low_s_der(&high_der, &digest, &public_key).is_err());
+    verify_p256_sha256_digest_low_s_der(&normalized, &digest, &public_key)?;
     assert_eq!(normalized, low_der);
     Ok(())
 }

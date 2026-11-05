@@ -16,7 +16,7 @@ use sha2::{Digest, Sha256};
 /// Returns `Ok(())` only for a valid signature. Malformed keys/signatures and
 /// well-formed signatures that do not verify all fail closed with typed errors.
 /// High-S signatures are accepted for ES256 interoperability.
-pub fn verify_p256_der_prehash(
+pub fn verify_p256_sha256_message_der_interoperable(
     signature_der: &[u8],
     message: &[u8],
     public_key_sec1: &[u8],
@@ -47,4 +47,17 @@ pub fn verify_p256_der_prehash(
             kind: SignatureFailureKind::InvalidSignature,
         })
     }
+}
+
+/// Compatibility name for interoperable P-256/SHA-256 message verification.
+#[deprecated(
+    since = "0.3.16",
+    note = "use verify_p256_sha256_message_der_interoperable; this legacy name accepts message bytes"
+)]
+pub fn verify_p256_der_prehash(
+    signature_der: &[u8],
+    message: &[u8],
+    public_key_sec1: &[u8],
+) -> Result<(), CryptoError> {
+    verify_p256_sha256_message_der_interoperable(signature_der, message, public_key_sec1)
 }

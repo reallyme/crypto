@@ -270,9 +270,13 @@ fn primitive_public_key(algorithm: Algorithm, secret_key: &[u8]) -> Option<Vec<u
     }
 }
 
+#[allow(deprecated)]
 fn primitive_signature(algorithm: Algorithm, secret_key: &[u8], message: &[u8]) -> Vec<u8> {
     let signature = match algorithm {
         Algorithm::Ed25519 => Some(crypto_ed25519::sign_ed25519(secret_key, message)),
+        // The generic operation retains its legacy byte-for-byte signing
+        // contract until a major release. The explicit P-256 facade exposes
+        // canonical low-S message signing for new callers.
         Algorithm::P256 => Some(crypto_p256::sign_p256_der_prehash(secret_key, message)),
         Algorithm::P384 => Some(crypto_p384::sign_p384_der_prehash(secret_key, message)),
         Algorithm::P521 => Some(crypto_p521::sign_p521_der_prehash(secret_key, message)),

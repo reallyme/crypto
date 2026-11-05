@@ -5,7 +5,7 @@
 //! ACVP signature audit adapters.
 
 use crypto_ed25519::verify_ed25519;
-use crypto_p256::verify_p256_der_prehash;
+use crypto_p256::verify_p256_sha256_message_der_interoperable;
 use crypto_p384::verify_p384_der_prehash;
 use crypto_p521::verify_p521_der_prehash;
 use crypto_rsa::{verify_rsa_pkcs1v15, RsaHash, RsaPublicKeyDerEncoding};
@@ -130,7 +130,8 @@ fn acvp_ecdsa_p256_sha256_sigver_vectors_execute_against_public_api() -> Result<
             let public_key = p256_sec1_public_key(&case.qx, &case.qy)?;
             let signature_der = p256_der_signature(&case.r, &case.s)?;
             let message = hex_bytes(&case.message)?;
-            let actual = verify_p256_der_prehash(&signature_der, &message, &public_key);
+            let actual =
+                verify_p256_sha256_message_der_interoperable(&signature_der, &message, &public_key);
             assert_signature_result(case.test_passed, actual)?;
             executed = executed
                 .checked_add(1)

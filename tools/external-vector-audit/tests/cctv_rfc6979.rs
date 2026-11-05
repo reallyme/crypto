@@ -4,7 +4,7 @@
 
 //! CCTV RFC6979 P-256 rejection-sampling vector.
 
-use crypto_p256::{p256_ecdsa_der_to_jose_signature, sign_p256_der_prehash};
+use crypto_p256::{p256_ecdsa_der_to_jose_signature, sign_p256_sha256_message_low_s_der};
 use external_vector_audit::support::{assert_bytes_eq, hex_bytes, load_text, AuditError};
 
 const PRIVATE_KEY_HEX: &str = "C9AFA9D845BA75166B5C215767B1D6934E50C3DB36E89B127B8A622B120F6721";
@@ -20,8 +20,8 @@ fn cctv_rfc6979_p256_rejection_vector_matches_public_signer() -> Result<(), Audi
     }
 
     let private_key = hex_bytes(PRIVATE_KEY_HEX)?;
-    let signature_der =
-        sign_p256_der_prehash(&private_key, MESSAGE).map_err(|_| AuditError::Mismatch)?;
+    let signature_der = sign_p256_sha256_message_low_s_der(&private_key, MESSAGE)
+        .map_err(|_| AuditError::Mismatch)?;
     let signature =
         p256_ecdsa_der_to_jose_signature(&signature_der).map_err(|_| AuditError::Mismatch)?;
     let mut expected_signature = hex_bytes(EXPECTED_R_HEX)?;

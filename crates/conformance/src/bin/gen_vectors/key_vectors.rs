@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+#[allow(deprecated)]
 fn write_key_vectors(dir: &Path, keys: &GeneratedKeys) -> Result<(), VectorGenError> {
     let p256_uncompressed =
         decompress_p256(&keys.p256_public).map_err(|_| VectorGenError::P256Decompress)?;
@@ -17,7 +18,11 @@ fn write_key_vectors(dir: &Path, keys: &GeneratedKeys) -> Result<(), VectorGenEr
     }
     let p256_signature = sign_p256_der_prehash(&keys.p256_secret, SIGNATURE_MESSAGE)
         .map_err(|_| VectorGenError::P256Sign)?;
-    verify_p256_der_prehash(&p256_signature, SIGNATURE_MESSAGE, &p256_uncompressed)
+    verify_p256_sha256_message_der_interoperable(
+        &p256_signature,
+        SIGNATURE_MESSAGE,
+        &p256_uncompressed,
+    )
         .map_err(|_| VectorGenError::P256SignInvariant)?;
     write_json(
         &dir.join("p256.json"),

@@ -10,8 +10,11 @@ use crypto_ml_dsa_87::{sign_ml_dsa_87, verify_ml_dsa_87};
 use crypto_ml_kem_1024::ml_kem_1024_decapsulate;
 use crypto_ml_kem_512::ml_kem_512_decapsulate;
 use crypto_ml_kem_768::ml_kem_768_decapsulate;
+#[allow(deprecated)]
 use crypto_p256::{
-    decompress_p256, derive_p256_shared_secret, sign_p256_der_prehash, verify_p256_der_prehash,
+    decompress_p256, derive_p256_shared_secret, normalize_p256_ecdsa_der_low_s,
+    sign_p256_der_prehash, sign_p256_sha256_message_low_s_der,
+    verify_p256_sha256_message_der_interoperable,
 };
 use crypto_p384::{decompress_p384, derive_p384_shared_secret, verify_p384_der_prehash};
 use crypto_p521::{decompress_p521, derive_p521_shared_secret, verify_p521_der_prehash};

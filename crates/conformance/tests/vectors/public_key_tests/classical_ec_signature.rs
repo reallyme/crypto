@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #[test]
+#[allow(deprecated)]
 fn p256_vector_invariants() -> Result<(), VectorTestError> {
     let v = load("p256.json")?;
     let sk = b64u_to_bytes(field_string(&v, "secret_key")?)?;
@@ -49,11 +50,25 @@ fn p256_vector_invariants() -> Result<(), VectorTestError> {
         resigned, signature,
         "P-256 ECDSA deterministic Rust signing must match the vector"
     );
-    verify_p256_der_prehash(&signature, &message, &pk_c)
+    let canonical = sign_p256_sha256_message_low_s_der(&sk, &message)
+        .map_err(|_| VectorTestError::EcdsaSign)?;
+    let normalized = normalize_p256_ecdsa_der_low_s(&signature)
+        .map_err(|_| VectorTestError::EcdsaSign)?;
+    assert_eq!(
+        canonical, normalized,
+        "the explicit message signer must canonicalize the legacy high-S vector"
+    );
+    assert_ne!(
+        canonical, signature,
+        "the compatibility signer must preserve the committed high-S bytes"
+    );
+    verify_p256_sha256_message_der_interoperable(&signature, &message, &pk_c)
+        .map_err(|_| VectorTestError::EcdsaVerify)?;
+    verify_p256_sha256_message_der_interoperable(&canonical, &message, &pk_c)
         .map_err(|_| VectorTestError::EcdsaVerify)?;
     let mut tampered = signature;
     tampered[0] ^= 0x01;
-    if verify_p256_der_prehash(&tampered, &message, &pk_c).is_ok() {
+    if verify_p256_sha256_message_der_interoperable(&tampered, &message, &pk_c).is_ok() {
         return Err(VectorTestError::EcdsaVerify);
     }
     Ok(())

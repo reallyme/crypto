@@ -13,14 +13,21 @@ use crate::signature_error::crypto_error_from_operation_error;
 pub use crypto_p256::{
     decode_se_handle, encode_se_handle, normalize_p256_ecdsa_der_low_s,
     normalize_p256_ecdsa_jose_signature_low_s, p256_ecdsa_der_to_jose_signature,
-    p256_ecdsa_jose_signature_to_der, P256_ECDSA_JOSE_SIGNATURE_LEN, P256_SECRET_KEY_LEN,
-    P256_SHA256_DIGEST_LEN, P256_SIGNATURE_DER_MAX_LEN, SE_HANDLE_PREFIX,
+    p256_ecdsa_jose_signature_to_der, P256Sha256Digest, P256Sha256DigestError,
+    P256_ECDSA_JOSE_SIGNATURE_LEN, P256_SECRET_KEY_LEN, P256_SHA256_DIGEST_LEN,
+    P256_SIGNATURE_DER_MAX_LEN, SE_HANDLE_PREFIX,
 };
 
 #[cfg(any(feature = "native", feature = "wasm"))]
 pub use crypto_p256::{
-    compress_public_key, decompress_public_key, sign_p256_digest_der, verify_p256_digest_der,
+    compress_public_key, decompress_public_key, sign_p256_sha256_digest_low_s_der,
+    sign_p256_sha256_message_low_s_der, verify_p256_sha256_digest_low_s_der,
+    verify_p256_sha256_message_der_interoperable,
 };
+
+#[cfg(any(feature = "native", feature = "wasm"))]
+#[allow(deprecated)]
+pub use crypto_p256::{sign_p256_digest_der, verify_p256_digest_der};
 
 #[cfg(feature = "native")]
 pub use crypto_p256::{
@@ -53,12 +60,20 @@ pub fn generate_p256_keypair_from_secret_key(
 ///
 /// Despite the retained low-level function name, callers pass the original
 /// message. The primitive performs exactly one SHA-256 hash internally.
+#[deprecated(
+    since = "0.3.16",
+    note = "use sign_p256_sha256_message_low_s_der; this legacy function preserves its existing operation-route behavior"
+)]
 pub fn sign_p256_der_prehash(secret_key: &[u8], message: &[u8]) -> Result<Vec<u8>, CryptoError> {
     crate::operations::signature::sign(Algorithm::P256, secret_key, message)
         .map_err(|error| crypto_error_from_operation_error(SignatureOperation::Sign, error))
 }
 
 /// Verify a DER-encoded P-256 ECDSA/SHA-256 signature over `message`.
+#[deprecated(
+    since = "0.3.16",
+    note = "use verify_p256_sha256_message_der_interoperable"
+)]
 pub fn verify_p256_der_prehash(
     signature_der: &[u8],
     message: &[u8],

@@ -109,7 +109,8 @@ messages, arbitrary-length IKM key derivation through each KEM's registered
 `DeriveKeyPair` construction, and named aliases for the MLS 192/256-bit
 ML-KEM-1024 and MLKEM1024-P384 draft profiles. Live sender contexts remain
 in-process, non-exportable state and are not exposed through protobuf or SDK
-transport adapters. Raw Rust derivation, operations, and serialized SDK
+transport adapters. They are `Send` for single-owner async handoff while
+remaining non-`Sync`. Raw Rust derivation, operations, and serialized SDK
 boundaries require at least 32 bytes of caller-owned high-entropy IKM.
 
 Every provider route must implement identical input validation and
@@ -204,16 +205,25 @@ the selected backend into every enabled primitive crate. The `wasm` lane is for
 Some Rust helper APIs are intentionally lane-scoped. P-256 raw scalar import is
 available in both native and wasm lanes through
 `p256::generate_p256_keypair_from_secret_key`; it validates an existing private
-scalar and is not random key generation. Keystore and protocol boundaries that
-already own SHA-256 hashing use `p256::sign_p256_digest_der`; it accepts exactly
-one 32-byte digest, signs that digest without hashing it again, and returns a
-deterministic low-S DER signature. `p256::verify_p256_digest_der` verifies that
-same canonical representation. The message API `p256::sign_p256_der_prehash`
-may produce a high-S signature, which the canonical digest verifier rejects;
-use the digest signing API when pairing with that verifier. P-384 and P-521
-ECDH are available in both Rust lanes; the Swift, Kotlin, and TypeScript
-facades expose their manifest-declared provider-backed P-384/P-521 ECDH
-surfaces.
+scalar and is not random key generation. The preferred message boundary is
+`p256::sign_p256_sha256_message_low_s_der`; it hashes the original message once
+with SHA-256 and returns deterministic canonical low-S DER. Verify message
+signatures with `p256::verify_p256_sha256_message_der_interoperable`, which
+accepts both low-S and high-S representations for ES256 interoperability.
+
+Keystore and protocol boundaries that already own SHA-256 hashing construct a
+`p256::P256Sha256Digest`, then use
+`p256::sign_p256_sha256_digest_low_s_der` and
+`p256::verify_p256_sha256_digest_low_s_der`. The fixed-size, zeroizing digest
+owner makes message-to-digest conversion explicit and prevents accidental
+substitution; the verifier requires canonical low-S DER. The former
+`sign_p256_der_prehash`,
+`verify_p256_der_prehash`, `sign_p256_digest_der`, and
+`verify_p256_digest_der` names remain behavior-compatible but are deprecated
+because their untyped byte slices do not distinguish messages from digests.
+P-384 and P-521 ECDH are available in both Rust lanes; the Swift, Kotlin, and
+TypeScript facades expose their manifest-declared provider-backed P-384/P-521
+ECDH surfaces.
 
 For standalone X25519 and secp256k1 random key generation, prefer
 `try_generate_x25519_keypair` and `try_generate_secp256k1_keypair`. These

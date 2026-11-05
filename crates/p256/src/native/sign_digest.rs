@@ -7,21 +7,22 @@ use ecdsa::signature::hazmat::PrehashSigner;
 use p256::ecdsa::{Signature, SigningKey};
 use zeroize::Zeroizing;
 
-use crate::{P256_SECRET_KEY_LEN, P256_SHA256_DIGEST_LEN};
+use crate::{P256Sha256Digest, P256_SECRET_KEY_LEN};
 
-/// Sign an already-computed SHA-256 digest with deterministic P-256 ECDSA.
+/// Sign a typed SHA-256 digest with deterministic low-S P-256 ECDSA DER.
 ///
 /// This boundary exists for keystores and protocol engines that own hashing.
-/// It signs the supplied 32-byte digest directly through the backend prehash
-/// primitive; it never hashes the digest again. The DER output uses the
-/// deterministic RFC 6979 signature normalized to low-S form.
-pub fn sign_p256_digest_der(secret_key: &[u8], digest: &[u8]) -> Result<Vec<u8>, CryptoError> {
+/// It signs the digest directly through the backend prehash primitive and
+/// never hashes it again. The digest type prevents accidental message input.
+pub fn sign_p256_sha256_digest_low_s_der(
+    secret_key: &[u8],
+    digest: &P256Sha256Digest,
+) -> Result<Vec<u8>, CryptoError> {
     let secret_key = copy_secret_key(secret_key)?;
-    let digest = copy_digest(digest)?;
     let signing_key = SigningKey::from_slice(secret_key.as_slice())
         .map_err(|_| signature_error(SignatureFailureKind::InvalidPrivateKey))?;
     let signature: Signature = signing_key
-        .sign_prehash(digest.as_slice())
+        .sign_prehash(digest.as_bytes())
         .map_err(|_| signature_error(SignatureFailureKind::BackendFailure))?;
 
     // Canonical low-S output prevents the keystore boundary from returning
@@ -30,16 +31,21 @@ pub fn sign_p256_digest_der(secret_key: &[u8], digest: &[u8]) -> Result<Vec<u8>,
     Ok(signature.to_der().as_bytes().to_vec())
 }
 
+/// Compatibility boundary for signing an untyped digest byte slice.
+#[deprecated(
+    since = "0.3.16",
+    note = "construct P256Sha256Digest and use sign_p256_sha256_digest_low_s_der"
+)]
+pub fn sign_p256_digest_der(secret_key: &[u8], digest: &[u8]) -> Result<Vec<u8>, CryptoError> {
+    let digest = P256Sha256Digest::try_from_slice(digest)
+        .map_err(|_| signature_error(SignatureFailureKind::InvalidMessage))?;
+    sign_p256_sha256_digest_low_s_der(secret_key, &digest)
+}
+
 fn copy_secret_key(secret_key: &[u8]) -> Result<Zeroizing<[u8; P256_SECRET_KEY_LEN]>, CryptoError> {
     let scalar = <[u8; P256_SECRET_KEY_LEN]>::try_from(secret_key)
         .map_err(|_| signature_error(SignatureFailureKind::InvalidPrivateKey))?;
     Ok(Zeroizing::new(scalar))
-}
-
-fn copy_digest(digest: &[u8]) -> Result<Zeroizing<[u8; P256_SHA256_DIGEST_LEN]>, CryptoError> {
-    let digest = <[u8; P256_SHA256_DIGEST_LEN]>::try_from(digest)
-        .map_err(|_| signature_error(SignatureFailureKind::InvalidMessage))?;
-    Ok(Zeroizing::new(digest))
 }
 
 fn signature_error(kind: SignatureFailureKind) -> CryptoError {
