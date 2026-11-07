@@ -73,12 +73,12 @@ jobs:
           components: rustfmt
 
       - name: Install wasm-pack
-        uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # wasm-pack
+        uses: taiki-e/install-action@c509219cf42fba86913069efd0ade2458c59337b # wasm-pack
         with:
           tool: wasm-pack@0.15.1
 
       - name: Install wasm-bindgen-cli
-        uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # wasm-bindgen-cli
+        uses: taiki-e/install-action@c509219cf42fba86913069efd0ade2458c59337b # wasm-bindgen-cli
         with:
           tool: wasm-bindgen-cli@0.2.130
 
@@ -86,7 +86,7 @@ jobs:
         uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2
 
       - name: Install buf
-        uses: bufbuild/buf-action@85aebf73123b5c15fd5528aaecbf9129cddf7fa7 # v1.6.0
+        uses: bufbuild/buf-action@37ac33d8960807670a6e9719080e885197b09cc6 # v1.7.0
         with:
           version: ${{ env.BUF_VERSION }}
           github_token: ${{ github.token }}
