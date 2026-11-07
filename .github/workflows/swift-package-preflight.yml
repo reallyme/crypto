@@ -87,12 +87,12 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Install wasm-pack
-        uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # wasm-pack
+        uses: taiki-e/install-action@c509219cf42fba86913069efd0ade2458c59337b # wasm-pack
         with:
           tool: wasm-pack@0.15.1
 
       - name: Install wasm-bindgen-cli
-        uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # wasm-bindgen-cli
+        uses: taiki-e/install-action@c509219cf42fba86913069efd0ade2458c59337b # wasm-bindgen-cli
         with:
           tool: wasm-bindgen-cli@0.2.130
 
@@ -102,7 +102,7 @@ jobs:
           node-version: '24'
 
       - name: Install Java for release readiness
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           distribution: temurin
           java-version: '21'

@@ -151,7 +151,7 @@ jobs:
         uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2
 
       - name: Install nextest
-        uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # nextest
+        uses: taiki-e/install-action@c509219cf42fba86913069efd0ade2458c59337b # nextest
         with:
           tool: nextest@0.9.140
 
@@ -159,22 +159,22 @@ jobs:
         run: cargo install cargo-deny --version 0.20.2 --locked
 
       - name: Install cargo-audit
-        uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # cargo-audit
+        uses: taiki-e/install-action@c509219cf42fba86913069efd0ade2458c59337b # cargo-audit
         with:
           tool: cargo-audit@0.22.2
 
       - name: Install wasm-pack
-        uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # wasm-pack
+        uses: taiki-e/install-action@c509219cf42fba86913069efd0ade2458c59337b # wasm-pack
         with:
           tool: wasm-pack@0.15.1
 
       - name: Install wasm-bindgen-cli
-        uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # wasm-bindgen-cli
+        uses: taiki-e/install-action@c509219cf42fba86913069efd0ade2458c59337b # wasm-bindgen-cli
         with:
           tool: wasm-bindgen-cli@0.2.130
 
       - name: Install Java for release readiness
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           distribution: temurin
           java-version: '21'
@@ -424,7 +424,7 @@ jobs:
         uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
 
       - name: Install Java
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           distribution: temurin
           java-version: '21'
