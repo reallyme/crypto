@@ -13,7 +13,7 @@ import java.security.MessageDigest
 import java.util.zip.ZipFile
 
 plugins {
-    id("com.android.library") version "9.5.0"
+    id("com.android.library") version "9.5.1"
     `maven-publish`
     signing
 }
