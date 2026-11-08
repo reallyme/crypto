@@ -1,5 +1,27 @@
 # Release Notes
 
+## 0.3.17
+
+- Makes HPKE sender and receiver contexts `Send` through explicit backend
+  bounds, allowing single-owner contexts to move across threads and compatible
+  async tasks while remaining non-`Clone`, non-serializable, and non-`Sync`.
+- Adds explicit P-256 SHA-256 message and digest APIs, including the
+  zeroizing `P256Sha256Digest` boundary and names that distinguish canonical
+  low-S verification from interoperable verification. The legacy entry points
+  remain available with their existing behavior and are deprecated in favor of
+  the unambiguous APIs.
+- Updates ReallyMe Codec to `0.3.2` across Rust, Swift, Kotlin/JVM, Android, and
+  TypeScript, including refreshed lockfiles and artifact provenance. Android
+  now compiles against API level 37 as required by the updated Codec artifact
+  while retaining API level 26 as its minimum runtime target.
+- Refreshes audited patch dependencies and build tooling, including `aes`
+  `0.9.4`, `ml-dsa` `0.1.2`, `ml-kem` `0.3.4`, Gradle `9.9.0`, Android Gradle
+  Plugin `9.5.1`, and immutable GitHub Actions pins.
+- Updates the repository policy gate to release-readiness `v0.6.9` and aligns
+  every published package lane at version `0.3.17`.
+- Preserves existing wire formats and the compatibility behavior of deprecated
+  P-256 entry points; callers can migrate to the new typed APIs additively.
+
 ## 0.3.16
 
 - Updates `ctutils` from `0.4.6` to `0.4.7` for constant-time hardening on

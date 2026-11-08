@@ -29,14 +29,13 @@ test("rejects malformed, missing, duplicate, and empty sections", () => {
   }
 });
 
-test("current 0.3.16 notes describe the dependency maintenance release", () => {
+test("current 0.3.17 notes describe the additive API and dependency release", () => {
   const path = fileURLToPath(new URL("../RELEASE_NOTES.md", import.meta.url));
-  const notes = extractReleaseNotes(readFileSync(path, "utf8"), "0.3.16");
-  assert.match(notes, /constant-time hardening/u);
-  assert.match(notes, /hpke` from `0[.]14[.]1` to `0[.]15[.]1/u);
-  assert.match(notes, /log` `0[.]4[.]35/u);
-  assert.match(notes, /wasm-bindgen` `0[.]2[.]130/u);
-  assert.match(notes, /wasm-pack` `0[.]15[.]1/u);
-  assert.match(notes, /Android Gradle Plugin `9[.]5[.]0`/u);
-  assert.match(notes, /Preserves the `0[.]3[.]15` public API/u);
+  const notes = extractReleaseNotes(readFileSync(path, "utf8"), "0.3.17");
+  assert.match(notes, /HPKE sender and receiver contexts `Send`/u);
+  assert.match(notes, /P256Sha256Digest/u);
+  assert.match(notes, /Codec to `0[.]3[.]2`/u);
+  assert.match(notes, /Android Gradle\s+Plugin `9[.]5[.]1`/u);
+  assert.match(notes, /release-readiness `v0[.]6[.]9`/u);
+  assert.match(notes, /Preserves existing wire formats/u);
 });
