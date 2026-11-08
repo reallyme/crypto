@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 ReallyMe LLC
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -13,7 +13,7 @@ import java.security.MessageDigest
 import java.util.zip.ZipFile
 
 plugins {
-    id("com.android.library") version "9.5.0"
+    id("com.android.library") version "9.5.1"
     `maven-publish`
     signing
 }
@@ -259,7 +259,7 @@ fun patchAndroidModuleCapabilities(metadataFile: File) {
 
 android {
     namespace = "me.really.crypto"
-    compileSdk = 36
+    compileSdk = 37
     ndkVersion = androidNdkVersion
 
     defaultConfig {
@@ -267,7 +267,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
         aarMetadata {
-            minCompileSdk = 36
+            minCompileSdk = 37
         }
     }
 
@@ -312,7 +312,7 @@ dependencies {
     implementation("org.bouncycastle:bcprov-jdk18on:1.86")
     implementation("fr.acinq.secp256k1:secp256k1-kmp:0.24.0")
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.24.0")
-    implementation("me.really:codec-android:0.3.1")
+    implementation("me.really:codec-android:0.3.2")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
 }
@@ -534,8 +534,8 @@ afterEvaluate {
                     developers {
                         developer {
                             id.set("reallyme")
-                            name.set("ReallyMe LLC")
-                            organization.set("ReallyMe LLC")
+                            name.set("ReallyMe Technologies Limited")
+                            organization.set("ReallyMe Technologies Limited")
                             organizationUrl.set("https://github.com/reallyme")
                         }
                     }

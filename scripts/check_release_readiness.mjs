@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// SPDX-FileCopyrightText: 2026 ReallyMe LLC
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -110,9 +110,9 @@ assertContains("packages/ts/LICENSE", "MIT License");
 assertContains("packages/ts/LICENSE", "Apache License");
 assertContains("README.md", `## Copyright And Trademarks
 
-Copyright © 2026 by ReallyMe LLC.
+Copyright © 2026 by ReallyMe Technologies Limited.
 
-ReallyMe® is a registered trademark of ReallyMe LLC.`);
+ReallyMe® is a registered trademark of ReallyMe Technologies Limited.`);
 for (const directory of ["packages/ts", "crates/conformance"]) {
   if (readJson(`${directory}/package.json`).license !== projectLicense ||
       readJson(`${directory}/package-lock.json`).packages[""].license !== projectLicense) {
@@ -129,12 +129,12 @@ const cryptoProtoPackageVersion = "0.3.16";
 const typescriptPackageVersion = "0.3.16";
 const kotlinPackageVersion = "0.3.16";
 const kotlinAndroidPackageVersion = "0.3.16";
-const rustCodecVersion = "0.3.1";
-const sdkCodecVersion = "0.3.1";
+const rustCodecVersion = "0.3.2";
+const sdkCodecVersion = "0.3.2";
 const rustSemverBaselineCommit = "54de2955ebf73e9fd1c306eba207550b3716d767";
 const cargoSemverChecksVersion = "0.50.0";
 const buffaVersion = "0.9.2";
-const releaseReadinessCommit = "5c2da5e5d5795c2c895d0dca0819287ee7101207";
+const releaseReadinessCommit = "9cf40c7da1def8a8d809af51789284097c572dd5";
 const releaseReadinessCommand = "node scripts/run_pinned_release_readiness.mjs";
 const gradleWrapperValidationAction =
   "gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c";
@@ -412,12 +412,12 @@ const assertCodecDependencyProvenance = () => {
   }
 
   const registryCodecChecksums = new Map([
-    ["reallyme-codec-base64url", "6f1f014d96ed84a1c226e0ffc8a6c6f6f893e5146e920f277fa434e79ba7b10f"],
-    ["reallyme-codec-jcs", "c7dfaeab71817a269d5c03d0edea6d47beb100cf987209ac6b70ce237348ba43"],
-    ["reallyme-codec-multibase", "beedd04b75562c34402fbe9407bc7f87743a363be1791e665164056135096650"],
-    ["reallyme-codec-multicodec", "97afd93d20ed068bcb86d448f83a6068d16fdfc03f4de05eea7b618f807f6e7d"],
-    ["reallyme-codec-multikey", "8738c002abeac047319d401e99b7fbc90fd063ccc7f0dd8e2304644e175313bb"],
-    ["reallyme-codec-pem", "9f3f227e8e8a1d44a7d7b922e7a7f40ee4350c638c8d3d08f25d0fd6c3feae64"],
+    ["reallyme-codec-base64url", "b7357b36942dcc73b00e485659f037ae5f4e7a2ef24d76ecc32a43ff315dd3b7"],
+    ["reallyme-codec-jcs", "1728274b25c9f3401e18b014b788728154f19350771b068d164299134ab886a7"],
+    ["reallyme-codec-multibase", "e1f8d1e90f33b62b6c93d969f4421c636c07fe2424ede7531cd1568776eb9224"],
+    ["reallyme-codec-multicodec", "251987ed56bfb0ef7e328386f5d5ae9b64e80a3ee280d46d1c38e24218fbce5f"],
+    ["reallyme-codec-multikey", "fac2cfb9b9ab2c404601f8d5bbd316d9811b3e4234372829dfa608bff2c1e2ce"],
+    ["reallyme-codec-pem", "ffd27f0946cb27090fd29b97e5a4cf912dc4f9ce2dd70fc1c39a127ebd92a65c"],
   ]);
   for (const lockPath of ["Cargo.lock", "fuzz/Cargo.lock"]) {
     for (const [packageName, checksum] of registryCodecChecksums) {
@@ -1306,7 +1306,7 @@ const gradleWrapperPaths = [
   "crates/conformance/platform/kotlin/gradle/wrapper/gradle-wrapper.properties",
 ];
 const gradleDistributionSha256 =
-  "21bd5da2de49b642904077f38c0efdc7778e92b3ed0889392dca61b97e389607";
+  "0b00b0ffe07c4d4789c12d4935a44a7057d55774b7540bd4a3f76f336deb177a";
 const gradleNetworkTimeoutMs = 60_000;
 const gradleDownloadRetries = 3;
 const gradleRetryBackOffMs = 1_000;
@@ -1520,8 +1520,8 @@ assertContains(
   "docs/maven-provenance.md",
   "a3d61910e69398a199ca11305ca555a28f4fa09b",
 );
-assertContains("packages/kotlin/README.md", "Android package use Gradle 9.8.2");
-assertContains("packages/kotlin/README.md", "Android package uses Android Gradle Plugin 9.5.0");
+assertContains("packages/kotlin/README.md", "Android package use Gradle 9.9.0");
+assertContains("packages/kotlin/README.md", "Android package uses Android Gradle Plugin 9.5.1");
 
 const kotlinAndroidBuild = readText("packages/kotlin-android/build.gradle.kts");
 if (!kotlinAndroidBuild.includes(`version = "${kotlinAndroidPackageVersion}"`)) {
@@ -2285,7 +2285,7 @@ assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/proto/ProtoErro
 assertContains("buf.yaml", "modules:");
 assertContains("buf.yaml", "- path: crates/proto/proto");
 assertContains(".github/workflows/protobuf-ci.yml", `BUFFA_VERSION: ${buffaVersion}`);
-assertContains(".github/workflows/protobuf-ci.yml", "BUF_VERSION: 1.73.0");
+assertContains(".github/workflows/protobuf-ci.yml", "BUF_VERSION: 1.75.0");
 assertContains(".github/workflows/protobuf-ci.yml", "setup_only: true");
 assertContains(".github/workflows/protobuf-ci.yml", "scripts/release-readiness/core.mjs");
 assertContains(".github/workflows/protobuf-ci.yml", "scripts/run_pinned_release_readiness.mjs");
@@ -2301,12 +2301,12 @@ assertContains(
 assertContains("scripts/release-readiness/core.mjs", "assertReallyMeProtobufReleasePolicy");
 const protobufReleasePolicy = {
   workflowMode: "delegated",
-  bufVersion: "1.73.0",
+  bufVersion: "1.75.0",
   buffaVersion,
   generatedFreshnessStepRun:
     `${releaseReadinessCommand} --generated-freshness`,
   installBufUses:
-    "bufbuild/buf-action@85aebf73123b5c15fd5528aaecbf9129cddf7fa7",
+    "bufbuild/buf-action@37ac33d8960807670a6e9719080e885197b09cc6",
   hardeningPolicy: {
     hardeningScript: "scripts/redact_crypto_proto_debug.mjs",
     protoSchema: "crates/proto/proto/reallyme/crypto/v1/crypto.proto",
@@ -2585,7 +2585,7 @@ const primaryOperationBoundaryPolicy = {
 const repositoryPolicy = {
   generatedFreshnessMode,
   vendoredCore: {
-    version: "0.6.7",
+    version: "0.6.9",
     scriptPath: "scripts/check_release_readiness.mjs",
     corePath: "scripts/release-readiness/core.mjs",
   },
@@ -2730,7 +2730,7 @@ const repositoryPolicy = {
     // not documentation. Vendored sources retain their upstream licensing.
     extensions: [".rs", ".ts", ".js", ".mjs", ".py", ".sh", ".swift", ".kt", ".kts", ".java", ".h", ".c", ".proto", ".spthy", ".toml"],
     names: [],
-    copyright: "SPDX-FileCopyrightText: 2026 ReallyMe LLC",
+    copyright: "SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited",
     license: "SPDX-License-Identifier: MIT OR Apache-2.0",
     exclusions: [
       { path: "crates/proto/src/generated", reason: "generated" },
@@ -2874,7 +2874,7 @@ const repositoryPolicy = {
         path: "scripts/run_pinned_release_readiness.mjs",
         required: [
           `const RELEASE_READINESS_COMMIT = "${releaseReadinessCommit}";`,
-          'const RELEASE_READINESS_CORE_SHA256 =\n  "d3434554901ea5438bb0dd64f4f7214b9050e95cd1e3d579cc2992f4c662e85a";',
+          'const RELEASE_READINESS_CORE_SHA256 =\n  "c65fd51666d3858f33b9447f7e59aa32fb5fcd63e87465bfd8d7cd463a124452";',
           "const LOCAL_CHECKER_SHA256 =",
           "const LOCAL_CHECKER_DEPENDENCIES =",
           "scripts/crypto_operation_route_readiness.mjs",
@@ -2898,11 +2898,11 @@ const repositoryPolicy = {
       usesSteps: [
         {
           name: "Install wasm-pack",
-          uses: "taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32",
+          uses: "taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39",
         },
         {
           name: "Install wasm-bindgen-cli",
-          uses: "taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32",
+          uses: "taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39",
         },
       ],
       runSteps: [

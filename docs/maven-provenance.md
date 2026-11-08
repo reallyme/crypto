@@ -11,7 +11,7 @@ the corresponding Gradle verification metadata.
 | `me.really:codec:0.3.1` | `https://repo.maven.apache.org/maven2/me/really/codec/0.3.1/codec-0.3.1.jar` | `976826b466f0f5668ec1dc7db9672607bb2d466d010832e61218e9d5bdfacc4e` | `reallyme/codec` tag `v0.3.1`, commit `a3d61910e69398a199ca11305ca555a28f4fa09b` |
 | `me.really:codec-android:0.3.1` | `https://repo.maven.apache.org/maven2/me/really/codec-android/0.3.1/codec-android-0.3.1.aar` | `25d3d6e964acd323e12cdaee1680cfe5534fec77671fddf62776e4bfc8520190` | `reallyme/codec` tag `v0.3.1`, commit `a3d61910e69398a199ca11305ca555a28f4fa09b` |
 
-The published POMs identify ReallyMe LLC as the developer and
+The published POMs identify ReallyMe Technologies Limited as the developer and
 `https://github.com/reallyme/codec.git` as the SCM repository. The repository's
 reviewed `v0.3.1` tag resolves to the commit recorded above. The artifact hashes
 match the entries in `packages/kotlin/gradle/verification-metadata.xml` and

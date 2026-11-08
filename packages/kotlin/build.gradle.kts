@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 ReallyMe LLC
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -234,7 +234,7 @@ dependencies {
     // natives; an Android consumer swaps it for `secp256k1-kmp-jni-android`.
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jvm:0.24.0")
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.24.0")
-    implementation("me.really:codec:0.3.1")
+    implementation("me.really:codec:0.3.2")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.3")
     testImplementation(kotlin("test"))
@@ -384,8 +384,8 @@ publishing {
                 developers {
                     developer {
                         id.set("reallyme")
-                        name.set("ReallyMe LLC")
-                        organization.set("ReallyMe LLC")
+                        name.set("ReallyMe Technologies Limited")
+                        organization.set("ReallyMe Technologies Limited")
                         organizationUrl.set("https://github.com/reallyme")
                     }
                 }

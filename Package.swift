@@ -1,5 +1,5 @@
 // swift-tools-version: 6.3
-// SPDX-FileCopyrightText: 2026 ReallyMe LLC
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -127,7 +127,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/reallyme/codec",
-      from: "0.3.1"
+      from: "0.3.2"
     ),
     .package(
       url: "https://github.com/reallyme/CSecp256k1",

@@ -1,5 +1,5 @@
 {
-  "spdxFileCopyrightText": "Copyright \u00a9 2026 ReallyMe LLC. All rights reserved",
+  "spdxFileCopyrightText": "Copyright \u00a9 2026 ReallyMe Technologies Limited. All rights reserved",
   "schemaVersion": 1,
   "generatedDocument": "PROVIDER_POLICY.md",
   "requiredLanes": ["swift", "kotlin_jvm", "kotlin_android", "typescript_wasm"],

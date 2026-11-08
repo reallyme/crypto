@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// SPDX-FileCopyrightText: 2026 ReallyMe LLC
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -9,16 +9,16 @@ import { spawnSync } from "node:child_process";
 
 // The upstream core and this repository's policy checker are separate inputs.
 // Pinning both makes an unreviewed policy edit fail before the checker runs.
-const RELEASE_READINESS_COMMIT = "5c2da5e5d5795c2c895d0dca0819287ee7101207";
+const RELEASE_READINESS_COMMIT = "9cf40c7da1def8a8d809af51789284097c572dd5";
 const RELEASE_READINESS_CORE_SHA256 =
-  "d3434554901ea5438bb0dd64f4f7214b9050e95cd1e3d579cc2992f4c662e85a";
+  "c65fd51666d3858f33b9447f7e59aa32fb5fcd63e87465bfd8d7cd463a124452";
 const LOCAL_CHECKER_SHA256 =
-  "9c1966cdb823ddea7375aaaf298ee013bfee9645d4744363c4a54144a83bb185";
+  "4bca57cc527ca17d9b6502154d67732454fb673de51aa6cad0cbe9b478038060";
 // The checker imports both local policy modules. Pinning only its entry file
 // would let an unreviewed dependency change the release decision.
 const LOCAL_CHECKER_DEPENDENCIES = [
-  ["scripts/crypto_operation_route_readiness.mjs", "e82490e194d4712d36ae43b5975fb7449d67ea08260763a83798a60dc33452f2"],
-  ["scripts/workflow_gate_policy.mjs", "ee426d45e53608350bce9923ebc78d43ec8dc2c68df1af1305d30a1203d9656b"],
+  ["scripts/crypto_operation_route_readiness.mjs", "d55749f477782633e382fe9c50b152322e5f8d958ad31ba3550afbf8568c1295"],
+  ["scripts/workflow_gate_policy.mjs", "71b4f702eeb7d2d2b88ad5074ad5b90cab1588666f7d2924f891539f112b2069"],
 ];
 const RELEASE_READINESS_CORE_URL =
   `https://raw.githubusercontent.com/reallyme/release-readiness/${RELEASE_READINESS_COMMIT}/core.mjs`;

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2026 ReallyMe LLC
+# SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -103,8 +103,8 @@ getrandom = { version = "0.4", features = ["wasm_js"], optional = true }
 
 ed25519-dalek-conformance = { package = "ed25519-dalek", version = "3.0" }
 k256-conformance = { package = "k256", version = "0.14", features = ["ecdsa"] }
-ml-dsa-conformance = { package = "ml-dsa", version = "0.1.1" }
-ml-kem-conformance = { package = "ml-kem", version = "0.3.3", features = ["zeroize"] }
+ml-dsa-conformance = { package = "ml-dsa", version = "0.1.2" }
+ml-kem-conformance = { package = "ml-kem", version = "0.3.4", features = ["zeroize"] }
 p256-conformance = { package = "p256", version = "0.14", features = ["ecdh", "ecdsa"] }
 p384-conformance = { package = "p384", version = "0.14", features = ["ecdsa"] }
 p521-conformance = { package = "p521", version = "0.14", features = ["ecdsa"] }

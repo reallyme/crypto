@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2026 ReallyMe LLC
+# SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -27,13 +27,13 @@ wasm = ["envelopes-jwk/wasm"]
 thiserror.workspace = true
 
 # multikey codec (decode / encode)
-codec-multikey = { package = "reallyme-codec-multikey", version = "0.3.1" }
+codec-multikey = { package = "reallyme-codec-multikey", version = "0.3.2" }
 
 # JWK envelope
 envelopes-jwk = { package = "reallyme-crypto-jwk", version = "=0.3.16", path = "../jwk", default-features = false }
 
 [dev-dependencies]
-codec-base64url = { package = "reallyme-codec-base64url", version = "0.3.1" }
+codec-base64url = { package = "reallyme-codec-base64url", version = "0.3.2" }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.3.16", path = "../crypto/core" }
 crypto-dispatch = { package = "reallyme-crypto-dispatch", version = "=0.3.16", path = "../crypto/dispatch", default-features = false, features = ["native", "p256"] }
 
