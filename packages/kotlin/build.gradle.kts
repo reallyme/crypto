@@ -18,7 +18,7 @@ plugins {
 }
 
 group = "me.really"
-version = "0.3.16"
+version = "0.3.17"
 
 dependencyLocking {
     lockAllConfigurations()
