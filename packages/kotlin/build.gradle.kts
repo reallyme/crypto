@@ -234,7 +234,7 @@ dependencies {
     // natives; an Android consumer swaps it for `secp256k1-kmp-jni-android`.
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jvm:0.24.0")
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.24.0")
-    implementation("me.really:codec:0.3.1")
+    implementation("me.really:codec:0.3.2")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.3")
     testImplementation(kotlin("test"))
