@@ -54,7 +54,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version: '26'
 
       - name: Require current main and successful crates package checks
         env:
@@ -92,7 +92,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version: '26'
 
       - name: Reverify release attestation without registry credentials
         run: node scripts/verify_release_attestation.mjs

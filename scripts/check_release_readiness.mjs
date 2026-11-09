@@ -134,7 +134,7 @@ const sdkCodecVersion = "0.3.2";
 const rustSemverBaselineCommit = "54de2955ebf73e9fd1c306eba207550b3716d767";
 const cargoSemverChecksVersion = "0.50.0";
 const buffaVersion = "0.9.2";
-const releaseReadinessCommit = "9cf40c7da1def8a8d809af51789284097c572dd5";
+const releaseReadinessCommit = "18a6d91d99837e80f92e41fe04effb0b043d754e";
 const releaseReadinessCommand = "node scripts/run_pinned_release_readiness.mjs";
 const gradleWrapperValidationAction =
   "gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c";
@@ -2585,13 +2585,13 @@ const primaryOperationBoundaryPolicy = {
 const repositoryPolicy = {
   generatedFreshnessMode,
   vendoredCore: {
-    version: "0.6.9",
+    version: "0.7.0",
     scriptPath: "scripts/check_release_readiness.mjs",
     corePath: "scripts/release-readiness/core.mjs",
   },
   workflowActions: {},
   nodeWorkflows: {
-    nodeVersion: "24",
+    nodeVersion: "26",
   },
   cargoFuzz: {
     workflow: ".github/workflows/fuzz.yml",
@@ -2874,7 +2874,7 @@ const repositoryPolicy = {
         path: "scripts/run_pinned_release_readiness.mjs",
         required: [
           `const RELEASE_READINESS_COMMIT = "${releaseReadinessCommit}";`,
-          'const RELEASE_READINESS_CORE_SHA256 =\n  "c65fd51666d3858f33b9447f7e59aa32fb5fcd63e87465bfd8d7cd463a124452";',
+          'const RELEASE_READINESS_CORE_SHA256 =\n  "7614b0cbf9e36a4653c2fa9008bee0d1e22542de0e4a08a10e640c836a5c93db";',
           "const LOCAL_CHECKER_SHA256 =",
           "const LOCAL_CHECKER_DEPENDENCIES =",
           "scripts/crypto_operation_route_readiness.mjs",
