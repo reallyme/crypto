@@ -9,11 +9,11 @@ import { spawnSync } from "node:child_process";
 
 // The upstream core and this repository's policy checker are separate inputs.
 // Pinning both makes an unreviewed policy edit fail before the checker runs.
-const RELEASE_READINESS_COMMIT = "9cf40c7da1def8a8d809af51789284097c572dd5";
+const RELEASE_READINESS_COMMIT = "18a6d91d99837e80f92e41fe04effb0b043d754e";
 const RELEASE_READINESS_CORE_SHA256 =
-  "c65fd51666d3858f33b9447f7e59aa32fb5fcd63e87465bfd8d7cd463a124452";
+  "7614b0cbf9e36a4653c2fa9008bee0d1e22542de0e4a08a10e640c836a5c93db";
 const LOCAL_CHECKER_SHA256 =
-  "f623b9369f9c48f29bb7d629ecd6cbe9333d1025f64ee7aaeffcfe775a853f58";
+  "644238bc46cd989f1b0e8aeeb20f2a29651225bb1bb830b244d32222759433d5";
 // The checker imports both local policy modules. Pinning only its entry file
 // would let an unreviewed dependency change the release decision.
 const LOCAL_CHECKER_DEPENDENCIES = [
