@@ -175,8 +175,8 @@ The private `optional-provider-build` tool builds the registry-checksummed
 target. It does not process private keys and is not a published dependency:
 
 ```sh
-cargo run --locked -p optional-provider-build -- --target aarch64-apple-ios --out-dir /tmp/crypto-provider-ios
-OPENSSL_DIR=/tmp/crypto-provider-ios/install OPENSSL_STATIC=1 cargo check --locked -p reallyme-crypto --target aarch64-apple-ios --no-default-features --features brainpool-openssl,ed448-openssl,key-identifier-sha1
+IPHONEOS_DEPLOYMENT_TARGET=16.0 cargo run --locked -p optional-provider-build -- --target aarch64-apple-ios --out-dir /tmp/crypto-provider-ios
+IPHONEOS_DEPLOYMENT_TARGET=16.0 OPENSSL_DIR=/tmp/crypto-provider-ios/install OPENSSL_STATIC=1 cargo check --locked -p reallyme-crypto --target aarch64-apple-ios --no-default-features --features brainpool-openssl,ed448-openssl,key-identifier-sha1
 ```
 
 Cross builds also require the target's compiler/SDK configuration. Use the
