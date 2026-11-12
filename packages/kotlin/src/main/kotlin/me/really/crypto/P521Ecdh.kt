@@ -21,22 +21,30 @@ public object ReallyMeP521Ecdh {
     public const val SECRET_KEY_LENGTH: Int = 66
     public const val COMPRESSED_PUBLIC_KEY_LENGTH: Int = 67
     public const val SHARED_SECRET_LENGTH: Int = 66
+    private const val SCALAR_HIGH_BYTE_MASK: Int = 0x01
 
     private val domain: ECDomainParameters =
         ECDomainParameters(SECNamedCurves.getByName("secp521r1"))
 
-    public fun generateKeyPair(): Pair<ByteArray, ByteArray> {
-        val random = SecureRandom()
-        val secretKey = ByteArray(SECRET_KEY_LENGTH)
-        repeat(1024) {
-            random.nextBytes(secretKey)
-            val scalar = BigInteger(1, secretKey)
-            if (scalar.signum() > 0 && scalar < domain.n) {
-                return Pair(derivePublicKey(secretKey), secretKey.copyOf())
-            }
+    public fun generateKeyPair(): Pair<ByteArray, ByteArray> =
+        generateKeyPair(SecureRandom())
+
+    internal fun generateKeyPair(random: SecureRandom): Pair<ByteArray, ByteArray> =
+        withRandomSecretCandidate(
+            length = SECRET_KEY_LENGTH,
+            random = random,
+            prepareCandidate = { secretKey ->
+                // Seven bits in the 66-byte representation are unused. Masking
+                // them gives uniform 521-bit candidates before range rejection.
+                secretKey[0] = (secretKey[0].toInt() and SCALAR_HIGH_BYTE_MASK).toByte()
+            },
+            isValid = { secretKey ->
+                val scalar = BigInteger(1, secretKey)
+                scalar.signum() > 0 && scalar < domain.n
+            },
+        ) { secretKey ->
+            Pair(derivePublicKey(secretKey), secretKey.copyOf())
         }
-        throw ReallyMeCryptoException.ProviderFailure()
-    }
 
     public fun deriveKeyPair(secretKey: ByteArray): Pair<ByteArray, ByteArray> =
         Pair(derivePublicKey(secretKey), secretKey.copyOf())
