@@ -11,6 +11,9 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 const script = fileURLToPath(new URL("./install_actionlint.sh", import.meta.url));
+// Each fixture starts several interpreter processes. Leave scheduling headroom
+// when the tooling suite shares a host with native builds; keep hangs bounded.
+const fixtureTimeoutMs = 60_000;
 
 function fixture(t) {
   const root = mkdtempSync(join(tmpdir(), "crypto workflow lint # "));
@@ -57,7 +60,7 @@ function fixture(t) {
     LINT_EXTRACT_LOG: join(root, "extract"),
   };
   const run = (arguments_ = []) => {
-    const result = spawnSync("bash", [script, ...arguments_], { cwd: root, env, encoding: "utf8", timeout: 10_000 });
+    const result = spawnSync("bash", [script, ...arguments_], { cwd: root, env, encoding: "utf8", timeout: fixtureTimeoutMs });
     assert.equal(result.error, undefined);
     assert.equal(readdirSync(runner).some((name) => name.startsWith("workflow-lint.")), false);
     return result;

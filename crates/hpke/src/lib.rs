@@ -5,6 +5,8 @@
 #![doc = include_str!("../README.md")]
 #![forbid(unsafe_code)]
 
+#[cfg(feature = "base-p256-aes128gcm")]
+pub mod base_p256;
 mod constants;
 #[cfg(feature = "backend-native")]
 #[macro_use]

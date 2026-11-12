@@ -1,0 +1,54 @@
+{
+  "source": "RFC 5280 section 4.2.1.2 method (1), independently calculated SHA-1 of fixed public point bytes.",
+  "vectors": [
+    {
+      "curve": "P256",
+      "subject_public_key_bits": "043ce51f198a71564a64c943d1e8bc2eca2d1dcc644084d9893e13108d4e8ecd2547c9cb474bd218aaa966c8ba464f6f67431d729fa3977ff920c7eaeb726c5ec5",
+      "identifier": "20dc891fae7ee35b54da041733f06b0d1e3e566f",
+      "compressed_key_bits": "033ce51f198a71564a64c943d1e8bc2eca2d1dcc644084d9893e13108d4e8ecd25",
+      "compressed_identifier": "1b5a27d93783382ffe20a5a0b6c5a16b9cd36181"
+    },
+    {
+      "curve": "P384",
+      "subject_public_key_bits": "045b44ed68b5f8d26e110109b4368e7411f4e8227dec4161d292016d9a77e87c6e715b97e24329c548d0d61d440c052c4302e1013e4471c9020f17a127b654cf9c0c3051448d61f53191962e5b046a5090af9f5fc21643666c232b6d601226c08e",
+      "identifier": "ad351596a2f816ac2fa4d3932b09f91541ba0f17",
+      "compressed_key_bits": "025b44ed68b5f8d26e110109b4368e7411f4e8227dec4161d292016d9a77e87c6e715b97e24329c548d0d61d440c052c43",
+      "compressed_identifier": "4c2c1f69b8dc372ca1a6c13adb11a26fa62bed7f"
+    },
+    {
+      "curve": "P521",
+      "subject_public_key_bits": "040194facaa17a340413211471de1c72bc362f0c2e80732f0e977815b79cf6ce958487dd71b3a62342c77a978857f86c67a6d6f3a0270e9fe72afe360fcf4e7a3dd06d00ed213457204ace9a23b7471601e11a1a7852c9f93680c69d27e4eaa35f2a048a576bea00ff1a5f977a0140a530ced62e8ee4b71c5397b2c99cabd8b2e80f4bcb20",
+      "identifier": "a07cf192e1519fdbf580bd7bd9d8f232b597dafa",
+      "compressed_key_bits": "020194facaa17a340413211471de1c72bc362f0c2e80732f0e977815b79cf6ce958487dd71b3a62342c77a978857f86c67a6d6f3a0270e9fe72afe360fcf4e7a3dd06d",
+      "compressed_identifier": "d42246c593161d46e162f53643fbe87f33f3b0f2"
+    },
+    {
+      "curve": "BrainpoolP256r1",
+      "subject_public_key_bits": "04293be37c3a15821c10363e39093332d9bd1f99a3dfcf2401c0622264ac7f73df0ff0cf9927666c9fda0e470ac3c459c70938d2eb0917530ef1c945c8e42ed721",
+      "identifier": "c55449e1a748c187546c7c8bef3f5d40e5319d94",
+      "compressed_key_bits": "03293be37c3a15821c10363e39093332d9bd1f99a3dfcf2401c0622264ac7f73df",
+      "compressed_identifier": "4772b516b648979eef07abf354cecfb5de6c6508"
+    },
+    {
+      "curve": "BrainpoolP320r1",
+      "subject_public_key_bits": "041ece3f83cb1588c01025ad0335c81ac4e5eb5547ac33d25ea215d58bcaad586594812fb45069a765852f6350cdf40c64f58487f60602afae4826a510708c9e8361233becdefd8bdeef4a68414173cd76",
+      "identifier": "86e05e763f47b58d2eb2668ed3c05605d0d17e7c",
+      "compressed_key_bits": "021ece3f83cb1588c01025ad0335c81ac4e5eb5547ac33d25ea215d58bcaad586594812fb45069a765",
+      "compressed_identifier": "e70116e9098b96967cc705d0efffcba16739447f"
+    },
+    {
+      "curve": "BrainpoolP384r1",
+      "subject_public_key_bits": "04691c50ce9be3ff58812db6ec7c7981d32777c95668095dfafda79e62b4de61c4c56dc1e5392aa3230468f72165c9e35c85d9a0589774edcc5c48b878d5c39fb8ea7203c1e683e72032fe05348b4897a423389634e4e81120dc95ff2632fde8f5",
+      "identifier": "74ed493971f038c2c1e4bbda9f1b193634325c47",
+      "compressed_key_bits": "03691c50ce9be3ff58812db6ec7c7981d32777c95668095dfafda79e62b4de61c4c56dc1e5392aa3230468f72165c9e35c",
+      "compressed_identifier": "3991179f33b719102ef16f38d8c869fc142ebcc3"
+    },
+    {
+      "curve": "BrainpoolP512r1",
+      "subject_public_key_bits": "047085d73c369747921aa79373b33434757d600fbf5713a5f2c12b94c9e5724dc29c28e233024f4b0f57f4c5ab0f46c706c85944bead70fb92e25c171957d324b12633b3f9306d9121910b5423fe6617708057a8733db3c2898135f1b1715c9840b508b7faac2ba0940941d17e6827be015e1049cd84023b1142f1dd50ce3965f1",
+      "identifier": "acd23b57bd47d7baf61c758f0ae3f2e8f0d00561",
+      "compressed_key_bits": "037085d73c369747921aa79373b33434757d600fbf5713a5f2c12b94c9e5724dc29c28e233024f4b0f57f4c5ab0f46c706c85944bead70fb92e25c171957d324b1",
+      "compressed_identifier": "333c6bcc17757b48c341d22700f17db8dbe5144e"
+    }
+  ]
+}
