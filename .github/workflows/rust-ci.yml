@@ -48,12 +48,19 @@ concurrency:
 jobs:
   tooling:
     name: repository policy and tooling (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04, macos-15]
+        include:
+          - os: ubuntu-24.04
+            runner: ubuntu-24.04
+          # Portable tooling uses Intel capacity; compiled Apple lanes below
+          # retain ARM64 coverage. Keep logical job names stable for releases.
+          - os: macos-15
+            runner: macos-15-intel
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
