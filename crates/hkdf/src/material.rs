@@ -109,6 +109,10 @@ impl HkdfSha384Prk {
     pub(crate) fn from_array(bytes: [u8; HKDF_SHA384_PRK_LENGTH]) -> Self {
         Self { bytes }
     }
+
+    pub(crate) fn as_mut_bytes(&mut self) -> &mut [u8; HKDF_SHA384_PRK_LENGTH] {
+        &mut self.bytes
+    }
 }
 
 impl<const N: usize> HkdfOutput<N> {
@@ -124,5 +128,9 @@ impl<const N: usize> HkdfOutput<N> {
 
     pub(crate) fn from_array(bytes: [u8; N]) -> Self {
         Self { bytes }
+    }
+
+    pub(crate) fn as_mut_bytes(&mut self) -> &mut [u8; N] {
+        &mut self.bytes
     }
 }

@@ -30,9 +30,9 @@ pub fn extract_sha384(
     // Extract returns a separate PRK copy in addition to the HMAC state.
     // Wipe that copy after transferring it to the typed secret owner.
     let prk = Zeroizing::new(prk);
-    let mut bytes = [0u8; HKDF_SHA384_PRK_LENGTH];
-    bytes.copy_from_slice(prk.as_ref());
-    Ok(HkdfSha384Prk::from_array(bytes))
+    let mut output = HkdfSha384Prk::from_array([0u8; HKDF_SHA384_PRK_LENGTH]);
+    output.as_mut_bytes().copy_from_slice(prk.as_ref());
+    Ok(output)
 }
 
 /// Runs HKDF-SHA384 expand from an extracted PRK.
@@ -51,11 +51,12 @@ pub fn expand_sha384<const N: usize>(
         hash: HkdfHash::Sha2_384,
         kind: HkdfFailureKind::InvalidIkmLength,
     })?;
-    let mut output = [0u8; N];
-    hkdf.expand(info.as_bytes(), &mut output)
+    // Expansion writes through the clearing owner on both success and error.
+    let mut output = HkdfOutput::from_array([0u8; N]);
+    hkdf.expand(info.as_bytes(), output.as_mut_bytes())
         .map_err(|_| CryptoError::Hkdf {
             hash: HkdfHash::Sha2_384,
             kind: HkdfFailureKind::ExpandFailed,
         })?;
-    Ok(HkdfOutput::from_array(output))
+    Ok(output)
 }

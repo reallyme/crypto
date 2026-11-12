@@ -44,7 +44,15 @@ impl EcdsaKey {
             EcdsaCurve::P521 => public_key!(p521),
             #[cfg(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))]
             curve => super::brainpool::public_from_private(curve, scalar)?,
-            #[cfg(not(all(feature = "brainpool-openssl", not(target_arch = "wasm32"))))]
+            #[cfg(all(
+                feature = "brainpool",
+                not(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))
+            ))]
+            curve => super::portable_brainpool::public_from_private(curve, scalar)?,
+            #[cfg(not(any(
+                feature = "brainpool",
+                all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
+            )))]
             _ => return Err(EcdsaError::UnsupportedCurve),
         };
         Ok(Self {
@@ -117,7 +125,20 @@ impl EcdsaKey {
                 curve => {
                     super::brainpool::sign(curve, self.private.expose_secret(), digest, encoding)
                 }
-                #[cfg(not(all(feature = "brainpool-openssl", not(target_arch = "wasm32"))))]
+                #[cfg(all(
+                    feature = "brainpool",
+                    not(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))
+                ))]
+                curve => super::portable_brainpool::sign(
+                    curve,
+                    self.private.expose_secret(),
+                    digest,
+                    encoding,
+                ),
+                #[cfg(not(any(
+                    feature = "brainpool",
+                    all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
+                )))]
                 _ => Err(EcdsaError::UnsupportedCurve),
             }
         })
@@ -143,7 +164,17 @@ impl EcdsaKey {
             EcdsaCurve::P521 => agree_curve!(p521),
             #[cfg(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))]
             curve => super::brainpool::agree(curve, self.private.expose_secret(), peer_sec1),
-            #[cfg(not(all(feature = "brainpool-openssl", not(target_arch = "wasm32"))))]
+            #[cfg(all(
+                feature = "brainpool",
+                not(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))
+            ))]
+            curve => {
+                super::portable_brainpool::agree(curve, self.private.expose_secret(), peer_sec1)
+            }
+            #[cfg(not(any(
+                feature = "brainpool",
+                all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
+            )))]
             _ => Err(EcdsaError::UnsupportedCurve),
         }
     }

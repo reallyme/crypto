@@ -43,7 +43,7 @@ pub mod ecdsa_explicit;
 pub mod ed448;
 #[cfg(feature = "key-identifier-sha1")]
 pub mod key_identifier;
-#[cfg(feature = "ecdsa-explicit")]
+#[cfg(any(feature = "ecdsa-explicit", feature = "ed448"))]
 pub mod key_random;
 #[cfg(all(
     any(feature = "brainpool-openssl", feature = "ed448-openssl"),

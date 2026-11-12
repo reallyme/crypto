@@ -6,6 +6,12 @@
 
 #![forbid(unsafe_code)]
 
+// These direct dependencies enable the shared entropy and clearing features
+// used by the transitive digest implementation; HKDF itself needs no entropy.
+#[cfg(feature = "wasm")]
+use getrandom as _;
+use hybrid_array as _;
+
 mod derive;
 mod material;
 mod policy;

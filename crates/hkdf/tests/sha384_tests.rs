@@ -16,7 +16,8 @@ const IKM: [u8; 22] = [0x0b; 22];
 const SALT: [u8; 13] = hex!("000102030405060708090a0b0c");
 const INFO: [u8; 10] = hex!("f0f1f2f3f4f5f6f7f8f9");
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn sha384_extract_and_expand_matches_independent_known_answer() {
     let ikm = HkdfInputKeyMaterial::from_slice(&IKM);
     let salt = HkdfSalt::from_slice(&SALT);
@@ -42,7 +43,8 @@ fn sha384_extract_and_expand_matches_independent_known_answer() {
     assert_eq!(prk.as_bytes().len(), HKDF_SHA384_PRK_LENGTH);
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn sha384_combined_derivation_matches_extract_then_expand() {
     let ikm = HkdfInputKeyMaterial::from_slice(&IKM);
     let salt = HkdfSalt::from_slice(&SALT);
@@ -61,7 +63,8 @@ fn sha384_combined_derivation_matches_extract_then_expand() {
     assert_eq!(split.as_bytes(), combined.as_bytes());
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn sha384_rejects_empty_ikm_and_invalid_output_lengths() {
     let empty_ikm = HkdfInputKeyMaterial::from_slice(&[]);
     let info = HkdfInfo::from_slice(b"context");

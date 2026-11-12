@@ -20,7 +20,15 @@ pub fn validate_public_key(curve: EcdsaCurve, public: &[u8]) -> Result<(), Ecdsa
             .map_err(|_| EcdsaError::InvalidPublicKey),
         #[cfg(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))]
         curve => super::brainpool::validate_public(curve, public),
-        #[cfg(not(all(feature = "brainpool-openssl", not(target_arch = "wasm32"))))]
+        #[cfg(all(
+            feature = "brainpool",
+            not(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))
+        ))]
+        curve => super::portable_brainpool::validate_public(curve, public),
+        #[cfg(not(any(
+            feature = "brainpool",
+            all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
+        )))]
         _ => Err(EcdsaError::UnsupportedCurve),
     }
 }
@@ -57,7 +65,15 @@ pub fn verify(
             EcdsaCurve::P521 => verify_curve!(p521),
             #[cfg(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))]
             curve => super::brainpool::verify(curve, public, digest, signature, encoding),
-            #[cfg(not(all(feature = "brainpool-openssl", not(target_arch = "wasm32"))))]
+            #[cfg(all(
+                feature = "brainpool",
+                not(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))
+            ))]
+            curve => super::portable_brainpool::verify(curve, public, digest, signature, encoding),
+            #[cfg(not(any(
+                feature = "brainpool",
+                all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
+            )))]
             _ => Err(EcdsaError::UnsupportedCurve),
         }
     })

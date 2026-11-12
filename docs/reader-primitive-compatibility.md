@@ -17,7 +17,10 @@ The reviewed lockfile resolves the relevant implementation packages as follows:
 | --- | --- |
 | `reallyme-crypto`, `reallyme-crypto-hpke`, existing ReallyMe primitive leaves | 0.3.17 (additional interfaces unreleased) |
 | `hpke` | 0.15.1 |
-| `p256`, `p384`, `p521` | 0.14.0 |
+| `p256`, `p384`, `p521`, `bp256`, `bp384` | 0.14.0 |
+| `primefield` / `primeorder` / `elliptic-curve` | 0.14.0 / 0.14.0 / 0.14.3 |
+| `ed448-goldilocks` (curve arithmetic only) | 0.14.0-pre.15 |
+| `shake` / `crypto-bigint` | 0.1.0 / 0.7.10 |
 | `ecdsa` | 0.17.0 |
 | `sha2` / its `digest` dependency | 0.11.1 / 0.11.3 |
 | `sha1` (identifier feature only) | 0.11.0 |
@@ -44,13 +47,13 @@ are retained as a source discrepancy, rather than interpreted as a new clause.
 | Requirement | Rust interface and feature | Evidence |
 | --- | --- | --- |
 | 2021 9.1.2.4, 9.1.5.2 table 22; DIS 12.3.4, 12.4.6, 12.5.4, 12.7.2 table 17: NIST ECDSA/ECDH | `reallyme_crypto::ecdsa_explicit::{EcdsaKey, verify, validate_public_key}`; `ecdsa-explicit` | `ecdsa_explicit_tests`: independent key, raw agreement, signature, prehash and high-S known answers for each curve and hash |
-| Same clauses: Brainpool ECDSA/ECDH | Same interface; explicit native `brainpool-openssl` provider | Same tests execute all four curves when selected; absent-provider tests require `UnsupportedCurve` |
+| Same clauses: Brainpool ECDSA/ECDH | Same interface; portable `brainpool`, optional native `brainpool-openssl` provider | Same tests execute all four curves natively and in WASM when selected; absent-feature tests require `UnsupportedCurve` |
 | Same clauses: X25519/X448 raw agreement | Existing `reallyme-crypto-x25519` / `reallyme-crypto-x448` leaves, `native` / `wasm` | Existing RFC 7748 and invalid/low-order-point tests |
 | Same clauses: ordinary Ed25519 | Existing `reallyme-crypto-ed25519` leaf | Existing seed/signature known answers and strict verification tests |
-| Same clauses: ordinary Ed448 | `reallyme_crypto::ed448::{verify, sign_with_provider}`; explicit native `ed448-openssl` | `ed448_tests`: RFC 8032 ordinary cases, opaque signing, rejected context/prehash variants, explicit unsupported software-key operations; independent signature oracle |
+| Same clauses: ordinary Ed448 | `reallyme_crypto::ed448::{Ed448Key, verify, sign_with_provider}`; portable `ed448`, optional native `ed448-openssl` verifier | `ed448_tests`: RFC 8032 ordinary key/signature answers, protected generation/import, opaque signing, rejected context/prehash variants, canonical scalar/point and cleanup tests; independent native verifier |
 | DIS 12.6.4 tables 21–23, 12.7.1: optional document-response encryption | `crypto_hpke::base_p256::{P256RecipientKey, seal, open}`; `base-p256-aes128gcm` | RFC 9180 A.3.1 retained unchanged; separate independently calculated empty-AAD answer; bounds, context, mode, suite, key, encoding, tampering and RNG tests |
 | 2021 9.1.1.5; DIS 12.2.5: ordinary session encryption | Existing raw ECDH leaves, `crypto_hkdf::derive`, `crypto_aes256_gcm::{encrypt, decrypt_zeroizing}` | Existing agreement, RFC 5869 and NIST AES-GCM vectors; this cipher remains AES-256-GCM |
-| SHA-256/384/512, certificate thumbprints, HMAC-SHA256 verification | Existing `crypto_sha2_256::digest`, `crypto_sha2::{digest_sha2_384, digest_sha2_512}`, `crypto_hmac::verify` | Existing NIST/RFC vectors; clearing-owner and block-boundary regressions |
+| SHA-256/384/512, certificate thumbprints, HMAC-SHA256 verification | Existing `crypto_sha2_256::digest`, `crypto_sha2::{digest_sha2_384, digest_sha2_512}`, `crypto_hmac::verify` | 1,668 NIST byte-aligned SHA-2 AFT answers, million-byte answers, differential padding and clearing-owner regressions; existing HMAC vectors |
 | DIS 12.8 and Annex B: certificate/CRL ECDSA verification | `ecdsa_explicit::verify` with explicit `EcdsaHash`, `EcdsaInput`, `EcdsaEncoding` | All 21 issuer-curve/hash primitive combinations; exact-byte mutation, encoding-confusion, digest-length and high-S cases |
 | Annex B; RFC 5280 4.2.1.2 method (1): subject key identifier | `key_identifier::subject_key_identifier_sha1`; separate `key-identifier-sha1` feature | Fourteen independent identifiers across seven curves; compressed/uncompressed payloads, retained SEC1 prefixes, BIT STRING framing, unused-bit octet and full-SPKI wrong-span comparisons |
 | Reader signing without private-key export | `ecdsa_explicit::{OpaqueEcdsaSigner, sign_with_provider}` | Non-exporting test provider executes signing and returns stable typed provider failures; returned signatures are checked against the associated public key |
@@ -71,10 +74,10 @@ DER API. Existing conversion functions remain available during that transition.
 | P-256 | 32 / 32 | 65 | SHA-256 | Portable Rust |
 | P-384 | 48 / 48 | 97 | SHA-384 | Portable Rust |
 | P-521 | 66 / 66 | 133 | SHA-512 | Portable Rust |
-| brainpoolP256r1 | 32 / 32 | 65 | SHA-256 | Explicit native provider |
-| brainpoolP320r1 | 40 / 40 | 81 | SHA-384 | Explicit native provider |
-| brainpoolP384r1 | 48 / 48 | 97 | SHA-384 | Explicit native provider |
-| brainpoolP512r1 | 64 / 64 | 129 | SHA-512 | Explicit native provider |
+| brainpoolP256r1 | 32 / 32 | 65 | SHA-256 | Portable Rust; optional native provider |
+| brainpoolP320r1 | 40 / 40 | 81 | SHA-384 | Portable Rust; optional native provider |
+| brainpoolP384r1 | 48 / 48 | 97 | SHA-384 | Portable Rust; optional native provider |
+| brainpoolP512r1 | 64 / 64 | 129 | SHA-512 | Portable Rust; optional native provider |
 
 The ECDSA/ECDH private owner validates the scalar and binds its uncompressed
 public key at import. Raw ECDH preserves the fixed-width big-endian
@@ -102,15 +105,31 @@ Compressed and uncompressed representations of the same point have different
 method-(1) identifiers. ASN.1 framing removal and validation belong to the
 codec/trust boundary; this API does not normalize points.
 
-Portable NIST signing is deterministic RFC 6979 using the backend curve's
+Portable ECDSA signing is deterministic RFC 6979 using the backend curve's
 nonce-HMAC digest. The supplied message hash stays explicit. The optional
-Brainpool provider uses randomized ECDSA. Ordinary Ed448 verification and opaque
-signing use the RFC 8032 Ed448 variant with empty context, without an external
-prehash. Its native
-verification boundary rejects noncanonical and small-order public keys; the
-provider decodes points during verification. Software Ed448 key generation and
-import remain unavailable because their intermediate cleanup contract is
-unresolved. `require_support` returns a typed unsupported operation for them.
+native Brainpool provider uses randomized ECDSA. The portable Brainpool
+implementation uses the existing field and complete point-arithmetic engines;
+the 320-bit and 512-bit curves instantiate the RFC 5639 domain parameters.
+The 320-bit curve retains 40-byte wire scalars and coordinates while using
+384-bit integer storage internally.
+
+Ordinary Ed448 uses RFC 8032 with empty context and no external prehash.
+`Ed448Key` imports a 57-byte seed or generates one with fallible entropy,
+binds its public key and signs without private export. All seed expansion,
+nonce and challenge outputs enter clearing owners directly. Constant-time
+integer reduction precedes construction of private scalars; secret bytes do
+not enter the arithmetic dependency's byte-decoding or signing adapters.
+Explicit destruction invalidates the owner even though an all-zero seed is a
+valid RFC 8032 seed. Portable verification checks canonical points and scalars,
+rejects small-order public keys and uses the RFC cofactored verification
+equation. Contextual Ed448 and Ed448ph are separate variants and are rejected
+by this ordinary-signature interface.
+
+The portable Ed448 adapter reuses the curve arithmetic already selected by the
+X448 leaf. Its signing adapter is local and ownership-focused; it does not
+enable the dependency's signing feature. This source review and known-answer
+validation do not constitute an independent audit of the complete current
+arithmetic dependency.
 
 ## Bounded HPKE contract
 
@@ -149,7 +168,7 @@ Commands below target this source tree with defaults disabled:
 
 ```sh
 cargo test -p reallyme-crypto-hpke --no-default-features --features base-p256-aes128gcm --lib
-cargo test -p reallyme-crypto --no-default-features --features ecdsa-explicit,ed448,key-identifier-sha1 --test ecdsa_explicit_tests --test ed448_tests --test key_identifier_tests
+cargo test -p reallyme-crypto --no-default-features --features brainpool,ed448,key-identifier-sha1 --lib --test ecdsa_explicit_tests --test ed448_tests --test key_identifier_tests
 cargo test -p reallyme-crypto --no-default-features --features brainpool-openssl,ed448-openssl,key-identifier-sha1 --test ecdsa_explicit_tests --test ed448_tests --test key_identifier_tests
 CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER=wasm-bindgen-test-runner cargo test --release -p reallyme-crypto-hpke --target wasm32-unknown-unknown --no-default-features --features base-p256-aes128gcm --lib
 ```
@@ -185,20 +204,26 @@ the C library and Rust code. CI provisions the same pinned source before native
 tests. The exposed provider uses EC and Ed448 operations only; the optional
 provider does not select OpenSSL for the existing symmetric primitives.
 
-WASM returns `UnsupportedCurve` for all four Brainpool curves and
-`UnsupportedAlgorithm` for Ed448 verification/signing, including when their
-provider features are selected. A mobile application must link and execute the
-selected provider as part of its own release validation.
+`brainpool` and `ed448` provide portable native and WASM implementations without
+OpenSSL. Native `brainpool-openssl` and `ed448-openssl` explicitly select their
+native providers; an unavailable or rejected selected provider fails closed.
+WASM uses the portable implementation when these features are selected because
+the native dependency is target-excluded. No runtime fallback changes an
+explicit native provider selection.
 
 ## Validation scope
 
 | Environment | Evidence | Limits |
 | --- | --- | --- |
-| Native ARM64 macOS, Rust 1.99.1 | Workspace native/all-feature tests, strict Clippy, independent known answers, package inspection and public API compatibility checks; optional provider execution with pinned OpenSSL 4.0.3 | Primitive behavior does not establish reader trust or protocol acceptance |
+| Native ARM64 macOS, Rust 1.100.0 | 914 native tests plus the additional RFC 5869 cases, 976 all-feature tests, strict Clippy and independent known answers; optional provider execution with pinned OpenSSL 4.0.3 | Primitive behavior does not establish reader trust or protocol acceptance |
 | Rust 1.96.0 | All-feature workspace compilation | Minimum-version compile evidence |
-| WASM, Node test runner | Portable NIST ECDSA/ECDH, identifiers and HPKE execute; absent Brainpool/Ed448 providers return typed unsupported errors; HPKE includes the maximum 16 MiB record | No portable Brainpool/Ed448 execution; these new tests do not establish browser-specific integration |
-| `aarch64-apple-ios`, `aarch64-apple-ios-sim`, `x86_64-apple-ios` | Narrow crypto/provider and HPKE compilation; pinned OpenSSL 4.0.3 built with iOS 16.0 minimum | Compile-only; no device or simulator execution of these new APIs |
-| `aarch64-linux-android`, `armv7-linux-androideabi`, `i686-linux-android`, `x86_64-linux-android` | Narrow crypto/provider and HPKE compilation; NDK 29.0.14206865, API 24, pinned OpenSSL 4.0.3 | Compile-only; no device execution of these new APIs |
+| WASM, Node test runner | All seven ECDSA/ECDH curves, ordinary Ed448 software/opaque signing and verification, identifiers, SHA-2 NIST answers and HPKE execute; HPKE includes the maximum 16 MiB record | These tests do not establish browser-specific application integration |
+| iOS 27.0.1 physical device, ARM64; Rust 1.100.0 | 100 test functions execute: all seven ECDSA/ECDH curves, ordinary Ed448, identifiers, HPKE, SHA-2 NIST answers and existing Ed25519/X25519/X448/HMAC/HKDF/AES-GCM suites | Rust engines execute inside signed isolated test applications; SDK facade routing is separate |
+| iOS 26.5 simulator, ARM64; Rust 1.100.0 | Portable reader, HPKE and SHA-2 suites execute | Simulator evidence supplements physical-device execution |
+| `aarch64-apple-ios`, `aarch64-apple-ios-sim`, `x86_64-apple-ios` | All three portable target configurations compile; optional pinned OpenSSL 4.0.3 provider compilation also checked | x86-64 simulator execution was not performed |
+| Android 17 / API 37 physical device, ARM64; Rust 1.100.0 | Same 100 test functions execute, including all three direct RFC 5869 SHA-256 answers | Rust engine execution; application integration and SDK routing remain separate |
+| Android 16 / API 36 emulator, ARM64; Rust 1.100.0 | Same 100 test functions execute | Emulator evidence supplements physical-device execution |
+| `aarch64-linux-android`, `armv7-linux-androideabi`, `i686-linux-android`, `x86_64-linux-android` | All four portable targets compile with NDK 29.0.14206865 and API 24 link configuration; optional pinned OpenSSL 4.0.3 provider compilation also checked | Runtime execution covers ARM64; other architectures have compilation evidence |
 
 The existing Swift, Kotlin and TypeScript facade suites remain regression
 evidence for their existing provider routes. These additions expose Rust APIs;
@@ -210,23 +235,34 @@ New private-key owners and raw shared secrets use secrecy storage, clear on
 drop and offer no implicit private export. Plaintext and entropy buffers are
 zeroizing owners. Borrowed source buffers remain the caller's cleanup
 responsibility. Backend and compiler copies have the limitations described in
+`SECURITY_MEMORY_MODEL.md`. HKDF expansion writes directly into its clearing
+output owner, including error exits, while preserving existing error variants
+and exact caller-supplied salt and info bytes.
+
+All seven ECDSA/ECDH curves, ordinary Ed448, key identifiers and bounded HPKE
+have portable native and WASM execution coverage. Existing native providers
+remain optional and separately tested. New Rust capabilities do not add
+Swift/Kotlin/TypeScript facade routes or change existing serialized identifiers.
+
+The three SHA-2 one-shot leaves now use the existing block compression and
+padding engines with protected state, padding buffers and output owners.
+They bypass the dependency's unguarded fixed-output temporary; no dependency
+patch or change to FIPS SHA-2 output semantics is required. The upstream
+fixed-output wrapper itself remains unchanged for unrelated users. The
+ownership repair and its regression evidence are documented separately in
 `SECURITY_MEMORY_MODEL.md`.
 
-Portable NIST ECDSA/ECDH, key identifiers and bounded HPKE have native and WASM
-known-answer coverage. Native Brainpool and Ed448 verification/opaque signing
-coverage require their explicit providers. Ed448 software private-key operations
-are unsupported on every target. Mobile compilation and
-device execution are distinct evidence; a successful cross build establishes
-neither device execution nor provider availability in an application bundle.
+Parameter tests cover field widths, reduction, inversion, square roots and
+full multiplicative orders for both scalar fields and the 320-bit base field.
+For the private 512-bit base-field metadata, generator 2 has verified quadratic
+nonresidue and square-root properties; a complete multiplicative-order
+certificate remains an outstanding review item. The executed ECDSA/ECDH paths
+use the verified square-root property. This evidence does not claim a complete
+formal proof or an independent audit of the arithmetic implementation.
 
-Remaining delivery requirements are a coordinated versioned release and
-application-level mobile execution. Portable Brainpool and Ed448 implementations
-remain unavailable in WASM. Protected software Ed448 key generation/import is
-also an open requirement; callers must supply a reviewed opaque key provider
-for signing. New Rust capabilities do not add
-Swift/Kotlin/TypeScript facade routes or change existing serialized identifiers.
-Full reader conformance also requires the protocol and trust-layer work outside
-these primitives. Proof-system selection remains a separate contract.
+A coordinated versioned package release remains a delivery step. Full reader
+conformance also requires protocol and trust-layer work outside these
+primitives. Proof-system selection remains a separate contract.
 
 Primary primitive references: [RFC 9180](https://www.rfc-editor.org/rfc/rfc9180.html),
 [RFC 8032](https://www.rfc-editor.org/rfc/rfc8032.html),

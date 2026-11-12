@@ -133,6 +133,9 @@ private keys, or provide RSA encryption/decryption APIs.
 cargo add reallyme-crypto --features native,dispatch,ed25519
 ```
 
+Development and CI use Rust `1.100.0`, including its matching Cargo, Clippy and
+rustfmt components.
+
 The Rust crates require Rust `1.96.0` or newer. That MSRV is intentional:
 ReallyMe Crypto tracks current stable Rust so the public packages can use the
 compiler, dependency, lint, and target support expected by the conformance wall.

@@ -57,6 +57,15 @@ envelopes-jwk-multikey = { package = "reallyme-crypto-jwk-multikey", version = "
 thiserror = { workspace = true }
 zeroize = { workspace = true }
 ecdsa = { workspace = true, optional = true }
+elliptic-curve = { workspace = true, optional = true }
+primefield = { workspace = true, optional = true }
+primeorder = { workspace = true, optional = true }
+bp256 = { workspace = true, optional = true }
+bp384 = { workspace = true, optional = true }
+ed448-goldilocks = { workspace = true, optional = true }
+shake = { workspace = true, optional = true }
+sha2-backend = { package = "sha2", version = "0.11", features = ["zeroize"], optional = true }
+crypto-bigint = { workspace = true, features = ["zeroize"], optional = true }
 p256 = { workspace = true, features = ["ecdh", "ecdsa"], optional = true }
 p384 = { workspace = true, features = ["ecdh", "ecdsa"], optional = true }
 p521 = { workspace = true, features = ["ecdh", "ecdsa"], optional = true }
@@ -113,10 +122,11 @@ messaging-primitives = [
 
 # Additive contracts: these do not alter existing algorithms or provider routes.
 ecdsa-explicit = ["dep:ecdsa", "dep:p256", "dep:p384", "dep:p521", "dep:secrecy", "dep:getrandom", "dep:crypto-p256", "sha2"]
-ed448 = []
+ed448 = ["dep:ed448-goldilocks", "dep:shake", "dep:crypto-bigint", "dep:secrecy", "dep:getrandom"]
 ed448-openssl = ["ed448", "dep:openssl"]
 key-identifier-sha1 = ["dep:sha1"]
-brainpool-openssl = ["ecdsa-explicit", "dep:openssl"]
+brainpool-openssl = ["brainpool", "dep:openssl"]
+brainpool = ["ecdsa-explicit", "dep:elliptic-curve", "dep:primefield", "dep:primeorder", "dep:bp256", "dep:bp384", "dep:sha2-backend"]
 
 native = [
     "envelopes-jwk?/native",

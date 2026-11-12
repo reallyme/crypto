@@ -5,5 +5,6 @@
 //! SHA-256 (FIPS 180-4) digest wrapper.
 
 mod digest;
+mod hash_message;
 
 pub use digest::{digest, Sha2_256Digest, SHA2_256_DIGEST_LENGTH};
