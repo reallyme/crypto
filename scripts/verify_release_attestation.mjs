@@ -28,6 +28,8 @@ const REQUIRED_EVENTS = Object.freeze({
 });
 const REQUIRED_JOB_NAMES = Object.freeze({
   [CODE_CHECK_WORKFLOW]: [
+    "repository policy and tooling (ubuntu-24.04)",
+    "repository policy and tooling (macos-15)",
     "fmt, lint, test, wasm, package",
     "native sanitizer lanes",
     "FFI release artifact and C sanitizer",

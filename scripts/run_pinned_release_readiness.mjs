@@ -4,8 +4,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { createHash, timingSafeEqual } from "node:crypto";
-import { closeSync, constants, fstatSync, openSync, readSync } from "node:fs";
+import { closeSync, constants, fstatSync, openSync, readSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 // The upstream core and this repository's policy checker are separate inputs.
 // Pinning both makes an unreviewed policy edit fail before the checker runs.
@@ -13,12 +14,12 @@ const RELEASE_READINESS_COMMIT = "18a6d91d99837e80f92e41fe04effb0b043d754e";
 const RELEASE_READINESS_CORE_SHA256 =
   "7614b0cbf9e36a4653c2fa9008bee0d1e22542de0e4a08a10e640c836a5c93db";
 const LOCAL_CHECKER_SHA256 =
-  "47c47ba4703ef6770458148d45e1ee3dfc1f3772de79bdee982500f249ae4e0c";
+  "dcf23420761288eb1279bfdeccf4b58745048155486bc3e9ebdfe55f4379f39c";
 // The checker imports both local policy modules. Pinning only its entry file
 // would let an unreviewed dependency change the release decision.
 const LOCAL_CHECKER_DEPENDENCIES = [
   ["scripts/crypto_operation_route_readiness.mjs", "d55749f477782633e382fe9c50b152322e5f8d958ad31ba3550afbf8568c1295"],
-  ["scripts/workflow_gate_policy.mjs", "71b4f702eeb7d2d2b88ad5074ad5b90cab1588666f7d2924f891539f112b2069"],
+  ["scripts/workflow_gate_policy.mjs", "b7f48fb6cc84a5dde0c4350fcfcbf04da4e4b834bb01b98716054cb4001d0b69"],
 ];
 const RELEASE_READINESS_CORE_URL =
   `https://raw.githubusercontent.com/reallyme/release-readiness/${RELEASE_READINESS_COMMIT}/core.mjs`;
@@ -27,11 +28,40 @@ const LOCAL_CHECKER_PATH = "scripts/check_release_readiness.mjs";
 const MAX_CORE_BYTES = 262_144;
 const MAX_CHECKER_BYTES = 524_288;
 const FETCH_TIMEOUT_MILLISECONDS = 30_000;
+const repositoryUrl = new URL("../", import.meta.url);
+const repositoryRoot = fileURLToPath(repositoryUrl);
 
 const fail = (message) => {
   console.error(`pinned release readiness failed: ${message}`);
   process.exit(1);
 };
+
+const supportedArguments = new Set([
+  "--check-pins", "--refresh-checker-pin", "--verify-upstream",
+  "--generated-freshness", "--release-packages",
+]);
+const suppliedArguments = new Set();
+for (const argument of process.argv.slice(2)) {
+  if (!supportedArguments.has(argument) || suppliedArguments.has(argument)) {
+    fail("unsupported or duplicate argument");
+  }
+  suppliedArguments.add(argument);
+}
+const refreshCheckerPin = suppliedArguments.has("--refresh-checker-pin");
+if (refreshCheckerPin && suppliedArguments.size !== 1) {
+  fail("checker pin refresh cannot be combined with checks");
+}
+// A checksum refresh records reviewed policy; CI must never approve its own
+// changed inputs simply to make an integrity check pass.
+if (refreshCheckerPin && process.env.CI !== undefined) {
+  fail("checker pin refresh is a local review operation and is forbidden in CI");
+}
+const checkerArguments = [...suppliedArguments].filter((argument) =>
+  argument === "--generated-freshness" || argument === "--release-packages",
+);
+if (suppliedArguments.has("--check-pins") && checkerArguments.length !== 0) {
+  fail("--check-pins cannot be combined with a full checker mode");
+}
 
 const sha256 = (value) => createHash("sha256").update(value).digest();
 
@@ -41,7 +71,10 @@ const readBoundedRegularFile = (path, maximumBytes, label) => {
   }
   let descriptor;
   try {
-    descriptor = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW);
+    descriptor = openSync(
+      new URL(path, repositoryUrl),
+      constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK,
+    );
     const status = fstatSync(descriptor);
     if (!status.isFile()) {
       fail(`${label} must be a regular file`);
@@ -99,11 +132,8 @@ try {
 } catch {
   fail("release readiness inputs are missing or inaccessible");
 }
-if (!timingSafeEqual(sha256(localChecker), expectedCheckerDigest)) {
-  fail("local checker does not match the reviewed repository policy pin");
-}
 if (!timingSafeEqual(sha256(localCore), expectedDigest)) {
-  fail("vendored core does not match the reviewed upstream pin");
+  fail(`vendored core does not match the reviewed upstream pin at ${RELEASE_READINESS_COMMIT}`);
 }
 for (const [path, digestHex] of LOCAL_CHECKER_DEPENDENCIES) {
   const expected = Buffer.from(digestHex, "hex");
@@ -121,60 +151,103 @@ for (const [path, digestHex] of LOCAL_CHECKER_DEPENDENCIES) {
   }
 }
 
-let response;
-try {
-  response = await fetch(RELEASE_READINESS_CORE_URL, {
-    cache: "no-store",
-    redirect: "error",
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MILLISECONDS),
-  });
-} catch {
-  fail("pinned upstream core could not be fetched");
-}
-if (!response.ok || response.body === null) {
-  fail("pinned upstream core returned an invalid response");
-}
-
-const contentLength = response.headers.get("content-length");
-if (contentLength !== null) {
-  if (!/^[1-9][0-9]*$/u.test(contentLength)) {
-    fail("pinned upstream core returned an invalid content length");
-  }
-  const parsedLength = Number.parseInt(contentLength, 10);
-  if (!Number.isSafeInteger(parsedLength) || parsedLength <= 0 || parsedLength > MAX_CORE_BYTES) {
-    fail("pinned upstream core length is outside the accepted boundary");
-  }
-}
-
-const reader = response.body.getReader();
-const chunks = [];
-let totalLength = 0;
-while (true) {
-  let result;
+if (refreshCheckerPin) {
   try {
-    result = await reader.read();
+    const source = readBoundedRegularFile(import.meta.url, MAX_CHECKER_BYTES, "runner").toString("utf8");
+    const declaration = /const LOCAL_CHECKER_SHA256 =\n  "[0-9a-f]{64}";/gu;
+    if ([...source.matchAll(declaration)].length !== 1) {
+      fail("local checker pin declaration is missing or ambiguous");
+    }
+    const updated = source.replace(
+      declaration,
+      `const LOCAL_CHECKER_SHA256 =\n  "${sha256(localChecker).toString("hex")}";`,
+    );
+    if (updated !== source) {
+      // Only the fixed-width digest changes. Avoid following a substituted
+      // symlink or truncating the runner before its content is validated.
+      writeFileSync(new URL(import.meta.url), updated, {
+        flag: constants.O_WRONLY | constants.O_NOFOLLOW,
+      });
+    }
   } catch {
-    fail("pinned upstream core response could not be read");
+    fail("local checker pin could not be refreshed");
   }
-  if (result.done) {
-    break;
-  }
-  const chunk = result.value;
-  if (!(chunk instanceof Uint8Array) || chunk.length > MAX_CORE_BYTES - totalLength) {
-    fail("pinned upstream core exceeds the accepted boundary");
-  }
-  chunks.push(chunk);
-  totalLength += chunk.length;
-}
-if (totalLength === 0) {
-  fail("pinned upstream core is empty");
-}
-const upstreamCore = Buffer.concat(chunks, totalLength);
-if (!timingSafeEqual(sha256(upstreamCore), expectedDigest)) {
-  fail("pinned upstream core digest does not match the reviewed commit");
+  console.log("local checker pin refreshed; review the checker and pin diff together");
+  process.exit(0);
 }
 
-const checker = spawnSync(process.execPath, [LOCAL_CHECKER_PATH, ...process.argv.slice(2)], {
+if (!timingSafeEqual(sha256(localChecker), expectedCheckerDigest)) {
+  fail("local checker does not match the reviewed repository policy pin; after reviewing the policy change, run node scripts/run_pinned_release_readiness.mjs --refresh-checker-pin");
+}
+
+// Upstream provenance verification is explicit maintenance. Routine CI
+// authenticates the identical committed bytes without requiring this service.
+if (suppliedArguments.has("--verify-upstream")) {
+  let response;
+  try {
+    response = await fetch(RELEASE_READINESS_CORE_URL, {
+      cache: "no-store",
+      redirect: "error",
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MILLISECONDS),
+    });
+  } catch {
+    fail("pinned upstream core could not be fetched");
+  }
+  if (!response.ok || response.body === null) {
+    fail("pinned upstream core returned an invalid response");
+  }
+
+  const contentLength = response.headers.get("content-length");
+  if (contentLength !== null) {
+    if (!/^[1-9][0-9]*$/u.test(contentLength)) {
+      fail("pinned upstream core returned an invalid content length");
+    }
+    const parsedLength = Number.parseInt(contentLength, 10);
+    if (!Number.isSafeInteger(parsedLength) || parsedLength <= 0 || parsedLength > MAX_CORE_BYTES) {
+      fail("pinned upstream core length is outside the accepted boundary");
+    }
+  }
+
+  const reader = response.body.getReader();
+  const chunks = [];
+  let totalLength = 0;
+  while (true) {
+    let result;
+    try {
+      result = await reader.read();
+    } catch {
+      fail("pinned upstream core response could not be read");
+    }
+    if (result.done) {
+      break;
+    }
+    const chunk = result.value;
+    if (!(chunk instanceof Uint8Array) || chunk.length > MAX_CORE_BYTES - totalLength) {
+      fail("pinned upstream core exceeds the accepted boundary");
+    }
+    chunks.push(chunk);
+    totalLength += chunk.length;
+  }
+  if (totalLength === 0) {
+    fail("pinned upstream core is empty");
+  }
+  const upstreamCore = Buffer.concat(chunks, totalLength);
+  if (!timingSafeEqual(sha256(upstreamCore), expectedDigest)) {
+    fail("pinned upstream core digest does not match the reviewed commit");
+  }
+}
+
+// Local development and the first CI steps need to detect stale policy pins
+// without the cost of running the full release gate.
+if (suppliedArguments.has("--check-pins")) {
+  process.exit(0);
+}
+
+// The reviewed digest authenticates the committed upstream bytes. Downloading
+// the identical file again adds an availability dependency without adding an
+// integrity guarantee; policy upgrades must update the vendored core and pin.
+const checker = spawnSync(process.execPath, [LOCAL_CHECKER_PATH, ...checkerArguments], {
+  cwd: repositoryRoot,
   env: process.env,
   stdio: "inherit",
 });

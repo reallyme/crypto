@@ -42,10 +42,49 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  tooling:
+    name: repository policy and tooling (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '26'
+
+      - name: Verify release readiness pins
+        run: node scripts/run_pinned_release_readiness.mjs --check-pins
+
+      - name: Test repository tooling
+        run: node --test --test-concurrency=4 "scripts/**/*.test.mjs" "packages/ts/scripts/*.test.mjs"
+
+      - name: Test Gradle policy tools
+        run: python3 -B -m unittest discover -s scripts -p '*_test.py'
+
+      - name: Install ShellCheck
+        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # v2.90.3
+        with:
+          tool: shellcheck@0.11.0
+
+      - name: Install actionlint
+        run: bash scripts/install_actionlint.sh
+
+      - name: Lint GitHub Actions workflows
+        run: actionlint -color
+
   mobile-targets:
     name: iOS and Android Rust targets
     runs-on: macos-15
@@ -69,7 +108,7 @@ jobs:
 
   rust-msrv:
     name: Rust 1.96 minimum version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -86,7 +125,7 @@ jobs:
 
   rust-semver:
     name: Rust public API semver
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -133,12 +172,24 @@ jobs:
 
   rust:
     name: fmt, lint, test, wasm, package
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      - name: Install Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '26'
+          cache: npm
+          cache-dependency-path: |
+            crates/conformance/package-lock.json
+            packages/ts/package-lock.json
+
+      - name: Verify release readiness pins
+        run: node scripts/run_pinned_release_readiness.mjs --check-pins
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
@@ -178,15 +229,6 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-
-      - name: Install Node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '26'
-          cache: npm
-          cache-dependency-path: |
-            crates/conformance/package-lock.json
-            packages/ts/package-lock.json
 
       - name: Verify locked dependency graph
         run: cargo metadata --locked --format-version 1 --no-deps
@@ -344,7 +386,7 @@ jobs:
 
   ffi-abi-artifact:
     name: FFI release artifact and C sanitizer
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -361,7 +403,7 @@ jobs:
 
   ffi-miri:
     name: FFI pointer and panic boundary Miri tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -413,7 +455,7 @@ jobs:
 
   kotlin:
     name: kotlin package + vector conformance
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

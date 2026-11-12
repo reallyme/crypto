@@ -18,6 +18,9 @@ on:
       - ".github/workflows/protobuf-ci.yml"
       - "scripts/check_release_readiness.mjs"
       - "scripts/run_pinned_release_readiness.mjs"
+      - "scripts/pinned_release_readiness.test.mjs"
+      - "scripts/crypto_operation_route_readiness.mjs"
+      - "scripts/workflow_gate_policy.mjs"
       - "scripts/release-readiness/core.mjs"
       - "scripts/redact_crypto_proto_debug.mjs"
   push:
@@ -33,6 +36,9 @@ on:
       - ".github/workflows/protobuf-ci.yml"
       - "scripts/check_release_readiness.mjs"
       - "scripts/run_pinned_release_readiness.mjs"
+      - "scripts/pinned_release_readiness.test.mjs"
+      - "scripts/crypto_operation_route_readiness.mjs"
+      - "scripts/workflow_gate_policy.mjs"
       - "scripts/release-readiness/core.mjs"
       - "scripts/redact_crypto_proto_debug.mjs"
 
@@ -40,8 +46,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   BUFFA_VERSION: 0.9.2
@@ -50,7 +56,7 @@ env:
 jobs:
   protobuf:
     name: lint, immutable contracts, generated freshness
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -62,6 +68,9 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '26'
+
+      - name: Verify release readiness pins
+        run: node scripts/run_pinned_release_readiness.mjs --check-pins
 
       - name: Install TypeScript package dependencies
         run: npm ci --prefix packages/ts
