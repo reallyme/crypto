@@ -60,7 +60,7 @@ test("ordinary Ed448 vectors agree with an independent implementation", () => {
       assert.equal(verify(null, bytes(vector.message), publicKey, bytes(vector.signature)), false);
     }
   }
-  assert.equal(executed, 3);
+  assert.equal(executed, 8);
 });
 
 test("certificate and CRL answers bind the exact externally supplied TBS spans", () => {
@@ -94,11 +94,28 @@ test("legacy key identifiers hash the subjectPublicKey value alone", () => {
   }
 });
 
-test("SHA-2 leaves finalize directly into their clearing public owners", () => {
-  for (const path of ["../crates/sha2-256/src/digest.rs", "../crates/sha2/src/digest.rs"]) {
-    const source = readFileSync(new URL(path, import.meta.url), "utf8");
-    assert.doesNotMatch(source, /\.finalize\s*\(/, "an unowned finalized output must not return to the leaf");
-    assert.match(source, /finalize_into\(/);
-    assert.match(source, /ZeroizeOnDrop/);
+test("SHA-2 leaves retain protected state through output serialization", () => {
+  for (const crate of ["sha2-256", "sha2"]) {
+    const source = (file) => readFileSync(new URL(`../crates/${crate}/src/${file}.rs`, import.meta.url), "utf8");
+    const leaf = source("digest");
+    const implementation = source("hash_message");
+    assert.doesNotMatch(leaf + implementation, /\.finalize(?:_into)?\s*\(/, "fixed-output wrappers must not stage an unguarded finalized array");
+    assert.match(leaf, /crate::hash_message::hash\(/);
+    assert.match(leaf, /ZeroizeOnDrop/);
+    assert.match(implementation, /let mut state = Zeroizing::new\(/);
+    assert.match(implementation, /let mut buffer = Zeroizing::new\(Buffer/);
+    assert.match(implementation, /let encoded = Zeroizing::new\(word.to_be_bytes\(\)\)/);
+    assert.match(implementation, /destination.copy_from_slice\(encoded.as_ref\(\)\)/);
+    assert.doesNotMatch(implementation, /(?:Sha256|Sha384|Sha512)::(?:new|digest)\(/);
+  }
+});
+
+test("HKDF expansion writes through its clearing output owner", () => {
+  for (const file of ["derive", "sha384"]) {
+    const source = readFileSync(new URL(`../crates/hkdf/src/${file}.rs`, import.meta.url), "utf8");
+    assert.match(source, /let mut output = HkdfOutput::from_array\(\[0u8; N\]\)/);
+    assert.match(source, /\.expand\([^;]*output\.as_mut_bytes\(\)\)/s);
+    assert.doesNotMatch(source, /let mut (?:output|bytes) = \[0u8;/);
+    assert.doesNotMatch(source, /Ok\(HkdfOutput::from_array\(output\)\)/);
   }
 });

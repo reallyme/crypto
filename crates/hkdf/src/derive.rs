@@ -44,13 +44,15 @@ pub fn derive<const N: usize>(request: &DeriveRequest<'_>) -> Result<HkdfOutput<
         });
     }
 
-    let mut output = [0u8; N];
+    // Install the clearing owner before expansion can write key material. A
+    // backend error then drops the same owner as a successful derivation.
+    let mut output = HkdfOutput::from_array([0u8; N]);
 
     match request.suite {
         HkdfSuite::Sha2_256 => {
             let hkdf =
                 Hkdf::<Sha256>::new(request.salt.map(HkdfSalt::as_bytes), request.ikm.as_bytes());
-            hkdf.expand(request.info.as_bytes(), &mut output)
+            hkdf.expand(request.info.as_bytes(), output.as_mut_bytes())
                 .map_err(|_| CryptoError::Hkdf {
                     hash: HkdfHash::Sha2_256,
                     kind: HkdfFailureKind::ExpandFailed,
@@ -59,7 +61,7 @@ pub fn derive<const N: usize>(request: &DeriveRequest<'_>) -> Result<HkdfOutput<
         HkdfSuite::Sha2_384 => {
             let hkdf =
                 Hkdf::<Sha384>::new(request.salt.map(HkdfSalt::as_bytes), request.ikm.as_bytes());
-            hkdf.expand(request.info.as_bytes(), &mut output)
+            hkdf.expand(request.info.as_bytes(), output.as_mut_bytes())
                 .map_err(|_| CryptoError::Hkdf {
                     hash: HkdfHash::Sha2_384,
                     kind: HkdfFailureKind::ExpandFailed,
@@ -76,7 +78,7 @@ pub fn derive<const N: usize>(request: &DeriveRequest<'_>) -> Result<HkdfOutput<
                     request.salt.map(HkdfSalt::as_bytes),
                     request.ikm.as_bytes(),
                 );
-                hkdf.expand(request.info.as_bytes(), &mut output)
+                hkdf.expand(request.info.as_bytes(), output.as_mut_bytes())
                     .map_err(|_| CryptoError::Hkdf {
                         hash: HkdfHash::Sha3_256,
                         kind: HkdfFailureKind::ExpandFailed,
@@ -90,7 +92,7 @@ pub fn derive<const N: usize>(request: &DeriveRequest<'_>) -> Result<HkdfOutput<
         }
     }
 
-    Ok(HkdfOutput::from_array(output))
+    Ok(output)
 }
 
 /// Derive a 32-byte domain-separated key using SHA3-256 HKDF.

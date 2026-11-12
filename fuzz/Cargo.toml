@@ -44,7 +44,7 @@ crypto-pbkdf2 = { package = "reallyme-crypto-pbkdf2", path = "../crates/pbkdf2",
 crypto-slh-dsa = { package = "reallyme-crypto-slh-dsa", path = "../crates/slh-dsa", features = ["native"] }
 envelopes-jwk = { package = "reallyme-crypto-jwk", path = "../crates/jwk", features = ["native"] }
 envelopes-jwk-multikey = { package = "reallyme-crypto-jwk-multikey", path = "../crates/jwk-multikey", features = ["native"] }
-reallyme-crypto = { path = "../crates/crypto", default-features = false, features = ["native", "operation-response", "sha2", "sha3", "aes", "aes-kw", "aes-gcm-siv", "argon2id", "chacha20-poly1305", "concat-kdf", "hmac", "hkdf", "pbkdf2", "ed25519", "p256", "p384", "p521", "secp256k1", "x25519", "rsa", "ml-kem-512", "ml-kem-768", "ml-kem-1024", "ml-dsa-44", "ml-dsa-65", "ml-dsa-87", "slh-dsa", "x-wing", "hpke"] }
+reallyme-crypto = { path = "../crates/crypto", default-features = false, features = ["native", "operation-response", "sha2", "sha3", "aes", "aes-kw", "aes-gcm-siv", "argon2id", "chacha20-poly1305", "concat-kdf", "hmac", "hkdf", "pbkdf2", "ed25519", "p256", "p384", "p521", "secp256k1", "x25519", "rsa", "ml-kem-512", "ml-kem-768", "ml-kem-1024", "ml-dsa-44", "ml-dsa-65", "ml-dsa-87", "slh-dsa", "x-wing", "hpke", "brainpool", "ed448", "key-identifier-sha1"] }
 serde_json = "1.0"
 
 [[bin]]
@@ -92,6 +92,13 @@ bench = false
 [[bin]]
 name = "operation_family_boundaries"
 path = "fuzz_targets/operation_family_boundaries.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "reader_primitives"
+path = "fuzz_targets/reader_primitives.rs"
 test = false
 doc = false
 bench = false

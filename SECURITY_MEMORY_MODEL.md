@@ -184,17 +184,32 @@ crash reporters, debugger snapshots, swap, hibernation, or application logs.
 
 ## Residual Risks
 
-The SHA-256/384/512 one-shot leaves finalize through a mutable view of their
-existing clearing digest owner. They do not stage a separate plain finalized
-array at the leaf call site. Their public `into_bytes` methods retain the
-existing caller-owned array export contract.
+The SHA-256/384/512 one-shot leaves keep compression state and the partial-block
+buffer in clearing owners, then serialize state words through clearing byte
+owners directly into the existing clearing digest owner. SHA-384 serializes only
+its six output words; its two unused state words remain protected until drop.
+The leaves use the resolved SHA-2 implementation's compression and block-buffer
+padding, retaining its state-clearing features and exact FIPS 180-4 outputs.
+Their public `into_bytes` methods retain the existing caller-owned array export
+contract.
 
-The resolved `digest` 0.11.3 dependency's `CtOutWrapper` still stages a full
-output array internally without a clearing owner. Hash-state zeroization does
-not clear that array. The leaf change therefore addresses call-site ownership;
-complete dependency-level intermediate-output cleanup remains an upstream gap.
-No source-level ownership check establishes erasure of every compiler or CPU
-copy, and no unsafe after-drop memory observation is used as evidence.
+This path bypasses `digest` 0.11.3's `CtOutWrapper`, whose full-output temporary
+has no clearing owner. That dependency behavior remains relevant to other users
+of its fixed-output interface, but is no longer an intermediate-output gap in
+these one-shot leaves. Clearing owners cover normal return and unwinding; the
+leaf path has no fallible allocation or typed-error exit. Ownership regression
+checks, native/WASM NIST known answers and padding-boundary comparisons verify
+this contract without unsafe observations of released storage. Source-level
+ownership does not establish erasure of every compiler or CPU copy.
+
+HKDF extract and expand initialize their returned clearing owners before copying
+or writing derived material. Expansion errors drop that protected destination;
+there is no additional plain local output array to survive either exit path.
+The RFC 5869 SHA-256 answers and existing SHA-384/SHA-3 answers retain their
+exact output semantics. As with the other adapters, those owners do not erase
+buffers internal to a dependency or establish erasure of every arithmetic
+working value. Dependency implementation review remains distinct from the
+ownership guarantees at these public interfaces.
 
 1. Zeroization cannot remove all copies created by the OS, allocator, CPU, compiler, browser runtime, or platform managed runtimes.
 2. FFI callers can copy or log sensitive bytes after receiving them; Rust-side controls cannot erase caller-owned copies.

@@ -16,6 +16,11 @@ mod constants;
 mod digest;
 mod encode;
 mod key;
+#[cfg(all(
+    feature = "brainpool",
+    not(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))
+))]
+mod portable_brainpool;
 mod sign;
 mod verify;
 
@@ -36,13 +41,13 @@ pub enum EcdsaCurve {
     P384,
     /// NIST P-521 (66-byte scalars).
     P521,
-    /// brainpoolP256r1; requires the explicit native `brainpool-openssl` feature.
+    /// brainpoolP256r1; requires `brainpool` or the native `brainpool-openssl` feature.
     BrainpoolP256r1,
-    /// brainpoolP320r1; requires the explicit native `brainpool-openssl` feature.
+    /// brainpoolP320r1; requires `brainpool` or the native `brainpool-openssl` feature.
     BrainpoolP320r1,
-    /// brainpoolP384r1; requires the explicit native `brainpool-openssl` feature.
+    /// brainpoolP384r1; requires `brainpool` or the native `brainpool-openssl` feature.
     BrainpoolP384r1,
-    /// brainpoolP512r1; requires the explicit native `brainpool-openssl` feature.
+    /// brainpoolP512r1; requires `brainpool` or the native `brainpool-openssl` feature.
     BrainpoolP512r1,
 }
 
@@ -136,15 +141,30 @@ impl EcdsaCurve {
             Self::P256 => Ok(constants::P256_SCALAR_LEN),
             Self::P384 => Ok(constants::P384_SCALAR_LEN),
             Self::P521 => Ok(constants::P521_SCALAR_LEN),
-            #[cfg(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))]
+            #[cfg(any(
+                feature = "brainpool",
+                all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
+            ))]
             Self::BrainpoolP256r1 => Ok(constants::BRAINPOOL_P256_SCALAR_LEN),
-            #[cfg(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))]
+            #[cfg(any(
+                feature = "brainpool",
+                all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
+            ))]
             Self::BrainpoolP320r1 => Ok(constants::BRAINPOOL_P320_SCALAR_LEN),
-            #[cfg(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))]
+            #[cfg(any(
+                feature = "brainpool",
+                all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
+            ))]
             Self::BrainpoolP384r1 => Ok(constants::BRAINPOOL_P384_SCALAR_LEN),
-            #[cfg(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))]
+            #[cfg(any(
+                feature = "brainpool",
+                all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
+            ))]
             Self::BrainpoolP512r1 => Ok(constants::BRAINPOOL_P512_SCALAR_LEN),
-            #[cfg(not(all(feature = "brainpool-openssl", not(target_arch = "wasm32"))))]
+            #[cfg(not(any(
+                feature = "brainpool",
+                all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
+            )))]
             _ => Err(EcdsaError::UnsupportedCurve),
         }
     }

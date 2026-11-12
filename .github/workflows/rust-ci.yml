@@ -104,7 +104,7 @@ jobs:
       - name: Install Rust toolchain and mobile targets
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
-          toolchain: 1.99.1
+          toolchain: 1.100.0
           targets: aarch64-apple-ios,aarch64-linux-android
 
       - name: Check iOS FFI target
@@ -149,7 +149,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
-          toolchain: 1.99.1
+          toolchain: 1.100.0
 
       # Version 0.50.0 has no prebuilt Linux artifact. Cache the audited source
       # build and its dependencies so later runs do not rebuild the tool.
@@ -201,7 +201,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
-          toolchain: 1.99.1
+          toolchain: 1.100.0
           components: rustfmt, clippy
           targets: wasm32-unknown-unknown
 
@@ -325,7 +325,7 @@ jobs:
           cargo test --locked -p reallyme-crypto-hpke --no-default-features --features openmls
           cargo check --locked -p reallyme-crypto --no-default-features --features native,hpke-openmls
           cargo test --locked -p reallyme-crypto-hpke --no-default-features --features base-p256-aes128gcm --lib
-          cargo test --locked -p reallyme-crypto --no-default-features --features ecdsa-explicit,ed448,key-identifier-sha1 --test ecdsa_explicit_tests --test ed448_tests --test key_identifier_tests
+          cargo test --locked -p reallyme-crypto --no-default-features --features brainpool,ed448,key-identifier-sha1 --lib --test ecdsa_explicit_tests --test ed448_tests --test key_identifier_tests
 
       # SSI and other facade consumers select algorithms without a Rust backend.
       # Every feature must compile independently and as a combined graph.
@@ -341,10 +341,10 @@ jobs:
         run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
 
       - name: Test
-        run: cargo nextest run --locked --workspace --no-default-features --features native
+        run: cargo nextest run --locked --workspace --no-default-features --features native --test-threads 4
 
       - name: Test (all features — runs feature-gated tests incl. the proto bridge)
-        run: cargo nextest run --locked --workspace --all-features
+        run: cargo nextest run --locked --workspace --all-features --test-threads 4
 
       - name: Doc build (enforces missing_docs)
         run: cargo doc --locked --workspace --no-deps --all-features
@@ -381,7 +381,7 @@ jobs:
         env:
           CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER: wasm-bindgen-test-runner
         run: |
-          cargo test --locked -p reallyme-crypto --target wasm32-unknown-unknown --no-default-features --features brainpool-openssl,ed448-openssl,key-identifier-sha1 --test ecdsa_explicit_tests --test ed448_tests --test key_identifier_tests
+          cargo test --locked --release -p reallyme-crypto --target wasm32-unknown-unknown --no-default-features --features brainpool,ed448,key-identifier-sha1 --lib --test ecdsa_explicit_tests --test ed448_tests --test key_identifier_tests
           cargo test --locked --release -p reallyme-crypto-hpke --target wasm32-unknown-unknown --no-default-features --features base-p256-aes128gcm --lib
 
       - name: Check generated provider matrix
@@ -431,7 +431,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
-          toolchain: 1.99.1
+          toolchain: 1.100.0
 
       - name: Verify release artifact through C sanitizer
         run: bash scripts/test_ffi_abi_release_artifact.sh
@@ -509,7 +509,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
-          toolchain: 1.99.1
+          toolchain: 1.100.0
 
       - name: Build crypto-ffi dylib
         run: cargo build --locked -p crypto-ffi

@@ -94,6 +94,7 @@ jobs:
         target:
           - jwk_multikey
           - key_encodings
+          - reader_primitives
           - operation_family_boundaries
           - p256_point
           - post_quantum_encodings

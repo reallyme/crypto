@@ -42,6 +42,18 @@ fn portable(curve: EcdsaCurve) -> bool {
         EcdsaCurve::P256 | EcdsaCurve::P384 | EcdsaCurve::P521
     )
 }
+fn compressed_public(encoded: &[u8], width: usize) -> Vec<u8> {
+    let x_end = width.checked_add(1).unwrap();
+    assert_eq!(encoded.first(), Some(&4));
+    assert_eq!(
+        encoded.len(),
+        width.checked_mul(2).unwrap().checked_add(1).unwrap()
+    );
+    let mut compressed = vec![2 | (encoded.last().unwrap() & 1)];
+    compressed.extend_from_slice(&encoded[1..x_end]);
+    compressed
+}
+
 fn vectors() -> Vec<Value> {
     let mut vectors: Value =
         serde_json::from_str(include_str!("data/ecdsa_explicit.json")).unwrap();
@@ -49,13 +61,7 @@ fn vectors() -> Vec<Value> {
         .as_array_mut()
         .unwrap()
         .drain(..)
-        .filter(|v| {
-            portable(curve(&v["curve"]))
-                || cfg!(all(
-                    feature = "brainpool-openssl",
-                    not(target_arch = "wasm32")
-                ))
-        })
+        .filter(|v| portable(curve(&v["curve"])) || cfg!(feature = "brainpool"))
         .collect()
 }
 
@@ -65,14 +71,7 @@ fn every_enabled_curve_and_hash_executes_independent_known_answers() {
     let vectors = vectors();
     assert_eq!(
         vectors.len(),
-        if cfg!(all(
-            feature = "brainpool-openssl",
-            not(target_arch = "wasm32")
-        )) {
-            7
-        } else {
-            3
-        }
+        if cfg!(feature = "brainpool") { 7 } else { 3 }
     );
     for v in vectors {
         let curve = curve(&v["curve"]);
@@ -80,6 +79,14 @@ fn every_enabled_curve_and_hash_executes_independent_known_answers() {
         assert_eq!(key.public_key(), bytes(&v["public"]));
         assert_eq!(key.curve(), curve);
         validate_public_key(curve, key.public_key()).unwrap();
+        let width = bytes(&v["scalar"]).len();
+        let compressed = compressed_public(key.public_key(), width);
+        validate_public_key(curve, &compressed).unwrap();
+        let compressed_peer = compressed_public(&bytes(&v["peer_public"]), width);
+        assert_eq!(
+            key.agree(&compressed_peer).unwrap().expose_secret(),
+            bytes(&v["shared"])
+        );
         assert_eq!(
             key.agree(&bytes(&v["peer_public"]))
                 .unwrap()
@@ -103,6 +110,7 @@ fn every_enabled_curve_and_hash_executes_independent_known_answers() {
                 EcdsaEncoding::FixedWidth,
             )
             .unwrap();
+            verify(curve, &compressed, input, &raw, EcdsaEncoding::FixedWidth).unwrap();
             assert_eq!(
                 verify(
                     curve,
@@ -133,7 +141,13 @@ fn every_enabled_curve_and_hash_executes_independent_known_answers() {
             )
             .unwrap();
             let signed = key.sign(input, EcdsaEncoding::FixedWidth).unwrap();
-            if portable(curve) {
+            if portable(curve)
+                || cfg!(all(
+                    feature = "brainpool",
+                    not(feature = "brainpool-openssl")
+                ))
+                || cfg!(all(feature = "brainpool", target_arch = "wasm32"))
+            {
                 // The portable backend uses deterministic RFC 6979 signing;
                 // these expected bytes were calculated independently.
                 assert_eq!(signed, raw, "curve/hash {:?}/{:?}", curve, hash);
@@ -256,12 +270,7 @@ fn certificate_and_crl_verification_uses_exact_tbs_spans_for_every_curve_and_has
     let mut executed = 0;
     for v in fixture["vectors"].as_array().unwrap() {
         let curve = curve(&v["curve"]);
-        if !portable(curve)
-            && !cfg!(all(
-                feature = "brainpool-openssl",
-                not(target_arch = "wasm32")
-            ))
-        {
+        if !portable(curve) && !cfg!(feature = "brainpool") {
             continue;
         }
         let hash = hash(&v["hash"]);
@@ -305,17 +314,7 @@ fn certificate_and_crl_verification_uses_exact_tbs_spans_for_every_curve_and_has
         }
         executed += 1;
     }
-    assert_eq!(
-        executed,
-        if cfg!(all(
-            feature = "brainpool-openssl",
-            not(target_arch = "wasm32")
-        )) {
-            42
-        } else {
-            18
-        }
-    );
+    assert_eq!(executed, if cfg!(feature = "brainpool") { 42 } else { 18 });
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -515,7 +514,7 @@ fn clearing_owners_fail_closed_after_explicit_destruction() {
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
-#[cfg(not(all(feature = "brainpool-openssl", not(target_arch = "wasm32"))))]
+#[cfg(not(feature = "brainpool"))]
 fn absent_brainpool_provider_reports_unsupported_for_every_operation() {
     for curve in [
         EcdsaCurve::BrainpoolP256r1,

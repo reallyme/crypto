@@ -9,7 +9,8 @@ use crypto_sha2::{
 };
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn digest_lengths_are_stable() {
     assert_eq!(
         digest_sha2_384(b"hello").as_bytes().len(),
@@ -21,7 +22,8 @@ fn digest_lengths_are_stable() {
     );
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn digests_are_deterministic() {
     assert_eq!(
         digest_sha2_384(b"same input"),
@@ -33,7 +35,8 @@ fn digests_are_deterministic() {
     );
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn digests_change_when_message_changes() {
     assert_ne!(
         digest_sha2_384(b"message-one"),
@@ -45,7 +48,8 @@ fn digests_change_when_message_changes() {
     );
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn known_vectors_match() {
     let sha384_empty = concat!(
         "38b060a751ac96384cd9327eb1b1e36a",
@@ -76,7 +80,8 @@ fn known_vectors_match() {
     assert_eq!(hex::encode(digest_sha2_512(b"abc").as_bytes()), sha512_abc);
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn digest_owners_and_hash_states_keep_drop_cleanup() {
     fn requires_cleanup<T: ZeroizeOnDrop>() {
         assert!(core::mem::needs_drop::<T>());
@@ -85,6 +90,11 @@ fn digest_owners_and_hash_states_keep_drop_cleanup() {
     requires_cleanup::<crypto_sha2::Sha2_512Digest>();
     requires_cleanup::<sha2::Sha384>();
     requires_cleanup::<sha2::Sha512>();
+    requires_cleanup::<zeroize::Zeroizing<[u64; 8]>>();
+    requires_cleanup::<
+        zeroize::Zeroizing<sha2::digest::block_api::Buffer<sha2::block_api::Sha512VarCore>>,
+    >();
+    requires_cleanup::<zeroize::Zeroizing<[u8; 8]>>();
     let mut sha384 = digest_sha2_384(b"sensitive digest input");
     let mut sha512 = digest_sha2_512(b"sensitive digest input");
     assert_eq!(sha384.as_bytes(), &sha384.clone().into_bytes());
@@ -95,11 +105,12 @@ fn digest_owners_and_hash_states_keep_drop_cleanup() {
     assert_eq!(sha512.as_bytes(), &[0; SHA2_512_DIGEST_LENGTH]);
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn block_and_padding_boundaries_preserve_existing_outputs() {
     use sha2::Digest;
-    for length in [0, 1, 111, 112, 127, 128, 129, 239, 240, 255, 256, 257, 1024] {
-        let input = vec![0xa5; length];
+    for length in (0..=1024).chain([4095, 4096, 4097, 65535, 65536, 65537]) {
+        let input: Vec<u8> = (0_u8..=255).cycle().take(length).collect();
         assert_eq!(
             digest_sha2_384(&input).as_bytes().as_slice(),
             sha2::Sha384::digest(&input).as_slice()

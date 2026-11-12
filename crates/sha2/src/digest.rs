@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use sha2::{Digest, Sha384, Sha512};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Length in bytes of a SHA-384 digest.
@@ -64,26 +63,30 @@ impl core::fmt::Debug for Sha2_512Digest {
 
 /// Compute SHA-384 digest bytes for `message`.
 pub fn digest_sha2_384(message: &[u8]) -> Sha2_384Digest {
-    let mut hasher = Sha384::new();
-    hasher.update(message);
     // The existing public owner guards the destination before any digest
     // bytes are written, including when finalization unwinds.
     let mut digest = Sha2_384Digest {
         bytes: [0u8; SHA2_384_DIGEST_LENGTH],
     };
-    hasher.finalize_into((&mut digest.bytes).into());
+    crate::hash_message::hash(
+        message,
+        crate::hash_message::SHA384_INITIAL_STATE,
+        &mut digest.bytes,
+    );
     digest
 }
 
 /// Compute SHA-512 digest bytes for `message`.
 pub fn digest_sha2_512(message: &[u8]) -> Sha2_512Digest {
-    let mut hasher = Sha512::new();
-    hasher.update(message);
     // Keep the output inside its clearing owner instead of staging a second
     // plain byte array on the leaf's stack.
     let mut digest = Sha2_512Digest {
         bytes: [0u8; SHA2_512_DIGEST_LENGTH],
     };
-    hasher.finalize_into((&mut digest.bytes).into());
+    crate::hash_message::hash(
+        message,
+        crate::hash_message::SHA512_INITIAL_STATE,
+        &mut digest.bytes,
+    );
     digest
 }

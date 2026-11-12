@@ -20,7 +20,15 @@ pub fn der_to_fixed(curve: EcdsaCurve, signature: &[u8]) -> Result<Vec<u8>, Ecds
             .map_err(|_| EcdsaError::InvalidSignature),
         #[cfg(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))]
         curve => super::brainpool::der_to_fixed(curve, signature),
-        #[cfg(not(all(feature = "brainpool-openssl", not(target_arch = "wasm32"))))]
+        #[cfg(all(
+            feature = "brainpool",
+            not(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))
+        ))]
+        curve => super::portable_brainpool::der_to_fixed(curve, signature),
+        #[cfg(not(any(
+            feature = "brainpool",
+            all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
+        )))]
         _ => Err(EcdsaError::UnsupportedCurve),
     }
 }
@@ -39,7 +47,15 @@ pub fn fixed_to_der(curve: EcdsaCurve, signature: &[u8]) -> Result<Vec<u8>, Ecds
             .map_err(|_| EcdsaError::InvalidSignature),
         #[cfg(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))]
         curve => super::brainpool::fixed_to_der(curve, signature),
-        #[cfg(not(all(feature = "brainpool-openssl", not(target_arch = "wasm32"))))]
+        #[cfg(all(
+            feature = "brainpool",
+            not(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))
+        ))]
+        curve => super::portable_brainpool::fixed_to_der(curve, signature),
+        #[cfg(not(any(
+            feature = "brainpool",
+            all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
+        )))]
         _ => Err(EcdsaError::UnsupportedCurve),
     }
 }

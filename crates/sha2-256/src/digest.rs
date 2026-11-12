@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use sha2::{Digest, Sha256};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Length in bytes of a SHA-256 digest.
@@ -36,13 +35,10 @@ impl core::fmt::Debug for Sha2_256Digest {
 
 /// Compute SHA-256 digest bytes for `message`.
 pub fn digest(message: &[u8]) -> Sha2_256Digest {
-    let mut hasher = Sha256::new();
-    hasher.update(message);
-    // Install the drop guard before finalization writes digest bytes. The
-    // fixed-size borrow conversion cannot create another owned output array.
+    // Guard the destination before compression/finalization can write to it.
     let mut digest = Sha2_256Digest {
         bytes: [0u8; SHA2_256_DIGEST_LENGTH],
     };
-    hasher.finalize_into((&mut digest.bytes).into());
+    crate::hash_message::hash(message, &mut digest.bytes);
     digest
 }

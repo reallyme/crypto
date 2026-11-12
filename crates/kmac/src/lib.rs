@@ -9,6 +9,10 @@
 
 #![forbid(unsafe_code)]
 
+// Keep the shared keyed sponge state on its clearing feature. The direct
+// dependency exists for feature unification rather than a second implementation.
+use sha3_kmac_state as _;
+
 mod algorithm;
 
 #[cfg(any(feature = "native", feature = "wasm"))]

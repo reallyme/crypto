@@ -4,6 +4,7 @@
 
 //! Semantic-owner coverage for all HPKE operations and error classes.
 
+#![cfg(feature = "hpke-api")]
 #![allow(clippy::expect_used)]
 
 use reallyme_crypto::hpke::{

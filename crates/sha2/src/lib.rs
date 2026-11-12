@@ -7,6 +7,7 @@
 #![forbid(unsafe_code)]
 
 mod digest;
+mod hash_message;
 
 pub use digest::{
     digest_sha2_384, digest_sha2_512, Sha2_384Digest, Sha2_512Digest, SHA2_384_DIGEST_LENGTH,
