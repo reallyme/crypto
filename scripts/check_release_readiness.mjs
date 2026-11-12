@@ -4,13 +4,27 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { readdirSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
-import { assertCryptoOperationRouteReadiness } from "./crypto_operation_route_readiness.mjs";
-import { REQUIRED_WORKFLOW_GATES, workflowGateViolation } from "./workflow_gate_policy.mjs";
-// The package runner supplies the exact upstream module URL and verifies its
-// version. Direct local checks use the reviewed vendored copy.
-const coreUrl = process.env.RELEASE_READINESS_CORE_URL ?? "./release-readiness/core.mjs";
-const { createReleaseReadinessContext } = await import(coreUrl);
+// Direct local execution must authenticate policy before importing it, just
+// as the CI runner does. Loading a changed module first could execute its code
+// before the stale pin is rejected.
+const policyPins = spawnSync(process.execPath, [
+  fileURLToPath(new URL("./run_pinned_release_readiness.mjs", import.meta.url)),
+  "--check-pins",
+], {
+  cwd: fileURLToPath(new URL("../", import.meta.url)),
+  stdio: "inherit",
+});
+if (policyPins.error !== undefined || policyPins.status !== 0) {
+  process.stderr.write("release readiness check failed: policy pin verification failed\n");
+  process.exit(1);
+}
+const { assertCryptoOperationRouteReadiness } = await import("./crypto_operation_route_readiness.mjs");
+const { REQUIRED_WORKFLOW_GATES, workflowGateViolation } = await import("./workflow_gate_policy.mjs");
+// Environment configuration must not substitute an unreviewed core.
+const { createReleaseReadinessContext } = await import("./release-readiness/core.mjs");
 
 // The checker parses Cargo's registry output. Rust setup actions export
 // CARGO_TERM_COLOR=always, which otherwise inserts ANSI escapes into crate names
@@ -219,16 +233,9 @@ if (releaseVersionEnv !== undefined && !/^[0-9]+[.][0-9]+[.][0-9]+$/.test(releas
 const manifest = readJson("provider_manifest.json");
 runNodeCheck("scripts/check_provider_routing.mjs");
 runNodeCheck("scripts/check_negative_vectors.mjs");
-runNodeCheck("scripts/crypto_operation_route_readiness.test.mjs");
-runNodeCheck("scripts/workflow_gate_policy.test.mjs");
-runNodeCheck("scripts/prepare_semver_baseline.test.mjs");
-runNodeCheck("scripts/release_notes.test.mjs");
-runNodeCheck("scripts/native_build_scripts.test.mjs");
-runNodeCheck("scripts/maven_central_bundle.test.mjs");
-runNodeCheck("scripts/proto_hardening.test.mjs");
-runNodeCheck("scripts/publish_retry_policy.test.mjs");
-runNodeCheck("scripts/verify_release_attestation.test.mjs");
-runNodeCheck("scripts/verify_native_artifact_handoff.test.mjs");
+// Discover the same tests as the independent CI job. Adding a regression test
+// must not require changing this pinned policy entry point just to register it.
+runNodeCheck("--test", ["--test-concurrency=4", "scripts/**/*.test.mjs", "packages/ts/scripts/*.test.mjs"]);
 runNodeCheck("scripts/publish_crates_in_order.mjs", ["order"]);
 runNodeCheck("scripts/redact_crypto_proto_debug.mjs", ["--check-idempotent"]);
 const byId = new Map();
@@ -3286,8 +3293,8 @@ for (const path of [
   ".github/workflows/dependency-security.yml",
   ".github/workflows/codeql.yml",
 ]) {
-  assertContains(path, 'group: ${{ github.workflow }}-${{ github.ref }}');
-  assertContains(path, "cancel-in-progress: true");
+  assertContains(path, 'group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.sha }}');
+  assertContains(path, "cancel-in-progress: ${{ github.event_name == 'pull_request' }}");
 }
 for (const path of [
   ".github/workflows/rust-ci.yml",

@@ -20,8 +20,8 @@ on:
     - cron: '19 4 * * 1'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -40,16 +40,16 @@ jobs:
       matrix:
         include:
           - language: actions
-            os: ubuntu-latest
+            os: ubuntu-24.04
             build-mode: none
           - language: javascript-typescript
-            os: ubuntu-latest
+            os: ubuntu-24.04
             build-mode: none
           - language: rust
-            os: ubuntu-latest
+            os: ubuntu-24.04
             build-mode: none
           - language: java-kotlin
-            os: ubuntu-latest
+            os: ubuntu-24.04
             build-mode: manual
           - language: swift
             os: macos-26

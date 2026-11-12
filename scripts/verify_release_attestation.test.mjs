@@ -77,6 +77,8 @@ test("latest successful workflow attempt authorizes release", () => {
 
 test("release evidence requires every named code-check job", () => {
   const names = [
+    "repository policy and tooling (ubuntu-24.04)",
+    "repository policy and tooling (macos-15)",
     "fmt, lint, test, wasm, package",
     "native sanitizer lanes",
     "FFI release artifact and C sanitizer",
@@ -86,14 +88,17 @@ test("release evidence requires every named code-check job", () => {
   ];
   const jobs = names.map((name) => ({ name, status: "completed", conclusion: "success" }));
   assert.doesNotThrow(() => requireSuccessfulJobs(jobs, "rust-ci.yml"));
-  assert.throws(
-    () => requireSuccessfulJobs(jobs.slice(1), "rust-ci.yml"),
-    (error) => error instanceof ReleaseAttestationError && error.code === "missing-rust-ci.yml-job",
-  );
-  assert.throws(
-    () => requireSuccessfulJobs([{ ...jobs[0], conclusion: "skipped" }, ...jobs.slice(1)], "rust-ci.yml"),
-    (error) => error instanceof ReleaseAttestationError && error.code === "required-rust-ci.yml-job-not-successful",
-  );
+  for (const requiredName of names) {
+    assert.throws(
+      () => requireSuccessfulJobs(jobs.filter((job) => job.name !== requiredName), "rust-ci.yml"),
+      (error) => error instanceof ReleaseAttestationError && error.code === "missing-rust-ci.yml-job",
+    );
+    assert.throws(
+      () => requireSuccessfulJobs(jobs.map((job) => job.name === requiredName
+        ? { ...job, conclusion: "skipped" } : job), "rust-ci.yml"),
+      (error) => error instanceof ReleaseAttestationError && error.code === "required-rust-ci.yml-job-not-successful",
+    );
+  }
 });
 
 test("package preflight attestation requires matrix and publication jobs", () => {

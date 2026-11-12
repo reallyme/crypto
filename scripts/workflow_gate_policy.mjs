@@ -11,6 +11,8 @@ const RUN_KEY = /^\s{8}run\s*:/mu;
 
 export const REQUIRED_WORKFLOW_GATES = [
   [".github/workflows/rust-ci.yml", [
+    'node --test --test-concurrency=4 "scripts/**/*.test.mjs" "packages/ts/scripts/*.test.mjs"',
+    "actionlint -color",
     "cargo clippy --locked --workspace --all-targets --all-features -- -D warnings",
     "cargo nextest run --locked --workspace --no-default-features --features native",
     "cargo nextest run --locked --workspace --all-features",
