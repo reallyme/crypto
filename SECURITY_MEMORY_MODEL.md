@@ -184,6 +184,18 @@ crash reporters, debugger snapshots, swap, hibernation, or application logs.
 
 ## Residual Risks
 
+The SHA-256/384/512 one-shot leaves finalize through a mutable view of their
+existing clearing digest owner. They do not stage a separate plain finalized
+array at the leaf call site. Their public `into_bytes` methods retain the
+existing caller-owned array export contract.
+
+The resolved `digest` 0.11.3 dependency's `CtOutWrapper` still stages a full
+output array internally without a clearing owner. Hash-state zeroization does
+not clear that array. The leaf change therefore addresses call-site ownership;
+complete dependency-level intermediate-output cleanup remains an upstream gap.
+No source-level ownership check establishes erasure of every compiler or CPU
+copy, and no unsafe after-drop memory observation is used as evidence.
+
 1. Zeroization cannot remove all copies created by the OS, allocator, CPU, compiler, browser runtime, or platform managed runtimes.
 2. FFI callers can copy or log sensitive bytes after receiving them; Rust-side controls cannot erase caller-owned copies.
 3. Crash reporters, telemetry, swap, hibernation, and process snapshots remain deployment responsibilities.
