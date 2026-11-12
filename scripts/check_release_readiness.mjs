@@ -224,6 +224,7 @@ runNodeCheck("scripts/workflow_gate_policy.test.mjs");
 runNodeCheck("scripts/prepare_semver_baseline.test.mjs");
 runNodeCheck("scripts/release_notes.test.mjs");
 runNodeCheck("scripts/native_build_scripts.test.mjs");
+runNodeCheck("scripts/maven_central_bundle.test.mjs");
 runNodeCheck("scripts/proto_hardening.test.mjs");
 runNodeCheck("scripts/publish_retry_policy.test.mjs");
 runNodeCheck("scripts/verify_release_attestation.test.mjs");
