@@ -56,6 +56,13 @@ envelopes-jwk = { package = "reallyme-crypto-jwk", version = "=0.3.17", path = "
 envelopes-jwk-multikey = { package = "reallyme-crypto-jwk-multikey", version = "=0.3.17", path = "../jwk-multikey", optional = true, default-features = false }
 thiserror = { workspace = true }
 zeroize = { workspace = true }
+ecdsa = { workspace = true, optional = true }
+p256 = { workspace = true, features = ["ecdh", "ecdsa"], optional = true }
+p384 = { workspace = true, features = ["ecdh", "ecdsa"], optional = true }
+p521 = { workspace = true, features = ["ecdh", "ecdsa"], optional = true }
+secrecy = { workspace = true, optional = true }
+sha1 = { workspace = true, features = ["zeroize"], optional = true }
+getrandom = { workspace = true, features = ["wasm_js"], optional = true }
 
 [features]
 default = [
@@ -103,6 +110,13 @@ messaging-primitives = [
     "sha2",
     "x25519",
 ]
+
+# Additive contracts: these do not alter existing algorithms or provider routes.
+ecdsa-explicit = ["dep:ecdsa", "dep:p256", "dep:p384", "dep:p521", "dep:secrecy", "dep:getrandom", "dep:crypto-p256", "sha2"]
+ed448 = []
+ed448-openssl = ["ed448", "dep:openssl"]
+key-identifier-sha1 = ["dep:sha1"]
+brainpool-openssl = ["ecdsa-explicit", "dep:openssl"]
 
 native = [
     "envelopes-jwk?/native",
@@ -228,10 +242,15 @@ jwk = ["dep:envelopes-jwk"]
 jwk-multikey = ["dep:envelopes-jwk-multikey", "jwk"]
 
 [dev-dependencies]
+hex = { workspace = true }
+wasm-bindgen-test = { workspace = true }
 base64 = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 zeroize = { workspace = true }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+openssl = { workspace = true, optional = true }
 
 [lints]
 workspace = true

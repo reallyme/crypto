@@ -32,11 +32,24 @@
 //! conformance vectors pin the Rust output against an independent oracle.
 //! See `SECURITY.md` and `SECURITY_MEMORY_MODEL.md` at the repository root.
 //!
-//! Compile-checked usage examples live in the crate README so tests remain
-//! separate from production implementation files.
+//! Compile-checked usage examples live in the crate README.
 
 #![doc = include_str!("../README.md")]
 #![forbid(unsafe_code)]
+
+#[cfg(feature = "ecdsa-explicit")]
+pub mod ecdsa_explicit;
+#[cfg(feature = "ed448")]
+pub mod ed448;
+#[cfg(feature = "key-identifier-sha1")]
+pub mod key_identifier;
+#[cfg(feature = "ecdsa-explicit")]
+pub mod key_random;
+#[cfg(all(
+    any(feature = "brainpool-openssl", feature = "ed448-openssl"),
+    not(target_arch = "wasm32")
+))]
+mod native_provider;
 
 #[cfg(all(feature = "wasm", not(target_arch = "wasm32"), not(feature = "native")))]
 compile_error!(

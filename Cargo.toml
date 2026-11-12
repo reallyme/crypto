@@ -51,6 +51,7 @@ members = [
     "crates/conformance",
     "crates/proto",
     "tools/external-vector-audit",
+    "tools/optional-provider-build",
 ]
 exclude = ["core", "fuzz"]
 
@@ -110,6 +111,9 @@ p384 = "0.14"
 p521 = "0.14"
 k256 = "0.14"
 ecdsa = "0.17"
+# Only explicitly selected native Brainpool/Ed448 providers use this dependency.
+openssl = { version = "0.10.82", default-features = false }
+openssl-src = "=400.0.2"
 crypto-bigint = { version = "0.7", features = ["alloc"] }
 const-oid = { version = "0.10", features = ["db"] }
 ark-bn254 = "0.6"
