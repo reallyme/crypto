@@ -239,6 +239,16 @@ responsibility. Backend and compiler copies have the limitations described in
 output owner, including error exits, while preserving existing error variants
 and exact caller-supplied salt and info bytes.
 
+Portable Brainpool has a separate dependency-level serialization cleanup gap.
+In `primefield` 0.14.0, `MontyFieldElement::to_bytes` stages an unguarded padded
+coordinate array before copying into the returned representation. The ECDH
+shared-secret owner clears its retained bytes but cannot clear that discarded
+source array. This is a source-level buffer finding, beyond compiler/register
+copy limitations. Complete coordinate-serialization cleanup requires a reviewed
+dependency repair or a supported direct-output interface; it is not established
+by the current outer owners or known-answer tests. This part of CR-DIS-03
+remains open for the portable Brainpool provider.
+
 All seven ECDSA/ECDH curves, ordinary Ed448, key identifiers and bounded HPKE
 have portable native and WASM execution coverage. Existing native providers
 remain optional and separately tested. New Rust capabilities do not add
