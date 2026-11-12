@@ -246,8 +246,11 @@ shared-secret owner clears its retained bytes but cannot clear that discarded
 source array. This is a source-level buffer finding, beyond compiler/register
 copy limitations. Complete coordinate-serialization cleanup requires a reviewed
 dependency repair or a supported direct-output interface; it is not established
-by the current outer owners or known-answer tests. This part of CR-DIS-03
-remains open for the portable Brainpool provider.
+by the current outer owners or known-answer tests. The upstream encoding
+implementation remains in use, and this limitation is temporarily accepted.
+Practical disclosure and incorrect cryptographic results have not been
+demonstrated. This acceptance does not close the intermediate-buffer cleanup
+requirement in CR-DIS-03 for providers using that serialization path.
 
 All seven ECDSA/ECDH curves, ordinary Ed448, key identifiers and bounded HPKE
 have portable native and WASM execution coverage. Existing native providers
