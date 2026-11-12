@@ -23,6 +23,8 @@ impl Sha2_384Digest {
     }
 
     /// Consume the digest and return its fixed-size byte array.
+    ///
+    /// The caller owns the returned array and its cleanup responsibility.
     pub fn into_bytes(self) -> [u8; SHA2_384_DIGEST_LENGTH] {
         self.bytes
     }
@@ -47,6 +49,8 @@ impl Sha2_512Digest {
     }
 
     /// Consume the digest and return its fixed-size byte array.
+    ///
+    /// The caller owns the returned array and its cleanup responsibility.
     pub fn into_bytes(self) -> [u8; SHA2_512_DIGEST_LENGTH] {
         self.bytes
     }
@@ -62,20 +66,24 @@ impl core::fmt::Debug for Sha2_512Digest {
 pub fn digest_sha2_384(message: &[u8]) -> Sha2_384Digest {
     let mut hasher = Sha384::new();
     hasher.update(message);
-    let output = hasher.finalize();
-
-    let mut bytes = [0u8; SHA2_384_DIGEST_LENGTH];
-    bytes.copy_from_slice(&output);
-    Sha2_384Digest { bytes }
+    // The existing public owner guards the destination before any digest
+    // bytes are written, including when finalization unwinds.
+    let mut digest = Sha2_384Digest {
+        bytes: [0u8; SHA2_384_DIGEST_LENGTH],
+    };
+    hasher.finalize_into((&mut digest.bytes).into());
+    digest
 }
 
 /// Compute SHA-512 digest bytes for `message`.
 pub fn digest_sha2_512(message: &[u8]) -> Sha2_512Digest {
     let mut hasher = Sha512::new();
     hasher.update(message);
-    let output = hasher.finalize();
-
-    let mut bytes = [0u8; SHA2_512_DIGEST_LENGTH];
-    bytes.copy_from_slice(&output);
-    Sha2_512Digest { bytes }
+    // Keep the output inside its clearing owner instead of staging a second
+    // plain byte array on the leaf's stack.
+    let mut digest = Sha2_512Digest {
+        bytes: [0u8; SHA2_512_DIGEST_LENGTH],
+    };
+    hasher.finalize_into((&mut digest.bytes).into());
+    digest
 }

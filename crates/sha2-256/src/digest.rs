@@ -21,6 +21,8 @@ impl Sha2_256Digest {
     }
 
     /// Consume the digest and return its fixed-size byte array.
+    ///
+    /// The caller owns the returned array and its cleanup responsibility.
     pub fn into_bytes(self) -> [u8; SHA2_256_DIGEST_LENGTH] {
         self.bytes
     }
@@ -36,9 +38,11 @@ impl core::fmt::Debug for Sha2_256Digest {
 pub fn digest(message: &[u8]) -> Sha2_256Digest {
     let mut hasher = Sha256::new();
     hasher.update(message);
-    let output = hasher.finalize();
-
-    let mut bytes = [0u8; SHA2_256_DIGEST_LENGTH];
-    bytes.copy_from_slice(&output);
-    Sha2_256Digest { bytes }
+    // Install the drop guard before finalization writes digest bytes. The
+    // fixed-size borrow conversion cannot create another owned output array.
+    let mut digest = Sha2_256Digest {
+        bytes: [0u8; SHA2_256_DIGEST_LENGTH],
+    };
+    hasher.finalize_into((&mut digest.bytes).into());
+    digest
 }

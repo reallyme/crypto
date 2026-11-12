@@ -7,6 +7,7 @@
 use crypto_sha2::{
     digest_sha2_384, digest_sha2_512, SHA2_384_DIGEST_LENGTH, SHA2_512_DIGEST_LENGTH,
 };
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 #[test]
 fn digest_lengths_are_stable() {
@@ -73,4 +74,39 @@ fn known_vectors_match() {
     assert_eq!(hex::encode(digest_sha2_384(b"abc").as_bytes()), sha384_abc);
     assert_eq!(hex::encode(digest_sha2_512(b"").as_bytes()), sha512_empty);
     assert_eq!(hex::encode(digest_sha2_512(b"abc").as_bytes()), sha512_abc);
+}
+
+#[test]
+fn digest_owners_and_hash_states_keep_drop_cleanup() {
+    fn requires_cleanup<T: ZeroizeOnDrop>() {
+        assert!(core::mem::needs_drop::<T>());
+    }
+    requires_cleanup::<crypto_sha2::Sha2_384Digest>();
+    requires_cleanup::<crypto_sha2::Sha2_512Digest>();
+    requires_cleanup::<sha2::Sha384>();
+    requires_cleanup::<sha2::Sha512>();
+    let mut sha384 = digest_sha2_384(b"sensitive digest input");
+    let mut sha512 = digest_sha2_512(b"sensitive digest input");
+    assert_eq!(sha384.as_bytes(), &sha384.clone().into_bytes());
+    assert_eq!(sha512.as_bytes(), &sha512.clone().into_bytes());
+    sha384.zeroize();
+    sha512.zeroize();
+    assert_eq!(sha384.as_bytes(), &[0; SHA2_384_DIGEST_LENGTH]);
+    assert_eq!(sha512.as_bytes(), &[0; SHA2_512_DIGEST_LENGTH]);
+}
+
+#[test]
+fn block_and_padding_boundaries_preserve_existing_outputs() {
+    use sha2::Digest;
+    for length in [0, 1, 111, 112, 127, 128, 129, 239, 240, 255, 256, 257, 1024] {
+        let input = vec![0xa5; length];
+        assert_eq!(
+            digest_sha2_384(&input).as_bytes().as_slice(),
+            sha2::Sha384::digest(&input).as_slice()
+        );
+        assert_eq!(
+            digest_sha2_512(&input).as_bytes().as_slice(),
+            sha2::Sha512::digest(&input).as_slice()
+        );
+    }
 }
