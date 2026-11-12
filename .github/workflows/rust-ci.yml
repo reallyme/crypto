@@ -94,7 +94,7 @@ jobs:
 
   mobile-targets:
     name: iOS and Android Rust targets
-    runs-on: macos-15
+    runs-on: macos-15-intel
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -404,7 +404,7 @@ jobs:
 
   native-sanitizers:
     name: native sanitizer lanes
-    runs-on: macos-15
+    runs-on: macos-15-intel
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
