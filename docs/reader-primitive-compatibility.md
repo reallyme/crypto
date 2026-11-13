@@ -472,6 +472,11 @@ Practical disclosure and incorrect cryptographic results have not been
 demonstrated. This acceptance does not close the intermediate-buffer cleanup
 requirement in CR-DIS-03 for providers using that serialization path.
 
+The reviewed source repair, explicit interim application override and registry
+delivery criteria are recorded in the [dependency release plan](primefield-release-plan.md).
+The retained patch is not active in canonical dependency resolution and does not
+change the acceptance above.
+
 The historical checkpoints exercised all seven ECDSA/ECDH curves, ordinary
 Ed448, key identifiers and bounded HPKE in portable native and WASM lanes.
 Optional native providers were tested separately at those checkpoints. Current

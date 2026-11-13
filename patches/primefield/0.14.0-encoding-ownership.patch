@@ -1,0 +1,339 @@
+# SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -52,6 +52,7 @@
+     "rand_core",
+     "hybrid-array",
+     "subtle",
++    "zeroize",
+ ]
+ default-features = false
+ package = "crypto-bigint"
+@@ -63,6 +64,11 @@
+
+ [dependencies.ff]
+ version = "0.14"
++default-features = false
++
++[dependencies.hybrid-array]
++version = "0.4.12"
++features = ["zeroize"]
+ default-features = false
+
+ [dependencies.rand_core]
+@@ -86,7 +92,6 @@
+ cast_precision_loss = "warn"
+ cast_sign_loss = "warn"
+ checked_conversions = "warn"
+-from_iter_instead_of_collect = "warn"
+ implicit_saturating_sub = "warn"
+ manual_assert = "warn"
+ map_unwrap_or = "warn"
+--- a/Cargo.toml.orig
++++ b/Cargo.toml.orig
+@@ -17,9 +17,10 @@
+ rust-version = "1.85"
+
+ [dependencies]
+-bigint = { version = "0.7.5", package = "crypto-bigint", default-features = false, features = ["rand_core", "hybrid-array", "subtle"] }
++bigint = { version = "0.7.5", package = "crypto-bigint", default-features = false, features = ["rand_core", "hybrid-array", "subtle", "zeroize"] }
+ common = { package = "crypto-common", version = "0.2", features = ["rand_core"] }
+ ff = { version = "0.14", default-features = false }
++hybrid-array = { version = "0.4.12", default-features = false, features = ["zeroize"] }
+ subtle = { version = "2.6", default-features = false, features = ["const-generics"] }
+ rand_core = { version = "0.10", default-features = false }
+ zeroize = { version = "1.7", default-features = false }
+--- a/src/macros.rs
++++ b/src/macros.rs
+@@ -46,6 +46,7 @@
+         );
+
+         impl $crate::MontyFieldParams<{ <$uint>::LIMBS }> for $name {
++            #[allow(deprecated, reason = "Preserve crypto-bigint 0.7.10 compatibility")]
+             type ByteSize = $crate::bigint::hybrid_array::typenum::U<
+                 { $name::PARAMS.modulus().as_ref().bits().div_ceil(8) as usize },
+             >;
+--- a/src/monty.rs
++++ b/src/monty.rs
+@@ -4,7 +4,6 @@
+ use crate::ByteOrder;
+ use bigint::{
+     ArrayEncoding, ByteArray, Invert, Reduce, Uint, Word, ctutils,
+-    hybrid_array::{Array, ArraySize, typenum::Unsigned},
+     modular::{
+         ConstMontyForm as MontyForm, ConstMontyParams, ConstPrimeMontyParams, FixedMontyParams,
+         Retrieve,
+@@ -18,11 +17,13 @@
+     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
+ };
+ use ff::{Field, PrimeField};
++use hybrid_array::{Array, ArraySize, typenum::Unsigned};
+ use rand_core::TryCryptoRng;
+ use subtle::{
+     Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeGreater, ConstantTimeLess,
+     CtOption,
+ };
++use zeroize::Zeroizing;
+
+ /// Extension trait for defining additional field parameters beyond the ones provided by
+ /// [`ConstMontyPrimeParams`].
+@@ -76,14 +77,16 @@
+     where
+         Uint<LIMBS>: ArrayEncoding,
+     {
+-        let mut byte_array = ByteArray::<Uint<LIMBS>>::default();
++        // Private scalars and points can pass through this padded representation.
++        // Borrow its storage during decoding instead of copying another byte array.
++        let mut byte_array = Zeroizing::new(ByteArray::<Uint<LIMBS>>::default());
+         debug_assert!(repr.len() <= byte_array.len());
+
+         let offset = byte_array.len().saturating_sub(repr.len());
+-        let uint = match MOD::BYTE_ORDER {
++        let uint = Zeroizing::new(match MOD::BYTE_ORDER {
+             ByteOrder::BigEndian => {
+                 byte_array[offset..].copy_from_slice(repr);
+-                Uint::from_be_byte_array(byte_array)
++                Uint::from_be_slice(&byte_array)
+             }
+             ByteOrder::LittleEndian => {
+                 // For little-endian encoding we place the serialized bytes starting
+@@ -92,9 +95,9 @@
+                 // `repr` is at most as large as the underlying `Uint` byte size
+                 // (see `MontyFieldParams::ByteSize`), so this slice is valid.
+                 byte_array[..repr.len()].copy_from_slice(repr);
+-                Uint::from_le_byte_array(byte_array)
++                Uint::from_le_slice(&byte_array)
+             }
+-        };
++        });
+
+         Self::from_uint(&uint)
+     }
+@@ -108,7 +111,7 @@
+     where
+         Uint<LIMBS>: ArrayEncoding,
+     {
+-        let array = Array::try_from(slice).ok()?;
++        let array = Zeroizing::new(MontyFieldBytes::<MOD, LIMBS>::try_from(slice).ok()?);
+         Self::from_bytes(&array).into()
+     }
+
+@@ -176,6 +179,7 @@
+     /// If the modulus is 32-bits or smaller.
+     #[inline]
+     #[must_use]
++    #[allow(deprecated, reason = "Preserve crypto-bigint 0.7.10 compatibility")]
+     pub const fn from_u32(w: u32) -> Self {
+         assert!(
+             MOD::PARAMS.modulus().as_ref().bits() > 32,
+@@ -192,6 +196,7 @@
+     /// If the modulus is 64-bits or smaller.
+     #[inline]
+     #[must_use]
++    #[allow(deprecated, reason = "Preserve crypto-bigint 0.7.10 compatibility")]
+     pub const fn from_u64(w: u64) -> Self {
+         assert!(
+             MOD::PARAMS.modulus().as_ref().bits() > 64,
+@@ -251,18 +256,21 @@
+         MOD: MontyFieldParams<LIMBS>,
+         Uint<LIMBS>: ArrayEncoding,
+     {
+-        let mut repr = MontyFieldBytes::<MOD, LIMBS>::default();
++        let mut repr = Zeroizing::new(MontyFieldBytes::<MOD, LIMBS>::default());
+         debug_assert!(repr.len() <= <Uint::<LIMBS> as ArrayEncoding>::ByteSize::USIZE);
+
+         let offset = <Uint<LIMBS> as ArrayEncoding>::ByteSize::USIZE.saturating_sub(repr.len());
+
++        // A field encoding may contain a shared secret. Keep the canonical
++        // integer and any padding in clearing owners until serialization ends.
++        let canonical = Zeroizing::new(self.inner.retrieve());
+         match MOD::BYTE_ORDER {
+             ByteOrder::BigEndian => {
+-                let padded = self.inner.retrieve().to_be_byte_array();
++                let padded = Zeroizing::new(canonical.to_be_byte_array());
+                 repr.copy_from_slice(&padded[offset..]);
+             }
+             ByteOrder::LittleEndian => {
+-                let padded = self.inner.retrieve().to_le_byte_array();
++                let padded = Zeroizing::new(canonical.to_le_byte_array());
+                 // For little-endian encoding we expose the least-significant bytes
+                 // at the beginning of the representation.
+                 let len = repr.len();
+@@ -270,7 +278,8 @@
+             }
+         }
+
+-        repr
++        // Transfer the caller-visible bytes while clearing all source buffers.
++        core::mem::take(&mut *repr)
+     }
+
+     /// Determine if this field element is odd: `self mod 2 == 1`.
+@@ -482,6 +491,7 @@
+     type Repr = MontyFieldBytes<MOD, LIMBS>;
+
+     const MODULUS: &'static str = MOD::MODULUS_HEX;
++    #[allow(deprecated, reason = "Preserve crypto-bigint 0.7.10 compatibility")]
+     const NUM_BITS: u32 = MOD::PARAMS.modulus().as_ref().bits_vartime();
+     const CAPACITY: u32 = Self::NUM_BITS - 1;
+     const TWO_INV: Self = Self::from_u64(2).const_invert();
+@@ -492,6 +502,7 @@
+     const DELTA: Self = Self::MULTIPLICATIVE_GENERATOR.sqn_vartime(Self::S as usize);
+
+     fn from_repr(bytes: Self::Repr) -> CtOption<Self> {
++        let bytes = Zeroizing::new(bytes);
+         Self::from_bytes(&bytes)
+     }
+
+@@ -1088,3 +1099,148 @@
+         }
+     }
+ }
++
++#[cfg(test)]
++mod encoding_ownership_tests {
++    use super::{MontyFieldBytes, MontyFieldElement, MontyFieldParams};
++    use crate::{ByteOrder, compute_t};
++    use bigint::{ArrayEncoding, U384, const_prime_monty_params, modular::ConstMontyParams};
++    use ff::PrimeField;
++    use hybrid_array::typenum::U32;
++    use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
++
++    // The existing P-256 test field in wider storage exercises padding without
++    // introducing a new field modulus or multiplicative-generator assumption.
++    const_prime_monty_params!(
++        BigParams,
++        U384,
++        "00000000000000000000000000000000FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF",
++        6,
++        "Padded P-256 encoding regression field."
++    );
++    const_prime_monty_params!(
++        LittleParams,
++        U384,
++        "00000000000000000000000000000000FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF",
++        6,
++        "Padded P-256 encoding regression field."
++    );
++
++    impl MontyFieldParams<{ U384::LIMBS }> for BigParams {
++        type ByteSize = U32;
++        const BYTE_ORDER: ByteOrder = ByteOrder::BigEndian;
++        const MODULUS_HEX: &str =
++            "ffffffff00000001000000000000000000000000ffffffffffffffffffffffff";
++        const T: U384 = compute_t(Self::PARAMS.modulus().as_ref());
++    }
++
++    impl MontyFieldParams<{ U384::LIMBS }> for LittleParams {
++        type ByteSize = U32;
++        const BYTE_ORDER: ByteOrder = ByteOrder::LittleEndian;
++        const MODULUS_HEX: &str =
++            "ffffffff00000001000000000000000000000000ffffffffffffffffffffffff";
++        const T: U384 = compute_t(Self::PARAMS.modulus().as_ref());
++    }
++
++    type BigField = MontyFieldElement<BigParams, { U384::LIMBS }>;
++    type LittleField = MontyFieldElement<LittleParams, { U384::LIMBS }>;
++
++    #[test]
++    fn padded_big_endian_representations_preserve_all_low_sixteen_bit_patterns() {
++        for value in u16::MIN..=u16::MAX {
++            let mut bytes = MontyFieldBytes::<BigParams, { U384::LIMBS }>::default();
++            for (target, source) in bytes.iter_mut().rev().zip(value.to_be_bytes().iter().rev()) {
++                *target = *source;
++            }
++            let expected = BigField::from_u64(u64::from(value));
++            assert_eq!(BigField::from_bytes(&bytes).into_option(), Some(expected));
++            assert_eq!(BigField::from_slice(&bytes), Some(expected));
++            assert_eq!(BigField::from_repr(bytes).into_option(), Some(expected));
++            assert_eq!(expected.to_bytes(), bytes);
++        }
++    }
++
++    #[test]
++    fn padded_little_endian_representations_preserve_all_low_sixteen_bit_patterns() {
++        for value in u16::MIN..=u16::MAX {
++            let mut bytes = MontyFieldBytes::<LittleParams, { U384::LIMBS }>::default();
++            for (target, source) in bytes.iter_mut().zip(value.to_le_bytes().iter()) {
++                *target = *source;
++            }
++            let expected = LittleField::from_u64(u64::from(value));
++            assert_eq!(
++                LittleField::from_bytes(&bytes).into_option(),
++                Some(expected)
++            );
++            assert_eq!(LittleField::from_slice(&bytes), Some(expected));
++            assert_eq!(LittleField::from_repr(bytes).into_option(), Some(expected));
++            assert_eq!(expected.to_bytes(), bytes);
++        }
++    }
++
++    #[test]
++    fn padded_canonical_boundaries_are_checked_in_both_byte_orders() {
++        let cases = [
++            (
++                "00000000000000000000000000000000FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFE",
++                true,
++            ),
++            (
++                "00000000000000000000000000000000FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF",
++                false,
++            ),
++            (
++                "00000000000000000000000000000000FFFFFFFF00000001000000000000000000000001000000000000000000000000",
++                false,
++            ),
++            (
++                "00000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
++                false,
++            ),
++        ];
++        for (hex, valid) in cases {
++            let integer = U384::from_be_hex(hex);
++            let big_padded = integer.to_be_byte_array();
++            let little_padded = integer.to_le_byte_array();
++            let mut big = MontyFieldBytes::<BigParams, { U384::LIMBS }>::default();
++            let mut little = MontyFieldBytes::<LittleParams, { U384::LIMBS }>::default();
++            for (target, source) in big.iter_mut().rev().zip(big_padded.iter().rev()) {
++                *target = *source;
++            }
++            for (target, source) in little.iter_mut().zip(little_padded.iter()) {
++                *target = *source;
++            }
++            assert_eq!(bool::from(BigField::from_bytes(&big).is_some()), valid);
++            assert_eq!(BigField::from_slice(&big).is_some(), valid);
++            assert_eq!(bool::from(BigField::from_repr(big).is_some()), valid);
++            assert_eq!(
++                bool::from(LittleField::from_bytes(&little).is_some()),
++                valid
++            );
++            assert_eq!(LittleField::from_slice(&little).is_some(), valid);
++            assert_eq!(bool::from(LittleField::from_repr(little).is_some()), valid);
++        }
++    }
++
++    #[test]
++    fn invalid_representation_lengths_fail_without_decoding() {
++        let invalid: &[&[u8]] = &[&[], &[1], &[1, 2, 3], &[0; 31], &[0; 33], &[0; 49]];
++        for bytes in invalid {
++            assert_eq!(BigField::from_slice(bytes), None);
++            assert_eq!(LittleField::from_slice(bytes), None);
++        }
++    }
++
++    #[test]
++    fn independent_guards_clear_integer_and_representation_storage() {
++        fn require_clearing_owner<T: ZeroizeOnDrop>() {}
++        require_clearing_owner::<Zeroizing<U384>>();
++        require_clearing_owner::<Zeroizing<MontyFieldBytes<BigParams, { U384::LIMBS }>>>();
++        let mut canonical = Zeroizing::new(U384::from_u64(0x1234));
++        let mut bytes = Zeroizing::new(BigField::from_u64(0x1234).to_bytes());
++        canonical.zeroize();
++        bytes.zeroize();
++        assert_eq!(*canonical, U384::ZERO);
++        assert!(bytes.iter().all(|byte| *byte == 0));
++    }
++}
