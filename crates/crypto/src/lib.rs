@@ -4,39 +4,39 @@
 
 //! # reallyme-crypto
 //!
-//! Umbrella crate that re-exports the ReallyMe cryptographic primitives,
-//! dispatch and signer abstractions behind one dependency and a consistent
-//! feature set.
+//! ReallyMe cryptographic primitives, dispatch and signing abstractions behind
+//! one dependency and a consistent feature set.
 //!
 //! ## Platform lanes
 //!
-//! Rust exposes two backend lanes selected by Cargo feature and target:
-//! `native` (portable Rust) and `wasm` (package-owned Rust compiled for
-//! WebAssembly with target-appropriate entropy support).
-//! Swift and Kotlin provider selection lives in their package facades; those
-//! facades call this Rust workspace through FFI/JNI only for algorithms whose
-//! provider policy explicitly selects Rust. A lane never silently falls back to
-//! another backend.
+//! Rust selects `native` (portable Rust) or `wasm` (WebAssembly with appropriate
+//! entropy support) through Cargo features and target. Swift and Kotlin select
+//! providers in their facades and use FFI/JNI only where policy specifies Rust.
+//! A lane never silently falls back to another backend.
 //!
-//! The canonical contract is not the Rust API by itself. It is the shared set
-//! of protobuf/enums, package algorithm identifiers, typed error taxonomy,
-//! provider manifest, and conformance vectors. Rust is the reference
-//! implementation and the shared implementation for selected primitives; native
-//! platform routes are interchangeable only when vectors and typed-error tests
-//! prove identical input, output, failure, and edge-case behavior.
+//! The canonical contract is not the Rust API by itself.
+//! Protobuf/enums, package identifiers, typed errors, the provider manifest and
+//! conformance vectors define the shared contract. Platform routes are
+//! interchangeable only where vectors and typed-error tests prove identical
+//! input, output, failure and edge-case behavior.
 //!
 //! ## Security posture
 //!
-//! `#![forbid(unsafe_code)]` here; secret material is returned in zeroizing
-//! wrappers; signature verification fails closed; and cross-implementation
-//! conformance vectors pin the Rust output against an independent oracle.
-//! See `SECURITY.md` and `SECURITY_MEMORY_MODEL.md` at the repository root.
-//!
-//! Compile-checked usage examples live in the crate README.
+//! Unsafe code is forbidden; secret owners zeroize and verification fails closed.
+//! See `SECURITY.md`, `SECURITY_MEMORY_MODEL.md` and the compile-checked examples
+//! in the crate README.
 
 #![doc = include_str!("../README.md")]
 #![forbid(unsafe_code)]
 
+#[cfg(any(
+    feature = "prime-groups",
+    all(
+        feature = "brainpool",
+        not(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))
+    )
+))]
+mod brainpool_parameters;
 #[cfg(feature = "ecdsa-explicit")]
 pub mod ecdsa_explicit;
 #[cfg(feature = "ed448")]
@@ -50,6 +50,8 @@ pub mod key_random;
     not(target_arch = "wasm32")
 ))]
 mod native_provider;
+#[cfg(feature = "prime-groups")]
+pub mod prime_groups;
 
 #[cfg(all(feature = "wasm", not(target_arch = "wasm32"), not(feature = "native")))]
 compile_error!(
@@ -203,18 +205,15 @@ pub mod hkdf;
 #[cfg(feature = "kmac")]
 pub mod kmac;
 
-/// ML-DSA-44 (FIPS 204) post-quantum signatures: keygen, sign/verify, and
-/// public-key encoding.
+/// ML-DSA-44 (FIPS 204) key generation, signatures and public-key encoding.
 #[cfg(feature = "ml-dsa-44")]
 pub mod ml_dsa_44;
 
-/// ML-DSA-65 (FIPS 204) post-quantum signatures: keygen, sign/verify, and
-/// public-key encoding.
+/// ML-DSA-65 (FIPS 204) key generation, signatures and public-key encoding.
 #[cfg(feature = "ml-dsa-65")]
 pub mod ml_dsa_65;
 
-/// ML-DSA-87 (FIPS 204) post-quantum signatures: keygen, sign/verify, and
-/// public-key encoding.
+/// ML-DSA-87 (FIPS 204) key generation, signatures and public-key encoding.
 #[cfg(feature = "ml-dsa-87")]
 pub mod ml_dsa_87;
 

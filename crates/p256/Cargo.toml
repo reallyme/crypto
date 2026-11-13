@@ -44,7 +44,8 @@ wasm = [
 
 [dependencies]
 crypto-core = { package = "reallyme-crypto-core", version = "=0.3.17", path = "../crypto/core" }
-codec-pem = { package = "reallyme-codec-pem", version = "0.3.2", optional = true }
+codec-der = { package = "reallyme-codec", version = "=0.3.4", default-features = false, features = ["der"] }
+codec-pem = { package = "reallyme-codec-pem", version = "0.3.4", optional = true }
 thiserror = { workspace = true }
 zeroize = { workspace = true, features = ["derive"] }
 
@@ -59,8 +60,11 @@ getrandom = { workspace = true, features = ["wasm_js"], optional = true }
 sha2 = { workspace = true, optional = true }
 
 [dev-dependencies]
+# Exercise strict DER even when another consumer enables BER on the same parser.
+der-core = { package = "der", version = "=0.8.3", default-features = false, features = ["ber"] }
 hex = { workspace = true }
 hex-literal = { workspace = true }
+wasm-bindgen-test = { workspace = true }
 
 [lints]
 workspace = true

@@ -140,6 +140,17 @@ fn every_enabled_curve_and_hash_executes_independent_known_answers() {
                 EcdsaEncoding::FixedWidth,
             )
             .unwrap();
+            let high_s = bytes(&signature["high_s_raw"]);
+            let high_s_der = fixed_to_der(curve, &high_s).unwrap();
+            assert_eq!(der_to_fixed(curve, &high_s_der).unwrap(), high_s);
+            verify(
+                curve,
+                key.public_key(),
+                input,
+                &high_s_der,
+                EcdsaEncoding::Der,
+            )
+            .unwrap();
             let signed = key.sign(input, EcdsaEncoding::FixedWidth).unwrap();
             if portable(curve)
                 || cfg!(all(
@@ -389,10 +400,17 @@ fn every_curve_rejects_invalid_scalars_points_encodings_and_lengths() {
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
 fn strict_der_syntax_and_curve_scalar_validation_share_one_contract() {
+    use der_core::Decode;
+
+    // A sibling consumer enables BER, but the shared codec signature parser
+    // must still enforce DER independently of dependency feature unification.
+    // This entry point exists only when the unified BER feature is enabled.
+    assert_eq!(u8::from_ber(&[0x02, 0x01, 0x01]).unwrap(), 1);
     // Valid DER zero is still an invalid ECDSA scalar. Other cases exercise
     // BER forms, nonminimal lengths/signs, constructed INTEGERs and extra data.
     let malformed = [
         "3006020100020101",
+        "3006020101020100",
         "30060201ff020101",
         "300702020001020101",
         "300702020000020101",
@@ -403,6 +421,7 @@ fn strict_der_syntax_and_curve_scalar_validation_share_one_contract() {
         "3088ffffffffffffffff",
         "3006220101020101",
         "30050200020101",
+        "3003020101",
         "300602010102010100",
     ];
     let minimal = hex::decode("3006020101020101").unwrap();
@@ -410,6 +429,33 @@ fn strict_der_syntax_and_curve_scalar_validation_share_one_contract() {
         let curve = curve(&vector["curve"]);
         let public = bytes(&vector["public"]);
         let width = bytes(&vector["scalar"]).len();
+        let zero_scalar = hex::decode("3006020100020101").unwrap();
+        assert_eq!(
+            verify(
+                curve,
+                &public,
+                EcdsaInput::Prehash {
+                    hash: EcdsaHash::Sha256,
+                    bytes: &[0; 31]
+                },
+                &zero_scalar,
+                EcdsaEncoding::Der,
+            ),
+            Err(EcdsaError::InvalidPrehashLength)
+        );
+        assert_eq!(
+            verify(
+                curve,
+                &[],
+                EcdsaInput::Message {
+                    hash: EcdsaHash::Sha256,
+                    bytes: b"invalid key"
+                },
+                &zero_scalar,
+                EcdsaEncoding::Der,
+            ),
+            Err(EcdsaError::InvalidPublicKey)
+        );
         let mut fixed = vec![0; 2 * width];
         fixed[width - 1] = 1;
         fixed[2 * width - 1] = 1;
@@ -426,6 +472,74 @@ fn strict_der_syntax_and_curve_scalar_validation_share_one_contract() {
                         bytes: b"strict DER boundary",
                     },
                     &der,
+                    EcdsaEncoding::Der,
+                ),
+                Err(EcdsaError::InvalidSignature)
+            );
+        }
+    }
+}
+
+// Build public test inputs without applying crypto's scalar-range checks.
+// In particular, q is valid ASN.1 but must never become a valid ECDSA scalar.
+fn der_pair_for_scalar_boundary(first: &[u8], second: &[u8]) -> Vec<u8> {
+    let mut body = Vec::new();
+    for magnitude in [first, second] {
+        let start = magnitude.iter().position(|byte| *byte != 0).unwrap();
+        let magnitude = &magnitude[start..];
+        let padding = usize::from(magnitude[0] & 0x80 != 0);
+        body.push(0x02);
+        body.push(u8::try_from(magnitude.len().checked_add(padding).unwrap()).unwrap());
+        if padding != 0 {
+            body.push(0);
+        }
+        body.extend_from_slice(magnitude);
+    }
+    let mut encoded = vec![0x30];
+    if body.len() >= 128 {
+        encoded.push(0x81);
+    }
+    encoded.push(u8::try_from(body.len()).unwrap());
+    encoded.extend_from_slice(&body);
+    encoded
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn der_scalar_orders_are_rejected_without_rejecting_their_predecessors() {
+    for vector in vectors() {
+        let curve = curve(&vector["curve"]);
+        let order = bytes(&vector["order"]);
+        let mut previous = order.clone();
+        for byte in previous.iter_mut().rev() {
+            let (value, borrow) = byte.overflowing_sub(1);
+            *byte = value;
+            if !borrow {
+                break;
+            }
+        }
+        let accepted = der_pair_for_scalar_boundary(&previous, &previous);
+        let mut expected = previous.clone();
+        expected.extend_from_slice(&previous);
+        assert_eq!(der_to_fixed(curve, &accepted).unwrap(), expected);
+        assert_eq!(fixed_to_der(curve, &expected).unwrap(), accepted);
+        for rejected in [
+            der_pair_for_scalar_boundary(&order, &[1]),
+            der_pair_for_scalar_boundary(&[1], &order),
+        ] {
+            assert_eq!(
+                der_to_fixed(curve, &rejected),
+                Err(EcdsaError::InvalidSignature)
+            );
+            assert_eq!(
+                verify(
+                    curve,
+                    &bytes(&vector["public"]),
+                    EcdsaInput::Message {
+                        hash: EcdsaHash::Sha256,
+                        bytes: b"scalar boundary"
+                    },
+                    &rejected,
                     EcdsaEncoding::Der,
                 ),
                 Err(EcdsaError::InvalidSignature)

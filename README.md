@@ -206,6 +206,22 @@ no-default consumers from pulling unused cryptography while still forwarding
 the selected backend into every enabled primitive crate. The `wasm` lane is for
 `wasm32` builds; host builds should use `native`.
 
+The source tree also provides the following protected Rust interfaces. These
+additions are unreleased in the 0.3.17 source tree; published 0.3.17 packages do
+not contain them.
+
+| Interface | Selection | Contract |
+|---|---|---|
+| `prime_groups::{PrimeGroup, GroupScalar, GroupElement}` | Opt-in `prime-groups` | Validated supplied-base operations over seven standard elliptic curves and three RFC 5114 domains, with protected scalars, elements and agreement outputs. |
+| `rsa::rsa_public_representatives` / `crypto_rsa::rsa_public_representatives` | Root `rsa` feature or the RSA leaf | Explicit SPKI/PKCS#1 key encoding, exact modulus-width input, range checks and protected ordinary/complement results. |
+
+Protocol strength policy, transcript construction and authentication checks
+remain with callers. The raw RSA result does not establish signature validity,
+trust or freshness. These interfaces expose borrowed bytes from clearing owners
+and add no Swift, Kotlin or TypeScript facade routes. The documented
+[memory ownership limits](docs/reader-primitive-compatibility.md#ownership-and-delivery-limits)
+also apply, including the temporarily accepted upstream serialization limit.
+
 Some Rust helper APIs are intentionally lane-scoped. P-256 raw scalar import is
 available in both native and wasm lanes through
 `p256::generate_p256_keypair_from_secret_key`; it validates an existing private

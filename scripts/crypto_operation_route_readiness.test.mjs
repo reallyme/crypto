@@ -278,7 +278,12 @@ assert.throws(
 
 const withSourceMutation = (targetPath, mutate) => (path) => {
   const source = readText(path);
-  return path === targetPath ? mutate(source) : source;
+  if (path !== targetPath) {
+    return source;
+  }
+  const mutated = mutate(source);
+  assert.notEqual(mutated, source, `test mutation did not change ${targetPath}`);
+  return mutated;
 };
 
 assert.throws(
@@ -435,8 +440,8 @@ assert.throws(
     readText: withSourceMutation(
       "crates/ffi/Cargo.toml",
       (source) => source.replace(
-        "[dependencies]\n",
-        "[dependencies]\ncrypto-aes-kw = \"0.2.1\"\n",
+        /^\[(?:target\.[^\n]+\.)?dependencies\]$/mu,
+        "$&\ncrypto-aes-kw = \"0.2.1\"",
       ),
     ),
     fail,

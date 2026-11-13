@@ -11,8 +11,8 @@ pub(crate) const SCALAR_LEN: usize = 32;
 const DER_SEQUENCE_TAG: u8 = 0x30;
 const DER_INTEGER_TAG: u8 = 0x02;
 const DER_LONG_FORM_MASK: u8 = 0x80;
-const DER_LONG_FORM_LEN_MASK: u8 = 0x7f;
-const DER_MAX_LEN_OCTETS: usize = 2;
+const DER_PAIR_DEPTH: usize = 1;
+const DER_PAIR_ELEMENTS: usize = 3;
 // The P-256 subgroup order from FIPS 186-5. JOSE transcoding remains available
 // without a native provider feature, so scalar validation cannot depend on the
 // optional `p256` backend. Signature scalars are public, making an ordinary
@@ -48,41 +48,6 @@ pub(crate) fn signature_encoding_error() -> CryptoError {
     }
 }
 
-fn read_len(input: &[u8], offset: &mut usize) -> Result<usize, CryptoError> {
-    let b = *input.get(*offset).ok_or_else(signature_encoding_error)?;
-    *offset = (*offset)
-        .checked_add(1)
-        .ok_or_else(signature_encoding_error)?;
-
-    if b & DER_LONG_FORM_MASK == 0 {
-        return Ok(usize::from(b));
-    }
-
-    let len_octets = usize::from(b & DER_LONG_FORM_LEN_MASK);
-    let end = (*offset)
-        .checked_add(len_octets)
-        .ok_or_else(signature_encoding_error)?;
-    if len_octets == 0 || len_octets > DER_MAX_LEN_OCTETS || end > input.len() {
-        return Err(signature_encoding_error());
-    }
-    if len_octets > 1 && input.get(*offset) == Some(&0x00) {
-        return Err(signature_encoding_error());
-    }
-
-    let mut len = 0usize;
-    for byte in &input[*offset..end] {
-        len = len
-            .checked_mul(256)
-            .and_then(|value| value.checked_add(usize::from(*byte)))
-            .ok_or_else(signature_encoding_error)?;
-    }
-    *offset = end;
-    if len < usize::from(DER_LONG_FORM_MASK) {
-        return Err(signature_encoding_error());
-    }
-    Ok(len)
-}
-
 fn strip_leading_zero(mut bytes: &[u8]) -> &[u8] {
     while bytes.len() > 1 && bytes[0] == 0x00 {
         bytes = &bytes[1..];
@@ -100,27 +65,16 @@ pub(crate) fn validate_scalar(bytes: &[u8]) -> Result<(), CryptoError> {
     Ok(())
 }
 
+// Codec returns unsigned magnitudes: a required DER sign octet is already
+// removed, so a high first bit here is valid and must not be rejected.
 fn left_pad_scalar(bytes: &[u8]) -> Result<[u8; SCALAR_LEN], CryptoError> {
-    if bytes
-        .first()
-        .is_some_and(|first| (first & DER_LONG_FORM_MASK) != 0)
-    {
-        return Err(signature_encoding_error());
-    }
-    if bytes.len() > 1 && bytes[0] == 0x00 && (bytes[1] & DER_LONG_FORM_MASK) == 0 {
-        return Err(signature_encoding_error());
-    }
-
-    let bytes = strip_leading_zero(bytes);
-    if bytes.len() > SCALAR_LEN {
-        return Err(signature_encoding_error());
-    }
-
     let mut out = [0u8; SCALAR_LEN];
     let start = SCALAR_LEN
         .checked_sub(bytes.len())
         .ok_or_else(signature_encoding_error)?;
-    out[start..].copy_from_slice(bytes);
+    out.get_mut(start..)
+        .ok_or_else(signature_encoding_error)?
+        .copy_from_slice(bytes);
     validate_scalar(&out)?;
     Ok(out)
 }
@@ -163,50 +117,25 @@ fn write_len(out: &mut Vec<u8>, len: usize) -> Result<(), CryptoError> {
     Err(signature_encoding_error())
 }
 
-fn read_der_integer<'a>(der: &'a [u8], offset: &mut usize) -> Result<&'a [u8], CryptoError> {
-    if der.get(*offset) != Some(&DER_INTEGER_TAG) {
-        return Err(signature_encoding_error());
-    }
-    *offset = (*offset)
-        .checked_add(1)
-        .ok_or_else(signature_encoding_error)?;
-    let len = read_len(der, offset)?;
-    let end = (*offset)
-        .checked_add(len)
-        .ok_or_else(signature_encoding_error)?;
-    if len == 0 || end > der.len() {
-        return Err(signature_encoding_error());
-    }
-
-    let bytes = &der[*offset..end];
-    *offset = end;
-    Ok(bytes)
-}
-
 fn der_to_jose_signature(der: &[u8]) -> Result<[u8; P256_ECDSA_JOSE_SIGNATURE_LEN], CryptoError> {
-    let mut offset = 0usize;
-    if der.get(offset) != Some(&DER_SEQUENCE_TAG) {
-        return Err(signature_encoding_error());
-    }
-    offset = offset.checked_add(1).ok_or_else(signature_encoding_error)?;
-
-    let seq_len = read_len(der, &mut offset)?;
-    let seq_end = offset
-        .checked_add(seq_len)
-        .ok_or_else(signature_encoding_error)?;
-    if seq_end != der.len() {
-        return Err(signature_encoding_error());
-    }
-
-    let r = left_pad_scalar(read_der_integer(der, &mut offset)?)?;
-    let s = left_pad_scalar(read_der_integer(der, &mut offset)?)?;
-    if offset != der.len() {
-        return Err(signature_encoding_error());
-    }
-
+    let limits = codec_der::der::DerLimits::new(
+        crate::P256_SIGNATURE_DER_MAX_LEN,
+        DER_PAIR_DEPTH,
+        DER_PAIR_ELEMENTS,
+        SCALAR_LEN,
+    )
+    .map_err(|_| signature_encoding_error())?;
+    let pair = codec_der::der::decode_unsigned_integer_pair(der, limits)
+        .map_err(|_| signature_encoding_error())?;
+    let r = left_pad_scalar(pair.first())?;
+    let s = left_pad_scalar(pair.second())?;
     let mut out = [0u8; P256_ECDSA_JOSE_SIGNATURE_LEN];
-    out[..SCALAR_LEN].copy_from_slice(&r);
-    out[SCALAR_LEN..].copy_from_slice(&s);
+    out.get_mut(..SCALAR_LEN)
+        .ok_or_else(signature_encoding_error)?
+        .copy_from_slice(&r);
+    out.get_mut(SCALAR_LEN..)
+        .ok_or_else(signature_encoding_error)?
+        .copy_from_slice(&s);
     Ok(out)
 }
 

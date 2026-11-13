@@ -143,7 +143,7 @@ const cryptoProtoPackageVersion = "0.3.17";
 const typescriptPackageVersion = "0.3.17";
 const kotlinPackageVersion = "0.3.17";
 const kotlinAndroidPackageVersion = "0.3.17";
-const rustCodecVersion = "0.3.2";
+const rustCodecVersion = "0.3.4";
 const sdkCodecVersion = "0.3.2";
 const rustSemverBaselineCommit = "54de2955ebf73e9fd1c306eba207550b3716d767";
 const cargoSemverChecksVersion = "0.50.0";
@@ -390,6 +390,14 @@ assertTextPolicy({
 const assertCodecDependencyProvenance = () => {
   const registryCodecCargoDependencies = [
     [
+      "crates/crypto/Cargo.toml",
+      `codec-der = { package = "reallyme-codec", version = "=${rustCodecVersion}", default-features = false, features = ["der"], optional = true }`,
+    ],
+    [
+      "crates/p256/Cargo.toml",
+      `codec-der = { package = "reallyme-codec", version = "=${rustCodecVersion}", default-features = false, features = ["der"] }`,
+    ],
+    [
       "crates/crypto/dispatch/Cargo.toml",
       `codec-multikey = { package = "reallyme-codec-multikey", version = "${rustCodecVersion}" }`,
     ],
@@ -420,12 +428,13 @@ const assertCodecDependencyProvenance = () => {
   }
 
   const registryCodecChecksums = new Map([
-    ["reallyme-codec-base64url", "b7357b36942dcc73b00e485659f037ae5f4e7a2ef24d76ecc32a43ff315dd3b7"],
-    ["reallyme-codec-jcs", "1728274b25c9f3401e18b014b788728154f19350771b068d164299134ab886a7"],
-    ["reallyme-codec-multibase", "e1f8d1e90f33b62b6c93d969f4421c636c07fe2424ede7531cd1568776eb9224"],
-    ["reallyme-codec-multicodec", "251987ed56bfb0ef7e328386f5d5ae9b64e80a3ee280d46d1c38e24218fbce5f"],
-    ["reallyme-codec-multikey", "fac2cfb9b9ab2c404601f8d5bbd316d9811b3e4234372829dfa608bff2c1e2ce"],
-    ["reallyme-codec-pem", "ffd27f0946cb27090fd29b97e5a4cf912dc4f9ce2dd70fc1c39a127ebd92a65c"],
+    ["reallyme-codec", "ae315c3d9cfddd227fba255b583b73caf6123ffe1e6121b98a9f960faa0ed75a"],
+    ["reallyme-codec-base64url", "c9ca2853922d0f3bc59f38d7deae3e1888e12e22dd568cc8f9ade5bed823daba"],
+    ["reallyme-codec-jcs", "f9fc18c7f332a515b3bb06b5ced6e795fbbc3cbc3c12f43e09dad20a0a7726c9"],
+    ["reallyme-codec-multibase", "9fd15760acac470315db35571be995f6b243ffbb6b819e492f184312ae05c828"],
+    ["reallyme-codec-multicodec", "3265903196e8a6a92d2d2dc6169e260d6f30b5b7e9a4913658dc32ef485a1317"],
+    ["reallyme-codec-multikey", "0260b9205d863c180c9b946ca4ac1e15f463fe85fc9c47195efb27fab99d9f82"],
+    ["reallyme-codec-pem", "8de86a70e85b91b0d5a611a20c0f05c1117c952da36868e0e813be3d93f7104d"],
   ]);
   for (const lockPath of ["Cargo.lock", "fuzz/Cargo.lock"]) {
     for (const [packageName, checksum] of registryCodecChecksums) {
@@ -1758,7 +1767,9 @@ assertContains(".github/workflows/dependency-security.yml", "packages/kotlin-and
 assertContains(".github/workflows/dependency-security.yml", "verify_gradle_checksum_provenance.py");
 assertContains(".github/workflows/codeql.yml", "javascript-typescript");
 assertContains(".github/workflows/codeql.yml", "java-kotlin");
-assertContains(".github/workflows/codeql.yml", "swift");
+assertContains(".github/workflows/codeql.yml", "language: actions");
+assertContains(".github/workflows/codeql.yml", "language: rust");
+assertNotContains(".github/workflows/codeql.yml", "language: swift");
 for (const workflow of [
   ".github/workflows/kotlin-android-package-preflight.yml",
   ".github/workflows/swift-package-preflight.yml",
@@ -2767,6 +2778,14 @@ const repositoryPolicy = {
         publish: "public",
         dependencies: [
           {
+            name: "reallyme-codec",
+            requirement: `=${rustCodecVersion}`,
+            source: "registry",
+            optional: true,
+            defaultFeatures: false,
+            features: ["der"],
+          },
+          {
             name: "reallyme-crypto-core",
             requirement: `=${rustRootVersion}`,
             source: "path",
@@ -2817,6 +2836,13 @@ const repositoryPolicy = {
         version: rustRootVersion,
         publish: "public",
         dependencies: [
+          {
+            name: "reallyme-codec",
+            requirement: `=${rustCodecVersion}`,
+            source: "registry",
+            defaultFeatures: false,
+            features: ["der"],
+          },
           {
             name: "reallyme-codec-pem",
             requirement: `^${rustCodecVersion}`,

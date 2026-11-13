@@ -62,10 +62,13 @@ mod field {
         ops::BatchInvert,
         subtle::{Choice, ConstantTimeEq, CtOption},
     };
-    primefield::monty_field_params! {
-        name: FieldParams, modulus: "aadd9db8dbe9c48b3fd4e6ae33c9fc07cb308db3b3c9d20ed6639cca703308717d4d9b009bc66842aecda12ae6a380e62881ff2f2d82c68528aa6056583a48f3", uint: U512,
-        byte_order: primefield::ByteOrder::BigEndian, multiplicative_generator: 2,
-        doc: "RFC 5639 base field parameters."
+    use primefield::bigint::modular::ConstMontyParams;
+    primefield::bigint::const_prime_monty_params!(FieldParams, U512, "aadd9db8dbe9c48b3fd4e6ae33c9fc07cb308db3b3c9d20ed6639cca703308717d4d9b009bc66842aecda12ae6a380e62881ff2f2d82c68528aa6056583a48f3", 2, "RFC 5639 base field parameters.");
+    impl primefield::MontyFieldParams<{ U512::LIMBS }> for FieldParams {
+        type ByteSize = elliptic_curve::consts::U64;
+        const BYTE_ORDER: primefield::ByteOrder = primefield::ByteOrder::BigEndian;
+        const MODULUS_HEX: &'static str = "aadd9db8dbe9c48b3fd4e6ae33c9fc07cb308db3b3c9d20ed6639cca703308717d4d9b009bc66842aecda12ae6a380e62881ff2f2d82c68528aa6056583a48f3";
+        const T: U512 = primefield::compute_t(FieldParams::PARAMS.modulus().as_ref());
     }
     primefield::monty_field_element! { name: FieldElement, params: FieldParams, uint: U512, doc: "Base field element." }
     primefield::monty_field_arithmetic! { name: FieldElement, params: FieldParams, uint: U512 }
@@ -78,10 +81,19 @@ mod scalar {
         scalar::{FromUintUnchecked, IsHigh},
         subtle::{Choice, ConstantTimeEq, ConstantTimeGreater, CtOption},
     };
-    primefield::monty_field_params! {
-        name: ScalarParams, modulus: ORDER_HEX, uint: U512,
-        byte_order: primefield::ByteOrder::BigEndian, multiplicative_generator: 7,
-        doc: "RFC 5639 subgroup order parameters."
+    use primefield::bigint::modular::ConstMontyParams;
+    primefield::bigint::const_prime_monty_params!(
+        ScalarParams,
+        U512,
+        ORDER_HEX,
+        7,
+        "RFC 5639 subgroup order parameters."
+    );
+    impl primefield::MontyFieldParams<{ U512::LIMBS }> for ScalarParams {
+        type ByteSize = elliptic_curve::consts::U64;
+        const BYTE_ORDER: primefield::ByteOrder = primefield::ByteOrder::BigEndian;
+        const MODULUS_HEX: &'static str = ORDER_HEX;
+        const T: U512 = primefield::compute_t(ScalarParams::PARAMS.modulus().as_ref());
     }
     primefield::monty_field_element! { name: Scalar, params: ScalarParams, uint: U512, doc: "Scalar field element." }
     primefield::monty_field_arithmetic! { name: Scalar, params: ScalarParams, uint: U512 }

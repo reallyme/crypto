@@ -25,7 +25,8 @@ pub fn verify_p256_sha256_message_der_interoperable(
 
     let vk = VerifyingKey::from(pk);
 
-    let sig = Signature::from_der(signature_der).map_err(|_| CryptoError::Signature {
+    let fixed = crate::p256_ecdsa_der_to_jose_signature(signature_der)?;
+    let sig = Signature::from_slice(&fixed).map_err(|_| CryptoError::Signature {
         backend: crypto_core::SignatureBackend::Native,
         operation: crypto_core::SignatureOperation::Verify,
         kind: crypto_core::SignatureFailureKind::InvalidSignature,
