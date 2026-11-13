@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "status": "reviewed patch and release plan; canonical registry dependency unchanged",
+  "source_baseline": {
+    "package": "primefield",
+    "version": "0.14.0",
+    "registry_archive_sha256": "c555a6e4eb7d4e158fcb028c835c3b8642206ddc279b5c6b202ef9a8bdb592f4",
+    "repository": "https://github.com/RustCrypto/elliptic-curves",
+    "files_sha256": {
+      "Cargo.toml": "5d15ee32fa2e25ff9f56f2cb98a74f211a7fdd2446578ba2b8ce19ffd9f632e2",
+      "Cargo.toml.orig": "bd984ad23c0ec448d182d6520a7684d93c97689cbbfdf9d73764937cb00c50c8",
+      "src/macros.rs": "51a43b8149c4658e7cfa28b6060328b87ffd33199819318ae0c7bb6c7107d1a3",
+      "src/monty.rs": "9625d937636aace29a0a194fde39da6f466b410f5e481aaf68094d0955b41e3b"
+    }
+  },
+  "candidate": {
+    "patch": "0.14.0-encoding-ownership.patch",
+    "patch_sha256": "441d0822cb9081a5c471905900cda6e7b3df1ab554f56e7a55007d383760b723",
+    "files_sha256": {
+      "Cargo.toml": "d16179bd24c866cfe674bb7319c981a4422ebb6f51f50f09267f4f3fa82f7329",
+      "Cargo.toml.orig": "c4e180e4ca4c941543a4eb4e02a96d9597312d37b8cdd3dd1f0c46b97fc4e8ca",
+      "src/macros.rs": "7b1bc82e9f5c1760eba00d07bad6399988acf777453488d2020138d93f2cf632",
+      "src/monty.rs": "191b74e2d2f61c65d718661cfeb46a72142cafb5712727eb67775a47ba176822"
+    },
+    "canonical_dependency_changed": false,
+    "schema_or_public_api_changed": false,
+    "arithmetic_changed": false,
+    "additional_compatibility_scope": [
+      "Fourth public-modulus metadata deprecation allowance in monty_field_params.",
+      "Equivalent dependency features in the original source manifest.",
+      "Removed obsolete Clippy lint from normalized manifest."
+    ]
+  },
+  "validation": {
+    "toolchain": "1.100.0",
+    "minimum_version_compile": "1.96.0",
+    "canonical_consumer_source_commit": "46d55c362bbff5c7fc40320f12b8224275077461",
+    "canonical_consumer_source_isolated": true,
+    "runtime_tests_executed": false,
+    "mobile_or_device_execution": false,
+    "checks": [
+      {
+        "check": "field-native-bigint-0.7.10",
+        "exit_code": 0
+      },
+      {
+        "check": "field-wasm-bigint-0.7.10",
+        "exit_code": 0
+      },
+      {
+        "check": "field-msrv-bigint-0.7.10",
+        "exit_code": 0
+      },
+      {
+        "check": "field-clippy-bigint-0.7.10",
+        "exit_code": 0
+      },
+      {
+        "check": "field-select-bigint-0.7.11",
+        "exit_code": 0
+      },
+      {
+        "check": "field-native-bigint-0.7.11",
+        "exit_code": 0
+      },
+      {
+        "check": "field-wasm-bigint-0.7.11",
+        "exit_code": 0
+      },
+      {
+        "check": "field-clippy-bigint-0.7.11",
+        "exit_code": 0
+      },
+      {
+        "check": "canonical-narrow-native",
+        "exit_code": 0
+      },
+      {
+        "check": "canonical-narrow-wasm",
+        "exit_code": 0
+      },
+      {
+        "check": "canonical-narrow-hpke-native",
+        "exit_code": 0
+      },
+      {
+        "check": "canonical-group-clippy",
+        "exit_code": 0
+      },
+      {
+        "check": "canonical-narrow-hpke-wasm",
+        "exit_code": 0
+      }
+    ]
+  },
+  "canonical_registry_versions": {
+    "bp256": "0.14.0",
+    "bp384": "0.14.0",
+    "crypto-bigint": "0.7.10",
+    "hybrid-array": "0.4.15",
+    "p256": "0.14.0",
+    "p384": "0.14.0",
+    "p521": "0.14.0",
+    "primefield": "0.14.0",
+    "primeorder": "0.14.0",
+    "wnaf": "0.14.1",
+    "zeroize": "1.9.1"
+  },
+  "required_registry_release": {
+    "package": "primefield",
+    "proposed_minimum": "0.14.1",
+    "proposed_version_is_published_or_reserved": false,
+    "actual_fixed_version_and_checksum": "pending maintainer release and packaged-source review",
+    "independent_version_floor_review": [
+      "reallyme-crypto",
+      "reallyme-crypto-p256",
+      "reallyme-crypto-p384",
+      "reallyme-crypto-p521",
+      "reallyme-crypto-hpke"
+    ]
+  },
+  "coordinated_source_release": {
+    "reallyme-crypto": "0.4.0",
+    "reallyme-crypto-aes-kw": "0.4.0",
+    "reallyme-crypto-aes256-gcm": "0.4.0",
+    "reallyme-crypto-aes256-gcm-siv": "0.4.0",
+    "reallyme-crypto-argon2id": "0.4.0",
+    "reallyme-crypto-chacha20-poly1305": "0.4.0",
+    "reallyme-crypto-concat-kdf": "0.4.0",
+    "reallyme-crypto-constant-time": "0.4.0",
+    "reallyme-crypto-core": "0.4.0",
+    "reallyme-crypto-csprng": "0.4.0",
+    "reallyme-crypto-dispatch": "0.4.0",
+    "reallyme-crypto-ed25519": "0.4.0",
+    "reallyme-crypto-hkdf": "0.4.0",
+    "reallyme-crypto-hmac": "0.4.0",
+    "reallyme-crypto-hpke": "0.4.0",
+    "reallyme-crypto-jwk": "0.4.0",
+    "reallyme-crypto-jwk-multikey": "0.4.0",
+    "reallyme-crypto-kmac": "0.4.0",
+    "reallyme-crypto-ml-dsa-44": "0.4.0",
+    "reallyme-crypto-ml-dsa-65": "0.4.0",
+    "reallyme-crypto-ml-dsa-87": "0.4.0",
+    "reallyme-crypto-ml-kem-1024": "0.4.0",
+    "reallyme-crypto-ml-kem-512": "0.4.0",
+    "reallyme-crypto-ml-kem-768": "0.4.0",
+    "reallyme-crypto-p256": "0.4.0",
+    "reallyme-crypto-p384": "0.4.0",
+    "reallyme-crypto-p521": "0.4.0",
+    "reallyme-crypto-pbkdf2": "0.4.0",
+    "reallyme-crypto-poseidon2": "0.4.0",
+    "reallyme-crypto-proto": "0.4.0",
+    "reallyme-crypto-rsa": "0.4.0",
+    "reallyme-crypto-secp256k1": "0.4.0",
+    "reallyme-crypto-sha2": "0.4.0",
+    "reallyme-crypto-sha2-256": "0.4.0",
+    "reallyme-crypto-sha3": "0.4.0",
+    "reallyme-crypto-sha3-256": "0.4.0",
+    "reallyme-crypto-signer": "0.4.0",
+    "reallyme-crypto-slh-dsa": "0.4.0",
+    "reallyme-crypto-x-wing": "0.4.0",
+    "reallyme-crypto-x25519": "0.4.0",
+    "reallyme-crypto-x448": "0.4.0"
+  },
+  "remaining_steps": [
+    "Upstream reviewed compatible registry release, or separately approved complete fork migration.",
+    "Version floors in every affected independently consumed package and arithmetic feature route.",
+    "Clean registry package and runtime/conformance validation without source overrides.",
+    "Explicit publication authorization and verification of resulting registry artifacts."
+  ]
+}
