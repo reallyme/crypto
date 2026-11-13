@@ -12,11 +12,17 @@ features=(
   constant-time csprng ed25519 hmac hkdf kmac p256 p384 p521
   pbkdf2 rsa secp256k1 x25519 x-wing ml-dsa-44 ml-dsa-65 ml-dsa-87
   ml-kem-512 ml-kem-768 ml-kem-1024 sha2 sha3 poseidon2 slh-dsa
-  operation-response jwk jwk-multikey
+  operation-response dispatch jwk jwk-multikey
 )
 
 for feature in "${features[@]}"; do
-  cargo check --locked --offline -p reallyme-crypto --no-default-features --features "$feature"
+  if [[ "$feature" == "operation-response" || "$feature" == "dispatch" ]]; then
+    # All-feature checks exclude disabled-provider test crates. Compile those
+    # targets in this existing narrow pass so their imports cannot drift.
+    cargo check --locked --offline -p reallyme-crypto --all-targets --no-default-features --features "$feature"
+  else
+    cargo check --locked --offline -p reallyme-crypto --no-default-features --features "$feature"
+  fi
 done
 
 # Feature unification may expose a second missing gate that isolated checks

@@ -4,7 +4,6 @@
 
 use crypto_core::CryptoError;
 use subtle::ConstantTimeEq;
-use zeroize::Zeroizing;
 
 use crate::hash::digest_message;
 use crate::key::{parse_public_key, validate_signature_length, RsaPublicKey};
@@ -46,7 +45,7 @@ fn verify_pkcs1v15_with_key(
     message: &[u8],
     signature: &[u8],
 ) -> Result<(), CryptoError> {
-    let digest = Zeroizing::new(digest_message(hash, message));
+    let digest = digest_message(hash, message)?;
     let encoded_message = crate::pss::recover_encoded_message(key, signature)?;
     verify_pkcs1v15_encoded_message(hash, &digest, &encoded_message)
 }

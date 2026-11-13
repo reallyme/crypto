@@ -9,7 +9,6 @@
     not(feature = "chacha20-poly1305")
 ))]
 
-use reallyme_crypto::operations::OperationError;
 use reallyme_crypto::AeadAlgorithm;
 
 const AEAD_ALGORITHMS: &[AeadAlgorithm] = &[

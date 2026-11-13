@@ -7,7 +7,6 @@
 #![allow(missing_docs)]
 #![cfg(not(feature = "hmac"))]
 
-use reallyme_crypto::operations::OperationError;
 use reallyme_crypto::MacAlgorithm;
 
 #[test]

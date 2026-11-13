@@ -4,12 +4,10 @@
 
 use crypto_bigint::BoxedUint;
 use crypto_core::CryptoError;
-use sha1::Sha1;
-use sha2::{Digest, Sha256, Sha384, Sha512};
 use subtle::{Choice, ConstantTimeEq};
 use zeroize::Zeroizing;
 
-use crate::hash::{digest_len, digest_message, mgf1_xor};
+use crate::hash::{digest_len, digest_message, digest_parts, mgf1_xor};
 use crate::key::validate_signature_length;
 use crate::key::RsaPublicKey;
 use crate::types::{RsaHash, RsaPssParams};
@@ -22,7 +20,7 @@ pub(crate) fn verify_pss(
 ) -> Result<(), CryptoError> {
     validate_signature_length(key, signature)?;
 
-    let m_hash = Zeroizing::new(digest_message(params.message_hash, message));
+    let m_hash = digest_message(params.message_hash, message)?;
     let recovered = recover_encoded_message(key, signature)?;
     let encoded_message = pss_encoded_message(&recovered, key)?;
     verify_encoded_message(&m_hash, encoded_message, key, params)
@@ -180,7 +178,7 @@ fn verify_encoded_message(
         return Err(signature_error());
     }
 
-    let expected = Zeroizing::new(pss_hash(params.message_hash, m_hash, salt));
+    let expected = pss_hash(params.message_hash, m_hash, salt)?;
     if bool::from(expected.ct_eq(h)) {
         Ok(())
     } else {
@@ -188,38 +186,9 @@ fn verify_encoded_message(
     }
 }
 
-fn pss_hash(hash: RsaHash, m_hash: &[u8], salt: &[u8]) -> Vec<u8> {
+fn pss_hash(hash: RsaHash, m_hash: &[u8], salt: &[u8]) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
     let prefix = [0u8; 8];
-    match hash {
-        RsaHash::Sha1 => {
-            let mut digest = Sha1::new();
-            digest.update(prefix);
-            digest.update(m_hash);
-            digest.update(salt);
-            digest.finalize().to_vec()
-        }
-        RsaHash::Sha256 => {
-            let mut digest = Sha256::new();
-            digest.update(prefix);
-            digest.update(m_hash);
-            digest.update(salt);
-            digest.finalize().to_vec()
-        }
-        RsaHash::Sha384 => {
-            let mut digest = Sha384::new();
-            digest.update(prefix);
-            digest.update(m_hash);
-            digest.update(salt);
-            digest.finalize().to_vec()
-        }
-        RsaHash::Sha512 => {
-            let mut digest = Sha512::new();
-            digest.update(prefix);
-            digest.update(m_hash);
-            digest.update(salt);
-            digest.finalize().to_vec()
-        }
-    }
+    digest_parts(hash, &[&prefix, m_hash, salt])
 }
 
 fn all_zero(bytes: &[u8]) -> Choice {
