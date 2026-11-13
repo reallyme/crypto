@@ -25,6 +25,9 @@ mod mlkem1024p384;
 mod mlkem512;
 #[cfg(feature = "proto")]
 mod proto;
+/// Protected protocol request adapters and native context borrows.
+#[cfg(feature = "proto")]
+pub mod proto_protocol;
 #[cfg(feature = "backend-native")]
 mod random;
 #[cfg(feature = "backend-native")]

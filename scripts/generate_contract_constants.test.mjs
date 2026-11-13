@@ -27,7 +27,11 @@ const fixture = () => ({ file: [{
     field("native_name", 1, "TYPE_STRING"), field("native_type", 2, "TYPE_ENUM", { typeName: type("NativeType") }),
     field("unit", 3, "TYPE_ENUM", { typeName: type("Unit") }), field("unsigned_value", 4, "TYPE_UINT64", { oneofIndex: 0 }),
     field("signed_value", 5, "TYPE_SINT64", { oneofIndex: 0 }), field("bytes_value", 6, "TYPE_BYTES", { oneofIndex: 0 }),
+    field("constant_reference", 7, "TYPE_MESSAGE", { typeName: type("ConstantReference"), oneofIndex: 0 }),
+    field("enum_reference", 8, "TYPE_MESSAGE", { typeName: type("EnumValueReference"), oneofIndex: 0 }),
   ] }, { name: "ConstantRange", field: [field("minimum_name", 1, "TYPE_STRING"), field("maximum_name", 2, "TYPE_STRING")] },
+  { name: "ConstantReference", field: [field("native_module", 1, "TYPE_STRING"), field("native_name", 2, "TYPE_STRING")] },
+  { name: "EnumValueReference", field: [field("enum_type", 1, "TYPE_STRING"), field("value_name", 2, "TYPE_STRING")] },
   { name: "ConstantModule", field: [field("native_module", 1, "TYPE_STRING"),
     field("constants", 2, "TYPE_MESSAGE", { typeName: type("Constant"), label: "LABEL_REPEATED" }),
     field("ranges", 3, "TYPE_MESSAGE", { typeName: type("ConstantRange"), label: "LABEL_REPEATED" })] },
@@ -173,4 +177,40 @@ test("maintenance shares one descriptor invocation and validates before output w
   assert.match(source, /validateErrorReasonRanges\(contract, constantsContract\)/u);
   assert.ok(source.indexOf("validateErrorReasonRanges(contract, constantsContract)") <
     source.indexOf("if (shared !== original) writeErrorContractOutput"));
+});
+
+test("scalar aliases resolve across modules and retain reference-only Rust output", () => {
+  const document = fixture();
+  module(document).constants.push({ nativeName: "ALIAS", nativeType: "NATIVE_TYPE_USIZE", unit: "UNIT_BYTES",
+    constantReference: { nativeModule: "example", nativeName: "BUFFER_BYTES" } });
+  const contract = parseContractConstantsDescriptor(document);
+  assert.equal(contract.modules[0].constants.find((value) => value.name === "ALIAS").value, "32");
+  assert.match(renderContractConstants(contract), /ALIAS: usize = super::example::BUFFER_BYTES/u);
+  rejects((value) => { module(value).constants[0] = { nativeName: "ALIAS", nativeType: "NATIVE_TYPE_USIZE", unit: "UNIT_BYTES",
+    constantReference: { nativeModule: "example", nativeName: "ALIAS" } }; }, "constants-reference-cycle");
+  rejects((value) => { module(value).constants.push({ nativeName: "ALIAS", nativeType: "NATIVE_TYPE_U32", unit: "UNIT_BYTES",
+    constantReference: { nativeModule: "example", nativeName: "BUFFER_BYTES" } }); }, "constants-reference-type");
+  rejects((value) => { module(value).constants.push({ nativeName: "ALIAS", nativeType: "NATIVE_TYPE_USIZE", unit: "UNIT_BITS",
+    constantReference: { nativeModule: "example", nativeName: "BUFFER_BYTES" } }); }, "constants-reference-type");
+  rejects((value) => { module(value).constants.push({ nativeName: "ALIAS", nativeType: "NATIVE_TYPE_USIZE", unit: "UNIT_BYTES",
+    constantReference: { nativeModule: "example", nativeName: "ABSENT" } }); }, "constants-reference");
+});
+
+test("identity constants resolve only positive known schema enum values", () => {
+  const makeReference = (document, valueName = "SCHEMA_ID_EXAMPLE") => {
+    document.file[1].enumType = [{ name: "SchemaId", value: [
+      { name: "SCHEMA_ID_UNSPECIFIED", number: 0 }, { name: "SCHEMA_ID_EXAMPLE", number: 16 },
+    ] }];
+    module(document).constants = [{ nativeName: "IDENTITY", nativeType: "NATIVE_TYPE_U16", unit: "UNIT_IDENTIFIER",
+      enumReference: { enumType: `.${PACKAGE}.SchemaId`, valueName } }];
+  };
+  const document = fixture(); makeReference(document);
+  assert.match(renderContractConstants(parseContractConstantsDescriptor(document)), /IDENTITY: u16 = 16/u);
+  document.file[1].enumType[0].value[1].number = 17;
+  assert.match(renderContractConstants(parseContractConstantsDescriptor(document)), /IDENTITY: u16 = 17/u);
+  rejects((value) => { makeReference(value, "SCHEMA_ID_UNSPECIFIED"); }, "constants-enum-reference");
+  rejects((value) => { makeReference(value, "SCHEMA_ID_MISSING"); }, "constants-enum-reference");
+  rejects((value) => { makeReference(value); module(value).constants[0].unit = "UNIT_BYTES"; }, "constants-unit");
+  rejects((value) => { makeReference(value); value.file[1].enumType[0].value[1].number = 65536; }, "constants-overflow");
+  rejects((value) => { makeReference(value); value.file[1].enumType[0].options = { allowAlias: true }; }, "constants-enum-reference");
 });

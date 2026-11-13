@@ -114,7 +114,7 @@ function validateMessage(file, name, expected, oneof = false) {
 
 function validateDefinitions(file) {
   if (file.package !== PACKAGE || (file.syntax !== undefined && file.syntax !== "proto2") ||
-      list(file.enumType, 2).length !== 2 || list(file.messageType, 4).length !== 4) fail("constants-schema");
+      list(file.enumType, 2).length !== 2 || list(file.messageType, 6).length !== 6) fail("constants-schema");
   validateEnum(file, "NativeType", new Set(["NATIVE_TYPE_UNSPECIFIED", ...TYPES.keys()]));
   validateEnum(file, "Unit", new Set(["UNIT_UNSPECIFIED", ...UNITS]));
   const field = (name, number, type, extra = {}) => ({ name, number, type, ...extra });
@@ -124,7 +124,11 @@ function validateDefinitions(file) {
     field("unit", 3, "TYPE_ENUM", { typeName: message("Unit") }),
     field("unsigned_value", 4, "TYPE_UINT64", { oneof: true }),
     field("signed_value", 5, "TYPE_SINT64", { oneof: true }),
-    field("bytes_value", 6, "TYPE_BYTES", { oneof: true })], true);
+    field("bytes_value", 6, "TYPE_BYTES", { oneof: true }),
+    field("constant_reference", 7, "TYPE_MESSAGE", { typeName: message("ConstantReference"), oneof: true }),
+    field("enum_reference", 8, "TYPE_MESSAGE", { typeName: message("EnumValueReference"), oneof: true })], true);
+  validateMessage(file, "ConstantReference", [field("native_module", 1, "TYPE_STRING"), field("native_name", 2, "TYPE_STRING")]);
+  validateMessage(file, "EnumValueReference", [field("enum_type", 1, "TYPE_STRING"), field("value_name", 2, "TYPE_STRING")]);
   validateMessage(file, "ConstantRange", [field("minimum_name", 1, "TYPE_STRING"), field("maximum_name", 2, "TYPE_STRING")]);
   validateMessage(file, "ConstantModule", [field("native_module", 1, "TYPE_STRING"),
     field("constants", 2, "TYPE_MESSAGE", { typeName: message("Constant"), repeated: true }),
@@ -141,6 +145,7 @@ function validateDefinitions(file) {
 
 function validateOptionSites(files) {
   const known = new Set();
+  const fileOptions = new Set();
   const extensionNumbers = new Set();
   for (const file of files) {
     for (const value of list(file.extension ?? [], MAX_CONSTANTS, true).map(record)) {
@@ -153,6 +158,7 @@ function validateOptionSites(files) {
       const numericKey = `${value.extendee}:${number}`;
       if (known.has(key) || extensionNumbers.has(numericKey)) fail("constants-extension");
       known.add(key);
+      if (value.extendee === ".google.protobuf.FileOptions") fileOptions.add(key);
       extensionNumbers.add(numericKey);
     }
   }
@@ -166,7 +172,7 @@ function validateOptionSites(files) {
     } else if (value !== null && typeof value === "object") {
       for (const [key, item] of Object.entries(value)) {
         if (key.startsWith(`[${PACKAGE}.`) && !known.has(key)) fail("constants-option");
-        if (key === OPTION && value !== rootOptions) fail("constants-owner");
+        if (fileOptions.has(key) && value !== rootOptions) fail("constants-owner");
         visit(item, rootOptions, depth + 1);
       }
     }
@@ -174,16 +180,81 @@ function validateOptionSites(files) {
   for (const file of files) visit(file, file.options, 0);
 }
 
-function parseValue(raw) {
-  keys(raw, ["nativeName", "nativeType", "unit", "unsignedValue", "signedValue", "bytesValue"],
+function enumIndex(files) {
+  const result = new Map();
+  const visit = (owner, prefix, depth) => {
+    if (depth > MAX_DEPTH) fail("constants-complexity");
+    for (const definition of list(owner.enumType ?? [], MAX_CONSTANTS, true).map(record)) {
+      if (typeof definition.name !== "string" || !/^[A-Za-z_][A-Za-z0-9_]*$/u.test(definition.name)) fail("constants-enum-reference");
+      const name = `${prefix}.${definition.name}`;
+      if (result.has(name)) fail("constants-enum-reference");
+      result.set(name, definition);
+      if (result.size > MAX_CONSTANTS) fail("constants-complexity");
+    }
+    for (const message of list(owner.nestedType ?? owner.messageType ?? [], MAX_CONSTANTS, true).map(record)) {
+      if (typeof message.name !== "string" || !/^[A-Za-z_][A-Za-z0-9_]*$/u.test(message.name)) fail("constants-enum-reference");
+      visit(message, `${prefix}.${message.name}`, depth + 1);
+    }
+  };
+  for (const file of files) {
+    if (typeof file.package !== "string" || file.package.length > 512 ||
+        !/^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*$/u.test(file.package)) fail("constants-enum-reference");
+    visit(file, `.${file.package}`, 0);
+  }
+  return result;
+}
+
+/** Resolve one positive identity directly from its defining descriptor. */
+export function resolveEnumReference(index, raw) {
+  keys(raw, ["enumType", "valueName"]);
+  if (typeof raw.enumType !== "string" || raw.enumType.length > 512 ||
+      !/^\.(?:[A-Za-z_][A-Za-z0-9_]*\.)+[A-Za-z_][A-Za-z0-9_]*$/u.test(raw.enumType)) fail("constants-enum-reference");
+  const valueName = identifier(raw.valueName);
+  const definition = index.get(raw.enumType);
+  if (definition === undefined || record(definition.options ?? {}).allowAlias === true) fail("constants-enum-reference");
+  const names = new Set();
+  const numbers = new Set();
+  const values = list(definition.value, MAX_CONSTANTS).map(record);
+  for (const value of values) {
+    const name = identifier(value.name);
+    const number = integer(value.number, -2_147_483_648, 2_147_483_647);
+    if (names.has(name) || numbers.has(number)) fail("constants-enum-reference");
+    names.add(name); numbers.add(number);
+  }
+  const value = values.find((entry) => entry.name === valueName);
+  if (value === undefined || value.number <= 0) fail("constants-enum-reference");
+  const reserved = new Set(list(definition.reservedName ?? [], MAX_CONSTANTS, true).map((name) => identifier(name)));
+  if (reserved.has(valueName)) fail("constants-enum-reference");
+  for (const rawRange of list(definition.reservedRange ?? [], MAX_CONSTANTS, true).map(record)) {
+    const start = integer(rawRange.start, -2_147_483_648, 2_147_483_647);
+    const end = integer(rawRange.end, start, 2_147_483_647);
+    if (value.number >= start && value.number <= end) fail("constants-enum-reference");
+  }
+  return { enumType: raw.enumType, valueName, number: value.number };
+}
+
+function parseValue(raw, index) {
+  keys(raw, ["nativeName", "nativeType", "unit", "unsignedValue", "signedValue", "bytesValue", "constantReference", "enumReference"],
     ["nativeName", "nativeType", "unit"]);
   const name = identifier(raw.nativeName);
   const type = TYPES.get(raw.nativeType);
   if (type === undefined || !UNITS.has(raw.unit)) fail("constants-type");
-  const values = ["unsignedValue", "signedValue", "bytesValue"].filter((key) => Object.hasOwn(raw, key));
+  const values = ["unsignedValue", "signedValue", "bytesValue", "constantReference", "enumReference"].filter((key) => Object.hasOwn(raw, key));
   if (values.length !== 1) fail("constants-value");
   const key = values[0];
   const value = raw[key];
+  if (key === "constantReference") {
+    keys(value, ["nativeModule", "nativeName"]);
+    return { name, type: type.rust, unit: raw.unit, reference: {
+      module: identifier(value.nativeModule, true), name: identifier(value.nativeName),
+    } };
+  }
+  if (key === "enumReference") {
+    if (raw.unit !== "UNIT_IDENTIFIER" || type.rust === "&[u8]") fail("constants-unit");
+    const reference = resolveEnumReference(index, value);
+    if (BigInt(reference.number) > type.maximum) fail("constants-overflow");
+    return { name, type: type.rust, unit: raw.unit, value: String(reference.number), enumReference: reference };
+  }
   if (type.rust === "&[u8]") {
     if (raw.unit !== "UNIT_BYTES" || key !== "bytesValue" || typeof value !== "string" ||
         value.length > Math.ceil(MAX_CONSTANT_BYTES / 3) * 4 ||
@@ -215,6 +286,7 @@ export function parseContractConstantsDescriptor(document) {
   if (definitions.length !== 1) fail("constants-schema");
   validateDefinitions(definitions[0]);
   validateOptionSites(files);
+  const index = enumIndex(files);
   const modules = new Map();
   let count = 0;
   let rangeCount = 0;
@@ -235,7 +307,7 @@ export function parseContractConstantsDescriptor(document) {
       for (const value of list(raw.constants, MAX_CONSTANTS).map(record)) {
         count += 1;
         if (count > MAX_CONSTANTS) fail("constants-complexity");
-        const constant = parseValue(value);
+        const constant = parseValue(value, index);
         if (module.constants.has(constant.name)) fail("constants-duplicate");
         module.constants.set(constant.name, constant);
       }
@@ -252,6 +324,26 @@ export function parseContractConstantsDescriptor(document) {
     }
   }
   if (modules.size === 0) fail("constants-missing");
+  const states = new Map();
+  const resolve = (module, constant, depth) => {
+    if (depth > MAX_DEPTH) fail("constants-complexity");
+    const key = `${module.name}:${constant.name}`;
+    if (states.get(key) === "done") return;
+    if (states.get(key) === "visiting") fail("constants-reference-cycle");
+    states.set(key, "visiting");
+    if (constant.reference !== undefined) {
+      const targetModule = modules.get(constant.reference.module);
+      const target = targetModule?.constants.get(constant.reference.name);
+      if (target === undefined) fail("constants-reference");
+      resolve(targetModule, target, depth + 1);
+      if (target.type !== constant.type || target.unit !== constant.unit) fail("constants-reference-type");
+      constant.value = target.value;
+    }
+    states.set(key, "done");
+  };
+  for (const module of modules.values()) {
+    for (const constant of module.constants.values()) resolve(module, constant, 0);
+  }
   for (const module of modules.values()) {
     for (const range of module.ranges.values()) {
       const minimum = module.constants.get(range.minimum);
@@ -261,7 +353,7 @@ export function parseContractConstantsDescriptor(document) {
           BigInt(minimum.value) > BigInt(maximum.value)) fail("constants-range");
     }
   }
-  return { modules: [...modules.values()].sort((left, right) => compare(left.name, right.name)).map((module) => ({
+  return { enums: index, modules: [...modules.values()].sort((left, right) => compare(left.name, right.name)).map((module) => ({
     name: module.name,
     constants: [...module.constants.values()].sort((left, right) => compare(left.name, right.name)),
     ranges: [...module.ranges.values()].sort((left, right) => compare(left.minimum, right.minimum) || compare(left.maximum, right.maximum)),
@@ -304,7 +396,8 @@ export function renderContractConstants(contract) {
   for (const module of contract.modules) {
     lines.push(`/// Immutable \`${module.name}\` contract constants.`, `pub mod ${module.name} {`);
     for (const constant of module.constants) {
-      const value = constant.type === "&[u8]" ? `&[${[...Buffer.from(constant.value, "base64")].map((byte) => `0x${byte.toString(16).padStart(2, "0")}`).join(", ")}]` : constant.value;
+      const value = constant.reference !== undefined ? `super::${constant.reference.module}::${constant.reference.name}` :
+        constant.type === "&[u8]" ? `&[${[...Buffer.from(constant.value, "base64")].map((byte) => `0x${byte.toString(16).padStart(2, "0")}`).join(", ")}]` : constant.value;
       lines.push(`    /// Exact ${constant.unit.slice("UNIT_".length).toLowerCase()} value declared by the schema.`,
         `    pub const ${constant.name}: ${constant.type} = ${value};`);
     }

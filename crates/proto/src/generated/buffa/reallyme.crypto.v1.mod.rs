@@ -2,6 +2,7 @@
 
 include!("reallyme.crypto.v1.native_options.rs");
 include!("reallyme.crypto.v1.native_primitives.rs");
+include!("reallyme.crypto.v1.native_protocols.rs");
 include!("reallyme.crypto.v1.policy.rs");
 include!("reallyme.crypto.v1.crypto.rs");
 #[allow(
@@ -176,6 +177,27 @@ pub mod __buffa {
         reg.register_json_any(super::__CRYPTO_VERIFICATION_RESULT_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_PROVIDER_CAPABILITY_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_PROVIDER_CAPABILITY_SET_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HPKE_PSK_SENDER_SETUP_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HPKE_PSK_SENDER_SETUP_RESULT_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HPKE_PSK_RECEIVER_SETUP_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HPKE_PSK_RECEIVER_SETUP_RESULT_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HPKE_SENDER_SEAL_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HPKE_SENDER_SEAL_RESULT_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HPKE_RECEIVER_OPEN_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HPKE_RECEIVER_OPEN_RESULT_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HPKE_P256BASE_CAPABILITIES_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HPKE_P256BASE_PUBLIC_KEY_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HPKE_P256BASE_SEAL_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HPKE_P256BASE_OPEN_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HPKE_P256BASE_SEALED_RESULT_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HPKE_P256BASE_OPEN_RESULT_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HPKE_COMPONENT_CAPABILITY_JSON_ANY);
+        reg.register_json_any(
+            super::__CRYPTO_HPKE_P256BASE_RECIPIENT_IMPORT_REQUEST_JSON_ANY,
+        );
+        reg.register_json_any(
+            super::__CRYPTO_HPKE_P256BASE_RECIPIENT_GENERATE_REQUEST_JSON_ANY,
+        );
         reg.register_json_any(super::__JSON_WEB_KEY_JSON_ANY);
         reg.register_json_any(super::__JSON_WEB_KEY_SET_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_NATIVE_KEY_CAPABILITIES_JSON_ANY);
@@ -670,6 +692,74 @@ pub use self::__buffa::view::CryptoProviderCapabilityOwnedView;
 pub use self::__buffa::view::CryptoProviderCapabilitySetView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoProviderCapabilitySetOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkePskSenderSetupRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkePskSenderSetupRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkePskSenderSetupResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkePskSenderSetupResultOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkePskReceiverSetupRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkePskReceiverSetupRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkePskReceiverSetupResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkePskReceiverSetupResultOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeSenderSealRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeSenderSealRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeSenderSealResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeSenderSealResultOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeReceiverOpenRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeReceiverOpenRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeReceiverOpenResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeReceiverOpenResultOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeP256BaseCapabilitiesView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeP256BaseCapabilitiesOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeP256BasePublicKeyView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeP256BasePublicKeyOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeP256BaseSealRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeP256BaseSealRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeP256BaseOpenRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeP256BaseOpenRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeP256BaseSealedResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeP256BaseSealedResultOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeP256BaseOpenResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeP256BaseOpenResultOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeComponentCapabilityView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeComponentCapabilityOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeP256BaseRecipientImportRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeP256BaseRecipientImportRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeP256BaseRecipientGenerateRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeP256BaseRecipientGenerateRequestOwnedView;
 #[doc(inline)]
 pub use self::__buffa::view::JsonWebKeyView;
 #[doc(inline)]

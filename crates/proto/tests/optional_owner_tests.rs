@@ -206,3 +206,20 @@ fn unknown_group_wire_and_budgets_remain_unchanged() -> Result<(), DecodeError> 
     assert!(reallyme_crypto_proto::wire::decode_protobuf::<PublicJwkDocument>(&encoded).is_err());
     Ok(())
 }
+
+#[test]
+fn custom_option_owners_keep_protojson_null_boolean_defaults() -> Result<(), serde_json::Error> {
+    let options: CryptoJwkOptions =
+        serde_json::from_str(r#"{"alg":null,"useSig":null,"useEnc":null,"kid":""}"#)?;
+    assert!(!options.alg);
+    assert!(!options.use_sig);
+    assert!(!options.use_enc);
+    assert_eq!(options.kid.as_deref(), Some([].as_slice()));
+    let options: CryptoJwkOptions =
+        serde_json::from_str(r#"{"alg":true,"useSig":false,"useEnc":true,"kid":null}"#)?;
+    assert!(options.alg);
+    assert!(!options.use_sig);
+    assert!(options.use_enc);
+    assert!(options.kid.is_none());
+    Ok(())
+}

@@ -16,6 +16,9 @@ use crate::constants::{
 };
 use crate::error::HpkeError;
 
+#[path = "generated/hpke_contract_constants.rs"]
+mod contract_constants;
+
 /// Runtime availability of an IANA-registered HPKE component in this build.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HpkeComponentSupport {
@@ -247,44 +250,13 @@ impl HpkeAeadId {
 }
 
 /// Complete IANA HPKE KEM registry snapshot supported by the `0.3.17` contract.
-pub const HPKE_REGISTERED_KEMS: [HpkeKemId; 17] = [
-    HpkeKemId::DhKemP256HkdfSha256,
-    HpkeKemId::DhKemP384HkdfSha384,
-    HpkeKemId::DhKemP521HkdfSha512,
-    HpkeKemId::DhKemCp256HkdfSha256,
-    HpkeKemId::DhKemCp384HkdfSha384,
-    HpkeKemId::DhKemCp521HkdfSha512,
-    HpkeKemId::DhKemSecp256k1HkdfSha256,
-    HpkeKemId::DhKemX25519HkdfSha256,
-    HpkeKemId::DhKemX448HkdfSha512,
-    HpkeKemId::DhKemX25519ElligatorHkdfSha256,
-    HpkeKemId::X25519Kyber768Draft00,
-    HpkeKemId::MlKem512,
-    HpkeKemId::MlKem768,
-    HpkeKemId::MlKem1024,
-    HpkeKemId::MlKem768P256,
-    HpkeKemId::MlKem1024P384,
-    HpkeKemId::XWing,
-];
+pub use contract_constants::HPKE_REGISTERED_KEMS;
 
 /// Complete IANA HPKE KDF registry snapshot supported by the `0.3.17` contract.
-pub const HPKE_REGISTERED_KDFS: [HpkeKdfId; 7] = [
-    HpkeKdfId::HkdfSha256,
-    HpkeKdfId::HkdfSha384,
-    HpkeKdfId::HkdfSha512,
-    HpkeKdfId::Shake128,
-    HpkeKdfId::Shake256,
-    HpkeKdfId::TurboShake128,
-    HpkeKdfId::TurboShake256,
-];
+pub use contract_constants::HPKE_REGISTERED_KDFS;
 
 /// Complete IANA HPKE AEAD registry snapshot supported by the `0.3.17` contract.
-pub const HPKE_REGISTERED_AEADS: [HpkeAeadId; 4] = [
-    HpkeAeadId::Aes128Gcm,
-    HpkeAeadId::Aes256Gcm,
-    HpkeAeadId::ChaCha20Poly1305,
-    HpkeAeadId::ExportOnly,
-];
+pub use contract_constants::HPKE_REGISTERED_AEADS;
 
 impl TryFrom<u16> for HpkeAeadId {
     type Error = HpkeError;
@@ -343,135 +315,67 @@ impl HpkeSuite {
     }
 }
 
-/// DHKEM(P-256), HKDF-SHA256, AES-128-GCM.
-pub const HPKE_DHKEM_P256_HKDF_SHA256_AES128GCM: HpkeSuite = HpkeSuite::new(
-    HpkeKemId::DhKemP256HkdfSha256,
-    HpkeKdfId::HkdfSha256,
-    HpkeAeadId::Aes128Gcm,
-);
-/// DHKEM(P-256), HKDF-SHA256, AES-256-GCM.
-pub const HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM: HpkeSuite = HpkeSuite::new(
-    HpkeKemId::DhKemP256HkdfSha256,
-    HpkeKdfId::HkdfSha256,
-    HpkeAeadId::Aes256Gcm,
-);
-/// DHKEM(P-384), HKDF-SHA384, AES-256-GCM.
-pub const HPKE_DHKEM_P384_HKDF_SHA384_AES256GCM: HpkeSuite = HpkeSuite::new(
-    HpkeKemId::DhKemP384HkdfSha384,
-    HpkeKdfId::HkdfSha384,
-    HpkeAeadId::Aes256Gcm,
-);
-/// DHKEM(P-521), HKDF-SHA512, AES-256-GCM.
-pub const HPKE_DHKEM_P521_HKDF_SHA512_AES256GCM: HpkeSuite = HpkeSuite::new(
-    HpkeKemId::DhKemP521HkdfSha512,
-    HpkeKdfId::HkdfSha512,
-    HpkeAeadId::Aes256Gcm,
-);
-/// DHKEM(X25519), HKDF-SHA256, AES-128-GCM.
-pub const HPKE_DHKEM_X25519_HKDF_SHA256_AES128GCM: HpkeSuite = HpkeSuite::new(
-    HpkeKemId::DhKemX25519HkdfSha256,
-    HpkeKdfId::HkdfSha256,
-    HpkeAeadId::Aes128Gcm,
-);
-/// DHKEM(X25519), HKDF-SHA256, ChaCha20-Poly1305.
-pub const HPKE_DHKEM_X25519_HKDF_SHA256_CHACHA20POLY1305: HpkeSuite = HpkeSuite::new(
-    HpkeKemId::DhKemX25519HkdfSha256,
-    HpkeKdfId::HkdfSha256,
-    HpkeAeadId::ChaCha20Poly1305,
-);
-/// ML-KEM-512, HKDF-SHA256, AES-128-GCM.
-///
-/// ML-KEM-512 targets NIST security category 1. Prefer ML-KEM-768,
-/// ML-KEM-1024, or a hybrid KEM unless a constrained profile requires it.
-pub const HPKE_MLKEM512_HKDF_SHA256_AES128GCM: HpkeSuite = HpkeSuite::new(
-    HpkeKemId::MlKem512,
-    HpkeKdfId::HkdfSha256,
-    HpkeAeadId::Aes128Gcm,
-);
-/// X-Wing, HKDF-SHA256, ChaCha20-Poly1305.
-pub const HPKE_XWING_HKDF_SHA256_CHACHA20POLY1305: HpkeSuite = HpkeSuite::new(
-    HpkeKemId::XWing,
-    HpkeKdfId::HkdfSha256,
-    HpkeAeadId::ChaCha20Poly1305,
-);
-/// X-Wing (ML-KEM-768 + X25519), HKDF-SHA384, AES-256-GCM.
-pub const HPKE_XWING_HKDF_SHA384_AES256GCM: HpkeSuite = HpkeSuite::new(
-    HpkeKemId::XWing,
-    HpkeKdfId::HkdfSha384,
-    HpkeAeadId::Aes256Gcm,
-);
-/// ML-KEM-768, SHAKE256, AES-256-GCM.
-pub const HPKE_MLKEM768_SHAKE256_AES256GCM: HpkeSuite = HpkeSuite::new(
-    HpkeKemId::MlKem768,
-    HpkeKdfId::Shake256,
-    HpkeAeadId::Aes256Gcm,
-);
-/// ML-KEM-768, HKDF-SHA384, AES-256-GCM.
-pub const HPKE_MLKEM768_HKDF_SHA384_AES256GCM: HpkeSuite = HpkeSuite::new(
-    HpkeKemId::MlKem768,
-    HpkeKdfId::HkdfSha384,
-    HpkeAeadId::Aes256Gcm,
-);
-/// ML-KEM-1024, SHAKE256, AES-256-GCM.
-pub const HPKE_MLKEM1024_SHAKE256_AES256GCM: HpkeSuite = HpkeSuite::new(
-    HpkeKemId::MlKem1024,
-    HpkeKdfId::Shake256,
-    HpkeAeadId::Aes256Gcm,
-);
-/// ML-KEM-1024, HKDF-SHA384, AES-256-GCM.
-pub const HPKE_MLKEM1024_HKDF_SHA384_AES256GCM: HpkeSuite = HpkeSuite::new(
-    HpkeKemId::MlKem1024,
-    HpkeKdfId::HkdfSha384,
-    HpkeAeadId::Aes256Gcm,
-);
-/// MLKEM768-P256, SHAKE256, AES-256-GCM.
-pub const HPKE_MLKEM768P256_SHAKE256_AES256GCM: HpkeSuite = HpkeSuite::new(
-    HpkeKemId::MlKem768P256,
-    HpkeKdfId::Shake256,
-    HpkeAeadId::Aes256Gcm,
-);
-/// MLKEM1024-P384, SHAKE256, AES-256-GCM.
-pub const HPKE_MLKEM1024P384_SHAKE256_AES256GCM: HpkeSuite = HpkeSuite::new(
-    HpkeKemId::MlKem1024P384,
-    HpkeKdfId::Shake256,
-    HpkeAeadId::Aes256Gcm,
-);
-/// MLKEM1024-P384, HKDF-SHA384, AES-256-GCM.
-pub const HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM: HpkeSuite = HpkeSuite::new(
-    HpkeKemId::MlKem1024P384,
-    HpkeKdfId::HkdfSha384,
-    HpkeAeadId::Aes256Gcm,
-);
-/// MLS 192-bit profile: ML-KEM-1024, HKDF-SHA384, AES-256-GCM, and P-384 signatures.
-///
-/// The profile's MLS transcript hash and HPKE KDF both use SHA-384, but they
-/// remain distinct protocol components. The P-384 suffix identifies the MLS
-/// signature algorithm and does not alter the HPKE ciphersuite triple.
-pub const MLS_192_MLKEM1024_AES256GCM_SHA384_P384: HpkeSuite = HPKE_MLKEM1024_HKDF_SHA384_AES256GCM;
-/// MLS 256-bit profile: ML-KEM-1024, HKDF-SHA384, AES-256-GCM, and ML-DSA-87 signatures.
-///
-/// The ML-DSA-87 suffix identifies the MLS signature algorithm and does not
-/// alter the HPKE ciphersuite triple represented by this value.
-pub const MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87: HpkeSuite =
-    HPKE_MLKEM1024_HKDF_SHA384_AES256GCM;
-/// MLS 192-bit profile: MLKEM1024-P384, HKDF-SHA384, AES-256-GCM, and P-384 signatures.
-///
-/// The profile's MLS transcript hash and HPKE KDF both use SHA-384, but they
-/// remain distinct protocol components. The final P-384 suffix identifies the
-/// MLS signature algorithm rather than an additional HPKE component.
-pub const MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384: HpkeSuite =
-    HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM;
-/// MLS 192-bit profile: ML-KEM-768, HKDF-SHA384, AES-256-GCM, and ML-DSA-65 signatures.
-///
-/// The ML-DSA-65 suffix identifies the MLS signature algorithm and does not
-/// alter the HPKE ciphersuite triple represented by this value.
-pub const MLS_192_MLKEM768_AES256GCM_SHA384_MLDSA65: HpkeSuite =
-    HPKE_MLKEM768_HKDF_SHA384_AES256GCM;
 /// MLS 128-bit profile: X-Wing, HKDF-SHA384, AES-256-GCM, and Ed25519 signatures.
 ///
 /// X-Wing is the ML-KEM-768 + X25519 hybrid KEM standardized by the HPKE PQ
 /// draft. The Ed25519 suffix identifies the MLS signature algorithm and does
 /// not alter the HPKE ciphersuite triple represented by this value.
-#[allow(non_upper_case_globals)] // Preserve the exact ciphersuite name used by the MLS draft.
-pub const MLS_128_MLKEM768X25519_AES256GCM_SHA384_Ed25519: HpkeSuite =
-    HPKE_XWING_HKDF_SHA384_AES256GCM;
+// Preserve the exact ciphersuite name used by the MLS draft.
+pub use contract_constants::MLS_128_MLKEM768X25519_AES256GCM_SHA384_Ed25519;
+/// DHKEM(P-256), HKDF-SHA256, AES-128-GCM.
+pub use contract_constants::HPKE_DHKEM_P256_HKDF_SHA256_AES128GCM;
+/// DHKEM(P-256), HKDF-SHA256, AES-256-GCM.
+pub use contract_constants::HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM;
+/// DHKEM(P-384), HKDF-SHA384, AES-256-GCM.
+pub use contract_constants::HPKE_DHKEM_P384_HKDF_SHA384_AES256GCM;
+/// DHKEM(P-521), HKDF-SHA512, AES-256-GCM.
+pub use contract_constants::HPKE_DHKEM_P521_HKDF_SHA512_AES256GCM;
+/// DHKEM(X25519), HKDF-SHA256, AES-128-GCM.
+pub use contract_constants::HPKE_DHKEM_X25519_HKDF_SHA256_AES128GCM;
+/// DHKEM(X25519), HKDF-SHA256, ChaCha20-Poly1305.
+pub use contract_constants::HPKE_DHKEM_X25519_HKDF_SHA256_CHACHA20POLY1305;
+/// MLKEM1024-P384, HKDF-SHA384, AES-256-GCM.
+pub use contract_constants::HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM;
+/// MLKEM1024-P384, SHAKE256, AES-256-GCM.
+pub use contract_constants::HPKE_MLKEM1024P384_SHAKE256_AES256GCM;
+/// ML-KEM-1024, HKDF-SHA384, AES-256-GCM.
+pub use contract_constants::HPKE_MLKEM1024_HKDF_SHA384_AES256GCM;
+/// ML-KEM-1024, SHAKE256, AES-256-GCM.
+pub use contract_constants::HPKE_MLKEM1024_SHAKE256_AES256GCM;
+/// ML-KEM-512, HKDF-SHA256, AES-128-GCM.
+///
+/// ML-KEM-512 targets NIST security category 1. Prefer ML-KEM-768,
+/// ML-KEM-1024, or a hybrid KEM unless a constrained profile requires it.
+pub use contract_constants::HPKE_MLKEM512_HKDF_SHA256_AES128GCM;
+/// MLKEM768-P256, SHAKE256, AES-256-GCM.
+pub use contract_constants::HPKE_MLKEM768P256_SHAKE256_AES256GCM;
+/// ML-KEM-768, HKDF-SHA384, AES-256-GCM.
+pub use contract_constants::HPKE_MLKEM768_HKDF_SHA384_AES256GCM;
+/// ML-KEM-768, SHAKE256, AES-256-GCM.
+pub use contract_constants::HPKE_MLKEM768_SHAKE256_AES256GCM;
+/// X-Wing, HKDF-SHA256, ChaCha20-Poly1305.
+pub use contract_constants::HPKE_XWING_HKDF_SHA256_CHACHA20POLY1305;
+/// X-Wing (ML-KEM-768 + X25519), HKDF-SHA384, AES-256-GCM.
+pub use contract_constants::HPKE_XWING_HKDF_SHA384_AES256GCM;
+/// MLS 192-bit profile: MLKEM1024-P384, HKDF-SHA384, AES-256-GCM, and P-384 signatures.
+///
+/// The profile's MLS transcript hash and HPKE KDF both use SHA-384, but they
+/// remain distinct protocol components. The final P-384 suffix identifies the
+/// MLS signature algorithm rather than an additional HPKE component.
+pub use contract_constants::MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384;
+/// MLS 192-bit profile: ML-KEM-1024, HKDF-SHA384, AES-256-GCM, and P-384 signatures.
+///
+/// The profile's MLS transcript hash and HPKE KDF both use SHA-384, but they
+/// remain distinct protocol components. The P-384 suffix identifies the MLS
+/// signature algorithm and does not alter the HPKE ciphersuite triple.
+pub use contract_constants::MLS_192_MLKEM1024_AES256GCM_SHA384_P384;
+/// MLS 192-bit profile: ML-KEM-768, HKDF-SHA384, AES-256-GCM, and ML-DSA-65 signatures.
+///
+/// The ML-DSA-65 suffix identifies the MLS signature algorithm and does not
+/// alter the HPKE ciphersuite triple represented by this value.
+pub use contract_constants::MLS_192_MLKEM768_AES256GCM_SHA384_MLDSA65;
+/// MLS 256-bit profile: ML-KEM-1024, HKDF-SHA384, AES-256-GCM, and ML-DSA-87 signatures.
+///
+/// The ML-DSA-87 suffix identifies the MLS signature algorithm and does not
+/// alter the HPKE ciphersuite triple represented by this value.
+pub use contract_constants::MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87;

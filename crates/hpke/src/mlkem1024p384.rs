@@ -19,7 +19,7 @@ use shake::Shake256;
 use subtle::{Choice, ConstantTimeEq};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
-const KEM_ID: u16 = 0x0051;
+const KEM_ID: u16 = crate::constants::HPKE_KEM_ML_KEM_1024_P384;
 const PRIVATE_KEY_LEN: usize = 32;
 const ML_KEM_SEED_LEN: usize = 64;
 const ML_KEM_PUBLIC_KEY_LEN: usize = 1_568;
@@ -29,7 +29,7 @@ const P384_PUBLIC_KEY_LEN: usize = 97;
 const PUBLIC_KEY_LEN: usize = ML_KEM_PUBLIC_KEY_LEN + P384_PUBLIC_KEY_LEN;
 const ENCAPSULATED_KEY_LEN: usize = ML_KEM_CIPHERTEXT_LEN + P384_PUBLIC_KEY_LEN;
 const VERSION_LABEL: &[u8] = b"HPKE-v1";
-const KEM_SUITE_ID: &[u8] = b"KEM\x00\x51";
+const KEM_SUITE_ID: &[u8] = &crate::constants::encode_kem_suite_id(KEM_ID);
 const DERIVE_KEYPAIR_LABEL: &[u8] = b"DeriveKeyPair";
 const DERIVE_KEYPAIR_LABEL_LEN: [u8; 2] = [0, 13];
 const PRIVATE_KEY_LEN_U16: [u8; 2] = [0, 32];

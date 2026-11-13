@@ -10,7 +10,8 @@ use crate::identifiers::HpkeSuite;
 use crate::types::{HpkeKeyPair, HpkePrivateKeyBytes};
 use crate::validation::{kem_parameters, require_executable_suite};
 
-const MIN_INPUT_KEY_MATERIAL_LEN: usize = 32;
+const MIN_INPUT_KEY_MATERIAL_LEN: usize =
+    crypto_core::contract_constants::hpke_internal::MIN_INPUT_KEY_MATERIAL_LEN;
 
 /// Generates a fresh HPKE KEM keypair using operating-system randomness.
 pub fn keygen(suite: HpkeSuite) -> Result<HpkeKeyPair, HpkeError> {

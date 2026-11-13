@@ -19,15 +19,16 @@ pub use key::P256RecipientKey;
 pub use plaintext::P256BasePlaintext;
 
 /// Maximum `info` length, below the engine's inclusive key-schedule limit.
-pub const INFO_MAX_LEN: usize = 65_530;
+pub const INFO_MAX_LEN: usize = crypto_core::contract_constants::hpke_base_p256::INFO_MAX_LEN;
 /// Local single-record plaintext bound in bytes.
-pub const PLAINTEXT_MAX_LEN: usize = 16_777_216;
+pub const PLAINTEXT_MAX_LEN: usize =
+    crypto_core::contract_constants::hpke_base_p256::PLAINTEXT_MAX_LEN;
 /// RFC 9180 uncompressed P-256 public/encapsulated key length.
-pub const PUBLIC_KEY_LEN: usize = 65;
+pub const PUBLIC_KEY_LEN: usize = crypto_core::contract_constants::hpke_base_p256::PUBLIC_KEY_LEN;
 /// RFC 9180 P-256 private scalar length.
-pub const PRIVATE_KEY_LEN: usize = 32;
+pub const PRIVATE_KEY_LEN: usize = crypto_core::contract_constants::hpke_base_p256::PRIVATE_KEY_LEN;
 /// AES-GCM authentication tag length.
-pub const TAG_LEN: usize = 16;
+pub const TAG_LEN: usize = crypto_core::contract_constants::hpke_base_p256::TAG_LEN;
 
 /// Canonical schema-owned failure for the bounded Base-mode interface.
 pub use crypto_core::CryptoError as P256BaseError;

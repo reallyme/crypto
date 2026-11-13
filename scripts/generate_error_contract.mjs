@@ -9,6 +9,8 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ContractConstantsGenerationError, parseContractConstantsDescriptor,
   renderContractConstants, validateErrorReasonRanges } from "./generate_contract_constants.mjs";
+import { parseHpkeConstantsDescriptor, renderHpkeConstants,
+  validateHpkeNativeSources, validateHpkeBackendSources } from "./generate_hpke_constants.mjs";
 
 const PACKAGE = "reallyme.crypto.v1";
 const SCHEMA = "reallyme/crypto/v1/crypto.proto";
@@ -23,6 +25,7 @@ const MAX_IDENTIFIER_LENGTH = 160;
 const COMMAND_TIMEOUT_MS = 30_000;
 const OUTPUT = "crates/proto/src/generated/error_contract.rs";
 const CONSTANTS_OUTPUT = "crates/proto/src/generated/contract_constants.rs";
+const HPKE_OUTPUT = "crates/hpke/src/generated/hpke_contract_constants.rs";
 const BUFFA_OUTPUT = "crates/proto/src/generated/buffa/reallyme.crypto.v1.crypto.rs";
 const REEXPORT = "pub use crate::error_types::CryptoErrorReason;";
 
@@ -353,20 +356,37 @@ function main() {
   const contract = parseErrorDescriptorDocument(document);
   const constantsContract = parseContractConstantsDescriptor(document);
   validateErrorReasonRanges(contract, constantsContract);
+  const hpkeContract = parseHpkeConstantsDescriptor(document, constantsContract);
+  const hpkeSources = {
+    identifiers: readBounded(resolve(root, "crates/hpke/src/identifiers.rs"), MAX_GENERATED_BYTES),
+    constants: readBounded(resolve(root, "crates/hpke/src/constants.rs"), MAX_GENERATED_BYTES),
+    baseP256: readBounded(resolve(root, "crates/hpke/src/base_p256.rs"), MAX_GENERATED_BYTES),
+  };
+  validateHpkeNativeSources(hpkeContract, hpkeSources);
+  validateHpkeBackendSources(hpkeSources.constants, {
+    mlkem512: readBounded(resolve(root, "crates/hpke/src/mlkem512.rs"), MAX_GENERATED_BYTES),
+    mlkem1024p384: readBounded(resolve(root, "crates/hpke/src/mlkem1024p384.rs"), MAX_GENERATED_BYTES),
+    secp256k1: readBounded(resolve(root, "crates/hpke/src/secp256k1.rs"), MAX_GENERATED_BYTES),
+    x448: readBounded(resolve(root, "crates/hpke/src/x448.rs"), MAX_GENERATED_BYTES),
+  });
   const original = readBounded(resolve(root, BUFFA_OUTPUT), MAX_GENERATED_BYTES);
   const rust = command("rustfmt", ["--edition", "2021", "--emit", "stdout"], { cwd: root, input: renderErrorContract(contract) });
   const constantsRust = command("rustfmt", ["--edition", "2021", "--emit", "stdout"],
     { cwd: root, input: renderContractConstants(constantsContract) });
+  const hpkeRust = command("rustfmt", ["--edition", "2021", "--emit", "stdout"],
+    { cwd: root, input: renderHpkeConstants(hpkeContract) });
   const shared = shareReasonEnum(original, contract);
   if (args[0] === "--check") {
     if (readBounded(resolve(root, OUTPUT), MAX_GENERATED_BYTES) !== rust || shared !== original ||
-        readBounded(resolve(root, CONSTANTS_OUTPUT), MAX_GENERATED_BYTES) !== constantsRust) fail("stale-output");
+        readBounded(resolve(root, CONSTANTS_OUTPUT), MAX_GENERATED_BYTES) !== constantsRust ||
+        readBounded(resolve(root, HPKE_OUTPUT), MAX_GENERATED_BYTES) !== hpkeRust) fail("stale-output");
     return;
   }
   // Validate every output before making any maintenance edit.
   if (shared !== original) writeErrorContractOutput(resolve(root, BUFFA_OUTPUT), shared);
   writeErrorContractOutput(resolve(root, OUTPUT), rust);
   writeErrorContractOutput(resolve(root, CONSTANTS_OUTPUT), constantsRust);
+  writeErrorContractOutput(resolve(root, HPKE_OUTPUT), hpkeRust);
 }
 
 const sourcePath = fileURLToPath(import.meta.url);

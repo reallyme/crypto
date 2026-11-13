@@ -94,6 +94,26 @@ export function classifyProtoScalars(source) {
  * The shared validator continues checking every non-optional sensitive field,
  * schema coverage, unknown-field cleanup and the other generation invariants.
  */
+// Check each cleanup obligation in its own generated implementation. A wipe
+// in clear() cannot compensate for a missing Drop wipe, or the reverse.
+function implementationBlock(source, marker) {
+  const start = source.indexOf(marker);
+  if (start < 0) fail("optional-owner");
+  const open = source.indexOf("{", start + marker.length);
+  if (open < 0) fail("optional-owner");
+  let depth = 1;
+  let close = open + 1;
+  // The selected generated bodies contain no brace-bearing string literals.
+  // Their exact markers and field obligations are also checked independently.
+  while (close < source.length && depth !== 0) {
+    if (source[close] === "{") depth += 1;
+    else if (source[close] === "}") depth -= 1;
+    close += 1;
+  }
+  if (depth !== 0) fail("optional-owner");
+  return source.slice(open + 1, close - 1);
+}
+
 export function projectLegacyScalarChecks(source, generated) {
   if (typeof generated !== "string" || generated.length > 16_777_216) fail("generated-size");
   const fields = classifyProtoScalars(source);
@@ -110,19 +130,36 @@ export function projectLegacyScalarChecks(source, generated) {
     const scope = scopes.get(field.message);
     if (scope === undefined) fail("optional-owner");
     const name = field.field;
+    const drop = implementationBlock(scope, 'impl::core::ops::Dropfor' + field.message);
+    const message = implementationBlock(scope, 'impl::buffa::Messagefor' + field.message);
+    const clear = implementationBlock(message, 'fnclear(&mutself)');
+    const merge = implementationBlock(message, 'fnmerge_field(');
+    const setter = implementationBlock(scope, 'pubfnwith_' + name + '(');
+    const deserialize = implementationBlock(scope, "impl<'de>::serde::Deserialize<'de>for" + field.message);
+    const wire = implementationBlock(deserialize, 'structWire');
+    const wipe = '::zeroize::Zeroize::zeroize(&mutself.' + name + ');';
+    const unknownWipe = '__reallyme_zeroize_unknown_fields(&mutself.__buffa_unknown_fields);';
+    const wireField = new RegExp('#\\[serde\\(([^\\]]*)\\)\\]' + name + ':');
+    const wireAttribute = wireField.exec(wire)?.[1];
     const requirements = [
-      '.field("' + name + '",&"<redacted>")',
-      'impl::core::ops::Dropfor' + field.message + '{',
-      'impl::zeroize::ZeroizeOnDropfor' + field.message + '{}',
-      '::zeroize::Zeroize::zeroize(&mutself.' + name + ');',
-      name + ': ::core::option::Option<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>>',
-      'crate::deserialize_sensitive::deserialize_optional_bytes(deserializer)',
-      name + ':wire.' + name + '.as_mut().map(|bytes|::core::mem::take(&mut**bytes))',
-      'pubfnwith_' + name + '(mutself,value:implInto<::buffa::alloc::vec::Vec<u8>>)',
-      'self.' + name + '=Some(::core::mem::take(&mut*value));',
-      'crate::merge_sensitive::merge_bytes(self.' + name + '.get_or_insert_with(::buffa::alloc::vec::Vec::new),buf,)?;',
+      [scope, '.field("' + name + '",&"<redacted>")'],
+      [scope, 'impl::zeroize::ZeroizeOnDropfor' + field.message + '{}'],
+      [drop, wipe], [drop, unknownWipe], [clear, wipe], [clear, unknownWipe],
+      [setter, wipe], [setter, '::zeroize::Zeroizing::new(value.into())'],
+      [setter, 'self.' + name + '=Some(::core::mem::take(&mut*value));'],
+      [wire, name + ': ::core::option::Option<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>>'],
+      [deserialize, 'crate::deserialize_sensitive::deserialize_optional_bytes(deserializer)'],
+      [deserialize, name + ':wire.' + name + '.as_mut().map(|bytes|::core::mem::take(&mut**bytes))'],
+      [merge, 'crate::merge_sensitive::merge_bytes(self.' + name + '.get_or_insert_with(::buffa::alloc::vec::Vec::new),buf,)?;'],
     ];
-    if (requirements.some((value) => !scope.includes(value.replace(/\s+/gu, ""))) ||
+    const guard = setter.indexOf('::zeroize::Zeroizing::new(value.into())');
+    const replacement = setter.indexOf('self.' + name + '=Some(::core::mem::take(&mut*value));');
+    const staging = deserialize.indexOf('letmutwire=Wire::deserialize(deserializer)?;');
+    const transfer = deserialize.indexOf(name + ':wire.' + name + '.as_mut().map(');
+    if (guard < 0 || setter.indexOf(wipe) <= guard || replacement <= setter.indexOf(wipe) ||
+        staging < 0 || transfer <= staging ||
+        requirements.some(([body, value]) => !body.includes(value.replace(/\s+/gu, ""))) ||
+        !wireAttribute?.includes('deserialize_with="deserialize_optional_zeroizing_bytes"') ||
         scope.includes('.field("' + name + '",&self.' + name + ')')) fail("optional-owner");
     return { ...field, sensitivity: "public" };
   });

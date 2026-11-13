@@ -11,7 +11,8 @@ use super::{
 };
 use crate::random::FixedRandomness;
 
-const UNCOMPRESSED_POINT_PREFIX: u8 = 0x04;
+const UNCOMPRESSED_POINT_PREFIX: u8 =
+    crypto_core::contract_constants::hpke_internal::UNCOMPRESSED_POINT_PREFIX;
 
 /// Separate RFC 9180 `enc` and ciphertext-with-tag; no application envelope.
 pub struct P256BaseSealed {

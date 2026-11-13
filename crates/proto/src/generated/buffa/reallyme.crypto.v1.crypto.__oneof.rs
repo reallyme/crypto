@@ -1296,6 +1296,38 @@ pub mod platform_key_policy {
         }
     }
 }
+pub mod crypto_hpke_component_capability {
+    #[allow(unused_imports)]
+    use super::*;
+    #[derive(Clone, PartialEq, Debug)]
+    pub enum Component {
+        Kem(::buffa::EnumValue<super::super::super::HpkeKemId>),
+        Kdf(::buffa::EnumValue<super::super::super::HpkeKdfId>),
+        Aead(::buffa::EnumValue<super::super::super::HpkeAeadId>),
+    }
+    impl ::buffa::Oneof for Component {}
+    impl ::serde::Serialize for Component {
+        fn serialize<S: ::serde::Serializer>(
+            &self,
+            s: S,
+        ) -> ::core::result::Result<S::Ok, S::Error> {
+            use ::serde::ser::SerializeMap;
+            let mut map = s.serialize_map(Some(1))?;
+            match self {
+                Self::Kem(v) => {
+                    map.serialize_entry("kem", v)?;
+                }
+                Self::Kdf(v) => {
+                    map.serialize_entry("kdf", v)?;
+                }
+                Self::Aead(v) => {
+                    map.serialize_entry("aead", v)?;
+                }
+            }
+            map.end()
+        }
+    }
+}
 pub mod crypto_ecdsa_input {
     #[allow(unused_imports)]
     use super::*;

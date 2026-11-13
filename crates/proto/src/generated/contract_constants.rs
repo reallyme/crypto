@@ -210,6 +210,129 @@ pub mod hmac {
     pub const HMAC_SHA512_TAG_LENGTH: usize = 64;
 }
 
+/// Immutable `hpke` contract constants.
+pub mod hpke {
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_AEAD_AES_128_GCM: u16 = 1;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_AEAD_AES_256_GCM: u16 = 2;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_AEAD_CHACHA20_POLY1305: u16 = 3;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_AEAD_EXPORT_ONLY: u16 = 65535;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_AEAD_NONCE_LEN: usize = 12;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_AEAD_TAG_LEN: usize = 16;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_ENCAPSULATED_KEY_MAX_LEN: usize = 1665;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KDF_HKDF_SHA256: u16 = 1;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KDF_HKDF_SHA384: u16 = 2;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KDF_HKDF_SHA512: u16 = 3;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KDF_SHAKE128: u16 = 16;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KDF_SHAKE256: u16 = 17;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KDF_TURBO_SHAKE128: u16 = 18;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KDF_TURBO_SHAKE256: u16 = 19;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KEM_DHKEM_CP256_HKDF_SHA256: u16 = 19;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KEM_DHKEM_CP384_HKDF_SHA384: u16 = 20;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KEM_DHKEM_CP521_HKDF_SHA512: u16 = 21;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KEM_DHKEM_P256_HKDF_SHA256: u16 = 16;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KEM_DHKEM_P384_HKDF_SHA384: u16 = 17;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KEM_DHKEM_P521_HKDF_SHA512: u16 = 18;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KEM_DHKEM_SECP256K1_HKDF_SHA256: u16 = 22;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KEM_DHKEM_X25519_ELLIGATOR_HKDF_SHA256: u16 = 34;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KEM_DHKEM_X25519_HKDF_SHA256: u16 = 32;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KEM_DHKEM_X448_HKDF_SHA512: u16 = 33;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KEM_ML_KEM_1024: u16 = 66;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KEM_ML_KEM_1024_P384: u16 = 81;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KEM_ML_KEM_512: u16 = 64;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KEM_ML_KEM_768: u16 = 65;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KEM_ML_KEM_768_P256: u16 = 80;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KEM_X25519_KYBER768_DRAFT00: u16 = 48;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_KEM_X_WING: u16 = 25722;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_KEY_SCHEDULE_LABEL_OVERHEAD: usize = 5;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_LABELED_CONTEXT_LIMIT: usize = 65536;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_MIN_PSK_LEN: usize = 32;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_P256_PRIVATE_KEY_LEN: usize = 32;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_P256_PUBLIC_KEY_LEN: usize = 65;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_P384_PRIVATE_KEY_LEN: usize = 48;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_P384_PUBLIC_KEY_LEN: usize = 97;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_P521_PRIVATE_KEY_LEN: usize = 66;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_P521_PUBLIC_KEY_LEN: usize = 133;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_PRIVATE_KEY_MAX_LEN: usize = 66;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_PUBLIC_KEY_MAX_LEN: usize = 1665;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_SECP256K1_PRIVATE_KEY_LEN: usize = 32;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_SECP256K1_PUBLIC_KEY_LEN: usize = 65;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_X25519_PRIVATE_KEY_LEN: usize = 32;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_X25519_PUBLIC_KEY_LEN: usize = 32;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_X448_PRIVATE_KEY_LEN: usize = 56;
+    /// Exact bytes value declared by the schema.
+    pub const HPKE_X448_PUBLIC_KEY_LEN: usize = 56;
+}
+
+/// Immutable `hpke_base_p256` contract constants.
+pub mod hpke_base_p256 {
+    /// Exact bytes value declared by the schema.
+    pub const INFO_MAX_LEN: usize = 65530;
+    /// Exact bytes value declared by the schema.
+    pub const PLAINTEXT_MAX_LEN: usize = 16777216;
+    /// Exact bytes value declared by the schema.
+    pub const PRIVATE_KEY_LEN: usize = super::hpke::HPKE_P256_PRIVATE_KEY_LEN;
+    /// Exact bytes value declared by the schema.
+    pub const PUBLIC_KEY_LEN: usize = super::hpke::HPKE_P256_PUBLIC_KEY_LEN;
+    /// Exact bytes value declared by the schema.
+    pub const TAG_LEN: usize = super::hpke::HPKE_AEAD_TAG_LEN;
+}
+
+/// Immutable `hpke_internal` contract constants.
+pub mod hpke_internal {
+    /// Exact bytes value declared by the schema.
+    pub const MIN_INPUT_KEY_MATERIAL_LEN: usize =
+        super::operation_hpke::HPKE_OPERATION_MIN_INPUT_KEY_MATERIAL_LEN;
+    /// Exact identifier value declared by the schema.
+    pub const UNCOMPRESSED_POINT_PREFIX: u8 = 4;
+}
+
 /// Immutable `key_identifier` contract constants.
 pub mod key_identifier {
     /// Exact bytes value declared by the schema.
