@@ -29,7 +29,7 @@ public  final class CryptoProviderCapabilitySet extends
   /**
    * <code>repeated .reallyme.crypto.v1.CryptoProviderCapability capabilities = 1 [json_name = "capabilities"];</code>
    */
-  public java.util.List<? extends me.really.crypto.v1.CryptoProviderCapabilityOrBuilder> 
+  public java.util.List<? extends me.really.crypto.v1.CryptoProviderCapabilityOrBuilder>
       getCapabilitiesOrBuilderList() {
     return capabilities_;
   }
@@ -384,4 +384,3 @@ public  final class CryptoProviderCapabilitySet extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

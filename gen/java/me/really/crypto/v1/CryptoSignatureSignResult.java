@@ -87,7 +87,7 @@ public  final class CryptoSignatureSignResult extends
    */
   private void setSignature(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     signature_ = value;
   }
   /**
@@ -346,4 +346,3 @@ public  final class CryptoSignatureSignResult extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

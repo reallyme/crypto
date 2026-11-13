@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -45,6 +45,9 @@ for (const match of protoSource.matchAll(messagePattern)) {
 }
 const messageNames = [...messageBodies.keys()];
 const scalarMetadataMessageNames = new Set([
+  "ProviderDecision",
+  "ProviderDecisionRequest",
+  "ProviderDecisionResult",
   "CryptoKeyAlgorithmIdentifier",
   "CryptoEcdsaCurveIdentifier",
   "CryptoPrimeGroupIdentifier",
@@ -966,44 +969,21 @@ const swiftPath = join(
   root,
   "gen/swift/reallyme/crypto/v1/crypto.pb.swift",
 );
+// Normalize the generated package uniformly so new schema files do not need
+// a second list of SDK filenames just to keep regeneration stable.
 const normalizedGeneratedPaths = [
-  ...[...scalarMetadataMessageNames].flatMap((name) => [
-    `gen/java/me/really/crypto/v1/${name}.java`,
-    `gen/kotlin/me/really/crypto/v1/${name}Kt.kt`,
-  ]),
-  ...["KeyAlgorithm", "EcdsaCurve", "PrimeGroup", "RsaHashAlgorithm"].map(
-    (name) => `gen/java/me/really/crypto/v1/${name}.java`,
-  ),
-  "gen/java/me/really/crypto/v1/CryptoHpkeDeriveKeyPairRequest.java",
-  "gen/java/me/really/crypto/v1/CryptoHpkeGenerateKeyPairRequest.java",
-  "gen/java/me/really/crypto/v1/CryptoHpkePskOpenRequest.java",
-  "gen/java/me/really/crypto/v1/CryptoHpkePskSealRequest.java",
-  "gen/java/me/really/crypto/v1/CryptoHpkeReceiverExportRequest.java",
-  "gen/java/me/really/crypto/v1/CryptoHpkeReceiverExportResult.java",
-  "gen/java/me/really/crypto/v1/CryptoHpkeSenderExportRequest.java",
-  "gen/java/me/really/crypto/v1/CryptoHpkeSenderExportResult.java",
-  "gen/java/me/really/crypto/v1/CryptoKmac256DeriveRequest.java",
-  "gen/java/me/really/crypto/v1/CryptoKmac256DeriveResult.java",
-  "gen/java/me/really/crypto/v1/CryptoKemDeriveKeyPairRequest.java",
-  "gen/java/me/really/crypto/v1/CryptoOperationRequest.java",
-  "gen/java/me/really/crypto/v1/HpkeAeadId.java",
-  "gen/java/me/really/crypto/v1/HpkeKdfId.java",
-  "gen/java/me/really/crypto/v1/HpkeKemId.java",
-  "gen/java/me/really/crypto/v1/HpkeSuiteIdentifier.java",
-  "gen/kotlin/me/really/crypto/v1/CryptoHpkeDeriveKeyPairRequestKt.kt",
-  "gen/kotlin/me/really/crypto/v1/CryptoHpkeGenerateKeyPairRequestKt.kt",
-  "gen/kotlin/me/really/crypto/v1/CryptoHpkePskOpenRequestKt.kt",
-  "gen/kotlin/me/really/crypto/v1/CryptoHpkePskSealRequestKt.kt",
-  "gen/kotlin/me/really/crypto/v1/CryptoHpkeReceiverExportRequestKt.kt",
-  "gen/kotlin/me/really/crypto/v1/CryptoHpkeReceiverExportResultKt.kt",
-  "gen/kotlin/me/really/crypto/v1/CryptoHpkeSenderExportRequestKt.kt",
-  "gen/kotlin/me/really/crypto/v1/CryptoHpkeSenderExportResultKt.kt",
-  "gen/kotlin/me/really/crypto/v1/CryptoKmac256DeriveRequestKt.kt",
-  "gen/kotlin/me/really/crypto/v1/CryptoKmac256DeriveResultKt.kt",
-  "gen/kotlin/me/really/crypto/v1/CryptoKemDeriveKeyPairRequestKt.kt",
-  "gen/kotlin/me/really/crypto/v1/CryptoOperationRequestKt.kt",
-  "gen/kotlin/me/really/crypto/v1/HpkeSuiteIdentifierKt.kt",
-].map((relativePath) => join(root, relativePath));
+  ["gen/java/me/really/crypto/v1", ".java"],
+  ["gen/kotlin/me/really/crypto/v1", ".kt"],
+  ["gen/es/reallyme/crypto/v1", ".js"],
+  ["gen/es/reallyme/crypto/v1", ".ts"],
+  ["packages/ts/src/proto/generated/reallyme/crypto/v1", ".ts"],
+  ["gen/swift/reallyme/crypto/v1", ".swift"],
+].flatMap(([directory, extension]) =>
+  readdirSync(join(root, directory), { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(extension))
+    .map((entry) => join(root, directory, entry.name))
+    .sort(),
+);
 const generatedPaths = [
   rustGeneratedPath,
   rustGeneratedViewPath,
@@ -1068,9 +1048,8 @@ function normalizeGeneratedTextFile(path) {
   }
 }
 
-// Protoc emits unstable trailing whitespace for these message shapes. Keep the
-// list explicit so clean regeneration is deterministic without rewriting the
-// entire managed-runtime output tree during a release-only hardening change.
+// Protoc emits trailing whitespace for some message and enum shapes. Keep
+// normalization deterministic across the complete generated package.
 for (const path of normalizedGeneratedPaths) {
   normalizeGeneratedTextFile(path);
 }

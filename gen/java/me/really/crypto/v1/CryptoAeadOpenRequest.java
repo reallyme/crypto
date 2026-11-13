@@ -100,7 +100,7 @@ public  final class CryptoAeadOpenRequest extends
    */
   private void setKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     key_ = value;
   }
   /**
@@ -132,7 +132,7 @@ public  final class CryptoAeadOpenRequest extends
    */
   private void setNonce(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     nonce_ = value;
   }
   /**
@@ -159,7 +159,7 @@ public  final class CryptoAeadOpenRequest extends
    */
   private void setAad(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     aad_ = value;
   }
   /**
@@ -186,7 +186,7 @@ public  final class CryptoAeadOpenRequest extends
    */
   private void setCiphertextWithTag(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     ciphertextWithTag_ = value;
   }
   /**
@@ -547,4 +547,3 @@ public  final class CryptoAeadOpenRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

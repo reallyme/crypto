@@ -18,6 +18,7 @@ name = "crypto_dispatch"
 
 [features]
 default = []
+proto = ["dep:buffa", "dep:crypto-proto", "crypto-core/protobuf"]
 
 native = [
     "crypto-ed25519?/native",
@@ -66,6 +67,8 @@ x25519 = ["dep:crypto-x25519"]
 x-wing = ["dep:crypto-x-wing"]
 
 [dependencies]
+buffa = { workspace = true, optional = true }
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../../proto", default-features = false, features = ["generated"], optional = true }
 thiserror = { workspace = true }
 
 # --- Core definitions (no behavior) ---

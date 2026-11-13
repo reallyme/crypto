@@ -80,13 +80,13 @@ public enum AppleKeychainAccessibility
           }
         };
 
-  public static com.google.protobuf.Internal.EnumVerifier 
+  public static com.google.protobuf.Internal.EnumVerifier
       internalGetVerifier() {
     return AppleKeychainAccessibilityVerifier.INSTANCE;
   }
 
-  private static final class AppleKeychainAccessibilityVerifier implements 
-       com.google.protobuf.Internal.EnumVerifier { 
+  private static final class AppleKeychainAccessibilityVerifier implements
+       com.google.protobuf.Internal.EnumVerifier {
           static final com.google.protobuf.Internal.EnumVerifier
               INSTANCE = new AppleKeychainAccessibilityVerifier();
           @java.lang.Override
@@ -103,4 +103,3 @@ public enum AppleKeychainAccessibility
 
   // @@protoc_insertion_point(enum_scope:reallyme.crypto.v1.AppleKeychainAccessibility)
 }
-

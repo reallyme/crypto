@@ -41,7 +41,7 @@ public  final class CryptoBip340SchnorrSignRequest extends
    */
   private void setMessage32(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     message32_ = value;
   }
   /**
@@ -76,7 +76,7 @@ public  final class CryptoBip340SchnorrSignRequest extends
    */
   private void setSecretKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     secretKey_ = value;
   }
   /**
@@ -115,7 +115,7 @@ public  final class CryptoBip340SchnorrSignRequest extends
    */
   private void setAuxRand32(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     auxRand32_ = value;
   }
   /**
@@ -411,4 +411,3 @@ public  final class CryptoBip340SchnorrSignRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

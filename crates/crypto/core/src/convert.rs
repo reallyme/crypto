@@ -26,6 +26,7 @@
 //! protobuf enums.
 
 mod identity;
+mod policy;
 
 use crate::{AeadAlgorithm as CoreAead, Algorithm, HashAlgorithm as CoreHash};
 

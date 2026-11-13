@@ -104,4 +104,3 @@ public inline fun me.really.crypto.v1.CryptoSignatureSignRequest.copy(block: `me
 
 public val me.really.crypto.v1.CryptoSignatureSignRequestOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

@@ -62,4 +62,3 @@ public inline fun me.really.crypto.v1.CryptoPlatformKeyGetPublicKeyRequest.copy(
 
 public val me.really.crypto.v1.CryptoPlatformKeyGetPublicKeyRequestOrBuilder.privateKeyHandleOrNull: me.really.crypto.v1.CryptoPlatformPrivateKeyHandle?
   get() = if (hasPrivateKeyHandle()) getPrivateKeyHandle() else null
-

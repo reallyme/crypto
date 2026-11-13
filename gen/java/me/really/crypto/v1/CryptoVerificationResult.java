@@ -481,4 +481,3 @@ public  final class CryptoVerificationResult extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

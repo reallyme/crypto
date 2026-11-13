@@ -137,4 +137,3 @@ public inline fun me.really.crypto.v1.CryptoRsaVerifyRequest.copy(block: `me.rea
 
 public val me.really.crypto.v1.CryptoRsaVerifyRequestOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

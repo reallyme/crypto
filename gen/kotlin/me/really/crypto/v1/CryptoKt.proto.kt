@@ -6,4 +6,3 @@
 // Generated files should ignore deprecation warnings
 @file:Suppress("DEPRECATION")
 package me.really.crypto.v1;
-

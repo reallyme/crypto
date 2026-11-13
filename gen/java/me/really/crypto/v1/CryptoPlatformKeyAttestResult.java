@@ -35,7 +35,7 @@ public  final class CryptoPlatformKeyAttestResult extends
   /**
    * <code>repeated .reallyme.crypto.v1.CryptoPlatformKeyAttestationCertificate certificate_chain = 1 [json_name = "certificateChain"];</code>
    */
-  public java.util.List<? extends me.really.crypto.v1.CryptoPlatformKeyAttestationCertificateOrBuilder> 
+  public java.util.List<? extends me.really.crypto.v1.CryptoPlatformKeyAttestationCertificateOrBuilder>
       getCertificateChainOrBuilderList() {
     return certificateChain_;
   }
@@ -482,4 +482,3 @@ public  final class CryptoPlatformKeyAttestResult extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

@@ -96,7 +96,7 @@ public  final class CryptoMacAuthenticateRequest extends
    */
   private void setKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     key_ = value;
   }
   /**
@@ -127,7 +127,7 @@ public  final class CryptoMacAuthenticateRequest extends
    */
   private void setMessage(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     message_ = value;
   }
   /**
@@ -427,4 +427,3 @@ public  final class CryptoMacAuthenticateRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

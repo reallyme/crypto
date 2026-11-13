@@ -106,7 +106,7 @@ public  final class AndroidPlatformKeyPolicy extends
    * @param value The userAuthenticationRequired to set.
    */
   private void setUserAuthenticationRequired(boolean value) {
-    
+
     userAuthenticationRequired_ = value;
   }
   /**
@@ -132,7 +132,7 @@ public  final class AndroidPlatformKeyPolicy extends
    * @param value The userAuthenticationTimeoutSeconds to set.
    */
   private void setUserAuthenticationTimeoutSeconds(int value) {
-    
+
     userAuthenticationTimeoutSeconds_ = value;
   }
   /**
@@ -158,7 +158,7 @@ public  final class AndroidPlatformKeyPolicy extends
    * @param value The allowBiometricStrong to set.
    */
   private void setAllowBiometricStrong(boolean value) {
-    
+
     allowBiometricStrong_ = value;
   }
   /**
@@ -184,7 +184,7 @@ public  final class AndroidPlatformKeyPolicy extends
    * @param value The allowDeviceCredential to set.
    */
   private void setAllowDeviceCredential(boolean value) {
-    
+
     allowDeviceCredential_ = value;
   }
   /**
@@ -210,7 +210,7 @@ public  final class AndroidPlatformKeyPolicy extends
    * @param value The invalidatedByBiometricEnrollment to set.
    */
   private void setInvalidatedByBiometricEnrollment(boolean value) {
-    
+
     invalidatedByBiometricEnrollment_ = value;
   }
   /**
@@ -236,7 +236,7 @@ public  final class AndroidPlatformKeyPolicy extends
    * @param value The userConfirmationRequired to set.
    */
   private void setUserConfirmationRequired(boolean value) {
-    
+
     userConfirmationRequired_ = value;
   }
   /**
@@ -262,7 +262,7 @@ public  final class AndroidPlatformKeyPolicy extends
    * @param value The unlockedDeviceRequired to set.
    */
   private void setUnlockedDeviceRequired(boolean value) {
-    
+
     unlockedDeviceRequired_ = value;
   }
   /**
@@ -289,7 +289,7 @@ public  final class AndroidPlatformKeyPolicy extends
    */
   private void setAttestationChallenge(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     attestationChallenge_ = value;
   }
   /**
@@ -775,4 +775,3 @@ public  final class AndroidPlatformKeyPolicy extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

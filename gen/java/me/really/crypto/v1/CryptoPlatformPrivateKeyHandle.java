@@ -181,7 +181,7 @@ public  final class CryptoPlatformPrivateKeyHandle extends
    */
   private void setOpaqueHandle(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     opaqueHandle_ = value;
   }
   /**
@@ -208,7 +208,7 @@ public  final class CryptoPlatformPrivateKeyHandle extends
    */
   private void setPublicKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     publicKey_ = value;
   }
   /**
@@ -781,4 +781,3 @@ public  final class CryptoPlatformPrivateKeyHandle extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

@@ -148,4 +148,3 @@ public inline fun me.really.crypto.v1.CryptoKdfDeriveKeyRequest.copy(block: `me.
 
 public val me.really.crypto.v1.CryptoKdfDeriveKeyRequestOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

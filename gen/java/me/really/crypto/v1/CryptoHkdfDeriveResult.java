@@ -95,7 +95,7 @@ public  final class CryptoHkdfDeriveResult extends
    */
   private void setOutputKeyMaterial(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     outputKeyMaterial_ = value;
   }
   /**
@@ -370,4 +370,3 @@ public  final class CryptoHkdfDeriveResult extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

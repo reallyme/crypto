@@ -138,4 +138,3 @@ public inline fun me.really.crypto.v1.CryptoHpkeSealRequest.copy(block: `me.real
 
 public val me.really.crypto.v1.CryptoHpkeSealRequestOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

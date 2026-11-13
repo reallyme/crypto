@@ -1847,6 +1847,7 @@ dependencies = [
 name = "reallyme-crypto-dispatch"
 version = "0.4.0"
 dependencies = [
+ "buffa",
  "hex",
  "reallyme-codec-multikey",
  "reallyme-crypto-core",
@@ -1860,6 +1861,7 @@ dependencies = [
  "reallyme-crypto-p256",
  "reallyme-crypto-p384",
  "reallyme-crypto-p521",
+ "reallyme-crypto-proto",
  "reallyme-crypto-secp256k1",
  "reallyme-crypto-x-wing",
  "reallyme-crypto-x25519",

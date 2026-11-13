@@ -288,4 +288,3 @@ public  final class CryptoPlatformKeyGetPublicKeyRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

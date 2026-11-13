@@ -26,6 +26,9 @@
 
 #![doc = include_str!("../README.md")]
 
+#[cfg(feature = "proto")]
+mod convert_proto_policy;
+
 // Core modules
 /// Error type returned by dispatch operations.
 pub mod error;

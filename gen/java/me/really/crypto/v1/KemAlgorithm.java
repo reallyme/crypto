@@ -104,13 +104,13 @@ public enum KemAlgorithm
           }
         };
 
-  public static com.google.protobuf.Internal.EnumVerifier 
+  public static com.google.protobuf.Internal.EnumVerifier
       internalGetVerifier() {
     return KemAlgorithmVerifier.INSTANCE;
   }
 
-  private static final class KemAlgorithmVerifier implements 
-       com.google.protobuf.Internal.EnumVerifier { 
+  private static final class KemAlgorithmVerifier implements
+       com.google.protobuf.Internal.EnumVerifier {
           static final com.google.protobuf.Internal.EnumVerifier
               INSTANCE = new KemAlgorithmVerifier();
           @java.lang.Override
@@ -127,4 +127,3 @@ public enum KemAlgorithm
 
   // @@protoc_insertion_point(enum_scope:reallyme.crypto.v1.KemAlgorithm)
 }
-

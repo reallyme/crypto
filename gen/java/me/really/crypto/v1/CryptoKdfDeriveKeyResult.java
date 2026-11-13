@@ -95,7 +95,7 @@ public  final class CryptoKdfDeriveKeyResult extends
    */
   private void setDerivedKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     derivedKey_ = value;
   }
   /**
@@ -370,4 +370,3 @@ public  final class CryptoKdfDeriveKeyResult extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

@@ -288,4 +288,3 @@ public  final class CryptoPlatformKeyGenerateResult extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

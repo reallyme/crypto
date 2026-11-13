@@ -222,6 +222,7 @@ operation-response = [
     "dep:buffa",
     "dep:crypto-proto",
     "crypto-core/protobuf",
+    "crypto-dispatch?/proto",
     # Identity adapters follow only leaves the caller already selected.
     "crypto-hkdf?/proto",
     "crypto-pbkdf2?/proto",

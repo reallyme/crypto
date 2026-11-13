@@ -96,7 +96,7 @@ public  final class CryptoKeyUnwrapRequest extends
    */
   private void setWrappingKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     wrappingKey_ = value;
   }
   /**
@@ -127,7 +127,7 @@ public  final class CryptoKeyUnwrapRequest extends
    */
   private void setWrappedKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     wrappedKey_ = value;
   }
   /**
@@ -427,4 +427,3 @@ public  final class CryptoKeyUnwrapRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

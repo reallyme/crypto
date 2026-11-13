@@ -13,7 +13,7 @@ public interface JsonWebKeySetOrBuilder extends
   /**
    * <code>repeated .reallyme.crypto.v1.JsonWebKey keys = 1 [json_name = "keys"];</code>
    */
-  java.util.List<me.really.crypto.v1.JsonWebKey> 
+  java.util.List<me.really.crypto.v1.JsonWebKey>
       getKeysList();
   /**
    * <code>repeated .reallyme.crypto.v1.JsonWebKey keys = 1 [json_name = "keys"];</code>

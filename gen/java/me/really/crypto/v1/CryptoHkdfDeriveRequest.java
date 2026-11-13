@@ -97,7 +97,7 @@ public  final class CryptoHkdfDeriveRequest extends
    */
   private void setInputKeyMaterial(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     inputKeyMaterial_ = value;
   }
   /**
@@ -136,7 +136,7 @@ public  final class CryptoHkdfDeriveRequest extends
    */
   private void setSalt(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     salt_ = value;
   }
   /**
@@ -167,7 +167,7 @@ public  final class CryptoHkdfDeriveRequest extends
    */
   private void setInfo(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     info_ = value;
   }
   /**
@@ -193,7 +193,7 @@ public  final class CryptoHkdfDeriveRequest extends
    * @param value The outputLength to set.
    */
   private void setOutputLength(int value) {
-    
+
     outputLength_ = value;
   }
   /**
@@ -563,4 +563,3 @@ public  final class CryptoHkdfDeriveRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

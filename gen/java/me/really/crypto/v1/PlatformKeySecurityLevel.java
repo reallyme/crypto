@@ -104,13 +104,13 @@ public enum PlatformKeySecurityLevel
           }
         };
 
-  public static com.google.protobuf.Internal.EnumVerifier 
+  public static com.google.protobuf.Internal.EnumVerifier
       internalGetVerifier() {
     return PlatformKeySecurityLevelVerifier.INSTANCE;
   }
 
-  private static final class PlatformKeySecurityLevelVerifier implements 
-       com.google.protobuf.Internal.EnumVerifier { 
+  private static final class PlatformKeySecurityLevelVerifier implements
+       com.google.protobuf.Internal.EnumVerifier {
           static final com.google.protobuf.Internal.EnumVerifier
               INSTANCE = new PlatformKeySecurityLevelVerifier();
           @java.lang.Override
@@ -127,4 +127,3 @@ public enum PlatformKeySecurityLevel
 
   // @@protoc_insertion_point(enum_scope:reallyme.crypto.v1.PlatformKeySecurityLevel)
 }
-

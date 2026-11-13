@@ -62,4 +62,3 @@ public inline fun me.really.crypto.v1.CryptoSignatureGenerateKeyPairRequest.copy
 
 public val me.really.crypto.v1.CryptoSignatureGenerateKeyPairRequestOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

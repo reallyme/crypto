@@ -1,0 +1,342 @@
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+syntax = "proto3";
+
+package reallyme.crypto.v1;
+
+option java_multiple_files = true;
+option java_package = "me.really.crypto.v1";
+option swift_prefix = "ReallyMeProto";
+
+// Policy identities describe reviewed runtime behavior. Zero is never a valid
+// identity. Numeric family assignments are independent of native ordinals.
+// Policy records are read-only outputs, not caller authorization or overrides.
+
+// Operation requested from the dispatch provider. Key lifecycle uses 100-199, signatures
+// 200-299, agreement 300-399 and KEM 400-499.
+enum ProviderOperation {
+  PROVIDER_OPERATION_UNSPECIFIED = 0;
+  // Generate a fresh raw keypair.
+  PROVIDER_OPERATION_GENERATE_KEY_PAIR = 100;
+  // Reconstruct a keypair from caller-owned secret material.
+  PROVIDER_OPERATION_DERIVE_KEY_PAIR = 110;
+  // Produce a detached signature.
+  PROVIDER_OPERATION_SIGN = 200;
+  // Verify a detached signature.
+  PROVIDER_OPERATION_VERIFY = 210;
+  // Derive a key-agreement shared secret.
+  PROVIDER_OPERATION_DERIVE_SHARED_SECRET = 300;
+  // Encapsulate to a KEM public key.
+  PROVIDER_OPERATION_KEM_ENCAPSULATE = 400;
+  // Decapsulate a KEM ciphertext.
+  PROVIDER_OPERATION_KEM_DECAPSULATE = 410;
+}
+
+// Implementation class considered by dispatch. Package-owned implementations use 100-199.
+enum ProviderKind {
+  PROVIDER_KIND_UNSPECIFIED = 0;
+  // Package-owned Rust implementation selected by Cargo feature policy.
+  PROVIDER_KIND_PACKAGE_OWNED_RUST = 100;
+}
+
+// Runtime lane considered by dispatch. Native uses 100-199 and WebAssembly uses 200-299.
+enum ProviderLane {
+  PROVIDER_LANE_UNSPECIFIED = 0;
+  // Native Rust target.
+  PROVIDER_LANE_NATIVE = 100;
+  // WebAssembly Rust target using package-owned implementations.
+  PROVIDER_LANE_WASM = 200;
+}
+
+// Residency of secret key material. Process-memory custody uses 100-199.
+enum KeyResidency {
+  KEY_RESIDENCY_UNSPECIFIED = 0;
+  // Secret material resides in caller or provider process memory.
+  KEY_RESIDENCY_PROCESS_MEMORY = 100;
+}
+
+// Secret-input boundary. No-secret, borrowed and newly owned material use 100-, 200- and
+// 300-series values respectively.
+enum KeyCopyBoundary {
+  KEY_COPY_BOUNDARY_UNSPECIFIED = 0;
+  // The operation has no secret-key input.
+  KEY_COPY_BOUNDARY_NO_SECRET_INPUT = 100;
+  // The provider borrows caller-owned secret bytes for one call.
+  KEY_COPY_BOUNDARY_BORROWED_CALLER_SECRET = 200;
+  // The provider creates a new secret owner for the result.
+  KEY_COPY_BOUNDARY_PROVIDER_CREATES_SECRET = 300;
+}
+
+// Provider output cleanup classification. Public and secret output use 100- and 200-series
+// values respectively.
+enum ProviderOutputPolicy {
+  PROVIDER_OUTPUT_POLICY_UNSPECIFIED = 0;
+  // The result contains no secret-bearing output.
+  PROVIDER_OUTPUT_POLICY_PUBLIC_ONLY = 100;
+  // Secret output is returned in a zeroizing owner.
+  PROVIDER_OUTPUT_POLICY_ZEROIZING_SECRET = 200;
+}
+
+// Fixed provider-policy reason. Selection uses 100-199 and rejection uses 200-299.
+enum ProviderPolicyReason {
+  PROVIDER_POLICY_REASON_UNSPECIFIED = 0;
+  // The operation and algorithm are supported in the compiled lane.
+  PROVIDER_POLICY_REASON_SELECTED_COMPILED_IMPLEMENTATION = 100;
+  // The algorithm does not implement the requested operation family.
+  PROVIDER_POLICY_REASON_REJECTED_OPERATION_MISMATCH = 200;
+  // The matching implementation was not compiled into the package.
+  PROVIDER_POLICY_REASON_REJECTED_FEATURE_DISABLED = 210;
+}
+
+// Provider selection result. Selection uses 100-199 and rejection uses 200-299.
+enum ProviderDisposition {
+  PROVIDER_DISPOSITION_UNSPECIFIED = 0;
+  // The provider was selected.
+  PROVIDER_DISPOSITION_SELECTED = 100;
+  // The provider was rejected without trying another implementation.
+  PROVIDER_DISPOSITION_REJECTED = 200;
+}
+
+// Explicit provider fallback policy. Prohibition uses 100-199.
+enum FallbackPolicy {
+  FALLBACK_POLICY_UNSPECIFIED = 0;
+  // Cross-provider and cross-lane fallback is prohibited.
+  FALLBACK_POLICY_PROHIBITED = 100;
+}
+
+// Layer responsible for a material buffer. Caller, operation, contract, adapter, managed-
+// runtime and platform custody occupy successive 100-value families.
+enum BufferOwner {
+  BUFFER_OWNER_UNSPECIFIED = 0;
+  // The caller owns borrowed input storage.
+  BUFFER_OWNER_CALLER = 100;
+  // The semantic Rust operation owns a result or temporary.
+  BUFFER_OWNER_OPERATION_LAYER = 200;
+  // The protobuf contract owns an encoded request or response.
+  BUFFER_OWNER_OPERATION_CONTRACT = 300;
+  // A C ABI or JNI adapter owns native memory for a caller.
+  BUFFER_OWNER_NATIVE_ADAPTER = 400;
+  // A managed runtime owns memory Rust cannot deterministically wipe.
+  BUFFER_OWNER_MANAGED_RUNTIME = 500;
+  // A platform provider owns non-exportable key material.
+  BUFFER_OWNER_PLATFORM_PROVIDER = 600;
+}
+
+// Material sensitivity. Public, privacy-sensitive and cryptographically secret material use
+// 100-, 200- and 300-series values.
+enum SecretSensitivity {
+  SECRET_SENSITIVITY_UNSPECIFIED = 0;
+  // Public material without secret-memory requirements.
+  SECRET_SENSITIVITY_PUBLIC = 100;
+  // Privacy-sensitive material, including plaintext and ciphertext.
+  SECRET_SENSITIVITY_SENSITIVE = 200;
+  // Cryptographic secret material requiring deterministic zeroization.
+  SECRET_SENSITIVITY_SECRET = 300;
+}
+
+// Security-relevant result class. Public, privacy-sensitive, secret and mixed results
+// occupy successive 100-value families.
+enum OutputMaterial {
+  OUTPUT_MATERIAL_UNSPECIFIED = 0;
+  // Digest, signature, public key, boolean or another public result.
+  OUTPUT_MATERIAL_PUBLIC = 100;
+  // Ciphertext or wrapped material that remains privacy-sensitive.
+  OUTPUT_MATERIAL_SENSITIVE_PUBLIC = 200;
+  // Private key, plaintext, shared secret, derived key or seed.
+  OUTPUT_MATERIAL_SECRET = 300;
+  // A structured result containing public and secret fields.
+  OUTPUT_MATERIAL_MIXED = 400;
+}
+
+// Maximum intended material lifetime. Call, temporary, result and provider lifetimes occupy
+// successive 100-value families.
+enum RetentionPolicy {
+  RETENTION_POLICY_UNSPECIFIED = 0;
+  // Borrowed only while the operation call is active.
+  RETENTION_POLICY_BORROWED_FOR_CALL = 100;
+  // Owned until the operation completes or returns an error.
+  RETENTION_POLICY_OPERATION_TEMPORARY = 200;
+  // Retained by the returned value until its owner drops it.
+  RETENTION_POLICY_RESULT_LIFETIME = 300;
+  // Retained under the provider key-lifecycle policy.
+  RETENTION_POLICY_PROVIDER_MANAGED = 400;
+}
+
+// Permitted material export. Public, protected-owner and non-exportable policies occupy
+// successive 100-value families.
+enum ExportPolicy {
+  EXPORT_POLICY_UNSPECIFIED = 0;
+  // Public or ciphertext material may cross the boundary.
+  EXPORT_POLICY_PUBLIC = 100;
+  // Secret bytes may cross only through an explicitly secret owner.
+  EXPORT_POLICY_SECRET_OWNER_REQUIRED = 200;
+  // Provider-resident material must not be exported as raw bytes.
+  EXPORT_POLICY_NON_EXPORTABLE = 300;
+}
+
+// Zeroization obligation. Public, owning, caller-managed and managed-runtime obligations
+// occupy successive 100-value families.
+enum ZeroizationPolicy {
+  ZEROIZATION_POLICY_UNSPECIFIED = 0;
+  // Public material does not require explicit zeroization.
+  ZEROIZATION_POLICY_NOT_REQUIRED = 100;
+  // The owning value clears its storage on drop.
+  ZEROIZATION_POLICY_OWNER_ZEROIZES_ON_DROP = 200;
+  // The operation borrows storage and the caller remains responsible.
+  ZEROIZATION_POLICY_CALLER_RETAINS_RESPONSIBILITY = 300;
+  // Managed memory must be overwritten as soon as practical.
+  ZEROIZATION_POLICY_MANAGED_RUNTIME_BEST_EFFORT = 400;
+}
+
+// Required destruction behavior. Public, owning, caller-managed and managed-runtime
+// behavior occupies successive 100-value families.
+enum DestructionPolicy {
+  DESTRUCTION_POLICY_UNSPECIFIED = 0;
+  // Public material has no explicit destruction requirement.
+  DESTRUCTION_POLICY_NONE_REQUIRED = 100;
+  // The owning value zeroizes its storage when dropped.
+  DESTRUCTION_POLICY_ZEROIZE_ON_DROP = 200;
+  // The caller clears borrowed storage.
+  DESTRUCTION_POLICY_CALLER_CONTROLLED = 300;
+  // A managed runtime clears mutable storage as a best effort.
+  DESTRUCTION_POLICY_MANAGED_RUNTIME_BEST_EFFORT = 400;
+}
+
+// Semantic operation identity. AEAD uses 100-199, comparison 200-299, hashing 300-399, MAC
+// 400-499, KDF 500-599, key wrap 600-699, signatures 700-799, agreement 800-899, KEM
+// 900-999, HPKE 1000-1099, randomness 1100-1199 and key encoding 1200-1299. These values
+// are not native persisted discriminants.
+enum SecretMaterialOperation {
+  SECRET_MATERIAL_OPERATION_UNSPECIFIED = 0;
+  // Authenticated encryption.
+  SECRET_MATERIAL_OPERATION_AEAD_SEAL = 100;
+  // Authenticated decryption.
+  SECRET_MATERIAL_OPERATION_AEAD_OPEN = 110;
+  // Constant-time comparison.
+  SECRET_MATERIAL_OPERATION_CONSTANT_TIME_COMPARE = 200;
+  // Cryptographic hashing.
+  SECRET_MATERIAL_OPERATION_HASH = 300;
+  // Message authentication tag generation.
+  SECRET_MATERIAL_OPERATION_MAC_AUTHENTICATE = 400;
+  // Message authentication tag verification.
+  SECRET_MATERIAL_OPERATION_MAC_VERIFY = 410;
+  // Password or key derivation.
+  SECRET_MATERIAL_OPERATION_KEY_DERIVATION = 500;
+  // Symmetric key wrapping.
+  SECRET_MATERIAL_OPERATION_KEY_WRAP = 600;
+  // Symmetric key unwrapping.
+  SECRET_MATERIAL_OPERATION_KEY_UNWRAP = 610;
+  // Signature keypair generation.
+  SECRET_MATERIAL_OPERATION_SIGNATURE_KEY_GENERATION = 700;
+  // Signature keypair derivation.
+  SECRET_MATERIAL_OPERATION_SIGNATURE_KEY_DERIVATION = 710;
+  // Signature creation.
+  SECRET_MATERIAL_OPERATION_SIGNATURE_SIGN = 720;
+  // Signature verification.
+  SECRET_MATERIAL_OPERATION_SIGNATURE_VERIFY = 730;
+  // Public signature representation validation or normalization.
+  SECRET_MATERIAL_OPERATION_SIGNATURE_ENCODING = 740;
+  // Key-agreement keypair generation.
+  SECRET_MATERIAL_OPERATION_KEY_AGREEMENT_KEY_GENERATION = 800;
+  // Key-agreement keypair derivation.
+  SECRET_MATERIAL_OPERATION_KEY_AGREEMENT_KEY_DERIVATION = 810;
+  // Shared-secret derivation.
+  SECRET_MATERIAL_OPERATION_KEY_AGREEMENT_SHARED_SECRET = 820;
+  // KEM keypair generation.
+  SECRET_MATERIAL_OPERATION_KEM_KEY_GENERATION = 900;
+  // KEM keypair derivation.
+  SECRET_MATERIAL_OPERATION_KEM_KEY_DERIVATION = 910;
+  // KEM encapsulation.
+  SECRET_MATERIAL_OPERATION_KEM_ENCAPSULATE = 920;
+  // KEM decapsulation.
+  SECRET_MATERIAL_OPERATION_KEM_DECAPSULATE = 930;
+  // HPKE keypair generation.
+  SECRET_MATERIAL_OPERATION_HPKE_KEY_GENERATION = 1000;
+  // HPKE keypair derivation.
+  SECRET_MATERIAL_OPERATION_HPKE_KEY_DERIVATION = 1010;
+  // Establish a live non-exportable HPKE sender context.
+  SECRET_MATERIAL_OPERATION_HPKE_SENDER_SETUP = 1020;
+  // Establish a live non-exportable HPKE receiver context.
+  SECRET_MATERIAL_OPERATION_HPKE_RECEIVER_SETUP = 1030;
+  // HPKE sealing.
+  SECRET_MATERIAL_OPERATION_HPKE_SEAL = 1040;
+  // HPKE opening.
+  SECRET_MATERIAL_OPERATION_HPKE_OPEN = 1050;
+  // HPKE exporter-secret derivation.
+  SECRET_MATERIAL_OPERATION_HPKE_EXPORT = 1060;
+  // Fill caller-owned storage with secure random bytes.
+  SECRET_MATERIAL_OPERATION_RANDOM_FILL = 1100;
+  // Generate an AEAD nonce.
+  SECRET_MATERIAL_OPERATION_RANDOM_NONCE = 1110;
+  // Generate an Argon2 salt.
+  SECRET_MATERIAL_OPERATION_RANDOM_SALT = 1120;
+  // Public-key encoding or decoding.
+  SECRET_MATERIAL_OPERATION_PUBLIC_KEY_ENCODING = 1200;
+}
+
+// Purpose of generated randomness. Generic output uses 100-199, nonce 200-299, salt
+// 300-399, symmetric key 400-499, classical seed 500-599 and post-quantum seeds 1000-1199.
+enum RngOutputKind {
+  RNG_OUTPUT_KIND_UNSPECIFIED = 0;
+  // Generic random bytes with no fixed length.
+  RNG_OUTPUT_KIND_GENERIC = 100;
+  // A 12-byte AEAD nonce.
+  RNG_OUTPUT_KIND_AEAD_NONCE_12 = 200;
+  // A 16-byte Argon2 salt.
+  RNG_OUTPUT_KIND_ARGON2_SALT_16 = 300;
+  // A 32-byte Argon2 salt.
+  RNG_OUTPUT_KIND_ARGON2_SALT_32 = 310;
+  // A 32-byte AES-256-GCM key.
+  RNG_OUTPUT_KIND_AES_256_GCM_KEY = 400;
+  // A 64-byte ML-KEM-1024 seed.
+  RNG_OUTPUT_KIND_ML_KEM_1024_SEED = 1000;
+  // A 32-byte ML-DSA-87 seed.
+  RNG_OUTPUT_KIND_ML_DSA_87_SEED = 1100;
+  // A 32-byte Ed25519 private seed.
+  RNG_OUTPUT_KIND_ED25519_SEED = 500;
+  // One 16-byte SLH-DSA-SHA2-128s key-generation seed component.
+  RNG_OUTPUT_KIND_SLH_DSA_SHA2_128S_SEED = 1110;
+}
+
+// Descriptive platform-key operation. Lifecycle uses 100-199, signatures 200-299, agreement
+// 300-399 and attestation 400-499. This metadata cannot transfer provider custody.
+enum PlatformKeyOperation {
+  PLATFORM_KEY_OPERATION_UNSPECIFIED = 0;
+  // Generate a non-exportable platform key.
+  PLATFORM_KEY_OPERATION_GENERATE = 100;
+  // Return the public half of an existing key.
+  PLATFORM_KEY_OPERATION_GET_PUBLIC_KEY = 110;
+  // Sign with an existing key.
+  PLATFORM_KEY_OPERATION_SIGN = 200;
+  // Verify with an existing key.
+  PLATFORM_KEY_OPERATION_VERIFY = 210;
+  // Derive a shared secret with an existing key.
+  PLATFORM_KEY_OPERATION_DERIVE_SHARED_SECRET = 300;
+  // Delete an existing key.
+  PLATFORM_KEY_OPERATION_DELETE = 120;
+  // Request provider attestation for an existing key.
+  PLATFORM_KEY_OPERATION_ATTEST = 400;
+}
+
+// MaterialPolicy reports the complete ownership contract for one buffer.
+// Receiving or editing this record does not authorize a change to that contract.
+message MaterialPolicy {
+  BufferOwner owner = 1;
+  SecretSensitivity sensitivity = 2;
+  RetentionPolicy retention = 3;
+  ZeroizationPolicy zeroization = 4;
+  ExportPolicy export = 5;
+  DestructionPolicy destruction = 6;
+}
+
+// OperationSecretMaterialPolicy reports the complete policy computed by the
+// semantic operation. Every nested record is required in a produced result.
+message OperationSecretMaterialPolicy {
+  MaterialPolicy input = 1;
+  MaterialPolicy output = 2;
+  MaterialPolicy request_wire = 3;
+  MaterialPolicy response_wire = 4;
+  OutputMaterial output_material = 5;
+}

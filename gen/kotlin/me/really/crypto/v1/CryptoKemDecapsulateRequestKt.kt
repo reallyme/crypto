@@ -104,4 +104,3 @@ public inline fun me.really.crypto.v1.CryptoKemDecapsulateRequest.copy(block: `m
 
 public val me.really.crypto.v1.CryptoKemDecapsulateRequestOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

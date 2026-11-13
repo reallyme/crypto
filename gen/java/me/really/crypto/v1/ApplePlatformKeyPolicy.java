@@ -367,4 +367,3 @@ public  final class ApplePlatformKeyPolicy extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

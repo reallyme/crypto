@@ -86,13 +86,13 @@ public enum Argon2idKdfVersion
           }
         };
 
-  public static com.google.protobuf.Internal.EnumVerifier 
+  public static com.google.protobuf.Internal.EnumVerifier
       internalGetVerifier() {
     return Argon2idKdfVersionVerifier.INSTANCE;
   }
 
-  private static final class Argon2idKdfVersionVerifier implements 
-       com.google.protobuf.Internal.EnumVerifier { 
+  private static final class Argon2idKdfVersionVerifier implements
+       com.google.protobuf.Internal.EnumVerifier {
           static final com.google.protobuf.Internal.EnumVerifier
               INSTANCE = new Argon2idKdfVersionVerifier();
           @java.lang.Override
@@ -109,4 +109,3 @@ public enum Argon2idKdfVersion
 
   // @@protoc_insertion_point(enum_scope:reallyme.crypto.v1.Argon2idKdfVersion)
 }
-

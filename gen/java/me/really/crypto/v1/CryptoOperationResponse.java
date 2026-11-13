@@ -460,4 +460,3 @@ public  final class CryptoOperationResponse extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

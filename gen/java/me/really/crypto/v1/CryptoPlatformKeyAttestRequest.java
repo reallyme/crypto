@@ -92,7 +92,7 @@ public  final class CryptoPlatformKeyAttestRequest extends
    */
   private void setChallenge(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     challenge_ = value;
   }
   /**
@@ -356,4 +356,3 @@ public  final class CryptoPlatformKeyAttestRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

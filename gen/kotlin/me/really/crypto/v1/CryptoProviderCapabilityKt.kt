@@ -203,4 +203,3 @@ public inline fun me.really.crypto.v1.CryptoProviderCapability.copy(block: `me.r
 
 public val me.really.crypto.v1.CryptoProviderCapabilityOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

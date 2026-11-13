@@ -103,4 +103,3 @@ public object CryptoProviderCapabilitySetKt {
 }
 public inline fun me.really.crypto.v1.CryptoProviderCapabilitySet.copy(block: `me.really.crypto.v1`.CryptoProviderCapabilitySetKt.Dsl.() -> kotlin.Unit): me.really.crypto.v1.CryptoProviderCapabilitySet =
   `me.really.crypto.v1`.CryptoProviderCapabilitySetKt.Dsl._create(this.toBuilder()).apply { block() }._build()
-

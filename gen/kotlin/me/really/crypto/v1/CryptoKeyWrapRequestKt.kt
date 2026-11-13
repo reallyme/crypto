@@ -112,4 +112,3 @@ public inline fun me.really.crypto.v1.CryptoKeyWrapRequest.copy(block: `me.reall
 
 public val me.really.crypto.v1.CryptoKeyWrapRequestOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

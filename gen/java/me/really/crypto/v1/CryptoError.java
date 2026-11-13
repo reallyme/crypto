@@ -557,4 +557,3 @@ public  final class CryptoError extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

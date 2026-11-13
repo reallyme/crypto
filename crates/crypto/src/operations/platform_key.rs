@@ -4,6 +4,9 @@
 
 use super::OperationFamily;
 
+#[cfg(feature = "operation-response")]
+mod convert_proto_policy;
+
 /// Platform-owned key operations represented by the shared domain model.
 ///
 /// This enum is intentionally descriptive rather than executable. Apple and

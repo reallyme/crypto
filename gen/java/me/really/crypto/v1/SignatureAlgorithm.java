@@ -241,13 +241,13 @@ public enum SignatureAlgorithm
           }
         };
 
-  public static com.google.protobuf.Internal.EnumVerifier 
+  public static com.google.protobuf.Internal.EnumVerifier
       internalGetVerifier() {
     return SignatureAlgorithmVerifier.INSTANCE;
   }
 
-  private static final class SignatureAlgorithmVerifier implements 
-       com.google.protobuf.Internal.EnumVerifier { 
+  private static final class SignatureAlgorithmVerifier implements
+       com.google.protobuf.Internal.EnumVerifier {
           static final com.google.protobuf.Internal.EnumVerifier
               INSTANCE = new SignatureAlgorithmVerifier();
           @java.lang.Override
@@ -264,4 +264,3 @@ public enum SignatureAlgorithm
 
   // @@protoc_insertion_point(enum_scope:reallyme.crypto.v1.SignatureAlgorithm)
 }
-

@@ -105,13 +105,13 @@ public enum KeyAgreementAlgorithm
           }
         };
 
-  public static com.google.protobuf.Internal.EnumVerifier 
+  public static com.google.protobuf.Internal.EnumVerifier
       internalGetVerifier() {
     return KeyAgreementAlgorithmVerifier.INSTANCE;
   }
 
-  private static final class KeyAgreementAlgorithmVerifier implements 
-       com.google.protobuf.Internal.EnumVerifier { 
+  private static final class KeyAgreementAlgorithmVerifier implements
+       com.google.protobuf.Internal.EnumVerifier {
           static final com.google.protobuf.Internal.EnumVerifier
               INSTANCE = new KeyAgreementAlgorithmVerifier();
           @java.lang.Override
@@ -128,4 +128,3 @@ public enum KeyAgreementAlgorithm
 
   // @@protoc_insertion_point(enum_scope:reallyme.crypto.v1.KeyAgreementAlgorithm)
 }
-

@@ -350,4 +350,3 @@ public inline fun me.really.crypto.v1.CryptoAlgorithmIdentifier.copy(block: `me.
 
 public val me.really.crypto.v1.CryptoAlgorithmIdentifierOrBuilder.hpkeSuiteOrNull: me.really.crypto.v1.HpkeSuiteIdentifier?
   get() = if (hasHpkeSuite()) getHpkeSuite() else null
-

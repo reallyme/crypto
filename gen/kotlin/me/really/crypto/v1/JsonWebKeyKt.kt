@@ -102,4 +102,3 @@ public inline fun me.really.crypto.v1.JsonWebKey.copy(block: `me.really.crypto.v
 
 public val me.really.crypto.v1.JsonWebKeyOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

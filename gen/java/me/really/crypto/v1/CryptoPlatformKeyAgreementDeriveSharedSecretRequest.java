@@ -87,7 +87,7 @@ public  final class CryptoPlatformKeyAgreementDeriveSharedSecretRequest extends
    */
   private void setPeerPublicKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     peerPublicKey_ = value;
   }
   /**
@@ -346,4 +346,3 @@ public  final class CryptoPlatformKeyAgreementDeriveSharedSecretRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

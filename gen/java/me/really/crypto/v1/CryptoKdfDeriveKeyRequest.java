@@ -96,7 +96,7 @@ public  final class CryptoKdfDeriveKeyRequest extends
    */
   private void setPassword(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     password_ = value;
   }
   /**
@@ -137,7 +137,7 @@ public  final class CryptoKdfDeriveKeyRequest extends
    */
   private void setSalt(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     salt_ = value;
   }
   /**
@@ -168,7 +168,7 @@ public  final class CryptoKdfDeriveKeyRequest extends
    * @param value The iterations to set.
    */
   private void setIterations(int value) {
-    
+
     iterations_ = value;
   }
   /**
@@ -194,7 +194,7 @@ public  final class CryptoKdfDeriveKeyRequest extends
    * @param value The outputLength to set.
    */
   private void setOutputLength(int value) {
-    
+
     outputLength_ = value;
   }
   /**
@@ -567,4 +567,3 @@ public  final class CryptoKdfDeriveKeyRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

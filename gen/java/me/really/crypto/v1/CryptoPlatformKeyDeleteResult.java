@@ -198,4 +198,3 @@ public  final class CryptoPlatformKeyDeleteResult extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-
