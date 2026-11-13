@@ -1691,6 +1691,7 @@ dependencies = [
  "elliptic-curve",
  "getrandom 0.4.3",
  "hex",
+ "hex-literal",
  "openssl",
  "p256",
  "p384",

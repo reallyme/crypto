@@ -13,11 +13,24 @@ use elliptic_curve::{
 use secrecy::{ExposeSecretMut, SecretSlice};
 use zeroize::Zeroizing;
 
+use super::legacy_curves::{bp192, bp224, nistp192};
 use super::{secret, CryptoError, PrimeGroup};
 
 macro_rules! with_curve {
     ($group:expr, $curve:ident, $body:block) => {
         match $group {
+            PrimeGroup::NistP192 => {
+                type $curve = nistp192::NistP192;
+                $body
+            }
+            PrimeGroup::BrainpoolP192r1 => {
+                type $curve = bp192::BrainpoolP192r1;
+                $body
+            }
+            PrimeGroup::BrainpoolP224r1 => {
+                type $curve = bp224::BrainpoolP224r1;
+                $body
+            }
             PrimeGroup::NistP256 => {
                 type $curve = p256::NistP256;
                 $body

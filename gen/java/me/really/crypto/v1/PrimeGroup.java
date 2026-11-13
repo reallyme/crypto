@@ -35,6 +35,10 @@ public enum PrimeGroup
    */
   PRIME_GROUP_NIST_P521(120),
   /**
+   * <code>PRIME_GROUP_NIST_P192 = 130;</code>
+   */
+  PRIME_GROUP_NIST_P192(130),
+  /**
    * <code>PRIME_GROUP_BRAINPOOL_P256R1 = 200;</code>
    */
   PRIME_GROUP_BRAINPOOL_P256R1(200),
@@ -50,6 +54,14 @@ public enum PrimeGroup
    * <code>PRIME_GROUP_BRAINPOOL_P512R1 = 230;</code>
    */
   PRIME_GROUP_BRAINPOOL_P512R1(230),
+  /**
+   * <code>PRIME_GROUP_BRAINPOOL_P192R1 = 240;</code>
+   */
+  PRIME_GROUP_BRAINPOOL_P192R1(240),
+  /**
+   * <code>PRIME_GROUP_BRAINPOOL_P224R1 = 250;</code>
+   */
+  PRIME_GROUP_BRAINPOOL_P224R1(250),
   /**
    * <code>PRIME_GROUP_RFC5114_DH1024_160 = 300;</code>
    */
@@ -82,6 +94,10 @@ public enum PrimeGroup
    */
   public static final int PRIME_GROUP_NIST_P521_VALUE = 120;
   /**
+   * <code>PRIME_GROUP_NIST_P192 = 130;</code>
+   */
+  public static final int PRIME_GROUP_NIST_P192_VALUE = 130;
+  /**
    * <code>PRIME_GROUP_BRAINPOOL_P256R1 = 200;</code>
    */
   public static final int PRIME_GROUP_BRAINPOOL_P256R1_VALUE = 200;
@@ -97,6 +113,14 @@ public enum PrimeGroup
    * <code>PRIME_GROUP_BRAINPOOL_P512R1 = 230;</code>
    */
   public static final int PRIME_GROUP_BRAINPOOL_P512R1_VALUE = 230;
+  /**
+   * <code>PRIME_GROUP_BRAINPOOL_P192R1 = 240;</code>
+   */
+  public static final int PRIME_GROUP_BRAINPOOL_P192R1_VALUE = 240;
+  /**
+   * <code>PRIME_GROUP_BRAINPOOL_P224R1 = 250;</code>
+   */
+  public static final int PRIME_GROUP_BRAINPOOL_P224R1_VALUE = 250;
   /**
    * <code>PRIME_GROUP_RFC5114_DH1024_160 = 300;</code>
    */
@@ -135,10 +159,13 @@ public enum PrimeGroup
       case 100: return PRIME_GROUP_NIST_P256;
       case 110: return PRIME_GROUP_NIST_P384;
       case 120: return PRIME_GROUP_NIST_P521;
+      case 130: return PRIME_GROUP_NIST_P192;
       case 200: return PRIME_GROUP_BRAINPOOL_P256R1;
       case 210: return PRIME_GROUP_BRAINPOOL_P320R1;
       case 220: return PRIME_GROUP_BRAINPOOL_P384R1;
       case 230: return PRIME_GROUP_BRAINPOOL_P512R1;
+      case 240: return PRIME_GROUP_BRAINPOOL_P192R1;
+      case 250: return PRIME_GROUP_BRAINPOOL_P224R1;
       case 300: return PRIME_GROUP_RFC5114_DH1024_160;
       case 310: return PRIME_GROUP_RFC5114_DH2048_224;
       case 320: return PRIME_GROUP_RFC5114_DH2048_256;

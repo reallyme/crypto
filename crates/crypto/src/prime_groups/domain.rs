@@ -27,6 +27,12 @@ pub enum PrimeGroup {
     BrainpoolP512r1,
     /// NIST P-521.
     NistP521,
+    /// NIST P-192 (secp192r1). Legacy deployment policy belongs to the caller.
+    NistP192,
+    /// brainpoolP192r1. Legacy deployment policy belongs to the caller.
+    BrainpoolP192r1,
+    /// brainpoolP224r1. Legacy deployment policy belongs to the caller.
+    BrainpoolP224r1,
 }
 
 pub(super) struct Domain {

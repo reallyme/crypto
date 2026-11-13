@@ -69,8 +69,8 @@ fn vectors() -> Vec<Vector> {
     let file: Vectors = serde_json::from_str(include_str!("prime_groups/known_answers.json"))
         .expect("public fixtures");
     assert_eq!(file.schema_version, 1);
-    assert_eq!(file.sources.len(), 4);
-    assert_eq!(file.groups.len(), 10);
+    assert_eq!(file.sources.len(), 5);
+    assert_eq!(file.groups.len(), 13);
     file.groups
 }
 
@@ -86,6 +86,9 @@ fn group(name: &str) -> PrimeGroup {
         "BrainpoolP384r1" => PrimeGroup::BrainpoolP384r1,
         "BrainpoolP512r1" => PrimeGroup::BrainpoolP512r1,
         "NistP521" => PrimeGroup::NistP521,
+        "NistP192" => PrimeGroup::NistP192,
+        "BrainpoolP192r1" => PrimeGroup::BrainpoolP192r1,
+        "BrainpoolP224r1" => PrimeGroup::BrainpoolP224r1,
         _ => unreachable_fixture(),
     }
 }
@@ -333,6 +336,98 @@ fn scalar_bounds_identity_and_domain_binding_are_enforced() {
             ),
             CryptoError::PRIMITIVE_INVALID_PARAMETER,
         );
+    }
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn legacy_curve_widths_and_same_width_domain_binding_are_explicit() {
+    for (group, width, point_width) in [
+        (PrimeGroup::NistP192, 24, 49),
+        (PrimeGroup::BrainpoolP192r1, 24, 49),
+        (PrimeGroup::BrainpoolP224r1, 28, 57),
+    ] {
+        assert_eq!(group.field_len(), width);
+        assert_eq!(group.scalar_len(), width);
+        assert_eq!(group.element_len(), point_width);
+        assert!(group.is_elliptic_curve());
+    }
+    let nist = PrimeGroup::NistP192;
+    let brainpool = PrimeGroup::BrainpoolP192r1;
+    assert_error(
+        small(nist, 2).multiply(&brainpool.generator().expect("Brainpool generator")),
+        CryptoError::PRIMITIVE_INVALID_PARAMETER,
+    );
+    assert_error(
+        nist.element(brainpool.standard_generator_encoding()),
+        CryptoError::PRIMITIVE_INVALID_PARAMETER,
+    );
+    assert_error(
+        brainpool.element(nist.standard_generator_encoding()),
+        CryptoError::PRIMITIVE_INVALID_PARAMETER,
+    );
+}
+
+#[cfg(feature = "operation-response")]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn legacy_schema_adapters_retain_independent_multiplication_reduction_and_icart_answers() {
+    use buffa::{Message, MessageField};
+    use crypto_proto::generated::proto::reallyme::crypto::v1::{
+        CryptoPrimeGroupElement, CryptoPrimeGroupFieldValue, CryptoPrimeGroupIdentifier,
+        CryptoPrimeGroupMultiplyRequest, CryptoPrimeGroupReduceToFieldRequest,
+        CryptoPrimeGroupScalarImportRequest, PrimeGroup as ProtoGroup,
+    };
+    use reallyme_crypto::prime_groups::contract;
+
+    for row in vectors() {
+        let group = group(&row.group);
+        if !matches!(
+            group,
+            PrimeGroup::NistP192 | PrimeGroup::BrainpoolP192r1 | PrimeGroup::BrainpoolP224r1
+        ) {
+            continue;
+        }
+        let identifier = || CryptoPrimeGroupIdentifier {
+            group: ProtoGroup::from(group).into(),
+            __buffa_unknown_fields: Default::default(),
+        };
+        let mut request = CryptoPrimeGroupScalarImportRequest {
+            group: MessageField::some(identifier()),
+            scalar: Vec::new(),
+            __buffa_unknown_fields: Default::default(),
+        };
+        request.scalar.resize(group.scalar_len(), 0);
+        *request.scalar.last_mut().expect("nonempty scalar") = 2;
+        let wire = zeroize::Zeroizing::new(request.encode_to_vec());
+        let decoded = CryptoPrimeGroupScalarImportRequest::decode_from_slice(&wire)
+            .expect("scalar request wire");
+        let scalar = GroupScalar::try_from(&decoded).expect("protected imported scalar");
+        let generator = CryptoPrimeGroupElement::try_from(&group.generator().expect("generator"))
+            .expect("clearing generator message");
+        let multiply = CryptoPrimeGroupMultiplyRequest {
+            base: MessageField::some(generator),
+            __buffa_unknown_fields: Default::default(),
+        };
+        let result = contract::multiply(&scalar, &multiply).expect("supplied-base multiplication");
+        assert_eq!(result.encoding(), decode(&row.answers.multiple_2));
+
+        let reduction = CryptoPrimeGroupReduceToFieldRequest {
+            group: MessageField::some(identifier()),
+            input: decode(&row.answers.reduction_input),
+            __buffa_unknown_fields: Default::default(),
+        };
+        let reduced = contract::reduce_to_field(&reduction).expect("protected field reduction");
+        assert_eq!(reduced.as_bytes(), decode(&row.answers.reduction_expected));
+        for answer in &row.answers.field_encodings {
+            let input = CryptoPrimeGroupFieldValue {
+                group: MessageField::some(identifier()),
+                value: decode(&answer.input),
+                __buffa_unknown_fields: Default::default(),
+            };
+            let mapped = contract::encode_field(&input).expect("protected Icart point");
+            assert_eq!(mapped.encoding(), decode(&answer.expected));
+        }
     }
 }
 

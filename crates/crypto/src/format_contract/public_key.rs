@@ -26,6 +26,9 @@ pub fn transform_public_key(
         .as_known()
         .filter(|value| *value != PublicKeyFormatOperation::PUBLIC_KEY_FORMAT_OPERATION_UNSPECIFIED)
         .ok_or(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)?;
+    // Selector validation still applies when every format provider is disabled;
+    // only feature-selected handlers need the validated operation value.
+    let _ = operation;
     // Identity validation is independent of an execution lane in the Ed25519
     // leaf. Its subgroup/canonical-encoding policy must not become a mere
     // length check when reached through this standalone format contract.

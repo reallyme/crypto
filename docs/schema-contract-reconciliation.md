@@ -50,3 +50,7 @@ The original report handoff at `05a9846` changed only documentation/evidence aft
 ## Subsequent implementation review
 
 Commit `e22f15e82e1e26fa625787234e28581c9eded9f6` adds private RSA digest-buffer cleanup and repairs three disabled-provider test files plus the existing sparse-feature CI check. Public Rust signatures, schema, generated bindings, package manifests and lockfiles are unchanged. The original compiler capture and its ledgers remain bound to `e0368ca`; this follow-up does not claim a new compiler-graph capture. Its native, WASM, mobile and minimum-version compile results are recorded in the [compatibility matrix](reader-primitive-compatibility.md#subsequent-rsa-and-feature-review). Runtime regressions remain unexecuted.
+
+## Legacy group additions
+
+The subsequent [legacy prime-group extension](legacy-prime-groups.md) adds three native variants and matching schema identities: `NistP192`/130, `BrainpoolP192r1`/240 and `BrainpoolP224r1`/250. Their existing owner and operation shapes are retained. The parameter types remain private implementation bindings. This explicit supplement accounts for the additions; the original compiler-capture counts and historical ledgers retain their recorded checkpoint rather than being relabelled as a new capture.

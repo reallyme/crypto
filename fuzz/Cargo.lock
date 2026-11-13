@@ -1447,6 +1447,7 @@ name = "reallyme-crypto-argon2id"
 version = "0.4.0"
 dependencies = [
  "argon2",
+ "buffa",
  "reallyme-crypto-core",
  "reallyme-crypto-proto",
  "zeroize",
@@ -1477,7 +1478,6 @@ dependencies = [
 name = "reallyme-crypto-constant-time"
 version = "0.4.0"
 dependencies = [
- "buffa",
  "reallyme-crypto-core",
  "reallyme-crypto-proto",
  "subtle",
@@ -1496,7 +1496,6 @@ dependencies = [
 name = "reallyme-crypto-csprng"
 version = "0.4.0"
 dependencies = [
- "buffa",
  "getrandom 0.4.3",
  "reallyme-crypto-core",
  "reallyme-crypto-proto",
@@ -1545,6 +1544,7 @@ dependencies = [
 name = "reallyme-crypto-hkdf"
 version = "0.4.0"
 dependencies = [
+ "buffa",
  "hkdf",
  "hybrid-array",
  "reallyme-crypto-core",
@@ -1570,6 +1570,7 @@ name = "reallyme-crypto-hpke"
 version = "0.4.0"
 dependencies = [
  "aes-gcm",
+ "buffa",
  "chacha20poly1305",
  "getrandom 0.4.3",
  "hkdf",
@@ -1593,14 +1594,17 @@ dependencies = [
 name = "reallyme-crypto-jwk"
 version = "0.4.0"
 dependencies = [
+ "buffa",
  "reallyme-codec-base64url",
  "reallyme-codec-jcs",
  "reallyme-crypto-core",
  "reallyme-crypto-ed25519",
  "reallyme-crypto-p256",
+ "reallyme-crypto-proto",
  "reallyme-crypto-secp256k1",
  "serde",
  "serde_json",
+ "zeroize",
 ]
 
 [[package]]
@@ -1612,7 +1616,6 @@ dependencies = [
  "reallyme-crypto-core",
  "reallyme-crypto-jwk",
  "reallyme-crypto-proto",
- "serde_json",
  "zeroize",
 ]
 
@@ -1738,7 +1741,6 @@ version = "0.4.0"
 dependencies = [
  "ark-bn254",
  "ark-ff",
- "buffa",
  "reallyme-crypto-core",
  "reallyme-crypto-proto",
  "taceo-poseidon2",
@@ -1779,7 +1781,6 @@ dependencies = [
 name = "reallyme-crypto-secp256k1"
 version = "0.4.0"
 dependencies = [
- "buffa",
  "ecdsa",
  "k256",
  "reallyme-crypto-core",
@@ -1873,12 +1874,9 @@ dependencies = [
 name = "reallyme-crypto-x448"
 version = "0.4.0"
 dependencies = [
- "buffa",
  "getrandom 0.4.3",
  "reallyme-crypto-core",
- "reallyme-crypto-proto",
  "subtle",
- "wasm-bindgen-test",
  "x448",
  "zeroize",
 ]

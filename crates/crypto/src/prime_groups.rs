@@ -17,6 +17,7 @@ mod error;
 mod field;
 #[cfg(feature = "operation-response")]
 mod identity;
+mod legacy_curves;
 mod map;
 mod parameters;
 mod scalar;

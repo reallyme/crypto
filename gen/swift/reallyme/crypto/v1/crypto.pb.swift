@@ -444,10 +444,13 @@ public nonisolated enum ReallyMeProtoPrimeGroup: SwiftProtobuf.Enum, Swift.CaseI
   case nistP256 // = 100
   case nistP384 // = 110
   case nistP521 // = 120
+  case nistP192 // = 130
   case brainpoolP256R1 // = 200
   case brainpoolP320R1 // = 210
   case brainpoolP384R1 // = 220
   case brainpoolP512R1 // = 230
+  case brainpoolP192R1 // = 240
+  case brainpoolP224R1 // = 250
   case rfc5114Dh1024160 // = 300
   case rfc5114Dh2048224 // = 310
   case rfc5114Dh2048256 // = 320
@@ -463,10 +466,13 @@ public nonisolated enum ReallyMeProtoPrimeGroup: SwiftProtobuf.Enum, Swift.CaseI
     case 100: self = .nistP256
     case 110: self = .nistP384
     case 120: self = .nistP521
+    case 130: self = .nistP192
     case 200: self = .brainpoolP256R1
     case 210: self = .brainpoolP320R1
     case 220: self = .brainpoolP384R1
     case 230: self = .brainpoolP512R1
+    case 240: self = .brainpoolP192R1
+    case 250: self = .brainpoolP224R1
     case 300: self = .rfc5114Dh1024160
     case 310: self = .rfc5114Dh2048224
     case 320: self = .rfc5114Dh2048256
@@ -480,10 +486,13 @@ public nonisolated enum ReallyMeProtoPrimeGroup: SwiftProtobuf.Enum, Swift.CaseI
     case .nistP256: return 100
     case .nistP384: return 110
     case .nistP521: return 120
+    case .nistP192: return 130
     case .brainpoolP256R1: return 200
     case .brainpoolP320R1: return 210
     case .brainpoolP384R1: return 220
     case .brainpoolP512R1: return 230
+    case .brainpoolP192R1: return 240
+    case .brainpoolP224R1: return 250
     case .rfc5114Dh1024160: return 300
     case .rfc5114Dh2048224: return 310
     case .rfc5114Dh2048256: return 320
@@ -497,10 +506,13 @@ public nonisolated enum ReallyMeProtoPrimeGroup: SwiftProtobuf.Enum, Swift.CaseI
     .nistP256,
     .nistP384,
     .nistP521,
+    .nistP192,
     .brainpoolP256R1,
     .brainpoolP320R1,
     .brainpoolP384R1,
     .brainpoolP512R1,
+    .brainpoolP192R1,
+    .brainpoolP224R1,
     .rfc5114Dh1024160,
     .rfc5114Dh2048224,
     .rfc5114Dh2048256,
@@ -8034,7 +8046,7 @@ nonisolated extension ReallyMeProtoEcdsaCurve: SwiftProtobuf._ProtoNameProviding
 }
 
 nonisolated extension ReallyMeProtoPrimeGroup: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PRIME_GROUP_UNSPECIFIED\0\u{2}d\u{1}PRIME_GROUP_NIST_P256\0\u{2}\u{a}PRIME_GROUP_NIST_P384\0\u{2}\u{a}PRIME_GROUP_NIST_P521\0\u{2}P\u{1}PRIME_GROUP_BRAINPOOL_P256R1\0\u{2}\u{a}PRIME_GROUP_BRAINPOOL_P320R1\0\u{2}\u{a}PRIME_GROUP_BRAINPOOL_P384R1\0\u{2}\u{a}PRIME_GROUP_BRAINPOOL_P512R1\0\u{2}F\u{1}PRIME_GROUP_RFC5114_DH1024_160\0\u{2}\u{a}PRIME_GROUP_RFC5114_DH2048_224\0\u{2}\u{a}PRIME_GROUP_RFC5114_DH2048_256\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PRIME_GROUP_UNSPECIFIED\0\u{2}d\u{1}PRIME_GROUP_NIST_P256\0\u{2}\u{a}PRIME_GROUP_NIST_P384\0\u{2}\u{a}PRIME_GROUP_NIST_P521\0\u{2}\u{a}PRIME_GROUP_NIST_P192\0\u{2}F\u{1}PRIME_GROUP_BRAINPOOL_P256R1\0\u{2}\u{a}PRIME_GROUP_BRAINPOOL_P320R1\0\u{2}\u{a}PRIME_GROUP_BRAINPOOL_P384R1\0\u{2}\u{a}PRIME_GROUP_BRAINPOOL_P512R1\0\u{2}\u{a}PRIME_GROUP_BRAINPOOL_P192R1\0\u{2}\u{a}PRIME_GROUP_BRAINPOOL_P224R1\0\u{2}2PRIME_GROUP_RFC5114_DH1024_160\0\u{2}\u{a}PRIME_GROUP_RFC5114_DH2048_224\0\u{2}\u{a}PRIME_GROUP_RFC5114_DH2048_256\0")
 }
 
 nonisolated extension ReallyMeProtoSignatureAlgorithm: SwiftProtobuf._ProtoNameProviding {

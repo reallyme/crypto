@@ -69,6 +69,9 @@ fn metadata_has_permanent_wire_known_answers() -> Result<(), buffa::DecodeError>
         (PrimeGroup::Rfc5114Dh1024_160, &[0x08, 0xac, 0x02]),
         (PrimeGroup::Rfc5114Dh2048_224, &[0x08, 0xb6, 0x02]),
         (PrimeGroup::Rfc5114Dh2048_256, &[0x08, 0xc0, 0x02]),
+        (PrimeGroup::NistP192, &[0x08, 0x82, 0x01]),
+        (PrimeGroup::BrainpoolP192r1, &[0x08, 0xf0, 0x01]),
+        (PrimeGroup::BrainpoolP224r1, &[0x08, 0xfa, 0x01]),
     ];
     for &(native, encoded) in cases {
         let value = identifier(ProtoGroup::from(native).into());
