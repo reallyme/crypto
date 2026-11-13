@@ -6,7 +6,7 @@ use crypto_core::CryptoError;
 
 /// Secure Enclave handle format:
 /// b"SE:" + UTF-8 tag bytes
-pub const SE_HANDLE_PREFIX: &[u8] = b"SE:";
+pub const SE_HANDLE_PREFIX: &[u8] = crypto_core::contract_constants::p256::SE_HANDLE_PREFIX;
 
 /// If `secret` is a Secure Enclave handle, return the tag bytes (UTF-8).
 pub fn decode_se_handle(secret: &[u8]) -> Option<&[u8]> {

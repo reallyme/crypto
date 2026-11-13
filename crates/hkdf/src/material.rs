@@ -5,7 +5,8 @@
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 /// Length in bytes of an HKDF-SHA384 pseudorandom key.
-pub const HKDF_SHA384_PRK_LENGTH: usize = 48;
+pub const HKDF_SHA384_PRK_LENGTH: usize =
+    crypto_core::contract_constants::hkdf::HKDF_SHA384_PRK_LENGTH;
 
 /// HKDF input keying material, zeroized on drop.
 #[derive(Zeroize, ZeroizeOnDrop)]

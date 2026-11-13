@@ -22,6 +22,7 @@ native = []
 wasm = []
 
 [dependencies]
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../proto", default-features = false, features = ["contract-types"] }
 sha2 = { workspace = true }
 zeroize = { workspace = true, features = ["derive"] }
 

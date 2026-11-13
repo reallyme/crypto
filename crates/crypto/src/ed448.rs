@@ -18,11 +18,11 @@ pub use key::Ed448Key;
 pub use verify::verify;
 
 /// RFC 8032 Ed448 public-key length.
-pub const PUBLIC_KEY_LEN: usize = 57;
+pub const PUBLIC_KEY_LEN: usize = crypto_core::contract_constants::ed448::PUBLIC_KEY_LEN;
 /// RFC 8032 Ed448 signature length.
-pub const SIGNATURE_LEN: usize = 114;
+pub const SIGNATURE_LEN: usize = crypto_core::contract_constants::ed448::SIGNATURE_LEN;
 /// RFC 8032 private seed length.
-pub const SEED_LEN: usize = 57;
+pub const SEED_LEN: usize = crypto_core::contract_constants::ed448::SEED_LEN;
 
 /// Canonical schema-defined error returned by ordinary Ed448 operations.
 pub use crypto_core::CryptoError as Ed448Error;

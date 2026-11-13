@@ -48,5 +48,11 @@ The full `generated` feature re-exports the same reason enum, rather than
 creating another classification type. Normal Cargo builds use committed
 outputs and do not require Buf.
 
+The independent `contract-types` feature exposes immutable schema-owned scalar
+constants under `contract_constants`. It has no dependencies, including no
+Buffa, serde, or thiserror dependency. Values are compiled from committed Rust
+output; applications cannot replace them through request configuration.
+The `generated` feature includes these constants as well as `error-types`.
+
 The protobuf source lives at
 [`proto/reallyme/crypto/v1/crypto.proto`](proto/reallyme/crypto/v1/crypto.proto).

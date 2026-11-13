@@ -24,7 +24,10 @@ impl Argon2Secret {
     /// empty or exceeds [`ARGON2ID_SECRET_MAX_LENGTH`]. The `profile` is used
     /// only to tag any resulting error.
     pub fn from_slice(input: &[u8], _profile: Argon2Profile) -> Result<Self, CryptoError> {
-        if input.is_empty() || input.len() > ARGON2ID_SECRET_MAX_LENGTH {
+        if !(crypto_core::contract_constants::argon2id::ARGON2ID_SECRET_MIN_LENGTH
+            ..=ARGON2ID_SECRET_MAX_LENGTH)
+            .contains(&input.len())
+        {
             return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_PASSWORD);
         }
 

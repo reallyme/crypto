@@ -9,7 +9,8 @@ use crate::key_random::KeyRng;
 
 use super::{dh, ec, field, secret, CryptoError, GroupElement, PrimeGroup};
 
-const MAX_RANDOM_ATTEMPTS: usize = 128;
+const MAX_RANDOM_ATTEMPTS: usize =
+    crypto_core::contract_constants::prime_groups::MAX_RANDOM_ATTEMPTS;
 
 /// Protected nonzero private scalar, bound to one standard subgroup.
 ///

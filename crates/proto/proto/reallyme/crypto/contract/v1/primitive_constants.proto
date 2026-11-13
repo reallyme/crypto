@@ -1,0 +1,435 @@
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+syntax = "proto2";
+
+package reallyme.crypto.contract.v1;
+
+import "reallyme/crypto/contract/v1/constants.proto";
+
+// Reviewed primitive parameters and boundary limits. Values are immutable
+// descriptor metadata; executable requests cannot supply replacements.
+option (constant_registry) = {
+  modules: {
+    native_module: "pbkdf2"
+    constants: {
+      native_name: "PBKDF2_MIN_PASSWORD_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "PBKDF2_MAX_PASSWORD_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 4096
+    }
+    constants: {
+      native_name: "PBKDF2_MIN_SALT_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "PBKDF2_MAX_SALT_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 4096
+    }
+    constants: {
+      native_name: "PBKDF2_STANDARD_MIN_ITERATIONS"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_ITERATIONS
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "PBKDF2_MODERN_MIN_ITERATIONS"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_ITERATIONS
+      unsigned_value: 100000
+    }
+    constants: {
+      native_name: "PBKDF2_MAX_ITERATIONS"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_ITERATIONS
+      unsigned_value: 10000000
+    }
+    constants: {
+      native_name: "PBKDF2_MIN_OUTPUT_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "PBKDF2_MAX_OUTPUT_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 4096
+    }
+    constants: {
+      native_name: "PBKDF2_MAX_HMAC_EVALUATIONS"
+      native_type: NATIVE_TYPE_U64
+      unit: UNIT_EVALUATIONS
+      unsigned_value: 20000000
+    }
+    constants: {
+      native_name: "PBKDF2_SHA256_OUTPUT_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "PBKDF2_SHA512_OUTPUT_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 64
+    }
+    ranges: {
+      minimum_name: "PBKDF2_MIN_PASSWORD_LENGTH"
+      maximum_name: "PBKDF2_MAX_PASSWORD_LENGTH"
+    }
+    ranges: {
+      minimum_name: "PBKDF2_MIN_SALT_LENGTH"
+      maximum_name: "PBKDF2_MAX_SALT_LENGTH"
+    }
+    ranges: {
+      minimum_name: "PBKDF2_STANDARD_MIN_ITERATIONS"
+      maximum_name: "PBKDF2_MODERN_MIN_ITERATIONS"
+    }
+    ranges: {
+      minimum_name: "PBKDF2_MODERN_MIN_ITERATIONS"
+      maximum_name: "PBKDF2_MAX_ITERATIONS"
+    }
+    ranges: {
+      minimum_name: "PBKDF2_MIN_OUTPUT_LENGTH"
+      maximum_name: "PBKDF2_MAX_OUTPUT_LENGTH"
+    }
+  }
+  modules: {
+    native_module: "argon2id"
+    constants: {
+      native_name: "ARGON2ID_DERIVED_KEY_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "ARGON2ID_SECRET_MIN_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "ARGON2ID_SECRET_MAX_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1048576
+    }
+    constants: {
+      native_name: "ARGON2ID_SALT_MIN_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 16
+    }
+    constants: {
+      native_name: "ARGON2ID_SALT_MAX_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "ARGON2ID_V1_MEMORY_COST_KIB"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_KIBIBYTES
+      unsigned_value: 262144
+    }
+    constants: {
+      native_name: "ARGON2ID_V1_TIME_COST"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_PASSES
+      unsigned_value: 3
+    }
+    constants: {
+      native_name: "ARGON2ID_V1_LANES"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_LANES
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "ARGON2ID_V2_MEMORY_COST_KIB"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_KIBIBYTES
+      unsigned_value: 524288
+    }
+    constants: {
+      native_name: "ARGON2ID_V2_TIME_COST"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_PASSES
+      unsigned_value: 3
+    }
+    constants: {
+      native_name: "ARGON2ID_V2_LANES"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_LANES
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "ARGON2ID_MOBILE_MODERN_MEMORY_CAP_KIB"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_KIBIBYTES
+      unsigned_value: 524288
+    }
+    constants: {
+      native_name: "ARGON2ID_MOBILE_MODERN_TIME_COST_CAP"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_PASSES
+      unsigned_value: 4
+    }
+    constants: {
+      native_name: "ARGON2ID_MOBILE_MODERN_LANES_CAP"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_LANES
+      unsigned_value: 4
+    }
+    constants: {
+      native_name: "ARGON2ID_DESKTOP_MODERN_MEMORY_CAP_KIB"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_KIBIBYTES
+      unsigned_value: 2097152
+    }
+    constants: {
+      native_name: "ARGON2ID_DESKTOP_MODERN_TIME_COST_CAP"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_PASSES
+      unsigned_value: 6
+    }
+    constants: {
+      native_name: "ARGON2ID_DESKTOP_MODERN_LANES_CAP"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_LANES
+      unsigned_value: 4
+    }
+    constants: {
+      native_name: "ARGON2ID_ALGORITHM_VERSION"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 19
+    }
+    ranges: {
+      minimum_name: "ARGON2ID_SECRET_MIN_LENGTH"
+      maximum_name: "ARGON2ID_SECRET_MAX_LENGTH"
+    }
+    ranges: {
+      minimum_name: "ARGON2ID_SALT_MIN_LENGTH"
+      maximum_name: "ARGON2ID_SALT_MAX_LENGTH"
+    }
+    ranges: {
+      minimum_name: "ARGON2ID_V1_MEMORY_COST_KIB"
+      maximum_name: "ARGON2ID_V2_MEMORY_COST_KIB"
+    }
+    ranges: {
+      minimum_name: "ARGON2ID_V2_MEMORY_COST_KIB"
+      maximum_name: "ARGON2ID_MOBILE_MODERN_MEMORY_CAP_KIB"
+    }
+    ranges: {
+      minimum_name: "ARGON2ID_MOBILE_MODERN_MEMORY_CAP_KIB"
+      maximum_name: "ARGON2ID_DESKTOP_MODERN_MEMORY_CAP_KIB"
+    }
+  }
+  modules: {
+    native_module: "rsa"
+    constants: {
+      native_name: "RSA_MIN_MODULUS_BITS"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BITS
+      unsigned_value: 1024
+    }
+    constants: {
+      native_name: "RSA_MAX_MODULUS_BITS"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BITS
+      unsigned_value: 8192
+    }
+    constants: {
+      native_name: "RSA_MIN_EXPONENT_BITS"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BITS
+      unsigned_value: 2
+    }
+    constants: {
+      native_name: "RSA_MAX_EXPONENT_BITS"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BITS
+      unsigned_value: 64
+    }
+    constants: {
+      native_name: "RSA_PUBLIC_KEY_DER_MAX_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 4096
+    }
+    constants: {
+      native_name: "RSA_SIGNATURE_MAX_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1024
+    }
+    ranges: {
+      minimum_name: "RSA_MIN_MODULUS_BITS"
+      maximum_name: "RSA_MAX_MODULUS_BITS"
+    }
+    ranges: {
+      minimum_name: "RSA_MIN_EXPONENT_BITS"
+      maximum_name: "RSA_MAX_EXPONENT_BITS"
+    }
+  }
+  modules: {
+    native_module: "kmac"
+    constants: {
+      native_name: "KMAC256_MIN_KEY_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "KMAC256_MAX_KEY_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 4096
+    }
+    constants: {
+      native_name: "KMAC256_MIN_CONTEXT_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 0
+    }
+    constants: {
+      native_name: "KMAC256_MAX_CONTEXT_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 65536
+    }
+    constants: {
+      native_name: "KMAC256_MIN_CUSTOMIZATION_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 0
+    }
+    constants: {
+      native_name: "KMAC256_MAX_CUSTOMIZATION_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 4096
+    }
+    constants: {
+      native_name: "KMAC256_MIN_OUTPUT_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "KMAC256_MAX_OUTPUT_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 65536
+    }
+    ranges: {
+      minimum_name: "KMAC256_MIN_KEY_LENGTH"
+      maximum_name: "KMAC256_MAX_KEY_LENGTH"
+    }
+    ranges: {
+      minimum_name: "KMAC256_MIN_CONTEXT_LENGTH"
+      maximum_name: "KMAC256_MAX_CONTEXT_LENGTH"
+    }
+    ranges: {
+      minimum_name: "KMAC256_MIN_CUSTOMIZATION_LENGTH"
+      maximum_name: "KMAC256_MAX_CUSTOMIZATION_LENGTH"
+    }
+    ranges: {
+      minimum_name: "KMAC256_MIN_OUTPUT_LENGTH"
+      maximum_name: "KMAC256_MAX_OUTPUT_LENGTH"
+    }
+  }
+  modules: {
+    native_module: "proto_wire"
+    constants: {
+      native_name: "CRYPTO_PROTO_RECURSION_LIMIT"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_LEVELS
+      unsigned_value: 64
+    }
+    constants: {
+      native_name: "CRYPTO_PROTO_UNKNOWN_FIELD_LIMIT"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_COUNT
+      unsigned_value: 0
+    }
+    constants: {
+      native_name: "MAX_CRYPTO_PROTO_MESSAGE_BYTES"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1048576
+    }
+    constants: {
+      native_name: "MAX_CRYPTO_PROTO_JSON_BYTES"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1572864
+    }
+    constants: {
+      native_name: "CRYPTO_ERROR_ENVELOPE_PROTOBUF_DECODE_LIMIT"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1024
+    }
+    constants: {
+      native_name: "PRIMITIVE_REASON_CODE_MIN"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: 100
+    }
+    constants: {
+      native_name: "PRIMITIVE_REASON_CODE_MAX"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: 199
+    }
+    constants: {
+      native_name: "PROVIDER_REASON_CODE_MIN"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: 200
+    }
+    constants: {
+      native_name: "PROVIDER_REASON_CODE_MAX"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: 299
+    }
+    constants: {
+      native_name: "BACKEND_REASON_CODE_MIN"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: 300
+    }
+    constants: {
+      native_name: "BACKEND_REASON_CODE_MAX"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: 399
+    }
+    ranges: {
+      minimum_name: "PRIMITIVE_REASON_CODE_MIN"
+      maximum_name: "PRIMITIVE_REASON_CODE_MAX"
+    }
+    ranges: {
+      minimum_name: "PROVIDER_REASON_CODE_MIN"
+      maximum_name: "PROVIDER_REASON_CODE_MAX"
+    }
+    ranges: {
+      minimum_name: "BACKEND_REASON_CODE_MIN"
+      maximum_name: "BACKEND_REASON_CODE_MAX"
+    }
+  }
+};

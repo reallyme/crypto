@@ -6,7 +6,7 @@ use crypto_core::CryptoError;
 use curve25519_dalek::edwards::CompressedEdwardsY;
 use ed25519_dalek::{Signature, VerifyingKey};
 
-const ED25519_POINT_LENGTH: usize = 32;
+const ED25519_POINT_LENGTH: usize = crypto_core::contract_constants::ed25519::ED25519_POINT_LENGTH;
 
 /// Strictly verify an Ed25519 signature over `message` under `public`.
 ///
@@ -26,9 +26,10 @@ pub fn verify_ed25519(public: &[u8], message: &[u8], signature: &[u8]) -> Result
     }
     let vk = VerifyingKey::from_bytes(pubkey).map_err(|_| invalid_signature())?;
 
-    let sig_bytes: &[u8; 64] = signature
-        .try_into()
-        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
+    let sig_bytes: &[u8; crypto_core::contract_constants::ed25519::ED25519_SIGNATURE_LENGTH] =
+        signature
+            .try_into()
+            .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
 
     let sig = Signature::from_bytes(sig_bytes);
     let mut r_bytes = [0_u8; ED25519_POINT_LENGTH];

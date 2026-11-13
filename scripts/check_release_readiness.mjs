@@ -727,7 +727,16 @@ assertContains(
 );
 assertContains("buf.gen.yaml", "out: crates/proto/src/generated/buffa");
 assertNotContains("buf.gen.yaml", "reallyme.crypto.v1.**");
-assertNotContains("buf.gen.yaml", "types:");
+// Runtime SDKs expose every operation type. Only immutable descriptor metadata
+// is excluded because its maintenance-only option model is not a runtime API.
+const generationConfig = readText("buf.gen.yaml");
+const metadataExclusions = [...generationConfig.matchAll(
+  /^[ \t]*exclude_types:[ \t]*\n((?:[ \t]*-[^\n]*(?:\n|$))+)/gmu,
+)];
+if (/^[ \t]*types:/mu.test(generationConfig) || metadataExclusions.length !== 1 ||
+    metadataExclusions[0][1].trim() !== "- reallyme.crypto.contract.v1.**") {
+  fail("buf.gen.yaml must generate every runtime type and exclude only immutable contract metadata");
+}
 assertContains("buf.gen.yaml", "buf.build/bufbuild/es:v2.14.1");
 assertContains("buf.gen.yaml", "buf.build/apple/swift:v1.38.1");
 assertContains("buf.gen.yaml", "buf.build/protocolbuffers/java:v36.2");
@@ -1897,7 +1906,7 @@ assertContains("fuzz/fuzz_targets/operation_family_boundaries.rs", "HpkeKemId::t
 assertContains("fuzz/fuzz_targets/operation_family_boundaries.rs", "Pbkdf2Iterations::from_u32_modern");
 assertContains(
   "crates/pbkdf2/src/constants.rs",
-  "PBKDF2_MAX_ITERATIONS: u32 = 10_000_000",
+  "crypto_core::contract_constants::pbkdf2::PBKDF2_MAX_ITERATIONS",
 );
 assertContains(
   "crates/pbkdf2/src/types.rs",
@@ -1959,7 +1968,7 @@ assertContains("fuzz/README.md", "cargo install cargo-fuzz --version 0.13.2 --lo
 assertContains("crates/p256/src/import_pem.rs", "validate_der_input(der)?");
 assertContains(
   "crates/p256/src/import_pem.rs",
-  "der.len() > P256_MAX_KEY_DER_LEN",
+  "P256_MIN_KEY_DER_LEN..=P256_MAX_KEY_DER_LEN",
 );
 assertContains("PROVIDER_POLICY.md", "Generated from `provider_manifest.json`");
 assertContains("PROVIDER_POLICY.md", "Every provider route must implement identical input validation");
@@ -2094,7 +2103,7 @@ assertContains("crates/crypto/src/operations/hpke.rs", "pub fn derive_keypair(")
 assertContains("crates/crypto/src/operations/hpke.rs", "pub fn derive_keypair_from_ikm(");
 assertContains(
   "crates/crypto/src/operations/hpke.rs",
-  "HPKE_OPERATION_MIN_INPUT_KEY_MATERIAL_LEN: usize = 32",
+  "crypto_core::contract_constants::operation_hpke::HPKE_OPERATION_MIN_INPUT_KEY_MATERIAL_LEN",
 );
 assertContains("crates/crypto/src/operations/hpke.rs", "pub fn setup_sender_psk(");
 assertContains("crates/crypto/src/operations/hpke.rs", "pub fn seal_base(");

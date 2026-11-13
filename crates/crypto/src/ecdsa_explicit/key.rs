@@ -13,7 +13,8 @@ use super::{
 use crate::key_random::{KeyRng, SystemKeyRng};
 
 const MAX_SCALAR_LEN: usize = super::constants::P521_SCALAR_LEN;
-const GENERATION_ATTEMPTS: usize = 128;
+const GENERATION_ATTEMPTS: usize =
+    crypto_core::contract_constants::ecdsa_explicit::GENERATION_ATTEMPTS;
 const P521_HIGH_BYTE_MASK: u8 = 0x01;
 
 /// Validated, clearing ECDSA/ECDH private scalar, with its public key bound at

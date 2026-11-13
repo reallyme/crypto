@@ -7,11 +7,14 @@
 use crypto_core::CryptoError;
 
 /// Length in bytes of an ML-DSA-65 public key.
-pub const ML_DSA_65_PUBLIC_KEY_LEN: usize = 1952;
+pub const ML_DSA_65_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::ml_dsa_65::ML_DSA_65_PUBLIC_KEY_LEN;
 /// Length in bytes of the ML-DSA-65 secret key seed.
-pub const ML_DSA_65_SECRET_SEED_LEN: usize = 32;
+pub const ML_DSA_65_SECRET_SEED_LEN: usize =
+    crypto_core::contract_constants::ml_dsa_65::ML_DSA_65_SECRET_SEED_LEN;
 /// Length in bytes of an ML-DSA-65 signature.
-pub const ML_DSA_65_SIGNATURE_LEN: usize = 3309;
+pub const ML_DSA_65_SIGNATURE_LEN: usize =
+    crypto_core::contract_constants::ml_dsa_65::ML_DSA_65_SIGNATURE_LEN;
 
 /// Validate that `pk` has the ML-DSA-65 public-key length, returning it
 /// unchanged or [`CryptoError::PRIMITIVE_INVALID_KEY`] otherwise.

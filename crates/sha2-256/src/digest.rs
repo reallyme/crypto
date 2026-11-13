@@ -5,7 +5,8 @@
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Length in bytes of a SHA-256 digest.
-pub const SHA2_256_DIGEST_LENGTH: usize = 32;
+pub const SHA2_256_DIGEST_LENGTH: usize =
+    crypto_proto::contract_constants::sha2_256::SHA2_256_DIGEST_LENGTH;
 
 /// SHA-256 digest bytes.
 #[derive(Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]

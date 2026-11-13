@@ -2158,6 +2158,7 @@ name = "reallyme-crypto-sha2"
 version = "0.4.0"
 dependencies = [
  "hex",
+ "reallyme-crypto-proto",
  "serde_json",
  "sha2",
  "wasm-bindgen-test",
@@ -2170,6 +2171,7 @@ version = "0.4.0"
 dependencies = [
  "getrandom 0.4.3",
  "hex",
+ "reallyme-crypto-proto",
  "serde_json",
  "sha2",
  "wasm-bindgen-test",
@@ -2181,6 +2183,7 @@ name = "reallyme-crypto-sha3"
 version = "0.4.0"
 dependencies = [
  "hex",
+ "reallyme-crypto-proto",
  "sha3 0.12.0",
  "shake",
  "zeroize",
@@ -2192,6 +2195,7 @@ version = "0.4.0"
 dependencies = [
  "getrandom 0.4.3",
  "hex",
+ "reallyme-crypto-proto",
  "sha3 0.12.0",
  "zeroize",
 ]

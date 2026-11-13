@@ -7,17 +7,20 @@ use subtle::ConstantTimeEq;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 /// Length in bytes of an HMAC-SHA-256 tag.
-pub const HMAC_SHA256_TAG_LENGTH: usize = 32;
+pub const HMAC_SHA256_TAG_LENGTH: usize =
+    crypto_core::contract_constants::hmac::HMAC_SHA256_TAG_LENGTH;
 /// Length in bytes of an HMAC-SHA-384 tag.
-pub const HMAC_SHA384_TAG_LENGTH: usize = 48;
+pub const HMAC_SHA384_TAG_LENGTH: usize =
+    crypto_core::contract_constants::hmac::HMAC_SHA384_TAG_LENGTH;
 /// Length in bytes of an HMAC-SHA-512 tag.
-pub const HMAC_SHA512_TAG_LENGTH: usize = 64;
+pub const HMAC_SHA512_TAG_LENGTH: usize =
+    crypto_core::contract_constants::hmac::HMAC_SHA512_TAG_LENGTH;
 /// Maximum accepted HMAC key length in bytes.
 ///
 /// HMAC itself permits arbitrary-length keys, but the public API caps accepted
 /// key material so boundary callers cannot force unbounded allocation. Long
 /// keys above the SHA-512 block size are already hashed by HMAC internally.
-pub const HMAC_MAX_KEY_LENGTH: usize = 4096;
+pub const HMAC_MAX_KEY_LENGTH: usize = crypto_core::contract_constants::hmac::HMAC_MAX_KEY_LENGTH;
 
 /// HMAC key material.
 ///
@@ -35,7 +38,9 @@ impl HmacKey {
     /// large keys are rejected to keep allocation behavior deterministic at
     /// FFI and platform boundaries.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
-        if input.is_empty() || input.len() > HMAC_MAX_KEY_LENGTH {
+        if !(crypto_core::contract_constants::hmac::HMAC_MIN_KEY_LENGTH..=HMAC_MAX_KEY_LENGTH)
+            .contains(&input.len())
+        {
             return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_KEY);
         }
 

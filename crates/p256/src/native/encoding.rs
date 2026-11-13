@@ -8,8 +8,10 @@ use crypto_core::CryptoError;
 use p256::elliptic_curve::sec1::ToSec1Point;
 use p256::PublicKey;
 
-const P256_PUBLIC_KEY_COMPRESSED_LEN: usize = 33;
-const P256_PUBLIC_KEY_UNCOMPRESSED_LEN: usize = 65;
+const P256_PUBLIC_KEY_COMPRESSED_LEN: usize =
+    crypto_core::contract_constants::p256::P256_PUBLIC_KEY_COMPRESSED_LEN;
+const P256_PUBLIC_KEY_UNCOMPRESSED_LEN: usize =
+    crypto_core::contract_constants::p256::P256_PUBLIC_KEY_UNCOMPRESSED_LEN;
 const SEC1_COMPRESSED_EVEN_PREFIX: u8 = 0x02;
 const SEC1_COMPRESSED_ODD_PREFIX: u8 = 0x03;
 const SEC1_UNCOMPRESSED_PREFIX: u8 = 0x04;

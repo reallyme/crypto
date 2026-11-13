@@ -12,7 +12,8 @@ use zeroize::Zeroizing;
 use super::{secret, CryptoError};
 
 // A local bound on secret reduction inputs, not a group-standard constraint.
-pub(super) const MAX_REDUCTION_BYTES: usize = 512;
+pub(super) const MAX_REDUCTION_BYTES: usize =
+    crypto_core::contract_constants::prime_groups::MAX_REDUCTION_BYTES;
 
 pub(super) fn precision(length: usize) -> Result<u32, CryptoError> {
     u32::try_from(length)

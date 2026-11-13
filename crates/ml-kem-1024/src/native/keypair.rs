@@ -11,7 +11,8 @@ use ml_kem::{
 use zeroize::{Zeroize, Zeroizing};
 
 /// Length in bytes of the ML-KEM-1024 decapsulation (secret) key seed.
-pub const ML_KEM_1024_SECRET_KEY_LEN: usize = 64;
+pub const ML_KEM_1024_SECRET_KEY_LEN: usize =
+    crypto_core::contract_constants::ml_kem_1024::ML_KEM_1024_SECRET_KEY_LEN;
 
 /// Generate a fresh ML-KEM-1024 keypair.
 ///

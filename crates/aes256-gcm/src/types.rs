@@ -6,19 +6,24 @@ use crypto_core::CryptoError;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Length in bytes of an AES-256-GCM key (32 bytes / 256 bits).
-pub const AES_256_GCM_KEY_LENGTH: usize = 32;
+pub const AES_256_GCM_KEY_LENGTH: usize =
+    crypto_core::contract_constants::aes256_gcm::AES_256_GCM_KEY_LENGTH;
 /// Length in bytes of an AES-128-GCM key (16 bytes / 128 bits).
-pub const AES_128_GCM_KEY_LENGTH: usize = 16;
+pub const AES_128_GCM_KEY_LENGTH: usize =
+    crypto_core::contract_constants::aes256_gcm::AES_128_GCM_KEY_LENGTH;
 /// Length in bytes of an AES-192-GCM key (24 bytes / 192 bits).
-pub const AES_192_GCM_KEY_LENGTH: usize = 24;
+pub const AES_192_GCM_KEY_LENGTH: usize =
+    crypto_core::contract_constants::aes256_gcm::AES_192_GCM_KEY_LENGTH;
 /// Length in bytes of an AES-256-GCM nonce (12 bytes / 96 bits).
-pub const AES_256_GCM_NONCE_LENGTH: usize = 12;
+pub const AES_256_GCM_NONCE_LENGTH: usize =
+    crypto_core::contract_constants::aes256_gcm::AES_256_GCM_NONCE_LENGTH;
 /// Length in bytes of an AES-128-GCM nonce (12 bytes / 96 bits).
 pub const AES_128_GCM_NONCE_LENGTH: usize = AES_256_GCM_NONCE_LENGTH;
 /// Length in bytes of an AES-192-GCM nonce (12 bytes / 96 bits).
 pub const AES_192_GCM_NONCE_LENGTH: usize = AES_256_GCM_NONCE_LENGTH;
 /// Length in bytes of an AES-256-GCM authentication tag (16 bytes / 128 bits).
-pub const AES_256_GCM_TAG_LENGTH: usize = 16;
+pub const AES_256_GCM_TAG_LENGTH: usize =
+    crypto_core::contract_constants::aes256_gcm::AES_256_GCM_TAG_LENGTH;
 /// Length in bytes of an AES-128-GCM authentication tag (16 bytes / 128 bits).
 pub const AES_128_GCM_TAG_LENGTH: usize = AES_256_GCM_TAG_LENGTH;
 /// Length in bytes of an AES-192-GCM authentication tag (16 bytes / 128 bits).

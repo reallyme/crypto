@@ -7,11 +7,14 @@
 use crypto_core::CryptoError;
 
 /// Length in bytes of an ML-DSA-44 public key.
-pub const ML_DSA_44_PUBLIC_KEY_LEN: usize = 1312;
+pub const ML_DSA_44_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::ml_dsa_44::ML_DSA_44_PUBLIC_KEY_LEN;
 /// Length in bytes of the ML-DSA-44 secret key seed.
-pub const ML_DSA_44_SECRET_SEED_LEN: usize = 32;
+pub const ML_DSA_44_SECRET_SEED_LEN: usize =
+    crypto_core::contract_constants::ml_dsa_44::ML_DSA_44_SECRET_SEED_LEN;
 /// Length in bytes of an ML-DSA-44 signature.
-pub const ML_DSA_44_SIGNATURE_LEN: usize = 2420;
+pub const ML_DSA_44_SIGNATURE_LEN: usize =
+    crypto_core::contract_constants::ml_dsa_44::ML_DSA_44_SIGNATURE_LEN;
 
 /// Validate that `pk` has the ML-DSA-44 public-key length, returning it
 /// unchanged or [`CryptoError::PRIMITIVE_INVALID_KEY`] otherwise.

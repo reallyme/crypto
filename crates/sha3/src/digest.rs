@@ -6,11 +6,14 @@ use sha3::{Digest, Sha3_224, Sha3_384, Sha3_512};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Length in bytes of a SHA3-224 digest.
-pub const SHA3_224_DIGEST_LENGTH: usize = 28;
+pub const SHA3_224_DIGEST_LENGTH: usize =
+    crypto_proto::contract_constants::sha3::SHA3_224_DIGEST_LENGTH;
 /// Length in bytes of a SHA3-384 digest.
-pub const SHA3_384_DIGEST_LENGTH: usize = 48;
+pub const SHA3_384_DIGEST_LENGTH: usize =
+    crypto_proto::contract_constants::sha3::SHA3_384_DIGEST_LENGTH;
 /// Length in bytes of a SHA3-512 digest.
-pub const SHA3_512_DIGEST_LENGTH: usize = 64;
+pub const SHA3_512_DIGEST_LENGTH: usize =
+    crypto_proto::contract_constants::sha3::SHA3_512_DIGEST_LENGTH;
 
 /// SHA3-224 digest bytes.
 #[derive(Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]

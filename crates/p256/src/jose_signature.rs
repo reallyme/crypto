@@ -5,14 +5,15 @@
 use crypto_core::CryptoError;
 
 /// Length in bytes of an ES256 JOSE signature (`r || s`).
-pub const P256_ECDSA_JOSE_SIGNATURE_LEN: usize = 64;
+pub const P256_ECDSA_JOSE_SIGNATURE_LEN: usize =
+    crypto_core::contract_constants::p256::P256_ECDSA_JOSE_SIGNATURE_LEN;
 
 pub(crate) const SCALAR_LEN: usize = 32;
 const DER_SEQUENCE_TAG: u8 = 0x30;
 const DER_INTEGER_TAG: u8 = 0x02;
 const DER_LONG_FORM_MASK: u8 = 0x80;
-const DER_PAIR_DEPTH: usize = 1;
-const DER_PAIR_ELEMENTS: usize = 3;
+const DER_PAIR_DEPTH: usize = crypto_core::contract_constants::p256::DER_PAIR_DEPTH;
+const DER_PAIR_ELEMENTS: usize = crypto_core::contract_constants::p256::DER_PAIR_ELEMENTS;
 // The P-256 subgroup order from FIPS 186-5. JOSE transcoding remains available
 // without a native provider feature, so scalar validation cannot depend on the
 // optional `p256` backend. Signature scalars are public, making an ordinary

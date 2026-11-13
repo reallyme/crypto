@@ -12,7 +12,8 @@ use crate::material::{
 };
 
 /// Maximum output length permitted by RFC 5869 for HKDF-SHA384.
-pub const HKDF_SHA384_MAX_OUTPUT_LENGTH: usize = 12_240;
+pub const HKDF_SHA384_MAX_OUTPUT_LENGTH: usize =
+    crypto_core::contract_constants::hkdf::HKDF_SHA384_MAX_OUTPUT_LENGTH;
 
 /// Runs the HKDF-SHA384 extract step and returns its fixed-size secret PRK.
 pub fn extract_sha384(

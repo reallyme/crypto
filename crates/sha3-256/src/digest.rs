@@ -6,7 +6,8 @@ use sha3::{Digest, Sha3_256};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Length in bytes of a SHA3-256 digest.
-pub const SHA3_256_DIGEST_LENGTH: usize = 32;
+pub const SHA3_256_DIGEST_LENGTH: usize =
+    crypto_proto::contract_constants::sha3_256::SHA3_256_DIGEST_LENGTH;
 
 /// SHA3-256 digest bytes.
 #[derive(Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]

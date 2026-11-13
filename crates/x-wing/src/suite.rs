@@ -3,11 +3,14 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 /// X-Wing private key seed length, in bytes.
-pub const X_WING_SECRET_KEY_LEN: usize = 32;
+pub const X_WING_SECRET_KEY_LEN: usize =
+    crypto_core::contract_constants::x_wing::X_WING_SECRET_KEY_LEN;
 /// X-Wing encapsulation seed length, in bytes.
-pub const X_WING_ENCAPS_SEED_LEN: usize = 64;
+pub const X_WING_ENCAPS_SEED_LEN: usize =
+    crypto_core::contract_constants::x_wing::X_WING_ENCAPS_SEED_LEN;
 /// X-Wing shared secret length, in bytes.
-pub const X_WING_SHARED_SECRET_LEN: usize = 32;
+pub const X_WING_SHARED_SECRET_LEN: usize =
+    crypto_core::contract_constants::x_wing::X_WING_SHARED_SECRET_LEN;
 
 pub(crate) const X25519_KEY_LEN: usize = 32;
 pub(crate) const X_WING_LABEL: &[u8; 6] = b"\\.//^\\";
@@ -18,9 +21,11 @@ pub(crate) const ML_KEM_768_PUBLIC_KEY_LEN: usize = 1184;
 pub(crate) const ML_KEM_768_CIPHERTEXT_LEN: usize = 1088;
 
 /// X-Wing public key length for the standard ML-KEM-768 suite.
-pub const X_WING_768_PUBLIC_KEY_LEN: usize = ML_KEM_768_PUBLIC_KEY_LEN + X25519_KEY_LEN;
+pub const X_WING_768_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::x_wing::X_WING_768_PUBLIC_KEY_LEN;
 /// X-Wing ciphertext length for the standard ML-KEM-768 suite.
-pub const X_WING_768_CIPHERTEXT_LEN: usize = ML_KEM_768_CIPHERTEXT_LEN + X25519_KEY_LEN;
+pub const X_WING_768_CIPHERTEXT_LEN: usize =
+    crypto_core::contract_constants::x_wing::X_WING_768_CIPHERTEXT_LEN;
 #[derive(Clone, Copy)]
 pub(crate) enum XWingSuite {
     MlKem768,

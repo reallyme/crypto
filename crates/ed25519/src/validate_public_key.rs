@@ -7,7 +7,7 @@
 use crypto_core::CryptoError;
 use curve25519_dalek::edwards::{CompressedEdwardsY, EdwardsPoint};
 
-const PUBLIC_KEY_LENGTH: usize = 32;
+const PUBLIC_KEY_LENGTH: usize = crypto_core::contract_constants::ed25519::PUBLIC_KEY_LENGTH;
 
 /// Reject encodings that cannot identify a usable strict Ed25519 verifier key.
 pub fn validate_public_key_identity(public_key: &[u8]) -> Result<(), CryptoError> {

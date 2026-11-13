@@ -1,0 +1,76 @@
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+syntax = "proto2";
+
+package reallyme.crypto.contract.v1;
+
+import "google/protobuf/descriptor.proto";
+
+// NativeType describes a constant's exact native representation, independent
+// of its unit. Values select types; they never encode a resource limit.
+enum NativeType {
+  NATIVE_TYPE_UNSPECIFIED = 0;
+  NATIVE_TYPE_U8 = 1;
+  NATIVE_TYPE_U16 = 2;
+  NATIVE_TYPE_U32 = 3;
+  NATIVE_TYPE_U64 = 4;
+  NATIVE_TYPE_USIZE = 5;
+  NATIVE_TYPE_I32 = 6;
+  NATIVE_TYPE_BYTES = 7;
+}
+
+// Unit prevents an integer's representation from obscuring its meaning.
+enum Unit {
+  UNIT_UNSPECIFIED = 0;
+  UNIT_BYTES = 1;
+  UNIT_BITS = 2;
+  UNIT_KIBIBYTES = 3;
+  UNIT_ITERATIONS = 4;
+  UNIT_PASSES = 5;
+  UNIT_LANES = 6;
+  UNIT_EVALUATIONS = 7;
+  UNIT_IDENTIFIER = 8;
+  UNIT_DIMENSIONLESS = 9;
+  UNIT_COUNT = 10;
+  UNIT_LEVELS = 11;
+}
+
+// Constant is immutable schema metadata, consumed only during maintenance
+// generation. No executable operation accepts this message as configuration.
+message Constant {
+  optional string native_name = 1;
+  optional NativeType native_type = 2;
+  optional Unit unit = 3;
+  oneof value {
+    uint64 unsigned_value = 4;
+    sint64 signed_value = 5;
+    bytes bytes_value = 6;
+  }
+}
+
+// ConstantRange relates two existing scalar constants without duplicating
+// either bound. Generation rejects mixed types, mixed units, and reversed
+// bounds. The relationship does not create a caller-overridable range.
+message ConstantRange {
+  optional string minimum_name = 1;
+  optional string maximum_name = 2;
+}
+
+// ConstantModule names the generated native namespace for one family.
+message ConstantModule {
+  optional string native_module = 1;
+  repeated Constant constants = 2;
+  repeated ConstantRange ranges = 3;
+}
+
+// ConstantRegistry is attached to files so constants remain reachable through
+// the canonical descriptor graph without introducing runtime message fields.
+message ConstantRegistry {
+  repeated ConstantModule modules = 1;
+}
+
+extend google.protobuf.FileOptions {
+  optional ConstantRegistry constant_registry = 51000;
+}

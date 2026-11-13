@@ -70,7 +70,7 @@ pub fn generate_bytes<const N: usize>(
     rng: &mut impl SecureRandom,
     kind: RngOutputKind,
 ) -> Result<RandomBytes<N>, CryptoError> {
-    if N == 0 {
+    if N < crypto_core::contract_constants::csprng::RANDOM_BYTES_MIN_LENGTH {
         return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
 

@@ -3,10 +3,14 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 /// Length in bytes of an SLH-DSA-SHA2-128s public key.
-pub const SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN: usize = 32;
+pub const SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::slh_dsa::SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN;
 /// Length in bytes of an SLH-DSA-SHA2-128s serialized secret key.
-pub const SLH_DSA_SHA2_128S_SECRET_KEY_LEN: usize = 64;
+pub const SLH_DSA_SHA2_128S_SECRET_KEY_LEN: usize =
+    crypto_core::contract_constants::slh_dsa::SLH_DSA_SHA2_128S_SECRET_KEY_LEN;
 /// Length in bytes of an SLH-DSA-SHA2-128s detached signature.
-pub const SLH_DSA_SHA2_128S_SIGNATURE_LEN: usize = 7_856;
+pub const SLH_DSA_SHA2_128S_SIGNATURE_LEN: usize =
+    crypto_core::contract_constants::slh_dsa::SLH_DSA_SHA2_128S_SIGNATURE_LEN;
 /// Length in bytes of each FIPS 205 keygen seed component for SHA2-128s.
-pub const SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN: usize = 16;
+pub const SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN: usize =
+    crypto_core::contract_constants::slh_dsa::SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN;
