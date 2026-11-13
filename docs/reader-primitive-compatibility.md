@@ -29,10 +29,10 @@ are **unexecuted**. Earlier native, WASM and mobile runtime evidence is retained
 in the historical validation section with its source scope. It is not evidence
 that the 0.4.0 migration has passed runtime regression testing.
 
-Current compiled-source evidence is scoped to
-`e0368ca60ab68eb710b6cf5cf5a46b66fdbaf4c4`. A later documentation/evidence-only handoff
-can reuse it only after confirming that implementation source, generated code,
-manifests and lockfiles are unchanged. The completed
+The compiler inventory and original migration checks are scoped to
+`e0368ca60ab68eb710b6cf5cf5a46b66fdbaf4c4`. The subsequent private RSA ownership
+repair and sparse-feature checks are recorded separately below, without
+relabeling the original compiler capture. The completed
 [schema-contract reconciliation](schema-contract-reconciliation.md) records
 3,617 declaration/exposure records and 3,511 export edges, with no unresolved
 supported product items and 47 explicit private-tooling records. This establishes
@@ -372,7 +372,7 @@ No runtime test execution is claimed for the schema/error/API migration. New
 parity, malformed-input, optional-presence, provider-failure and cleanup tests
 are source coverage until executed against the final 0.4.0 tree.
 
-| Gate | Current 0.4.0 status at `e0368ca60ab68eb710b6cf5cf5a46b66fdbaf4c4` |
+| Gate | Migration checkpoint `e0368ca60ab68eb710b6cf5cf5a46b66fdbaf4c4` |
 | --- | --- |
 | Native workspace Clippy, all targets/all features, warnings denied | Passed |
 | Full WASM workspace check, all targets/all features, warnings denied | Passed for `wasm32-unknown-unknown`, excluding native FFI and the two private native maintenance tools |
@@ -390,6 +390,37 @@ are source coverage until executed against the final 0.4.0 tree.
 Compilation and generated-code checks establish their specific source and
 schema properties. They do not replace execution of cryptographic known
 answers, negative cases, cleanup paths or platform integration.
+
+### Subsequent RSA and feature review
+
+Implementation commit `e22f15e82e1e26fa625787234e28581c9eded9f6` guards RSA
+finalized hash arrays and the message/PSS/MGF1 digest vectors. MGF1 retains its
+clearing owner while borrowing each block. These private changes preserve the
+public Rust API, exact byte concatenation and independent hash/salt selection;
+allocation failure uses the existing typed backend error. The schema, generated
+code, package manifests, lockfiles and Rust toolchain pins are unchanged.
+
+Three disabled-provider test files also now use the canonical 0.4 errors without
+stale imports or retired variants. The existing backendless CI step compiles
+all targets for isolated `operation-response` and `dispatch` profiles. Its
+combined graph includes `dispatch`. The existing RSA WASM invocation includes
+library tests so the new ownership regressions are discoverable there. No new
+workflow or job is introduced.
+
+| Follow-up check | Result for the reviewed implementation |
+| --- | --- |
+| Native workspace Clippy, all targets/all features | Passed with warnings denied |
+| Declared Rust 1.96.0 minimum, all-feature workspace check | Passed; active development toolchain remains 1.100.0 |
+| Exact CI WASM workspace profile, defaults disabled | Passed with warnings denied |
+| RSA WASM all-target checks with and without `proto` | Passed with warnings denied; test sources compiled, not executed |
+| Bare root, isolated `operation-response` and `dispatch`, and exact combined backendless CI profile | Passed with warnings denied; isolated profiles include all targets |
+| Seven mobile reader-library targets listed above | Passed with warnings denied; no installation or device execution |
+
+The compiler inventory remains bound to its original checkpoint; these private
+implementation and test/CI repairs do not constitute a new compiler-graph
+capture. All runtime, known-answer, ownership, SDK and device regression
+execution remains outstanding. Published packages and artifact versions remain
+unchanged.
 
 ## Historical runtime and compilation evidence
 
@@ -489,9 +520,9 @@ formal proof or an independent audit of the arithmetic implementation.
 ## Remaining requirements and delivery
 
 The CR-DIS-01/02/05 primitive APIs and named schema adapters are represented
-above, with the current public surface reconciled in the
-[schema-contract report](schema-contract-reconciliation.md). The report-only
-handoff remains distinct from the compiled source checkpoint. Passed Clippy,
+above, with the public surface reconciled at the recorded checkpoint in the
+[schema-contract report](schema-contract-reconciliation.md). The subsequent
+private RSA review has its own compilation results above. Passed Clippy,
 full/narrow WASM, HKDF/HMAC, seven mobile-library and strict Rustdoc checks
 establish compilation, not runtime behavior. Newly added parity, known-answer,
 negative-input, ownership and conformance sources remain unexecuted. Applicable

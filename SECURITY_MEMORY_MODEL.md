@@ -321,3 +321,19 @@ arrays in a clearing owner before constructing the returned tag. This guards
 the call-site output on normal return and early exits independently of optional
 upstream array cleanup features. The existing hashing implementation, state
 clearing features, verification path, tag bytes and public API are preserved.
+
+### RSA verification hash buffers
+
+RSA message hashing, PSS hashing and MGF1 now immediately guard finalized
+SHA-1/256/384/512 arrays before copying into independent `Zeroizing<Vec<u8>>`
+owners. Output allocation is fallible and reports the existing typed backend
+error; the finalized array clears on both allocation failure and success.
+MGF1 borrows its digest vector while XORing each block, keeping cleanup active
+through the last partial block and early returns. Previously that vector was
+consumed by an iterator without clearing its allocation.
+
+These private helpers retain the existing byte concatenation, independent PSS
+message/MGF1 hashes, salt policy, SHA-1 verification scope and public API.
+Ownership and known-answer regression sources are compiled but unexecuted.
+This call-site repair does not claim to erase upstream wrapper temporaries,
+compiler/register copies or the separately accepted primefield encoding buffer.

@@ -455,8 +455,12 @@ unchanged. All added regression sources remain unexecuted.
 
 ## Remaining work
 
-The current compiled implementation checkpoint is
-`e0368ca60ab68eb710b6cf5cf5a46b66fdbaf4c4`. The completed
+The compiler inventory checkpoint is
+`e0368ca60ab68eb710b6cf5cf5a46b66fdbaf4c4`. The later private RSA ownership and
+sparse-feature repairs at `e22f15e82e1e26fa625787234e28581c9eded9f6` preserve
+the public API and schema; their native/WASM/mobile and minimum-version compile
+checks are recorded separately in the [compatibility matrix](reader-primitive-compatibility.md#subsequent-rsa-and-feature-review).
+The completed
 [schema-contract reconciliation](schema-contract-reconciliation.md) records
 3,617 declaration/exposure records, 3,511 export edges and all 2,670 frozen
 historical declarations. No supported product item remains unresolved within
@@ -500,9 +504,9 @@ tools. Strict Rustdoc captured 45 native and 42 WASM targets under the same
 warning policy. Buf lint/breaking against the pinned baseline, TypeScript build,
 hardening idempotence, maintenance freshness, Actionlint and static CI policy
 passed. Offline Cargo Deny passed; registry versions, sources and checksums
-remain unchanged. A later documentation/evidence-only handoff must preserve the
-compiled source scope and verify implementation, generated source, manifests
-and lockfiles are unchanged.
+remain unchanged. Those statements retain their original migration-checkpoint
+scope; the later private RSA and sparse-feature checks are recorded separately
+above. Documentation and workflow updates do not relabel the compiler capture.
 
 Remaining release and audit requirements are:
 

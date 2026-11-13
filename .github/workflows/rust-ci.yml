@@ -396,7 +396,7 @@ jobs:
         run: |
           cargo test --locked --release -p reallyme-crypto --target wasm32-unknown-unknown --no-default-features --features prime-groups,ed448,key-identifier-sha1 --lib --test ecdsa_explicit_tests --test ed448_tests --test key_identifier_tests --test prime_groups
           cargo test --locked --release -p reallyme-crypto-hpke --target wasm32-unknown-unknown --no-default-features --features base-p256-aes128gcm --lib
-          cargo test --locked --release -p reallyme-crypto-rsa --target wasm32-unknown-unknown --no-default-features --features wasm --test representatives --test feature_lane_tests
+          cargo test --locked --release -p reallyme-crypto-rsa --target wasm32-unknown-unknown --no-default-features --features wasm --lib --test representatives --test feature_lane_tests
           cargo test --locked --release -p reallyme-crypto-p256 --target wasm32-unknown-unknown --no-default-features --features wasm --test jose_signature_tests
 
       - name: Check wasm32 lane

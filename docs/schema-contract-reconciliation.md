@@ -45,4 +45,8 @@ The compiler graph has zero unresolved document or source problems. All 148 macr
 
 This reconciliation does not execute tests, known answers, cryptographic operations, device applications or publication. Compiler/documentation and related native/WASM/mobile source checks do not establish runtime parity, mobile device execution, every feature combination or cryptographic certification. Runtime test sources remain unexecuted.
 
-A subsequent documentation-only commit is distinct from the compiled checkpoint above. Final handoff must verify that only report artifacts changed afterward; it must not describe that later report commit as the commit compiled by this capture.
+The original report handoff at `05a9846` changed only documentation/evidence after the compiled checkpoint above. That report commit is distinct from the source compiled by this capture. The later implementation review below has its own validation scope.
+
+## Subsequent implementation review
+
+Commit `e22f15e82e1e26fa625787234e28581c9eded9f6` adds private RSA digest-buffer cleanup and repairs three disabled-provider test files plus the existing sparse-feature CI check. Public Rust signatures, schema, generated bindings, package manifests and lockfiles are unchanged. The original compiler capture and its ledgers remain bound to `e0368ca`; this follow-up does not claim a new compiler-graph capture. Its native, WASM, mobile and minimum-version compile results are recorded in the [compatibility matrix](reader-primitive-compatibility.md#subsequent-rsa-and-feature-review). Runtime regressions remain unexecuted.
