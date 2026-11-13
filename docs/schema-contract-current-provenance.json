@@ -131,7 +131,7 @@
     "schema-contract-current-versions.csv": "893ade7987205fc6329acab1d611b9f56ff895bbb308929d48a36ea3547eecb5",
     "schema-contract-current.csv": "6b8b0a1e93230f7ae4ad764a51f2db9f64ca6b2523fb4e00a04ac6145b683676",
     "schema-contract-migration.csv": "a12c6f0d80efac28357b27a3e93b2274e6be114b6ac4bab429b2503a4a55457e",
-    "schema-contract-reconciliation.md": "ce816ad418656450378d2438f45b4ef204d1a0f182e4faa15f3dbcc52dc916be"
+    "schema-contract-reconciliation.md": "d689c5cf0e8e45a201364ea2b4ec11b807fb8205d5d6656adff206093967317a"
   },
   "evidence_input_sha256": {
     "declarations.json": "2ea1b00844a074d1b5b9f34cc846b483c2a19592311e8918e38ee44593ad4e6f",
@@ -158,5 +158,31 @@
     "compiler_graph_recaptured": false,
     "scope": "Private RSA digest-buffer ownership, disabled-provider test repairs and sparse-feature CI coverage; runtime regressions unexecuted.",
     "validation_document": "reader-primitive-compatibility.md#subsequent-rsa-and-feature-review"
+  },
+  "legacy_group_extension": {
+    "native_type": "reallyme_crypto::prime_groups::PrimeGroup",
+    "schema_values": {
+      "NistP192": 130,
+      "BrainpoolP192r1": 240,
+      "BrainpoolP224r1": 250
+    },
+    "report": "legacy-prime-groups.md",
+    "compiler_graph_recaptured": false,
+    "canonical_runtime_tests_executed": false,
+    "source_sha256": {
+      "crates/proto/proto/reallyme/crypto/v1/crypto.proto": "33a765e61a8be6c693681e33a0268098a3502e0179537ef47dd735fe5a4e3c3c",
+      "crates/crypto/src/prime_groups/domain.rs": "fb976267225dda42cdf5b0ea2bfe926500315ad30192cd6166df7b30bf02a3cb",
+      "crates/crypto/src/prime_groups/identity.rs": "6bbd94fbeda0bcf408d48984cdc6f5a024d5767912f8b8f52f2ffa150e3328dd",
+      "crates/crypto/src/prime_groups/ec.rs": "695cfc531c7b5213030dfe72fcbaf5c0107c9d7acb66bf410c02d1da103d159e",
+      "crates/crypto/src/prime_groups/legacy_curves.rs": "6fcade1ddcd69188e7297f2e85611073c2520887d833200a47d891182f2e374f",
+      "crates/crypto/src/prime_groups/legacy_curves/nistp192.rs": "71bc886ca1cb8833d74dbb6127da9bedbb57ebe9fddb7965620ef7dc9850a6a5",
+      "crates/crypto/src/prime_groups/legacy_curves/bp192.rs": "c435b935dbff0c4c9d08a09898ce0b20f5725f3ff58cd40ec2017dd74ba112d5",
+      "crates/crypto/src/prime_groups/legacy_curves/bp224.rs": "14ce9f374926cd8b5e03c2c1856e02897d8417464e3a457cceaf35c9d5dc614f",
+      "Cargo.lock": "8121503a10ebe006434c7e8b7f2a5808c257404a6a6bd085b7cda63b4031392e",
+      "fuzz/Cargo.lock": "04fb64fc8d27fac8e7a771f6deab8aa3ca19534afba9c950a833ec481bd01192",
+      "crates/crypto/Cargo.toml": "34b0e4fbf613ec2e1bdc607c8624c1336c3371f10cc57df174db81d14937352e",
+      "crates/crypto/src/prime_groups.rs": "41021283f6cee30d9c99c8bd91122d1d93c986da6db94d93ed5b10b9c699dee8",
+      "crates/crypto/src/prime_groups/parameters.rs": "b50133a9c674e9be3bbb9597665df785fe764823b35f7599814823ded993a7a8"
+    }
   }
 }

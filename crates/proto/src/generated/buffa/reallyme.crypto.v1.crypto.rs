@@ -1396,10 +1396,13 @@ pub enum PrimeGroup {
     PRIME_GROUP_NIST_P256 = 100i32,
     PRIME_GROUP_NIST_P384 = 110i32,
     PRIME_GROUP_NIST_P521 = 120i32,
+    PRIME_GROUP_NIST_P192 = 130i32,
     PRIME_GROUP_BRAINPOOL_P256R1 = 200i32,
     PRIME_GROUP_BRAINPOOL_P320R1 = 210i32,
     PRIME_GROUP_BRAINPOOL_P384R1 = 220i32,
     PRIME_GROUP_BRAINPOOL_P512R1 = 230i32,
+    PRIME_GROUP_BRAINPOOL_P192R1 = 240i32,
+    PRIME_GROUP_BRAINPOOL_P224R1 = 250i32,
     PRIME_GROUP_RFC5114_DH1024_160 = 300i32,
     PRIME_GROUP_RFC5114_DH2048_224 = 310i32,
     PRIME_GROUP_RFC5114_DH2048_256 = 320i32,
@@ -1417,6 +1420,9 @@ impl PrimeGroup {
     ///Idiomatic alias for [`Self::PRIME_GROUP_NIST_P521`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const NistP521: Self = Self::PRIME_GROUP_NIST_P521;
+    ///Idiomatic alias for [`Self::PRIME_GROUP_NIST_P192`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const NistP192: Self = Self::PRIME_GROUP_NIST_P192;
     ///Idiomatic alias for [`Self::PRIME_GROUP_BRAINPOOL_P256R1`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const BrainpoolP256r1: Self = Self::PRIME_GROUP_BRAINPOOL_P256R1;
@@ -1429,6 +1435,12 @@ impl PrimeGroup {
     ///Idiomatic alias for [`Self::PRIME_GROUP_BRAINPOOL_P512R1`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const BrainpoolP512r1: Self = Self::PRIME_GROUP_BRAINPOOL_P512R1;
+    ///Idiomatic alias for [`Self::PRIME_GROUP_BRAINPOOL_P192R1`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const BrainpoolP192r1: Self = Self::PRIME_GROUP_BRAINPOOL_P192R1;
+    ///Idiomatic alias for [`Self::PRIME_GROUP_BRAINPOOL_P224R1`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const BrainpoolP224r1: Self = Self::PRIME_GROUP_BRAINPOOL_P224R1;
     ///Idiomatic alias for [`Self::PRIME_GROUP_RFC5114_DH1024_160`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const Rfc5114Dh1024160: Self = Self::PRIME_GROUP_RFC5114_DH1024_160;
@@ -1529,10 +1541,13 @@ impl ::buffa::Enumeration for PrimeGroup {
             100i32 => ::core::option::Option::Some(Self::PRIME_GROUP_NIST_P256),
             110i32 => ::core::option::Option::Some(Self::PRIME_GROUP_NIST_P384),
             120i32 => ::core::option::Option::Some(Self::PRIME_GROUP_NIST_P521),
+            130i32 => ::core::option::Option::Some(Self::PRIME_GROUP_NIST_P192),
             200i32 => ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P256R1),
             210i32 => ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P320R1),
             220i32 => ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P384R1),
             230i32 => ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P512R1),
+            240i32 => ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P192R1),
+            250i32 => ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P224R1),
             300i32 => ::core::option::Option::Some(Self::PRIME_GROUP_RFC5114_DH1024_160),
             310i32 => ::core::option::Option::Some(Self::PRIME_GROUP_RFC5114_DH2048_224),
             320i32 => ::core::option::Option::Some(Self::PRIME_GROUP_RFC5114_DH2048_256),
@@ -1548,10 +1563,13 @@ impl ::buffa::Enumeration for PrimeGroup {
             Self::PRIME_GROUP_NIST_P256 => "PRIME_GROUP_NIST_P256",
             Self::PRIME_GROUP_NIST_P384 => "PRIME_GROUP_NIST_P384",
             Self::PRIME_GROUP_NIST_P521 => "PRIME_GROUP_NIST_P521",
+            Self::PRIME_GROUP_NIST_P192 => "PRIME_GROUP_NIST_P192",
             Self::PRIME_GROUP_BRAINPOOL_P256R1 => "PRIME_GROUP_BRAINPOOL_P256R1",
             Self::PRIME_GROUP_BRAINPOOL_P320R1 => "PRIME_GROUP_BRAINPOOL_P320R1",
             Self::PRIME_GROUP_BRAINPOOL_P384R1 => "PRIME_GROUP_BRAINPOOL_P384R1",
             Self::PRIME_GROUP_BRAINPOOL_P512R1 => "PRIME_GROUP_BRAINPOOL_P512R1",
+            Self::PRIME_GROUP_BRAINPOOL_P192R1 => "PRIME_GROUP_BRAINPOOL_P192R1",
+            Self::PRIME_GROUP_BRAINPOOL_P224R1 => "PRIME_GROUP_BRAINPOOL_P224R1",
             Self::PRIME_GROUP_RFC5114_DH1024_160 => "PRIME_GROUP_RFC5114_DH1024_160",
             Self::PRIME_GROUP_RFC5114_DH2048_224 => "PRIME_GROUP_RFC5114_DH2048_224",
             Self::PRIME_GROUP_RFC5114_DH2048_256 => "PRIME_GROUP_RFC5114_DH2048_256",
@@ -1571,6 +1589,9 @@ impl ::buffa::Enumeration for PrimeGroup {
             "PRIME_GROUP_NIST_P521" => {
                 ::core::option::Option::Some(Self::PRIME_GROUP_NIST_P521)
             }
+            "PRIME_GROUP_NIST_P192" => {
+                ::core::option::Option::Some(Self::PRIME_GROUP_NIST_P192)
+            }
             "PRIME_GROUP_BRAINPOOL_P256R1" => {
                 ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P256R1)
             }
@@ -1582,6 +1603,12 @@ impl ::buffa::Enumeration for PrimeGroup {
             }
             "PRIME_GROUP_BRAINPOOL_P512R1" => {
                 ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P512R1)
+            }
+            "PRIME_GROUP_BRAINPOOL_P192R1" => {
+                ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P192R1)
+            }
+            "PRIME_GROUP_BRAINPOOL_P224R1" => {
+                ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P224R1)
             }
             "PRIME_GROUP_RFC5114_DH1024_160" => {
                 ::core::option::Option::Some(Self::PRIME_GROUP_RFC5114_DH1024_160)
@@ -1601,10 +1628,13 @@ impl ::buffa::Enumeration for PrimeGroup {
             Self::PRIME_GROUP_NIST_P256,
             Self::PRIME_GROUP_NIST_P384,
             Self::PRIME_GROUP_NIST_P521,
+            Self::PRIME_GROUP_NIST_P192,
             Self::PRIME_GROUP_BRAINPOOL_P256R1,
             Self::PRIME_GROUP_BRAINPOOL_P320R1,
             Self::PRIME_GROUP_BRAINPOOL_P384R1,
             Self::PRIME_GROUP_BRAINPOOL_P512R1,
+            Self::PRIME_GROUP_BRAINPOOL_P192R1,
+            Self::PRIME_GROUP_BRAINPOOL_P224R1,
             Self::PRIME_GROUP_RFC5114_DH1024_160,
             Self::PRIME_GROUP_RFC5114_DH2048_224,
             Self::PRIME_GROUP_RFC5114_DH2048_256,

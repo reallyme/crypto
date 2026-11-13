@@ -24,7 +24,9 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 #[cfg(any(feature = "native", feature = "wasm"))]
 use reallyme_crypto::ecdsa_explicit::EcdsaKey;
 use reallyme_crypto::ecdsa_explicit::{format_contract as contract, EcdsaCurve};
-use zeroize::{Zeroize, ZeroizeOnDrop};
+#[cfg(any(feature = "native", feature = "wasm"))]
+use zeroize::Zeroize;
+use zeroize::ZeroizeOnDrop;
 
 #[cfg(any(feature = "native", feature = "wasm"))]
 fn message(bytes: &[u8]) -> CryptoEcdsaInput {

@@ -363,6 +363,9 @@ use super::{domain::Domain, PrimeGroup};
 
 pub(super) fn domain(group: PrimeGroup) -> Domain {
     match group {
+        PrimeGroup::NistP192 => super::legacy_curves::nistp192::DOMAIN,
+        PrimeGroup::BrainpoolP192r1 => super::legacy_curves::bp192::DOMAIN,
+        PrimeGroup::BrainpoolP224r1 => super::legacy_curves::bp224::DOMAIN,
         PrimeGroup::Rfc5114Dh1024_160 => Domain {
             p: RFC5114DH1024_160_P,
             q: RFC5114DH1024_160_Q,

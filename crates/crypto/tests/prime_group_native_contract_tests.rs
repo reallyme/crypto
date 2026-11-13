@@ -68,7 +68,7 @@ fn every_domain_and_scalar_adapter_matches_native_standard_generator() -> Result
         );
         executed += 1;
     }
-    assert_eq!(executed, 10);
+    assert_eq!(executed, 13);
     Ok(())
 }
 
