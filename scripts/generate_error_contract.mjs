@@ -7,6 +7,8 @@ import { spawnSync } from "node:child_process";
 import { constants, closeSync, fstatSync, openSync, readSync, realpathSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { ContractConstantsGenerationError, parseContractConstantsDescriptor,
+  renderContractConstants, validateErrorReasonRanges } from "./generate_contract_constants.mjs";
 
 const PACKAGE = "reallyme.crypto.v1";
 const SCHEMA = "reallyme/crypto/v1/crypto.proto";
@@ -20,6 +22,7 @@ const MAX_REASONS = 1_024;
 const MAX_IDENTIFIER_LENGTH = 160;
 const COMMAND_TIMEOUT_MS = 30_000;
 const OUTPUT = "crates/proto/src/generated/error_contract.rs";
+const CONSTANTS_OUTPUT = "crates/proto/src/generated/contract_constants.rs";
 const BUFFA_OUTPUT = "crates/proto/src/generated/buffa/reallyme.crypto.v1.crypto.rs";
 const REEXPORT = "pub use crate::error_types::CryptoErrorReason;";
 
@@ -58,13 +61,22 @@ const named = (values, name) => {
 const pascal = (value) => value.toLowerCase().split("_").map((word) =>
   word.charAt(0).toUpperCase() + word.slice(1)).join("");
 
-/** Read only the descriptor schema needed by the error contract. */
-export function parseErrorDescriptor(input) {
+/** Decode the bounded descriptor once for all maintenance outputs. */
+export function parseContractDescriptor(input) {
   if (typeof input !== "string" || Buffer.byteLength(input, "utf8") > MAX_DESCRIPTOR_BYTES) {
     fail("descriptor-size");
   }
   let document;
   try { document = JSON.parse(input); } catch { fail("descriptor-json"); }
+  return record(document);
+}
+
+/** Read only the descriptor schema needed by the error contract. */
+export function parseErrorDescriptor(input) {
+  return parseErrorDescriptorDocument(parseContractDescriptor(input));
+}
+
+export function parseErrorDescriptorDocument(document) {
   const files = list(record(document).file, MAX_DESCRIPTORS).map(record);
   const matches = files.filter((file) => file.name === SCHEMA);
   if (matches.length !== 1) fail("descriptor-file");
@@ -337,17 +349,24 @@ function main() {
   if (args.length > 1 || (args.length === 1 && args[0] !== "--check")) fail("arguments");
   const root = fileURLToPath(new URL("../", import.meta.url));
   const descriptor = command("buf", ["build", "--as-file-descriptor-set", "-o", "-#format=json"], { cwd: root });
-  const contract = parseErrorDescriptor(descriptor);
+  const document = parseContractDescriptor(descriptor);
+  const contract = parseErrorDescriptorDocument(document);
+  const constantsContract = parseContractConstantsDescriptor(document);
+  validateErrorReasonRanges(contract, constantsContract);
   const original = readBounded(resolve(root, BUFFA_OUTPUT), MAX_GENERATED_BYTES);
   const rust = command("rustfmt", ["--edition", "2021", "--emit", "stdout"], { cwd: root, input: renderErrorContract(contract) });
+  const constantsRust = command("rustfmt", ["--edition", "2021", "--emit", "stdout"],
+    { cwd: root, input: renderContractConstants(constantsContract) });
   const shared = shareReasonEnum(original, contract);
   if (args[0] === "--check") {
-    if (readBounded(resolve(root, OUTPUT), MAX_GENERATED_BYTES) !== rust || shared !== original) fail("stale-output");
+    if (readBounded(resolve(root, OUTPUT), MAX_GENERATED_BYTES) !== rust || shared !== original ||
+        readBounded(resolve(root, CONSTANTS_OUTPUT), MAX_GENERATED_BYTES) !== constantsRust) fail("stale-output");
     return;
   }
-  // Compute and validate both outputs before making either maintenance edit.
+  // Validate every output before making any maintenance edit.
   if (shared !== original) writeErrorContractOutput(resolve(root, BUFFA_OUTPUT), shared);
   writeErrorContractOutput(resolve(root, OUTPUT), rust);
+  writeErrorContractOutput(resolve(root, CONSTANTS_OUTPUT), constantsRust);
 }
 
 const sourcePath = fileURLToPath(import.meta.url);
@@ -360,7 +379,7 @@ if (!isEntry && entryPath !== undefined) {
 }
 if (isEntry) {
   try { main(); } catch (error) {
-    process.stderr.write(error instanceof ErrorContractGenerationError ?
+    process.stderr.write(error instanceof ErrorContractGenerationError || error instanceof ContractConstantsGenerationError ?
       `error contract generation failed: ${error.code}\n` : "error contract generation failed: internal\n");
     process.exitCode = 1;
   }

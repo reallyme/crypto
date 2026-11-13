@@ -5,7 +5,8 @@
 use crypto_core::CryptoError;
 use ed25519_dalek::{Signature, Signer, SigningKey};
 
-const ED25519_SECRET_KEY_LEN: usize = 32;
+const ED25519_SECRET_KEY_LEN: usize =
+    crypto_core::contract_constants::ed25519::ED25519_SECRET_KEY_LEN;
 
 /// Sign a message using a 32-byte seed.
 pub fn sign_ed25519(privkey: &[u8], message: &[u8]) -> Result<Vec<u8>, CryptoError> {

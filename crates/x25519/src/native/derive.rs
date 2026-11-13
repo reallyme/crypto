@@ -21,15 +21,18 @@ pub fn derive_x25519_shared_secret(
     secret_key: &[u8],
     public_key: &[u8],
 ) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
-    if secret_key.len() != 32 || public_key.len() != 32 {
+    if secret_key.len() != crypto_core::contract_constants::x25519::X25519_PRIVATE_KEY_LEN
+        || public_key.len() != crypto_core::contract_constants::x25519::X25519_PUBLIC_KEY_LEN
+    {
         return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
 
-    let mut sk_bytes: [u8; 32] = secret_key
-        .try_into()
-        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    let mut sk_bytes: [u8; crypto_core::contract_constants::x25519::X25519_PRIVATE_KEY_LEN] =
+        secret_key
+            .try_into()
+            .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
 
-    let pk_bytes: [u8; 32] = public_key
+    let pk_bytes: [u8; crypto_core::contract_constants::x25519::X25519_PUBLIC_KEY_LEN] = public_key
         .try_into()
         .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
 

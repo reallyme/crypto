@@ -4,6 +4,12 @@
 #
 
 version: v2
+# Compile policy metadata for maintenance generation without exposing its
+# descriptor-option model as a runtime SDK API.
+inputs:
+  - directory: .
+    exclude_types:
+      - reallyme.crypto.contract.v1.**
 plugins:
   # Rust Buffa message/view types. This mirrors the platform workspace
   # contract-generation convention and intentionally avoids build.rs codegen.

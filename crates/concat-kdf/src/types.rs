@@ -7,11 +7,14 @@ use sha2::{Digest, Sha256};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 /// SHA-256 digest length in bytes for the JWA Concat KDF profile.
-pub const JWA_CONCAT_KDF_SHA256_DIGEST_LENGTH: usize = 32;
+pub const JWA_CONCAT_KDF_SHA256_DIGEST_LENGTH: usize =
+    crypto_core::contract_constants::concat_kdf::JWA_CONCAT_KDF_SHA256_DIGEST_LENGTH;
 /// Maximum accepted ECDH shared-secret length.
-pub const JWA_CONCAT_KDF_MAX_SHARED_SECRET_LENGTH: usize = 4096;
+pub const JWA_CONCAT_KDF_MAX_SHARED_SECRET_LENGTH: usize =
+    crypto_core::contract_constants::concat_kdf::JWA_CONCAT_KDF_MAX_SHARED_SECRET_LENGTH;
 /// Maximum accepted AlgorithmID, PartyUInfo, or PartyVInfo byte length.
-pub const JWA_CONCAT_KDF_MAX_INFO_LENGTH: usize = 4096;
+pub const JWA_CONCAT_KDF_MAX_INFO_LENGTH: usize =
+    crypto_core::contract_constants::concat_kdf::JWA_CONCAT_KDF_MAX_INFO_LENGTH;
 
 /// ECDH shared secret `Z` input to Concat KDF.
 #[derive(Zeroize, ZeroizeOnDrop)]
@@ -22,7 +25,10 @@ pub struct JwaSharedSecret {
 impl JwaSharedSecret {
     /// Constructs a shared-secret input for JWA Concat KDF.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
-        if input.is_empty() || input.len() > JWA_CONCAT_KDF_MAX_SHARED_SECRET_LENGTH {
+        if !(crypto_core::contract_constants::concat_kdf::JWA_CONCAT_KDF_MIN_SHARED_SECRET_LENGTH
+            ..=JWA_CONCAT_KDF_MAX_SHARED_SECRET_LENGTH)
+            .contains(&input.len())
+        {
             return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_PASSWORD);
         }
 
@@ -45,7 +51,10 @@ pub struct JwaAlgorithmId {
 impl JwaAlgorithmId {
     /// Constructs an AlgorithmID from its ASCII/UTF-8 bytes, such as `A128GCM`.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
-        if input.is_empty() || input.len() > JWA_CONCAT_KDF_MAX_INFO_LENGTH {
+        if !(crypto_core::contract_constants::concat_kdf::JWA_CONCAT_KDF_MIN_ALGORITHM_ID_LENGTH
+            ..=JWA_CONCAT_KDF_MAX_INFO_LENGTH)
+            .contains(&input.len())
+        {
             return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER);
         }
 
@@ -120,7 +129,7 @@ impl<const N: usize> JwaConcatKdfOutput<N> {
 pub fn derive_jwa_concat_kdf_sha256<const N: usize>(
     request: &JwaConcatKdfRequest<'_>,
 ) -> Result<JwaConcatKdfOutput<N>, CryptoError> {
-    if N == 0 {
+    if N < crypto_core::contract_constants::concat_kdf::JWA_CONCAT_KDF_MIN_OUTPUT_LENGTH {
         return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
 

@@ -5,9 +5,9 @@
 use super::{CryptoError, EcdsaCurve, EcdsaEncoding};
 
 // Two sign octets, two INTEGER headers and the widest SEQUENCE length header.
-const MAX_DER_OVERHEAD: usize = 9;
-const DER_PAIR_DEPTH: usize = 1;
-const DER_PAIR_ELEMENTS: usize = 3;
+const MAX_DER_OVERHEAD: usize = crypto_core::contract_constants::ecdsa_explicit::MAX_DER_OVERHEAD;
+const DER_PAIR_DEPTH: usize = crypto_core::contract_constants::ecdsa_explicit::DER_PAIR_DEPTH;
+const DER_PAIR_ELEMENTS: usize = crypto_core::contract_constants::ecdsa_explicit::DER_PAIR_ELEMENTS;
 
 /// Convert strict DER to fixed-width `r || s`, validating nonzero scalar ranges.
 /// This changes only representation and retains high-S values.

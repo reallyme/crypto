@@ -7,7 +7,8 @@
 use crypto_core::{Algorithm, CryptoError};
 use zeroize::Zeroizing;
 
-const SLH_DSA_KEYGEN_SEED_PART_COUNT: usize = 3;
+const SLH_DSA_KEYGEN_SEED_PART_COUNT: usize =
+    crypto_core::contract_constants::slh_dsa::SLH_DSA_KEYGEN_SEED_PART_COUNT;
 
 pub use crypto_slh_dsa::{
     SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN, SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN,

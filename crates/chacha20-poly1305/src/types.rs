@@ -6,13 +6,17 @@ use crypto_core::CryptoError;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Length in bytes of a ChaCha20-Poly1305 key (32 bytes / 256 bits).
-pub const CHACHA20_POLY1305_KEY_LENGTH: usize = 32;
+pub const CHACHA20_POLY1305_KEY_LENGTH: usize =
+    crypto_core::contract_constants::chacha20_poly1305::CHACHA20_POLY1305_KEY_LENGTH;
 /// Length in bytes of an RFC 8439 ChaCha20-Poly1305 nonce (96 bits).
-pub const CHACHA20_POLY1305_NONCE_LENGTH: usize = 12;
+pub const CHACHA20_POLY1305_NONCE_LENGTH: usize =
+    crypto_core::contract_constants::chacha20_poly1305::CHACHA20_POLY1305_NONCE_LENGTH;
 /// Length in bytes of an XChaCha20-Poly1305 nonce (192 bits).
-pub const XCHACHA20_POLY1305_NONCE_LENGTH: usize = 24;
+pub const XCHACHA20_POLY1305_NONCE_LENGTH: usize =
+    crypto_core::contract_constants::chacha20_poly1305::XCHACHA20_POLY1305_NONCE_LENGTH;
 /// Length in bytes of a Poly1305 authentication tag (128 bits).
-pub const CHACHA20_POLY1305_TAG_LENGTH: usize = 16;
+pub const CHACHA20_POLY1305_TAG_LENGTH: usize =
+    crypto_core::contract_constants::chacha20_poly1305::CHACHA20_POLY1305_TAG_LENGTH;
 
 /// ChaCha20-Poly1305 key material.
 ///

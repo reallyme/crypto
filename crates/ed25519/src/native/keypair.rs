@@ -7,7 +7,7 @@ use crypto_csprng::{generate_bytes, OsSecureRandom, SecureRandom};
 use ed25519_dalek::SigningKey;
 use zeroize::Zeroizing;
 
-const ED25519_SEED_LENGTH: usize = 32;
+const ED25519_SEED_LENGTH: usize = crypto_core::contract_constants::ed25519::ED25519_SEED_LENGTH;
 
 /// Generate a standard Ed25519 keypair.
 ///

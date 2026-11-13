@@ -6,7 +6,8 @@ use crypto_core::CryptoError;
 use ml_kem::ml_kem_512::EncapsulationKey;
 
 /// Length in bytes of an ML-KEM-512 encapsulation (public) key.
-pub const ML_KEM_512_PUBLIC_KEY_LEN: usize = 800;
+pub const ML_KEM_512_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::ml_kem_512::ML_KEM_512_PUBLIC_KEY_LEN;
 
 /// Validate that `pubkey` is a well-formed ML-KEM-512 encapsulation key,
 /// returning it unchanged or [`CryptoError::PRIMITIVE_INVALID_KEY`] otherwise.

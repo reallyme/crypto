@@ -3,12 +3,17 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 /// Length in bytes of a secp256k1 secret scalar.
-pub const SECP256K1_SECRET_KEY_LEN: usize = 32;
+pub const SECP256K1_SECRET_KEY_LEN: usize =
+    crypto_core::contract_constants::secp256k1::SECP256K1_SECRET_KEY_LEN;
 /// Length in bytes of a BIP-340 x-only secp256k1 public key.
-pub const BIP340_SCHNORR_PUBLIC_KEY_LEN: usize = 32;
+pub const BIP340_SCHNORR_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::secp256k1::BIP340_SCHNORR_PUBLIC_KEY_LEN;
 /// Length in bytes of a BIP-340 message digest.
-pub const BIP340_SCHNORR_MESSAGE_LEN: usize = 32;
+pub const BIP340_SCHNORR_MESSAGE_LEN: usize =
+    crypto_core::contract_constants::secp256k1::BIP340_SCHNORR_MESSAGE_LEN;
 /// Length in bytes of BIP-340 auxiliary signing randomness.
-pub const BIP340_SCHNORR_AUX_RAND_LEN: usize = 32;
+pub const BIP340_SCHNORR_AUX_RAND_LEN: usize =
+    crypto_core::contract_constants::secp256k1::BIP340_SCHNORR_AUX_RAND_LEN;
 /// Length in bytes of a BIP-340 Schnorr signature.
-pub const BIP340_SCHNORR_SIGNATURE_LEN: usize = 64;
+pub const BIP340_SCHNORR_SIGNATURE_LEN: usize =
+    crypto_core::contract_constants::secp256k1::BIP340_SCHNORR_SIGNATURE_LEN;

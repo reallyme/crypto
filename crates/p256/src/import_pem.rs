@@ -9,10 +9,11 @@ use p256::pkcs8::{DecodePrivateKey, DecodePublicKey};
 use p256::{PublicKey, SecretKey};
 use zeroize::{Zeroize, Zeroizing};
 
-const P256_SECRET_KEY_LEN: usize = 32;
-const P256_PUBLIC_KEY_COMPRESSED_LEN: usize = 33;
-const P256_MAX_KEY_DER_LEN: usize = 4096;
-const P256_MAX_KEY_PEM_LEN: usize = 8192;
+const P256_SECRET_KEY_LEN: usize = crypto_core::contract_constants::p256::P256_SECRET_KEY_LEN;
+const P256_PUBLIC_KEY_COMPRESSED_LEN: usize =
+    crypto_core::contract_constants::p256::P256_PUBLIC_KEY_COMPRESSED_LEN;
+const P256_MAX_KEY_DER_LEN: usize = crypto_core::contract_constants::p256::P256_MAX_KEY_DER_LEN;
+const P256_MAX_KEY_PEM_LEN: usize = crypto_core::contract_constants::p256::P256_MAX_KEY_PEM_LEN;
 
 /// Import a P-256 private scalar from PKCS#8 DER.
 pub fn private_key_from_pkcs8_der(der: &[u8]) -> Result<Zeroizing<[u8; 32]>, CryptoError> {
@@ -99,7 +100,9 @@ fn validate_der_input(der: &[u8]) -> Result<(), CryptoError> {
     // Direct DER entrypoints must enforce the same resource boundary as PEM
     // imports. Otherwise callers can bypass the PEM decoder's size policy and
     // hand an unbounded attacker-controlled document to the ASN.1 parser.
-    if der.is_empty() || der.len() > P256_MAX_KEY_DER_LEN {
+    if !(crypto_core::contract_constants::p256::P256_MIN_KEY_DER_LEN..=P256_MAX_KEY_DER_LEN)
+        .contains(&der.len())
+    {
         return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
     Ok(())

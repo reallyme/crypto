@@ -4,6 +4,11 @@
 
 //! ReallyMe crypto protobuf identifiers with generated Buffa bindings.
 
+/// Immutable schema-owned constants without message codecs or error dependencies.
+#[cfg(feature = "contract-types")]
+#[path = "generated/contract_constants.rs"]
+pub mod contract_constants;
+
 /// Schema-generated reasons and validated native errors without message codecs.
 #[cfg(feature = "error-types")]
 #[path = "generated/error_contract.rs"]

@@ -28,6 +28,7 @@ native = []
 wasm = ["dep:getrandom"]
 
 [dependencies]
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../proto", default-features = false, features = ["contract-types"] }
 getrandom = { version = "0.4", features = ["wasm_js"], optional = true }
 sha3 = { workspace = true }
 zeroize = { workspace = true, features = ["derive"] }

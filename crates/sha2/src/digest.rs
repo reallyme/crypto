@@ -5,9 +5,11 @@
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Length in bytes of a SHA-384 digest.
-pub const SHA2_384_DIGEST_LENGTH: usize = 48;
+pub const SHA2_384_DIGEST_LENGTH: usize =
+    crypto_proto::contract_constants::sha2::SHA2_384_DIGEST_LENGTH;
 /// Length in bytes of a SHA-512 digest.
-pub const SHA2_512_DIGEST_LENGTH: usize = 64;
+pub const SHA2_512_DIGEST_LENGTH: usize =
+    crypto_proto::contract_constants::sha2::SHA2_512_DIGEST_LENGTH;
 
 /// SHA-384 digest bytes.
 #[derive(Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]

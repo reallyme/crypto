@@ -63,14 +63,14 @@ impl Argon2Caps {
     pub const fn for_platform(platform: Argon2PlatformClass) -> Self {
         match platform {
             Argon2PlatformClass::MobileModern => Self {
-                mem_cap_kib: 524_288,
-                time_cost_cap: 4,
-                lanes_cap: 4,
+                mem_cap_kib: crypto_core::contract_constants::argon2id::ARGON2ID_MOBILE_MODERN_MEMORY_CAP_KIB,
+                time_cost_cap: crypto_core::contract_constants::argon2id::ARGON2ID_MOBILE_MODERN_TIME_COST_CAP,
+                lanes_cap: crypto_core::contract_constants::argon2id::ARGON2ID_MOBILE_MODERN_LANES_CAP,
             },
             Argon2PlatformClass::DesktopModern => Self {
-                mem_cap_kib: 2_097_152,
-                time_cost_cap: 6,
-                lanes_cap: 4,
+                mem_cap_kib: crypto_core::contract_constants::argon2id::ARGON2ID_DESKTOP_MODERN_MEMORY_CAP_KIB,
+                time_cost_cap: crypto_core::contract_constants::argon2id::ARGON2ID_DESKTOP_MODERN_TIME_COST_CAP,
+                lanes_cap: crypto_core::contract_constants::argon2id::ARGON2ID_DESKTOP_MODERN_LANES_CAP,
             },
         }
     }

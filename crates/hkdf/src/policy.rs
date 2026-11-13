@@ -59,7 +59,10 @@ impl DomainTag {
     /// Build a domain tag, requiring 1..=48 bytes drawn only from lowercase
     /// ASCII letters, digits, and `/`, `_`, or `-`; otherwise returns an error.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
-        if input.is_empty() || input.len() > 48 {
+        if !(crypto_core::contract_constants::hkdf::HKDF_DOMAIN_TAG_MIN_LENGTH
+            ..=crypto_core::contract_constants::hkdf::HKDF_DOMAIN_TAG_MAX_LENGTH)
+            .contains(&input.len())
+        {
             return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
         }
 

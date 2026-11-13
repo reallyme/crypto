@@ -18,7 +18,8 @@ use crate::secret_material::{bind_operation_policy, SecretMaterialOperation};
 ///
 /// Each boundary applies this 256-bit floor so trivially enumerable caller
 /// input fails closed before invoking a KEM's derivation procedure.
-pub const HPKE_OPERATION_MIN_INPUT_KEY_MATERIAL_LEN: usize = 32;
+pub const HPKE_OPERATION_MIN_INPUT_KEY_MATERIAL_LEN: usize =
+    crypto_core::contract_constants::operation_hpke::HPKE_OPERATION_MIN_INPUT_KEY_MATERIAL_LEN;
 
 /// Generates a recipient keypair for the selected HPKE KEM.
 pub fn keygen(suite: HpkeSuite) -> Result<HpkeKeyPair, OperationError> {

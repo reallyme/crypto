@@ -90,7 +90,8 @@ coalesced into an unrelated key or length error.
 Algorithm conversions now live with their native owners: core conversions use
 `crypto-core/protobuf` and HPKE conversions use `crypto-hpke/proto`. The protobuf
 package has no dependency on those implementations. Default core builds depend
-only on the minimal schema error types and `thiserror`, without Buffa or JSON.
+only on minimal schema constants, error types and `thiserror`, without Buffa
+or JSON.
 All Rust release packages and local pins target unpublished version 0.4.0.
 Existing registry packages, SDK artifact pins and release tags remain intact.
 
@@ -169,6 +170,36 @@ test sources select the existing protobuf workflow. Ordinary `--ci-policy`
 validation checks the shared-owner source invariants without invoking Buf,
 generating code, or launching repository tests; the existing tooling jobs own
 those tests. Full local and release modes retain their complete test routing.
+
+## Primitive dimensions and resource limits
+
+Immutable descriptor metadata now owns 197 exact scalar or byte constants
+across 39 native modules. It includes primitive key/output dimensions, PBKDF2
+work factors, fixed Argon2 cost tuples and platform caps, RSA admission bounds,
+KMAC limits, HKDF domain sizes, signature import limits, group-generation and
+field-reduction bounds, the secure-handle prefix and wire decoder limits.
+Native constants retain their public names and types and alias generated values;
+existing root and FFI aliases therefore resolve to the same authority. Admission
+predicates use the same generated bounds without changing accepted inputs.
+
+The `contract-types` feature has no codec, JSON, error or cryptographic
+implementation dependencies. Pure hash leaves select only this feature. Core
+reexports the same module alongside its minimal error types; the full Buffa
+feature remains optional. Metadata describes compiled policy and cannot be used
+as a request to override costs, resource limits or cryptographic dimensions.
+
+The existing maintenance generator reads the Buf descriptor once, validates
+constant types, units, ranges, identifier safety, portability and reason-family
+ownership, then renders the minimal Rust module. Both generation outputs are
+validated before any write. SDK generation excludes the descriptor-option
+package while retaining the complete descriptor for maintenance. No Cargo build
+script or additional CI job is introduced. Compatibility-value and malformed
+metadata regression sources are included; execution remains deferred.
+
+Workspace all-targets/features Clippy with warnings denied, formatting, Buf
+lint/breaking against the supported baseline, generated ownership idempotence,
+maintenance freshness and CI policy checks pass for this checkpoint. No tests
+were executed.
 
 ## Remaining work
 

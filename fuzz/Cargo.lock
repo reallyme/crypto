@@ -1775,6 +1775,7 @@ dependencies = [
 name = "reallyme-crypto-sha2"
 version = "0.4.0"
 dependencies = [
+ "reallyme-crypto-proto",
  "sha2",
  "zeroize",
 ]
@@ -1783,6 +1784,7 @@ dependencies = [
 name = "reallyme-crypto-sha2-256"
 version = "0.4.0"
 dependencies = [
+ "reallyme-crypto-proto",
  "sha2",
  "zeroize",
 ]
@@ -1791,6 +1793,7 @@ dependencies = [
 name = "reallyme-crypto-sha3"
 version = "0.4.0"
 dependencies = [
+ "reallyme-crypto-proto",
  "sha3 0.12.0",
  "shake",
  "zeroize",
@@ -1800,6 +1803,7 @@ dependencies = [
 name = "reallyme-crypto-sha3-256"
 version = "0.4.0"
 dependencies = [
+ "reallyme-crypto-proto",
  "sha3 0.12.0",
  "zeroize",
 ]

@@ -13,7 +13,8 @@ use crate::secret_material::{bind_operation_policy, SecretMaterialOperation};
 #[cfg(all(feature = "slh-dsa", any(feature = "native", feature = "wasm")))]
 const SLH_DSA_SEED_COMPONENT_LEN: usize = crypto_slh_dsa::SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN;
 #[cfg(all(feature = "slh-dsa", any(feature = "native", feature = "wasm")))]
-const SLH_DSA_DERIVE_INPUT_LEN: usize = SLH_DSA_SEED_COMPONENT_LEN * 3;
+const SLH_DSA_DERIVE_INPUT_LEN: usize =
+    crypto_core::contract_constants::operation_signature::SLH_DSA_DERIVE_INPUT_LEN;
 
 /// Raw public/secret keypair returned by a signature key-management operation.
 pub struct SignatureKeyPair {

@@ -10,9 +10,11 @@ use sha1::{Digest, Sha1};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Length of the method-(1) subject key identifier.
-pub const SUBJECT_KEY_IDENTIFIER_LEN: usize = 20;
+pub const SUBJECT_KEY_IDENTIFIER_LEN: usize =
+    crypto_core::contract_constants::key_identifier::SUBJECT_KEY_IDENTIFIER_LEN;
 /// Local upper bound for subjectPublicKey BIT STRING value bytes.
-pub const SUBJECT_PUBLIC_KEY_MAX_LEN: usize = 16_384;
+pub const SUBJECT_PUBLIC_KEY_MAX_LEN: usize =
+    crypto_core::contract_constants::key_identifier::SUBJECT_PUBLIC_KEY_MAX_LEN;
 
 /// Clearing key-identifier owner; its output is an identifier, not a signature.
 #[derive(Zeroize, ZeroizeOnDrop)]
@@ -38,7 +40,9 @@ pub use crypto_core::CryptoError as KeyIdentifierError;
 pub fn subject_key_identifier_sha1(
     subject_public_key_bits: &[u8],
 ) -> Result<SubjectKeyIdentifier, CryptoError> {
-    if subject_public_key_bits.is_empty() {
+    if subject_public_key_bits.len()
+        < crypto_core::contract_constants::key_identifier::SUBJECT_PUBLIC_KEY_MIN_LEN
+    {
         return Err(CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
     if subject_public_key_bits.len() > SUBJECT_PUBLIC_KEY_MAX_LEN {

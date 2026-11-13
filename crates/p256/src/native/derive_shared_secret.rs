@@ -6,8 +6,8 @@ use crypto_core::CryptoError;
 use p256::{PublicKey, SecretKey};
 use zeroize::Zeroizing;
 
-const P256_SECRET_KEY_LEN: usize = 32;
-const P256_SHARED_SECRET_LEN: usize = 32;
+const P256_SECRET_KEY_LEN: usize = crypto_core::contract_constants::p256::P256_SECRET_KEY_LEN;
+const P256_SHARED_SECRET_LEN: usize = crypto_core::contract_constants::p256::P256_SHARED_SECRET_LEN;
 
 /// Derive the raw P-256 ECDH shared secret.
 ///

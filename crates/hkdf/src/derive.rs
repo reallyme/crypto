@@ -34,7 +34,7 @@ pub fn derive<const N: usize>(request: &DeriveRequest<'_>) -> Result<HkdfOutput<
         return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_KEY);
     }
 
-    if N == 0 {
+    if N < crypto_core::contract_constants::hkdf::HKDF_MIN_OUTPUT_LENGTH {
         return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
 
@@ -91,7 +91,10 @@ pub fn derive_domain_key_32(
     salt: Option<&HkdfSalt>,
     purpose: DomainKeyPurpose,
     domain_tag: &DomainTag,
-) -> Result<HkdfOutput<32>, CryptoError> {
+) -> Result<
+    HkdfOutput<{ crypto_core::contract_constants::hkdf::HKDF_DOMAIN_KEY_LENGTH }>,
+    CryptoError,
+> {
     const PREFIX: &[u8] = b"reallyme/crypto/hkdf/v1/";
     const SEPARATOR: &[u8] = b"/";
 
@@ -109,7 +112,7 @@ pub fn derive_domain_key_32(
     info.extend_from_slice(domain_tag.as_bytes());
 
     let hkdf_info = HkdfInfo::from_vec(info);
-    derive::<32>(&DeriveRequest {
+    derive::<{ crypto_core::contract_constants::hkdf::HKDF_DOMAIN_KEY_LENGTH }>(&DeriveRequest {
         suite: HkdfSuite::Sha3_256,
         ikm,
         salt,

@@ -17,6 +17,8 @@ pub mod error;
 pub mod random;
 
 pub use algorithm::{AeadAlgorithm, Algorithm, HashAlgorithm, KeyWrapAlgorithm, MacAlgorithm};
+/// Immutable primitive parameters and limits generated from the schema.
+pub use crypto_proto::contract_constants;
 pub use error::{CryptoError, CryptoErrorBranch, CryptoErrorReason};
 pub use random::RngOutputKind;
 

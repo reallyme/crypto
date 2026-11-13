@@ -7,8 +7,10 @@ use k256::ecdh::diffie_hellman;
 use k256::{PublicKey, SecretKey};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
-const SECP256K1_UNCOMPRESSED_PUBLIC_KEY_LEN: usize = 65;
-const SECP256K1_SHARED_SECRET_LEN: usize = 32;
+const SECP256K1_UNCOMPRESSED_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::secp256k1::SECP256K1_UNCOMPRESSED_PUBLIC_KEY_LEN;
+const SECP256K1_SHARED_SECRET_LEN: usize =
+    crypto_core::contract_constants::secp256k1::SECP256K1_SHARED_SECRET_LEN;
 const SEC1_UNCOMPRESSED_POINT_TAG: u8 = 0x04;
 
 /// A raw secp256k1 ECDH x-coordinate with zeroize-on-drop ownership.

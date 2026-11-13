@@ -1,0 +1,1001 @@
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+syntax = "proto2";
+
+package reallyme.crypto.contract.v1;
+
+import "reallyme/crypto/contract/v1/constants.proto";
+
+// Immutable dimensions and admission limits for the existing primitive APIs.
+// These compile-time records do not enable providers or permit runtime policy
+// overrides. Algorithm execution remains owned by the primitive operation APIs.
+option (reallyme.crypto.contract.v1.constant_registry) = {
+  modules: {
+    native_module: "aes256_gcm"
+    constants: {
+      native_name: "AES_128_GCM_KEY_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 16
+    }
+    constants: {
+      native_name: "AES_192_GCM_KEY_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 24
+    }
+    constants: {
+      native_name: "AES_256_GCM_KEY_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "AES_256_GCM_NONCE_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 12
+    }
+    constants: {
+      native_name: "AES_256_GCM_TAG_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 16
+    }
+  }
+  modules: {
+    native_module: "aes256_gcm_siv"
+    constants: {
+      native_name: "AES_256_GCM_SIV_KEY_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "AES_256_GCM_SIV_NONCE_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 12
+    }
+    constants: {
+      native_name: "AES_256_GCM_SIV_TAG_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 16
+    }
+  }
+  modules: {
+    native_module: "aes_kw"
+    constants: {
+      native_name: "AES_128_KW_KEK_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 16
+    }
+    constants: {
+      native_name: "AES_192_KW_KEK_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 24
+    }
+    constants: {
+      native_name: "AES_256_KW_KEK_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "AES_KW_BLOCK_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 8
+    }
+    constants: {
+      native_name: "AES_KW_INTEGRITY_CHECK_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 8
+    }
+    constants: {
+      native_name: "AES_KW_MAX_KEY_DATA_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 4096
+    }
+    constants: {
+      native_name: "AES_KW_MAX_WRAPPED_KEY_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 4104
+    }
+    constants: {
+      native_name: "AES_KW_MIN_KEY_DATA_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 16
+    }
+    constants: {
+      native_name: "AES_KW_MIN_WRAPPED_KEY_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 24
+    }
+    ranges: {
+      minimum_name: "AES_KW_MIN_KEY_DATA_LENGTH"
+      maximum_name: "AES_KW_MAX_KEY_DATA_LENGTH"
+    }
+    ranges: {
+      minimum_name: "AES_KW_MIN_WRAPPED_KEY_LENGTH"
+      maximum_name: "AES_KW_MAX_WRAPPED_KEY_LENGTH"
+    }
+  }
+  modules: {
+    native_module: "chacha20_poly1305"
+    constants: {
+      native_name: "CHACHA20_POLY1305_KEY_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "CHACHA20_POLY1305_NONCE_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 12
+    }
+    constants: {
+      native_name: "CHACHA20_POLY1305_TAG_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 16
+    }
+    constants: {
+      native_name: "XCHACHA20_POLY1305_NONCE_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 24
+    }
+  }
+  modules: {
+    native_module: "concat_kdf"
+    constants: {
+      native_name: "JWA_CONCAT_KDF_MAX_INFO_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 4096
+    }
+    constants: {
+      native_name: "JWA_CONCAT_KDF_MAX_SHARED_SECRET_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 4096
+    }
+    constants: {
+      native_name: "JWA_CONCAT_KDF_MIN_ALGORITHM_ID_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "JWA_CONCAT_KDF_MIN_OUTPUT_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "JWA_CONCAT_KDF_MIN_SHARED_SECRET_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "JWA_CONCAT_KDF_SHA256_DIGEST_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    ranges: {
+      minimum_name: "JWA_CONCAT_KDF_MIN_SHARED_SECRET_LENGTH"
+      maximum_name: "JWA_CONCAT_KDF_MAX_SHARED_SECRET_LENGTH"
+    }
+  }
+  modules: {
+    native_module: "csprng"
+    constants: {
+      native_name: "AEAD_NONCE_12_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 12
+    }
+    constants: {
+      native_name: "AES_256_GCM_KEY_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "ARGON2_SALT_16_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 16
+    }
+    constants: {
+      native_name: "ARGON2_SALT_32_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "ML_DSA_87_SEED_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "ML_KEM_1024_SEED_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 64
+    }
+    constants: {
+      native_name: "RANDOM_BYTES_MIN_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1
+    }
+  }
+  modules: {
+    native_module: "ecdsa_explicit"
+    constants: {
+      native_name: "BRAINPOOL_P256_SCALAR_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "BRAINPOOL_P320_SCALAR_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 40
+    }
+    constants: {
+      native_name: "BRAINPOOL_P384_SCALAR_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 48
+    }
+    constants: {
+      native_name: "BRAINPOOL_P512_SCALAR_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 64
+    }
+    constants: {
+      native_name: "DER_PAIR_DEPTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_LEVELS
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "DER_PAIR_ELEMENTS"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_COUNT
+      unsigned_value: 3
+    }
+    constants: {
+      native_name: "GENERATION_ATTEMPTS"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_COUNT
+      unsigned_value: 128
+    }
+    constants: {
+      native_name: "MAX_DER_OVERHEAD"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 9
+    }
+  }
+  modules: {
+    native_module: "ed25519"
+    constants: {
+      native_name: "ED25519_POINT_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "ED25519_SECRET_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "ED25519_SEED_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "ED25519_SIGNATURE_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 64
+    }
+    constants: {
+      native_name: "PUBLIC_KEY_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+  }
+  modules: {
+    native_module: "ed448"
+    constants: {
+      native_name: "PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 57
+    }
+    constants: {
+      native_name: "SEED_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 57
+    }
+    constants: {
+      native_name: "SIGNATURE_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 114
+    }
+  }
+  modules: {
+    native_module: "hkdf"
+    constants: {
+      native_name: "HKDF_DOMAIN_KEY_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "HKDF_DOMAIN_TAG_MAX_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 48
+    }
+    constants: {
+      native_name: "HKDF_DOMAIN_TAG_MIN_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "HKDF_MIN_OUTPUT_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "HKDF_SHA384_MAX_OUTPUT_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 12240
+    }
+    constants: {
+      native_name: "HKDF_SHA384_PRK_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 48
+    }
+    ranges: {
+      minimum_name: "HKDF_DOMAIN_TAG_MIN_LENGTH"
+      maximum_name: "HKDF_DOMAIN_TAG_MAX_LENGTH"
+    }
+    ranges: {
+      minimum_name: "HKDF_MIN_OUTPUT_LENGTH"
+      maximum_name: "HKDF_SHA384_MAX_OUTPUT_LENGTH"
+    }
+  }
+  modules: {
+    native_module: "hmac"
+    constants: {
+      native_name: "HMAC_MAX_KEY_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 4096
+    }
+    constants: {
+      native_name: "HMAC_MIN_KEY_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "HMAC_SHA256_TAG_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "HMAC_SHA384_TAG_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 48
+    }
+    constants: {
+      native_name: "HMAC_SHA512_TAG_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 64
+    }
+    ranges: {
+      minimum_name: "HMAC_MIN_KEY_LENGTH"
+      maximum_name: "HMAC_MAX_KEY_LENGTH"
+    }
+  }
+  modules: {
+    native_module: "key_identifier"
+    constants: {
+      native_name: "SUBJECT_KEY_IDENTIFIER_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 20
+    }
+    constants: {
+      native_name: "SUBJECT_PUBLIC_KEY_MAX_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 16384
+    }
+    constants: {
+      native_name: "SUBJECT_PUBLIC_KEY_MIN_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1
+    }
+    ranges: {
+      minimum_name: "SUBJECT_PUBLIC_KEY_MIN_LEN"
+      maximum_name: "SUBJECT_PUBLIC_KEY_MAX_LEN"
+    }
+  }
+  modules: {
+    native_module: "ml_dsa_44"
+    constants: {
+      native_name: "ML_DSA_44_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1312
+    }
+    constants: {
+      native_name: "ML_DSA_44_SECRET_SEED_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "ML_DSA_44_SIGNATURE_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 2420
+    }
+  }
+  modules: {
+    native_module: "ml_dsa_65"
+    constants: {
+      native_name: "ML_DSA_65_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1952
+    }
+    constants: {
+      native_name: "ML_DSA_65_SECRET_SEED_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "ML_DSA_65_SIGNATURE_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 3309
+    }
+  }
+  modules: {
+    native_module: "ml_dsa_87"
+    constants: {
+      native_name: "ML_DSA_87_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 2592
+    }
+    constants: {
+      native_name: "ML_DSA_87_SECRET_SEED_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "ML_DSA_87_SIGNATURE_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 4627
+    }
+  }
+  modules: {
+    native_module: "ml_kem_1024"
+    constants: {
+      native_name: "ML_KEM_1024_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1568
+    }
+    constants: {
+      native_name: "ML_KEM_1024_SECRET_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 64
+    }
+  }
+  modules: {
+    native_module: "ml_kem_512"
+    constants: {
+      native_name: "ML_KEM_512_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 800
+    }
+    constants: {
+      native_name: "ML_KEM_512_SECRET_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 64
+    }
+  }
+  modules: {
+    native_module: "ml_kem_768"
+    constants: {
+      native_name: "ML_KEM_768_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1184
+    }
+    constants: {
+      native_name: "ML_KEM_768_SECRET_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 64
+    }
+  }
+  modules: {
+    native_module: "operation_hpke"
+    constants: {
+      native_name: "HPKE_OPERATION_MIN_INPUT_KEY_MATERIAL_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+  }
+  modules: {
+    native_module: "operation_signature"
+    constants: {
+      native_name: "SLH_DSA_DERIVE_INPUT_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 48
+    }
+  }
+  modules: {
+    native_module: "p256"
+    constants: {
+      native_name: "SE_HANDLE_PREFIX"
+      native_type: NATIVE_TYPE_BYTES
+      unit: UNIT_BYTES
+      bytes_value: "U0U6"
+    }
+    constants: {
+      native_name: "DER_PAIR_DEPTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_LEVELS
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "DER_PAIR_ELEMENTS"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_COUNT
+      unsigned_value: 3
+    }
+    constants: {
+      native_name: "P256_ECDSA_JOSE_SIGNATURE_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 64
+    }
+    constants: {
+      native_name: "P256_MAX_KEY_DER_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 4096
+    }
+    constants: {
+      native_name: "P256_MAX_KEY_PEM_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 8192
+    }
+    constants: {
+      native_name: "P256_MIN_KEY_DER_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "P256_PUBLIC_KEY_COMPRESSED_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 33
+    }
+    constants: {
+      native_name: "P256_PUBLIC_KEY_UNCOMPRESSED_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 65
+    }
+    constants: {
+      native_name: "P256_SECRET_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "P256_SHA256_DIGEST_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "P256_SHARED_SECRET_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "P256_SIGNATURE_DER_MAX_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 72
+    }
+    ranges: {
+      minimum_name: "P256_MIN_KEY_DER_LEN"
+      maximum_name: "P256_MAX_KEY_DER_LEN"
+    }
+  }
+  modules: {
+    native_module: "p384"
+    constants: {
+      native_name: "P384_PUBLIC_KEY_COMPRESSED_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 49
+    }
+    constants: {
+      native_name: "P384_PUBLIC_KEY_RAW_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 96
+    }
+    constants: {
+      native_name: "P384_PUBLIC_KEY_UNCOMPRESSED_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 97
+    }
+    constants: {
+      native_name: "P384_SECRET_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 48
+    }
+    constants: {
+      native_name: "P384_SHARED_SECRET_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 48
+    }
+    constants: {
+      native_name: "P384_SIGNATURE_DER_MAX_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 104
+    }
+  }
+  modules: {
+    native_module: "p521"
+    constants: {
+      native_name: "P521_PUBLIC_KEY_COMPRESSED_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 67
+    }
+    constants: {
+      native_name: "P521_PUBLIC_KEY_RAW_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 132
+    }
+    constants: {
+      native_name: "P521_PUBLIC_KEY_UNCOMPRESSED_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 133
+    }
+    constants: {
+      native_name: "P521_SECRET_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 66
+    }
+    constants: {
+      native_name: "P521_SHARED_SECRET_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 66
+    }
+    constants: {
+      native_name: "P521_SIGNATURE_DER_MAX_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 144
+    }
+  }
+  modules: {
+    native_module: "poseidon2"
+    constants: {
+      native_name: "DIGEST_BYTES"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "MAX_INPUT_BYTES"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 515
+    }
+  }
+  modules: {
+    native_module: "prime_groups"
+    constants: {
+      native_name: "MAX_REDUCTION_BYTES"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 512
+    }
+    constants: {
+      native_name: "MAX_RANDOM_ATTEMPTS"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_COUNT
+      unsigned_value: 128
+    }
+  }
+  modules: {
+    native_module: "secp256k1"
+    constants: {
+      native_name: "BIP340_SCHNORR_AUX_RAND_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "BIP340_SCHNORR_MESSAGE_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "BIP340_SCHNORR_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "BIP340_SCHNORR_SIGNATURE_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 64
+    }
+    constants: {
+      native_name: "DER_MAX_LEN_OCTETS"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 2
+    }
+    constants: {
+      native_name: "SECP256K1_ECDSA_JOSE_SIGNATURE_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 64
+    }
+    constants: {
+      native_name: "SECP256K1_SECRET_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "SECP256K1_SHARED_SECRET_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "SECP256K1_UNCOMPRESSED_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 65
+    }
+  }
+  modules: {
+    native_module: "sha2"
+    constants: {
+      native_name: "SHA2_384_DIGEST_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 48
+    }
+    constants: {
+      native_name: "SHA2_512_DIGEST_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 64
+    }
+  }
+  modules: {
+    native_module: "sha2_256"
+    constants: {
+      native_name: "SHA2_256_DIGEST_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+  }
+  modules: {
+    native_module: "sha3"
+    constants: {
+      native_name: "SHA3_224_DIGEST_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 28
+    }
+    constants: {
+      native_name: "SHA3_384_DIGEST_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 48
+    }
+    constants: {
+      native_name: "SHA3_512_DIGEST_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 64
+    }
+  }
+  modules: {
+    native_module: "sha3_256"
+    constants: {
+      native_name: "SHA3_256_DIGEST_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+  }
+  modules: {
+    native_module: "slh_dsa"
+    constants: {
+      native_name: "SLH_DSA_KEYGEN_SEED_PART_COUNT"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_COUNT
+      unsigned_value: 3
+    }
+    constants: {
+      native_name: "SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 16
+    }
+    constants: {
+      native_name: "SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "SLH_DSA_SHA2_128S_SECRET_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 64
+    }
+    constants: {
+      native_name: "SLH_DSA_SHA2_128S_SIGNATURE_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 7856
+    }
+  }
+  modules: {
+    native_module: "x25519"
+    constants: {
+      native_name: "X25519_PRIVATE_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "X25519_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "X25519_SHARED_SECRET_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+  }
+  modules: {
+    native_module: "x448"
+    constants: {
+      native_name: "X448_PRIVATE_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 56
+    }
+    constants: {
+      native_name: "X448_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 56
+    }
+    constants: {
+      native_name: "X448_SHARED_SECRET_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 56
+    }
+  }
+  modules: {
+    native_module: "x_wing"
+    constants: {
+      native_name: "X_WING_768_CIPHERTEXT_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1120
+    }
+    constants: {
+      native_name: "X_WING_768_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1216
+    }
+    constants: {
+      native_name: "X_WING_ENCAPS_SEED_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 64
+    }
+    constants: {
+      native_name: "X_WING_SECRET_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "X_WING_SHARED_SECRET_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+  }
+};

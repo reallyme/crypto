@@ -25,6 +25,8 @@ on:
       - "scripts/redact_crypto_proto_debug.mjs"
       - "scripts/generate_error_contract.mjs"
       - "scripts/generate_error_contract.test.mjs"
+      - "scripts/generate_contract_constants.mjs"
+      - "scripts/generate_contract_constants.test.mjs"
       - "scripts/proto_hardening.test.mjs"
   push:
     branches:
@@ -46,6 +48,8 @@ on:
       - "scripts/redact_crypto_proto_debug.mjs"
       - "scripts/generate_error_contract.mjs"
       - "scripts/generate_error_contract.test.mjs"
+      - "scripts/generate_contract_constants.mjs"
+      - "scripts/generate_contract_constants.test.mjs"
       - "scripts/proto_hardening.test.mjs"
 
 permissions:

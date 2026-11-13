@@ -8,10 +8,10 @@ use taceo_poseidon2::bn254::t4::permutation_in_place;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 /// Largest byte preimage supported by the reviewed ReallyMe ZK circuits.
-pub const MAX_INPUT_BYTES: usize = 515;
+pub const MAX_INPUT_BYTES: usize = crypto_core::contract_constants::poseidon2::MAX_INPUT_BYTES;
 const RATE: usize = 3;
 const WIDTH: usize = 4;
-const DIGEST_BYTES: usize = 32;
+const DIGEST_BYTES: usize = crypto_core::contract_constants::poseidon2::DIGEST_BYTES;
 const LIMB_BYTES: usize = core::mem::size_of::<u64>();
 const LENGTH_DOMAIN_SHIFT: u32 = 64;
 

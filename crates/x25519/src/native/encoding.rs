@@ -5,7 +5,8 @@
 use crypto_core::CryptoError;
 
 /// Byte length of an encoded X25519 public key.
-pub const X25519_PUBLIC_KEY_LEN: usize = 32;
+pub const X25519_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::x25519::X25519_PUBLIC_KEY_LEN;
 
 // RFC 7748 accepts noncanonical u-coordinates for agreement. An encoded key
 // used as an identifier needs one byte representation for each field element.
