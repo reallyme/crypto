@@ -7,7 +7,7 @@ use crypto_core::CryptoError;
 use p256::elliptic_curve::sec1::ToSec1Point;
 use p256::pkcs8::{DecodePrivateKey, DecodePublicKey};
 use p256::{PublicKey, SecretKey};
-use zeroize::{Zeroize, Zeroizing};
+use zeroize::Zeroizing;
 
 const P256_SECRET_KEY_LEN: usize = crypto_core::contract_constants::p256::P256_SECRET_KEY_LEN;
 const P256_PUBLIC_KEY_COMPRESSED_LEN: usize =
@@ -109,15 +109,15 @@ fn validate_der_input(der: &[u8]) -> Result<(), CryptoError> {
 }
 
 fn secret_key_to_scalar(secret_key: SecretKey) -> Result<Zeroizing<[u8; 32]>, CryptoError> {
-    let mut bytes = secret_key.to_bytes();
+    // The serialized scalar is sensitive independently of SecretKey. Install
+    // its clearing owner before validation/copy so every return path is covered.
+    let bytes = Zeroizing::new(secret_key.to_bytes());
     if bytes.len() != P256_SECRET_KEY_LEN {
-        bytes.zeroize();
         return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
 
     let mut scalar = Zeroizing::new([0u8; P256_SECRET_KEY_LEN]);
     scalar.copy_from_slice(bytes.as_slice());
-    bytes.zeroize();
     Ok(scalar)
 }
 

@@ -60,14 +60,7 @@ compile_error!(
      backend lane, or include `native` when running all-feature host checks."
 );
 
-#[cfg(all(
-    feature = "operation-response",
-    any(
-        feature = "ecdsa-explicit",
-        feature = "ed448",
-        feature = "prime-groups"
-    )
-))]
+#[cfg(feature = "operation-response")]
 mod native_contract_support;
 
 pub use crypto_core as core;
@@ -93,6 +86,10 @@ pub use envelopes_jwk_multikey as jwk_multikey;
 /// hashing, and multikey binding routed by an [`core::Algorithm`] selector.
 #[cfg(feature = "dispatch")]
 pub mod dispatch;
+
+/// Standalone adapters for existing signature and public-key format helpers.
+#[cfg(feature = "operation-response")]
+pub mod format_contract;
 
 /// Primary generated protobuf operation-response boundary.
 #[cfg(feature = "operation-response")]

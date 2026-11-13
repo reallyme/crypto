@@ -229,6 +229,7 @@ operation-response = [
     "crypto-argon2id?/proto",
     "crypto-rsa?/proto",
     "envelopes-jwk?/proto",
+    "envelopes-jwk-multikey?/proto",
     "crypto-csprng?/proto",
     "crypto-constant-time?/proto",
     "crypto-poseidon2?/proto",

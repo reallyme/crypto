@@ -5,6 +5,9 @@
 //! RFC 5280 §4.2.1.2 method (1) legacy key identifiers only.
 //! This feature does not enable SHA-1 signatures, MACs or document digests.
 
+#[cfg(feature = "operation-response")]
+pub mod contract;
+
 use crypto_core::CryptoError;
 use sha1::{Digest, Sha1};
 use zeroize::{Zeroize, ZeroizeOnDrop};

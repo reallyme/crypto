@@ -566,3 +566,22 @@ pub mod crypto_ecdsa_input {
         ),
     }
 }
+pub mod crypto_public_key_format_result {
+    #[allow(unused_imports)]
+    use super::*;
+    #[derive(Clone, Debug)]
+    pub enum Representation<'a> {
+        Encoded(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::CryptoPublicKeyBytesView<'a>,
+            >,
+        ),
+        Affine(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::CryptoPublicKeyAffineCoordinatesView<
+                    'a,
+                >,
+            >,
+        ),
+    }
+}

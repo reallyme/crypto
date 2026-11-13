@@ -8,7 +8,7 @@ use crypto_core::Algorithm;
 
 const SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN: usize = 32;
 
-fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError> {
+pub(crate) fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError> {
     match algorithm {
         Algorithm::Ed25519 => {
             #[cfg(feature = "ed25519")]

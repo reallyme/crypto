@@ -29,6 +29,10 @@
 #[cfg(feature = "proto")]
 mod convert_proto_policy;
 
+/// Protected standalone adapters for multikey generation, encoding and binding.
+#[cfg(feature = "proto")]
+pub mod proto_multikey;
+
 // Core modules
 /// Error type returned by dispatch operations.
 pub mod error;

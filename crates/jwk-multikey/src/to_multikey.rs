@@ -4,6 +4,7 @@
 
 use codec_multikey::encode_multikey;
 use envelopes_jwk::Jwk;
+use zeroize::Zeroizing;
 
 use crate::JwkMultikeyError;
 
@@ -42,7 +43,7 @@ pub fn jwk_to_multikey(jwk: &Jwk) -> Result<String, JwkMultikeyError> {
     // The JWK crate owns key-shape, metadata, length, and exact-coordinate
     // validation. Reusing that boundary prevents this adapter from drifting
     // into a second envelope parser with weaker policy.
-    let public_key = jwk.public_key_bytes()?;
+    let public_key = Zeroizing::new(jwk.public_key_bytes()?);
     // The codec receives a fixed reviewed name and already validated public
     // bytes. A rejection here is a trusted table/output invariant failure.
     encode_multikey(codec_name, &public_key).map_err(|_| JwkMultikeyError::BACKEND_INTERNAL)

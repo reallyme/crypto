@@ -1967,11 +1967,15 @@ dependencies = [
 name = "reallyme-crypto-jwk-multikey"
 version = "0.4.0"
 dependencies = [
+ "buffa",
  "reallyme-codec-base64url",
  "reallyme-codec-multikey",
  "reallyme-crypto-core",
  "reallyme-crypto-dispatch",
  "reallyme-crypto-jwk",
+ "reallyme-crypto-proto",
+ "serde_json",
+ "zeroize",
 ]
 
 [[package]]

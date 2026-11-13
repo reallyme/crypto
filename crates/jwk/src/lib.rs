@@ -10,6 +10,10 @@
 //! vectors so they do not overload RFC 8037 `OKP` curves.
 
 mod canonicalize_jwk;
+/// Protected standalone adapters for the existing public-key format encoders.
+#[cfg(feature = "proto")]
+pub mod proto_transforms;
+mod serialize_value;
 
 /// Protected protobuf options and typed public-key adapters.
 #[cfg(feature = "proto")]
