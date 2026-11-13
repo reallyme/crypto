@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crypto_core::{CryptoError, RngOutputKind};
-use zeroize::Zeroize;
+use zeroize::Zeroizing;
 
 use crate::constants::{
     AEAD_NONCE_12_LENGTH, AES_256_GCM_KEY_LENGTH, ARGON2_SALT_16_LENGTH, ARGON2_SALT_32_LENGTH,
@@ -74,13 +74,9 @@ pub fn generate_bytes<const N: usize>(
         return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
 
-    let mut output = [0u8; N];
-    if let Err(error) = rng.fill_secure(&mut output, kind) {
-        // An RNG implementation may have written some bytes before reporting
-        // failure. Clear the partially populated stack buffer before returning
-        // so failed generation cannot leave entropy-bearing material behind.
-        output.zeroize();
-        return Err(error);
-    }
-    Ok(RandomBytes::from_array(output))
+    // Keep the source protected on success, failure and unwinding. Moving a
+    // Copy array into the returned owner cannot clear this source allocation.
+    let mut output = Zeroizing::new([0u8; N]);
+    rng.fill_secure(output.as_mut(), kind)?;
+    Ok(RandomBytes::from_array(*output))
 }
