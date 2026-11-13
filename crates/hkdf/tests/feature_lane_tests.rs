@@ -10,6 +10,7 @@
     clippy::unwrap_used
 )]
 
+#[cfg(any(feature = "native", feature = "wasm"))]
 fn assert_package_name() {
     // Cargo supplies package metadata at compilation. WASM test runtimes do
     // not expose the host environment, so the lane check uses that fixed value.
