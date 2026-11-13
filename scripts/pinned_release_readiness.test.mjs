@@ -87,12 +87,29 @@ test("pin-only verification never starts the checker", (context) => {
 test("full invocations use verified local inputs and preserve checker modes and status", (context) => {
   const root = fixture(context);
   replaceChecker(root, 'process.stdout.write(JSON.stringify(process.argv.slice(2))); process.exit(73);\n');
-  for (const args of [[], ["--generated-freshness"], ["--release-packages"]]) {
+  for (const args of [[], ["--generated-freshness"], ["--release-packages"],
+    ["--ci-policy"], ["--typescript-source"], ["--swift-source"], ["--kotlin-source"]]) {
     const result = verifyPins(root, args);
     assert.equal(result.error, undefined);
     assert.equal(result.status, 73, result.stderr);
     assert.equal(result.stdout, JSON.stringify(args));
     assert.equal(result.stderr, "");
+  }
+});
+
+test("checker modes cannot be combined or disguised as pin-only verification", (context) => {
+  const root = fixture(context);
+  replaceChecker(root, "process.exit(79);\n");
+  const modes = ["--ci-policy", "--generated-freshness", "--release-packages",
+    "--typescript-source", "--swift-source", "--kotlin-source"];
+  for (const first of modes) {
+    assertRejected(verifyPins(root, ["--check-pins", first]));
+    assertRejected(verifyPins(root, [first, first]));
+    for (const second of modes) {
+      if (first !== second) {
+        assertRejected(verifyPins(root, [first, second]));
+      }
+    }
   }
 });
 
@@ -281,7 +298,7 @@ test("runner rejects unknown, duplicate, and conflicting maintenance arguments",
 test("CI verifies policy pins before installing build tooling and dependencies", () => {
   for (const [path, laterStep] of [
     [".github/workflows/rust-ci.yml", "      - name: Install Rust toolchain"],
-    [".github/workflows/protobuf-ci.yml", "      - name: Install TypeScript package dependencies"],
+    [".github/workflows/protobuf-ci.yml", "      - name: Install Rust toolchain"],
   ]) {
     const source = readFileSync(join(repositoryRoot, path), "utf8");
     // The Rust workflow has other jobs with their own toolchains. Restrict the

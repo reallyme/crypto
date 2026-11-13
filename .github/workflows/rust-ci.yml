@@ -42,8 +42,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.sha }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || (github.event_name == 'push' && github.ref) || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
 
 jobs:
   tooling:
@@ -107,6 +107,11 @@ jobs:
           toolchain: 1.100.0
           targets: aarch64-apple-ios,aarch64-linux-android
 
+      - name: Cache Rust mobile-targets
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: mobile-targets
+
       - name: Check iOS FFI target
         run: cargo check --locked -p crypto-ffi --target aarch64-apple-ios
 
@@ -126,6 +131,11 @@ jobs:
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: 1.96.0
+
+      - name: Cache Rust rust-msrv
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: msrv-1.96
 
       - name: Check workspace at declared minimum Rust version
         run: cargo check --locked --workspace --all-features
@@ -190,10 +200,6 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '26'
-          cache: npm
-          cache-dependency-path: |
-            crates/conformance/package-lock.json
-            packages/ts/package-lock.json
 
       - name: Verify release readiness pins
         run: node scripts/run_pinned_release_readiness.mjs --check-pins
@@ -203,7 +209,6 @@ jobs:
         with:
           toolchain: 1.100.0
           components: rustfmt, clippy
-          targets: wasm32-unknown-unknown
 
       - name: Cache Cargo
         uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
@@ -225,28 +230,14 @@ jobs:
           tool: nextest@0.9.140
 
       - name: Install cargo-deny
-        run: cargo install cargo-deny --version 0.20.2 --locked
+        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # v2.90.3
+        with:
+          tool: cargo-deny@0.20.2
 
       - name: Install cargo-audit
         uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # cargo-audit
         with:
           tool: cargo-audit@0.22.2
-
-      - name: Install wasm-pack
-        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # wasm-pack
-        with:
-          tool: wasm-pack@0.15.1
-
-      - name: Install wasm-bindgen-cli
-        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # wasm-bindgen-cli
-        with:
-          tool: wasm-bindgen-cli@0.2.130
-
-      - name: Install Java for release readiness
-        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
-        with:
-          distribution: temurin
-          java-version: '21'
 
       - name: Verify locked dependency graph
         run: cargo metadata --locked --format-version 1 --no-deps
@@ -269,40 +260,6 @@ jobs:
 
       - name: Format
         run: cargo fmt --check
-
-      - name: Check all features
-        run: cargo check --locked --workspace --all-features
-
-      - name: Check unwind-capable FFI release profile
-        run: cargo check --locked -p crypto-ffi --profile release-ffi
-
-      - name: Verify production FFI release symbol surface
-        run: |
-          cargo build --locked -p crypto-ffi --profile release-ffi
-          symbol_file="target/release-ffi/libcrypto_ffi.so"
-          if [ ! -f "${symbol_file}" ]; then
-            echo "Production FFI artifact is missing" >&2
-            exit 1
-          fi
-          symbols="$(nm -D --defined-only "${symbol_file}")"
-          if ! printf '%s\n' "${symbols}" | grep -Eq 'rm_crypto_ed25519_verify$'; then
-            echo "Production FFI artifact has no expected Ed25519 export" >&2
-            exit 1
-          fi
-          if printf '%s\n' "${symbols}" | grep -E 'rm_crypto_(ml_kem_(512|768|1024)|x_wing_768)_encapsulate_derand$'; then
-            echo "Conformance-only deterministic encapsulation symbols leaked into the production FFI artifact" >&2
-            exit 1
-          fi
-
-      - name: Check conformance-only FFI release profile
-        run: cargo check --locked -p crypto-ffi --profile release-ffi --features test-vectors
-
-      - name: Reject abort-mode FFI release builds
-        run: |
-          if cargo check --locked -p crypto-ffi --release; then
-            echo "crypto-ffi unexpectedly compiled with the abort-mode release profile" >&2
-            exit 1
-          fi
 
       - name: Check warnings as errors
         run: RUSTFLAGS=-Dwarnings cargo check --locked --workspace --all-features
@@ -357,6 +314,66 @@ jobs:
       - name: Doctests
         run: cargo test --locked --workspace --all-features --doc
 
+      - name: Verify committed external vectors against public APIs
+        run: bash scripts/check_external_vector_adapters.sh
+
+      - name: Check generated provider matrix
+        run: node scripts/generate_provider_matrix.mjs --check
+
+      - name: Release readiness
+        run: node scripts/run_pinned_release_readiness.mjs --ci-policy
+
+      - name: Check native lane
+        run: cargo check --locked --workspace --no-default-features --features native
+
+      - name: Dependency policy
+        run: cargo deny check
+
+      - name: Security advisory audit
+        run: scripts/audit_committed_lockfiles.sh
+
+  typescript:
+    name: typescript package + browser conformance
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '26'
+          cache: npm
+          cache-dependency-path: |
+            crates/conformance/package-lock.json
+            packages/ts/package-lock.json
+
+      - name: Verify release readiness pins
+        run: node scripts/run_pinned_release_readiness.mjs --check-pins
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: 1.100.0
+          targets: wasm32-unknown-unknown
+
+      - name: Cache TypeScript WASM build
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: typescript-wasm
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # wasm-pack
+        with:
+          tool: wasm-pack@0.15.1
+
+      - name: Install wasm-bindgen-cli
+        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # wasm-bindgen-cli
+        with:
+          tool: wasm-bindgen-cli@0.2.130
+
       - name: Install TypeScript package dependencies
         run: npm ci --prefix packages/ts
 
@@ -368,14 +385,11 @@ jobs:
       - name: Verify post-quantum vectors against @noble/post-quantum oracle
         run: npm run --prefix crates/conformance verify:noble-pq
 
-      - name: Verify committed external vectors against public APIs
-        run: bash scripts/check_external_vector_adapters.sh
-
-      - name: Test browser DevTools startup parsing
-        run: node --test packages/ts/scripts/chrome-devtools-port.test.mjs
+      - name: Test TypeScript source policy
+        run: node scripts/run_pinned_release_readiness.mjs --typescript-source
 
       - name: Test TypeScript package in Chromium
-        run: npm --prefix packages/ts run test:browser
+        run: node packages/ts/scripts/browser-wasm-test.mjs
 
       - name: Test primitive WASM backends in Chromium
         run: bash scripts/check_wasm_browser_backends.sh
@@ -389,23 +403,8 @@ jobs:
           cargo test --locked --release -p reallyme-crypto-rsa --target wasm32-unknown-unknown --no-default-features --features wasm --test representatives --test feature_lane_tests
           cargo test --locked --release -p reallyme-crypto-p256 --target wasm32-unknown-unknown --no-default-features --features wasm --test jose_signature_tests
 
-      - name: Check generated provider matrix
-        run: node scripts/generate_provider_matrix.mjs --check
-
-      - name: Release readiness
-        run: node scripts/run_pinned_release_readiness.mjs
-
-      - name: Check native lane
-        run: cargo check --locked --workspace --no-default-features --features native
-
       - name: Check wasm32 lane
         run: cargo check --locked --workspace --no-default-features --features wasm --target wasm32-unknown-unknown
-
-      - name: Dependency policy
-        run: cargo deny check
-
-      - name: Security advisory audit
-        run: scripts/audit_committed_lockfiles.sh
 
   native-sanitizers:
     name: native sanitizer lanes
@@ -420,6 +419,11 @@ jobs:
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: nightly-2026-07-01
+
+      - name: Cache Rust native-sanitizers
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: native-sanitizers
 
       - name: Test FFI with address sanitizer and checked UB
         run: bash scripts/test_native_sanitizers.sh
@@ -438,8 +442,16 @@ jobs:
         with:
           toolchain: 1.100.0
 
+      - name: Cache Rust ffi-abi-artifact
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: release-ffi-abi
+
       - name: Verify release artifact through C sanitizer
         run: bash scripts/test_ffi_abi_release_artifact.sh
+
+      - name: Check conformance-only FFI release profile
+        run: cargo check --locked -p crypto-ffi --profile release-ffi --target x86_64-unknown-linux-gnu --features test-vectors
 
   ffi-miri:
     name: FFI pointer and panic boundary Miri tests
@@ -456,6 +468,11 @@ jobs:
           toolchain: nightly-2026-07-01
           components: miri
 
+      - name: Cache Rust ffi-miri
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: ffi-miri
+
       - name: Test FFI pointer and panic boundaries
         run: |
           cargo +nightly-2026-07-01 miri test --locked -p crypto-ffi --lib pointer::tests
@@ -470,12 +487,34 @@ jobs:
         with:
           persist-credentials: false
 
-      # ReallyMe Codec 0.3.1 requires Swift tools 6.3. Pin the runner's newest
-      # stable Xcode so SwiftPM validates that manifest before compiling tests.
+      - name: Install Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '26'
+
+      - name: Verify release readiness pins
+        run: node scripts/run_pinned_release_readiness.mjs --check-pins
+
+      # The package manifests require Swift tools 6.3. Select the reviewed Xcode
+      # before restoring or compiling SwiftPM artifacts.
       - name: Select Xcode 26.6
         run: |
           sudo xcode-select -s /Applications/Xcode_26.6.app
           swift --version
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: 1.100.0
+
+      - name: Cache Rust swift
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: swift-native
+          key: swift-xcode26.6-${{ hashFiles('Package.resolved', 'crates/conformance/platform/swift/Package.resolved') }}
+          cache-directories: |
+            .build
+            crates/conformance/platform/swift/.build
 
       # The shipped Rust-C-ABI wrapper KATs (ML-KEM/ML-DSA/SLH-DSA/RSA/…) load
       # this dylib at runtime and skip without it. Build it and hand the path
@@ -488,7 +527,7 @@ jobs:
         run: touch .reallyme-crypto-runtime-ffi
 
       - name: Check Swift source policy
-        run: scripts/check_swift_source_policy.sh
+        run: node scripts/run_pinned_release_readiness.mjs --swift-source
         env:
           REALLYME_CRYPTO_FFI_LIBRARY_PATH: ${{ github.workspace }}/target/debug/libcrypto_ffi.dylib
           REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI: "1"
@@ -502,6 +541,14 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Install Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '26'
+
+      - name: Verify release readiness pins
+        run: node scripts/run_pinned_release_readiness.mjs --check-pins
+
       - name: Validate Gradle wrappers
         uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
 
@@ -510,21 +557,30 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+          cache: gradle
+          cache-dependency-path: |
+            packages/kotlin/gradle.lockfile
+            packages/kotlin-android/gradle.lockfile
+            crates/conformance/platform/kotlin/gradle.lockfile
+            packages/kotlin/gradle/verification-metadata.xml
+            packages/kotlin-android/gradle/verification-metadata.xml
+            crates/conformance/platform/kotlin/gradle/verification-metadata.xml
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: 1.100.0
 
-      - name: Build crypto-ffi dylib
-        run: cargo build --locked -p crypto-ffi
+      - name: Cache Rust kotlin
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: kotlin-native
 
-      - name: Test Kotlin package
-        working-directory: packages/kotlin
-        run: ./gradlew --dependency-verification strict test
-        env:
-          REALLYME_CRYPTO_FFI_LIBRARY_PATH: ${{ github.workspace }}/target/debug/libcrypto_ffi.so
+      - name: Install pinned Android SDK packages
+        run: |
+          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-37.0" "ndk;29.0.14206865" <<< "$(printf 'y\n%.0s' {1..32})"
+          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/29.0.14206865" >> "${GITHUB_ENV}"
 
-      - name: Test Kotlin vectors
-        working-directory: crates/conformance/platform/kotlin
-        run: ./gradlew --dependency-verification strict test
+      - name: Test Kotlin source policy
+        run: node scripts/run_pinned_release_readiness.mjs --kotlin-source

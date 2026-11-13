@@ -14,12 +14,12 @@ const RELEASE_READINESS_COMMIT = "18a6d91d99837e80f92e41fe04effb0b043d754e";
 const RELEASE_READINESS_CORE_SHA256 =
   "7614b0cbf9e36a4653c2fa9008bee0d1e22542de0e4a08a10e640c836a5c93db";
 const LOCAL_CHECKER_SHA256 =
-  "36058ddaaf582265c394fb632ef5de71bb669de43034209ded80a9157aab2ffc";
+  "6d2690636c0a5fa28b5e201ff6a604efe217b7d28f080221fc4caf2ef32f1ef5";
 // The checker imports both local policy modules. Pinning only its entry file
 // would let an unreviewed dependency change the release decision.
 const LOCAL_CHECKER_DEPENDENCIES = [
   ["scripts/crypto_operation_route_readiness.mjs", "d55749f477782633e382fe9c50b152322e5f8d958ad31ba3550afbf8568c1295"],
-  ["scripts/workflow_gate_policy.mjs", "b7f48fb6cc84a5dde0c4350fcfcbf04da4e4b834bb01b98716054cb4001d0b69"],
+  ["scripts/workflow_gate_policy.mjs", "a5b0ac299de016810c08e8802d74aa9dc00b6ae8ee434f8334a2e0c26a6d7fcc"],
 ];
 const RELEASE_READINESS_CORE_URL =
   `https://raw.githubusercontent.com/reallyme/release-readiness/${RELEASE_READINESS_COMMIT}/core.mjs`;
@@ -38,7 +38,8 @@ const fail = (message) => {
 
 const supportedArguments = new Set([
   "--check-pins", "--refresh-checker-pin", "--verify-upstream",
-  "--generated-freshness", "--release-packages",
+  "--generated-freshness", "--release-packages", "--ci-policy",
+  "--typescript-source", "--swift-source", "--kotlin-source",
 ]);
 const suppliedArguments = new Set();
 for (const argument of process.argv.slice(2)) {
@@ -56,9 +57,14 @@ if (refreshCheckerPin && suppliedArguments.size !== 1) {
 if (refreshCheckerPin && process.env.CI !== undefined) {
   fail("checker pin refresh is a local review operation and is forbidden in CI");
 }
-const checkerArguments = [...suppliedArguments].filter((argument) =>
-  argument === "--generated-freshness" || argument === "--release-packages",
-);
+const checkerModes = new Set([
+  "--generated-freshness", "--release-packages", "--ci-policy",
+  "--typescript-source", "--swift-source", "--kotlin-source",
+]);
+const checkerArguments = [...suppliedArguments].filter((argument) => checkerModes.has(argument));
+if (checkerArguments.length > 1) {
+  fail("checker modes are mutually exclusive");
+}
 if (suppliedArguments.has("--check-pins") && checkerArguments.length !== 0) {
   fail("--check-pins cannot be combined with a full checker mode");
 }

@@ -20,8 +20,8 @@ on:
     - cron: '19 4 * * 1'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.sha }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || (github.event_name == 'push' && github.ref) || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
 
 permissions:
   contents: read
@@ -67,6 +67,14 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+          cache: gradle
+          cache-dependency-path: |
+            packages/kotlin/gradle.lockfile
+            packages/kotlin-android/gradle.lockfile
+            crates/conformance/platform/kotlin/gradle.lockfile
+            packages/kotlin/gradle/verification-metadata.xml
+            packages/kotlin-android/gradle/verification-metadata.xml
+            crates/conformance/platform/kotlin/gradle/verification-metadata.xml
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
@@ -79,9 +87,11 @@ jobs:
         if: matrix.language == 'java-kotlin'
         # The independent Gradle roots are not discovered by the automatic
         # builder. Trace the JVM, Android, and conformance source sets explicitly.
+        # Android extraction needs compiled JVM sources, not rebuilt JNI artifacts;
+        # the Kotlin/native ABI gates validate those artifacts separately.
         run: |
           packages/kotlin/gradlew -p packages/kotlin --dependency-verification strict --no-daemon --no-build-cache --rerun-tasks compileKotlin compileJava
-          packages/kotlin-android/gradlew -p packages/kotlin-android --dependency-verification strict --no-daemon --no-build-cache --rerun-tasks compileReleaseKotlin compileReleaseJavaWithJavac
+          packages/kotlin-android/gradlew -p packages/kotlin-android --dependency-verification strict --no-daemon --no-build-cache --rerun-tasks compileReleaseKotlin compileReleaseJavaWithJavac -x buildAndroidJniLibs -x generateAndroidNativeManifest -x verifyAndroidJniLibs
           crates/conformance/platform/kotlin/gradlew -p crates/conformance/platform/kotlin --dependency-verification strict --no-daemon --no-build-cache --rerun-tasks compileKotlin
 
       - name: Analyze CodeQL

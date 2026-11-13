@@ -80,6 +80,7 @@ test("release evidence requires every named code-check job", () => {
     "repository policy and tooling (ubuntu-24.04)",
     "repository policy and tooling (macos-15)",
     "fmt, lint, test, wasm, package",
+    "typescript package + browser conformance",
     "native sanitizer lanes",
     "FFI release artifact and C sanitizer",
     "FFI pointer and panic boundary Miri tests",
