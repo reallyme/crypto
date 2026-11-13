@@ -2,6 +2,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+#[path = "key_wrap.rs"]
+mod key_wrap;
+
+pub use key_wrap::KeyWrapAlgorithm;
+
 /// Asymmetric algorithm identifiers used for signatures and key agreement.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Algorithm {

@@ -61,8 +61,7 @@ impl SignatureAlgorithm for P521Algo {
     fn verify(public: &[u8], msg: &[u8], sig: &[u8]) -> Result<(), AlgorithmError> {
         #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
         {
-            return crypto_p521::verify_p521_der_prehash(sig, msg, public)
-                .map_err(|error| crate::algorithms::map_verify_error(Self::ALG, error));
+            return crypto_p521::verify_p521_der_prehash(sig, msg, public);
         }
 
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]

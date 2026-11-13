@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, KdfProfile};
+use crypto_core::CryptoError;
 
 use crate::constants::{
     ARGON2ID_V1_LANES, ARGON2ID_V1_MEMORY_COST_KIB, ARGON2ID_V1_TIME_COST, ARGON2ID_V2_LANES,
@@ -98,14 +98,6 @@ impl From<Argon2KdfVersion> for Argon2Profile {
 }
 
 impl Argon2Profile {
-    /// Maps this profile to its `crypto_core` [`KdfProfile`] tag.
-    pub const fn to_kdf_profile(self) -> KdfProfile {
-        match self {
-            Self::V1 => KdfProfile::Argon2idV1,
-            Self::V2 => KdfProfile::Argon2idV2,
-        }
-    }
-
     const fn params(self) -> Argon2ParamsProfile {
         match self {
             Self::V1 => Argon2ParamsProfile {
@@ -132,7 +124,6 @@ fn validate_caps(
     caps: Argon2Caps,
 ) -> Result<Argon2ParamsProfile, CryptoError> {
     let params = profile.params();
-    let _profile_tag = profile.to_kdf_profile();
 
     if params.mem_kib > caps.mem_cap_kib
         || params.time_cost > caps.time_cost_cap

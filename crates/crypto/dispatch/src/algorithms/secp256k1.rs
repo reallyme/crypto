@@ -60,8 +60,7 @@ impl SignatureAlgorithm for Secp256k1Algo {
     fn verify(public: &[u8], msg: &[u8], sig: &[u8]) -> Result<(), AlgorithmError> {
         #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
         {
-            return crypto_secp256k1::verify_secp256k1(sig, msg, public)
-                .map_err(|error| crate::algorithms::map_verify_error(Self::ALG, error));
+            return crypto_secp256k1::verify_secp256k1(sig, msg, public);
         }
 
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]

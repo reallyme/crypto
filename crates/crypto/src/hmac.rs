@@ -20,7 +20,6 @@ pub fn authenticate(
     message: &[u8],
 ) -> Result<HmacTag, CryptoError> {
     crate::operations::mac::authenticate_tag(algorithm, key.as_bytes(), message)
-        .map_err(|error| crypto_error_from_operation_error(algorithm, error))
 }
 
 /// Verifies an HMAC tag through the operation layer.
@@ -32,13 +31,4 @@ pub fn verify(
     expected_tag: &[u8],
 ) -> Result<(), CryptoError> {
     crate::operations::mac::verify(algorithm, key.as_bytes(), message, expected_tag)
-        .map_err(|error| crypto_error_from_operation_error(algorithm, error))
-}
-
-#[cfg(any(feature = "native", feature = "wasm"))]
-fn crypto_error_from_operation_error(
-    _algorithm: MacAlgorithm,
-    error: crate::operations::OperationError,
-) -> CryptoError {
-    error
 }

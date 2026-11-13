@@ -24,26 +24,3 @@ impl core::fmt::Display for KeyWrapAlgorithm {
         write!(f, "{detail}")
     }
 }
-
-/// Key-wrap operation being attempted when a failure occurred.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[non_exhaustive]
-pub enum KeyWrapOperation {
-    /// Wrapping plaintext key material.
-    Wrap,
-    /// Unwrapping wrapped key material.
-    Unwrap,
-}
-
-impl core::fmt::Display for KeyWrapOperation {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let op = match self {
-            KeyWrapOperation::Wrap => "wrap",
-            KeyWrapOperation::Unwrap => "unwrap",
-        };
-        write!(f, "{op}")
-    }
-}
-
-/// Specific reason a key-wrap operation failed.
-pub type KeyWrapFailureKind = super::CryptoError;

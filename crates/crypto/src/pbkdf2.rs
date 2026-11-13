@@ -21,13 +21,4 @@ pub use crypto_pbkdf2::Pbkdf2Request;
 #[cfg(any(feature = "native", feature = "wasm"))]
 pub fn derive_key(request: &Pbkdf2Request<'_>) -> Result<Pbkdf2Output, CryptoError> {
     crate::operations::kdf::derive_pbkdf2(request)
-        .map_err(|error| crypto_error_from_operation_error(request.prf, error))
-}
-
-#[cfg(any(feature = "native", feature = "wasm"))]
-fn crypto_error_from_operation_error(
-    _prf: Pbkdf2Prf,
-    error: crate::operations::OperationError,
-) -> CryptoError {
-    error
 }

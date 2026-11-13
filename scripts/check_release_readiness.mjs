@@ -658,7 +658,7 @@ for (const sspPolicy of [
     constant: "ML_DSA_87_SEED_LENGTH",
   },
 ]) {
-  assertContains("crates/crypto/core/src/error/rng.rs", `RngOutputKind::${sspPolicy.kind}`);
+  assertContains("crates/crypto/core/src/random.rs", `RngOutputKind::${sspPolicy.kind}`);
   assertContains("crates/csprng/src/constants.rs", sspPolicy.constant);
   assertContains("crates/csprng/src/types.rs", `pub struct ${sspPolicy.type}`);
   assertContains("crates/csprng/src/types.rs", "SecretBox<[u8;");

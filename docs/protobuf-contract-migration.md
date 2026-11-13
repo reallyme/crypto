@@ -108,6 +108,27 @@ Node, browser, SDK or device tests were executed during this migration. Runtime
 regressions, including browser property-write failures, require execution before
 release approval.
 
+## Retired diagnostic vocabulary
+
+The 0.4 cleanup removes eight obsolete context enums: `AeadBackend`,
+`SignatureBackend`, `SignatureOperation`, `KeyWrapOperation`, `KdfProfile`,
+`MacHash`, `HkdfHash` and the unused core diagnostic `KdfAlgorithm`. It also
+removes the ten `FailureKind` aliases and the three per-area reason synonyms.
+These names no longer select or classify failures independently of the schema.
+The metadata-only `HkdfSuite::hash` and `Argon2Profile::to_kdf_profile` helpers
+are retired with them.
+
+Functional key-wrap selection and random-output purposes retain their variants
+and root API paths, in focused modules outside the error namespace. Public
+PBKDF2 constructors retain their selector arguments and validation. Facade and
+leaf helpers now propagate the canonical error directly, preserving operational
+selection, checked arithmetic and clearing ownership. Workspace all-targets,
+all-features Clippy passes with warnings denied; tests remain unexecuted.
+
+The original inventory and ledgers are historical evidence from before
+migration. They are intentionally retained; this section records retirement
+rather than rewriting those earlier findings.
+
 ## Error generation and freshness
 
 Error code generation is maintenance work, not a Cargo build step. The existing

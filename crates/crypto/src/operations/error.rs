@@ -6,9 +6,3 @@
 
 /// Canonical schema-defined operation failure.
 pub use crypto_core::CryptoError as OperationError;
-/// Canonical primitive failure value.
-pub type PrimitiveErrorReason = OperationError;
-/// Canonical provider failure value.
-pub type ProviderErrorReason = OperationError;
-/// Canonical backend failure value.
-pub type BackendErrorReason = OperationError;

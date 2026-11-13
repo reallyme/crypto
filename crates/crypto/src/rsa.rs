@@ -4,9 +4,7 @@
 
 //! RSA signature verification facade over the semantic operation owner.
 
-use crypto_core::{CryptoError, SignatureOperation};
-
-use crate::signature_error::crypto_error_from_rsa_operation_error;
+use crypto_core::CryptoError;
 
 pub use crypto_rsa::{
     RsaHash, RsaPssParams, RsaPublicKeyDerEncoding, RSA_MAX_MODULUS_BITS, RSA_MIN_MODULUS_BITS,
@@ -28,7 +26,6 @@ pub fn verify_rsa_pkcs1v15(
         message,
         signature,
     )
-    .map_err(|error| crypto_error_from_rsa_operation_error(SignatureOperation::Verify, error))
 }
 
 /// Verifies an RSASSA-PSS signature.
@@ -46,5 +43,4 @@ pub fn verify_rsa_pss(
         message,
         signature,
     )
-    .map_err(|error| crypto_error_from_rsa_operation_error(SignatureOperation::Verify, error))
 }

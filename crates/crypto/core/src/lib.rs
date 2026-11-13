@@ -2,30 +2,23 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! Shared vocabulary types for the ReallyMe crypto workspace.
+//! Shared algorithm identities and schema-defined failures.
 //!
-//! This crate defines the algorithm identifiers ([`Algorithm`],
-//! [`AeadAlgorithm`], [`HashAlgorithm`]) and the typed error taxonomy
-//! ([`CryptoError`] and its failure-kind enums) that
-//! every primitive, the dispatch layer, and the FFI boundary share. It
-//! contains no cryptographic behavior — only the definitions the rest of
-//! the workspace agrees on — so that errors carry fixed, secret-free
-//! descriptors and algorithm selection is a single closed enum rather than
-//! stringly-typed.
+//! Algorithm selectors have total checked protobuf bridges. Native failures
+//! use the canonical schema reason without per-area diagnostic vocabularies.
+//! This package contains no cryptographic implementations.
 
 /// Algorithm identifier enums shared across the workspace.
 pub mod algorithm;
-/// Typed error taxonomy and failure-kind enums.
+/// Canonical schema-defined error types.
 pub mod error;
 
-pub use algorithm::{AeadAlgorithm, Algorithm, HashAlgorithm, MacAlgorithm};
-pub use error::{
-    AeadBackend, AeadFailureKind, ConstantTimeFailureKind, CryptoError, CryptoErrorBranch,
-    CryptoErrorReason, HkdfFailureKind, HkdfHash, KdfAlgorithm, KdfFailureKind, KdfProfile,
-    KemFailureKind, KeyAgreementFailureKind, KeyWrapAlgorithm, KeyWrapFailureKind,
-    KeyWrapOperation, MacFailureKind, MacHash, RngFailureKind, RngOutputKind, SignatureBackend,
-    SignatureFailureKind, SignatureOperation,
-};
+/// Random output-purpose vocabulary shared with entropy providers.
+pub mod random;
+
+pub use algorithm::{AeadAlgorithm, Algorithm, HashAlgorithm, KeyWrapAlgorithm, MacAlgorithm};
+pub use error::{CryptoError, CryptoErrorBranch, CryptoErrorReason};
+pub use random::RngOutputKind;
 
 /// Owner-local conversions from schema-defined algorithm identities.
 #[cfg(feature = "protobuf")]

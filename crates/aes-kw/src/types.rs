@@ -8,7 +8,7 @@ use crate::{
     AES_KW_BLOCK_LENGTH, AES_KW_INTEGRITY_CHECK_LENGTH, AES_KW_MAX_KEY_DATA_LENGTH,
     AES_KW_MIN_KEY_DATA_LENGTH, AES_KW_MIN_WRAPPED_KEY_LENGTH,
 };
-use crypto_core::{CryptoError, KeyWrapAlgorithm, KeyWrapFailureKind, KeyWrapOperation};
+use crypto_core::CryptoError;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 /// AES-128 key-encryption key used by RFC 3394 AES-KW.
@@ -21,11 +21,7 @@ impl Aes128KwKek {
     /// Constructs an AES-128-KW key-encryption key from raw bytes.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.len() != AES_128_KW_KEK_LENGTH {
-            return Err(key_wrap_error(
-                KeyWrapAlgorithm::Aes128Kw,
-                KeyWrapOperation::Wrap,
-                crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
-            ));
+            return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
         }
 
         let mut bytes = [0u8; AES_128_KW_KEK_LENGTH];
@@ -49,11 +45,7 @@ impl Aes192KwKek {
     /// Constructs an AES-192-KW key-encryption key from raw bytes.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.len() != AES_192_KW_KEK_LENGTH {
-            return Err(key_wrap_error(
-                KeyWrapAlgorithm::Aes192Kw,
-                KeyWrapOperation::Wrap,
-                crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
-            ));
+            return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
         }
 
         let mut bytes = [0u8; AES_192_KW_KEK_LENGTH];
@@ -77,11 +69,7 @@ impl Aes256KwKek {
     /// Constructs an AES-256-KW key-encryption key from raw bytes.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.len() != AES_256_KW_KEK_LENGTH {
-            return Err(key_wrap_error(
-                KeyWrapAlgorithm::Aes256Kw,
-                KeyWrapOperation::Wrap,
-                crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
-            ));
+            return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
         }
 
         let mut bytes = [0u8; AES_256_KW_KEK_LENGTH];
@@ -113,11 +101,8 @@ impl ZeroizeOnDrop for AesKwKeyData {}
 
 impl AesKwKeyData {
     #[cfg(any(feature = "native", feature = "wasm"))]
-    pub(crate) fn from_zeroizing(
-        algorithm: KeyWrapAlgorithm,
-        bytes: Zeroizing<Vec<u8>>,
-    ) -> Result<Self, CryptoError> {
-        validate_plaintext_len(algorithm, bytes.len())?;
+    pub(crate) fn from_zeroizing(bytes: Zeroizing<Vec<u8>>) -> Result<Self, CryptoError> {
+        validate_plaintext_len(bytes.len())?;
         Ok(Self { bytes })
     }
 
@@ -156,11 +141,8 @@ pub struct AesKwWrappedKey {
 
 impl AesKwWrappedKey {
     #[cfg(any(feature = "native", feature = "wasm"))]
-    pub(crate) fn from_zeroizing(
-        algorithm: KeyWrapAlgorithm,
-        bytes: Zeroizing<Vec<u8>>,
-    ) -> Result<Self, CryptoError> {
-        validate_wrapped_len(algorithm, bytes.len())?;
+    pub(crate) fn from_zeroizing(bytes: Zeroizing<Vec<u8>>) -> Result<Self, CryptoError> {
+        validate_wrapped_len(bytes.len())?;
         Ok(Self { bytes })
     }
 
@@ -194,54 +176,26 @@ impl core::fmt::Debug for AesKwWrappedKey {
     }
 }
 
-pub(crate) fn key_wrap_error(
-    _algorithm: KeyWrapAlgorithm,
-    _operation: KeyWrapOperation,
-    kind: KeyWrapFailureKind,
-) -> CryptoError {
-    kind
-}
-
 #[cfg(any(feature = "native", feature = "wasm"))]
-pub(crate) fn validate_plaintext_len(
-    algorithm: KeyWrapAlgorithm,
-    len: usize,
-) -> Result<(), CryptoError> {
+pub(crate) fn validate_plaintext_len(len: usize) -> Result<(), CryptoError> {
     if !(AES_KW_MIN_KEY_DATA_LENGTH..=AES_KW_MAX_KEY_DATA_LENGTH).contains(&len)
         || !len.is_multiple_of(AES_KW_BLOCK_LENGTH)
     {
-        return Err(key_wrap_error(
-            algorithm,
-            KeyWrapOperation::Wrap,
-            crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
-        ));
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
     Ok(())
 }
 
 #[cfg(any(feature = "native", feature = "wasm"))]
-pub(crate) fn validate_wrapped_len(
-    algorithm: KeyWrapAlgorithm,
-    len: usize,
-) -> Result<(), CryptoError> {
+pub(crate) fn validate_wrapped_len(len: usize) -> Result<(), CryptoError> {
     let max_wrapped_len = AES_KW_MAX_KEY_DATA_LENGTH
         .checked_add(AES_KW_INTEGRITY_CHECK_LENGTH)
-        .ok_or_else(|| {
-            key_wrap_error(
-                algorithm,
-                KeyWrapOperation::Unwrap,
-                crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
-            )
-        })?;
+        .ok_or(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)?;
 
     if !(AES_KW_MIN_WRAPPED_KEY_LENGTH..=max_wrapped_len).contains(&len)
         || !len.is_multiple_of(AES_KW_BLOCK_LENGTH)
     {
-        return Err(key_wrap_error(
-            algorithm,
-            KeyWrapOperation::Unwrap,
-            crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
-        ));
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
     Ok(())
 }

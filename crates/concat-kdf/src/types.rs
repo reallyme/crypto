@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, KdfFailureKind};
+use crypto_core::CryptoError;
 use sha2::{Digest, Sha256};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
@@ -23,9 +23,7 @@ impl JwaSharedSecret {
     /// Constructs a shared-secret input for JWA Concat KDF.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.is_empty() || input.len() > JWA_CONCAT_KDF_MAX_SHARED_SECRET_LENGTH {
-            return Err(kdf_error(
-                crypto_core::CryptoError::PRIMITIVE_INVALID_PASSWORD,
-            ));
+            return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_PASSWORD);
         }
 
         Ok(Self {
@@ -48,9 +46,7 @@ impl JwaAlgorithmId {
     /// Constructs an AlgorithmID from its ASCII/UTF-8 bytes, such as `A128GCM`.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.is_empty() || input.len() > JWA_CONCAT_KDF_MAX_INFO_LENGTH {
-            return Err(kdf_error(
-                crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER,
-            ));
+            return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER);
         }
 
         Ok(Self {
@@ -77,9 +73,7 @@ impl JwaPartyInfo {
     /// Constructs a PartyUInfo or PartyVInfo value. Empty values are valid.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.len() > JWA_CONCAT_KDF_MAX_INFO_LENGTH {
-            return Err(kdf_error(
-                crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER,
-            ));
+            return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER);
         }
 
         Ok(Self {
@@ -127,15 +121,13 @@ pub fn derive_jwa_concat_kdf_sha256<const N: usize>(
     request: &JwaConcatKdfRequest<'_>,
 ) -> Result<JwaConcatKdfOutput<N>, CryptoError> {
     if N == 0 {
-        return Err(kdf_error(
-            crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
-        ));
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
 
     let output_bits = N
         .checked_mul(8)
         .and_then(|value| u32::try_from(value).ok())
-        .ok_or_else(|| kdf_error(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH))?;
+        .ok_or(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)?;
 
     let other_info = Zeroizing::new(build_other_info(
         request.algorithm_id.as_bytes(),
@@ -147,23 +139,23 @@ pub fn derive_jwa_concat_kdf_sha256<const N: usize>(
     let reps = N
         .checked_add(JWA_CONCAT_KDF_SHA256_DIGEST_LENGTH - 1)
         .and_then(|value| value.checked_div(JWA_CONCAT_KDF_SHA256_DIGEST_LENGTH))
-        .ok_or_else(|| kdf_error(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH))?;
-    let reps_u32 = u32::try_from(reps)
-        .map_err(|_| kdf_error(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH))?;
+        .ok_or(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)?;
+    let reps_u32 =
+        u32::try_from(reps).map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)?;
     let derived_len = reps
         .checked_mul(JWA_CONCAT_KDF_SHA256_DIGEST_LENGTH)
-        .ok_or_else(|| kdf_error(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH))?;
+        .ok_or(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)?;
 
     let mut derived = Zeroizing::new(vec![0u8; derived_len]);
     for counter in 1..=reps_u32 {
         let counter_index = usize::try_from(counter - 1)
-            .map_err(|_| kdf_error(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH))?;
+            .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)?;
         let offset = counter_index
             .checked_mul(JWA_CONCAT_KDF_SHA256_DIGEST_LENGTH)
-            .ok_or_else(|| kdf_error(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH))?;
+            .ok_or(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)?;
         let end = offset
             .checked_add(JWA_CONCAT_KDF_SHA256_DIGEST_LENGTH)
-            .ok_or_else(|| kdf_error(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH))?;
+            .ok_or(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)?;
 
         let mut hasher = Sha256::new();
         hasher.update(counter.to_be_bytes());
@@ -190,7 +182,7 @@ fn build_other_info(
         .checked_add(length_prefixed_capacity(party_u_info)?)
         .and_then(|value| value.checked_add(length_prefixed_capacity(party_v_info).ok()?))
         .and_then(|value| value.checked_add(core::mem::size_of::<u32>()))
-        .ok_or_else(|| kdf_error(crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER))?;
+        .ok_or(crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER)?;
 
     let mut other_info = Vec::with_capacity(capacity);
     append_length_prefixed(&mut other_info, algorithm_id)?;
@@ -202,20 +194,16 @@ fn build_other_info(
 
 fn length_prefixed_capacity(input: &[u8]) -> Result<usize, CryptoError> {
     u32::try_from(input.len())
-        .map_err(|_| kdf_error(crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER))?;
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER)?;
     core::mem::size_of::<u32>()
         .checked_add(input.len())
-        .ok_or_else(|| kdf_error(crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER))
+        .ok_or(crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER)
 }
 
 fn append_length_prefixed(output: &mut Vec<u8>, input: &[u8]) -> Result<(), CryptoError> {
     let len = u32::try_from(input.len())
-        .map_err(|_| kdf_error(crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER))?;
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER)?;
     output.extend_from_slice(&len.to_be_bytes());
     output.extend_from_slice(input);
     Ok(())
-}
-
-fn kdf_error(kind: KdfFailureKind) -> CryptoError {
-    kind
 }

@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    types::{key_wrap_error, validate_wrapped_len},
-    Aes128KwKek, Aes192KwKek, Aes256KwKek, AesKwKeyData, AES_KW_INTEGRITY_CHECK_LENGTH,
+    types::validate_wrapped_len, Aes128KwKek, Aes192KwKek, Aes256KwKek, AesKwKeyData,
+    AES_KW_INTEGRITY_CHECK_LENGTH,
 };
 use aes_kw::{Error as AesKwError, KeyInit, KwAes128, KwAes192, KwAes256};
-use crypto_core::{CryptoError, KeyWrapAlgorithm, KeyWrapOperation};
+use crypto_core::CryptoError;
 use zeroize::Zeroizing;
 
 /// Unwraps RFC 3394 AES-256-KW wrapped key material.
@@ -21,7 +21,7 @@ pub fn unwrap_key_aes128(
     wrapped_key: &[u8],
 ) -> Result<AesKwKeyData, CryptoError> {
     let kw = KwAes128::new(kek.as_bytes().into());
-    unwrap_with(KeyWrapAlgorithm::Aes128Kw, wrapped_key, |output| {
+    unwrap_with(wrapped_key, |output| {
         kw.unwrap_key(wrapped_key, output).map(|_| ())
     })
 }
@@ -32,7 +32,7 @@ pub fn unwrap_key_aes192(
     wrapped_key: &[u8],
 ) -> Result<AesKwKeyData, CryptoError> {
     let kw = KwAes192::new(kek.as_bytes().into());
-    unwrap_with(KeyWrapAlgorithm::Aes192Kw, wrapped_key, |output| {
+    unwrap_with(wrapped_key, |output| {
         kw.unwrap_key(wrapped_key, output).map(|_| ())
     })
 }
@@ -43,41 +43,28 @@ pub fn unwrap_key_aes256(
     wrapped_key: &[u8],
 ) -> Result<AesKwKeyData, CryptoError> {
     let kw = KwAes256::new(kek.as_bytes().into());
-    unwrap_with(KeyWrapAlgorithm::Aes256Kw, wrapped_key, |output| {
+    unwrap_with(wrapped_key, |output| {
         kw.unwrap_key(wrapped_key, output).map(|_| ())
     })
 }
 
 fn unwrap_with(
-    algorithm: KeyWrapAlgorithm,
     wrapped_key: &[u8],
     unwrap: impl FnOnce(&mut [u8]) -> Result<(), AesKwError>,
 ) -> Result<AesKwKeyData, CryptoError> {
-    validate_wrapped_len(algorithm, wrapped_key.len())?;
+    validate_wrapped_len(wrapped_key.len())?;
     let key_data_len = wrapped_key
         .len()
         .checked_sub(AES_KW_INTEGRITY_CHECK_LENGTH)
-        .ok_or_else(|| {
-            key_wrap_error(
-                algorithm,
-                KeyWrapOperation::Unwrap,
-                crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
-            )
-        })?;
+        .ok_or(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)?;
     let mut key_data = Zeroizing::new(vec![0u8; key_data_len]);
     match unwrap(&mut key_data) {
         // Transfer the plaintext allocation directly into its final owner so
         // no second heap copy of the unwrapped key exists on the success path.
-        Ok(_) => AesKwKeyData::from_zeroizing(algorithm, key_data),
-        Err(AesKwError::IntegrityCheckFailed) => Err(key_wrap_error(
-            algorithm,
-            KeyWrapOperation::Unwrap,
-            crypto_core::CryptoError::PRIMITIVE_AUTHENTICATION_FAILED,
-        )),
-        Err(_) => Err(key_wrap_error(
-            algorithm,
-            KeyWrapOperation::Unwrap,
-            crypto_core::CryptoError::BACKEND_INTERNAL,
-        )),
+        Ok(_) => AesKwKeyData::from_zeroizing(key_data),
+        Err(AesKwError::IntegrityCheckFailed) => {
+            Err(crypto_core::CryptoError::PRIMITIVE_AUTHENTICATION_FAILED)
+        }
+        Err(_) => Err(crypto_core::CryptoError::BACKEND_INTERNAL),
     }
 }

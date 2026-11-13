@@ -25,7 +25,6 @@ pub struct DeriveKeyRequest<'a> {
 /// intermediate output buffer is zeroized before returning.
 pub fn derive_key(request: &DeriveKeyRequest<'_>) -> Result<Argon2idDerivedKey, CryptoError> {
     let profile = request.profile;
-    let _kdf_profile = profile.to_kdf_profile();
     let (m_cost, t_cost, p_cost) = profile.params_tuple();
 
     let params = Params::new(m_cost, t_cost, p_cost, Some(ARGON2ID_DERIVED_KEY_LENGTH))

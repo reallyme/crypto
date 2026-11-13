@@ -11,7 +11,7 @@ use crypto_hpke::{
 };
 use zeroize::ZeroizeOnDrop;
 
-use crate::operations::{OperationError, PrimitiveErrorReason};
+use crate::operations::OperationError;
 use crate::secret_material::{bind_operation_policy, SecretMaterialOperation};
 
 /// Minimum IKM length accepted by raw and serialized HPKE boundaries.
@@ -45,9 +45,7 @@ pub fn derive_keypair_from_ikm(
 ) -> Result<HpkeKeyPair, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::HpkeKeyDerivation);
     if input_key_material.len() < HPKE_OPERATION_MIN_INPUT_KEY_MATERIAL_LEN {
-        return Err(primitive(
-            crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
-        ));
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
     crypto_hpke::derive_keypair_from_ikm(suite, input_key_material)
 }
@@ -201,8 +199,4 @@ pub fn sender_export_derand(
 ) -> Result<HpkeSenderExportOutput, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::HpkeExport);
     crypto_hpke::sender_export_derand(request)
-}
-
-fn primitive(reason: PrimitiveErrorReason) -> OperationError {
-    reason
 }

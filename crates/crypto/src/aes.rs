@@ -7,8 +7,6 @@
 use crypto_core::{AeadAlgorithm, CryptoError};
 use zeroize::Zeroizing;
 
-use crate::aead_error::{crypto_error_from_operation_error, invalid_output_error, AeadOperation};
-
 pub use crypto_aes256_gcm::{
     Aes128GcmDecryptRequest, Aes128GcmEncryptRequest, Aes128GcmKey, Aes128GcmNonce,
     Aes192GcmDecryptRequest, Aes192GcmEncryptRequest, Aes192GcmKey, Aes192GcmNonce, Aes256GcmKey,
@@ -106,18 +104,8 @@ fn seal(
     aad: &[u8],
     plaintext: &[u8],
 ) -> Result<CiphertextWithTag, CryptoError> {
-    let bytes =
-        crate::operations::aead::seal(algorithm, key, nonce, aad, plaintext).map_err(|error| {
-            crypto_error_from_operation_error(
-                algorithm,
-                AeadOperation::Seal,
-                error,
-                key.len(),
-                nonce.len(),
-                plaintext.len(),
-            )
-        })?;
-    CiphertextWithTag::from_vec(bytes).map_err(|_| invalid_output_error(AeadOperation::Seal))
+    let bytes = crate::operations::aead::seal(algorithm, key, nonce, aad, plaintext)?;
+    CiphertextWithTag::from_vec(bytes).map_err(|_| CryptoError::BACKEND_INVALID_STATE)
 }
 
 fn open(
@@ -137,14 +125,5 @@ fn open_zeroizing(
     aad: &[u8],
     ciphertext: &[u8],
 ) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
-    crate::operations::aead::open(algorithm, key, nonce, aad, ciphertext).map_err(|error| {
-        crypto_error_from_operation_error(
-            algorithm,
-            AeadOperation::Open,
-            error,
-            key.len(),
-            nonce.len(),
-            ciphertext.len(),
-        )
-    })
+    crate::operations::aead::open(algorithm, key, nonce, aad, ciphertext)
 }
