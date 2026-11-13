@@ -5,14 +5,26 @@
 //! ML-DSA and SLH-DSA signature operation tests.
 
 #![allow(clippy::expect_used, clippy::panic)]
+#![cfg(all(
+    feature = "dispatch",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32")),
+    any(
+        feature = "ml-dsa-44",
+        feature = "ml-dsa-65",
+        feature = "ml-dsa-87",
+        feature = "slh-dsa"
+    )
+))]
 
 use crypto_core::Algorithm;
 use zeroize::Zeroizing;
 
 const MESSAGE: &[u8] = b"post-quantum signature operation";
 
+#[cfg(any(feature = "ml-dsa-44", feature = "ml-dsa-65", feature = "ml-dsa-87"))]
 #[test]
 fn ml_dsa_operations_match_primitive_parameter_sets_and_reject_tampering() {
+    #[cfg(feature = "ml-dsa-44")]
     ml_dsa_round_trip(
         Algorithm::MlDsa44,
         &[0x44; crypto_ml_dsa_44::ML_DSA_44_SECRET_SEED_LEN],
@@ -20,6 +32,7 @@ fn ml_dsa_operations_match_primitive_parameter_sets_and_reject_tampering() {
         crypto_ml_dsa_44::sign_ml_dsa_44,
         crypto_ml_dsa_44::verify_ml_dsa_44,
     );
+    #[cfg(feature = "ml-dsa-65")]
     ml_dsa_round_trip(
         Algorithm::MlDsa65,
         &[0x65; crypto_ml_dsa_65::ML_DSA_65_SECRET_SEED_LEN],
@@ -27,6 +40,7 @@ fn ml_dsa_operations_match_primitive_parameter_sets_and_reject_tampering() {
         crypto_ml_dsa_65::sign_ml_dsa_65,
         crypto_ml_dsa_65::verify_ml_dsa_65,
     );
+    #[cfg(feature = "ml-dsa-87")]
     ml_dsa_round_trip(
         Algorithm::MlDsa87,
         &[0x87; crypto_ml_dsa_87::ML_DSA_87_SECRET_SEED_LEN],
@@ -36,6 +50,7 @@ fn ml_dsa_operations_match_primitive_parameter_sets_and_reject_tampering() {
     );
 }
 
+#[cfg(feature = "slh-dsa")]
 #[test]
 fn slh_dsa_operation_matches_primitive_and_rejects_tampering() {
     let seed_material = slh_seed_material();
@@ -81,6 +96,7 @@ fn slh_dsa_operation_matches_primitive_and_rejects_tampering() {
     assert_eq!(error, crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE);
 }
 
+#[cfg(feature = "slh-dsa")]
 #[test]
 fn slh_dsa_derivation_rejects_partial_seed_material() {
     let result = reallyme_crypto::operations::signature::derive_key_pair(
@@ -96,6 +112,7 @@ fn slh_dsa_derivation_rejects_partial_seed_material() {
     assert_eq!(error, crypto_core::CryptoError::PRIMITIVE_INVALID_KEY);
 }
 
+#[cfg(any(feature = "ml-dsa-44", feature = "ml-dsa-65", feature = "ml-dsa-87"))]
 fn ml_dsa_round_trip<G, S, V>(
     algorithm: Algorithm,
     seed: &[u8; 32],
@@ -137,6 +154,7 @@ fn ml_dsa_round_trip<G, S, V>(
     assert_eq!(error, crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE);
 }
 
+#[cfg(feature = "slh-dsa")]
 fn slh_seed_material() -> Zeroizing<Vec<u8>> {
     let mut seed_material = Zeroizing::new(Vec::with_capacity(48));
     seed_material.extend_from_slice(&[0x11; 16]);

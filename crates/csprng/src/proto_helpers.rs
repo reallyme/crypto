@@ -75,7 +75,7 @@ impl TryFrom<RandomBytesRequest> for CryptoRandomBytesRequest {
     fn try_from(value: RandomBytesRequest) -> Result<Self, Self::Error> {
         Ok(Self {
             purpose: ProtoKind::from(value.purpose).into(),
-            output_length: u32::try_from(value.output_length)
+            output_length: u64::try_from(value.output_length)
                 .map_err(|_| CryptoError::PRIMITIVE_INVALID_LENGTH)?,
             __buffa_unknown_fields: Default::default(),
         })
@@ -85,7 +85,7 @@ fn random_result(
     purpose: RngOutputKind,
     bytes: &[u8],
 ) -> Result<CryptoRandomBytesResult, CryptoError> {
-    u32::try_from(bytes.len()).map_err(|_| CryptoError::PRIMITIVE_INVALID_LENGTH)?;
+    u64::try_from(bytes.len()).map_err(|_| CryptoError::PRIMITIVE_INVALID_LENGTH)?;
     let mut output = CryptoRandomBytesResult {
         purpose: ProtoKind::from(purpose).into(),
         value: Vec::new(),

@@ -71,29 +71,44 @@ public  final class CryptoRandomBytesRequest extends
   }
 
   public static final int OUTPUT_LENGTH_FIELD_NUMBER = 2;
-  private int outputLength_;
+  private long outputLength_;
   /**
-   * <code>uint32 output_length = 2 [json_name = "outputLength"];</code>
+   * <pre>
+   * Octet count preserves the native usize domain on 64-bit targets. Native
+   * adapters reject unrepresentable lengths on narrower targets before use.
+   * </pre>
+   *
+   * <code>uint64 output_length = 2 [json_name = "outputLength"];</code>
    * @return The outputLength.
    */
   @java.lang.Override
-  public int getOutputLength() {
+  public long getOutputLength() {
     return outputLength_;
   }
   /**
-   * <code>uint32 output_length = 2 [json_name = "outputLength"];</code>
+   * <pre>
+   * Octet count preserves the native usize domain on 64-bit targets. Native
+   * adapters reject unrepresentable lengths on narrower targets before use.
+   * </pre>
+   *
+   * <code>uint64 output_length = 2 [json_name = "outputLength"];</code>
    * @param value The outputLength to set.
    */
-  private void setOutputLength(int value) {
+  private void setOutputLength(long value) {
 
     outputLength_ = value;
   }
   /**
-   * <code>uint32 output_length = 2 [json_name = "outputLength"];</code>
+   * <pre>
+   * Octet count preserves the native usize domain on 64-bit targets. Native
+   * adapters reject unrepresentable lengths on narrower targets before use.
+   * </pre>
+   *
+   * <code>uint64 output_length = 2 [json_name = "outputLength"];</code>
    */
   private void clearOutputLength() {
 
-    outputLength_ = 0;
+    outputLength_ = 0L;
   }
 
   public static me.really.crypto.v1.CryptoRandomBytesRequest parseFrom(
@@ -246,25 +261,40 @@ public  final class CryptoRandomBytesRequest extends
     }
 
     /**
-     * <code>uint32 output_length = 2 [json_name = "outputLength"];</code>
+     * <pre>
+     * Octet count preserves the native usize domain on 64-bit targets. Native
+     * adapters reject unrepresentable lengths on narrower targets before use.
+     * </pre>
+     *
+     * <code>uint64 output_length = 2 [json_name = "outputLength"];</code>
      * @return The outputLength.
      */
     @java.lang.Override
-    public int getOutputLength() {
+    public long getOutputLength() {
       return instance.getOutputLength();
     }
     /**
-     * <code>uint32 output_length = 2 [json_name = "outputLength"];</code>
+     * <pre>
+     * Octet count preserves the native usize domain on 64-bit targets. Native
+     * adapters reject unrepresentable lengths on narrower targets before use.
+     * </pre>
+     *
+     * <code>uint64 output_length = 2 [json_name = "outputLength"];</code>
      * @param value The outputLength to set.
      * @return This builder for chaining.
      */
-    public Builder setOutputLength(int value) {
+    public Builder setOutputLength(long value) {
       copyOnWrite();
       instance.setOutputLength(value);
       return this;
     }
     /**
-     * <code>uint32 output_length = 2 [json_name = "outputLength"];</code>
+     * <pre>
+     * Octet count preserves the native usize domain on 64-bit targets. Native
+     * adapters reject unrepresentable lengths on narrower targets before use.
+     * </pre>
+     *
+     * <code>uint64 output_length = 2 [json_name = "outputLength"];</code>
      * @return This builder for chaining.
      */
     public Builder clearOutputLength() {
@@ -293,7 +323,7 @@ public  final class CryptoRandomBytesRequest extends
             "outputLength_",
           };
           java.lang.String info =
-              "\u0000\u0002\u0000\u0000\u0001\u0002\u0002\u0000\u0000\u0000\u0001\f\u0002\u000b" +
+              "\u0000\u0002\u0000\u0000\u0001\u0002\u0002\u0000\u0000\u0000\u0001\f\u0002\u0003" +
               "";
           return newMessageInfo(DEFAULT_INSTANCE, info, objects);
       }

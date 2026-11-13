@@ -1531,7 +1531,9 @@ message CryptoHpkeP256BaseRecipientGenerateRequest {
 // The entropy provider is a separately borrowed native capability, not data.
 message CryptoRandomBytesRequest {
   RngOutputKind purpose = 1;
-  uint32 output_length = 2;
+  // Octet count preserves the native usize domain on 64-bit targets. Native
+  // adapters reject unrepresentable lengths on narrower targets before use.
+  uint64 output_length = 2;
 }
 
 // Output only: caller-supplied bytes are not imported as fresh random material.
@@ -2049,4 +2051,13 @@ message CryptoShake256ExpandResult {
 message CryptoSecp256k1AgreementRequest {
   bytes private_key = 1;
   bytes peer_public_key_sec1 = 2;
+}
+
+
+// Standalone generation under the existing KeyAgreementKeyGeneration policy.
+// Only the registered key_agreement branch is accepted. The result is the
+// existing CryptoKeyPair with its native exportable-private-material policy;
+// opaque keys and new executable root operation selectors are not introduced.
+message CryptoKeyAgreementGenerateKeyPairRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
 }

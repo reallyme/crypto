@@ -31,7 +31,7 @@ impl SecureRandom for PartialFailure {
         Err(CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)
     }
 }
-fn request(length: u32) -> CryptoRandomBytesRequest {
+fn request(length: u64) -> CryptoRandomBytesRequest {
     CryptoRandomBytesRequest {
         purpose: ProtoKind::RNG_OUTPUT_KIND_GENERIC.into(),
         output_length: length,
@@ -129,4 +129,121 @@ fn fixed_named_results_keep_purpose_and_clearing_storage() {
         output.purpose.as_known(),
         Some(ProtoKind::RNG_OUTPUT_KIND_AES_256_GCM_KEY)
     );
+}
+
+#[cfg(target_pointer_width = "64")]
+struct MustNotBeCalled {
+    called: bool,
+}
+#[cfg(target_pointer_width = "64")]
+impl SecureRandom for MustNotBeCalled {
+    fn fill_secure(&mut self, _output: &mut [u8], _kind: RngOutputKind) -> Result<(), CryptoError> {
+        self.called = true;
+        Err(CryptoError::BACKEND_INTERNAL)
+    }
+}
+
+#[cfg(target_pointer_width = "64")]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn native_64bit_lengths_above_uint32_round_trip_without_allocating_outputs() {
+    let above_u32 = u64::from(u32::MAX)
+        .checked_add(1)
+        .expect("uint32 successor");
+    for length in [above_u32, u64::MAX] {
+        let owner = RandomBytesRequest::try_from(&request(length)).expect("native64-bit metadata");
+        assert_eq!(
+            owner.output_length(),
+            usize::try_from(length).expect("native width")
+        );
+        let wire = CryptoRandomBytesRequest::try_from(owner).expect("uint64 projection");
+        assert_eq!(wire.output_length, length);
+        let mut rng = MustNotBeCalled { called: false };
+        let mut output = [0xa5];
+        assert_eq!(
+            owner.fill(&mut rng, &mut output),
+            Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
+        );
+        assert_eq!(
+            owner.generate::<1>(&mut rng).err(),
+            Some(CryptoError::PRIMITIVE_INVALID_LENGTH)
+        );
+        assert_eq!(output, [0xa5]);
+        assert!(!rng.called);
+    }
+    assert_eq!(
+        request(above_u32).encode_to_vec(),
+        [8, 100, 16, 0x80, 0x80, 0x80, 0x80, 0x10]
+    );
+}
+
+#[cfg(target_pointer_width = "32")]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn native_32bit_lengths_reject_uint64_values_outside_usize() {
+    let above_u32 = u64::from(u32::MAX)
+        .checked_add(1)
+        .expect("uint32 successor");
+    for length in [above_u32, u64::MAX] {
+        assert_eq!(
+            RandomBytesRequest::try_from(&request(length)).err(),
+            Some(CryptoError::PRIMITIVE_INVALID_LENGTH)
+        );
+    }
+    let admitted = RandomBytesRequest::try_from(&request(u64::from(u32::MAX)))
+        .expect("largest32-bit metadata");
+    assert_eq!(admitted.output_length(), usize::MAX);
+    assert_eq!(
+        CryptoRandomBytesRequest::try_from(admitted)
+            .expect("uint64 projection")
+            .output_length,
+        u64::from(u32::MAX)
+    );
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn protojson_preserves_exact_uint64_lengths_and_null_default() {
+    for length in [4_294_967_296u64, 9_007_199_254_740_993, u64::MAX] {
+        for value in [
+            serde_json::json!(length.to_string()),
+            serde_json::json!(length),
+        ] {
+            let input =
+                serde_json::json!({ "purpose": "RNG_OUTPUT_KIND_GENERIC", "outputLength": value });
+            let decoded: CryptoRandomBytesRequest =
+                serde_json::from_value(input).expect("exact uint64 metadata");
+            assert_eq!(decoded.output_length, length);
+            let encoded = serde_json::to_value(&decoded).expect("canonical uint64 JSON");
+            assert_eq!(encoded["outputLength"], length.to_string());
+        }
+    }
+    let decoded: CryptoRandomBytesRequest = serde_json::from_value(serde_json::json!({
+        "purpose": "RNG_OUTPUT_KIND_GENERIC", "outputLength": null
+    }))
+    .expect("null to scalar default");
+    assert_eq!(decoded.output_length, 0);
+    assert_eq!(
+        RandomBytesRequest::try_from(&decoded)
+            .expect("zero metadata")
+            .output_length(),
+        0
+    );
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn protojson_rejects_negative_and_overflow_lengths() {
+    for invalid in [
+        "-1",
+        "\"-1\"",
+        "\"18446744073709551616\"",
+        "18446744073709551616",
+    ] {
+        let document =
+            format!(r#"{{"purpose":"RNG_OUTPUT_KIND_GENERIC","outputLength":{invalid}}}"#);
+        let error = serde_json::from_str::<CryptoRandomBytesRequest>(&document)
+            .expect_err("invalid uint64 metadata");
+        assert_eq!(error.classify(), serde_json::error::Category::Data);
+    }
 }

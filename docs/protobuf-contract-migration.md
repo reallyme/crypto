@@ -455,6 +455,13 @@ unchanged. All added regression sources remain unexecuted.
 
 ## Remaining work
 
+Standalone key-agreement generation now has its own request and adapter for
+X25519/P-256/P-384/P-521, using the existing key-agreement generation policy.
+The random-fill request uses a checked 64-bit byte count so native 64-bit
+lengths remain representable without allocating caller-requested output.
+Provider-dependent success tests follow the selected feature/runtime; unavailable
+HPKE suites retain explicit typed-unsupported assertions.
+
 The implemented identity, error, policy, dimensions, native options, primitive,
 HPKE, utility, format and conformance contracts above are the current 0.4.0
 source state. The original inventory remains frozen historical evidence.

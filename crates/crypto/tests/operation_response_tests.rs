@@ -8,18 +8,23 @@
 #![allow(clippy::expect_used)]
 #![allow(clippy::panic)]
 
+#[cfg(all(feature = "sha2", any(feature = "native", feature = "wasm")))]
 use buffa::{EnumValue, Message, MessageField};
+#[cfg(all(feature = "sha2", any(feature = "native", feature = "wasm")))]
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     __buffa::oneof::crypto_algorithm_identifier::Algorithm as ProtoAlgorithmBranch,
-    __buffa::oneof::crypto_error::Error as CryptoErrorBranch,
     __buffa::oneof::crypto_operation_request::Operation as CryptoOperation,
-    __buffa::oneof::crypto_operation_response::Outcome as CryptoOperationOutcome,
     __buffa::oneof::crypto_operation_result::Result as CryptoOperationResultBranch,
-    CryptoAlgorithmIdentifier, CryptoErrorReason, CryptoHashRequest, CryptoOperationRequest,
-    HashAlgorithm,
+    CryptoAlgorithmIdentifier, CryptoHashRequest, CryptoOperationRequest, HashAlgorithm,
+};
+use crypto_proto::generated::proto::reallyme::crypto::v1::{
+    __buffa::oneof::crypto_error::Error as CryptoErrorBranch,
+    __buffa::oneof::crypto_operation_response::Outcome as CryptoOperationOutcome,
+    CryptoErrorReason,
 };
 use crypto_proto::operation_response_wire::decode_operation_response;
 
+#[cfg(all(feature = "sha2", any(feature = "native", feature = "wasm")))]
 #[test]
 fn operation_response_wraps_hash_result_in_generated_oneof() {
     let output = reallyme_crypto::operation_contract::process_operation_response(
@@ -56,6 +61,7 @@ fn operation_response_wraps_malformed_request_as_generated_error() {
     );
 }
 
+#[cfg(all(feature = "sha2", any(feature = "native", feature = "wasm")))]
 fn hash_operation_request() -> CryptoOperationRequest {
     CryptoOperationRequest {
         operation: Some(CryptoOperation::Hash(Box::new(CryptoHashRequest {

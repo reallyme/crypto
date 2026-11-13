@@ -22,8 +22,13 @@ public interface CryptoRandomBytesRequestOrBuilder extends
   me.really.crypto.v1.RngOutputKind getPurpose();
 
   /**
-   * <code>uint32 output_length = 2 [json_name = "outputLength"];</code>
+   * <pre>
+   * Octet count preserves the native usize domain on 64-bit targets. Native
+   * adapters reject unrepresentable lengths on narrower targets before use.
+   * </pre>
+   *
+   * <code>uint64 output_length = 2 [json_name = "outputLength"];</code>
    * @return The outputLength.
    */
-  int getOutputLength();
+  long getOutputLength();
 }

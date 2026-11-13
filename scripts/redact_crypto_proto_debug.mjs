@@ -165,6 +165,7 @@ for (const name of [
   "CryptoArgon2MobileUnlockRequest",
   "CryptoMaterialPolicyQueryRequest",
   "CryptoRandomFillPolicyQueryRequest",
+  "CryptoKeyAgreementGenerateKeyPairRequest",
 ]) {
   if (messageBodies.has(name)) scalarMetadataMessageNames.add(name);
 }
