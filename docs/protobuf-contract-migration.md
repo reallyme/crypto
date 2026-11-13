@@ -455,45 +455,76 @@ unchanged. All added regression sources remain unexecuted.
 
 ## Remaining work
 
-Standalone key-agreement generation now has its own request and adapter for
-X25519/P-256/P-384/P-521, using the existing key-agreement generation policy.
-The random-fill request uses a checked 64-bit byte count so native 64-bit
-lengths remain representable without allocating caller-requested output.
-Provider-dependent success tests follow the selected feature/runtime; unavailable
-HPKE suites retain explicit typed-unsupported assertions.
+The current compiled implementation checkpoint is
+`e0368ca60ab68eb710b6cf5cf5a46b66fdbaf4c4`. The completed
+[schema-contract reconciliation](schema-contract-reconciliation.md) records
+3,617 declaration/exposure records, 3,511 export edges and all 2,670 frozen
+historical declarations. No supported product item remains unresolved within
+that scope; 47 private-tooling records have explicit dispositions. Native owners,
+borrowed buffers, const generics, injected providers and open traits retain their
+native boundaries. Source reconciliation does not assert universal wire
+callability or cryptographic certification.
 
-The implemented identity, error, policy, dimensions, native options, primitive,
-HPKE, utility, format and conformance contracts above are the current 0.4.0
-source state. The original inventory remains frozen historical evidence.
-Completeness of the migration still requires a current compiler-visible export
-and semantic reconciliation; a declared enum or DTO is not proof that an
-operation, option, lifecycle or SDK route is reachable.
+Standalone contracts include native key-agreement generation for
+X25519/P-256/P-384/P-521, raw secp256k1 agreement, borrowed SHAKE256 expansion
+and the checked `uint64` random-output length domain. Generation delegates the
+existing `KeyAgreementKeyGeneration` semantic owner, preserving its policy.
+SHAKE has no allocating convenience; native RNG fill requires caller-owned
+storage and an explicitly borrowed entropy capability. Length conversion to
+`usize` remains checked without allocating large outputs for metadata projection.
 
-- Reconcile current public declarations, cross-workspace reexports/aliases,
-  macro-expanded exports and public trait/default members with the frozen
-  inventory and all newly added items. Distinguish direct native adapters,
-  executable root routes, representation helpers and conformance-only gates;
-  preserve explicit dispositions for derived/blanket members and adapter-only
-  utilities. Close concrete missing domains without inventing executable routes.
-- Complete final-checkpoint formatting, native all-target/all-feature Clippy,
-  Buf compatibility/generation/freshness, TypeScript compilation and the native,
-  WASM and seven mobile target compile checks. Earlier passing statements above
-  describe their migration checkpoints; they do not certify subsequent changes.
-  Final aggregate checks remain pending in the compatibility matrix.
-- Execute the new parity, optional-presence, negative-input, canonical-error,
-  ownership, provider-failure and deterministic conformance regressions against
-  the final native/WASM source, with applicable property/fuzz and SDK validation
-  before release readiness is asserted. No runtime execution of these migration
-  regressions is claimed. Historical primitive/device results retain their
-  pre-migration source scope.
-- Retain absent-versus-present-empty bytes/messages and reject zero/unknown
-  selectors and unknown modifiers in each actual adapter. The baseline schema
-  has no manual `bool has_x` fields to retire. Generated transport copies must
-  retain independent cleanup without making native keys or live contexts
-  serializable. Deserializer-internal scratch remains a separate memory limit.
-- Keep the accepted primefield coordinate-serialization temporary and BP512
-  full-order certificate as explicit audit limits. Local ownership repairs,
-  schema completeness and known answers do not close those separate findings.
-- Keep the 44 Rust source package versions at 0.4.0 distinct from unchanged
-  0.3.17 SDK artifact versions and published packages. Coordinated release and
-  remote publication remain separate delivery steps; no 0.4.0 release is claimed.
+`CryptoHkdfNativeDeriveRequest` now binds output length explicitly to native `N`,
+using existing protected `CryptoHkdfDeriveInputs`. The owner-local
+`HkdfNativeDeriveInputs<N>::derive` returns the existing protected output;
+`derive_result` copies fallibly into `CryptoHkdfNativeDeriveResult` only after
+native success. All three existing suite identities retain native output limits,
+error precedence and optional SHA3 feature behavior. Salt absence versus
+present-empty and exact `info` bytes survive. The admitted native width domain
+is represented separately from the unchanged root 16/24/32/48/64-byte profiles;
+no new root execution selector, backend or default feature is introduced.
+
+The secp256k1 shared-secret owner now has actual drop cleanup and receives bytes
+directly into final storage. Three HMAC authentication helpers immediately guard
+finalized tag arrays with private clearing owners; tag bytes, verification and
+public APIs are unchanged. The two deprecated random key-generation aliases
+return canonical typed `Result` values in 0.4; the
+[migration note](0.4-entropy-error-migration.md) explains that source adjustment.
+These local repairs remain distinct from the earlier SHA-2 leaf repair and
+accepted dependency ownership limits.
+
+Strict native workspace Clippy, full WASM workspace all-target/all-feature checks,
+narrow-reader WASM all-target checks, narrow HKDF with and without SHA3, native
+HMAC and all seven mobile library target compiles passed with warnings denied.
+The full WASM profile excludes native FFI and two private native maintenance
+tools. Strict Rustdoc captured 45 native and 42 WASM targets under the same
+warning policy. Buf lint/breaking against the pinned baseline, TypeScript build,
+hardening idempotence, maintenance freshness, Actionlint and static CI policy
+passed. Offline Cargo Deny passed; registry versions, sources and checksums
+remain unchanged. A later documentation/evidence-only handoff must preserve the
+compiled source scope and verify implementation, generated source, manifests
+and lockfiles are unchanged.
+
+Remaining release and audit requirements are:
+
+- Execute the migration's native/WASM parity, known-answer, optional-presence,
+  negative-input, canonical-error, ownership, provider-failure and conformance
+  regressions, with applicable property/fuzz, SDK and platform validation before
+  release readiness is asserted. These tests remain unexecuted; historical
+  primitive/device evidence retains its pre-0.4 source scope. No new application
+  installation or device execution is claimed.
+- Retain the documented caller/upstream ownership limits. Storage moved from
+  public generated fields or replaced directly remains caller-owned. Borrowed
+  and shared view backings, manually altered malformed Buffa view states and
+  deserializer-internal scratch retain their separate ownership and
+  representation limits; normal owned-decoder hardening does not claim an
+  exploit or upstream repair.
+- Keep the accepted primefield coordinate temporary, outstanding BP512 full-order
+  certificate and serde/compiler/runtime memory limits separate from local
+  ownership repairs and schema correspondence. The earlier SHA-2 leaf path
+  avoids the upstream fixed-output temporary without repairing unrelated upstream
+  consumers. Affected CR-DIS-03 cleanup remains open as documented.
+- Keep all 44 aligned Rust source packages at 0.4.0, including 41 publishable and
+  three non-publishable packages, distinct from SDK artifact versions and existing
+  published packages at 0.3.17. Two private workspace tools remain at 0.0.0.
+  Coordinated release and explicitly authorized remote publication remain
+  separate delivery steps; no 0.4.0 release is claimed.
