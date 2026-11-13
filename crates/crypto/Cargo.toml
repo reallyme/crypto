@@ -227,6 +227,8 @@ operation-response = [
     "crypto-hkdf?/proto",
     "crypto-pbkdf2?/proto",
     "crypto-concat-kdf?/proto",
+    "crypto-sha3?/proto",
+    "crypto-secp256k1?/proto",
     "crypto-argon2id?/proto",
     "crypto-rsa?/proto",
     "envelopes-jwk?/proto",

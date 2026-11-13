@@ -91,31 +91,40 @@ impl core::fmt::Debug for Sha3_512Digest {
 pub fn digest_sha3_224(message: &[u8]) -> Sha3_224Digest {
     let mut hasher = Sha3_224::new();
     hasher.update(message);
-    let output = hasher.finalize();
-
-    let mut bytes = [0u8; SHA3_224_DIGEST_LENGTH];
-    bytes.copy_from_slice(&output);
-    Sha3_224Digest { bytes }
+    // Establish the final clearing owner before finalization writes any bytes.
+    // Direct output avoids both an unguarded finalized array and a second
+    // plain local copy, without relying on optional array cleanup features.
+    let mut digest = Sha3_224Digest {
+        bytes: [0u8; SHA3_224_DIGEST_LENGTH],
+    };
+    hasher.finalize_into((&mut digest.bytes).into());
+    digest
 }
 
 /// Compute SHA3-384 digest bytes for `message`.
 pub fn digest_sha3_384(message: &[u8]) -> Sha3_384Digest {
     let mut hasher = Sha3_384::new();
     hasher.update(message);
-    let output = hasher.finalize();
-
-    let mut bytes = [0u8; SHA3_384_DIGEST_LENGTH];
-    bytes.copy_from_slice(&output);
-    Sha3_384Digest { bytes }
+    // Establish the final clearing owner before finalization writes any bytes.
+    // Direct output avoids both an unguarded finalized array and a second
+    // plain local copy, without relying on optional array cleanup features.
+    let mut digest = Sha3_384Digest {
+        bytes: [0u8; SHA3_384_DIGEST_LENGTH],
+    };
+    hasher.finalize_into((&mut digest.bytes).into());
+    digest
 }
 
 /// Compute SHA3-512 digest bytes for `message`.
 pub fn digest_sha3_512(message: &[u8]) -> Sha3_512Digest {
     let mut hasher = Sha3_512::new();
     hasher.update(message);
-    let output = hasher.finalize();
-
-    let mut bytes = [0u8; SHA3_512_DIGEST_LENGTH];
-    bytes.copy_from_slice(&output);
-    Sha3_512Digest { bytes }
+    // Establish the final clearing owner before finalization writes any bytes.
+    // Direct output avoids both an unguarded finalized array and a second
+    // plain local copy, without relying on optional array cleanup features.
+    let mut digest = Sha3_512Digest {
+        bytes: [0u8; SHA3_512_DIGEST_LENGTH],
+    };
+    hasher.finalize_into((&mut digest.bytes).into());
+    digest
 }

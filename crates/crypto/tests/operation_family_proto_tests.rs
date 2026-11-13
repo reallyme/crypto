@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#![cfg(feature = "operation-response")]
 #![allow(missing_docs, clippy::expect_used)]
+#![cfg(feature = "operation-response")]
 use buffa::{EnumValue, Enumeration};
 use crypto_core::CryptoError;
 use crypto_proto::generated::proto::reallyme::crypto::v1::CryptoAlgorithmFamily;

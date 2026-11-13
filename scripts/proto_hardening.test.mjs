@@ -4,7 +4,7 @@
 
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -197,4 +197,105 @@ test("CI policy and generation modes do not launch repository tests", () => {
     assert.equal(calls.filter((args) => args[0] === "--test").length,
       mode === undefined || mode === "--release-packages" ? 1 : 0, mode);
   }
+});
+
+function supplementalMetadataFixture(callback) {
+  const root = mkdtempSync(join(tmpdir(), "crypto-metadata-hardening-"));
+  try {
+    for (const path of ["gen", "crates/proto/src/generated", "crates/proto/proto",
+      "packages/ts/src/proto/generated", "scripts/redact_crypto_proto_debug.mjs"]) {
+      mkdirSync(dirname(join(root, path)), { recursive: true });
+      cpSync(new URL(`../${path}`, import.meta.url), join(root, path), { recursive: true });
+    }
+    const script = join(root, "scripts/redact_crypto_proto_debug.mjs");
+    callback(root, script);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+function supplementalMetadataRecords() {
+  // Discover these output records from the same authoritative schemas. A new
+  // numeric record must inherit the coverage without another message-name list.
+  const directory = new URL("../crates/proto/proto/reallyme/crypto/v1/", import.meta.url);
+  return readdirSync(directory).filter((name) => name.endsWith(".proto") && name !== "crypto.proto")
+    .sort().flatMap((name) => {
+      const schema = readFileSync(new URL(name, directory), "utf8");
+      const basename = name.slice(0, -".proto".length);
+      return [...schema.matchAll(/^message\s+(\w+)\s*\{/gmu)]
+        .map((match) => ({ name: match[1], basename }));
+    });
+}
+
+test("numeric metadata outside the main schema keeps guarded ownership and public moves", () => {
+  const records = supplementalMetadataRecords();
+  assert.ok(records.length > 0);
+  for (const { name, basename } of records) {
+    const stem = `../crates/proto/src/generated/buffa/reallyme.crypto.v1.${basename}`;
+    const source = readFileSync(new URL(`${stem}.rs`, import.meta.url), "utf8");
+    assert.match(generatedBody(source, `pub struct ${name} {`),
+      /pub __buffa_unknown_fields: __ReallyMeZeroizingUnknownFields/u);
+    assert.ok(source.includes(`impl ::zeroize::ZeroizeOnDrop for ${name} {}`));
+    assert.ok(!source.includes(`impl ::core::ops::Drop for ${name} {`));
+    const message = generatedBody(source, `impl ::buffa::Message for ${name} {`);
+    assert.equal(message.split(".push(__reallyme_decode_unknown_field(tag, buf, ctx)?);").length - 1, 1);
+    assert.equal(message.split("__reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);").length - 1, 1);
+    assert.doesNotMatch(message, /::buffa::encoding::decode_unknown_field|self\.__buffa_unknown_fields\.clear\(\)/u);
+    assert.match(generatedBody(source, `impl ::core::fmt::Debug for ${name} {`), /formatter\.write_str/u);
+    const view = readFileSync(new URL(`${stem}.__view.rs`, import.meta.url), "utf8");
+    assert.ok(view.includes(`#[derive(Clone, Default)]\npub struct ${name}View<'a> {`));
+    assert.ok(view.includes(`#[derive(Clone)]\npub struct ${name}OwnedView(`));
+    assert.ok(view.includes(`formatter.write_str("${name}View(<redacted>)")`));
+    assert.ok(view.includes(`formatter.write_str("${name}OwnedView(<redacted>)")`));
+    assert.match(view, new RegExp(`impl<'__a> ::serde::Serialize\\s+for ${name}View<'__a>`, "u"));
+    assert.match(view, new RegExp(`impl ::serde::Serialize\\s+for ${name}OwnedView`, "u"));
+  }
+});
+
+test("numeric metadata regeneration is stable and preserves compiler timestamps", () => {
+  supplementalMetadataFixture((root, script) => {
+    const paths = [...new Set(supplementalMetadataRecords().flatMap(({ basename }) => [
+      `crates/proto/src/generated/buffa/reallyme.crypto.v1.${basename}.rs`,
+      `crates/proto/src/generated/buffa/reallyme.crypto.v1.${basename}.__view.rs`,
+    ]))];
+    const past = new Date("2000-01-01T00:00:00Z");
+    for (const path of paths) utimesSync(join(root, path), past, past);
+    const timestamps = paths.map((path) => statSync(join(root, path)).mtimeMs);
+    const result = spawnSync(process.execPath, [script, "--check-idempotent"], { encoding: "utf8" });
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(paths.map((path) => statSync(join(root, path)).mtimeMs), timestamps);
+  });
+});
+
+for (const obligation of ["merge", "clear"]) {
+  test(`numeric metadata fails closed when one record loses its ${obligation} guard`, () => {
+    supplementalMetadataFixture((root, script) => {
+      const { name, basename } = supplementalMetadataRecords()[0];
+      const path = join(root, `crates/proto/src/generated/buffa/reallyme.crypto.v1.${basename}.rs`);
+      const source = readFileSync(path, "utf8");
+      const body = generatedBody(source, `impl ::buffa::Message for ${name} {`);
+      const original = obligation === "merge"
+        ? ".push(__reallyme_decode_unknown_field(tag, buf, ctx)?);"
+        : "__reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);";
+      const corrupt = obligation === "merge"
+        ? ".push(unreviewed_unknown_decoder(tag, buf, ctx)?);"
+        : "unreviewed_unknown_clear(&mut self.__buffa_unknown_fields);";
+      const changedBody = body.replace(original, corrupt);
+      assert.notEqual(changedBody, body, "fixture must change the selected record");
+      writeFileSync(path, source.replace(body, changedBody));
+      const result = spawnSync(process.execPath, [script], { encoding: "utf8" });
+      assert.notEqual(result.status, 0);
+      assert.match(result.stderr, /incomplete supplemental metadata unknown-field hardening/u);
+    });
+  });
+}
+
+test("supplemental numeric discovery rejects unguarded byte-bearing schema additions", () => {
+  supplementalMetadataFixture((root, script) => {
+    const path = join(root, "crates/proto/proto/reallyme/crypto/v1/native_options.proto");
+    writeFileSync(path, `${readFileSync(path, "utf8")}\nmessage FutureByteRecord {\n  bytes payload = 1;\n}\n`);
+    const result = spawnSync(process.execPath, [script], { encoding: "utf8" });
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /supplemental metadata requires a numeric-only schema owner/u);
+  });
 });

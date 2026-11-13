@@ -2025,3 +2025,28 @@ message CryptoHpkePublicKeyDescriptor {
   HpkeSuiteIdentifier suite = 1;
   bytes public_key = 2;
 }
+
+// Standalone SHAKE256 expansion. Length is in octets, not bits. Zero output is
+// valid, and arbitrary native widths are retained rather than restricted to a
+// fixed-output hash identity. This does not add an executable root operation.
+message CryptoShake256ExpandRequest {
+  bytes input = 1;
+  uint64 output_length = 2;
+}
+
+// A caller-owned clearing output destination. The caller selects its resource
+// budget and initializes the admitted length before invoking the borrowed
+// adapter; a wire output length never triggers an allocation in that adapter.
+message CryptoShake256ExpandResult {
+  bytes output = 1;
+}
+
+
+// Standalone raw secp256k1 ECDH under its existing native wire contract:
+// private scalar is exactly 32 octets and peer key is exactly 65-octet
+// uncompressed SEC1. This does not introduce a generic algorithm selector.
+// The result is CryptoNativeAgreementResult; no KDF is applied here.
+message CryptoSecp256k1AgreementRequest {
+  bytes private_key = 1;
+  bytes peer_public_key_sec1 = 2;
+}

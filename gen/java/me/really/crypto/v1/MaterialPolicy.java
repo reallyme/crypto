@@ -19,6 +19,12 @@ public  final class MaterialPolicy extends
         MaterialPolicy, MaterialPolicy.Builder> implements
     // @@protoc_insertion_point(message_implements:reallyme.crypto.v1.MaterialPolicy)
     MaterialPolicyOrBuilder {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  @java.lang.Override
+  public java.lang.String toString() {
+    return "MaterialPolicy{<redacted>}";
+  }
+
   private MaterialPolicy() {
   }
   public static final int OWNER_FIELD_NUMBER = 1;

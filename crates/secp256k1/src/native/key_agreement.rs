@@ -29,6 +29,14 @@ impl Zeroize for Secp256k1SharedSecret {
     }
 }
 
+// This owner contains a plain array, so a marker alone does not clear it.
+// Keep actual destruction adjacent to the explicit clearing implementation.
+impl Drop for Secp256k1SharedSecret {
+    fn drop(&mut self) {
+        self.zeroize();
+    }
+}
+
 impl ZeroizeOnDrop for Secp256k1SharedSecret {}
 
 /// Derives a raw secp256k1 ECDH shared secret for HPKE-style protocols.
@@ -54,7 +62,13 @@ pub fn derive_secp256k1_shared_secret(
     let public_key =
         PublicKey::from_sec1_bytes(public_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     let shared_secret = diffie_hellman(secret_key.to_nonzero_scalar(), public_key.as_affine());
-    let mut bytes = [0_u8; SECP256K1_SHARED_SECRET_LEN];
-    bytes.copy_from_slice(shared_secret.raw_secret_bytes());
-    Ok(Secp256k1SharedSecret(bytes))
+    // Initialize the final clearing owner before copying the raw x-coordinate.
+    // The backend owner and returned owner then each clear their own storage.
+    let mut output = Secp256k1SharedSecret([0_u8; SECP256K1_SHARED_SECRET_LEN]);
+    output.0.copy_from_slice(shared_secret.raw_secret_bytes());
+    Ok(output)
 }
+
+#[cfg(test)]
+#[path = "key_agreement_ownership_tests.rs"]
+mod ownership_tests;

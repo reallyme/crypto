@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#![cfg(feature = "proto")]
 #![allow(missing_docs, clippy::expect_used)]
+#![cfg(feature = "proto")]
 use buffa::{EnumValue, Enumeration, Message, MessageField};
 use crypto_argon2id::proto_options::Argon2DeriveInputs;
 use crypto_argon2id::{resolve_profile_params_for_platform, Argon2Caps, Argon2PlatformClass};

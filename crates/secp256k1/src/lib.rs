@@ -7,6 +7,10 @@
 mod constants;
 mod jose_signature;
 
+/// Standalone raw ECDH contract with the existing uncompressed SEC1 policy.
+#[cfg(all(feature = "proto", any(feature = "native", feature = "wasm")))]
+pub mod proto;
+
 pub use constants::{
     BIP340_SCHNORR_AUX_RAND_LEN, BIP340_SCHNORR_MESSAGE_LEN, BIP340_SCHNORR_PUBLIC_KEY_LEN,
     BIP340_SCHNORR_SIGNATURE_LEN, SECP256K1_SECRET_KEY_LEN,

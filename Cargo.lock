@@ -2169,12 +2169,14 @@ dependencies = [
 name = "reallyme-crypto-secp256k1"
 version = "0.4.0"
 dependencies = [
+ "buffa",
  "ecdsa",
  "getrandom 0.4.3",
  "hex",
  "hex-literal",
  "k256",
  "reallyme-crypto-core",
+ "reallyme-crypto-proto",
  "sha2",
  "wasm-bindgen-test",
  "zeroize",
@@ -2209,10 +2211,13 @@ dependencies = [
 name = "reallyme-crypto-sha3"
 version = "0.4.0"
 dependencies = [
+ "buffa",
  "hex",
  "reallyme-crypto-proto",
+ "serde_json",
  "sha3 0.12.0",
  "shake",
+ "wasm-bindgen-test",
  "zeroize",
 ]
 
@@ -2224,6 +2229,7 @@ dependencies = [
  "hex",
  "reallyme-crypto-proto",
  "sha3 0.12.0",
+ "wasm-bindgen-test",
  "zeroize",
 ]
 

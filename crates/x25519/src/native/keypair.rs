@@ -6,29 +6,20 @@ use crypto_core::CryptoError;
 use x25519_dalek::{PublicKey, StaticSecret};
 use zeroize::Zeroizing;
 
-/// Generate an X25519 keypair.
+/// Generate an X25519 keypair with typed entropy failures.
 ///
-/// Returns:
-/// - public key: 32 bytes
-/// - secret key: 32 bytes, in a zeroizing wrapper so it is wiped when the
-///   caller drops it
+/// The public key retains its 32-byte representation, and the
+/// returned private scalar remains in its existing zeroizing owner. In 0.4 this
+/// compatibility name returns `Result`, so an unavailable entropy provider
+/// cannot reach the historical infallible provider path.
 ///
-/// # Panics
+/// # Errors
 ///
-/// The legacy infallible API inherits the provider panic on entropy failure.
-/// Use [`try_generate_x25519_keypair`] for typed failure handling.
-#[deprecated(note = "use try_generate_x25519_keypair for typed entropy failures")]
-pub fn generate_x25519_keypair() -> (Vec<u8>, Zeroizing<Vec<u8>>) {
-    let secret = StaticSecret::random();
-    let public = PublicKey::from(&secret);
-
-    // Keep the stack copy of the secret scalar inside a zeroizing wrapper.
-    let secret_bytes: Zeroizing<[u8; 32]> = Zeroizing::new(secret.to_bytes());
-
-    (
-        public.as_bytes().to_vec(),
-        Zeroizing::new(secret_bytes.to_vec()),
-    )
+/// Returns [`CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE`] when OS entropy
+/// cannot be obtained. Other existing native validation failures propagate.
+#[deprecated(note = "use try_generate_x25519_keypair")]
+pub fn generate_x25519_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
+    try_generate_x25519_keypair()
 }
 
 /// Generate an X25519 keypair with explicit entropy failure handling.

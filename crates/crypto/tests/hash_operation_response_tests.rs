@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! Generated operation-response coverage for hash semantics.
+
 #![cfg(feature = "operation-response")]
 #![allow(clippy::expect_used)]
 #![allow(clippy::panic)]
-
-//! Generated operation-response coverage for hash semantics.
 
 use buffa::{EnumValue, Message, MessageField};
 use crypto_proto::generated::proto::reallyme::crypto::v1::{

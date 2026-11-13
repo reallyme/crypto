@@ -46,15 +46,18 @@ The readiness policy requires that pinned check instead of forbidding it.
 HKDF suites, PBKDF2 PRFs, Argon2 profiles/versions, RSA hashes and DER encodings,
 explicit ECDSA curves/hashes, and prime-order groups now have schema metadata
 and owner-local total conversions. Generated metadata owners also clear retained
-unknown bytes. Native numeric values and existing executable suites are preserved.
+unknown bytes, including descriptive policy and Argon2 numeric records outside
+`crypto.proto`. Borrowed and shared views redact debug output; their backing
+input bytes retain the caller or shared-buffer lifetime described in the memory
+model. Native numeric values and existing executable suites are preserved.
 
 Native workspace Clippy (all targets/features, warnings denied), the selected
 WASM execution profile, TypeScript compilation, Buf lint/breaking against the
 published baseline, generation idempotence and CI policy checks pass. Test
 sources compile in the native all-targets check; test execution is deferred.
-Sparse feature builds retain a narrowly scoped test-crate documentation
-allowance before the test's feature gate, so disabled AEAD tests do not create
-an unrelated missing-crate-documentation warning.
+Sparse feature builds retain test-crate documentation or existing test-only
+allowances before the feature gate, so disabled test crates do not create
+unrelated missing-crate-documentation warnings.
 
 ## Canonical native error contract
 
@@ -415,6 +418,40 @@ equal numeric sizes are not treated as interchangeable meanings. Names, types,
 values, feature gates and ABI widths remain unchanged. An explicit regression
 source covers every alias and the historical ABI values without a second
 production table.
+
+## Variable-output hashing
+
+The standalone SHAKE256 request specifies its output length in octets as
+`uint64`. Its borrowed-output adapter checks conversion, exact destination width
+and unknown modifiers before writing. Zero-length and arbitrary native widths
+remain valid. Callers retain a clearing destination owner; no unbounded
+allocating convenience or fixed-output hash selector is introduced. ProtoJSON
+uses the pinned generator's exact 64-bit integer helper.
+
+The three wide SHA-3 one-shot leaves now finalize directly into their final
+clearing owners, matching the existing SHA3-256 ownership path. Existing NIST
+answers, exact-byte/width negatives, JSON integer cases and ownership regression
+sources are retained or added without executing them.
+
+## Raw secp256k1 agreement and entropy errors
+
+A fixed standalone secp256k1 agreement contract reaches the existing 32-byte
+scalar and 65-byte uncompressed SEC1 operation. It returns the raw x-coordinate
+through the existing protected agreement result; signature and HPKE suite
+selectors remain separate. Independent published scalar/point answers include
+a leading-zero x-coordinate, with exact-width and invalid-point negatives.
+
+The native shared-secret owner now has an actual clearing drop implementation;
+its previous marker alone did not run cleanup. Copying now initializes that final
+owner directly. This local ownership defect is separate from the accepted
+upstream encoding temporary.
+
+The two deprecated X25519/secp256k1 key-generation names now return canonical
+typed results by forwarding to their existing fallible implementations. This
+deliberate 0.4 error-boundary break removes their historical entropy-provider
+panic paths. The [migration note](0.4-entropy-error-migration.md) describes the
+caller adjustment. Successful bytes, provider policy and default features are
+unchanged. All added regression sources remain unexecuted.
 
 ## Remaining work
 

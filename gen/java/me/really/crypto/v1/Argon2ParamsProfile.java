@@ -18,6 +18,12 @@ public  final class Argon2ParamsProfile extends
         Argon2ParamsProfile, Argon2ParamsProfile.Builder> implements
     // @@protoc_insertion_point(message_implements:reallyme.crypto.v1.Argon2ParamsProfile)
     Argon2ParamsProfileOrBuilder {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  @java.lang.Override
+  public java.lang.String toString() {
+    return "Argon2ParamsProfile{<redacted>}";
+  }
+
   private Argon2ParamsProfile() {
   }
   public static final int MEM_KIB_FIELD_NUMBER = 1;

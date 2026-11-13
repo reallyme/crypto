@@ -4068,20 +4068,14 @@ pub struct MaterialPolicy {
     pub destruction: ::buffa::EnumValue<DestructionPolicy>,
     #[serde(skip)]
     #[doc(hidden)]
-    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+    pub __buffa_unknown_fields: __ReallyMeZeroizingUnknownFields,
 }
 impl ::core::fmt::Debug for MaterialPolicy {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("MaterialPolicy")
-            .field("owner", &self.owner)
-            .field("sensitivity", &self.sensitivity)
-            .field("retention", &self.retention)
-            .field("zeroization", &self.zeroization)
-            .field("export", &self.export)
-            .field("destruction", &self.destruction)
-            .finish()
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("MaterialPolicy(<redacted>)")
     }
 }
+impl ::zeroize::ZeroizeOnDrop for MaterialPolicy {}
 impl MaterialPolicy {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
@@ -4260,7 +4254,7 @@ impl ::buffa::Message for MaterialPolicy {
             }
             _ => {
                 self.__buffa_unknown_fields
-                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+                    .push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
             }
         }
         ::core::result::Result::Ok(())
@@ -4272,7 +4266,7 @@ impl ::buffa::Message for MaterialPolicy {
         self.zeroization = ::buffa::EnumValue::from(0);
         self.export = ::buffa::EnumValue::from(0);
         self.destruction = ::buffa::EnumValue::from(0);
-        self.__buffa_unknown_fields.clear();
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
     }
 }
 impl ::buffa::ExtensionSet for MaterialPolicy {
@@ -4352,19 +4346,14 @@ pub struct OperationSecretMaterialPolicy {
     pub output_material: ::buffa::EnumValue<OutputMaterial>,
     #[serde(skip)]
     #[doc(hidden)]
-    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+    pub __buffa_unknown_fields: __ReallyMeZeroizingUnknownFields,
 }
 impl ::core::fmt::Debug for OperationSecretMaterialPolicy {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("OperationSecretMaterialPolicy")
-            .field("input", &self.input)
-            .field("output", &self.output)
-            .field("request_wire", &self.request_wire)
-            .field("response_wire", &self.response_wire)
-            .field("output_material", &self.output_material)
-            .finish()
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("OperationSecretMaterialPolicy(<redacted>)")
     }
 }
+impl ::zeroize::ZeroizeOnDrop for OperationSecretMaterialPolicy {}
 impl OperationSecretMaterialPolicy {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
@@ -4546,7 +4535,7 @@ impl ::buffa::Message for OperationSecretMaterialPolicy {
             }
             _ => {
                 self.__buffa_unknown_fields
-                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+                    .push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
             }
         }
         ::core::result::Result::Ok(())
@@ -4557,7 +4546,7 @@ impl ::buffa::Message for OperationSecretMaterialPolicy {
         self.request_wire = ::buffa::MessageField::none();
         self.response_wire = ::buffa::MessageField::none();
         self.output_material = ::buffa::EnumValue::from(0);
-        self.__buffa_unknown_fields.clear();
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
     }
 }
 impl ::buffa::ExtensionSet for OperationSecretMaterialPolicy {

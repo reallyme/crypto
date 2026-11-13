@@ -408,17 +408,14 @@ pub struct Argon2Caps {
     pub lanes_cap: u32,
     #[serde(skip)]
     #[doc(hidden)]
-    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+    pub __buffa_unknown_fields: __ReallyMeZeroizingUnknownFields,
 }
 impl ::core::fmt::Debug for Argon2Caps {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("Argon2Caps")
-            .field("mem_cap_kib", &self.mem_cap_kib)
-            .field("time_cost_cap", &self.time_cost_cap)
-            .field("lanes_cap", &self.lanes_cap)
-            .finish()
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("Argon2Caps(<redacted>)")
     }
 }
+impl ::zeroize::ZeroizeOnDrop for Argon2Caps {}
 impl Argon2Caps {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
@@ -510,7 +507,7 @@ impl ::buffa::Message for Argon2Caps {
             }
             _ => {
                 self.__buffa_unknown_fields
-                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+                    .push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
             }
         }
         ::core::result::Result::Ok(())
@@ -519,7 +516,7 @@ impl ::buffa::Message for Argon2Caps {
         self.mem_cap_kib = 0u32;
         self.time_cost_cap = 0u32;
         self.lanes_cap = 0u32;
-        self.__buffa_unknown_fields.clear();
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
     }
 }
 impl ::buffa::ExtensionSet for Argon2Caps {
@@ -581,17 +578,14 @@ pub struct Argon2ParamsProfile {
     pub lanes: u32,
     #[serde(skip)]
     #[doc(hidden)]
-    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+    pub __buffa_unknown_fields: __ReallyMeZeroizingUnknownFields,
 }
 impl ::core::fmt::Debug for Argon2ParamsProfile {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("Argon2ParamsProfile")
-            .field("mem_kib", &self.mem_kib)
-            .field("time_cost", &self.time_cost)
-            .field("lanes", &self.lanes)
-            .finish()
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("Argon2ParamsProfile(<redacted>)")
     }
 }
+impl ::zeroize::ZeroizeOnDrop for Argon2ParamsProfile {}
 impl Argon2ParamsProfile {
     /// Protobuf type URL for this message, for use with `Any::pack` and
     /// `Any::unpack_if`.
@@ -683,7 +677,7 @@ impl ::buffa::Message for Argon2ParamsProfile {
             }
             _ => {
                 self.__buffa_unknown_fields
-                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+                    .push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
             }
         }
         ::core::result::Result::Ok(())
@@ -692,7 +686,7 @@ impl ::buffa::Message for Argon2ParamsProfile {
         self.mem_kib = 0u32;
         self.time_cost = 0u32;
         self.lanes = 0u32;
-        self.__buffa_unknown_fields.clear();
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
     }
 }
 impl ::buffa::ExtensionSet for Argon2ParamsProfile {

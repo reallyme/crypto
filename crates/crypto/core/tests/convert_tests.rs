@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#![cfg(feature = "protobuf")]
 //! Tests for protobuf-to-core algorithm conversion drift guards.
+
+#![cfg(feature = "protobuf")]
 #![allow(clippy::unwrap_used, clippy::panic)]
 
 use crypto_core::convert::{

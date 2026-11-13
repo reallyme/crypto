@@ -17,6 +17,8 @@ repository.workspace = true
 name = "crypto_sha3"
 
 [features]
+# Standalone schema adapters do not select a cryptographic runtime/backend.
+proto = ["crypto-proto/generated"]
 default = []
 native = []
 wasm = []
@@ -28,6 +30,9 @@ shake = { workspace = true }
 zeroize = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
+serde_json = { workspace = true }
+buffa = { workspace = true }
+wasm-bindgen-test = { workspace = true }
 hex = { workspace = true }
 
 [lints]

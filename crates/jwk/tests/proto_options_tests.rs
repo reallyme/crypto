@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#![cfg(feature = "proto")]
 #![allow(missing_docs, clippy::expect_used)]
+#![cfg(feature = "proto")]
 #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use buffa::Enumeration;
 use buffa::Message;
