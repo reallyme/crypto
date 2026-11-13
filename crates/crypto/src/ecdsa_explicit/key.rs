@@ -149,6 +149,59 @@ impl EcdsaKey {
         })
     }
 
+    // Keep profile-specific private-key access inside the existing owner. A
+    // generic scalar callback would allow adapters to export private material.
+    #[cfg(feature = "operation-response")]
+    pub(crate) fn sign_p256_low_s(&self, input: EcdsaInput<'_>) -> Result<Vec<u8>, CryptoError> {
+        if self.curve != EcdsaCurve::P256 {
+            return Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM);
+        }
+        #[cfg(any(feature = "native", feature = "wasm"))]
+        {
+            match input {
+                EcdsaInput::Message {
+                    hash: super::EcdsaHash::Sha256,
+                    bytes,
+                } => crypto_p256::sign_p256_sha256_message_low_s_der(
+                    self.private.expose_secret(),
+                    bytes,
+                ),
+                EcdsaInput::Prehash {
+                    hash: super::EcdsaHash::Sha256,
+                    bytes,
+                } => {
+                    let digest = crypto_p256::P256Sha256Digest::try_from_slice(bytes)?;
+                    crypto_p256::sign_p256_sha256_digest_low_s_der(
+                        self.private.expose_secret(),
+                        &digest,
+                    )
+                }
+                _ => Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
+            }
+        }
+        #[cfg(not(any(feature = "native", feature = "wasm")))]
+        {
+            let _ = input;
+            Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+        }
+    }
+
+    #[cfg(all(feature = "operation-response", feature = "native"))]
+    pub(crate) fn compressed_p256_public_key(
+        &self,
+    ) -> Result<
+        [u8; crypto_core::contract_constants::p256::P256_PUBLIC_KEY_COMPRESSED_LEN],
+        CryptoError,
+    > {
+        if self.curve != EcdsaCurve::P256 {
+            return Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM);
+        }
+        let scalar =
+            <&[u8; crypto_p256::P256_SECRET_KEY_LEN]>::try_from(self.private.expose_secret())
+                .map_err(|_| CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY)?;
+        crypto_p256::compressed_public_key_from_private_key(scalar)
+    }
+
     /// Raw ECDH x-coordinate, fixed-width big-endian with leading zeros kept.
     /// No KDF, transcript processing or protocol labels are applied here.
     pub fn agree(&self, peer_sec1: &[u8]) -> Result<SecretSlice<u8>, CryptoError> {

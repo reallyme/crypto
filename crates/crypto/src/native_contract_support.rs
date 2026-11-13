@@ -5,9 +5,13 @@
 //! Shared protected output construction for standalone native contracts.
 
 use crypto_core::CryptoError;
+#[cfg(any(
+    feature = "ecdsa-explicit",
+    feature = "ed448",
+    feature = "prime-groups"
+))]
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
-    CryptoNativeKeyCapabilities, CryptoNativeVerificationResult, CryptoVerificationStatus,
-    NativeKeySource,
+    CryptoNativeKeyCapabilities, NativeKeySource,
 };
 
 pub(crate) fn known_fields(empty: bool) -> Result<(), CryptoError> {
@@ -20,6 +24,31 @@ pub(crate) fn known_fields(empty: bool) -> Result<(), CryptoError> {
 
 // The destination must already belong to a clearing generated message. Install
 // capacity and initialized length before copying any secret or privacy bytes.
+#[cfg(any(
+    feature = "ecdsa-explicit",
+    feature = "ed448",
+    feature = "prime-groups",
+    feature = "key-identifier-sha1",
+    feature = "p256",
+    feature = "secp256k1",
+    feature = "ed25519",
+    all(
+        any(feature = "native", feature = "wasm"),
+        any(
+            feature = "x25519",
+            feature = "p384",
+            feature = "p521",
+            feature = "ml-dsa-44",
+            feature = "ml-dsa-65",
+            feature = "ml-dsa-87",
+            feature = "ml-kem-512",
+            feature = "ml-kem-768",
+            feature = "ml-kem-1024",
+            feature = "slh-dsa",
+            feature = "x-wing"
+        )
+    )
+))]
 pub(crate) fn copy_bytes(destination: &mut Vec<u8>, source: &[u8]) -> Result<(), CryptoError> {
     if !destination.is_empty() {
         return Err(CryptoError::BACKEND_INVALID_STATE);
@@ -32,6 +61,11 @@ pub(crate) fn copy_bytes(destination: &mut Vec<u8>, source: &[u8]) -> Result<(),
     Ok(())
 }
 
+#[cfg(any(
+    feature = "ecdsa-explicit",
+    feature = "ed448",
+    feature = "prime-groups"
+))]
 pub(crate) fn capabilities(
     source: NativeKeySource,
     signing: bool,
@@ -43,7 +77,7 @@ pub(crate) fn capabilities(
         NativeKeySource::NATIVE_KEY_SOURCE_SOFTWARE_OWNER => false,
         NativeKeySource::NATIVE_KEY_SOURCE_OPAQUE_SIGNER => true,
         NativeKeySource::NATIVE_KEY_SOURCE_UNSPECIFIED => {
-            return Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+            return Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM);
         }
     };
     Ok(CryptoNativeKeyCapabilities {
@@ -58,7 +92,12 @@ pub(crate) fn capabilities(
     })
 }
 
-pub(crate) fn verified() -> CryptoNativeVerificationResult {
+#[cfg(any(feature = "ecdsa-explicit", feature = "ed448"))]
+pub(crate) fn verified(
+) -> crypto_proto::generated::proto::reallyme::crypto::v1::CryptoNativeVerificationResult {
+    use crypto_proto::generated::proto::reallyme::crypto::v1::{
+        CryptoNativeVerificationResult, CryptoVerificationStatus,
+    };
     CryptoNativeVerificationResult {
         status: CryptoVerificationStatus::CRYPTO_VERIFICATION_STATUS_VALID.into(),
         __buffa_unknown_fields: Default::default(),

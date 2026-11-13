@@ -261,3 +261,14 @@ Copy input parameter explicitly. Caller-owned inputs remain unchanged. This is
 a local named-buffer repair, independent of the separately accepted upstream
 prime-field serialization gap; it does not promise erasure of every compiler
 or register copy. Runtime regression execution remains deferred.
+
+### Key-format serialization intermediates
+
+P-256 container import immediately guards its named serialized scalar before
+validation and copying to the returned clearing owner. Trusted JWK
+canonicalization now clears owned serde JSON strings, including object keys,
+on successful output and failure. These call-site ownership repairs preserve
+existing parsing, canonicalization and cryptographic bytes. They do not alter
+the separately tracked upstream prime-field serialization limitation or claim
+control over serializer/compiler-internal copies. Runtime regression execution
+remains deferred.

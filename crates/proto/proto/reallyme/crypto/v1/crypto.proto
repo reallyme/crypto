@@ -6,6 +6,7 @@ syntax = "proto3";
 
 package reallyme.crypto.v1;
 
+import "reallyme/crypto/v1/native_formats.proto";
 import "reallyme/crypto/v1/native_options.proto";
 import "reallyme/crypto/v1/native_primitives.proto";
 import "reallyme/crypto/v1/native_protocols.proto";
@@ -1514,6 +1515,79 @@ message CryptoPoseidon2HashResult {
   bytes digest = 1;
 }
 
+// Standalone public-key format transforms reuse the existing native encoders.
+// No executable operation oneof route or alternative JSON parser is added.
+message CryptoPublicKeyToJwkRequest {
+  KeyAlgorithm algorithm = 1;
+  bytes public_key = 2;
+  CryptoJwkOptions options = 3;
+}
+
+message CryptoPublicKeyToJwkResult {
+  PublicJwk jwk = 1;
+}
+
+// Exact RFC8785 bytes returned by the existing per-algorithm JCS functions.
+message CryptoPublicKeyToJcsResult {
+  bytes canonical_jcs = 1;
+}
+
+message CryptoJwkToMultikeyRequest {
+  PublicJwk jwk = 1;
+}
+
+message CryptoJwkToMultikeyResult {
+  bytes multikey = 1;
+}
+
+message CryptoMultikeyToJwkRequest {
+  bytes multikey = 1;
+  CryptoJwkOptions options = 2;
+}
+
+message CryptoMultikeyToJwkResult {
+  PublicJwk jwk = 1;
+}
+
+// CryptoGenerateMultikeyKeypairRequest reaches existing native software-keypair
+// generation. Key identity does not enable a backend or a disabled algorithm.
+message CryptoGenerateMultikeyKeypairRequest {
+  CryptoKeyAlgorithmIdentifier algorithm = 1;
+}
+
+// CryptoGenerateMultikeyKeypairResult preserves the existing caller-owned
+// software secret output. Opaque/platform keys cannot be exported by this API.
+message CryptoGenerateMultikeyKeypairResult {
+  CryptoKeyAlgorithmIdentifier algorithm = 1;
+  bytes public_key = 2;
+  bytes secret_key = 3;
+  bytes public_key_multikey = 4;
+}
+
+// CryptoPublicKeyToMultikeyRequest preserves the native input representation;
+// canonicalization, identity validation and availability remain native policy.
+message CryptoPublicKeyToMultikeyRequest {
+  CryptoKeyAlgorithmIdentifier algorithm = 1;
+  bytes public_key = 2;
+}
+
+// CryptoPublicKeyToMultikeyResult contains the existing z-prefixed UTF-8 text.
+message CryptoPublicKeyToMultikeyResult {
+  bytes multikey = 1;
+}
+
+// CryptoVerificationMethodMultikeyRequest carries exact UTF-8 binding metadata.
+// Validation is structural and does not establish signature validity or trust.
+message CryptoVerificationMethodMultikeyRequest {
+  CryptoKeyAlgorithmIdentifier algorithm = 1;
+  bytes binding_type = 2;
+  bytes public_key_multibase = 3;
+}
+
+// CryptoVerificationMethodMultikeyResult acknowledges structural validity only.
+message CryptoVerificationMethodMultikeyResult {
+}
+
 // JsonWebKey carries a public JWK document at API/storage boundaries. The JSON
 // member is the canonical JCS form used by the package vectors; private key
 // material is intentionally out of scope for this message.
@@ -1717,4 +1791,94 @@ message CryptoX448KeyDescriptor {
 }
 message CryptoX448AgreementRequest {
   CryptoX448PublicKey peer_public_key = 1;
+}
+
+// Standalone native helper contracts. These do not extend executable operation
+// oneofs, enable a provider, or change existing compatibility signing profiles.
+message CryptoEcdsaSignatureTranscodeRequest {
+  CryptoEcdsaCurveIdentifier curve = 1;
+  EcdsaEncoding source_encoding = 2;
+  EcdsaEncoding target_encoding = 3;
+  bytes signature = 4;
+}
+
+// secp256k1 is an existing leaf identity, separate from explicit ECDSA curves.
+message CryptoSecp256k1SignatureTranscodeRequest {
+  EcdsaEncoding source_encoding = 1;
+  EcdsaEncoding target_encoding = 2;
+  bytes signature = 3;
+}
+
+// This transform validates scalar ranges and normalizes S; it authenticates
+// neither a message nor a digest. Output retains the selected input encoding.
+message CryptoP256SignatureNormalizeRequest {
+  EcdsaEncoding encoding = 1;
+  bytes signature = 2;
+}
+
+// P-256/SHA-256 deterministic low-S DER only. Exact message bytes are hashed
+// once; the explicit prehash alternative must already be a SHA-256 digest.
+message CryptoP256LowSSignRequest {
+  CryptoEcdsaInput input = 1;
+}
+
+// Existing strict low-S verification consumes a digest, never a message.
+message CryptoP256LowSVerifyRequest {
+  bytes signature_der = 1;
+  bytes sha256_digest = 2;
+  bytes public_key_sec1 = 3;
+}
+
+message CryptoP256PrivateKeyContainerImportRequest {
+  P256KeyContainerFormat format = 1;
+  bytes document = 2;
+}
+
+message CryptoP256PublicKeyContainerImportRequest {
+  P256KeyContainerFormat format = 1;
+  bytes document = 2;
+}
+
+// Obtains the existing native-only compressed-public-key derivation from a
+// supplied protected P-256 owner, without serializing or exporting its scalar.
+message CryptoP256CompressedPublicKeyRequest {}
+
+message CryptoEcdsaPublicKeyValidationRequest {
+  CryptoEcdsaCurveIdentifier curve = 1;
+  bytes public_key_sec1 = 2;
+}
+
+message CryptoPublicKeyFormatRequest {
+  CryptoKeyAlgorithmIdentifier algorithm = 1;
+  PublicKeyFormatOperation operation = 2;
+  bytes public_key = 3;
+}
+
+message CryptoPublicKeyBytes {
+  bytes value = 1;
+}
+
+message CryptoPublicKeyAffineCoordinates {
+  bytes x = 1;
+  bytes y = 2;
+}
+
+// Existing secp256k1 decompression returns affine coordinates; NIST SEC1
+// decompression returns an uncompressed point. The result keeps that distinction.
+message CryptoPublicKeyFormatResult {
+  oneof representation {
+    CryptoPublicKeyBytes encoded = 1;
+    CryptoPublicKeyAffineCoordinates affine = 2;
+  }
+}
+
+// RFC 5280 method (1) hashes the exact subjectPublicKey BIT STRING payload.
+// Exclude ASN.1 tag/length and unused-bit-count; retain a SEC1 point prefix.
+// This request does not parse SPKI or enable general SHA-1 operations.
+message CryptoSubjectKeyIdentifierRequest {
+  bytes subject_public_key_bits = 1;
+}
+
+message CryptoSubjectKeyIdentifierResult {
+  bytes identifier = 1;
 }

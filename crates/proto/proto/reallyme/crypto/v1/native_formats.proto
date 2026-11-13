@@ -1,0 +1,43 @@
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+syntax = "proto3";
+package reallyme.crypto.v1;
+
+option java_multiple_files = true;
+option java_package = "me.really.crypto.v1";
+option swift_prefix = "ReallyMeProto";
+
+// Exact existing P-256 import formats. DER occupies 100-199 and PEM 200-299.
+// No content sniffing is implied except the explicitly selected private PEM
+// policy, which accepts the two existing private-key labels and nothing else.
+enum P256KeyContainerFormat {
+  P256_KEY_CONTAINER_FORMAT_UNSPECIFIED = 0;
+  reserved 1 to 99;
+  P256_KEY_CONTAINER_FORMAT_PKCS8_DER = 100;
+  P256_KEY_CONTAINER_FORMAT_SEC1_DER = 110;
+  P256_KEY_CONTAINER_FORMAT_SPKI_DER = 120;
+  P256_KEY_CONTAINER_FORMAT_PKCS8_PEM = 200;
+  P256_KEY_CONTAINER_FORMAT_SEC1_PEM = 210;
+  P256_KEY_CONTAINER_FORMAT_SPKI_PEM = 220;
+  P256_KEY_CONTAINER_FORMAT_PRIVATE_PEM = 230;
+}
+
+// Each value names an existing public-key helper, not a generic stronger
+// validator. Encode/decode occupy 100-199, SEC1 transforms 200-299, explicit
+// assertion/identity validation 300-399 and BIP-340 representation 400-499.
+// In particular secp256k1 encode/decode/assert check compressed shape only;
+// decompression parses the curve point. The algorithm remains separately typed.
+enum PublicKeyFormatOperation {
+  PUBLIC_KEY_FORMAT_OPERATION_UNSPECIFIED = 0;
+  reserved 1 to 99;
+  PUBLIC_KEY_FORMAT_OPERATION_ENCODE = 100;
+  PUBLIC_KEY_FORMAT_OPERATION_DECODE = 110;
+  PUBLIC_KEY_FORMAT_OPERATION_COMPRESS = 200;
+  PUBLIC_KEY_FORMAT_OPERATION_DECOMPRESS = 210;
+  PUBLIC_KEY_FORMAT_OPERATION_ASSERT = 300;
+  PUBLIC_KEY_FORMAT_OPERATION_VALIDATE_IDENTITY = 310;
+  PUBLIC_KEY_FORMAT_OPERATION_BIP340_ENCODE = 400;
+  PUBLIC_KEY_FORMAT_OPERATION_BIP340_DECODE = 410;
+}

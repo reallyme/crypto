@@ -1382,3 +1382,57 @@ pub mod crypto_ecdsa_input {
         }
     }
 }
+pub mod crypto_public_key_format_result {
+    #[allow(unused_imports)]
+    use super::*;
+    #[derive(Clone, PartialEq, Debug)]
+    pub enum Representation {
+        Encoded(::buffa::alloc::boxed::Box<super::super::super::CryptoPublicKeyBytes>),
+        Affine(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::CryptoPublicKeyAffineCoordinates,
+            >,
+        ),
+    }
+    impl ::buffa::Oneof for Representation {}
+    impl From<super::super::super::CryptoPublicKeyBytes> for Representation {
+        fn from(v: super::super::super::CryptoPublicKeyBytes) -> Self {
+            Self::Encoded(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl From<super::super::super::CryptoPublicKeyBytes>
+    for ::core::option::Option<Representation> {
+        fn from(v: super::super::super::CryptoPublicKeyBytes) -> Self {
+            Self::Some(Representation::from(v))
+        }
+    }
+    impl From<super::super::super::CryptoPublicKeyAffineCoordinates> for Representation {
+        fn from(v: super::super::super::CryptoPublicKeyAffineCoordinates) -> Self {
+            Self::Affine(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl From<super::super::super::CryptoPublicKeyAffineCoordinates>
+    for ::core::option::Option<Representation> {
+        fn from(v: super::super::super::CryptoPublicKeyAffineCoordinates) -> Self {
+            Self::Some(Representation::from(v))
+        }
+    }
+    impl ::serde::Serialize for Representation {
+        fn serialize<S: ::serde::Serializer>(
+            &self,
+            s: S,
+        ) -> ::core::result::Result<S::Ok, S::Error> {
+            use ::serde::ser::SerializeMap;
+            let mut map = s.serialize_map(Some(1))?;
+            match self {
+                Self::Encoded(v) => {
+                    map.serialize_entry("encoded", &**v)?;
+                }
+                Self::Affine(v) => {
+                    map.serialize_entry("affine", &**v)?;
+                }
+            }
+            map.end()
+        }
+    }
+}

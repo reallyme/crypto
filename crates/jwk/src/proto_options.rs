@@ -78,11 +78,34 @@ impl ProtectedJwk {
     pub fn as_jwk(&self) -> &Jwk {
         &self.jwk
     }
+    /// Replaces KID through this owner without changing key identity or encoding.
+    /// Failure drops the consumed owner and clears every owned field.
+    pub fn with_key_id(mut self, kid: Option<&str>) -> Result<Self, CryptoError> {
+        let target = match &mut self.jwk {
+            Jwk::Ec(value) => &mut value.kid,
+            Jwk::Okp(value) => &mut value.kid,
+            Jwk::Akp(value) => &mut value.kid,
+        };
+        target.zeroize();
+        *target = None;
+        copy_optional_string(target, kid)?;
+        Ok(self)
+    }
+
     fn take_jwk(&mut self) -> Jwk {
         // Used only after the destination set has reserved its full capacity.
         core::mem::replace(&mut self.jwk, empty_jwk())
     }
 }
+impl TryFrom<Jwk> for ProtectedJwk {
+    type Error = CryptoError;
+    fn try_from(jwk: Jwk) -> Result<Self, Self::Error> {
+        let owner = Self { jwk };
+        let _public_key = Zeroizing::new(owner.jwk.public_key_bytes()?);
+        Ok(owner)
+    }
+}
+
 impl Zeroize for ProtectedJwk {
     fn zeroize(&mut self) {
         clear_jwk(&mut self.jwk);

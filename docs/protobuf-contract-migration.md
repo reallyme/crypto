@@ -326,6 +326,32 @@ owners. Optional leaf metadata features and weak root forwarding keep backend
 selection unchanged; no new executable operation selectors are added. Parity,
 invalid-input and owner regression sources are included but unexecuted.
 
+## Key formats, canonical signatures and identifiers
+
+Standalone format contracts reach the existing explicit ECDSA/secp256k1
+transcodes, P-256 low-S normalization and signing/verification helpers,
+container import, compressed public-key extraction, existing public-key format
+operations and the narrowly scoped RFC 5280 subject-key-identifier operation.
+Encoding, curve and message/prehash choices remain explicit. The separate
+low-S helpers do not change interoperable legacy signing or verification.
+Container helpers retain their existing native-only availability, and typed
+unsupported errors preserve disabled-provider behavior.
+
+Typed JWK/JCS and multikey transformations now have matching requests/results
+and protected native adapters. They preserve existing canonicalization, codec
+identities, validation and unsupported families; no alternative JSON parser or
+normalizer is introduced. Optional metadata bytes are copied exactly through
+clearing owners. The dispatch multikey generation/binding helpers also have
+contracts, retaining their existing software-private-output policy and key
+validation order. No opaque private key or live context becomes serializable.
+
+Trusted JWK JSON values now clear their owned strings and map keys on every
+exit. P-256 container import immediately guards its named serialized scalar
+before validation/copy. These local ownership changes are separate from
+protocol vocabulary and the accepted upstream coordinate-temporary gap.
+Format tests use static PEM fixtures, so metadata validation does not broaden
+production dependencies. Regression sources remain unexecuted.
+
 ## Remaining work
 
 - Migrate the remaining options, policies, content modes, key-source contracts,

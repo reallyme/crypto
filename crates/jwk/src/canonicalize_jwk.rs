@@ -12,8 +12,10 @@ pub(crate) fn canonicalize_jwk<T: Serialize + ?Sized>(jwk: &T) -> Result<String,
     // These callers serialize fixed, flat public-JWK fields. Serializer and
     // structural/number/depth failures therefore indicate a trusted invariant
     // failure, rather than malformed untrusted JSON text.
-    let value = serde_json::to_value(jwk).map_err(|_| JwtError::BACKEND_INTERNAL)?;
-    canonicalize_trusted_json_value(&value).map_err(|error| match error {
+    let value = crate::serialize_value::ClearingJsonValue(
+        serde_json::to_value(jwk).map_err(|_| JwtError::BACKEND_INTERNAL)?,
+    );
+    canonicalize_trusted_json_value(&value.0).map_err(|error| match error {
         // Optional caller metadata can carry an I-JSON-forbidden noncharacter.
         // Preserve this real input rejection instead of calling it internal.
         JcsError::Noncharacter => JwtError::PRIMITIVE_INVALID_ENCODING,

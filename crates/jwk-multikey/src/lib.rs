@@ -4,6 +4,10 @@
 
 //! Conversion between ReallyMe JWK public keys and multikey strings.
 
+/// Protected standalone adapters for existing JWK and multikey transforms.
+#[cfg(feature = "proto")]
+pub mod proto_transforms;
+
 mod error;
 mod to_jwk;
 mod to_multikey;

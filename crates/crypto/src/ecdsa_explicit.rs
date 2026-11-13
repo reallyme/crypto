@@ -16,6 +16,8 @@ mod constants;
 mod digest;
 mod encode;
 #[cfg(feature = "operation-response")]
+pub mod format_contract;
+#[cfg(feature = "operation-response")]
 mod identity;
 mod key;
 #[cfg(all(
