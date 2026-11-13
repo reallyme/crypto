@@ -9,6 +9,32 @@ The source API is versioned 0.4.0. It replaces the legacy nested error
 variants as a deliberate breaking change. Existing 0.3 registry packages and
 release tags are not modified. No new release has been published.
 
+## Implementation completion
+
+The schema-first 0.4.0 refactor is complete within the public API scope recorded
+in the [reconciliation](schema-contract-reconciliation.md). No supported product
+item remains unresolved. Native protected owners, borrowed storage and injected
+providers retain their documented boundaries rather than acquiring serialized
+private state or an implicit backend.
+
+| Requested change | Completed implementation and evidence |
+| --- | --- |
+| Protobuf Contract rules | The local ignored `AGENTS.md` defines schema-first API ownership, total checked conversions, canonical reasons, reserved identifiers and Buf checks. |
+| Inventory before migration | The frozen 2,670-declaration inventory remains unchanged; the current reconciliation records 3,617 declarations/exposures and 3,511 export edges with explicit dispositions. |
+| Algorithm and suite identities | Schema-defined identities have total owner-local conversions and compiled parity/negative regression sources; HPKE registration and availability remain separate decisions. |
+| Shared errors | The approved breaking API replaces legacy error variants with one validated schema-owned error type. Every nonzero schema reason has exactly one native constant; adapters preserve canonical reasons. Coverage sources reject unspecified/unknown native reasons and check complete mappings. |
+| Remaining vocabularies, policy records and limits | Schema-owned options, provider/material policies, immutable dimensions, suites and registries have generated authority, native adapters and compiled parity/negative sources. |
+| Presence | Presence-bearing bytes use proto3 `optional`; retired private-draft flag tags/names are reserved. No hand-made `bool has_x` fields remain in the schema. Selection-policy booleans remain explicit options. |
+| Regeneration and compatibility | Buf lint and breaking against the pinned 0.3.17 baseline pass. Regenerating and hardening all 790 tracked binding artifacts reproduces the committed bytes exactly; error/constants/HPKE maintenance freshness and hardening idempotence pass. |
+| Native and target compilation | Strict native Clippy, WASM, seven mobile targets, minimum-version and sparse-feature compilation are recorded with their source scope in the [compatibility matrix](reader-primitive-compatibility.md#current-040-validation-status). |
+
+No implementation migration step is deferred to release validation. Added test
+sources are compiled but unexecuted under the requested no-tests constraint.
+Runtime known answers, negative/ownership regressions, property/fuzz and SDK
+execution, accepted dependency/audit limits, and coordinated publication remain
+the separate release requirements listed below. Existing published 0.3.17
+packages and SDK artifact versions are unchanged.
+
 ## Identity migration
 
 The first identity step defines operation-independent asymmetric key identity
@@ -453,7 +479,7 @@ panic paths. The [migration note](0.4-entropy-error-migration.md) describes the
 caller adjustment. Successful bytes, provider policy and default features are
 unchanged. All added regression sources remain unexecuted.
 
-## Remaining work
+## Release validation and audit limits
 
 The compiler inventory checkpoint is
 `e0368ca60ab68eb710b6cf5cf5a46b66fdbaf4c4`. The later private RSA ownership and
