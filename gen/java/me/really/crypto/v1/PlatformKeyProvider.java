@@ -86,13 +86,13 @@ public enum PlatformKeyProvider
           }
         };
 
-  public static com.google.protobuf.Internal.EnumVerifier 
+  public static com.google.protobuf.Internal.EnumVerifier
       internalGetVerifier() {
     return PlatformKeyProviderVerifier.INSTANCE;
   }
 
-  private static final class PlatformKeyProviderVerifier implements 
-       com.google.protobuf.Internal.EnumVerifier { 
+  private static final class PlatformKeyProviderVerifier implements
+       com.google.protobuf.Internal.EnumVerifier {
           static final com.google.protobuf.Internal.EnumVerifier
               INSTANCE = new PlatformKeyProviderVerifier();
           @java.lang.Override
@@ -109,4 +109,3 @@ public enum PlatformKeyProvider
 
   // @@protoc_insertion_point(enum_scope:reallyme.crypto.v1.PlatformKeyProvider)
 }
-

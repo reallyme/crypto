@@ -121,4 +121,3 @@ public inline fun me.really.crypto.v1.CryptoMacVerifyRequest.copy(block: `me.rea
 
 public val me.really.crypto.v1.CryptoMacVerifyRequestOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

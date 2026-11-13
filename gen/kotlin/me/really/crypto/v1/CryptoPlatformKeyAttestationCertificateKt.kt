@@ -54,4 +54,3 @@ public object CryptoPlatformKeyAttestationCertificateKt {
 }
 public inline fun me.really.crypto.v1.CryptoPlatformKeyAttestationCertificate.copy(block: `me.really.crypto.v1`.CryptoPlatformKeyAttestationCertificateKt.Dsl.() -> kotlin.Unit): me.really.crypto.v1.CryptoPlatformKeyAttestationCertificate =
   `me.really.crypto.v1`.CryptoPlatformKeyAttestationCertificateKt.Dsl._create(this.toBuilder()).apply { block() }._build()
-

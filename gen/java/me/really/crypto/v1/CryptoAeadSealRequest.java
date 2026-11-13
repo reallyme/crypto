@@ -100,7 +100,7 @@ public  final class CryptoAeadSealRequest extends
    */
   private void setKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     key_ = value;
   }
   /**
@@ -132,7 +132,7 @@ public  final class CryptoAeadSealRequest extends
    */
   private void setNonce(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     nonce_ = value;
   }
   /**
@@ -159,7 +159,7 @@ public  final class CryptoAeadSealRequest extends
    */
   private void setAad(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     aad_ = value;
   }
   /**
@@ -194,7 +194,7 @@ public  final class CryptoAeadSealRequest extends
    */
   private void setPlaintext(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     plaintext_ = value;
   }
   /**
@@ -571,4 +571,3 @@ public  final class CryptoAeadSealRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

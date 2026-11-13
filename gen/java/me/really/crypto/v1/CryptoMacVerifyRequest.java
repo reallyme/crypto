@@ -89,7 +89,7 @@ public  final class CryptoMacVerifyRequest extends
    */
   private void setTag(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     tag_ = value;
   }
   /**
@@ -124,7 +124,7 @@ public  final class CryptoMacVerifyRequest extends
    */
   private void setKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     key_ = value;
   }
   /**
@@ -155,7 +155,7 @@ public  final class CryptoMacVerifyRequest extends
    */
   private void setMessage(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     message_ = value;
   }
   /**
@@ -484,4 +484,3 @@ public  final class CryptoMacVerifyRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

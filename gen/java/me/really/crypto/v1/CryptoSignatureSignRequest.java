@@ -88,7 +88,7 @@ public  final class CryptoSignatureSignRequest extends
    */
   private void setMessage(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     message_ = value;
   }
   /**
@@ -123,7 +123,7 @@ public  final class CryptoSignatureSignRequest extends
    */
   private void setSecretKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     secretKey_ = value;
   }
   /**
@@ -427,4 +427,3 @@ public  final class CryptoSignatureSignRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

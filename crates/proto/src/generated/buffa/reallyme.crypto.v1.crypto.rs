@@ -11714,6 +11714,893 @@ pub mod crypto_operation_result {
     #[doc(inline)]
     pub use super::__buffa::view::oneof::crypto_operation_result::Result as ResultView;
 }
+/// ProviderDecision is the complete non-secret decision computed by dispatch.
+/// It describes feature, custody and fallback policy; it is never caller
+/// authorization and must not be accepted as a provider override.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct ProviderDecision {
+    /// Field 1: `operation`
+    #[serde(
+        rename = "operation",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub operation: ::buffa::EnumValue<ProviderOperation>,
+    /// Field 2: `algorithm`
+    #[serde(
+        rename = "algorithm",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub algorithm: ::buffa::EnumValue<KeyAlgorithm>,
+    /// Field 3: `provider_kind`
+    #[serde(
+        rename = "providerKind",
+        alias = "provider_kind",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub provider_kind: ::buffa::EnumValue<ProviderKind>,
+    /// Field 4: `lane`
+    #[serde(
+        rename = "lane",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub lane: ::buffa::EnumValue<ProviderLane>,
+    /// Field 5: `disposition`
+    #[serde(
+        rename = "disposition",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub disposition: ::buffa::EnumValue<ProviderDisposition>,
+    /// Field 6: `reason`
+    #[serde(
+        rename = "reason",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub reason: ::buffa::EnumValue<ProviderPolicyReason>,
+    /// Field 7: `key_residency`
+    #[serde(
+        rename = "keyResidency",
+        alias = "key_residency",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub key_residency: ::buffa::EnumValue<KeyResidency>,
+    /// Field 8: `key_copy_boundary`
+    #[serde(
+        rename = "keyCopyBoundary",
+        alias = "key_copy_boundary",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub key_copy_boundary: ::buffa::EnumValue<KeyCopyBoundary>,
+    /// Field 9: `output_policy`
+    #[serde(
+        rename = "outputPolicy",
+        alias = "output_policy",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub output_policy: ::buffa::EnumValue<ProviderOutputPolicy>,
+    /// Field 10: `fallback`
+    #[serde(
+        rename = "fallback",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub fallback: ::buffa::EnumValue<FallbackPolicy>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for ProviderDecision {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("ProviderDecision")
+            .field("operation", &self.operation)
+            .field("algorithm", &self.algorithm)
+            .field("provider_kind", &self.provider_kind)
+            .field("lane", &self.lane)
+            .field("disposition", &self.disposition)
+            .field("reason", &self.reason)
+            .field("key_residency", &self.key_residency)
+            .field("key_copy_boundary", &self.key_copy_boundary)
+            .field("output_policy", &self.output_policy)
+            .field("fallback", &self.fallback)
+            .finish()
+    }
+}
+impl ::core::ops::Drop for ProviderDecision {
+    fn drop(&mut self) {
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ProviderDecision {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::bytes::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        fn deserialize_zeroizing_string<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::string::String>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "operation", with = "::buffa::json_helpers::proto_enum")]
+            operation: ::buffa::EnumValue<ProviderOperation>,
+            #[serde(rename = "algorithm", with = "::buffa::json_helpers::proto_enum")]
+            algorithm: ::buffa::EnumValue<KeyAlgorithm>,
+            #[serde(rename = "providerKind", alias = "provider_kind", with = "::buffa::json_helpers::proto_enum")]
+            provider_kind: ::buffa::EnumValue<ProviderKind>,
+            #[serde(rename = "lane", with = "::buffa::json_helpers::proto_enum")]
+            lane: ::buffa::EnumValue<ProviderLane>,
+            #[serde(rename = "disposition", with = "::buffa::json_helpers::proto_enum")]
+            disposition: ::buffa::EnumValue<ProviderDisposition>,
+            #[serde(rename = "reason", with = "::buffa::json_helpers::proto_enum")]
+            reason: ::buffa::EnumValue<ProviderPolicyReason>,
+            #[serde(rename = "keyResidency", alias = "key_residency", with = "::buffa::json_helpers::proto_enum")]
+            key_residency: ::buffa::EnumValue<KeyResidency>,
+            #[serde(rename = "keyCopyBoundary", alias = "key_copy_boundary", with = "::buffa::json_helpers::proto_enum")]
+            key_copy_boundary: ::buffa::EnumValue<KeyCopyBoundary>,
+            #[serde(rename = "outputPolicy", alias = "output_policy", with = "::buffa::json_helpers::proto_enum")]
+            output_policy: ::buffa::EnumValue<ProviderOutputPolicy>,
+            #[serde(rename = "fallback", with = "::buffa::json_helpers::proto_enum")]
+            fallback: ::buffa::EnumValue<FallbackPolicy>,
+        }
+
+        let wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            operation: wire.operation,
+            algorithm: wire.algorithm,
+            provider_kind: wire.provider_kind,
+            lane: wire.lane,
+            disposition: wire.disposition,
+            reason: wire.reason,
+            key_residency: wire.key_residency,
+            key_copy_boundary: wire.key_copy_boundary,
+            output_policy: wire.output_policy,
+            fallback: wire.fallback,
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for ProviderDecision {}
+impl ProviderDecision {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.ProviderDecision";
+}
+::buffa::impl_default_instance!(ProviderDecision);
+impl ::buffa::MessageName for ProviderDecision {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "ProviderDecision";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.ProviderDecision";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.ProviderDecision";
+}
+impl ::buffa::Message for ProviderDecision {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.operation.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        {
+            let val = self.algorithm.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        {
+            let val = self.provider_kind.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        {
+            let val = self.lane.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        {
+            let val = self.disposition.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        {
+            let val = self.reason.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        {
+            let val = self.key_residency.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        {
+            let val = self.key_copy_boundary.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        {
+            let val = self.output_policy.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        {
+            let val = self.fallback.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.operation.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        {
+            let val = self.algorithm.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(2u32, val, buf);
+            }
+        }
+        {
+            let val = self.provider_kind.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(3u32, val, buf);
+            }
+        }
+        {
+            let val = self.lane.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(4u32, val, buf);
+            }
+        }
+        {
+            let val = self.disposition.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(5u32, val, buf);
+            }
+        }
+        {
+            let val = self.reason.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(6u32, val, buf);
+            }
+        }
+        {
+            let val = self.key_residency.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(7u32, val, buf);
+            }
+        }
+        {
+            let val = self.key_copy_boundary.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(8u32, val, buf);
+            }
+        }
+        {
+            let val = self.output_policy.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(9u32, val, buf);
+            }
+        }
+        {
+            let val = self.fallback.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(10u32, val, buf);
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.operation = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.algorithm = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.provider_kind = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.lane = ::buffa::EnumValue::from(::buffa::types::decode_int32(buf)?);
+            }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.disposition = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            6u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.reason = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            7u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.key_residency = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            8u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.key_copy_boundary = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            9u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.output_policy = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            10u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.fallback = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.operation = ::buffa::EnumValue::from(0);
+        self.algorithm = ::buffa::EnumValue::from(0);
+        self.provider_kind = ::buffa::EnumValue::from(0);
+        self.lane = ::buffa::EnumValue::from(0);
+        self.disposition = ::buffa::EnumValue::from(0);
+        self.reason = ::buffa::EnumValue::from(0);
+        self.key_residency = ::buffa::EnumValue::from(0);
+        self.key_copy_boundary = ::buffa::EnumValue::from(0);
+        self.output_policy = ::buffa::EnumValue::from(0);
+        self.fallback = ::buffa::EnumValue::from(0);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for ProviderDecision {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.ProviderDecision";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for ProviderDecision {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __PROVIDER_DECISION_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.ProviderDecision",
+    to_json: ::buffa::type_registry::any_to_json::<ProviderDecision>,
+    from_json: ::buffa::type_registry::any_from_json::<ProviderDecision>,
+    is_wkt: false,
+};
+/// ProviderDecisionRequest selects the existing read-only native policy query.
+/// The runtime computes a fresh decision from the compiled provider policy.
+/// This standalone message does not add an executable operation oneof route.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct ProviderDecisionRequest {
+    /// Field 1: `operation`
+    #[serde(
+        rename = "operation",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub operation: ::buffa::EnumValue<ProviderOperation>,
+    /// Field 2: `algorithm`
+    #[serde(
+        rename = "algorithm",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub algorithm: ::buffa::EnumValue<KeyAlgorithm>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for ProviderDecisionRequest {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("ProviderDecisionRequest")
+            .field("operation", &self.operation)
+            .field("algorithm", &self.algorithm)
+            .finish()
+    }
+}
+impl ::core::ops::Drop for ProviderDecisionRequest {
+    fn drop(&mut self) {
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ProviderDecisionRequest {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::bytes::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        fn deserialize_zeroizing_string<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::string::String>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "operation", with = "::buffa::json_helpers::proto_enum")]
+            operation: ::buffa::EnumValue<ProviderOperation>,
+            #[serde(rename = "algorithm", with = "::buffa::json_helpers::proto_enum")]
+            algorithm: ::buffa::EnumValue<KeyAlgorithm>,
+        }
+
+        let wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            operation: wire.operation,
+            algorithm: wire.algorithm,
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for ProviderDecisionRequest {}
+impl ProviderDecisionRequest {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.ProviderDecisionRequest";
+}
+::buffa::impl_default_instance!(ProviderDecisionRequest);
+impl ::buffa::MessageName for ProviderDecisionRequest {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "ProviderDecisionRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.ProviderDecisionRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.ProviderDecisionRequest";
+}
+impl ::buffa::Message for ProviderDecisionRequest {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.operation.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        {
+            let val = self.algorithm.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.operation.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        {
+            let val = self.algorithm.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(2u32, val, buf);
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.operation = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.algorithm = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.operation = ::buffa::EnumValue::from(0);
+        self.algorithm = ::buffa::EnumValue::from(0);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for ProviderDecisionRequest {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.ProviderDecisionRequest";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for ProviderDecisionRequest {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __PROVIDER_DECISION_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.ProviderDecisionRequest",
+    to_json: ::buffa::type_registry::any_to_json::<ProviderDecisionRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<ProviderDecisionRequest>,
+    is_wkt: false,
+};
+/// ProviderDecisionResult reports a runtime-computed policy decision.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct ProviderDecisionResult {
+    /// Field 1: `decision`
+    #[serde(
+        rename = "decision",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub decision: ::buffa::MessageField<
+        ProviderDecision,
+        ::buffa::Inline<ProviderDecision>,
+    >,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for ProviderDecisionResult {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("ProviderDecisionResult")
+            .field("decision", &self.decision)
+            .finish()
+    }
+}
+impl ::core::ops::Drop for ProviderDecisionResult {
+    fn drop(&mut self) {
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ProviderDecisionResult {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::bytes::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        fn deserialize_zeroizing_string<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::string::String>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "decision")]
+            decision: ::buffa::MessageField<
+                ProviderDecision,
+                ::buffa::Inline<ProviderDecision>,
+                >,
+        }
+
+        let wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            decision: wire.decision,
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for ProviderDecisionResult {}
+impl ProviderDecisionResult {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.ProviderDecisionResult";
+}
+::buffa::impl_default_instance!(ProviderDecisionResult);
+impl ::buffa::MessageName for ProviderDecisionResult {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "ProviderDecisionResult";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.ProviderDecisionResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.ProviderDecisionResult";
+}
+impl ::buffa::Message for ProviderDecisionResult {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.decision.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.decision.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.decision.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.decision.write_to(__cache, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.decision.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.decision = ::buffa::MessageField::none();
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for ProviderDecisionResult {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.ProviderDecisionResult";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for ProviderDecisionResult {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __PROVIDER_DECISION_RESULT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.ProviderDecisionResult",
+    to_json: ::buffa::type_registry::any_to_json::<ProviderDecisionResult>,
+    from_json: ::buffa::type_registry::any_from_json::<ProviderDecisionResult>,
+    is_wkt: false,
+};
 /// CryptoKeyAlgorithmIdentifier carries operation-independent key metadata.
 /// Keeping it separate preserves the published operation-suite oneof and its
 /// generated exhaustive match surfaces. It is not an executable suite selector.

@@ -87,7 +87,7 @@ public  final class CryptoAeadSealResult extends
    */
   private void setCiphertextWithTag(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     ciphertextWithTag_ = value;
   }
   /**
@@ -346,4 +346,3 @@ public  final class CryptoAeadSealResult extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

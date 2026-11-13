@@ -44,7 +44,7 @@ public  final class CryptoPlatformKeyAttestationCertificate extends
    */
   private void setCertificateDer(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     certificateDer_ = value;
   }
   /**
@@ -258,4 +258,3 @@ public  final class CryptoPlatformKeyAttestationCertificate extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

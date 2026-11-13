@@ -95,7 +95,7 @@ public  final class CryptoSignatureDeriveKeyPairRequest extends
    */
   private void setSecretKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     secretKey_ = value;
   }
   /**
@@ -370,4 +370,3 @@ public  final class CryptoSignatureDeriveKeyPairRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

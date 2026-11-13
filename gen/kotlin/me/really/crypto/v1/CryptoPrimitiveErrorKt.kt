@@ -70,4 +70,3 @@ public object CryptoPrimitiveErrorKt {
 }
 public inline fun me.really.crypto.v1.CryptoPrimitiveError.copy(block: `me.really.crypto.v1`.CryptoPrimitiveErrorKt.Dsl.() -> kotlin.Unit): me.really.crypto.v1.CryptoPrimitiveError =
   `me.really.crypto.v1`.CryptoPrimitiveErrorKt.Dsl._create(this.toBuilder()).apply { block() }._build()
-

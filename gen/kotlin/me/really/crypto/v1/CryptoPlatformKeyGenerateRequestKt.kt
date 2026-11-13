@@ -205,4 +205,3 @@ public val me.really.crypto.v1.CryptoPlatformKeyGenerateRequestOrBuilder.algorit
 
 public val me.really.crypto.v1.CryptoPlatformKeyGenerateRequestOrBuilder.policyOrNull: me.really.crypto.v1.PlatformKeyPolicy?
   get() = if (hasPolicy()) getPolicy() else null
-

@@ -13,7 +13,7 @@ public interface CryptoPlatformKeyAttestResultOrBuilder extends
   /**
    * <code>repeated .reallyme.crypto.v1.CryptoPlatformKeyAttestationCertificate certificate_chain = 1 [json_name = "certificateChain"];</code>
    */
-  java.util.List<me.really.crypto.v1.CryptoPlatformKeyAttestationCertificate> 
+  java.util.List<me.really.crypto.v1.CryptoPlatformKeyAttestationCertificate>
       getCertificateChainList();
   /**
    * <code>repeated .reallyme.crypto.v1.CryptoPlatformKeyAttestationCertificate certificate_chain = 1 [json_name = "certificateChain"];</code>

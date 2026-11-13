@@ -180,7 +180,7 @@ public  final class CryptoPlatformKeyGenerateRequest extends
    */
   private void setApplicationTag(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     applicationTag_ = value;
   }
   /**
@@ -253,7 +253,7 @@ public  final class CryptoPlatformKeyGenerateRequest extends
    * @param value The overwriteExisting to set.
    */
   private void setOverwriteExisting(boolean value) {
-    
+
     overwriteExisting_ = value;
   }
   /**
@@ -783,4 +783,3 @@ public  final class CryptoPlatformKeyGenerateRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

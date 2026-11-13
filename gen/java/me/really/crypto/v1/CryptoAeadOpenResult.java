@@ -95,7 +95,7 @@ public  final class CryptoAeadOpenResult extends
    */
   private void setPlaintext(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     plaintext_ = value;
   }
   /**
@@ -370,4 +370,3 @@ public  final class CryptoAeadOpenResult extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

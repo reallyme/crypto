@@ -89,7 +89,7 @@ public  final class CryptoPlatformSignatureVerifyRequest extends
    */
   private void setSignature(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     signature_ = value;
   }
   /**
@@ -116,7 +116,7 @@ public  final class CryptoPlatformSignatureVerifyRequest extends
    */
   private void setMessage(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     message_ = value;
   }
   /**
@@ -143,7 +143,7 @@ public  final class CryptoPlatformSignatureVerifyRequest extends
    */
   private void setPublicKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     publicKey_ = value;
   }
   /**
@@ -460,4 +460,3 @@ public  final class CryptoPlatformSignatureVerifyRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

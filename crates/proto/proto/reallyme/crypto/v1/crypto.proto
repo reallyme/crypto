@@ -6,6 +6,8 @@ syntax = "proto3";
 
 package reallyme.crypto.v1;
 
+import "reallyme/crypto/v1/policy.proto";
+
 option java_multiple_files = true;
 option java_package = "me.really.crypto.v1";
 option swift_prefix = "ReallyMeProto";
@@ -245,6 +247,35 @@ enum KeyAlgorithm {
   KEY_ALGORITHM_ML_KEM_768 = 2010;
   KEY_ALGORITHM_ML_KEM_1024 = 2020;
   KEY_ALGORITHM_X_WING_768 = 2100;
+}
+
+// ProviderDecision is the complete non-secret decision computed by dispatch.
+// It describes feature, custody and fallback policy; it is never caller
+// authorization and must not be accepted as a provider override.
+message ProviderDecision {
+  ProviderOperation operation = 1;
+  KeyAlgorithm algorithm = 2;
+  ProviderKind provider_kind = 3;
+  ProviderLane lane = 4;
+  ProviderDisposition disposition = 5;
+  ProviderPolicyReason reason = 6;
+  KeyResidency key_residency = 7;
+  KeyCopyBoundary key_copy_boundary = 8;
+  ProviderOutputPolicy output_policy = 9;
+  FallbackPolicy fallback = 10;
+}
+
+// ProviderDecisionRequest selects the existing read-only native policy query.
+// The runtime computes a fresh decision from the compiled provider policy.
+// This standalone message does not add an executable operation oneof route.
+message ProviderDecisionRequest {
+  ProviderOperation operation = 1;
+  KeyAlgorithm algorithm = 2;
+}
+
+// ProviderDecisionResult reports a runtime-computed policy decision.
+message ProviderDecisionResult {
+  ProviderDecision decision = 1;
 }
 
 // CryptoKeyAlgorithmIdentifier carries operation-independent key metadata.

@@ -137,13 +137,13 @@ public enum KdfAlgorithm
           }
         };
 
-  public static com.google.protobuf.Internal.EnumVerifier 
+  public static com.google.protobuf.Internal.EnumVerifier
       internalGetVerifier() {
     return KdfAlgorithmVerifier.INSTANCE;
   }
 
-  private static final class KdfAlgorithmVerifier implements 
-       com.google.protobuf.Internal.EnumVerifier { 
+  private static final class KdfAlgorithmVerifier implements
+       com.google.protobuf.Internal.EnumVerifier {
           static final com.google.protobuf.Internal.EnumVerifier
               INSTANCE = new KdfAlgorithmVerifier();
           @java.lang.Override
@@ -160,4 +160,3 @@ public enum KdfAlgorithm
 
   // @@protoc_insertion_point(enum_scope:reallyme.crypto.v1.KdfAlgorithm)
 }
-

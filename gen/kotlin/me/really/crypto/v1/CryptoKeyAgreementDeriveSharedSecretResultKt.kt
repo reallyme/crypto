@@ -87,4 +87,3 @@ public inline fun me.really.crypto.v1.CryptoKeyAgreementDeriveSharedSecretResult
 
 public val me.really.crypto.v1.CryptoKeyAgreementDeriveSharedSecretResultOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

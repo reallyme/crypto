@@ -94,7 +94,7 @@ public  final class JsonWebKey extends
    */
   private void setPublicKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     publicKey_ = value;
   }
   /**
@@ -121,7 +121,7 @@ public  final class JsonWebKey extends
    */
   private void setCanonicalJcs(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     canonicalJcs_ = value;
   }
   /**
@@ -415,4 +415,3 @@ public  final class JsonWebKey extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

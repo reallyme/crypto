@@ -99,4 +99,3 @@ public object CryptoBip340SchnorrSignRequestKt {
 }
 public inline fun me.really.crypto.v1.CryptoBip340SchnorrSignRequest.copy(block: `me.really.crypto.v1`.CryptoBip340SchnorrSignRequestKt.Dsl.() -> kotlin.Unit): me.really.crypto.v1.CryptoBip340SchnorrSignRequest =
   `me.really.crypto.v1`.CryptoBip340SchnorrSignRequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
-

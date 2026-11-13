@@ -111,4 +111,3 @@ public inline fun me.really.crypto.v1.CryptoKeyPair.copy(block: `me.really.crypt
 
 public val me.really.crypto.v1.CryptoKeyPairOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

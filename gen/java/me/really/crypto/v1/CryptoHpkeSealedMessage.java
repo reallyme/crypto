@@ -93,7 +93,7 @@ public  final class CryptoHpkeSealedMessage extends
    */
   private void setEncapsulatedKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     encapsulatedKey_ = value;
   }
   /**
@@ -120,7 +120,7 @@ public  final class CryptoHpkeSealedMessage extends
    */
   private void setCiphertext(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     ciphertext_ = value;
   }
   /**
@@ -413,4 +413,3 @@ public  final class CryptoHpkeSealedMessage extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

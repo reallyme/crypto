@@ -79,4 +79,3 @@ public inline fun me.really.crypto.v1.CryptoHashRequest.copy(block: `me.really.c
 
 public val me.really.crypto.v1.CryptoHashRequestOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

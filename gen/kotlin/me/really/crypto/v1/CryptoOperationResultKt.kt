@@ -910,4 +910,3 @@ public val me.really.crypto.v1.CryptoOperationResultOrBuilder.hpkePskSealOrNull:
 
 public val me.really.crypto.v1.CryptoOperationResultOrBuilder.hpkePskOpenOrNull: me.really.crypto.v1.CryptoHpkeOpenResult?
   get() = if (hasHpkePskOpen()) getHpkePskOpen() else null
-

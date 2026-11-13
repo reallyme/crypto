@@ -129,6 +129,28 @@ The original inventory and ledgers are historical evidence from before
 migration. They are intentionally retained; this section records retirement
 rather than rewriting those earlier findings.
 
+## Provider and material policy vocabulary
+
+The schema now defines all nine provider vocabularies, eight material-policy
+vocabularies, random-output purposes and platform-key operation identities.
+Each native enum has one total generated-value conversion, rejecting zero and
+unknown values, and one exhaustive reverse projection. The persisted native
+material-operation values 0–31 retain their existing meanings; explicit schema
+mappings use nonzero family values rather than integer casts.
+
+All 21 fields of provider and material-policy records are represented. Their
+native projections destructure exhaustively, so adding a native field requires
+an explicit contract update. Policy records are read-only outputs: no reverse
+conversion accepts caller-created records as authorization or policy overrides.
+The provider query request selects only an operation and key identity; its
+adapter computes a fresh decision from compiled provider rules.
+
+Parity, invalid-selector, exact-field and query-modifier regression sources are
+added. Native all-targets/features Clippy, the WASM SDK target, Buf compatibility,
+TypeScript compilation, hardening idempotence and CI policy checks pass. Tests
+remain unexecuted. Generated ES imports now use explicit `.js` extensions, and
+SDK output normalization covers the generated packages uniformly.
+
 ## Error generation and freshness
 
 Error code generation is maintenance work, not a Cargo build step. The existing

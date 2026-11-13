@@ -282,4 +282,3 @@ public  final class CryptoSignatureGenerateKeyPairRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

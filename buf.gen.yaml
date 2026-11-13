@@ -18,16 +18,19 @@ plugins:
     out: gen/es
     opt:
       - target=ts
+      - import_extension=js
   - remote: buf.build/bufbuild/es:v2.14.1
     out: packages/ts/src/proto/generated
     opt:
       - target=ts
+      - import_extension=js
 
   # JavaScript runtime
   - remote: buf.build/bufbuild/es:v2.14.1
     out: gen/es
     opt:
       - target=js
+      - import_extension=js
 
   # Swift
   - remote: buf.build/apple/swift:v1.38.1

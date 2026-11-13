@@ -95,7 +95,7 @@ public  final class CryptoKeyUnwrapResult extends
    */
   private void setKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     key_ = value;
   }
   /**
@@ -370,4 +370,3 @@ public  final class CryptoKeyUnwrapResult extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

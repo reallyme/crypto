@@ -127,4 +127,3 @@ public val me.really.crypto.v1.CryptoErrorOrBuilder.providerOrNull: me.really.cr
 
 public val me.really.crypto.v1.CryptoErrorOrBuilder.backendOrNull: me.really.crypto.v1.CryptoBackendError?
   get() = if (hasBackend()) getBackend() else null
-

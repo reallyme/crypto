@@ -155,4 +155,3 @@ public inline fun me.really.crypto.v1.CryptoHpkeOpenRequest.copy(block: `me.real
 
 public val me.really.crypto.v1.CryptoHpkeOpenRequestOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

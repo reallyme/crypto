@@ -79,4 +79,3 @@ public inline fun me.really.crypto.v1.CryptoAeadSealResult.copy(block: `me.reall
 
 public val me.really.crypto.v1.CryptoAeadSealResultOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

@@ -87,7 +87,7 @@ public  final class CryptoPlatformKeyGetPublicKeyResult extends
    */
   private void setPublicKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     publicKey_ = value;
   }
   /**
@@ -346,4 +346,3 @@ public  final class CryptoPlatformKeyGetPublicKeyResult extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

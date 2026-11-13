@@ -328,4 +328,3 @@ public  final class CryptoPrimitiveError extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

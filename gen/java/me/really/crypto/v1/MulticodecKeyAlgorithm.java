@@ -293,13 +293,13 @@ public enum MulticodecKeyAlgorithm
           }
         };
 
-  public static com.google.protobuf.Internal.EnumVerifier 
+  public static com.google.protobuf.Internal.EnumVerifier
       internalGetVerifier() {
     return MulticodecKeyAlgorithmVerifier.INSTANCE;
   }
 
-  private static final class MulticodecKeyAlgorithmVerifier implements 
-       com.google.protobuf.Internal.EnumVerifier { 
+  private static final class MulticodecKeyAlgorithmVerifier implements
+       com.google.protobuf.Internal.EnumVerifier {
           static final com.google.protobuf.Internal.EnumVerifier
               INSTANCE = new MulticodecKeyAlgorithmVerifier();
           @java.lang.Override
@@ -316,4 +316,3 @@ public enum MulticodecKeyAlgorithm
 
   // @@protoc_insertion_point(enum_scope:reallyme.crypto.v1.MulticodecKeyAlgorithm)
 }
-

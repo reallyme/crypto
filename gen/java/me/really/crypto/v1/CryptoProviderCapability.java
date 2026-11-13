@@ -265,7 +265,7 @@ public  final class CryptoProviderCapability extends
    * @param value The usesRust to set.
    */
   private void setUsesRust(boolean value) {
-    
+
     usesRust_ = value;
   }
   /**
@@ -719,4 +719,3 @@ public  final class CryptoProviderCapability extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

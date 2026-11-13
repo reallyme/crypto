@@ -199,4 +199,3 @@ public inline fun me.really.crypto.v1.CryptoPlatformPrivateKeyHandle.copy(block:
 
 public val me.really.crypto.v1.CryptoPlatformPrivateKeyHandleOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

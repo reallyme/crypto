@@ -7,6 +7,8 @@
 //! These records describe the security contract enforced by semantic
 //! operation entry points. They never contain runtime key material.
 
+#[cfg(feature = "operation-response")]
+mod convert_proto_policy;
 mod destruction;
 mod export;
 mod output;

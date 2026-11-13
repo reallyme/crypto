@@ -85,13 +85,13 @@ public enum RsaPublicKeyDerEncoding
           }
         };
 
-  public static com.google.protobuf.Internal.EnumVerifier 
+  public static com.google.protobuf.Internal.EnumVerifier
       internalGetVerifier() {
     return RsaPublicKeyDerEncodingVerifier.INSTANCE;
   }
 
-  private static final class RsaPublicKeyDerEncodingVerifier implements 
-       com.google.protobuf.Internal.EnumVerifier { 
+  private static final class RsaPublicKeyDerEncodingVerifier implements
+       com.google.protobuf.Internal.EnumVerifier {
           static final com.google.protobuf.Internal.EnumVerifier
               INSTANCE = new RsaPublicKeyDerEncodingVerifier();
           @java.lang.Override
@@ -108,4 +108,3 @@ public enum RsaPublicKeyDerEncoding
 
   // @@protoc_insertion_point(enum_scope:reallyme.crypto.v1.RsaPublicKeyDerEncoding)
 }
-

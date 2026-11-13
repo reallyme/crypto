@@ -121,13 +121,13 @@ public enum AeadAlgorithm
           }
         };
 
-  public static com.google.protobuf.Internal.EnumVerifier 
+  public static com.google.protobuf.Internal.EnumVerifier
       internalGetVerifier() {
     return AeadAlgorithmVerifier.INSTANCE;
   }
 
-  private static final class AeadAlgorithmVerifier implements 
-       com.google.protobuf.Internal.EnumVerifier { 
+  private static final class AeadAlgorithmVerifier implements
+       com.google.protobuf.Internal.EnumVerifier {
           static final com.google.protobuf.Internal.EnumVerifier
               INSTANCE = new AeadAlgorithmVerifier();
           @java.lang.Override
@@ -144,4 +144,3 @@ public enum AeadAlgorithm
 
   // @@protoc_insertion_point(enum_scope:reallyme.crypto.v1.AeadAlgorithm)
 }
-

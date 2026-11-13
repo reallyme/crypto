@@ -62,4 +62,3 @@ public inline fun me.really.crypto.v1.CryptoKemGenerateKeyPairRequest.copy(block
 
 public val me.really.crypto.v1.CryptoKemGenerateKeyPairRequestOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

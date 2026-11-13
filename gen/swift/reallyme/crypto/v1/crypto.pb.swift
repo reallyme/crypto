@@ -2521,6 +2521,84 @@ public nonisolated struct ReallyMeProtoCryptoOperationResult: Sendable {
   public init() {}
 }
 
+/// ProviderDecision is the complete non-secret decision computed by dispatch.
+/// It describes feature, custody and fallback policy; it is never caller
+/// authorization and must not be accepted as a provider override.
+public nonisolated struct ReallyMeProtoProviderDecision: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoProviderDecision(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var operation: ReallyMeProtoProviderOperation = .unspecified
+
+  public var algorithm: ReallyMeProtoKeyAlgorithm = .unspecified
+
+  public var providerKind: ReallyMeProtoProviderKind = .unspecified
+
+  public var lane: ReallyMeProtoProviderLane = .unspecified
+
+  public var disposition: ReallyMeProtoProviderDisposition = .unspecified
+
+  public var reason: ReallyMeProtoProviderPolicyReason = .unspecified
+
+  public var keyResidency: ReallyMeProtoKeyResidency = .unspecified
+
+  public var keyCopyBoundary: ReallyMeProtoKeyCopyBoundary = .unspecified
+
+  public var outputPolicy: ReallyMeProtoProviderOutputPolicy = .unspecified
+
+  public var fallback: ReallyMeProtoFallbackPolicy = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// ProviderDecisionRequest selects the existing read-only native policy query.
+/// The runtime computes a fresh decision from the compiled provider policy.
+/// This standalone message does not add an executable operation oneof route.
+public nonisolated struct ReallyMeProtoProviderDecisionRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoProviderDecisionRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var operation: ReallyMeProtoProviderOperation = .unspecified
+
+  public var algorithm: ReallyMeProtoKeyAlgorithm = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// ProviderDecisionResult reports a runtime-computed policy decision.
+public nonisolated struct ReallyMeProtoProviderDecisionResult: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoProviderDecisionResult(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var decision: ReallyMeProtoProviderDecision {
+    get {_decision ?? ReallyMeProtoProviderDecision()}
+    set {_decision = newValue}
+  }
+  /// Returns true if `decision` has been explicitly set.
+  public var hasDecision: Bool {self._decision != nil}
+  /// Clears the value of `decision`. Subsequent reads from it will return its default value.
+  public mutating func clearDecision() {self._decision = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _decision: ReallyMeProtoProviderDecision? = nil
+}
+
 /// CryptoKeyAlgorithmIdentifier carries operation-independent key metadata.
 /// Keeping it separate preserves the published operation-suite oneof and its
 /// generated exhaustive match surfaces. It is not an executable suite selector.
@@ -6339,6 +6417,150 @@ nonisolated extension ReallyMeProtoCryptoOperationResult: SwiftProtobuf.Message,
 
   public static func ==(lhs: ReallyMeProtoCryptoOperationResult, rhs: ReallyMeProtoCryptoOperationResult) -> Bool {
     if lhs.result != rhs.result {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoProviderDecision: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".ProviderDecision"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}operation\0\u{1}algorithm\0\u{3}provider_kind\0\u{1}lane\0\u{1}disposition\0\u{1}reason\0\u{3}key_residency\0\u{3}key_copy_boundary\0\u{3}output_policy\0\u{1}fallback\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.operation) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.algorithm) }()
+      case 3: try { try decoder.decodeSingularEnumField(value: &self.providerKind) }()
+      case 4: try { try decoder.decodeSingularEnumField(value: &self.lane) }()
+      case 5: try { try decoder.decodeSingularEnumField(value: &self.disposition) }()
+      case 6: try { try decoder.decodeSingularEnumField(value: &self.reason) }()
+      case 7: try { try decoder.decodeSingularEnumField(value: &self.keyResidency) }()
+      case 8: try { try decoder.decodeSingularEnumField(value: &self.keyCopyBoundary) }()
+      case 9: try { try decoder.decodeSingularEnumField(value: &self.outputPolicy) }()
+      case 10: try { try decoder.decodeSingularEnumField(value: &self.fallback) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.operation != .unspecified {
+      try visitor.visitSingularEnumField(value: self.operation, fieldNumber: 1)
+    }
+    if self.algorithm != .unspecified {
+      try visitor.visitSingularEnumField(value: self.algorithm, fieldNumber: 2)
+    }
+    if self.providerKind != .unspecified {
+      try visitor.visitSingularEnumField(value: self.providerKind, fieldNumber: 3)
+    }
+    if self.lane != .unspecified {
+      try visitor.visitSingularEnumField(value: self.lane, fieldNumber: 4)
+    }
+    if self.disposition != .unspecified {
+      try visitor.visitSingularEnumField(value: self.disposition, fieldNumber: 5)
+    }
+    if self.reason != .unspecified {
+      try visitor.visitSingularEnumField(value: self.reason, fieldNumber: 6)
+    }
+    if self.keyResidency != .unspecified {
+      try visitor.visitSingularEnumField(value: self.keyResidency, fieldNumber: 7)
+    }
+    if self.keyCopyBoundary != .unspecified {
+      try visitor.visitSingularEnumField(value: self.keyCopyBoundary, fieldNumber: 8)
+    }
+    if self.outputPolicy != .unspecified {
+      try visitor.visitSingularEnumField(value: self.outputPolicy, fieldNumber: 9)
+    }
+    if self.fallback != .unspecified {
+      try visitor.visitSingularEnumField(value: self.fallback, fieldNumber: 10)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoProviderDecision, rhs: ReallyMeProtoProviderDecision) -> Bool {
+    if lhs.operation != rhs.operation {return false}
+    if lhs.algorithm != rhs.algorithm {return false}
+    if lhs.providerKind != rhs.providerKind {return false}
+    if lhs.lane != rhs.lane {return false}
+    if lhs.disposition != rhs.disposition {return false}
+    if lhs.reason != rhs.reason {return false}
+    if lhs.keyResidency != rhs.keyResidency {return false}
+    if lhs.keyCopyBoundary != rhs.keyCopyBoundary {return false}
+    if lhs.outputPolicy != rhs.outputPolicy {return false}
+    if lhs.fallback != rhs.fallback {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoProviderDecisionRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".ProviderDecisionRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}operation\0\u{1}algorithm\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.operation) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.algorithm) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.operation != .unspecified {
+      try visitor.visitSingularEnumField(value: self.operation, fieldNumber: 1)
+    }
+    if self.algorithm != .unspecified {
+      try visitor.visitSingularEnumField(value: self.algorithm, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoProviderDecisionRequest, rhs: ReallyMeProtoProviderDecisionRequest) -> Bool {
+    if lhs.operation != rhs.operation {return false}
+    if lhs.algorithm != rhs.algorithm {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoProviderDecisionResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".ProviderDecisionResult"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}decision\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._decision) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._decision {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoProviderDecisionResult, rhs: ReallyMeProtoProviderDecisionResult) -> Bool {
+    if lhs._decision != rhs._decision {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

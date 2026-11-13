@@ -88,7 +88,7 @@ public  final class CryptoPlatformSignatureSignRequest extends
    */
   private void setMessage(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     message_ = value;
   }
   /**
@@ -444,4 +444,3 @@ public  final class CryptoPlatformSignatureSignRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

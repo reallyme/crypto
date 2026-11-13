@@ -87,7 +87,7 @@ public  final class CryptoPlatformKeyAgreementDeriveSharedSecretResult extends
    */
   private void setSharedSecret(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     sharedSecret_ = value;
   }
   /**
@@ -346,4 +346,3 @@ public  final class CryptoPlatformKeyAgreementDeriveSharedSecretResult extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

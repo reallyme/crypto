@@ -79,4 +79,3 @@ public inline fun me.really.crypto.v1.CryptoPlatformKeyAgreementDeriveSharedSecr
 
 public val me.really.crypto.v1.CryptoPlatformKeyAgreementDeriveSharedSecretRequestOrBuilder.privateKeyHandleOrNull: me.really.crypto.v1.CryptoPlatformPrivateKeyHandle?
   get() = if (hasPrivateKeyHandle()) getPrivateKeyHandle() else null
-

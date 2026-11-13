@@ -108,13 +108,13 @@ public enum CryptoVerificationStatus
           }
         };
 
-  public static com.google.protobuf.Internal.EnumVerifier 
+  public static com.google.protobuf.Internal.EnumVerifier
       internalGetVerifier() {
     return CryptoVerificationStatusVerifier.INSTANCE;
   }
 
-  private static final class CryptoVerificationStatusVerifier implements 
-       com.google.protobuf.Internal.EnumVerifier { 
+  private static final class CryptoVerificationStatusVerifier implements
+       com.google.protobuf.Internal.EnumVerifier {
           static final com.google.protobuf.Internal.EnumVerifier
               INSTANCE = new CryptoVerificationStatusVerifier();
           @java.lang.Override
@@ -131,4 +131,3 @@ public enum CryptoVerificationStatus
 
   // @@protoc_insertion_point(enum_scope:reallyme.crypto.v1.CryptoVerificationStatus)
 }
-

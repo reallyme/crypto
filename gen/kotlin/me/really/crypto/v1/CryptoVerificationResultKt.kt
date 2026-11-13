@@ -122,4 +122,3 @@ public val me.really.crypto.v1.CryptoVerificationResultOrBuilder.algorithmOrNull
 
 public val me.really.crypto.v1.CryptoVerificationResultOrBuilder.errorOrNull: me.really.crypto.v1.CryptoError?
   get() = if (hasError()) getError() else null
-

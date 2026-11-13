@@ -40,7 +40,7 @@ public  final class JsonWebKeySet extends
   /**
    * <code>repeated .reallyme.crypto.v1.JsonWebKey keys = 1 [json_name = "keys"];</code>
    */
-  public java.util.List<? extends me.really.crypto.v1.JsonWebKeyOrBuilder> 
+  public java.util.List<? extends me.really.crypto.v1.JsonWebKeyOrBuilder>
       getKeysOrBuilderList() {
     return keys_;
   }
@@ -400,4 +400,3 @@ public  final class JsonWebKeySet extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

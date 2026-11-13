@@ -393,13 +393,13 @@ public enum CryptoErrorReason
           }
         };
 
-  public static com.google.protobuf.Internal.EnumVerifier 
+  public static com.google.protobuf.Internal.EnumVerifier
       internalGetVerifier() {
     return CryptoErrorReasonVerifier.INSTANCE;
   }
 
-  private static final class CryptoErrorReasonVerifier implements 
-       com.google.protobuf.Internal.EnumVerifier { 
+  private static final class CryptoErrorReasonVerifier implements
+       com.google.protobuf.Internal.EnumVerifier {
           static final com.google.protobuf.Internal.EnumVerifier
               INSTANCE = new CryptoErrorReasonVerifier();
           @java.lang.Override
@@ -416,4 +416,3 @@ public enum CryptoErrorReason
 
   // @@protoc_insertion_point(enum_scope:reallyme.crypto.v1.CryptoErrorReason)
 }
-

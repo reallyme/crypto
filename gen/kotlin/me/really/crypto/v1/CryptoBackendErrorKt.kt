@@ -69,4 +69,3 @@ public object CryptoBackendErrorKt {
 }
 public inline fun me.really.crypto.v1.CryptoBackendError.copy(block: `me.really.crypto.v1`.CryptoBackendErrorKt.Dsl.() -> kotlin.Unit): me.really.crypto.v1.CryptoBackendError =
   `me.really.crypto.v1`.CryptoBackendErrorKt.Dsl._create(this.toBuilder()).apply { block() }._build()
-

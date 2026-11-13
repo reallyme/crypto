@@ -19,7 +19,7 @@ for (const namespace of ["serde", "::serde"]) {
   test(`protobuf hardening rejects unknown oneof fields from ${namespace} generator output`, () => {
     const root = mkdtempSync(join(tmpdir(), "crypto-proto-hardening-"));
     try {
-      for (const path of ["gen", "crates/proto/src/generated", "crates/proto/proto", "scripts/redact_crypto_proto_debug.mjs"]) {
+      for (const path of ["gen", "crates/proto/src/generated", "crates/proto/proto", "packages/ts/src/proto/generated", "scripts/redact_crypto_proto_debug.mjs"]) {
         mkdirSync(dirname(join(root, path)), { recursive: true });
         cpSync(new URL(`../${path}`, import.meta.url), join(root, path), { recursive: true });
       }

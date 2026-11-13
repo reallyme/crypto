@@ -87,4 +87,3 @@ public inline fun me.really.crypto.v1.CryptoJwaConcatKdfSha256DeriveResult.copy(
 
 public val me.really.crypto.v1.CryptoJwaConcatKdfSha256DeriveResultOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

@@ -93,4 +93,3 @@ public val me.really.crypto.v1.PlatformKeyPolicyOrBuilder.appleOrNull: me.really
 
 public val me.really.crypto.v1.PlatformKeyPolicyOrBuilder.androidOrNull: me.really.crypto.v1.AndroidPlatformKeyPolicy?
   get() = if (hasAndroid()) getAndroid() else null
-

@@ -98,7 +98,7 @@ public  final class CryptoJwaConcatKdfSha256DeriveRequest extends
    */
   private void setSharedSecret(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     sharedSecret_ = value;
   }
   /**
@@ -129,7 +129,7 @@ public  final class CryptoJwaConcatKdfSha256DeriveRequest extends
    */
   private void setAlgorithmId(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     algorithmId_ = value;
   }
   /**
@@ -156,7 +156,7 @@ public  final class CryptoJwaConcatKdfSha256DeriveRequest extends
    */
   private void setPartyUInfo(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     partyUInfo_ = value;
   }
   /**
@@ -183,7 +183,7 @@ public  final class CryptoJwaConcatKdfSha256DeriveRequest extends
    */
   private void setPartyVInfo(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     partyVInfo_ = value;
   }
   /**
@@ -209,7 +209,7 @@ public  final class CryptoJwaConcatKdfSha256DeriveRequest extends
    * @param value The outputLength to set.
    */
   private void setOutputLength(int value) {
-    
+
     outputLength_ = value;
   }
   /**
@@ -596,4 +596,3 @@ public  final class CryptoJwaConcatKdfSha256DeriveRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

@@ -139,7 +139,7 @@ public  final class CryptoArgon2idDeriveRequest extends
    */
   private void setSecret(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     secret_ = value;
   }
   /**
@@ -180,7 +180,7 @@ public  final class CryptoArgon2idDeriveRequest extends
    */
   private void setSalt(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     salt_ = value;
   }
   /**
@@ -548,4 +548,3 @@ public  final class CryptoArgon2idDeriveRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

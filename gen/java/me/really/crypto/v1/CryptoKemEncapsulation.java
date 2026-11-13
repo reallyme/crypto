@@ -94,7 +94,7 @@ public  final class CryptoKemEncapsulation extends
    */
   private void setCiphertext(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     ciphertext_ = value;
   }
   /**
@@ -129,7 +129,7 @@ public  final class CryptoKemEncapsulation extends
    */
   private void setSharedSecret(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     sharedSecret_ = value;
   }
   /**
@@ -439,4 +439,3 @@ public  final class CryptoKemEncapsulation extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

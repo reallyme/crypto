@@ -87,7 +87,7 @@ public  final class CryptoHashResult extends
    */
   private void setDigest(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     digest_ = value;
   }
   /**
@@ -346,4 +346,3 @@ public  final class CryptoHashResult extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

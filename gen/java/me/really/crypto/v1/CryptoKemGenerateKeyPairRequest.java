@@ -282,4 +282,3 @@ public  final class CryptoKemGenerateKeyPairRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

@@ -148,13 +148,13 @@ public enum CryptoAlgorithmFamily
           }
         };
 
-  public static com.google.protobuf.Internal.EnumVerifier 
+  public static com.google.protobuf.Internal.EnumVerifier
       internalGetVerifier() {
     return CryptoAlgorithmFamilyVerifier.INSTANCE;
   }
 
-  private static final class CryptoAlgorithmFamilyVerifier implements 
-       com.google.protobuf.Internal.EnumVerifier { 
+  private static final class CryptoAlgorithmFamilyVerifier implements
+       com.google.protobuf.Internal.EnumVerifier {
           static final com.google.protobuf.Internal.EnumVerifier
               INSTANCE = new CryptoAlgorithmFamilyVerifier();
           @java.lang.Override
@@ -171,4 +171,3 @@ public enum CryptoAlgorithmFamily
 
   // @@protoc_insertion_point(enum_scope:reallyme.crypto.v1.CryptoAlgorithmFamily)
 }
-

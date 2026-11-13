@@ -13,7 +13,7 @@ public interface CryptoProviderCapabilitySetOrBuilder extends
   /**
    * <code>repeated .reallyme.crypto.v1.CryptoProviderCapability capabilities = 1 [json_name = "capabilities"];</code>
    */
-  java.util.List<me.really.crypto.v1.CryptoProviderCapability> 
+  java.util.List<me.really.crypto.v1.CryptoProviderCapability>
       getCapabilitiesList();
   /**
    * <code>repeated .reallyme.crypto.v1.CryptoProviderCapability capabilities = 1 [json_name = "capabilities"];</code>

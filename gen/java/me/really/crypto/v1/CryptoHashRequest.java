@@ -87,7 +87,7 @@ public  final class CryptoHashRequest extends
    */
   private void setInput(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     input_ = value;
   }
   /**
@@ -346,4 +346,3 @@ public  final class CryptoHashRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

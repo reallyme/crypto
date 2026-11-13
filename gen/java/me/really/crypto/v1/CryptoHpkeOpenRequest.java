@@ -99,7 +99,7 @@ public  final class CryptoHpkeOpenRequest extends
    */
   private void setRecipientSecretKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     recipientSecretKey_ = value;
   }
   /**
@@ -130,7 +130,7 @@ public  final class CryptoHpkeOpenRequest extends
    */
   private void setEncapsulatedKey(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     encapsulatedKey_ = value;
   }
   /**
@@ -157,7 +157,7 @@ public  final class CryptoHpkeOpenRequest extends
    */
   private void setInfo(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     info_ = value;
   }
   /**
@@ -184,7 +184,7 @@ public  final class CryptoHpkeOpenRequest extends
    */
   private void setAad(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     aad_ = value;
   }
   /**
@@ -211,7 +211,7 @@ public  final class CryptoHpkeOpenRequest extends
    */
   private void setCiphertext(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-  
+
     ciphertext_ = value;
   }
   /**
@@ -598,4 +598,3 @@ public  final class CryptoHpkeOpenRequest extends
     return DEFAULT_INSTANCE.getParserForType();
   }
 }
-

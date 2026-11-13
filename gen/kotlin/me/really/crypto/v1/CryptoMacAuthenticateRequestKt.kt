@@ -104,4 +104,3 @@ public inline fun me.really.crypto.v1.CryptoMacAuthenticateRequest.copy(block: `
 
 public val me.really.crypto.v1.CryptoMacAuthenticateRequestOrBuilder.algorithmOrNull: me.really.crypto.v1.CryptoAlgorithmIdentifier?
   get() = if (hasAlgorithm()) getAlgorithm() else null
-

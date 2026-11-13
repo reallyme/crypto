@@ -107,13 +107,13 @@ public enum AppleSecureEnclaveAccessPolicy
           }
         };
 
-  public static com.google.protobuf.Internal.EnumVerifier 
+  public static com.google.protobuf.Internal.EnumVerifier
       internalGetVerifier() {
     return AppleSecureEnclaveAccessPolicyVerifier.INSTANCE;
   }
 
-  private static final class AppleSecureEnclaveAccessPolicyVerifier implements 
-       com.google.protobuf.Internal.EnumVerifier { 
+  private static final class AppleSecureEnclaveAccessPolicyVerifier implements
+       com.google.protobuf.Internal.EnumVerifier {
           static final com.google.protobuf.Internal.EnumVerifier
               INSTANCE = new AppleSecureEnclaveAccessPolicyVerifier();
           @java.lang.Override
@@ -130,4 +130,3 @@ public enum AppleSecureEnclaveAccessPolicy
 
   // @@protoc_insertion_point(enum_scope:reallyme.crypto.v1.AppleSecureEnclaveAccessPolicy)
 }
-

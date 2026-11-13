@@ -130,13 +130,13 @@ public enum HashAlgorithm
           }
         };
 
-  public static com.google.protobuf.Internal.EnumVerifier 
+  public static com.google.protobuf.Internal.EnumVerifier
       internalGetVerifier() {
     return HashAlgorithmVerifier.INSTANCE;
   }
 
-  private static final class HashAlgorithmVerifier implements 
-       com.google.protobuf.Internal.EnumVerifier { 
+  private static final class HashAlgorithmVerifier implements
+       com.google.protobuf.Internal.EnumVerifier {
           static final com.google.protobuf.Internal.EnumVerifier
               INSTANCE = new HashAlgorithmVerifier();
           @java.lang.Override
@@ -153,4 +153,3 @@ public enum HashAlgorithm
 
   // @@protoc_insertion_point(enum_scope:reallyme.crypto.v1.HashAlgorithm)
 }
-
