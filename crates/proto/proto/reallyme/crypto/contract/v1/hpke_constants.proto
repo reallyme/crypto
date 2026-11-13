@@ -1,0 +1,936 @@
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+syntax = "proto2";
+
+package reallyme.crypto.contract.v1;
+
+import "reallyme/crypto/contract/v1/constants.proto";
+import "reallyme/crypto/contract/v1/hpke.proto";
+
+// Immutable HPKE dimensions and identities. Component numbers remain owned
+// by the existing public enums; aliases carry no copied numeric value.
+option (constant_registry) = {
+  modules: {
+    native_module: "hpke"
+    constants: {
+      native_name: "HPKE_KEM_DHKEM_P256_HKDF_SHA256"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_DHKEM_P256_HKDF_SHA256"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KEM_DHKEM_P384_HKDF_SHA384"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_DHKEM_P384_HKDF_SHA384"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KEM_DHKEM_P521_HKDF_SHA512"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_DHKEM_P521_HKDF_SHA512"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KEM_DHKEM_CP256_HKDF_SHA256"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_DHKEM_CP256_HKDF_SHA256"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KEM_DHKEM_CP384_HKDF_SHA384"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_DHKEM_CP384_HKDF_SHA384"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KEM_DHKEM_CP521_HKDF_SHA512"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_DHKEM_CP521_HKDF_SHA512"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KEM_DHKEM_SECP256K1_HKDF_SHA256"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_DHKEM_SECP256K1_HKDF_SHA256"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KEM_DHKEM_X25519_HKDF_SHA256"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_DHKEM_X25519_HKDF_SHA256"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KEM_DHKEM_X448_HKDF_SHA512"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_DHKEM_X448_HKDF_SHA512"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KEM_DHKEM_X25519_ELLIGATOR_HKDF_SHA256"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_DHKEM_X25519_ELLIGATOR_HKDF_SHA256"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KEM_X25519_KYBER768_DRAFT00"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_X25519_KYBER768_DRAFT00"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KEM_ML_KEM_512"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_ML_KEM_512"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KEM_ML_KEM_768"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_ML_KEM_768"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KEM_ML_KEM_1024"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_ML_KEM_1024"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KEM_ML_KEM_768_P256"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_ML_KEM_768_P256"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KEM_ML_KEM_1024_P384"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_ML_KEM_1024_P384"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KEM_X_WING"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_X_WING"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KDF_HKDF_SHA256"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_HKDF_SHA256"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KDF_HKDF_SHA384"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_HKDF_SHA384"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KDF_HKDF_SHA512"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_HKDF_SHA512"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KDF_SHAKE128"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_SHAKE128"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KDF_SHAKE256"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_SHAKE256"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KDF_TURBO_SHAKE128"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_TURBO_SHAKE128"
+      }
+    }
+    constants: {
+      native_name: "HPKE_KDF_TURBO_SHAKE256"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_TURBO_SHAKE256"
+      }
+    }
+    constants: {
+      native_name: "HPKE_AEAD_AES_128_GCM"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_AES_128_GCM"
+      }
+    }
+    constants: {
+      native_name: "HPKE_AEAD_AES_256_GCM"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_AES_256_GCM"
+      }
+    }
+    constants: {
+      native_name: "HPKE_AEAD_CHACHA20_POLY1305"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_CHACHA20_POLY1305"
+      }
+    }
+    constants: {
+      native_name: "HPKE_AEAD_EXPORT_ONLY"
+      native_type: NATIVE_TYPE_U16
+      unit: UNIT_IDENTIFIER
+      enum_reference: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_EXPORT_ONLY"
+      }
+    }
+    constants: {
+      native_name: "HPKE_AEAD_TAG_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 16
+    }
+    constants: {
+      native_name: "HPKE_AEAD_NONCE_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 12
+    }
+    constants: {
+      native_name: "HPKE_MIN_PSK_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "HPKE_LABELED_CONTEXT_LIMIT"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 65536
+    }
+    constants: {
+      native_name: "HPKE_KEY_SCHEDULE_LABEL_OVERHEAD"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 5
+    }
+    constants: {
+      native_name: "HPKE_ENCAPSULATED_KEY_MAX_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1665
+    }
+    constants: {
+      native_name: "HPKE_PUBLIC_KEY_MAX_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1665
+    }
+    constants: {
+      native_name: "HPKE_PRIVATE_KEY_MAX_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 66
+    }
+    constants: {
+      native_name: "HPKE_P256_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 65
+    }
+    constants: {
+      native_name: "HPKE_P256_PRIVATE_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "HPKE_P384_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 97
+    }
+    constants: {
+      native_name: "HPKE_P384_PRIVATE_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 48
+    }
+    constants: {
+      native_name: "HPKE_P521_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 133
+    }
+    constants: {
+      native_name: "HPKE_P521_PRIVATE_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 66
+    }
+    constants: {
+      native_name: "HPKE_SECP256K1_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 65
+    }
+    constants: {
+      native_name: "HPKE_SECP256K1_PRIVATE_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "HPKE_X25519_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "HPKE_X25519_PRIVATE_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "HPKE_X448_PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 56
+    }
+    constants: {
+      native_name: "HPKE_X448_PRIVATE_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 56
+    }
+  }
+  modules: {
+    native_module: "hpke_base_p256"
+    constants: {
+      native_name: "INFO_MAX_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 65530
+    }
+    constants: {
+      native_name: "PLAINTEXT_MAX_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 16777216
+    }
+    constants: {
+      native_name: "PUBLIC_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      constant_reference: {
+        native_module: "hpke"
+        native_name: "HPKE_P256_PUBLIC_KEY_LEN"
+      }
+    }
+    constants: {
+      native_name: "PRIVATE_KEY_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      constant_reference: {
+        native_module: "hpke"
+        native_name: "HPKE_P256_PRIVATE_KEY_LEN"
+      }
+    }
+    constants: {
+      native_name: "TAG_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      constant_reference: {
+        native_module: "hpke"
+        native_name: "HPKE_AEAD_TAG_LEN"
+      }
+    }
+  }
+  modules: {
+    native_module: "hpke_internal"
+    constants: {
+      native_name: "MIN_INPUT_KEY_MATERIAL_LEN"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      constant_reference: {
+        native_module: "operation_hpke"
+        native_name: "HPKE_OPERATION_MIN_INPUT_KEY_MATERIAL_LEN"
+      }
+    }
+    constants: {
+      native_name: "UNCOMPRESSED_POINT_PREFIX"
+      native_type: NATIVE_TYPE_U8
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 4
+    }
+  }
+};
+
+// Native variants and public registry order are checked against their owner.
+// These metadata records do not enable an algorithm or select a provider.
+option (hpke_registry) = {
+  native_enums: {
+    enum_type: ".reallyme.crypto.v1.HpkeKemId"
+    values: {
+      schema_value: "HPKE_KEM_ID_DHKEM_P256_HKDF_SHA256"
+      native_variant: "DhKemP256HkdfSha256"
+      native_constant: "HPKE_KEM_DHKEM_P256_HKDF_SHA256"
+    }
+    values: {
+      schema_value: "HPKE_KEM_ID_DHKEM_P384_HKDF_SHA384"
+      native_variant: "DhKemP384HkdfSha384"
+      native_constant: "HPKE_KEM_DHKEM_P384_HKDF_SHA384"
+    }
+    values: {
+      schema_value: "HPKE_KEM_ID_DHKEM_P521_HKDF_SHA512"
+      native_variant: "DhKemP521HkdfSha512"
+      native_constant: "HPKE_KEM_DHKEM_P521_HKDF_SHA512"
+    }
+    values: {
+      schema_value: "HPKE_KEM_ID_DHKEM_CP256_HKDF_SHA256"
+      native_variant: "DhKemCp256HkdfSha256"
+      native_constant: "HPKE_KEM_DHKEM_CP256_HKDF_SHA256"
+    }
+    values: {
+      schema_value: "HPKE_KEM_ID_DHKEM_CP384_HKDF_SHA384"
+      native_variant: "DhKemCp384HkdfSha384"
+      native_constant: "HPKE_KEM_DHKEM_CP384_HKDF_SHA384"
+    }
+    values: {
+      schema_value: "HPKE_KEM_ID_DHKEM_CP521_HKDF_SHA512"
+      native_variant: "DhKemCp521HkdfSha512"
+      native_constant: "HPKE_KEM_DHKEM_CP521_HKDF_SHA512"
+    }
+    values: {
+      schema_value: "HPKE_KEM_ID_DHKEM_SECP256K1_HKDF_SHA256"
+      native_variant: "DhKemSecp256k1HkdfSha256"
+      native_constant: "HPKE_KEM_DHKEM_SECP256K1_HKDF_SHA256"
+    }
+    values: {
+      schema_value: "HPKE_KEM_ID_DHKEM_X25519_HKDF_SHA256"
+      native_variant: "DhKemX25519HkdfSha256"
+      native_constant: "HPKE_KEM_DHKEM_X25519_HKDF_SHA256"
+    }
+    values: {
+      schema_value: "HPKE_KEM_ID_DHKEM_X448_HKDF_SHA512"
+      native_variant: "DhKemX448HkdfSha512"
+      native_constant: "HPKE_KEM_DHKEM_X448_HKDF_SHA512"
+    }
+    values: {
+      schema_value: "HPKE_KEM_ID_DHKEM_X25519_ELLIGATOR_HKDF_SHA256"
+      native_variant: "DhKemX25519ElligatorHkdfSha256"
+      native_constant: "HPKE_KEM_DHKEM_X25519_ELLIGATOR_HKDF_SHA256"
+    }
+    values: {
+      schema_value: "HPKE_KEM_ID_X25519_KYBER768_DRAFT00"
+      native_variant: "X25519Kyber768Draft00"
+      native_constant: "HPKE_KEM_X25519_KYBER768_DRAFT00"
+    }
+    values: {
+      schema_value: "HPKE_KEM_ID_ML_KEM_512"
+      native_variant: "MlKem512"
+      native_constant: "HPKE_KEM_ML_KEM_512"
+    }
+    values: {
+      schema_value: "HPKE_KEM_ID_ML_KEM_768"
+      native_variant: "MlKem768"
+      native_constant: "HPKE_KEM_ML_KEM_768"
+    }
+    values: {
+      schema_value: "HPKE_KEM_ID_ML_KEM_1024"
+      native_variant: "MlKem1024"
+      native_constant: "HPKE_KEM_ML_KEM_1024"
+    }
+    values: {
+      schema_value: "HPKE_KEM_ID_ML_KEM_768_P256"
+      native_variant: "MlKem768P256"
+      native_constant: "HPKE_KEM_ML_KEM_768_P256"
+    }
+    values: {
+      schema_value: "HPKE_KEM_ID_ML_KEM_1024_P384"
+      native_variant: "MlKem1024P384"
+      native_constant: "HPKE_KEM_ML_KEM_1024_P384"
+    }
+    values: {
+      schema_value: "HPKE_KEM_ID_X_WING"
+      native_variant: "XWing"
+      native_constant: "HPKE_KEM_X_WING"
+    }
+  }
+  native_enums: {
+    enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+    values: {
+      schema_value: "HPKE_KDF_ID_HKDF_SHA256"
+      native_variant: "HkdfSha256"
+      native_constant: "HPKE_KDF_HKDF_SHA256"
+    }
+    values: {
+      schema_value: "HPKE_KDF_ID_HKDF_SHA384"
+      native_variant: "HkdfSha384"
+      native_constant: "HPKE_KDF_HKDF_SHA384"
+    }
+    values: {
+      schema_value: "HPKE_KDF_ID_HKDF_SHA512"
+      native_variant: "HkdfSha512"
+      native_constant: "HPKE_KDF_HKDF_SHA512"
+    }
+    values: {
+      schema_value: "HPKE_KDF_ID_SHAKE128"
+      native_variant: "Shake128"
+      native_constant: "HPKE_KDF_SHAKE128"
+    }
+    values: {
+      schema_value: "HPKE_KDF_ID_SHAKE256"
+      native_variant: "Shake256"
+      native_constant: "HPKE_KDF_SHAKE256"
+    }
+    values: {
+      schema_value: "HPKE_KDF_ID_TURBO_SHAKE128"
+      native_variant: "TurboShake128"
+      native_constant: "HPKE_KDF_TURBO_SHAKE128"
+    }
+    values: {
+      schema_value: "HPKE_KDF_ID_TURBO_SHAKE256"
+      native_variant: "TurboShake256"
+      native_constant: "HPKE_KDF_TURBO_SHAKE256"
+    }
+  }
+  native_enums: {
+    enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+    values: {
+      schema_value: "HPKE_AEAD_ID_AES_128_GCM"
+      native_variant: "Aes128Gcm"
+      native_constant: "HPKE_AEAD_AES_128_GCM"
+    }
+    values: {
+      schema_value: "HPKE_AEAD_ID_AES_256_GCM"
+      native_variant: "Aes256Gcm"
+      native_constant: "HPKE_AEAD_AES_256_GCM"
+    }
+    values: {
+      schema_value: "HPKE_AEAD_ID_CHACHA20_POLY1305"
+      native_variant: "ChaCha20Poly1305"
+      native_constant: "HPKE_AEAD_CHACHA20_POLY1305"
+    }
+    values: {
+      schema_value: "HPKE_AEAD_ID_EXPORT_ONLY"
+      native_variant: "ExportOnly"
+      native_constant: "HPKE_AEAD_EXPORT_ONLY"
+    }
+  }
+  suites: {
+    native_name: "HPKE_DHKEM_P256_HKDF_SHA256_AES128GCM"
+    components: {
+      kem: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_DHKEM_P256_HKDF_SHA256"
+      }
+      kdf: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_HKDF_SHA256"
+      }
+      aead: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_AES_128_GCM"
+      }
+    }
+  }
+  suites: {
+    native_name: "HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM"
+    components: {
+      kem: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_DHKEM_P256_HKDF_SHA256"
+      }
+      kdf: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_HKDF_SHA256"
+      }
+      aead: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_AES_256_GCM"
+      }
+    }
+  }
+  suites: {
+    native_name: "HPKE_DHKEM_P384_HKDF_SHA384_AES256GCM"
+    components: {
+      kem: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_DHKEM_P384_HKDF_SHA384"
+      }
+      kdf: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_HKDF_SHA384"
+      }
+      aead: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_AES_256_GCM"
+      }
+    }
+  }
+  suites: {
+    native_name: "HPKE_DHKEM_P521_HKDF_SHA512_AES256GCM"
+    components: {
+      kem: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_DHKEM_P521_HKDF_SHA512"
+      }
+      kdf: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_HKDF_SHA512"
+      }
+      aead: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_AES_256_GCM"
+      }
+    }
+  }
+  suites: {
+    native_name: "HPKE_DHKEM_X25519_HKDF_SHA256_AES128GCM"
+    components: {
+      kem: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_DHKEM_X25519_HKDF_SHA256"
+      }
+      kdf: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_HKDF_SHA256"
+      }
+      aead: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_AES_128_GCM"
+      }
+    }
+  }
+  suites: {
+    native_name: "HPKE_DHKEM_X25519_HKDF_SHA256_CHACHA20POLY1305"
+    components: {
+      kem: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_DHKEM_X25519_HKDF_SHA256"
+      }
+      kdf: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_HKDF_SHA256"
+      }
+      aead: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_CHACHA20_POLY1305"
+      }
+    }
+  }
+  suites: {
+    native_name: "HPKE_MLKEM512_HKDF_SHA256_AES128GCM"
+    components: {
+      kem: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_ML_KEM_512"
+      }
+      kdf: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_HKDF_SHA256"
+      }
+      aead: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_AES_128_GCM"
+      }
+    }
+  }
+  suites: {
+    native_name: "HPKE_XWING_HKDF_SHA256_CHACHA20POLY1305"
+    components: {
+      kem: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_X_WING"
+      }
+      kdf: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_HKDF_SHA256"
+      }
+      aead: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_CHACHA20_POLY1305"
+      }
+    }
+  }
+  suites: {
+    native_name: "HPKE_XWING_HKDF_SHA384_AES256GCM"
+    components: {
+      kem: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_X_WING"
+      }
+      kdf: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_HKDF_SHA384"
+      }
+      aead: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_AES_256_GCM"
+      }
+    }
+  }
+  suites: {
+    native_name: "HPKE_MLKEM768_SHAKE256_AES256GCM"
+    components: {
+      kem: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_ML_KEM_768"
+      }
+      kdf: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_SHAKE256"
+      }
+      aead: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_AES_256_GCM"
+      }
+    }
+  }
+  suites: {
+    native_name: "HPKE_MLKEM768_HKDF_SHA384_AES256GCM"
+    components: {
+      kem: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_ML_KEM_768"
+      }
+      kdf: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_HKDF_SHA384"
+      }
+      aead: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_AES_256_GCM"
+      }
+    }
+  }
+  suites: {
+    native_name: "HPKE_MLKEM1024_SHAKE256_AES256GCM"
+    components: {
+      kem: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_ML_KEM_1024"
+      }
+      kdf: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_SHAKE256"
+      }
+      aead: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_AES_256_GCM"
+      }
+    }
+  }
+  suites: {
+    native_name: "HPKE_MLKEM1024_HKDF_SHA384_AES256GCM"
+    components: {
+      kem: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_ML_KEM_1024"
+      }
+      kdf: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_HKDF_SHA384"
+      }
+      aead: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_AES_256_GCM"
+      }
+    }
+  }
+  suites: {
+    native_name: "HPKE_MLKEM768P256_SHAKE256_AES256GCM"
+    components: {
+      kem: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_ML_KEM_768_P256"
+      }
+      kdf: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_SHAKE256"
+      }
+      aead: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_AES_256_GCM"
+      }
+    }
+  }
+  suites: {
+    native_name: "HPKE_MLKEM1024P384_SHAKE256_AES256GCM"
+    components: {
+      kem: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_ML_KEM_1024_P384"
+      }
+      kdf: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_SHAKE256"
+      }
+      aead: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_AES_256_GCM"
+      }
+    }
+  }
+  suites: {
+    native_name: "HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM"
+    components: {
+      kem: {
+        enum_type: ".reallyme.crypto.v1.HpkeKemId"
+        value_name: "HPKE_KEM_ID_ML_KEM_1024_P384"
+      }
+      kdf: {
+        enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+        value_name: "HPKE_KDF_ID_HKDF_SHA384"
+      }
+      aead: {
+        enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+        value_name: "HPKE_AEAD_ID_AES_256_GCM"
+      }
+    }
+  }
+  suites: {
+    native_name: "MLS_192_MLKEM1024_AES256GCM_SHA384_P384"
+    alias_name: "HPKE_MLKEM1024_HKDF_SHA384_AES256GCM"
+  }
+  suites: {
+    native_name: "MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87"
+    alias_name: "HPKE_MLKEM1024_HKDF_SHA384_AES256GCM"
+  }
+  suites: {
+    native_name: "MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384"
+    alias_name: "HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM"
+  }
+  suites: {
+    native_name: "MLS_192_MLKEM768_AES256GCM_SHA384_MLDSA65"
+    alias_name: "HPKE_MLKEM768_HKDF_SHA384_AES256GCM"
+  }
+  suites: {
+    native_name: "MLS_128_MLKEM768X25519_AES256GCM_SHA384_Ed25519"
+    alias_name: "HPKE_XWING_HKDF_SHA384_AES256GCM"
+  }
+  registries: {
+    native_name: "HPKE_REGISTERED_KEMS"
+    enum_type: ".reallyme.crypto.v1.HpkeKemId"
+    members: "HPKE_KEM_ID_DHKEM_P256_HKDF_SHA256"
+    members: "HPKE_KEM_ID_DHKEM_P384_HKDF_SHA384"
+    members: "HPKE_KEM_ID_DHKEM_P521_HKDF_SHA512"
+    members: "HPKE_KEM_ID_DHKEM_CP256_HKDF_SHA256"
+    members: "HPKE_KEM_ID_DHKEM_CP384_HKDF_SHA384"
+    members: "HPKE_KEM_ID_DHKEM_CP521_HKDF_SHA512"
+    members: "HPKE_KEM_ID_DHKEM_SECP256K1_HKDF_SHA256"
+    members: "HPKE_KEM_ID_DHKEM_X25519_HKDF_SHA256"
+    members: "HPKE_KEM_ID_DHKEM_X448_HKDF_SHA512"
+    members: "HPKE_KEM_ID_DHKEM_X25519_ELLIGATOR_HKDF_SHA256"
+    members: "HPKE_KEM_ID_X25519_KYBER768_DRAFT00"
+    members: "HPKE_KEM_ID_ML_KEM_512"
+    members: "HPKE_KEM_ID_ML_KEM_768"
+    members: "HPKE_KEM_ID_ML_KEM_1024"
+    members: "HPKE_KEM_ID_ML_KEM_768_P256"
+    members: "HPKE_KEM_ID_ML_KEM_1024_P384"
+    members: "HPKE_KEM_ID_X_WING"
+  }
+  registries: {
+    native_name: "HPKE_REGISTERED_KDFS"
+    enum_type: ".reallyme.crypto.v1.HpkeKdfId"
+    members: "HPKE_KDF_ID_HKDF_SHA256"
+    members: "HPKE_KDF_ID_HKDF_SHA384"
+    members: "HPKE_KDF_ID_HKDF_SHA512"
+    members: "HPKE_KDF_ID_SHAKE128"
+    members: "HPKE_KDF_ID_SHAKE256"
+    members: "HPKE_KDF_ID_TURBO_SHAKE128"
+    members: "HPKE_KDF_ID_TURBO_SHAKE256"
+  }
+  registries: {
+    native_name: "HPKE_REGISTERED_AEADS"
+    enum_type: ".reallyme.crypto.v1.HpkeAeadId"
+    members: "HPKE_AEAD_ID_AES_128_GCM"
+    members: "HPKE_AEAD_ID_AES_256_GCM"
+    members: "HPKE_AEAD_ID_CHACHA20_POLY1305"
+    members: "HPKE_AEAD_ID_EXPORT_ONLY"
+  }
+};

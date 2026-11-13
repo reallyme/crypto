@@ -535,6 +535,16 @@ pub mod platform_key_policy {
         ),
     }
 }
+pub mod crypto_hpke_component_capability {
+    #[allow(unused_imports)]
+    use super::*;
+    #[derive(Clone, Debug)]
+    pub enum Component {
+        Kem(::buffa::EnumValue<super::super::super::super::HpkeKemId>),
+        Kdf(::buffa::EnumValue<super::super::super::super::HpkeKdfId>),
+        Aead(::buffa::EnumValue<super::super::super::super::HpkeAeadId>),
+    }
+}
 pub mod crypto_ecdsa_input {
     #[allow(unused_imports)]
     use super::*;

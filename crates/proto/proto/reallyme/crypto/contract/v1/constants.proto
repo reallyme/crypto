@@ -47,7 +47,23 @@ message Constant {
     uint64 unsigned_value = 4;
     sint64 signed_value = 5;
     bytes bytes_value = 6;
+    ConstantReference constant_reference = 7;
+    EnumValueReference enum_reference = 8;
   }
+}
+
+// A named alias retains its target's exact representation and unit. Generator
+// cycle detection prevents a reference graph from defining its own value.
+message ConstantReference {
+  optional string native_module = 1;
+  optional string native_name = 2;
+}
+
+// Identity references resolve numbers from the existing enum declaration.
+// Enum identities cannot supply byte lengths, resource limits, or other units.
+message EnumValueReference {
+  optional string enum_type = 1;
+  optional string value_name = 2;
 }
 
 // ConstantRange relates two existing scalar constants without duplicating

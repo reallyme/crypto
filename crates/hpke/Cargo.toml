@@ -19,7 +19,7 @@ name = "crypto_hpke"
 [features]
 default = []
 # Schema registration and conversion do not select a cryptographic backend.
-proto = ["dep:crypto-proto"]
+proto = ["dep:crypto-proto", "dep:buffa"]
 base-p256-aes128gcm = ["kem-dh-p256", "kdf-hkdf-sha256", "aead-aes128-gcm", "dep:secrecy"]
 backend-native = [
     "dep:getrandom",
@@ -137,6 +137,7 @@ wasm = ["native"]
 test-vectors = ["native"]
 
 [dependencies]
+buffa = { workspace = true, optional = true }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.4.0", path = "../crypto/core", default-features = false }
 crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../proto", default-features = false, features = ["generated"], optional = true }
 aes-gcm = { workspace = true, optional = true }

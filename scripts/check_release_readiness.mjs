@@ -2454,6 +2454,7 @@ const protobufReleasePolicy = {
   },
   generatedFreshness: {
     generatedPaths: [
+      "crates/hpke/src/generated",
       "crates/proto/src/generated",
       "packages/ts/src/proto/generated",
       "gen",

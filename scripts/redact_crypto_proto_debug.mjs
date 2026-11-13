@@ -92,7 +92,7 @@ const scalarMetadataMessageNames = new Set([
 ]);
 // Standalone contracts may be introduced independently of executable requests.
 // Register their scalar/empty owners only when present in this schema revision.
-for (const name of ["CryptoRsaPssParams", "CryptoNativeKeyCapabilities",
+for (const name of ["CryptoHpkeP256BaseRecipientGenerateRequest", "CryptoRsaPssParams", "CryptoNativeKeyCapabilities",
   "CryptoEcdsaSignOptions", "CryptoEd448SupportRequest", "CryptoNativeVerificationResult",
   "CryptoNativeKeyGenerateRequest", "CryptoNativePublicKeyRequest", "HpkeSuiteIdentifier",
   "CryptoHpkePskReceiverSetupResult", "CryptoHpkeP256BaseCapabilities", "CryptoHpkeComponentCapability"]) {
@@ -368,12 +368,12 @@ function serdeAttrForWireField(field) {
     parts.push('deserialize_with = "deserialize_zeroizing_string"');
   } else if (field.type === "::buffa::alloc::string::String") {
     parts.push('with = "::buffa::json_helpers::proto_string"');
-  } else if (
-    field.type.startsWith("::buffa::MessageField<") ||
-    field.type === "bool"
-  ) {
-    // Buffa's generated serde for these field shapes relies on the default
-    // field representation. The surrounding Wire struct is #[serde(default)].
+  } else if (field.type === "bool") {
+    // ProtoJSON null means the scalar default, including inside custom Wire
+    // owners. A bare bool deserializer would reject a previously valid null.
+    parts.push('with = "::buffa::json_helpers::proto_bool"');
+  } else if (field.type.startsWith("::buffa::MessageField<")) {
+    // MessageField preserves the generated optional-message representation.
   } else {
     fail(`unsupported field type ${field.type} on ${field.name}`);
   }

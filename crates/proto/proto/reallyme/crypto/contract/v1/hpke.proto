@@ -1,0 +1,57 @@
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+syntax = "proto2";
+
+package reallyme.crypto.contract.v1;
+
+import "google/protobuf/descriptor.proto";
+import "reallyme/crypto/contract/v1/constants.proto";
+
+// Native names bind an existing Rust enum variant and scalar alias to one
+// schema enum member. They do not introduce another numeric registry.
+message HpkeNativeEnumValue {
+  optional string schema_value = 1;
+  optional string native_variant = 2;
+  optional string native_constant = 3;
+}
+
+message HpkeNativeEnum {
+  optional string enum_type = 1;
+  repeated HpkeNativeEnumValue values = 2;
+}
+
+message HpkeSuiteComponents {
+  optional EnumValueReference kem = 1;
+  optional EnumValueReference kdf = 2;
+  optional EnumValueReference aead = 3;
+}
+
+// Aliases name an already reviewed suite instead of duplicating its triple.
+// Suite presence says nothing about execution support in a selected provider.
+message HpkeNamedSuite {
+  optional string native_name = 1;
+  oneof definition {
+    HpkeSuiteComponents components = 2;
+    string alias_name = 3;
+  }
+}
+
+// Ordered members are authoritative and include every nonzero schema member.
+// A schema registry extension requires an explicit review of this snapshot.
+message HpkeOrderedRegistry {
+  optional string native_name = 1;
+  optional string enum_type = 2;
+  repeated string members = 3;
+}
+
+message HpkeConstantRegistry {
+  repeated HpkeNativeEnum native_enums = 1;
+  repeated HpkeNamedSuite suites = 2;
+  repeated HpkeOrderedRegistry registries = 3;
+}
+
+extend google.protobuf.FileOptions {
+  optional HpkeConstantRegistry hpke_registry = 51002;
+}

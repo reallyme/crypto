@@ -16,12 +16,12 @@ use shake::Shake256;
 use subtle::{Choice, ConstantTimeEq};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
-const KEM_ID: u16 = 0x0040;
+const KEM_ID: u16 = crate::constants::HPKE_KEM_ML_KEM_512;
 const PRIVATE_KEY_LEN: usize = 64;
 const PUBLIC_KEY_LEN: usize = 800;
 const ENCAPSULATED_KEY_LEN: usize = 768;
 const VERSION_LABEL: &[u8] = b"HPKE-v1";
-const KEM_SUITE_ID: &[u8] = b"KEM\x00\x40";
+const KEM_SUITE_ID: &[u8] = &crate::constants::encode_kem_suite_id(KEM_ID);
 const DERIVE_KEYPAIR_LABEL: &[u8] = b"DeriveKeyPair";
 const EMPTY_CONTEXT: &[u8] = b"";
 const DERIVE_KEYPAIR_LABEL_LEN: [u8; 2] = [0, 13];

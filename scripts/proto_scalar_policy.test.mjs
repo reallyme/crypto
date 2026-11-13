@@ -57,3 +57,49 @@ test("optional compatibility projection requires real clearing owners before leg
     generated.replace(drop, "impl ::core::ops::Drop for UnrelatedOwner")),
   (error) => error instanceof ProtobufScalarPolicyError && error.code === "optional-owner");
 });
+
+
+test("optional projection independently requires Drop, clear and setter cleanup", () => {
+  const source = readFileSync(new URL("../crates/proto/proto/reallyme/crypto/v1/crypto.proto", import.meta.url), "utf8");
+  const generated = readFileSync(new URL("../crates/proto/src/generated/buffa/reallyme.crypto.v1.crypto.rs", import.meta.url), "utf8");
+  const wipe = "::zeroize::Zeroize::zeroize(&mut self.kid);";
+  for (const marker of [
+    "impl ::core::ops::Drop for CryptoJwkOptions",
+    "pub fn with_kid(",
+    "fn clear(&mut self) {",
+  ]) {
+    const owner = generated.indexOf("pub struct CryptoJwkOptions {");
+    const start = generated.indexOf(marker, owner);
+    assert.ok(start >= owner);
+    const index = generated.indexOf(wipe, start);
+    assert.ok(index > start);
+    const mutated = generated.slice(0, index) + generated.slice(index + wipe.length);
+    assert.throws(() => projectLegacyScalarChecks(source, mutated), (error) =>
+      error instanceof ProtobufScalarPolicyError && error.code === "optional-owner");
+  }
+});
+
+test("optional projection rejects unguarded or reordered transfer and merge paths", () => {
+  const source = readFileSync(new URL("../crates/proto/proto/reallyme/crypto/v1/crypto.proto", import.meta.url), "utf8");
+  const generated = readFileSync(new URL("../crates/proto/src/generated/buffa/reallyme.crypto.v1.crypto.rs", import.meta.url), "utf8");
+  const owner = generated.indexOf("pub struct CryptoJwkOptions {");
+  const setter = generated.indexOf("pub fn with_kid(", owner);
+  const wipe = "::zeroize::Zeroize::zeroize(&mut self.kid);";
+  const transfer = "self.kid = Some(::core::mem::take(&mut *value));";
+  const replacement = wipe + "\n        " + transfer;
+  const sourceVariants = [
+    [setter, "::zeroize::Zeroizing::new(value.into())", "::zeroize::Zeroizing::new(Vec::new())"],
+    [setter, replacement, transfer + "\n        " + wipe],
+    [owner, "self.kid.get_or_insert_with(::buffa::alloc::vec::Vec::new)", "self.kid.get_or_insert_with(Vec::new)"],
+    [owner, 'deserialize_with = "deserialize_optional_zeroizing_bytes"', 'with = "::buffa::json_helpers::opt_bytes"'],
+    [owner, "let mut wire = Wire::deserialize(deserializer)?;", "let mut wire = Wire::default();"],
+  ];
+  for (const [start, before, after] of sourceVariants) {
+    assert.ok(start >= owner);
+    const index = generated.indexOf(before, start);
+    assert.ok(index > start);
+    const mutated = generated.slice(0, index) + after + generated.slice(index + before.length);
+    assert.throws(() => projectLegacyScalarChecks(source, mutated), (error) =>
+      error instanceof ProtobufScalarPolicyError && error.code === "optional-owner");
+  }
+});

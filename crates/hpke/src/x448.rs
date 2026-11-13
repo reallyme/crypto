@@ -17,9 +17,9 @@ use zeroize::{Zeroize, Zeroizing};
 
 use crate::dhkem::{DhGroup, DhKem};
 
-const KEM_ID: u16 = 0x0021;
+const KEM_ID: u16 = crate::constants::HPKE_KEM_DHKEM_X448_HKDF_SHA512;
 const VERSION_LABEL: &[u8] = b"HPKE-v1";
-const KEM_SUITE_ID: &[u8] = b"KEM\x00\x21";
+const KEM_SUITE_ID: &[u8] = &crate::constants::encode_kem_suite_id(KEM_ID);
 const DERIVE_LABEL: &[u8] = b"dkp_prk";
 const PRIVATE_KEY_LABEL: &[u8] = b"sk";
 const PRIVATE_KEY_LEN_U16: [u8; 2] = [0, 56];

@@ -8,6 +8,7 @@ package reallyme.crypto.v1;
 
 import "reallyme/crypto/v1/native_options.proto";
 import "reallyme/crypto/v1/native_primitives.proto";
+import "reallyme/crypto/v1/native_protocols.proto";
 import "reallyme/crypto/v1/policy.proto";
 
 option java_multiple_files = true;
@@ -1359,6 +1360,120 @@ message CryptoProviderCapability {
 
 message CryptoProviderCapabilitySet {
   repeated CryptoProviderCapability capabilities = 1;
+}
+
+// Live HPKE contexts remain single-owner native values. These standalone
+// messages carry call content and public results only: no context handle,
+// traffic key, nonce, sequence, reset, reconstruction or state export exists.
+message CryptoHpkePskSenderSetupRequest {
+  HpkeSuiteIdentifier suite = 1;
+  bytes recipient_public_key = 2;
+  bytes info = 3;
+  bytes psk = 4;
+  bytes psk_id = 5;
+}
+
+// The live sender owner is returned separately by the native API.
+message CryptoHpkePskSenderSetupResult {
+  bytes encapsulated_key = 1;
+}
+
+message CryptoHpkePskReceiverSetupRequest {
+  HpkeSuiteIdentifier suite = 1;
+  bytes encapsulated_key = 2;
+  bytes recipient_private_key = 3;
+  bytes info = 4;
+  bytes psk = 5;
+  bytes psk_id = 6;
+}
+
+// Public acknowledgement only; the live receiver is the native return value.
+message CryptoHpkePskReceiverSetupResult {
+}
+
+// Requires a separately borrowed native sender owner; content cannot select,
+// reconstruct, reset or replace the context and cannot choose an AEAD nonce.
+message CryptoHpkeSenderSealRequest {
+  bytes aad = 1;
+  bytes plaintext = 2;
+}
+
+message CryptoHpkeSenderSealResult {
+  bytes ciphertext = 1;
+}
+
+// Requires a separately borrowed native receiver owner.
+message CryptoHpkeReceiverOpenRequest {
+  bytes aad = 1;
+  bytes ciphertext = 2;
+}
+
+message CryptoHpkeReceiverOpenResult {
+  bytes plaintext = 1;
+}
+
+// Read-only fixed Base/P-256/HKDF-SHA256/AES-128-GCM profile capabilities.
+// Numeric bounds cannot override the native profile or authorize execution.
+message CryptoHpkeP256BaseCapabilities {
+  HpkeSuiteIdentifier suite = 1;
+  uint32 info_max_length = 2;
+  uint32 plaintext_max_length = 3;
+  uint32 public_key_length = 4;
+  uint32 authentication_tag_length = 5;
+  bool empty_aad_only = 6;
+  bool private_key_exportable = 7;
+}
+
+// Only the public association of the non-exportable native recipient owner.
+message CryptoHpkeP256BasePublicKey {
+  bytes public_key = 1;
+}
+
+message CryptoHpkeP256BaseSealRequest {
+  bytes recipient_public_key = 1;
+  bytes info = 2;
+  bytes plaintext = 3;
+}
+
+// The recipient key is an explicit borrowed native owner, never serialized.
+message CryptoHpkeP256BaseOpenRequest {
+  bytes encapsulated_key = 1;
+  bytes info = 2;
+  bytes ciphertext = 3;
+}
+
+message CryptoHpkeP256BaseSealedResult {
+  bytes encapsulated_key = 1;
+  bytes ciphertext = 2;
+}
+
+message CryptoHpkeP256BaseOpenResult {
+  bytes plaintext = 1;
+}
+
+// Read-only build-relative support for one registered component. A component
+// report alone never authorizes a complete suite or selects another provider.
+message CryptoHpkeComponentCapability {
+  oneof component {
+    HpkeKemId kem = 1;
+    HpkeKdfId kdf = 2;
+    HpkeAeadId aead = 3;
+  }
+  HpkeComponentSupport support = 4;
+}
+
+// CryptoHpkeP256BaseRecipientImportRequest imports the exact RFC 9180 P-256
+// private scalar into the fixed profile's non-exportable native recipient.
+// The native owner and its existing public descriptor are returned separately;
+// no private key, reusable context, reset token or provider state is exported.
+message CryptoHpkeP256BaseRecipientImportRequest {
+  bytes private_key = 1;
+}
+
+// CryptoHpkeP256BaseRecipientGenerateRequest selects only fresh fixed-profile
+// recipient generation. An injected RNG is an explicit borrowed native
+// capability and cannot be supplied or reconstructed from serialized input.
+message CryptoHpkeP256BaseRecipientGenerateRequest {
 }
 
 // JsonWebKey carries a public JWK document at API/storage boundaries. The JSON

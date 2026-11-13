@@ -51,6 +51,8 @@ proptest-regressions/
 **/src/generated/**
 !crates/proto/src/generated/
 !crates/proto/src/generated/**
+!crates/hpke/src/generated/
+!crates/hpke/src/generated/**
 !packages/ts/src/proto/generated/
 !packages/ts/src/proto/generated/**
 **/src/pb

@@ -270,6 +270,41 @@ Parity, known-answer, malformed-input, provider-failure and ownership regression
 sources compile under strict workspace all-targets/features Clippy. Buf
 compatibility and hardened regeneration pass. Tests remain unexecuted.
 
+## HPKE identity, lifecycle and context contracts
+
+The schema now owns 55 additional HPKE scalar entries, all 21 named suite
+constants and all three ordered component registries. Existing wire enum values
+remain the authority for component numbers; typed enum/constant references avoid
+copying those numbers into another table. Native enum bindings and aliases are
+validated against actual bounded Rust tokens before generation. The generated
+owner-local suite module is covered by the existing freshness snapshot.
+Existing numeric values, suite triples, registry order, support tables and
+feature choices are preserved.
+
+Standalone protected inputs cover Base/PSK one-shot operations and exporters,
+PSK sender/receiver setup and record seal/open content. Live contexts remain
+native, exclusive mutable owners; no key, nonce, sequence, context identifier,
+reset or state-reconstruction field is added. The existing executable
+`hpke_suite = 11` selector and operation oneofs remain unchanged. Input, AAD,
+PSK identifier and exporter-context bytes are passed through exactly.
+
+The fixed P-256 Base profile has its own recipient import/generation contracts,
+returning the existing non-exportable recipient owner and associated public
+key. It retains exact uncompressed point encoding, existing input/output
+bounds, empty AAD and fallible protected allocations. Its explicit RNG path
+borrows the existing native entropy capability. No new default suite or backend
+is selected by metadata conversion.
+
+A runtime HPKE configuration must select at least one KEM and one AEAD, as
+required by the pinned implementation. The exact P-256/AES-128-GCM feature
+recipe supplies both; the root API facade without concrete components is not
+a supported runtime profile. Metadata-only leaf builds remain backend-free.
+
+Optional-owner checks now independently inspect Drop, clear, merge, setter and
+JSON staging scopes. Generated boolean fields retain the pinned ProtoJSON
+null-to-default behavior. Ownership, context-lifecycle, exact-byte and negative
+regression sources are added; execution remains deferred.
+
 ## Remaining work
 
 - Migrate the remaining options, policies, content modes, key-source contracts,

@@ -14,11 +14,11 @@ const RELEASE_READINESS_COMMIT = "18a6d91d99837e80f92e41fe04effb0b043d754e";
 const RELEASE_READINESS_CORE_SHA256 =
   "7614b0cbf9e36a4653c2fa9008bee0d1e22542de0e4a08a10e640c836a5c93db";
 const LOCAL_CHECKER_SHA256 =
-  "a68844e089058684c507cceb8816a1f127d1416f7465b610d56b6df6ab8ba08b";
+  "e140a42a103991b22c7a7cad5a1139e10ae0189bfb6b722de7447590c14fc0a0";
 // The checker imports local policy modules. Pinning only its entry file
 // would let an unreviewed dependency change the release decision.
 const LOCAL_CHECKER_DEPENDENCIES = [
-  ["scripts/proto_scalar_policy.mjs", "c45f27d82e524fafe786be99e8541af9ada6cfa01e13eb9c5114d9ae640f94cf"],
+  ["scripts/proto_scalar_policy.mjs", "b1d8ac8a0a11ba85d05c69738d01131a3512273647f702166aec63ce4e1e86e7"],
   ["scripts/crypto_operation_route_readiness.mjs", "1ecb7b2cd1efb8cefb4ff2875bdcd402b11b6add2135c1ae757e469bfd72ea61"],
   ["scripts/workflow_gate_policy.mjs", "a5b0ac299de016810c08e8802d74aa9dc00b6ae8ee434f8334a2e0c26a6d7fcc"],
 ];
