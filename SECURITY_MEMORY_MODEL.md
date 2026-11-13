@@ -156,6 +156,11 @@ Engineering rules that apply across primitives and protocols:
   privacy-bearing bytes fail serde `Serialize` with a fixed error. ProtoJSON is
   produced only from owned messages at an explicit, policy-approved boundary;
   callers must not serialize or log views as a substitute for that boundary.
+- Generated Rust transport messages clear retained storage through their drop,
+  clearing and guarded setter paths. Callers own bytes moved out of public
+  fields, and must clear old storage before directly replacing a public vector
+  field. Prefer guarded setters and `Message::clear` for mutation; native secret
+  owners provide the stronger boundary for long-lived material.
 - Swift CryptoKit and Security.framework ECDH routes copy shared secrets through
   provider-managed `Data` or opaque shared-secret storage before the package
   creates caller-owned `[UInt8]` results. The Swift wrappers best-effort clear

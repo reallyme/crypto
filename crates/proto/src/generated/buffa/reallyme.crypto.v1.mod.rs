@@ -346,6 +346,9 @@ pub mod __buffa {
         reg.register_json_any(super::__CRYPTO_SHAKE256EXPAND_REQUEST_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_SHAKE256EXPAND_RESULT_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_SECP256K1AGREEMENT_REQUEST_JSON_ANY);
+        reg.register_json_any(
+            super::__CRYPTO_KEY_AGREEMENT_GENERATE_KEY_PAIR_REQUEST_JSON_ANY,
+        );
     }
 }
 #[doc(inline)]
@@ -1248,5 +1251,9 @@ pub use self::__buffa::view::CryptoShake256ExpandResultOwnedView;
 pub use self::__buffa::view::CryptoSecp256k1AgreementRequestView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoSecp256k1AgreementRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoKeyAgreementGenerateKeyPairRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoKeyAgreementGenerateKeyPairRequestOwnedView;
 #[doc(inline)]
 pub use self::__buffa::register_types;

@@ -5903,7 +5903,9 @@ public nonisolated struct ReallyMeProtoCryptoRandomBytesRequest: Sendable {
 
   public var purpose: ReallyMeProtoRngOutputKind = .unspecified
 
-  public var outputLength: UInt32 = 0
+  /// Octet count preserves the native usize domain on 64-bit targets. Native
+  /// adapters reject unrepresentable lengths on narrower targets before use.
+  public var outputLength: UInt64 = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -7929,6 +7931,33 @@ public nonisolated struct ReallyMeProtoCryptoSecp256k1AgreementRequest: Sendable
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+}
+
+/// Standalone generation under the existing KeyAgreementKeyGeneration policy.
+/// Only the registered key_agreement branch is accepted. The result is the
+/// existing CryptoKeyPair with its native exportable-private-material policy;
+/// opaque keys and new executable root operation selectors are not introduced.
+public nonisolated struct ReallyMeProtoCryptoKeyAgreementGenerateKeyPairRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoKeyAgreementGenerateKeyPairRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var algorithm: ReallyMeProtoCryptoAlgorithmIdentifier {
+    get {_algorithm ?? ReallyMeProtoCryptoAlgorithmIdentifier()}
+    set {_algorithm = newValue}
+  }
+  /// Returns true if `algorithm` has been explicitly set.
+  public var hasAlgorithm: Bool {self._algorithm != nil}
+  /// Clears the value of `algorithm`. Subsequent reads from it will return its default value.
+  public mutating func clearAlgorithm() {self._algorithm = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _algorithm: ReallyMeProtoCryptoAlgorithmIdentifier? = nil
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -14863,7 +14892,7 @@ nonisolated extension ReallyMeProtoCryptoRandomBytesRequest: SwiftProtobuf.Messa
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularEnumField(value: &self.purpose) }()
-      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.outputLength) }()
+      case 2: try { try decoder.decodeSingularUInt64Field(value: &self.outputLength) }()
       default: break
       }
     }
@@ -14874,7 +14903,7 @@ nonisolated extension ReallyMeProtoCryptoRandomBytesRequest: SwiftProtobuf.Messa
       try visitor.visitSingularEnumField(value: self.purpose, fieldNumber: 1)
     }
     if self.outputLength != 0 {
-      try visitor.visitSingularUInt32Field(value: self.outputLength, fieldNumber: 2)
+      try visitor.visitSingularUInt64Field(value: self.outputLength, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -18215,6 +18244,40 @@ nonisolated extension ReallyMeProtoCryptoSecp256k1AgreementRequest: SwiftProtobu
   public static func ==(lhs: ReallyMeProtoCryptoSecp256k1AgreementRequest, rhs: ReallyMeProtoCryptoSecp256k1AgreementRequest) -> Bool {
     if lhs.privateKey != rhs.privateKey {return false}
     if lhs.peerPublicKeySec1 != rhs.peerPublicKeySec1 {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoKeyAgreementGenerateKeyPairRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoKeyAgreementGenerateKeyPairRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}algorithm\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._algorithm) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._algorithm {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoKeyAgreementGenerateKeyPairRequest, rhs: ReallyMeProtoCryptoKeyAgreementGenerateKeyPairRequest) -> Bool {
+    if lhs._algorithm != rhs._algorithm {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

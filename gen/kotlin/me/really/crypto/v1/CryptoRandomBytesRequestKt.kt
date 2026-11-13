@@ -59,9 +59,14 @@ public object CryptoRandomBytesRequestKt {
     }
 
     /**
-     * `uint32 output_length = 2 [json_name = "outputLength"];`
+     * ```
+     * Octet count preserves the native usize domain on 64-bit targets. Native
+     * adapters reject unrepresentable lengths on narrower targets before use.
+     * ```
+     *
+     * `uint64 output_length = 2 [json_name = "outputLength"];`
      */
-    public var outputLength: kotlin.Int
+    public var outputLength: kotlin.Long
       @kotlin.jvm.JvmName("getOutputLength")
         get() = _builder.outputLength
       @kotlin.jvm.JvmName("setOutputLength")
@@ -69,7 +74,12 @@ public object CryptoRandomBytesRequestKt {
         _builder.outputLength = value
       }
     /**
-     * `uint32 output_length = 2 [json_name = "outputLength"];`
+     * ```
+     * Octet count preserves the native usize domain on 64-bit targets. Native
+     * adapters reject unrepresentable lengths on narrower targets before use.
+     * ```
+     *
+     * `uint64 output_length = 2 [json_name = "outputLength"];`
      */
     public fun clearOutputLength() {
       _builder.clearOutputLength()

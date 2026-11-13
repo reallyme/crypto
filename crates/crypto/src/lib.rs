@@ -95,6 +95,10 @@ pub mod conformance_contract;
 #[cfg(feature = "operation-response")]
 pub mod format_contract;
 
+/// Standalone generation contract for existing key-agreement operations.
+#[cfg(feature = "operation-response")]
+pub mod key_agreement_contract;
+
 /// Primary generated protobuf operation-response boundary.
 #[cfg(feature = "operation-response")]
 pub mod operation_contract;

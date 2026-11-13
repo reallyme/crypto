@@ -9,17 +9,19 @@
 #![allow(clippy::panic)]
 
 use buffa::{EnumValue, Message, MessageField};
+#[cfg(all(feature = "sha3", any(feature = "native", feature = "wasm")))]
+use crypto_proto::generated::proto::reallyme::crypto::v1::__buffa::oneof::crypto_operation_result::Result as CryptoOperationResultBranch;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     __buffa::oneof::crypto_algorithm_identifier::Algorithm as ProtoAlgorithmBranch,
     __buffa::oneof::crypto_error::Error as CryptoErrorBranch,
     __buffa::oneof::crypto_operation_request::Operation as CryptoOperation,
     __buffa::oneof::crypto_operation_response::Outcome as CryptoOperationOutcome,
-    __buffa::oneof::crypto_operation_result::Result as CryptoOperationResultBranch,
     CryptoAlgorithmIdentifier, CryptoErrorReason, CryptoHashRequest, CryptoOperationRequest,
     CryptoOperationResponse, HashAlgorithm,
 };
 use crypto_proto::operation_response_wire::decode_operation_response;
 
+#[cfg(all(feature = "sha3", any(feature = "native", feature = "wasm")))]
 #[test]
 fn operation_response_hash_branch_uses_operation_owner_for_sha3() {
     let output = reallyme_crypto::operation_contract::process_operation_response(

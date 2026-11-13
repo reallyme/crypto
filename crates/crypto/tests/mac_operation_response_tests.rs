@@ -9,18 +9,23 @@
 #![allow(clippy::panic)]
 
 use buffa::{EnumValue, Message, MessageField};
+#[cfg(all(feature = "hmac", any(feature = "native", feature = "wasm")))]
+use crypto_proto::generated::proto::reallyme::crypto::v1::__buffa::oneof::crypto_operation_result::Result as CryptoOperationResultBranch;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     __buffa::oneof::crypto_algorithm_identifier::Algorithm as ProtoAlgorithmBranch,
     __buffa::oneof::crypto_error::Error as CryptoErrorBranch,
     __buffa::oneof::crypto_operation_request::Operation as CryptoOperation,
     __buffa::oneof::crypto_operation_response::Outcome as CryptoOperationOutcome,
-    __buffa::oneof::crypto_operation_result::Result as CryptoOperationResultBranch,
     CryptoAlgorithmIdentifier, CryptoErrorReason, CryptoMacAuthenticateRequest,
-    CryptoMacVerifyRequest, CryptoOperationRequest, CryptoOperationResponse,
-    CryptoVerificationStatus, MacAlgorithm,
+    CryptoOperationRequest, CryptoOperationResponse, MacAlgorithm,
+};
+#[cfg(all(feature = "hmac", any(feature = "native", feature = "wasm")))]
+use crypto_proto::generated::proto::reallyme::crypto::v1::{
+    CryptoMacVerifyRequest, CryptoVerificationStatus,
 };
 use crypto_proto::operation_response_wire::decode_operation_response;
 
+#[cfg(all(feature = "hmac", any(feature = "native", feature = "wasm")))]
 #[test]
 fn operation_response_mac_authenticate_uses_operation_owner_for_sha512() {
     let key = vec![0x42u8; 32];
@@ -54,6 +59,7 @@ fn operation_response_mac_authenticate_uses_operation_owner_for_sha512() {
     );
 }
 
+#[cfg(all(feature = "hmac", any(feature = "native", feature = "wasm")))]
 #[test]
 fn operation_response_mac_verify_reports_mismatch_as_invalid_result() {
     let key = vec![0x24u8; 32];
@@ -82,6 +88,7 @@ fn operation_response_mac_verify_reports_mismatch_as_invalid_result() {
     assert!(verification.error.as_option().is_none());
 }
 
+#[cfg(all(feature = "hmac", any(feature = "native", feature = "wasm")))]
 #[test]
 fn operation_response_mac_verify_reports_malformed_tag_as_error_result() {
     let response = mac_verify_response(
@@ -133,6 +140,7 @@ fn operation_response_mac_unspecified_algorithm_is_provider_error() {
     );
 }
 
+#[cfg(all(feature = "hmac", any(feature = "native", feature = "wasm")))]
 fn mac_verify_response(
     algorithm: MacAlgorithm,
     key: Vec<u8>,
@@ -165,6 +173,7 @@ fn mac_authenticate_request(
     }
 }
 
+#[cfg(all(feature = "hmac", any(feature = "native", feature = "wasm")))]
 fn mac_verify_request(
     algorithm: MacAlgorithm,
     key: Vec<u8>,

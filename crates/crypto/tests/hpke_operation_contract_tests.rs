@@ -32,6 +32,10 @@ const PSK_ID: &[u8] = b"operation-contract-psk";
 #[test]
 fn primary_operation_contract_executes_all_hpke_branches() {
     let algorithm = suite_identifier();
+    if !suite_is_executable(&algorithm) {
+        assert_suite_unavailable(&algorithm);
+        return;
+    }
 
     let CryptoOperationResultBranch::HpkeGenerateKeyPair(generated) = execute(
         CryptoOperation::HpkeGenerateKeyPair(Box::new(CryptoHpkeGenerateKeyPairRequest {
@@ -144,6 +148,10 @@ fn primary_operation_contract_executes_all_hpke_branches() {
 fn post_quantum_hpke_suites_execute_through_the_serialized_contract() {
     for case in post_quantum_suite_cases() {
         let algorithm = suite_identifier_for(case);
+        if !suite_is_executable(&algorithm) {
+            assert_suite_unavailable(&algorithm);
+            continue;
+        }
         assert_error_reason(
             CryptoOperation::HpkeDeriveKeyPair(Box::new(CryptoHpkeDeriveKeyPairRequest {
                 algorithm: MessageField::some(algorithm.clone()),
@@ -359,4 +367,38 @@ fn suite_identifier_for(case: HpkeSuiteCase) -> CryptoAlgorithmIdentifier {
         ))),
         __buffa_unknown_fields: Default::default(),
     }
+}
+
+fn suite_is_executable(algorithm: &CryptoAlgorithmIdentifier) -> bool {
+    #[cfg(all(feature = "hpke-api", any(feature = "native", feature = "wasm")))]
+    {
+        let Some(ProtoAlgorithmBranch::HpkeSuite(identifier)) = algorithm.algorithm.as_ref() else {
+            panic!("HPKE fixture did not contain a suite identifier");
+        };
+        let Ok(suite) = crypto_hpke::HpkeSuite::try_from(identifier.as_ref()) else {
+            panic!("HPKE fixture did not contain registered component identities");
+        };
+        // Every fixture uses an existing reviewed encrypting suite. Query the
+        // leaf's selected components because dependency features are not root
+        // cfg values, and a narrow profile may enable only some table rows.
+        suite.kem.support() == crypto_hpke::HpkeComponentSupport::Executable
+            && suite.kdf.support() == crypto_hpke::HpkeComponentSupport::Executable
+            && suite.aead.support() == crypto_hpke::HpkeComponentSupport::Executable
+    }
+    #[cfg(not(all(feature = "hpke-api", any(feature = "native", feature = "wasm"))))]
+    {
+        let _ = algorithm;
+        false
+    }
+}
+
+fn assert_suite_unavailable(algorithm: &CryptoAlgorithmIdentifier) {
+    assert_error_reason(
+        CryptoOperation::HpkeDeriveKeyPair(Box::new(CryptoHpkeDeriveKeyPairRequest {
+            algorithm: MessageField::some(algorithm.clone()),
+            input_key_material: vec![0x4c; 32],
+            __buffa_unknown_fields: Default::default(),
+        })),
+        CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_ALGORITHM,
+    );
 }
