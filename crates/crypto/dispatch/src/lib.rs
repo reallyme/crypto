@@ -12,7 +12,7 @@
 //!
 //! Two safety properties are enforced here rather than left to callers:
 //! [`verify`] fails closed — an invalid signature is an
-//! [`AlgorithmError::SignatureInvalid`], never `Ok(false)` — and every
+//! [`AlgorithmError::PRIMITIVE_INVALID_SIGNATURE`], never `Ok(false)` — and every
 //! secret returned (generated private keys, shared secrets, decapsulated
 //! secrets) is carried in a zeroizing wrapper. Length and key-shape checks are
 //! performed by the selected primitive's typed constructors and are exercised
