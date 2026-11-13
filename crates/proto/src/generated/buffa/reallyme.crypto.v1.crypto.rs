@@ -15986,7 +15986,7 @@ pub const __CRYPTO_HKDF_DOMAIN_TAG_JSON_ANY: ::buffa::type_registry::JsonAnyEntr
     is_wkt: false,
 };
 /// The native extract-and-expand request preserves absent versus empty salt.
-/// Output length remains the caller's native const-generic parameter.
+/// CryptoHkdfNativeDeriveRequest binds the output length to a native const generic.
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize)]
 #[serde(default, deny_unknown_fields)]
@@ -16269,6 +16269,381 @@ pub const __CRYPTO_HKDF_DERIVE_INPUTS_JSON_ANY: ::buffa::type_registry::JsonAnyE
     type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfDeriveInputs",
     to_json: ::buffa::type_registry::any_to_json::<CryptoHkdfDeriveInputs>,
     from_json: ::buffa::type_registry::any_from_json::<CryptoHkdfDeriveInputs>,
+    is_wkt: false,
+};
+/// Standalone native HKDF derivation, including lengths outside root profiles.
+/// The selected native const generic must equal output_length; the unchanged
+/// suite implementation owns its output limits and typed execution errors.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoHkdfNativeDeriveRequest {
+    /// Field 1: `inputs`
+    #[serde(
+        rename = "inputs",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub inputs: ::buffa::MessageField<
+        CryptoHkdfDeriveInputs,
+        ::buffa::Inline<CryptoHkdfDeriveInputs>,
+    >,
+    /// Field 2: `output_length`
+    #[serde(
+        rename = "outputLength",
+        alias = "output_length",
+        with = "::buffa::json_helpers::uint32",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_zero_u32"
+    )]
+    pub output_length: u32,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: __ReallyMeZeroizingUnknownFields,
+}
+impl ::core::fmt::Debug for CryptoHkdfNativeDeriveRequest {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoHkdfNativeDeriveRequest")
+            .field("inputs", &self.inputs)
+            .field("output_length", &self.output_length)
+            .finish()
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoHkdfNativeDeriveRequest {}
+impl CryptoHkdfNativeDeriveRequest {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfNativeDeriveRequest";
+}
+::buffa::impl_default_instance!(CryptoHkdfNativeDeriveRequest);
+impl ::buffa::MessageName for CryptoHkdfNativeDeriveRequest {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoHkdfNativeDeriveRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoHkdfNativeDeriveRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfNativeDeriveRequest";
+}
+impl ::buffa::Message for CryptoHkdfNativeDeriveRequest {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.inputs.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.inputs.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if self.output_length != 0u32 {
+            size += 1u64 + ::buffa::types::uint32_encoded_len(self.output_length) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.inputs.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.inputs.write_to(__cache, buf);
+        }
+        if self.output_length != 0u32 {
+            ::buffa::types::put_uint32_field(2u32, self.output_length, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.inputs.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.output_length = ::buffa::types::decode_uint32(buf)?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.inputs = ::buffa::MessageField::none();
+        self.output_length = 0u32;
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoHkdfNativeDeriveRequest {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoHkdfNativeDeriveRequest";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoHkdfNativeDeriveRequest {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_HKDF_NATIVE_DERIVE_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfNativeDeriveRequest",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoHkdfNativeDeriveRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<CryptoHkdfNativeDeriveRequest>,
+    is_wkt: false,
+};
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoHkdfNativeDeriveResult {
+    /// Field 1: `suite`
+    #[serde(
+        rename = "suite",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub suite: ::buffa::MessageField<
+        CryptoHkdfSuiteIdentifier,
+        ::buffa::Inline<CryptoHkdfSuiteIdentifier>,
+    >,
+    /// Field 2: `derived_key`
+    #[serde(
+        rename = "derivedKey",
+        alias = "derived_key",
+        with = "::buffa::json_helpers::bytes",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_bytes"
+    )]
+    pub derived_key: ::buffa::alloc::vec::Vec<u8>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoHkdfNativeDeriveResult {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoHkdfNativeDeriveResult")
+            .field("suite", &self.suite)
+            .field("derived_key", &"<redacted>")
+            .finish()
+    }
+}
+impl ::core::ops::Drop for CryptoHkdfNativeDeriveResult {
+    fn drop(&mut self) {
+        ::zeroize::Zeroize::zeroize(&mut self.derived_key);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoHkdfNativeDeriveResult {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            crate::deserialize_sensitive::deserialize_bytes(deserializer)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "suite")]
+            suite: ::buffa::MessageField<
+                CryptoHkdfSuiteIdentifier,
+                ::buffa::Inline<CryptoHkdfSuiteIdentifier>,
+                >,
+            #[serde(rename = "derivedKey", alias = "derived_key", deserialize_with = "deserialize_zeroizing_bytes")]
+            derived_key: ::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>,
+        }
+
+        let mut wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            suite: wire.suite,
+            derived_key: ::core::mem::take(&mut *wire.derived_key),
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoHkdfNativeDeriveResult {}
+impl CryptoHkdfNativeDeriveResult {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfNativeDeriveResult";
+}
+::buffa::impl_default_instance!(CryptoHkdfNativeDeriveResult);
+impl ::buffa::MessageName for CryptoHkdfNativeDeriveResult {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoHkdfNativeDeriveResult";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoHkdfNativeDeriveResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfNativeDeriveResult";
+}
+impl ::buffa::Message for CryptoHkdfNativeDeriveResult {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.suite.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.suite.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if !self.derived_key.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.derived_key) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.suite.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.suite.write_to(__cache, buf);
+        }
+        if !self.derived_key.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.derived_key, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.suite.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                crate::merge_sensitive::merge_bytes(&mut self.derived_key, buf)?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.suite = ::buffa::MessageField::none();
+        ::zeroize::Zeroize::zeroize(&mut self.derived_key);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoHkdfNativeDeriveResult {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoHkdfNativeDeriveResult";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoHkdfNativeDeriveResult {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_HKDF_NATIVE_DERIVE_RESULT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfNativeDeriveResult",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoHkdfNativeDeriveResult>,
+    from_json: ::buffa::type_registry::any_from_json::<CryptoHkdfNativeDeriveResult>,
     is_wkt: false,
 };
 #[derive(Clone, PartialEq, Default)]

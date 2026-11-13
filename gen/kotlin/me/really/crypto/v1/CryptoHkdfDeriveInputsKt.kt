@@ -13,7 +13,7 @@ public inline fun cryptoHkdfDeriveInputs(block: me.really.crypto.v1.CryptoHkdfDe
 /**
  * ```
  * The native extract-and-expand request preserves absent versus empty salt.
- * Output length remains the caller's native const-generic parameter.
+ * CryptoHkdfNativeDeriveRequest binds the output length to a native const generic.
  * ```
  *
  * Protobuf type `reallyme.crypto.v1.CryptoHkdfDeriveInputs`

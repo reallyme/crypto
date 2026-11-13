@@ -12393,7 +12393,7 @@ impl ::serde::Serialize for CryptoHkdfDomainTagOwnedView {
     }
 }
 /// The native extract-and-expand request preserves absent versus empty salt.
-/// Output length remains the caller's native const-generic parameter.
+/// CryptoHkdfNativeDeriveRequest binds the output length to a native const generic.
 #[derive(Clone, Default)]
 pub struct CryptoHkdfDeriveInputsView<'a> {
     /// Field 1: `suite`
@@ -12743,6 +12743,644 @@ impl ::buffa::HasMessageView for super::super::CryptoHkdfDeriveInputs {
     type ViewHandle = CryptoHkdfDeriveInputsOwnedView;
 }
 impl ::serde::Serialize for CryptoHkdfDeriveInputsOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// Standalone native HKDF derivation, including lengths outside root profiles.
+/// The selected native const generic must equal output_length; the unchanged
+/// suite implementation owns its output limits and typed execution errors.
+#[derive(Clone, Default)]
+pub struct CryptoHkdfNativeDeriveRequestView<'a> {
+    /// Field 1: `inputs`
+    pub inputs: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoHkdfDeriveInputsView<'a>,
+    >,
+    /// Field 2: `output_length`
+    pub output_length: u32,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoHkdfNativeDeriveRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHkdfNativeDeriveRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoHkdfNativeDeriveRequestView<'a> {
+    type Owned = super::super::CryptoHkdfNativeDeriveRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.inputs.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.inputs = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoHkdfDeriveInputsView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.output_length = ::buffa::types::decode_uint32(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoHkdfNativeDeriveRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoHkdfNativeDeriveRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoHkdfNativeDeriveRequest {
+            inputs: match self.inputs.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoHkdfDeriveInputs,
+                        ::buffa::Inline<super::super::CryptoHkdfDeriveInputs>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            output_length: self.output_length,
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoHkdfNativeDeriveRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.inputs.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.inputs.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if self.output_length != 0u32 {
+            size += 1u64 + ::buffa::types::uint32_encoded_len(self.output_length) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.inputs.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.inputs.write_to(__cache, buf);
+        }
+        if self.output_length != 0u32 {
+            ::buffa::types::put_uint32_field(2u32, self.output_length, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoHkdfNativeDeriveRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoHkdfNativeDeriveRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoHkdfNativeDeriveRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoHkdfNativeDeriveRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfNativeDeriveRequest";
+}
+::buffa::impl_default_view_instance!(CryptoHkdfNativeDeriveRequestView);
+::buffa::impl_view_reborrow!(CryptoHkdfNativeDeriveRequestView);
+/** Self-contained, `'static` owned view of a `CryptoHkdfNativeDeriveRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoHkdfNativeDeriveRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoHkdfNativeDeriveRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoHkdfNativeDeriveRequestOwnedView(
+    ::buffa::OwnedView<CryptoHkdfNativeDeriveRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoHkdfNativeDeriveRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHkdfNativeDeriveRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoHkdfNativeDeriveRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfNativeDeriveRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfNativeDeriveRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoHkdfNativeDeriveRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfNativeDeriveRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoHkdfNativeDeriveRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoHkdfNativeDeriveRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoHkdfNativeDeriveRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `inputs`
+    #[must_use]
+    pub fn inputs(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoHkdfDeriveInputsView<'_>,
+    > {
+        &self.0.reborrow().inputs
+    }
+    /// Field 2: `output_length`
+    #[must_use]
+    pub fn output_length(&self) -> u32 {
+        self.0.reborrow().output_length
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoHkdfNativeDeriveRequestView<'static>>,
+> for CryptoHkdfNativeDeriveRequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoHkdfNativeDeriveRequestView<'static>>,
+    ) -> Self {
+        CryptoHkdfNativeDeriveRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoHkdfNativeDeriveRequestOwnedView>
+for ::buffa::OwnedView<CryptoHkdfNativeDeriveRequestView<'static>> {
+    fn from(wrapper: CryptoHkdfNativeDeriveRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoHkdfNativeDeriveRequestView<'static>>,
+> for CryptoHkdfNativeDeriveRequestOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoHkdfNativeDeriveRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoHkdfNativeDeriveRequest {
+    type View<'a> = CryptoHkdfNativeDeriveRequestView<'a>;
+    type ViewHandle = CryptoHkdfNativeDeriveRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoHkdfNativeDeriveRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoHkdfNativeDeriveResultView<'a> {
+    /// Field 1: `suite`
+    pub suite: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoHkdfSuiteIdentifierView<'a>,
+    >,
+    /// Field 2: `derived_key`
+    pub derived_key: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoHkdfNativeDeriveResultView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHkdfNativeDeriveResultView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoHkdfNativeDeriveResultView<'a> {
+    type Owned = super::super::CryptoHkdfNativeDeriveResult;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.suite.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.suite = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoHkdfSuiteIdentifierView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.derived_key = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoHkdfNativeDeriveResult,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoHkdfNativeDeriveResult,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoHkdfNativeDeriveResult {
+            suite: match self.suite.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoHkdfSuiteIdentifier,
+                        ::buffa::Inline<super::super::CryptoHkdfSuiteIdentifier>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            derived_key: (self.derived_key).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoHkdfNativeDeriveResultView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.suite.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.suite.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if !self.derived_key.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.derived_key) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.suite.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.suite.write_to(__cache, buf);
+        }
+        if !self.derived_key.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.derived_key, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoHkdfNativeDeriveResultView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoHkdfNativeDeriveResultView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoHkdfNativeDeriveResult";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoHkdfNativeDeriveResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfNativeDeriveResult";
+}
+::buffa::impl_default_view_instance!(CryptoHkdfNativeDeriveResultView);
+::buffa::impl_view_reborrow!(CryptoHkdfNativeDeriveResultView);
+/** Self-contained, `'static` owned view of a `CryptoHkdfNativeDeriveResult` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoHkdfNativeDeriveResultView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoHkdfNativeDeriveResultView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoHkdfNativeDeriveResultOwnedView(
+    ::buffa::OwnedView<CryptoHkdfNativeDeriveResultView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoHkdfNativeDeriveResultOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHkdfNativeDeriveResultOwnedView(<redacted>)")
+    }
+}
+impl CryptoHkdfNativeDeriveResultOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfNativeDeriveResultOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfNativeDeriveResultOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoHkdfNativeDeriveResult,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfNativeDeriveResultOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoHkdfNativeDeriveResultView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoHkdfNativeDeriveResultView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoHkdfNativeDeriveResult {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `suite`
+    #[must_use]
+    pub fn suite(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoHkdfSuiteIdentifierView<'_>,
+    > {
+        &self.0.reborrow().suite
+    }
+    /// Field 2: `derived_key`
+    #[must_use]
+    pub fn derived_key(&self) -> &'_ [u8] {
+        self.0.reborrow().derived_key
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoHkdfNativeDeriveResultView<'static>>>
+for CryptoHkdfNativeDeriveResultOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoHkdfNativeDeriveResultView<'static>>,
+    ) -> Self {
+        CryptoHkdfNativeDeriveResultOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoHkdfNativeDeriveResultOwnedView>
+for ::buffa::OwnedView<CryptoHkdfNativeDeriveResultView<'static>> {
+    fn from(wrapper: CryptoHkdfNativeDeriveResultOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoHkdfNativeDeriveResultView<'static>>,
+> for CryptoHkdfNativeDeriveResultOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoHkdfNativeDeriveResultView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoHkdfNativeDeriveResult {
+    type View<'a> = CryptoHkdfNativeDeriveResultView<'a>;
+    type ViewHandle = CryptoHkdfNativeDeriveResultOwnedView;
+}
+impl ::serde::Serialize for CryptoHkdfNativeDeriveResultOwnedView {
     fn serialize<__S: ::serde::Serializer>(
         &self,
         _serializer: __S,

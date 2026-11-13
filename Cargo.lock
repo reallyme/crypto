@@ -1907,6 +1907,7 @@ dependencies = [
  "hybrid-array",
  "reallyme-crypto-core",
  "reallyme-crypto-proto",
+ "serde_json",
  "sha2",
  "sha3 0.12.0",
  "wasm-bindgen-test",

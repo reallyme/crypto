@@ -3005,7 +3005,7 @@ public nonisolated struct ReallyMeProtoCryptoHkdfDomainTag: Sendable {
 }
 
 /// The native extract-and-expand request preserves absent versus empty salt.
-/// Output length remains the caller's native const-generic parameter.
+/// CryptoHkdfNativeDeriveRequest binds the output length to a native const generic.
 public nonisolated struct ReallyMeProtoCryptoHkdfDeriveInputs: Sendable {
   // Security post-processing: protobuf bytes can contain secrets or PII.
   public var debugDescription: String { "ReallyMeProtoCryptoHkdfDeriveInputs(<redacted>)" }
@@ -3041,6 +3041,59 @@ public nonisolated struct ReallyMeProtoCryptoHkdfDeriveInputs: Sendable {
 
   fileprivate var _suite: ReallyMeProtoCryptoHkdfSuiteIdentifier? = nil
   fileprivate var _salt: Data? = nil
+}
+
+/// Standalone native HKDF derivation, including lengths outside root profiles.
+/// The selected native const generic must equal output_length; the unchanged
+/// suite implementation owns its output limits and typed execution errors.
+public nonisolated struct ReallyMeProtoCryptoHkdfNativeDeriveRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoHkdfNativeDeriveRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var inputs: ReallyMeProtoCryptoHkdfDeriveInputs {
+    get {_inputs ?? ReallyMeProtoCryptoHkdfDeriveInputs()}
+    set {_inputs = newValue}
+  }
+  /// Returns true if `inputs` has been explicitly set.
+  public var hasInputs: Bool {self._inputs != nil}
+  /// Clears the value of `inputs`. Subsequent reads from it will return its default value.
+  public mutating func clearInputs() {self._inputs = nil}
+
+  public var outputLength: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _inputs: ReallyMeProtoCryptoHkdfDeriveInputs? = nil
+}
+
+public nonisolated struct ReallyMeProtoCryptoHkdfNativeDeriveResult: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoHkdfNativeDeriveResult(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var suite: ReallyMeProtoCryptoHkdfSuiteIdentifier {
+    get {_suite ?? ReallyMeProtoCryptoHkdfSuiteIdentifier()}
+    set {_suite = newValue}
+  }
+  /// Returns true if `suite` has been explicitly set.
+  public var hasSuite: Bool {self._suite != nil}
+  /// Clears the value of `suite`. Subsequent reads from it will return its default value.
+  public mutating func clearSuite() {self._suite = nil}
+
+  public var derivedKey: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _suite: ReallyMeProtoCryptoHkdfSuiteIdentifier? = nil
 }
 
 public nonisolated struct ReallyMeProtoCryptoHkdfExtractSha384Request: Sendable {
@@ -10274,6 +10327,84 @@ nonisolated extension ReallyMeProtoCryptoHkdfDeriveInputs: SwiftProtobuf.Message
     if lhs.inputKeyMaterial != rhs.inputKeyMaterial {return false}
     if lhs._salt != rhs._salt {return false}
     if lhs.info != rhs.info {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoHkdfNativeDeriveRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoHkdfNativeDeriveRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}inputs\0\u{3}output_length\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._inputs) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.outputLength) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._inputs {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    if self.outputLength != 0 {
+      try visitor.visitSingularUInt32Field(value: self.outputLength, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoHkdfNativeDeriveRequest, rhs: ReallyMeProtoCryptoHkdfNativeDeriveRequest) -> Bool {
+    if lhs._inputs != rhs._inputs {return false}
+    if lhs.outputLength != rhs.outputLength {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoHkdfNativeDeriveResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoHkdfNativeDeriveResult"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}suite\0\u{3}derived_key\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._suite) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.derivedKey) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._suite {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    if !self.derivedKey.isEmpty {
+      try visitor.visitSingularBytesField(value: self.derivedKey, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoHkdfNativeDeriveResult, rhs: ReallyMeProtoCryptoHkdfNativeDeriveResult) -> Bool {
+    if lhs._suite != rhs._suite {return false}
+    if lhs.derivedKey != rhs.derivedKey {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

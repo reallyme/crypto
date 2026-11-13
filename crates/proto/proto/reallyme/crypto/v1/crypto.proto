@@ -694,12 +694,25 @@ message CryptoHkdfDomainTag {
 }
 
 // The native extract-and-expand request preserves absent versus empty salt.
-// Output length remains the caller's native const-generic parameter.
+// CryptoHkdfNativeDeriveRequest binds the output length to a native const generic.
 message CryptoHkdfDeriveInputs {
   CryptoHkdfSuiteIdentifier suite = 1;
   bytes input_key_material = 2;
   optional bytes salt = 3;
   bytes info = 4;
+}
+
+// Standalone native HKDF derivation, including lengths outside root profiles.
+// The selected native const generic must equal output_length; the unchanged
+// suite implementation owns its output limits and typed execution errors.
+message CryptoHkdfNativeDeriveRequest {
+  CryptoHkdfDeriveInputs inputs = 1;
+  uint32 output_length = 2;
+}
+
+message CryptoHkdfNativeDeriveResult {
+  CryptoHkdfSuiteIdentifier suite = 1;
+  bytes derived_key = 2;
 }
 
 message CryptoHkdfExtractSha384Request {
