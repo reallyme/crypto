@@ -10,6 +10,7 @@
 //! callers. Only the built-in, cofactor-one EC and RFC 5114 domains are accepted.
 
 mod dh;
+mod dh_parameters;
 mod domain;
 mod ec;
 mod element;

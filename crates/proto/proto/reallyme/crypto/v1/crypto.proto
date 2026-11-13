@@ -1852,6 +1852,24 @@ message CryptoPrimeGroupFieldValue {
 message CryptoPrimeGroupDomainRequest {
   CryptoPrimeGroupIdentifier group = 1;
 }
+// Validate explicit DH parameters against the selected built-in RFC5114 domain.
+// Every supplied integer is minimal, nonzero, unsigned big-endian. No DER sign
+// padding is accepted. Absent q is established by exact p/g registry identity;
+// supplied q must match, and supplied j must equal (p - 1) / the built-in q.
+// Present-empty q/j are invalid. This never admits caller-defined arithmetic or
+// performs attacker-selected primality work. Strength policy remains external.
+message CryptoPrimeGroupDhParametersValidationRequest {
+  CryptoPrimeGroupIdentifier group = 1;
+  bytes p = 2;
+  bytes g = 3;
+  optional bytes q = 4;
+  optional bytes j = 5;
+}
+// Successful validation identifies the exact selected built-in group. It does
+// not approve its use in a protocol, trust context or security-strength policy.
+message CryptoPrimeGroupDhParametersValidationResult {
+  CryptoPrimeGroupIdentifier group = 1;
+}
 message CryptoPrimeGroupCurveCoefficients {
   bytes a = 1;
   bytes b = 2;

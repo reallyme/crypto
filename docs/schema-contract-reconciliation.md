@@ -54,3 +54,7 @@ Commit `e22f15e82e1e26fa625787234e28581c9eded9f6` adds private RSA digest-buffer
 ## Legacy group additions
 
 The subsequent [legacy prime-group extension](legacy-prime-groups.md) adds three native variants and matching schema identities: `NistP192`/130, `BrainpoolP192r1`/240 and `BrainpoolP224r1`/250. Their existing owner and operation shapes are retained. The parameter types remain private implementation bindings. This explicit supplement accounts for the additions; the original compiler-capture counts and historical ledgers retain their recorded checkpoint rather than being relabelled as a new capture.
+
+## Explicit DH parameter validation
+
+The [DH parameter validation contract](prime-group-domain-validation.md) accounts for one additional native method and its standalone schema adapter. The schema defines the request's selected group and canonical unsigned `p`/`g`/optional-`q`/optional-`j`, plus the validated-identifier result, before their implementation. The two new generated messages carry that sole field authority; no new native enum, error reason, caller-defined domain or policy type is introduced. This supplement preserves the original compiler checkpoint and does not claim a recapture or runtime execution.

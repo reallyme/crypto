@@ -9,12 +9,13 @@ use buffa::MessageField;
 use crypto_core::CryptoError;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoNativeAgreementResult, CryptoNativeKeyCapabilities, CryptoNativePublicKeyRequest,
-    CryptoPrimeGroupCurveCoefficients, CryptoPrimeGroupDomainRequest, CryptoPrimeGroupDomainResult,
-    CryptoPrimeGroupElement, CryptoPrimeGroupFieldValue, CryptoPrimeGroupIdentifier,
-    CryptoPrimeGroupLinearCombinationRequest, CryptoPrimeGroupMultiplyRequest,
-    CryptoPrimeGroupReduceToFieldRequest, CryptoPrimeGroupScalarDescriptor,
-    CryptoPrimeGroupScalarGenerateRequest, CryptoPrimeGroupScalarImportRequest, NativeKeySource,
-    PrimeGroup as ProtoGroup,
+    CryptoPrimeGroupCurveCoefficients, CryptoPrimeGroupDhParametersValidationRequest,
+    CryptoPrimeGroupDhParametersValidationResult, CryptoPrimeGroupDomainRequest,
+    CryptoPrimeGroupDomainResult, CryptoPrimeGroupElement, CryptoPrimeGroupFieldValue,
+    CryptoPrimeGroupIdentifier, CryptoPrimeGroupLinearCombinationRequest,
+    CryptoPrimeGroupMultiplyRequest, CryptoPrimeGroupReduceToFieldRequest,
+    CryptoPrimeGroupScalarDescriptor, CryptoPrimeGroupScalarGenerateRequest,
+    CryptoPrimeGroupScalarImportRequest, NativeKeySource, PrimeGroup as ProtoGroup,
 };
 use secrecy::{ExposeSecret, SecretSlice};
 
@@ -29,6 +30,24 @@ fn identifier(value: PrimeGroup) -> CryptoPrimeGroupIdentifier {
         group: ProtoGroup::from(value).into(),
         __buffa_unknown_fields: Default::default(),
     }
+}
+/// Validate explicit canonical DH parameters using the selected built-in domain.
+/// Optional bytes are borrowed exactly; presence never implies acceptance.
+pub fn validate_dh_parameters(
+    request: &CryptoPrimeGroupDhParametersValidationRequest,
+) -> Result<CryptoPrimeGroupDhParametersValidationResult, CryptoError> {
+    known_fields(request.__buffa_unknown_fields.is_empty())?;
+    let group = group(request.group.as_option())?;
+    group.validate_dh_parameters(
+        &request.p,
+        &request.g,
+        request.q.as_deref(),
+        request.j.as_deref(),
+    )?;
+    Ok(CryptoPrimeGroupDhParametersValidationResult {
+        group: MessageField::some(identifier(group)),
+        __buffa_unknown_fields: Default::default(),
+    })
 }
 impl TryFrom<&CryptoPrimeGroupScalarImportRequest> for GroupScalar {
     type Error = CryptoError;
