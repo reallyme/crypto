@@ -11,6 +11,10 @@
 
 mod canonicalize_jwk;
 
+/// Protected protobuf options and typed public-key adapters.
+#[cfg(feature = "proto")]
+pub mod proto_options;
+
 /// JWK data structures and serialization options.
 pub mod jwk;
 

@@ -14,6 +14,12 @@ public  final class CryptoSignatureGenerateKeyPairRequest extends
         CryptoSignatureGenerateKeyPairRequest, CryptoSignatureGenerateKeyPairRequest.Builder> implements
     // @@protoc_insertion_point(message_implements:reallyme.crypto.v1.CryptoSignatureGenerateKeyPairRequest)
     CryptoSignatureGenerateKeyPairRequestOrBuilder {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  @java.lang.Override
+  public java.lang.String toString() {
+    return "CryptoSignatureGenerateKeyPairRequest{<redacted>}";
+  }
+
   private CryptoSignatureGenerateKeyPairRequest() {
   }
   private int bitField0_;

@@ -1,0 +1,45 @@
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+syntax = "proto3";
+
+package reallyme.crypto.v1;
+
+option java_multiple_files = true;
+option java_package = "me.really.crypto.v1";
+option swift_prefix = "ReallyMeProto";
+
+// Platform classes select existing fixed Argon2 validation bounds. Mobile and
+// desktop classes occupy 100-199 and 200-299 respectively; zero is invalid.
+enum Argon2PlatformClass {
+  ARGON2_PLATFORM_CLASS_UNSPECIFIED = 0;
+  ARGON2_PLATFORM_CLASS_MOBILE_MODERN = 100;
+  ARGON2_PLATFORM_CLASS_DESKTOP_MODERN = 200;
+}
+
+// Named purposes for the existing fixed SHA3-256 HKDF domain-key profile.
+// Content encryption, key wrapping, authentication and commitment occupy
+// successive 100-value families. These identities do not add cryptosuites.
+enum HkdfDomainKeyPurpose {
+  HKDF_DOMAIN_KEY_PURPOSE_UNSPECIFIED = 0;
+  HKDF_DOMAIN_KEY_PURPOSE_AEAD_CONTENT_KEY = 100;
+  HKDF_DOMAIN_KEY_PURPOSE_AEAD_WRAP_KEY = 200;
+  HKDF_DOMAIN_KEY_PURPOSE_AUTH_PROOF_KEY = 300;
+  HKDF_DOMAIN_KEY_PURPOSE_MANIFEST_COMMITMENT_KEY = 400;
+}
+
+// Read-only validation bounds reported by the existing native profile policy.
+// This record is not a caller-overridable Argon2 cost configuration.
+message Argon2Caps {
+  uint32 mem_cap_kib = 1;
+  uint32 time_cost_cap = 2;
+  uint32 lanes_cap = 3;
+}
+
+// Read-only cost tuple resolved from an existing fixed native profile.
+message Argon2ParamsProfile {
+  uint32 mem_kib = 1;
+  uint32 time_cost = 2;
+  uint32 lanes = 3;
+}

@@ -14,6 +14,12 @@ public  final class CryptoHpkeGenerateKeyPairRequest extends
         CryptoHpkeGenerateKeyPairRequest, CryptoHpkeGenerateKeyPairRequest.Builder> implements
     // @@protoc_insertion_point(message_implements:reallyme.crypto.v1.CryptoHpkeGenerateKeyPairRequest)
     CryptoHpkeGenerateKeyPairRequestOrBuilder {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  @java.lang.Override
+  public java.lang.String toString() {
+    return "CryptoHpkeGenerateKeyPairRequest{<redacted>}";
+  }
+
   private CryptoHpkeGenerateKeyPairRequest() {
   }
   private int bitField0_;

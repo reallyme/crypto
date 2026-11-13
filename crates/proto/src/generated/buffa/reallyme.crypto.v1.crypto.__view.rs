@@ -7929,7 +7929,7 @@ impl ::serde::Serialize for CryptoPrimeGroupIdentifierOwnedView {
 /// HpkeSuiteIdentifier is the canonical 0.3.0 HPKE algorithm identifier.
 /// Components use their assigned two-byte HPKE registry values; implementations
 /// must reject unsupported combinations instead of selecting a fallback suite.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct HpkeSuiteIdentifierView<'a> {
     /// Field 1: `kem`
     pub kem: ::buffa::EnumValue<super::super::HpkeKemId>,
@@ -7938,6 +7938,11 @@ pub struct HpkeSuiteIdentifierView<'a> {
     /// Field 3: `aead`
     pub aead: ::buffa::EnumValue<super::super::HpkeAeadId>,
     pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for HpkeSuiteIdentifierView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("HpkeSuiteIdentifierView(<redacted>)")
+    }
 }
 impl<'a> ::buffa::MessageView<'a> for HpkeSuiteIdentifierView<'a> {
     type Owned = super::super::HpkeSuiteIdentifier;
@@ -8088,34 +8093,17 @@ impl<'a> ::buffa::ViewEncode<'a> for HpkeSuiteIdentifierView<'a> {
         self.__buffa_unknown_fields.write_to(buf);
     }
 }
-/// Serializes this view as protobuf JSON.
-///
-/// Implicit-presence fields with default values are omitted, `required`
-/// fields are always emitted, explicit-presence (`optional`) fields are
-/// emitted only when set, bytes fields are base64-encoded, and enum
-/// values are their proto name strings.
-///
-/// This impl uses `serialize_map(None)` because the number of emitted
-/// fields depends on default-omission rules; serializers that require
-/// known map lengths (e.g. `bincode`) will return a runtime error.
-/// Use the owned message type for those formats.
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
 impl<'__a> ::serde::Serialize for HpkeSuiteIdentifierView<'__a> {
     fn serialize<__S: ::serde::Serializer>(
         &self,
-        __s: __S,
+        _serializer: __S,
     ) -> ::core::result::Result<__S::Ok, __S::Error> {
-        use ::serde::ser::SerializeMap as _;
-        let mut __map = __s.serialize_map(::core::option::Option::None)?;
-        if !::buffa::json_helpers::skip_if::is_default_enum_value(&self.kem) {
-            __map.serialize_entry("kem", &self.kem)?;
-        }
-        if !::buffa::json_helpers::skip_if::is_default_enum_value(&self.kdf) {
-            __map.serialize_entry("kdf", &self.kdf)?;
-        }
-        if !::buffa::json_helpers::skip_if::is_default_enum_value(&self.aead) {
-            __map.serialize_entry("aead", &self.aead)?;
-        }
-        __map.end()
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
     }
 }
 impl<'a> ::buffa::MessageName for HpkeSuiteIdentifierView<'a> {
@@ -8131,10 +8119,14 @@ impl<'a> ::buffa::MessageName for HpkeSuiteIdentifierView<'a> {
  Wraps [`::buffa::OwnedView`]`<`[`HpkeSuiteIdentifierView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
  Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`HpkeSuiteIdentifierView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
-#[derive(Clone, Debug)]
 pub struct HpkeSuiteIdentifierOwnedView(
     ::buffa::OwnedView<HpkeSuiteIdentifierView<'static>>,
 );
+impl ::core::fmt::Debug for HpkeSuiteIdentifierOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("HpkeSuiteIdentifierOwnedView(<redacted>)")
+    }
+}
 impl HpkeSuiteIdentifierOwnedView {
     /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
     ///
@@ -8251,9 +8243,11 @@ impl ::buffa::HasMessageView for super::super::HpkeSuiteIdentifier {
 impl ::serde::Serialize for HpkeSuiteIdentifierOwnedView {
     fn serialize<__S: ::serde::Serializer>(
         &self,
-        __s: __S,
+        _serializer: __S,
     ) -> ::core::result::Result<__S::Ok, __S::Error> {
-        ::serde::Serialize::serialize(&self.0, __s)
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
     }
 }
 /// CryptoHkdfSuiteIdentifier is metadata for the direct HKDF primitive. The
@@ -9606,14 +9600,4913 @@ impl ::serde::Serialize for CryptoRsaPublicKeyDerEncodingIdentifierOwnedView {
         ))
     }
 }
+/// Independent RSA-PSS verification parameters. SHA-1 remains restricted to
+/// historical verification callers; these options do not select a new route.
+/// Absent salt_length is invalid; an explicitly present zero is a valid value.
+#[derive(Clone, Default)]
+pub struct CryptoRsaPssParamsView<'a> {
+    /// Field 1: `message_hash`
+    pub message_hash: ::buffa::EnumValue<super::super::RsaHashAlgorithm>,
+    /// Field 2: `mgf1_hash`
+    pub mgf1_hash: ::buffa::EnumValue<super::super::RsaHashAlgorithm>,
+    /// Field 3: `salt_length`
+    pub salt_length: ::core::option::Option<u32>,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoRsaPssParamsView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoRsaPssParamsView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoRsaPssParamsView<'a> {
+    type Owned = super::super::CryptoRsaPssParams;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.message_hash = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(&mut cur)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.mgf1_hash = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(&mut cur)?,
+                );
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.salt_length = Some(::buffa::types::decode_uint32(&mut cur)?);
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<super::super::CryptoRsaPssParams, ::buffa::DecodeError> {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<super::super::CryptoRsaPssParams, ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoRsaPssParams {
+            message_hash: self.message_hash,
+            mgf1_hash: self.mgf1_hash,
+            salt_length: self.salt_length,
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoRsaPssParamsView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.message_hash.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        {
+            let val = self.mgf1_hash.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        if let Some(v) = self.salt_length {
+            size += 1u64 + ::buffa::types::uint32_encoded_len(v) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.message_hash.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        {
+            let val = self.mgf1_hash.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(2u32, val, buf);
+            }
+        }
+        if let Some(v) = self.salt_length {
+            ::buffa::types::put_uint32_field(3u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoRsaPssParamsView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoRsaPssParamsView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoRsaPssParams";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoRsaPssParams";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoRsaPssParams";
+}
+::buffa::impl_default_view_instance!(CryptoRsaPssParamsView);
+::buffa::impl_view_reborrow!(CryptoRsaPssParamsView);
+/** Self-contained, `'static` owned view of a `CryptoRsaPssParams` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoRsaPssParamsView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoRsaPssParamsView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoRsaPssParamsOwnedView(
+    ::buffa::OwnedView<CryptoRsaPssParamsView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoRsaPssParamsOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoRsaPssParamsOwnedView(<redacted>)")
+    }
+}
+impl CryptoRsaPssParamsOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoRsaPssParamsOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoRsaPssParamsOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoRsaPssParams,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoRsaPssParamsOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoRsaPssParamsView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoRsaPssParamsView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoRsaPssParams {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `message_hash`
+    #[must_use]
+    pub fn message_hash(&self) -> ::buffa::EnumValue<super::super::RsaHashAlgorithm> {
+        self.0.reborrow().message_hash
+    }
+    /// Field 2: `mgf1_hash`
+    #[must_use]
+    pub fn mgf1_hash(&self) -> ::buffa::EnumValue<super::super::RsaHashAlgorithm> {
+        self.0.reborrow().mgf1_hash
+    }
+    /// Field 3: `salt_length`
+    #[must_use]
+    pub fn salt_length(&self) -> ::core::option::Option<u32> {
+        self.0.reborrow().salt_length
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoRsaPssParamsView<'static>>>
+for CryptoRsaPssParamsOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoRsaPssParamsView<'static>>) -> Self {
+        CryptoRsaPssParamsOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoRsaPssParamsOwnedView>
+for ::buffa::OwnedView<CryptoRsaPssParamsView<'static>> {
+    fn from(wrapper: CryptoRsaPssParamsOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoRsaPssParamsView<'static>>>
+for CryptoRsaPssParamsOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoRsaPssParamsView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoRsaPssParams {
+    type View<'a> = CryptoRsaPssParamsView<'a>;
+    type ViewHandle = CryptoRsaPssParamsOwnedView;
+}
+impl ::serde::Serialize for CryptoRsaPssParamsOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// Fixed-profile native Argon2 request inputs. Profile selection cannot inject
+/// arbitrary cost parameters or override the platform validation bounds.
+#[derive(Clone, Default)]
+pub struct CryptoArgon2FixedDeriveRequestView<'a> {
+    /// Field 1: `profile`
+    pub profile: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoArgon2idProfileIdentifierView<'a>,
+    >,
+    /// Field 2: `secret`
+    pub secret: &'a [u8],
+    /// Field 3: `salt`
+    pub salt: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoArgon2FixedDeriveRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoArgon2FixedDeriveRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoArgon2FixedDeriveRequestView<'a> {
+    type Owned = super::super::CryptoArgon2FixedDeriveRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.profile.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.profile = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoArgon2idProfileIdentifierView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.secret = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.salt = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoArgon2FixedDeriveRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoArgon2FixedDeriveRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoArgon2FixedDeriveRequest {
+            profile: match self.profile.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoArgon2idProfileIdentifier,
+                        ::buffa::Inline<super::super::CryptoArgon2idProfileIdentifier>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            secret: (self.secret).to_vec(),
+            salt: (self.salt).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoArgon2FixedDeriveRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.profile.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.profile.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if !self.secret.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.secret) as u64;
+        }
+        if !self.salt.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.salt) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.profile.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.profile.write_to(__cache, buf);
+        }
+        if !self.secret.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.secret, buf);
+        }
+        if !self.salt.is_empty() {
+            ::buffa::types::put_shared_bytes_field(3u32, &self.salt, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoArgon2FixedDeriveRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoArgon2FixedDeriveRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoArgon2FixedDeriveRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoArgon2FixedDeriveRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoArgon2FixedDeriveRequest";
+}
+::buffa::impl_default_view_instance!(CryptoArgon2FixedDeriveRequestView);
+::buffa::impl_view_reborrow!(CryptoArgon2FixedDeriveRequestView);
+/** Self-contained, `'static` owned view of a `CryptoArgon2FixedDeriveRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoArgon2FixedDeriveRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoArgon2FixedDeriveRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoArgon2FixedDeriveRequestOwnedView(
+    ::buffa::OwnedView<CryptoArgon2FixedDeriveRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoArgon2FixedDeriveRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoArgon2FixedDeriveRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoArgon2FixedDeriveRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoArgon2FixedDeriveRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoArgon2FixedDeriveRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoArgon2FixedDeriveRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoArgon2FixedDeriveRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoArgon2FixedDeriveRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoArgon2FixedDeriveRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoArgon2FixedDeriveRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `profile`
+    #[must_use]
+    pub fn profile(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoArgon2idProfileIdentifierView<'_>,
+    > {
+        &self.0.reborrow().profile
+    }
+    /// Field 2: `secret`
+    #[must_use]
+    pub fn secret(&self) -> &'_ [u8] {
+        self.0.reborrow().secret
+    }
+    /// Field 3: `salt`
+    #[must_use]
+    pub fn salt(&self) -> &'_ [u8] {
+        self.0.reborrow().salt
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoArgon2FixedDeriveRequestView<'static>>,
+> for CryptoArgon2FixedDeriveRequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoArgon2FixedDeriveRequestView<'static>>,
+    ) -> Self {
+        CryptoArgon2FixedDeriveRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoArgon2FixedDeriveRequestOwnedView>
+for ::buffa::OwnedView<CryptoArgon2FixedDeriveRequestView<'static>> {
+    fn from(wrapper: CryptoArgon2FixedDeriveRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoArgon2FixedDeriveRequestView<'static>>,
+> for CryptoArgon2FixedDeriveRequestOwnedView {
+    fn as_ref(
+        &self,
+    ) -> &::buffa::OwnedView<CryptoArgon2FixedDeriveRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoArgon2FixedDeriveRequest {
+    type View<'a> = CryptoArgon2FixedDeriveRequestView<'a>;
+    type ViewHandle = CryptoArgon2FixedDeriveRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoArgon2FixedDeriveRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// Existing domain-tag bytes are validated verbatim, without normalization.
+#[derive(Clone, Default)]
+pub struct CryptoHkdfDomainTagView<'a> {
+    /// Field 1: `value`
+    pub value: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoHkdfDomainTagView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHkdfDomainTagView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoHkdfDomainTagView<'a> {
+    type Owned = super::super::CryptoHkdfDomainTag;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.value = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoHkdfDomainTag,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoHkdfDomainTag,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoHkdfDomainTag {
+            value: (self.value).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoHkdfDomainTagView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.value.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.value) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.value.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.value, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoHkdfDomainTagView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoHkdfDomainTagView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoHkdfDomainTag";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoHkdfDomainTag";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfDomainTag";
+}
+::buffa::impl_default_view_instance!(CryptoHkdfDomainTagView);
+::buffa::impl_view_reborrow!(CryptoHkdfDomainTagView);
+/** Self-contained, `'static` owned view of a `CryptoHkdfDomainTag` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoHkdfDomainTagView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoHkdfDomainTagView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoHkdfDomainTagOwnedView(
+    ::buffa::OwnedView<CryptoHkdfDomainTagView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoHkdfDomainTagOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHkdfDomainTagOwnedView(<redacted>)")
+    }
+}
+impl CryptoHkdfDomainTagOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfDomainTagOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfDomainTagOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoHkdfDomainTag,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfDomainTagOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoHkdfDomainTagView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoHkdfDomainTagView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoHkdfDomainTag {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `value`
+    #[must_use]
+    pub fn value(&self) -> &'_ [u8] {
+        self.0.reborrow().value
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoHkdfDomainTagView<'static>>>
+for CryptoHkdfDomainTagOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoHkdfDomainTagView<'static>>) -> Self {
+        CryptoHkdfDomainTagOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoHkdfDomainTagOwnedView>
+for ::buffa::OwnedView<CryptoHkdfDomainTagView<'static>> {
+    fn from(wrapper: CryptoHkdfDomainTagOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoHkdfDomainTagView<'static>>>
+for CryptoHkdfDomainTagOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoHkdfDomainTagView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoHkdfDomainTag {
+    type View<'a> = CryptoHkdfDomainTagView<'a>;
+    type ViewHandle = CryptoHkdfDomainTagOwnedView;
+}
+impl ::serde::Serialize for CryptoHkdfDomainTagOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// The native extract-and-expand request preserves absent versus empty salt.
+/// Output length remains the caller's native const-generic parameter.
+#[derive(Clone, Default)]
+pub struct CryptoHkdfDeriveInputsView<'a> {
+    /// Field 1: `suite`
+    pub suite: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoHkdfSuiteIdentifierView<'a>,
+    >,
+    /// Field 2: `input_key_material`
+    pub input_key_material: &'a [u8],
+    /// Field 3: `salt`
+    pub salt: ::core::option::Option<&'a [u8]>,
+    /// Field 4: `info`
+    pub info: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoHkdfDeriveInputsView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHkdfDeriveInputsView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoHkdfDeriveInputsView<'a> {
+    type Owned = super::super::CryptoHkdfDeriveInputs;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.suite.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.suite = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoHkdfSuiteIdentifierView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.input_key_material = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.salt = Some(::buffa::types::borrow_bytes(&mut cur)?);
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.info = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoHkdfDeriveInputs,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoHkdfDeriveInputs,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoHkdfDeriveInputs {
+            suite: match self.suite.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoHkdfSuiteIdentifier,
+                        ::buffa::Inline<super::super::CryptoHkdfSuiteIdentifier>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            input_key_material: (self.input_key_material).to_vec(),
+            salt: self.salt.map(|b| (b).to_vec()),
+            info: (self.info).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoHkdfDeriveInputsView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.suite.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.suite.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if !self.input_key_material.is_empty() {
+            size
+                += 1u64
+                    + ::buffa::types::bytes_encoded_len(&self.input_key_material) as u64;
+        }
+        if let Some(ref v) = self.salt {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(v) as u64;
+        }
+        if !self.info.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.info) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.suite.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.suite.write_to(__cache, buf);
+        }
+        if !self.input_key_material.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.input_key_material, buf);
+        }
+        if let Some(ref v) = self.salt {
+            ::buffa::types::put_shared_bytes_field(3u32, v, buf);
+        }
+        if !self.info.is_empty() {
+            ::buffa::types::put_shared_bytes_field(4u32, &self.info, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoHkdfDeriveInputsView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoHkdfDeriveInputsView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoHkdfDeriveInputs";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoHkdfDeriveInputs";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfDeriveInputs";
+}
+::buffa::impl_default_view_instance!(CryptoHkdfDeriveInputsView);
+::buffa::impl_view_reborrow!(CryptoHkdfDeriveInputsView);
+/** Self-contained, `'static` owned view of a `CryptoHkdfDeriveInputs` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoHkdfDeriveInputsView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoHkdfDeriveInputsView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoHkdfDeriveInputsOwnedView(
+    ::buffa::OwnedView<CryptoHkdfDeriveInputsView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoHkdfDeriveInputsOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHkdfDeriveInputsOwnedView(<redacted>)")
+    }
+}
+impl CryptoHkdfDeriveInputsOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfDeriveInputsOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfDeriveInputsOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoHkdfDeriveInputs,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfDeriveInputsOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoHkdfDeriveInputsView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoHkdfDeriveInputsView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoHkdfDeriveInputs {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `suite`
+    #[must_use]
+    pub fn suite(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoHkdfSuiteIdentifierView<'_>,
+    > {
+        &self.0.reborrow().suite
+    }
+    /// Field 2: `input_key_material`
+    #[must_use]
+    pub fn input_key_material(&self) -> &'_ [u8] {
+        self.0.reborrow().input_key_material
+    }
+    /// Field 3: `salt`
+    #[must_use]
+    pub fn salt(&self) -> ::core::option::Option<&'_ [u8]> {
+        self.0.reborrow().salt
+    }
+    /// Field 4: `info`
+    #[must_use]
+    pub fn info(&self) -> &'_ [u8] {
+        self.0.reborrow().info
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoHkdfDeriveInputsView<'static>>>
+for CryptoHkdfDeriveInputsOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoHkdfDeriveInputsView<'static>>) -> Self {
+        CryptoHkdfDeriveInputsOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoHkdfDeriveInputsOwnedView>
+for ::buffa::OwnedView<CryptoHkdfDeriveInputsView<'static>> {
+    fn from(wrapper: CryptoHkdfDeriveInputsOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoHkdfDeriveInputsView<'static>>>
+for CryptoHkdfDeriveInputsOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoHkdfDeriveInputsView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoHkdfDeriveInputs {
+    type View<'a> = CryptoHkdfDeriveInputsView<'a>;
+    type ViewHandle = CryptoHkdfDeriveInputsOwnedView;
+}
+impl ::serde::Serialize for CryptoHkdfDeriveInputsOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoHkdfExtractSha384RequestView<'a> {
+    /// Field 1: `input_key_material`
+    pub input_key_material: &'a [u8],
+    /// Field 2: `salt`
+    pub salt: ::core::option::Option<&'a [u8]>,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoHkdfExtractSha384RequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHkdfExtractSha384RequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoHkdfExtractSha384RequestView<'a> {
+    type Owned = super::super::CryptoHkdfExtractSha384Request;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.input_key_material = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.salt = Some(::buffa::types::borrow_bytes(&mut cur)?);
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoHkdfExtractSha384Request,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoHkdfExtractSha384Request,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoHkdfExtractSha384Request {
+            input_key_material: (self.input_key_material).to_vec(),
+            salt: self.salt.map(|b| (b).to_vec()),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoHkdfExtractSha384RequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.input_key_material.is_empty() {
+            size
+                += 1u64
+                    + ::buffa::types::bytes_encoded_len(&self.input_key_material) as u64;
+        }
+        if let Some(ref v) = self.salt {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(v) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.input_key_material.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.input_key_material, buf);
+        }
+        if let Some(ref v) = self.salt {
+            ::buffa::types::put_shared_bytes_field(2u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoHkdfExtractSha384RequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoHkdfExtractSha384RequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoHkdfExtractSha384Request";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoHkdfExtractSha384Request";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfExtractSha384Request";
+}
+::buffa::impl_default_view_instance!(CryptoHkdfExtractSha384RequestView);
+::buffa::impl_view_reborrow!(CryptoHkdfExtractSha384RequestView);
+/** Self-contained, `'static` owned view of a `CryptoHkdfExtractSha384Request` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoHkdfExtractSha384RequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoHkdfExtractSha384RequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoHkdfExtractSha384RequestOwnedView(
+    ::buffa::OwnedView<CryptoHkdfExtractSha384RequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoHkdfExtractSha384RequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHkdfExtractSha384RequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoHkdfExtractSha384RequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfExtractSha384RequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfExtractSha384RequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoHkdfExtractSha384Request,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfExtractSha384RequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoHkdfExtractSha384RequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoHkdfExtractSha384RequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoHkdfExtractSha384Request {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `input_key_material`
+    #[must_use]
+    pub fn input_key_material(&self) -> &'_ [u8] {
+        self.0.reborrow().input_key_material
+    }
+    /// Field 2: `salt`
+    #[must_use]
+    pub fn salt(&self) -> ::core::option::Option<&'_ [u8]> {
+        self.0.reborrow().salt
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoHkdfExtractSha384RequestView<'static>>,
+> for CryptoHkdfExtractSha384RequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoHkdfExtractSha384RequestView<'static>>,
+    ) -> Self {
+        CryptoHkdfExtractSha384RequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoHkdfExtractSha384RequestOwnedView>
+for ::buffa::OwnedView<CryptoHkdfExtractSha384RequestView<'static>> {
+    fn from(wrapper: CryptoHkdfExtractSha384RequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoHkdfExtractSha384RequestView<'static>>,
+> for CryptoHkdfExtractSha384RequestOwnedView {
+    fn as_ref(
+        &self,
+    ) -> &::buffa::OwnedView<CryptoHkdfExtractSha384RequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoHkdfExtractSha384Request {
+    type View<'a> = CryptoHkdfExtractSha384RequestView<'a>;
+    type ViewHandle = CryptoHkdfExtractSha384RequestOwnedView;
+}
+impl ::serde::Serialize for CryptoHkdfExtractSha384RequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoHkdfExtractSha384ResultView<'a> {
+    /// Field 1: `pseudorandom_key`
+    pub pseudorandom_key: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoHkdfExtractSha384ResultView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHkdfExtractSha384ResultView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoHkdfExtractSha384ResultView<'a> {
+    type Owned = super::super::CryptoHkdfExtractSha384Result;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.pseudorandom_key = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoHkdfExtractSha384Result,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoHkdfExtractSha384Result,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoHkdfExtractSha384Result {
+            pseudorandom_key: (self.pseudorandom_key).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoHkdfExtractSha384ResultView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.pseudorandom_key.is_empty() {
+            size
+                += 1u64
+                    + ::buffa::types::bytes_encoded_len(&self.pseudorandom_key) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.pseudorandom_key.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.pseudorandom_key, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoHkdfExtractSha384ResultView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoHkdfExtractSha384ResultView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoHkdfExtractSha384Result";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoHkdfExtractSha384Result";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfExtractSha384Result";
+}
+::buffa::impl_default_view_instance!(CryptoHkdfExtractSha384ResultView);
+::buffa::impl_view_reborrow!(CryptoHkdfExtractSha384ResultView);
+/** Self-contained, `'static` owned view of a `CryptoHkdfExtractSha384Result` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoHkdfExtractSha384ResultView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoHkdfExtractSha384ResultView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoHkdfExtractSha384ResultOwnedView(
+    ::buffa::OwnedView<CryptoHkdfExtractSha384ResultView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoHkdfExtractSha384ResultOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHkdfExtractSha384ResultOwnedView(<redacted>)")
+    }
+}
+impl CryptoHkdfExtractSha384ResultOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfExtractSha384ResultOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfExtractSha384ResultOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoHkdfExtractSha384Result,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfExtractSha384ResultOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoHkdfExtractSha384ResultView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoHkdfExtractSha384ResultView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoHkdfExtractSha384Result {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `pseudorandom_key`
+    #[must_use]
+    pub fn pseudorandom_key(&self) -> &'_ [u8] {
+        self.0.reborrow().pseudorandom_key
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoHkdfExtractSha384ResultView<'static>>,
+> for CryptoHkdfExtractSha384ResultOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoHkdfExtractSha384ResultView<'static>>,
+    ) -> Self {
+        CryptoHkdfExtractSha384ResultOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoHkdfExtractSha384ResultOwnedView>
+for ::buffa::OwnedView<CryptoHkdfExtractSha384ResultView<'static>> {
+    fn from(wrapper: CryptoHkdfExtractSha384ResultOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoHkdfExtractSha384ResultView<'static>>,
+> for CryptoHkdfExtractSha384ResultOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoHkdfExtractSha384ResultView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoHkdfExtractSha384Result {
+    type View<'a> = CryptoHkdfExtractSha384ResultView<'a>;
+    type ViewHandle = CryptoHkdfExtractSha384ResultOwnedView;
+}
+impl ::serde::Serialize for CryptoHkdfExtractSha384ResultOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoHkdfExpandSha384RequestView<'a> {
+    /// Field 1: `pseudorandom_key`
+    pub pseudorandom_key: &'a [u8],
+    /// Field 2: `info`
+    pub info: &'a [u8],
+    /// Field 3: `output_length`
+    pub output_length: u32,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoHkdfExpandSha384RequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHkdfExpandSha384RequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoHkdfExpandSha384RequestView<'a> {
+    type Owned = super::super::CryptoHkdfExpandSha384Request;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.pseudorandom_key = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.info = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.output_length = ::buffa::types::decode_uint32(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoHkdfExpandSha384Request,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoHkdfExpandSha384Request,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoHkdfExpandSha384Request {
+            pseudorandom_key: (self.pseudorandom_key).to_vec(),
+            info: (self.info).to_vec(),
+            output_length: self.output_length,
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoHkdfExpandSha384RequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.pseudorandom_key.is_empty() {
+            size
+                += 1u64
+                    + ::buffa::types::bytes_encoded_len(&self.pseudorandom_key) as u64;
+        }
+        if !self.info.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.info) as u64;
+        }
+        if self.output_length != 0u32 {
+            size += 1u64 + ::buffa::types::uint32_encoded_len(self.output_length) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.pseudorandom_key.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.pseudorandom_key, buf);
+        }
+        if !self.info.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.info, buf);
+        }
+        if self.output_length != 0u32 {
+            ::buffa::types::put_uint32_field(3u32, self.output_length, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoHkdfExpandSha384RequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoHkdfExpandSha384RequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoHkdfExpandSha384Request";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoHkdfExpandSha384Request";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfExpandSha384Request";
+}
+::buffa::impl_default_view_instance!(CryptoHkdfExpandSha384RequestView);
+::buffa::impl_view_reborrow!(CryptoHkdfExpandSha384RequestView);
+/** Self-contained, `'static` owned view of a `CryptoHkdfExpandSha384Request` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoHkdfExpandSha384RequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoHkdfExpandSha384RequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoHkdfExpandSha384RequestOwnedView(
+    ::buffa::OwnedView<CryptoHkdfExpandSha384RequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoHkdfExpandSha384RequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHkdfExpandSha384RequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoHkdfExpandSha384RequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfExpandSha384RequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfExpandSha384RequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoHkdfExpandSha384Request,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfExpandSha384RequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoHkdfExpandSha384RequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoHkdfExpandSha384RequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoHkdfExpandSha384Request {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `pseudorandom_key`
+    #[must_use]
+    pub fn pseudorandom_key(&self) -> &'_ [u8] {
+        self.0.reborrow().pseudorandom_key
+    }
+    /// Field 2: `info`
+    #[must_use]
+    pub fn info(&self) -> &'_ [u8] {
+        self.0.reborrow().info
+    }
+    /// Field 3: `output_length`
+    #[must_use]
+    pub fn output_length(&self) -> u32 {
+        self.0.reborrow().output_length
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoHkdfExpandSha384RequestView<'static>>,
+> for CryptoHkdfExpandSha384RequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoHkdfExpandSha384RequestView<'static>>,
+    ) -> Self {
+        CryptoHkdfExpandSha384RequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoHkdfExpandSha384RequestOwnedView>
+for ::buffa::OwnedView<CryptoHkdfExpandSha384RequestView<'static>> {
+    fn from(wrapper: CryptoHkdfExpandSha384RequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoHkdfExpandSha384RequestView<'static>>,
+> for CryptoHkdfExpandSha384RequestOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoHkdfExpandSha384RequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoHkdfExpandSha384Request {
+    type View<'a> = CryptoHkdfExpandSha384RequestView<'a>;
+    type ViewHandle = CryptoHkdfExpandSha384RequestOwnedView;
+}
+impl ::serde::Serialize for CryptoHkdfExpandSha384RequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// Fixed SHA3-256 HKDF, 32-byte output, existing versioned domain-info prefix.
+/// Purpose and tag select context only; neither changes the hash or output size.
+#[derive(Clone, Default)]
+pub struct CryptoHkdfDomainKey32RequestView<'a> {
+    /// Field 1: `input_key_material`
+    pub input_key_material: &'a [u8],
+    /// Field 2: `salt`
+    pub salt: ::core::option::Option<&'a [u8]>,
+    /// Field 3: `purpose`
+    pub purpose: ::buffa::EnumValue<super::super::HkdfDomainKeyPurpose>,
+    /// Field 4: `domain_tag`
+    pub domain_tag: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoHkdfDomainTagView<'a>,
+    >,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoHkdfDomainKey32RequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHkdfDomainKey32RequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoHkdfDomainKey32RequestView<'a> {
+    type Owned = super::super::CryptoHkdfDomainKey32Request;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.input_key_material = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.salt = Some(::buffa::types::borrow_bytes(&mut cur)?);
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.purpose = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(&mut cur)?,
+                );
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.domain_tag.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.domain_tag = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoHkdfDomainTagView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoHkdfDomainKey32Request,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoHkdfDomainKey32Request,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoHkdfDomainKey32Request {
+            input_key_material: (self.input_key_material).to_vec(),
+            salt: self.salt.map(|b| (b).to_vec()),
+            purpose: self.purpose,
+            domain_tag: match self.domain_tag.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoHkdfDomainTag,
+                        ::buffa::Inline<super::super::CryptoHkdfDomainTag>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoHkdfDomainKey32RequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.input_key_material.is_empty() {
+            size
+                += 1u64
+                    + ::buffa::types::bytes_encoded_len(&self.input_key_material) as u64;
+        }
+        if let Some(ref v) = self.salt {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(v) as u64;
+        }
+        {
+            let val = self.purpose.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        if self.domain_tag.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.domain_tag.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.input_key_material.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.input_key_material, buf);
+        }
+        if let Some(ref v) = self.salt {
+            ::buffa::types::put_shared_bytes_field(2u32, v, buf);
+        }
+        {
+            let val = self.purpose.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(3u32, val, buf);
+            }
+        }
+        if self.domain_tag.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                4u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.domain_tag.write_to(__cache, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoHkdfDomainKey32RequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoHkdfDomainKey32RequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoHkdfDomainKey32Request";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoHkdfDomainKey32Request";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfDomainKey32Request";
+}
+::buffa::impl_default_view_instance!(CryptoHkdfDomainKey32RequestView);
+::buffa::impl_view_reborrow!(CryptoHkdfDomainKey32RequestView);
+/** Self-contained, `'static` owned view of a `CryptoHkdfDomainKey32Request` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoHkdfDomainKey32RequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoHkdfDomainKey32RequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoHkdfDomainKey32RequestOwnedView(
+    ::buffa::OwnedView<CryptoHkdfDomainKey32RequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoHkdfDomainKey32RequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHkdfDomainKey32RequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoHkdfDomainKey32RequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfDomainKey32RequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfDomainKey32RequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoHkdfDomainKey32Request,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoHkdfDomainKey32RequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoHkdfDomainKey32RequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoHkdfDomainKey32RequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoHkdfDomainKey32Request {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `input_key_material`
+    #[must_use]
+    pub fn input_key_material(&self) -> &'_ [u8] {
+        self.0.reborrow().input_key_material
+    }
+    /// Field 2: `salt`
+    #[must_use]
+    pub fn salt(&self) -> ::core::option::Option<&'_ [u8]> {
+        self.0.reborrow().salt
+    }
+    /// Field 3: `purpose`
+    #[must_use]
+    pub fn purpose(&self) -> ::buffa::EnumValue<super::super::HkdfDomainKeyPurpose> {
+        self.0.reborrow().purpose
+    }
+    /// Field 4: `domain_tag`
+    #[must_use]
+    pub fn domain_tag(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoHkdfDomainTagView<'_>,
+    > {
+        &self.0.reborrow().domain_tag
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoHkdfDomainKey32RequestView<'static>>>
+for CryptoHkdfDomainKey32RequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoHkdfDomainKey32RequestView<'static>>,
+    ) -> Self {
+        CryptoHkdfDomainKey32RequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoHkdfDomainKey32RequestOwnedView>
+for ::buffa::OwnedView<CryptoHkdfDomainKey32RequestView<'static>> {
+    fn from(wrapper: CryptoHkdfDomainKey32RequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoHkdfDomainKey32RequestView<'static>>,
+> for CryptoHkdfDomainKey32RequestOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoHkdfDomainKey32RequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoHkdfDomainKey32Request {
+    type View<'a> = CryptoHkdfDomainKey32RequestView<'a>;
+    type ViewHandle = CryptoHkdfDomainKey32RequestOwnedView;
+}
+impl ::serde::Serialize for CryptoHkdfDomainKey32RequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// Native public-JWK serialization flags. KID is exact UTF-8 encoded in a
+/// clearing byte owner; absence and present-empty are distinct values.
+#[derive(Clone, Default)]
+pub struct CryptoJwkOptionsView<'a> {
+    /// Field 1: `alg`
+    pub alg: bool,
+    /// Field 2: `use_sig`
+    pub use_sig: bool,
+    /// Field 3: `use_enc`
+    pub use_enc: bool,
+    /// Field 4: `kid`
+    pub kid: ::core::option::Option<&'a [u8]>,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoJwkOptionsView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoJwkOptionsView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoJwkOptionsView<'a> {
+    type Owned = super::super::CryptoJwkOptions;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.alg = ::buffa::types::decode_bool(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.use_sig = ::buffa::types::decode_bool(&mut cur)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.use_enc = ::buffa::types::decode_bool(&mut cur)?;
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.kid = Some(::buffa::types::borrow_bytes(&mut cur)?);
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<super::super::CryptoJwkOptions, ::buffa::DecodeError> {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<super::super::CryptoJwkOptions, ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoJwkOptions {
+            alg: self.alg,
+            use_sig: self.use_sig,
+            use_enc: self.use_enc,
+            kid: self.kid.map(|b| (b).to_vec()),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoJwkOptionsView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.alg {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        if self.use_sig {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        if self.use_enc {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        if let Some(ref v) = self.kid {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(v) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.alg {
+            ::buffa::types::put_bool_field(1u32, self.alg, buf);
+        }
+        if self.use_sig {
+            ::buffa::types::put_bool_field(2u32, self.use_sig, buf);
+        }
+        if self.use_enc {
+            ::buffa::types::put_bool_field(3u32, self.use_enc, buf);
+        }
+        if let Some(ref v) = self.kid {
+            ::buffa::types::put_shared_bytes_field(4u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoJwkOptionsView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoJwkOptionsView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoJwkOptions";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoJwkOptions";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoJwkOptions";
+}
+::buffa::impl_default_view_instance!(CryptoJwkOptionsView);
+::buffa::impl_view_reborrow!(CryptoJwkOptionsView);
+/** Self-contained, `'static` owned view of a `CryptoJwkOptions` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoJwkOptionsView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoJwkOptionsView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoJwkOptionsOwnedView(::buffa::OwnedView<CryptoJwkOptionsView<'static>>);
+impl ::core::fmt::Debug for CryptoJwkOptionsOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoJwkOptionsOwnedView(<redacted>)")
+    }
+}
+impl CryptoJwkOptionsOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoJwkOptionsOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoJwkOptionsOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoJwkOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoJwkOptionsOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoJwkOptionsView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoJwkOptionsView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoJwkOptions {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `alg`
+    #[must_use]
+    pub fn alg(&self) -> bool {
+        self.0.reborrow().alg
+    }
+    /// Field 2: `use_sig`
+    #[must_use]
+    pub fn use_sig(&self) -> bool {
+        self.0.reborrow().use_sig
+    }
+    /// Field 3: `use_enc`
+    #[must_use]
+    pub fn use_enc(&self) -> bool {
+        self.0.reborrow().use_enc
+    }
+    /// Field 4: `kid`
+    #[must_use]
+    pub fn kid(&self) -> ::core::option::Option<&'_ [u8]> {
+        self.0.reborrow().kid
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoJwkOptionsView<'static>>>
+for CryptoJwkOptionsOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoJwkOptionsView<'static>>) -> Self {
+        CryptoJwkOptionsOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoJwkOptionsOwnedView>
+for ::buffa::OwnedView<CryptoJwkOptionsView<'static>> {
+    fn from(wrapper: CryptoJwkOptionsOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoJwkOptionsView<'static>>>
+for CryptoJwkOptionsOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoJwkOptionsView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoJwkOptions {
+    type View<'a> = CryptoJwkOptionsView<'a>;
+    type ViewHandle = CryptoJwkOptionsOwnedView;
+}
+impl ::serde::Serialize for CryptoJwkOptionsOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// Existing canonical key identities determine kty/crv. Optional alg/use members
+/// retain their exact UTF-8 bytes and must match existing native validation.
+/// Coordinate members retain their exact validated base64url UTF-8 bytes.
+#[derive(Clone, Default)]
+pub struct PublicEcJwkView<'a> {
+    /// Field 1: `key_algorithm`
+    pub key_algorithm: ::buffa::EnumValue<super::super::KeyAlgorithm>,
+    /// Field 2: `x_base64url`
+    pub x_base64url: &'a [u8],
+    /// Field 3: `y_base64url`
+    pub y_base64url: &'a [u8],
+    /// Field 6: `kid`
+    pub kid: ::core::option::Option<&'a [u8]>,
+    /// Field 7: `alg`
+    pub alg: ::core::option::Option<&'a [u8]>,
+    /// Field 8: `usage`
+    pub usage: ::core::option::Option<&'a [u8]>,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for PublicEcJwkView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("PublicEcJwkView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for PublicEcJwkView<'a> {
+    type Owned = super::super::PublicEcJwk;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.key_algorithm = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(&mut cur)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.x_base64url = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.y_base64url = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            6u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.kid = Some(::buffa::types::borrow_bytes(&mut cur)?);
+            }
+            7u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.alg = Some(::buffa::types::borrow_bytes(&mut cur)?);
+            }
+            8u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.usage = Some(::buffa::types::borrow_bytes(&mut cur)?);
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<super::super::PublicEcJwk, ::buffa::DecodeError> {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<super::super::PublicEcJwk, ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::PublicEcJwk {
+            key_algorithm: self.key_algorithm,
+            x_base64url: (self.x_base64url).to_vec(),
+            y_base64url: (self.y_base64url).to_vec(),
+            kid: self.kid.map(|b| (b).to_vec()),
+            alg: self.alg.map(|b| (b).to_vec()),
+            usage: self.usage.map(|b| (b).to_vec()),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for PublicEcJwkView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.key_algorithm.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        if !self.x_base64url.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.x_base64url) as u64;
+        }
+        if !self.y_base64url.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.y_base64url) as u64;
+        }
+        if let Some(ref v) = self.kid {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.alg {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.usage {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(v) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.key_algorithm.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        if !self.x_base64url.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.x_base64url, buf);
+        }
+        if !self.y_base64url.is_empty() {
+            ::buffa::types::put_shared_bytes_field(3u32, &self.y_base64url, buf);
+        }
+        if let Some(ref v) = self.kid {
+            ::buffa::types::put_shared_bytes_field(6u32, v, buf);
+        }
+        if let Some(ref v) = self.alg {
+            ::buffa::types::put_shared_bytes_field(7u32, v, buf);
+        }
+        if let Some(ref v) = self.usage {
+            ::buffa::types::put_shared_bytes_field(8u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for PublicEcJwkView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for PublicEcJwkView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "PublicEcJwk";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.PublicEcJwk";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.PublicEcJwk";
+}
+::buffa::impl_default_view_instance!(PublicEcJwkView);
+::buffa::impl_view_reborrow!(PublicEcJwkView);
+/** Self-contained, `'static` owned view of a `PublicEcJwk` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`PublicEcJwkView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`PublicEcJwkView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct PublicEcJwkOwnedView(::buffa::OwnedView<PublicEcJwkView<'static>>);
+impl ::core::fmt::Debug for PublicEcJwkOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("PublicEcJwkOwnedView(<redacted>)")
+    }
+}
+impl PublicEcJwkOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicEcJwkOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicEcJwkOwnedView(::buffa::OwnedView::decode_with_options(bytes, opts)?),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::PublicEcJwk,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicEcJwkOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`PublicEcJwkView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &PublicEcJwkView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::PublicEcJwk {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `key_algorithm`
+    #[must_use]
+    pub fn key_algorithm(&self) -> ::buffa::EnumValue<super::super::KeyAlgorithm> {
+        self.0.reborrow().key_algorithm
+    }
+    /// Field 2: `x_base64url`
+    #[must_use]
+    pub fn x_base64url(&self) -> &'_ [u8] {
+        self.0.reborrow().x_base64url
+    }
+    /// Field 3: `y_base64url`
+    #[must_use]
+    pub fn y_base64url(&self) -> &'_ [u8] {
+        self.0.reborrow().y_base64url
+    }
+    /// Field 6: `kid`
+    #[must_use]
+    pub fn kid(&self) -> ::core::option::Option<&'_ [u8]> {
+        self.0.reborrow().kid
+    }
+    /// Field 7: `alg`
+    #[must_use]
+    pub fn alg(&self) -> ::core::option::Option<&'_ [u8]> {
+        self.0.reborrow().alg
+    }
+    /// Field 8: `usage`
+    #[must_use]
+    pub fn usage(&self) -> ::core::option::Option<&'_ [u8]> {
+        self.0.reborrow().usage
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<PublicEcJwkView<'static>>>
+for PublicEcJwkOwnedView {
+    fn from(inner: ::buffa::OwnedView<PublicEcJwkView<'static>>) -> Self {
+        PublicEcJwkOwnedView(inner)
+    }
+}
+impl ::core::convert::From<PublicEcJwkOwnedView>
+for ::buffa::OwnedView<PublicEcJwkView<'static>> {
+    fn from(wrapper: PublicEcJwkOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<PublicEcJwkView<'static>>>
+for PublicEcJwkOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<PublicEcJwkView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::PublicEcJwk {
+    type View<'a> = PublicEcJwkView<'a>;
+    type ViewHandle = PublicEcJwkOwnedView;
+}
+impl ::serde::Serialize for PublicEcJwkOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct PublicOkpJwkView<'a> {
+    /// Field 1: `key_algorithm`
+    pub key_algorithm: ::buffa::EnumValue<super::super::KeyAlgorithm>,
+    /// Field 2: `x_base64url`
+    pub x_base64url: &'a [u8],
+    /// Field 5: `kid`
+    pub kid: ::core::option::Option<&'a [u8]>,
+    /// Field 6: `alg`
+    pub alg: ::core::option::Option<&'a [u8]>,
+    /// Field 7: `usage`
+    pub usage: ::core::option::Option<&'a [u8]>,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for PublicOkpJwkView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("PublicOkpJwkView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for PublicOkpJwkView<'a> {
+    type Owned = super::super::PublicOkpJwk;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.key_algorithm = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(&mut cur)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.x_base64url = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.kid = Some(::buffa::types::borrow_bytes(&mut cur)?);
+            }
+            6u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.alg = Some(::buffa::types::borrow_bytes(&mut cur)?);
+            }
+            7u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.usage = Some(::buffa::types::borrow_bytes(&mut cur)?);
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<super::super::PublicOkpJwk, ::buffa::DecodeError> {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<super::super::PublicOkpJwk, ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::PublicOkpJwk {
+            key_algorithm: self.key_algorithm,
+            x_base64url: (self.x_base64url).to_vec(),
+            kid: self.kid.map(|b| (b).to_vec()),
+            alg: self.alg.map(|b| (b).to_vec()),
+            usage: self.usage.map(|b| (b).to_vec()),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for PublicOkpJwkView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.key_algorithm.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        if !self.x_base64url.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.x_base64url) as u64;
+        }
+        if let Some(ref v) = self.kid {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.alg {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.usage {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(v) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.key_algorithm.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        if !self.x_base64url.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.x_base64url, buf);
+        }
+        if let Some(ref v) = self.kid {
+            ::buffa::types::put_shared_bytes_field(5u32, v, buf);
+        }
+        if let Some(ref v) = self.alg {
+            ::buffa::types::put_shared_bytes_field(6u32, v, buf);
+        }
+        if let Some(ref v) = self.usage {
+            ::buffa::types::put_shared_bytes_field(7u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for PublicOkpJwkView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for PublicOkpJwkView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "PublicOkpJwk";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.PublicOkpJwk";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.PublicOkpJwk";
+}
+::buffa::impl_default_view_instance!(PublicOkpJwkView);
+::buffa::impl_view_reborrow!(PublicOkpJwkView);
+/** Self-contained, `'static` owned view of a `PublicOkpJwk` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`PublicOkpJwkView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`PublicOkpJwkView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct PublicOkpJwkOwnedView(::buffa::OwnedView<PublicOkpJwkView<'static>>);
+impl ::core::fmt::Debug for PublicOkpJwkOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("PublicOkpJwkOwnedView(<redacted>)")
+    }
+}
+impl PublicOkpJwkOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicOkpJwkOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicOkpJwkOwnedView(::buffa::OwnedView::decode_with_options(bytes, opts)?),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::PublicOkpJwk,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicOkpJwkOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`PublicOkpJwkView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &PublicOkpJwkView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::PublicOkpJwk {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `key_algorithm`
+    #[must_use]
+    pub fn key_algorithm(&self) -> ::buffa::EnumValue<super::super::KeyAlgorithm> {
+        self.0.reborrow().key_algorithm
+    }
+    /// Field 2: `x_base64url`
+    #[must_use]
+    pub fn x_base64url(&self) -> &'_ [u8] {
+        self.0.reborrow().x_base64url
+    }
+    /// Field 5: `kid`
+    #[must_use]
+    pub fn kid(&self) -> ::core::option::Option<&'_ [u8]> {
+        self.0.reborrow().kid
+    }
+    /// Field 6: `alg`
+    #[must_use]
+    pub fn alg(&self) -> ::core::option::Option<&'_ [u8]> {
+        self.0.reborrow().alg
+    }
+    /// Field 7: `usage`
+    #[must_use]
+    pub fn usage(&self) -> ::core::option::Option<&'_ [u8]> {
+        self.0.reborrow().usage
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<PublicOkpJwkView<'static>>>
+for PublicOkpJwkOwnedView {
+    fn from(inner: ::buffa::OwnedView<PublicOkpJwkView<'static>>) -> Self {
+        PublicOkpJwkOwnedView(inner)
+    }
+}
+impl ::core::convert::From<PublicOkpJwkOwnedView>
+for ::buffa::OwnedView<PublicOkpJwkView<'static>> {
+    fn from(wrapper: PublicOkpJwkOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<PublicOkpJwkView<'static>>>
+for PublicOkpJwkOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<PublicOkpJwkView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::PublicOkpJwk {
+    type View<'a> = PublicOkpJwkView<'a>;
+    type ViewHandle = PublicOkpJwkOwnedView;
+}
+impl ::serde::Serialize for PublicOkpJwkOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// AKP alg is mandatory and determined by the existing key identity.
+#[derive(Clone, Default)]
+pub struct PublicAkpJwkView<'a> {
+    /// Field 1: `key_algorithm`
+    pub key_algorithm: ::buffa::EnumValue<super::super::KeyAlgorithm>,
+    /// Field 2: `public_key_base64url`
+    pub public_key_base64url: &'a [u8],
+    /// Field 4: `kid`
+    pub kid: ::core::option::Option<&'a [u8]>,
+    /// Field 5: `usage`
+    pub usage: ::core::option::Option<&'a [u8]>,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for PublicAkpJwkView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("PublicAkpJwkView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for PublicAkpJwkView<'a> {
+    type Owned = super::super::PublicAkpJwk;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.key_algorithm = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(&mut cur)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.public_key_base64url = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.kid = Some(::buffa::types::borrow_bytes(&mut cur)?);
+            }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.usage = Some(::buffa::types::borrow_bytes(&mut cur)?);
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<super::super::PublicAkpJwk, ::buffa::DecodeError> {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<super::super::PublicAkpJwk, ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::PublicAkpJwk {
+            key_algorithm: self.key_algorithm,
+            public_key_base64url: (self.public_key_base64url).to_vec(),
+            kid: self.kid.map(|b| (b).to_vec()),
+            usage: self.usage.map(|b| (b).to_vec()),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for PublicAkpJwkView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.key_algorithm.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        if !self.public_key_base64url.is_empty() {
+            size
+                += 1u64
+                    + ::buffa::types::bytes_encoded_len(&self.public_key_base64url)
+                        as u64;
+        }
+        if let Some(ref v) = self.kid {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.usage {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(v) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.key_algorithm.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        if !self.public_key_base64url.is_empty() {
+            ::buffa::types::put_shared_bytes_field(
+                2u32,
+                &self.public_key_base64url,
+                buf,
+            );
+        }
+        if let Some(ref v) = self.kid {
+            ::buffa::types::put_shared_bytes_field(4u32, v, buf);
+        }
+        if let Some(ref v) = self.usage {
+            ::buffa::types::put_shared_bytes_field(5u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for PublicAkpJwkView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for PublicAkpJwkView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "PublicAkpJwk";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.PublicAkpJwk";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.PublicAkpJwk";
+}
+::buffa::impl_default_view_instance!(PublicAkpJwkView);
+::buffa::impl_view_reborrow!(PublicAkpJwkView);
+/** Self-contained, `'static` owned view of a `PublicAkpJwk` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`PublicAkpJwkView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`PublicAkpJwkView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct PublicAkpJwkOwnedView(::buffa::OwnedView<PublicAkpJwkView<'static>>);
+impl ::core::fmt::Debug for PublicAkpJwkOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("PublicAkpJwkOwnedView(<redacted>)")
+    }
+}
+impl PublicAkpJwkOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicAkpJwkOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicAkpJwkOwnedView(::buffa::OwnedView::decode_with_options(bytes, opts)?),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::PublicAkpJwk,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicAkpJwkOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`PublicAkpJwkView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &PublicAkpJwkView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::PublicAkpJwk {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `key_algorithm`
+    #[must_use]
+    pub fn key_algorithm(&self) -> ::buffa::EnumValue<super::super::KeyAlgorithm> {
+        self.0.reborrow().key_algorithm
+    }
+    /// Field 2: `public_key_base64url`
+    #[must_use]
+    pub fn public_key_base64url(&self) -> &'_ [u8] {
+        self.0.reborrow().public_key_base64url
+    }
+    /// Field 4: `kid`
+    #[must_use]
+    pub fn kid(&self) -> ::core::option::Option<&'_ [u8]> {
+        self.0.reborrow().kid
+    }
+    /// Field 5: `usage`
+    #[must_use]
+    pub fn usage(&self) -> ::core::option::Option<&'_ [u8]> {
+        self.0.reborrow().usage
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<PublicAkpJwkView<'static>>>
+for PublicAkpJwkOwnedView {
+    fn from(inner: ::buffa::OwnedView<PublicAkpJwkView<'static>>) -> Self {
+        PublicAkpJwkOwnedView(inner)
+    }
+}
+impl ::core::convert::From<PublicAkpJwkOwnedView>
+for ::buffa::OwnedView<PublicAkpJwkView<'static>> {
+    fn from(wrapper: PublicAkpJwkOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<PublicAkpJwkView<'static>>>
+for PublicAkpJwkOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<PublicAkpJwkView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::PublicAkpJwk {
+    type View<'a> = PublicAkpJwkView<'a>;
+    type ViewHandle = PublicAkpJwkOwnedView;
+}
+impl ::serde::Serialize for PublicAkpJwkOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct PublicJwkView<'a> {
+    pub key: ::core::option::Option<
+        super::super::__buffa::view::oneof::public_jwk::Key<'a>,
+    >,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for PublicJwkView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("PublicJwkView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for PublicJwkView<'a> {
+    type Owned = super::super::PublicJwk;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::public_jwk::Key::Ec(
+                        ref mut existing,
+                    ),
+                ) = view.key
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.key = Some(
+                        super::super::__buffa::view::oneof::public_jwk::Key::Ec(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::PublicEcJwkView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::public_jwk::Key::Okp(
+                        ref mut existing,
+                    ),
+                ) = view.key
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.key = Some(
+                        super::super::__buffa::view::oneof::public_jwk::Key::Okp(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::PublicOkpJwkView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::public_jwk::Key::Akp(
+                        ref mut existing,
+                    ),
+                ) = view.key
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.key = Some(
+                        super::super::__buffa::view::oneof::public_jwk::Key::Akp(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::PublicAkpJwkView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<super::super::PublicJwk, ::buffa::DecodeError> {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<super::super::PublicJwk, ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::PublicJwk {
+            key: match self.key.as_ref() {
+                ::core::option::Option::Some(v) => {
+                    ::core::option::Option::Some(
+                        match v {
+                            super::super::__buffa::view::oneof::public_jwk::Key::Ec(
+                                v,
+                            ) => {
+                                super::super::__buffa::oneof::public_jwk::Key::Ec(
+                                    ::buffa::alloc::boxed::Box::new(
+                                        v.to_owned_from_source(__buffa_src)?,
+                                    ),
+                                )
+                            }
+                            super::super::__buffa::view::oneof::public_jwk::Key::Okp(
+                                v,
+                            ) => {
+                                super::super::__buffa::oneof::public_jwk::Key::Okp(
+                                    ::buffa::alloc::boxed::Box::new(
+                                        v.to_owned_from_source(__buffa_src)?,
+                                    ),
+                                )
+                            }
+                            super::super::__buffa::view::oneof::public_jwk::Key::Akp(
+                                v,
+                            ) => {
+                                super::super::__buffa::oneof::public_jwk::Key::Akp(
+                                    ::buffa::alloc::boxed::Box::new(
+                                        v.to_owned_from_source(__buffa_src)?,
+                                    ),
+                                )
+                            }
+                        },
+                    )
+                }
+                ::core::option::Option::None => ::core::option::Option::None,
+            },
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for PublicJwkView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(ref v) = self.key {
+            match v {
+                super::super::__buffa::view::oneof::public_jwk::Key::Ec(x) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::public_jwk::Key::Okp(x) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::public_jwk::Key::Akp(x) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(ref v) = self.key {
+            match v {
+                super::super::__buffa::view::oneof::public_jwk::Key::Ec(x) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                super::super::__buffa::view::oneof::public_jwk::Key::Okp(x) => {
+                    ::buffa::types::put_len_delimited_header(
+                        2u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                super::super::__buffa::view::oneof::public_jwk::Key::Akp(x) => {
+                    ::buffa::types::put_len_delimited_header(
+                        3u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for PublicJwkView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for PublicJwkView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "PublicJwk";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.PublicJwk";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.PublicJwk";
+}
+::buffa::impl_default_view_instance!(PublicJwkView);
+::buffa::impl_view_reborrow!(PublicJwkView);
+/** Self-contained, `'static` owned view of a `PublicJwk` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`PublicJwkView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`PublicJwkView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct PublicJwkOwnedView(::buffa::OwnedView<PublicJwkView<'static>>);
+impl ::core::fmt::Debug for PublicJwkOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("PublicJwkOwnedView(<redacted>)")
+    }
+}
+impl PublicJwkOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicJwkOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicJwkOwnedView(::buffa::OwnedView::decode_with_options(bytes, opts)?),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::PublicJwk,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicJwkOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`PublicJwkView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &PublicJwkView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::PublicJwk {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Oneof `key`.
+    #[must_use]
+    pub fn key(
+        &self,
+    ) -> ::core::option::Option<
+        &super::super::__buffa::view::oneof::public_jwk::Key<'_>,
+    > {
+        self.0.reborrow().key.as_ref()
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<PublicJwkView<'static>>>
+for PublicJwkOwnedView {
+    fn from(inner: ::buffa::OwnedView<PublicJwkView<'static>>) -> Self {
+        PublicJwkOwnedView(inner)
+    }
+}
+impl ::core::convert::From<PublicJwkOwnedView>
+for ::buffa::OwnedView<PublicJwkView<'static>> {
+    fn from(wrapper: PublicJwkOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<PublicJwkView<'static>>>
+for PublicJwkOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<PublicJwkView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::PublicJwk {
+    type View<'a> = PublicJwkView<'a>;
+    type ViewHandle = PublicJwkOwnedView;
+}
+impl ::serde::Serialize for PublicJwkOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct PublicJwksView<'a> {
+    /// Field 1: `keys`
+    pub keys: ::buffa::RepeatedView<'a, super::super::__buffa::view::PublicJwkView<'a>>,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for PublicJwksView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("PublicJwksView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for PublicJwksView<'a> {
+    type Owned = super::super::PublicJwks;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                ctx.register_element_memory(
+                    ::core::mem::size_of::<super::super::__buffa::view::PublicJwkView>(),
+                )?;
+                view.keys
+                    .push(
+                        <super::super::__buffa::view::PublicJwkView as ::buffa::MessageView>::decode_view_ctx(
+                            sub,
+                            __sub_ctx,
+                        )?,
+                    );
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<super::super::PublicJwks, ::buffa::DecodeError> {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<super::super::PublicJwks, ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::PublicJwks {
+            keys: self
+                .keys
+                .iter()
+                .map(|v| v.to_owned_from_source(__buffa_src))
+                .collect::<::core::result::Result<_, ::buffa::DecodeError>>()?,
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for PublicJwksView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        for v in &self.keys {
+            let __slot = __cache.reserve();
+            let inner_size = v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        for v in &self.keys {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            v.write_to(__cache, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for PublicJwksView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for PublicJwksView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "PublicJwks";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.PublicJwks";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.PublicJwks";
+}
+::buffa::impl_default_view_instance!(PublicJwksView);
+::buffa::impl_view_reborrow!(PublicJwksView);
+/** Self-contained, `'static` owned view of a `PublicJwks` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`PublicJwksView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`PublicJwksView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct PublicJwksOwnedView(::buffa::OwnedView<PublicJwksView<'static>>);
+impl ::core::fmt::Debug for PublicJwksOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("PublicJwksOwnedView(<redacted>)")
+    }
+}
+impl PublicJwksOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicJwksOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicJwksOwnedView(::buffa::OwnedView::decode_with_options(bytes, opts)?),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::PublicJwks,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicJwksOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`PublicJwksView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &PublicJwksView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::PublicJwks {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `keys`
+    #[must_use]
+    pub fn keys(
+        &self,
+    ) -> &::buffa::RepeatedView<'_, super::super::__buffa::view::PublicJwkView<'_>> {
+        &self.0.reborrow().keys
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<PublicJwksView<'static>>>
+for PublicJwksOwnedView {
+    fn from(inner: ::buffa::OwnedView<PublicJwksView<'static>>) -> Self {
+        PublicJwksOwnedView(inner)
+    }
+}
+impl ::core::convert::From<PublicJwksOwnedView>
+for ::buffa::OwnedView<PublicJwksView<'static>> {
+    fn from(wrapper: PublicJwksOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<PublicJwksView<'static>>>
+for PublicJwksOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<PublicJwksView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::PublicJwks {
+    type View<'a> = PublicJwksView<'a>;
+    type ViewHandle = PublicJwksOwnedView;
+}
+impl ::serde::Serialize for PublicJwksOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// Standalone reachability for the established canonical JSON document and the
+/// typed public variant. This does not add an executable transport operation.
+#[derive(Clone, Default)]
+pub struct PublicJwkDocumentView<'a> {
+    pub representation: ::core::option::Option<
+        super::super::__buffa::view::oneof::public_jwk_document::Representation<'a>,
+    >,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for PublicJwkDocumentView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("PublicJwkDocumentView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for PublicJwkDocumentView<'a> {
+    type Owned = super::super::PublicJwkDocument;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::public_jwk_document::Representation::Canonical(
+                        ref mut existing,
+                    ),
+                ) = view.representation
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.representation = Some(
+                        super::super::__buffa::view::oneof::public_jwk_document::Representation::Canonical(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JsonWebKeyView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::public_jwk_document::Representation::Typed(
+                        ref mut existing,
+                    ),
+                ) = view.representation
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.representation = Some(
+                        super::super::__buffa::view::oneof::public_jwk_document::Representation::Typed(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::PublicJwkView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<super::super::PublicJwkDocument, ::buffa::DecodeError> {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<super::super::PublicJwkDocument, ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::PublicJwkDocument {
+            representation: match self.representation.as_ref() {
+                ::core::option::Option::Some(v) => {
+                    ::core::option::Option::Some(
+                        match v {
+                            super::super::__buffa::view::oneof::public_jwk_document::Representation::Canonical(
+                                v,
+                            ) => {
+                                super::super::__buffa::oneof::public_jwk_document::Representation::Canonical(
+                                    ::buffa::alloc::boxed::Box::new(
+                                        v.to_owned_from_source(__buffa_src)?,
+                                    ),
+                                )
+                            }
+                            super::super::__buffa::view::oneof::public_jwk_document::Representation::Typed(
+                                v,
+                            ) => {
+                                super::super::__buffa::oneof::public_jwk_document::Representation::Typed(
+                                    ::buffa::alloc::boxed::Box::new(
+                                        v.to_owned_from_source(__buffa_src)?,
+                                    ),
+                                )
+                            }
+                        },
+                    )
+                }
+                ::core::option::Option::None => ::core::option::Option::None,
+            },
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for PublicJwkDocumentView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(ref v) = self.representation {
+            match v {
+                super::super::__buffa::view::oneof::public_jwk_document::Representation::Canonical(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::public_jwk_document::Representation::Typed(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(ref v) = self.representation {
+            match v {
+                super::super::__buffa::view::oneof::public_jwk_document::Representation::Canonical(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                super::super::__buffa::view::oneof::public_jwk_document::Representation::Typed(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        2u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for PublicJwkDocumentView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for PublicJwkDocumentView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "PublicJwkDocument";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.PublicJwkDocument";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.PublicJwkDocument";
+}
+::buffa::impl_default_view_instance!(PublicJwkDocumentView);
+::buffa::impl_view_reborrow!(PublicJwkDocumentView);
+/** Self-contained, `'static` owned view of a `PublicJwkDocument` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`PublicJwkDocumentView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`PublicJwkDocumentView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct PublicJwkDocumentOwnedView(
+    ::buffa::OwnedView<PublicJwkDocumentView<'static>>,
+);
+impl ::core::fmt::Debug for PublicJwkDocumentOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("PublicJwkDocumentOwnedView(<redacted>)")
+    }
+}
+impl PublicJwkDocumentOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicJwkDocumentOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicJwkDocumentOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::PublicJwkDocument,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            PublicJwkDocumentOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`PublicJwkDocumentView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &PublicJwkDocumentView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::PublicJwkDocument {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Oneof `representation`.
+    #[must_use]
+    pub fn representation(
+        &self,
+    ) -> ::core::option::Option<
+        &super::super::__buffa::view::oneof::public_jwk_document::Representation<'_>,
+    > {
+        self.0.reborrow().representation.as_ref()
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<PublicJwkDocumentView<'static>>>
+for PublicJwkDocumentOwnedView {
+    fn from(inner: ::buffa::OwnedView<PublicJwkDocumentView<'static>>) -> Self {
+        PublicJwkDocumentOwnedView(inner)
+    }
+}
+impl ::core::convert::From<PublicJwkDocumentOwnedView>
+for ::buffa::OwnedView<PublicJwkDocumentView<'static>> {
+    fn from(wrapper: PublicJwkDocumentOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<PublicJwkDocumentView<'static>>>
+for PublicJwkDocumentOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<PublicJwkDocumentView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::PublicJwkDocument {
+    type View<'a> = PublicJwkDocumentView<'a>;
+    type ViewHandle = PublicJwkDocumentOwnedView;
+}
+impl ::serde::Serialize for PublicJwkDocumentOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
 /// CryptoAlgorithmIdentifier is a oneof wrapper for protocol messages that need
 /// to carry a typed algorithm choice without using free-form strings.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct CryptoAlgorithmIdentifierView<'a> {
     pub algorithm: ::core::option::Option<
         super::super::__buffa::view::oneof::crypto_algorithm_identifier::Algorithm<'a>,
     >,
     pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoAlgorithmIdentifierView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoAlgorithmIdentifierView(<redacted>)")
+    }
 }
 impl<'a> ::buffa::MessageView<'a> for CryptoAlgorithmIdentifierView<'a> {
     type Owned = super::super::CryptoAlgorithmIdentifier;
@@ -10027,79 +14920,17 @@ impl<'a> ::buffa::ViewEncode<'a> for CryptoAlgorithmIdentifierView<'a> {
         self.__buffa_unknown_fields.write_to(buf);
     }
 }
-/// Serializes this view as protobuf JSON.
-///
-/// Implicit-presence fields with default values are omitted, `required`
-/// fields are always emitted, explicit-presence (`optional`) fields are
-/// emitted only when set, bytes fields are base64-encoded, and enum
-/// values are their proto name strings.
-///
-/// This impl uses `serialize_map(None)` because the number of emitted
-/// fields depends on default-omission rules; serializers that require
-/// known map lengths (e.g. `bincode`) will return a runtime error.
-/// Use the owned message type for those formats.
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
 impl<'__a> ::serde::Serialize for CryptoAlgorithmIdentifierView<'__a> {
     fn serialize<__S: ::serde::Serializer>(
         &self,
-        __s: __S,
+        _serializer: __S,
     ) -> ::core::result::Result<__S::Ok, __S::Error> {
-        use ::serde::ser::SerializeMap as _;
-        let mut __map = __s.serialize_map(::core::option::Option::None)?;
-        if let ::core::option::Option::Some(ref __ov) = self.algorithm {
-            match __ov {
-                super::super::__buffa::view::oneof::crypto_algorithm_identifier::Algorithm::Signature(
-                    v,
-                ) => {
-                    __map.serialize_entry("signature", v)?;
-                }
-                super::super::__buffa::view::oneof::crypto_algorithm_identifier::Algorithm::KeyAgreement(
-                    v,
-                ) => {
-                    __map.serialize_entry("keyAgreement", v)?;
-                }
-                super::super::__buffa::view::oneof::crypto_algorithm_identifier::Algorithm::Kem(
-                    v,
-                ) => {
-                    __map.serialize_entry("kem", v)?;
-                }
-                super::super::__buffa::view::oneof::crypto_algorithm_identifier::Algorithm::Aead(
-                    v,
-                ) => {
-                    __map.serialize_entry("aead", v)?;
-                }
-                super::super::__buffa::view::oneof::crypto_algorithm_identifier::Algorithm::Hash(
-                    v,
-                ) => {
-                    __map.serialize_entry("hash", v)?;
-                }
-                super::super::__buffa::view::oneof::crypto_algorithm_identifier::Algorithm::Mac(
-                    v,
-                ) => {
-                    __map.serialize_entry("mac", v)?;
-                }
-                super::super::__buffa::view::oneof::crypto_algorithm_identifier::Algorithm::Kdf(
-                    v,
-                ) => {
-                    __map.serialize_entry("kdf", v)?;
-                }
-                super::super::__buffa::view::oneof::crypto_algorithm_identifier::Algorithm::KeyWrap(
-                    v,
-                ) => {
-                    __map.serialize_entry("keyWrap", v)?;
-                }
-                super::super::__buffa::view::oneof::crypto_algorithm_identifier::Algorithm::MulticodecKey(
-                    v,
-                ) => {
-                    __map.serialize_entry("multicodecKey", v)?;
-                }
-                super::super::__buffa::view::oneof::crypto_algorithm_identifier::Algorithm::HpkeSuite(
-                    v,
-                ) => {
-                    __map.serialize_entry("hpkeSuite", v)?;
-                }
-            }
-        }
-        __map.end()
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
     }
 }
 impl<'a> ::buffa::MessageName for CryptoAlgorithmIdentifierView<'a> {
@@ -10115,10 +14946,14 @@ impl<'a> ::buffa::MessageName for CryptoAlgorithmIdentifierView<'a> {
  Wraps [`::buffa::OwnedView`]`<`[`CryptoAlgorithmIdentifierView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
  Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoAlgorithmIdentifierView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
-#[derive(Clone, Debug)]
 pub struct CryptoAlgorithmIdentifierOwnedView(
     ::buffa::OwnedView<CryptoAlgorithmIdentifierView<'static>>,
 );
+impl ::core::fmt::Debug for CryptoAlgorithmIdentifierOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoAlgorithmIdentifierOwnedView(<redacted>)")
+    }
+}
 impl CryptoAlgorithmIdentifierOwnedView {
     /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
     ///
@@ -10229,9 +15064,11 @@ impl ::buffa::HasMessageView for super::super::CryptoAlgorithmIdentifier {
 impl ::serde::Serialize for CryptoAlgorithmIdentifierOwnedView {
     fn serialize<__S: ::serde::Serializer>(
         &self,
-        __s: __S,
+        _serializer: __S,
     ) -> ::core::result::Result<__S::Ok, __S::Error> {
-        ::serde::Serialize::serialize(&self.0, __s)
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
     }
 }
 /// The request and result envelopes below are protocol-boundary shapes for the
@@ -17834,13 +22671,18 @@ impl ::serde::Serialize for CryptoKeyUnwrapResultOwnedView {
         ))
     }
 }
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct CryptoSignatureGenerateKeyPairRequestView<'a> {
     /// Field 1: `algorithm`
     pub algorithm: ::buffa::MessageFieldView<
         super::super::__buffa::view::CryptoAlgorithmIdentifierView<'a>,
     >,
     pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoSignatureGenerateKeyPairRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoSignatureGenerateKeyPairRequestView(<redacted>)")
+    }
 }
 impl<'a> ::buffa::MessageView<'a> for CryptoSignatureGenerateKeyPairRequestView<'a> {
     type Owned = super::super::CryptoSignatureGenerateKeyPairRequest;
@@ -17971,30 +22813,17 @@ impl<'a> ::buffa::ViewEncode<'a> for CryptoSignatureGenerateKeyPairRequestView<'
         self.__buffa_unknown_fields.write_to(buf);
     }
 }
-/// Serializes this view as protobuf JSON.
-///
-/// Implicit-presence fields with default values are omitted, `required`
-/// fields are always emitted, explicit-presence (`optional`) fields are
-/// emitted only when set, bytes fields are base64-encoded, and enum
-/// values are their proto name strings.
-///
-/// This impl uses `serialize_map(None)` because the number of emitted
-/// fields depends on default-omission rules; serializers that require
-/// known map lengths (e.g. `bincode`) will return a runtime error.
-/// Use the owned message type for those formats.
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
 impl<'__a> ::serde::Serialize for CryptoSignatureGenerateKeyPairRequestView<'__a> {
     fn serialize<__S: ::serde::Serializer>(
         &self,
-        __s: __S,
+        _serializer: __S,
     ) -> ::core::result::Result<__S::Ok, __S::Error> {
-        use ::serde::ser::SerializeMap as _;
-        let mut __map = __s.serialize_map(::core::option::Option::None)?;
-        {
-            if let ::core::option::Option::Some(__v) = self.algorithm.as_option() {
-                __map.serialize_entry("algorithm", __v)?;
-            }
-        }
-        __map.end()
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
     }
 }
 impl<'a> ::buffa::MessageName for CryptoSignatureGenerateKeyPairRequestView<'a> {
@@ -18010,10 +22839,14 @@ impl<'a> ::buffa::MessageName for CryptoSignatureGenerateKeyPairRequestView<'a> 
  Wraps [`::buffa::OwnedView`]`<`[`CryptoSignatureGenerateKeyPairRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
  Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoSignatureGenerateKeyPairRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
-#[derive(Clone, Debug)]
 pub struct CryptoSignatureGenerateKeyPairRequestOwnedView(
     ::buffa::OwnedView<CryptoSignatureGenerateKeyPairRequestView<'static>>,
 );
+impl ::core::fmt::Debug for CryptoSignatureGenerateKeyPairRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoSignatureGenerateKeyPairRequestOwnedView(<redacted>)")
+    }
+}
 impl CryptoSignatureGenerateKeyPairRequestOwnedView {
     /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
     ///
@@ -18136,9 +22969,11 @@ impl ::buffa::HasMessageView for super::super::CryptoSignatureGenerateKeyPairReq
 impl ::serde::Serialize for CryptoSignatureGenerateKeyPairRequestOwnedView {
     fn serialize<__S: ::serde::Serializer>(
         &self,
-        __s: __S,
+        _serializer: __S,
     ) -> ::core::result::Result<__S::Ok, __S::Error> {
-        ::serde::Serialize::serialize(&self.0, __s)
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
     }
 }
 #[derive(Clone, Default)]
@@ -21200,13 +26035,18 @@ impl ::serde::Serialize for CryptoKeyAgreementDeriveKeyPairRequestOwnedView {
         ))
     }
 }
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct CryptoKemGenerateKeyPairRequestView<'a> {
     /// Field 1: `algorithm`
     pub algorithm: ::buffa::MessageFieldView<
         super::super::__buffa::view::CryptoAlgorithmIdentifierView<'a>,
     >,
     pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoKemGenerateKeyPairRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoKemGenerateKeyPairRequestView(<redacted>)")
+    }
 }
 impl<'a> ::buffa::MessageView<'a> for CryptoKemGenerateKeyPairRequestView<'a> {
     type Owned = super::super::CryptoKemGenerateKeyPairRequest;
@@ -21337,30 +26177,17 @@ impl<'a> ::buffa::ViewEncode<'a> for CryptoKemGenerateKeyPairRequestView<'a> {
         self.__buffa_unknown_fields.write_to(buf);
     }
 }
-/// Serializes this view as protobuf JSON.
-///
-/// Implicit-presence fields with default values are omitted, `required`
-/// fields are always emitted, explicit-presence (`optional`) fields are
-/// emitted only when set, bytes fields are base64-encoded, and enum
-/// values are their proto name strings.
-///
-/// This impl uses `serialize_map(None)` because the number of emitted
-/// fields depends on default-omission rules; serializers that require
-/// known map lengths (e.g. `bincode`) will return a runtime error.
-/// Use the owned message type for those formats.
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
 impl<'__a> ::serde::Serialize for CryptoKemGenerateKeyPairRequestView<'__a> {
     fn serialize<__S: ::serde::Serializer>(
         &self,
-        __s: __S,
+        _serializer: __S,
     ) -> ::core::result::Result<__S::Ok, __S::Error> {
-        use ::serde::ser::SerializeMap as _;
-        let mut __map = __s.serialize_map(::core::option::Option::None)?;
-        {
-            if let ::core::option::Option::Some(__v) = self.algorithm.as_option() {
-                __map.serialize_entry("algorithm", __v)?;
-            }
-        }
-        __map.end()
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
     }
 }
 impl<'a> ::buffa::MessageName for CryptoKemGenerateKeyPairRequestView<'a> {
@@ -21376,10 +26203,14 @@ impl<'a> ::buffa::MessageName for CryptoKemGenerateKeyPairRequestView<'a> {
  Wraps [`::buffa::OwnedView`]`<`[`CryptoKemGenerateKeyPairRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
  Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoKemGenerateKeyPairRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
-#[derive(Clone, Debug)]
 pub struct CryptoKemGenerateKeyPairRequestOwnedView(
     ::buffa::OwnedView<CryptoKemGenerateKeyPairRequestView<'static>>,
 );
+impl ::core::fmt::Debug for CryptoKemGenerateKeyPairRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoKemGenerateKeyPairRequestOwnedView(<redacted>)")
+    }
+}
 impl CryptoKemGenerateKeyPairRequestOwnedView {
     /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
     ///
@@ -21498,9 +26329,11 @@ impl ::buffa::HasMessageView for super::super::CryptoKemGenerateKeyPairRequest {
 impl ::serde::Serialize for CryptoKemGenerateKeyPairRequestOwnedView {
     fn serialize<__S: ::serde::Serializer>(
         &self,
-        __s: __S,
+        _serializer: __S,
     ) -> ::core::result::Result<__S::Ok, __S::Error> {
-        ::serde::Serialize::serialize(&self.0, __s)
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
     }
 }
 #[derive(Clone, Default)]
@@ -23917,13 +28750,18 @@ impl ::serde::Serialize for CryptoHpkeOpenResultOwnedView {
         ))
     }
 }
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct CryptoHpkeGenerateKeyPairRequestView<'a> {
     /// Field 1: `algorithm`
     pub algorithm: ::buffa::MessageFieldView<
         super::super::__buffa::view::CryptoAlgorithmIdentifierView<'a>,
     >,
     pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoHpkeGenerateKeyPairRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHpkeGenerateKeyPairRequestView(<redacted>)")
+    }
 }
 impl<'a> ::buffa::MessageView<'a> for CryptoHpkeGenerateKeyPairRequestView<'a> {
     type Owned = super::super::CryptoHpkeGenerateKeyPairRequest;
@@ -24054,30 +28892,17 @@ impl<'a> ::buffa::ViewEncode<'a> for CryptoHpkeGenerateKeyPairRequestView<'a> {
         self.__buffa_unknown_fields.write_to(buf);
     }
 }
-/// Serializes this view as protobuf JSON.
-///
-/// Implicit-presence fields with default values are omitted, `required`
-/// fields are always emitted, explicit-presence (`optional`) fields are
-/// emitted only when set, bytes fields are base64-encoded, and enum
-/// values are their proto name strings.
-///
-/// This impl uses `serialize_map(None)` because the number of emitted
-/// fields depends on default-omission rules; serializers that require
-/// known map lengths (e.g. `bincode`) will return a runtime error.
-/// Use the owned message type for those formats.
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
 impl<'__a> ::serde::Serialize for CryptoHpkeGenerateKeyPairRequestView<'__a> {
     fn serialize<__S: ::serde::Serializer>(
         &self,
-        __s: __S,
+        _serializer: __S,
     ) -> ::core::result::Result<__S::Ok, __S::Error> {
-        use ::serde::ser::SerializeMap as _;
-        let mut __map = __s.serialize_map(::core::option::Option::None)?;
-        {
-            if let ::core::option::Option::Some(__v) = self.algorithm.as_option() {
-                __map.serialize_entry("algorithm", __v)?;
-            }
-        }
-        __map.end()
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
     }
 }
 impl<'a> ::buffa::MessageName for CryptoHpkeGenerateKeyPairRequestView<'a> {
@@ -24093,10 +28918,14 @@ impl<'a> ::buffa::MessageName for CryptoHpkeGenerateKeyPairRequestView<'a> {
  Wraps [`::buffa::OwnedView`]`<`[`CryptoHpkeGenerateKeyPairRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
  Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoHpkeGenerateKeyPairRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
-#[derive(Clone, Debug)]
 pub struct CryptoHpkeGenerateKeyPairRequestOwnedView(
     ::buffa::OwnedView<CryptoHpkeGenerateKeyPairRequestView<'static>>,
 );
+impl ::core::fmt::Debug for CryptoHpkeGenerateKeyPairRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoHpkeGenerateKeyPairRequestOwnedView(<redacted>)")
+    }
+}
 impl CryptoHpkeGenerateKeyPairRequestOwnedView {
     /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
     ///
@@ -24215,9 +29044,11 @@ impl ::buffa::HasMessageView for super::super::CryptoHpkeGenerateKeyPairRequest 
 impl ::serde::Serialize for CryptoHpkeGenerateKeyPairRequestOwnedView {
     fn serialize<__S: ::serde::Serializer>(
         &self,
-        __s: __S,
+        _serializer: __S,
     ) -> ::core::result::Result<__S::Ok, __S::Error> {
-        ::serde::Serialize::serialize(&self.0, __s)
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
     }
 }
 #[derive(Clone, Default)]
@@ -34167,7 +38998,7 @@ impl ::serde::Serialize for CryptoPlatformKeyAttestResultOwnedView {
 /// CryptoVerificationResult is for protocol layers that need a stable,
 /// serializable verification status. Ordinary facade calls should continue to
 /// fail closed with typed errors.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct CryptoVerificationResultView<'a> {
     /// Field 1: `algorithm`
     pub algorithm: ::buffa::MessageFieldView<
@@ -34180,6 +39011,11 @@ pub struct CryptoVerificationResultView<'a> {
         super::super::__buffa::view::CryptoErrorView<'a>,
     >,
     pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoVerificationResultView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoVerificationResultView(<redacted>)")
+    }
 }
 impl<'a> ::buffa::MessageView<'a> for CryptoVerificationResultView<'a> {
     type Owned = super::super::CryptoVerificationResult;
@@ -34378,38 +39214,17 @@ impl<'a> ::buffa::ViewEncode<'a> for CryptoVerificationResultView<'a> {
         self.__buffa_unknown_fields.write_to(buf);
     }
 }
-/// Serializes this view as protobuf JSON.
-///
-/// Implicit-presence fields with default values are omitted, `required`
-/// fields are always emitted, explicit-presence (`optional`) fields are
-/// emitted only when set, bytes fields are base64-encoded, and enum
-/// values are their proto name strings.
-///
-/// This impl uses `serialize_map(None)` because the number of emitted
-/// fields depends on default-omission rules; serializers that require
-/// known map lengths (e.g. `bincode`) will return a runtime error.
-/// Use the owned message type for those formats.
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
 impl<'__a> ::serde::Serialize for CryptoVerificationResultView<'__a> {
     fn serialize<__S: ::serde::Serializer>(
         &self,
-        __s: __S,
+        _serializer: __S,
     ) -> ::core::result::Result<__S::Ok, __S::Error> {
-        use ::serde::ser::SerializeMap as _;
-        let mut __map = __s.serialize_map(::core::option::Option::None)?;
-        {
-            if let ::core::option::Option::Some(__v) = self.algorithm.as_option() {
-                __map.serialize_entry("algorithm", __v)?;
-            }
-        }
-        if !::buffa::json_helpers::skip_if::is_default_enum_value(&self.status) {
-            __map.serialize_entry("status", &self.status)?;
-        }
-        {
-            if let ::core::option::Option::Some(__v) = self.error.as_option() {
-                __map.serialize_entry("error", __v)?;
-            }
-        }
-        __map.end()
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
     }
 }
 impl<'a> ::buffa::MessageName for CryptoVerificationResultView<'a> {
@@ -34425,10 +39240,14 @@ impl<'a> ::buffa::MessageName for CryptoVerificationResultView<'a> {
  Wraps [`::buffa::OwnedView`]`<`[`CryptoVerificationResultView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
  Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoVerificationResultView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
-#[derive(Clone, Debug)]
 pub struct CryptoVerificationResultOwnedView(
     ::buffa::OwnedView<CryptoVerificationResultView<'static>>,
 );
+impl ::core::fmt::Debug for CryptoVerificationResultOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoVerificationResultOwnedView(<redacted>)")
+    }
+}
 impl CryptoVerificationResultOwnedView {
     /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
     ///
@@ -34551,15 +39370,17 @@ impl ::buffa::HasMessageView for super::super::CryptoVerificationResult {
 impl ::serde::Serialize for CryptoVerificationResultOwnedView {
     fn serialize<__S: ::serde::Serializer>(
         &self,
-        __s: __S,
+        _serializer: __S,
     ) -> ::core::result::Result<__S::Ok, __S::Error> {
-        ::serde::Serialize::serialize(&self.0, __s)
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
     }
 }
 /// CryptoProviderCapability describes the package/provider posture for one
 /// algorithm in one published lane. Provider names are non-secret identifiers
 /// such as "CryptoKit", "BouncyCastle", or "ReallyMe Rust WASM".
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct CryptoProviderCapabilityView<'a> {
     /// Field 1: `algorithm`
     pub algorithm: ::buffa::MessageFieldView<
@@ -34574,6 +39395,11 @@ pub struct CryptoProviderCapabilityView<'a> {
     /// Field 5: `uses_rust`
     pub uses_rust: bool,
     pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoProviderCapabilityView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoProviderCapabilityView(<redacted>)")
+    }
 }
 impl<'a> ::buffa::MessageView<'a> for CryptoProviderCapabilityView<'a> {
     type Owned = super::super::CryptoProviderCapability;
@@ -34780,42 +39606,17 @@ impl<'a> ::buffa::ViewEncode<'a> for CryptoProviderCapabilityView<'a> {
         self.__buffa_unknown_fields.write_to(buf);
     }
 }
-/// Serializes this view as protobuf JSON.
-///
-/// Implicit-presence fields with default values are omitted, `required`
-/// fields are always emitted, explicit-presence (`optional`) fields are
-/// emitted only when set, bytes fields are base64-encoded, and enum
-/// values are their proto name strings.
-///
-/// This impl uses `serialize_map(None)` because the number of emitted
-/// fields depends on default-omission rules; serializers that require
-/// known map lengths (e.g. `bincode`) will return a runtime error.
-/// Use the owned message type for those formats.
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
 impl<'__a> ::serde::Serialize for CryptoProviderCapabilityView<'__a> {
     fn serialize<__S: ::serde::Serializer>(
         &self,
-        __s: __S,
+        _serializer: __S,
     ) -> ::core::result::Result<__S::Ok, __S::Error> {
-        use ::serde::ser::SerializeMap as _;
-        let mut __map = __s.serialize_map(::core::option::Option::None)?;
-        {
-            if let ::core::option::Option::Some(__v) = self.algorithm.as_option() {
-                __map.serialize_entry("algorithm", __v)?;
-            }
-        }
-        if !::buffa::json_helpers::skip_if::is_default_enum_value(&self.family) {
-            __map.serialize_entry("family", &self.family)?;
-        }
-        if !::buffa::json_helpers::skip_if::is_default_enum_value(&self.status) {
-            __map.serialize_entry("status", &self.status)?;
-        }
-        if !self.provider_names.is_empty() {
-            __map.serialize_entry("providerNames", &*self.provider_names)?;
-        }
-        if self.uses_rust {
-            __map.serialize_entry("usesRust", &self.uses_rust)?;
-        }
-        __map.end()
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
     }
 }
 impl<'a> ::buffa::MessageName for CryptoProviderCapabilityView<'a> {
@@ -34831,10 +39632,14 @@ impl<'a> ::buffa::MessageName for CryptoProviderCapabilityView<'a> {
  Wraps [`::buffa::OwnedView`]`<`[`CryptoProviderCapabilityView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
  Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoProviderCapabilityView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
-#[derive(Clone, Debug)]
 pub struct CryptoProviderCapabilityOwnedView(
     ::buffa::OwnedView<CryptoProviderCapabilityView<'static>>,
 );
+impl ::core::fmt::Debug for CryptoProviderCapabilityOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoProviderCapabilityOwnedView(<redacted>)")
+    }
+}
 impl CryptoProviderCapabilityOwnedView {
     /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
     ///
@@ -34967,12 +39772,14 @@ impl ::buffa::HasMessageView for super::super::CryptoProviderCapability {
 impl ::serde::Serialize for CryptoProviderCapabilityOwnedView {
     fn serialize<__S: ::serde::Serializer>(
         &self,
-        __s: __S,
+        _serializer: __S,
     ) -> ::core::result::Result<__S::Ok, __S::Error> {
-        ::serde::Serialize::serialize(&self.0, __s)
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
     }
 }
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct CryptoProviderCapabilitySetView<'a> {
     /// Field 1: `capabilities`
     pub capabilities: ::buffa::RepeatedView<
@@ -34980,6 +39787,11 @@ pub struct CryptoProviderCapabilitySetView<'a> {
         super::super::__buffa::view::CryptoProviderCapabilityView<'a>,
     >,
     pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoProviderCapabilitySetView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoProviderCapabilitySetView(<redacted>)")
+    }
 }
 impl<'a> ::buffa::MessageView<'a> for CryptoProviderCapabilitySetView<'a> {
     type Owned = super::super::CryptoProviderCapabilitySet;
@@ -35105,28 +39917,17 @@ impl<'a> ::buffa::ViewEncode<'a> for CryptoProviderCapabilitySetView<'a> {
         self.__buffa_unknown_fields.write_to(buf);
     }
 }
-/// Serializes this view as protobuf JSON.
-///
-/// Implicit-presence fields with default values are omitted, `required`
-/// fields are always emitted, explicit-presence (`optional`) fields are
-/// emitted only when set, bytes fields are base64-encoded, and enum
-/// values are their proto name strings.
-///
-/// This impl uses `serialize_map(None)` because the number of emitted
-/// fields depends on default-omission rules; serializers that require
-/// known map lengths (e.g. `bincode`) will return a runtime error.
-/// Use the owned message type for those formats.
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
 impl<'__a> ::serde::Serialize for CryptoProviderCapabilitySetView<'__a> {
     fn serialize<__S: ::serde::Serializer>(
         &self,
-        __s: __S,
+        _serializer: __S,
     ) -> ::core::result::Result<__S::Ok, __S::Error> {
-        use ::serde::ser::SerializeMap as _;
-        let mut __map = __s.serialize_map(::core::option::Option::None)?;
-        if !self.capabilities.is_empty() {
-            __map.serialize_entry("capabilities", &*self.capabilities)?;
-        }
-        __map.end()
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
     }
 }
 impl<'a> ::buffa::MessageName for CryptoProviderCapabilitySetView<'a> {
@@ -35142,10 +39943,14 @@ impl<'a> ::buffa::MessageName for CryptoProviderCapabilitySetView<'a> {
  Wraps [`::buffa::OwnedView`]`<`[`CryptoProviderCapabilitySetView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
  Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoProviderCapabilitySetView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
-#[derive(Clone, Debug)]
 pub struct CryptoProviderCapabilitySetOwnedView(
     ::buffa::OwnedView<CryptoProviderCapabilitySetView<'static>>,
 );
+impl ::core::fmt::Debug for CryptoProviderCapabilitySetOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoProviderCapabilitySetOwnedView(<redacted>)")
+    }
+}
 impl CryptoProviderCapabilitySetOwnedView {
     /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
     ///
@@ -35259,9 +40064,11 @@ impl ::buffa::HasMessageView for super::super::CryptoProviderCapabilitySet {
 impl ::serde::Serialize for CryptoProviderCapabilitySetOwnedView {
     fn serialize<__S: ::serde::Serializer>(
         &self,
-        __s: __S,
+        _serializer: __S,
     ) -> ::core::result::Result<__S::Ok, __S::Error> {
-        ::serde::Serialize::serialize(&self.0, __s)
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
     }
 }
 /// JsonWebKey carries a public JWK document at API/storage boundaries. The JSON

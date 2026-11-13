@@ -20,6 +20,9 @@ pub mod generated;
 #[cfg(feature = "generated")]
 mod merge_sensitive;
 
+#[cfg(feature = "generated")]
+mod deserialize_sensitive;
+
 /// Canonical typed failure for generated identity conversions.
 #[cfg(feature = "generated")]
 pub mod convert;

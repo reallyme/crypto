@@ -18,6 +18,7 @@ name = "envelopes_jwk"
 
 [features]
 default = ["native"]
+proto = ["dep:buffa", "dep:crypto-proto", "dep:zeroize"]
 
 native = [
     "crypto-p256/native",
@@ -30,6 +31,9 @@ wasm = [
 ]
 
 [dependencies]
+buffa = { workspace = true, optional = true }
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../proto", default-features = false, features = ["generated"], optional = true }
+zeroize = { workspace = true, optional = true }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.4.0", path = "../crypto/core", default-features = false }
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true

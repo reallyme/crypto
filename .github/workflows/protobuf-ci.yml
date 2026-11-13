@@ -28,6 +28,8 @@ on:
       - "scripts/generate_contract_constants.mjs"
       - "scripts/generate_contract_constants.test.mjs"
       - "scripts/proto_hardening.test.mjs"
+      - "scripts/proto_scalar_policy.mjs"
+      - "scripts/proto_scalar_policy.test.mjs"
   push:
     branches:
       - main
@@ -51,6 +53,8 @@ on:
       - "scripts/generate_contract_constants.mjs"
       - "scripts/generate_contract_constants.test.mjs"
       - "scripts/proto_hardening.test.mjs"
+      - "scripts/proto_scalar_policy.mjs"
+      - "scripts/proto_scalar_policy.test.mjs"
 
 permissions:
   contents: read

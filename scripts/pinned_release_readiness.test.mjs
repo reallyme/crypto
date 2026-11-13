@@ -17,6 +17,7 @@ import test from "node:test";
 const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
 const runnerPath = "scripts/run_pinned_release_readiness.mjs";
 const pinnedInputs = [
+  { path: "scripts/proto_scalar_policy.mjs", maximumBytes: 524_288 },
   { path: "scripts/check_release_readiness.mjs", maximumBytes: 524_288 },
   { path: "scripts/release-readiness/core.mjs", maximumBytes: 262_144 },
   { path: "scripts/crypto_operation_route_readiness.mjs", maximumBytes: 524_288 },

@@ -29,19 +29,52 @@ const byteFieldNames = new Set();
 const byteBearingMessageNames = [];
 const messageBodies = new Map();
 const sensitiveStringFieldNames = new Set(["authentication_prompt"]);
-const messagePattern = /message\s+(\w+)\s*\{([\s\S]*?)\n\}/gu;
-const oneofCount = [...protoSource.matchAll(/\boneof\s+\w+\s*\{/gu)].length;
-for (const match of protoSource.matchAll(messagePattern)) {
-  const [, messageName, body] = match;
+// Ignore comments and quoted values before following schema ownership edges.
+// Empty one-line messages and nested oneofs must retain their real braces.
+function schemaCode(source) {
+  const masked = [];
+  let state = "code";
+  let quote = "";
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+    const next = source[index + 1];
+    if (state === "line") {
+      masked.push(char === "\n" ? "\n" : " ");
+      if (char === "\n") state = "code";
+    } else if (state === "block") {
+      if (char === "*" && next === "/") {
+        masked.push("  "); index += 1; state = "code";
+      } else masked.push(char === "\n" ? "\n" : " ");
+    } else if (state === "quote") {
+      masked.push(char === "\n" ? "\n" : " ");
+      if (char === "\\" && next !== undefined) {
+        masked.push(next === "\n" ? "\n" : " "); index += 1;
+      } else if (char === quote) state = "code";
+    } else if (char === "/" && next === "/") {
+      masked.push("  "); index += 1; state = "line";
+    } else if (char === "/" && next === "*") {
+      masked.push("  "); index += 1; state = "block";
+    } else if (char === '"' || char === "'") {
+      masked.push(" "); quote = char; state = "quote";
+    } else masked.push(char);
+  }
+  if (state === "block" || state === "quote") fail("unterminated schema literal");
+  return masked.join("");
+}
+const protoCode = schemaCode(protoSource);
+const messagePattern = /\bmessage\s+(\w+)\s*\{/gu;
+const oneofCount = [...protoCode.matchAll(/\boneof\s+\w+\s*\{/gu)].length;
+for (const match of protoCode.matchAll(messagePattern)) {
+  const messageName = match[1];
+  const open = protoCode.indexOf("{", match.index);
+  const close = findMatchingBrace(protoCode, open);
+  const body = protoCode.slice(open + 1, close);
+  if (messageBodies.has(messageName)) fail("ambiguous schema message name");
   messageBodies.set(messageName, body);
   const fields = [...body.matchAll(/\bbytes\s+(\w+)\s*=/gu)];
-  if (fields.length === 0) {
-    continue;
-  }
+  if (fields.length === 0) continue;
   byteBearingMessageNames.push(messageName);
-  for (const field of fields) {
-    byteFieldNames.add(field[1]);
-  }
+  for (const field of fields) byteFieldNames.add(field[1]);
 }
 const messageNames = [...messageBodies.keys()];
 const scalarMetadataMessageNames = new Set([
@@ -57,6 +90,14 @@ const scalarMetadataMessageNames = new Set([
   "CryptoRsaHashIdentifier",
   "CryptoRsaPublicKeyDerEncodingIdentifier",
 ]);
+// Standalone contracts may be introduced independently of executable requests.
+// Register their scalar/empty owners only when present in this schema revision.
+for (const name of ["CryptoRsaPssParams", "CryptoNativeKeyCapabilities",
+  "CryptoEcdsaSignOptions", "CryptoEd448SupportRequest", "CryptoNativeVerificationResult",
+  "CryptoNativeKeyGenerateRequest", "CryptoNativePublicKeyRequest", "HpkeSuiteIdentifier",
+  "CryptoHpkePskReceiverSetupResult", "CryptoHpkeP256BaseCapabilities", "CryptoHpkeComponentCapability"]) {
+  if (messageBodies.has(name)) scalarMetadataMessageNames.add(name);
+}
 const sensitiveMessageNames = new Set([
   ...byteBearingMessageNames,
   ...scalarMetadataMessageNames,
@@ -101,11 +142,11 @@ const unknownFieldDropOwnerNames = new Set([
   // retain caller-owned bytes and must be cleared with the decoded owner.
   ...scalarMetadataMessageNames,
 ]);
-const wrappedUnknownFieldOwnerNames = new Set([
-  "CryptoOperationRequest",
-  "CryptoOperationResponse",
-  "CryptoOperationResult",
-]);
+// Wrappers retain child owners and receive guarded unknown storage instead of
+// a struct Drop, so generated oneof/default field transfers remain legal.
+const wrappedUnknownFieldOwnerNames = new Set(redactedMessageNames.filter(
+  (name) => !unknownFieldDropOwnerNames.has(name),
+));
 
 function fail(message) {
   console.error(`generated crypto proto hardening failed: ${message}`);
@@ -300,16 +341,27 @@ function parseStructFields(body) {
   return fields;
 }
 
+const bytesType = "::buffa::alloc::vec::Vec<u8>";
+const optionalBytesType = `::core::option::Option<${bytesType}>`;
+const compactType = (field) => field.type.replace(/\s+/gu, "").replace(/,>/gu, ">");
+const isRequiredByteField = (field) => compactType(field) === bytesType;
+const isOptionalByteField = (field) => compactType(field) === optionalBytesType;
+const isByteField = (field) => isRequiredByteField(field) || isOptionalByteField(field);
+
 function serdeAttrForWireField(field) {
   const parts = [`rename = "${field.jsonName}"`];
   for (const alias of field.aliases) {
     parts.push(`alias = "${alias}"`);
   }
 
-  if (field.type === "::buffa::alloc::vec::Vec<u8>") {
+  if (isOptionalByteField(field)) {
+    parts.push('deserialize_with = "deserialize_optional_zeroizing_bytes"');
+  } else if (isRequiredByteField(field)) {
     parts.push('deserialize_with = "deserialize_zeroizing_bytes"');
   } else if (field.type.startsWith("::buffa::EnumValue<")) {
     parts.push('with = "::buffa::json_helpers::proto_enum"');
+  } else if (compactType(field) === "::core::option::Option<u32>") {
+    parts.push('with = "::buffa::json_helpers::opt_uint32"');
   } else if (field.type === "u32") {
     parts.push('with = "::buffa::json_helpers::uint32"');
   } else if (isSensitiveStringField(field)) {
@@ -337,7 +389,10 @@ function isSensitiveStringField(field) {
 }
 
 function wireType(field) {
-  if (field.type === "::buffa::alloc::vec::Vec<u8>") {
+  if (isOptionalByteField(field)) {
+    return "::core::option::Option<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>>";
+  }
+  if (isRequiredByteField(field)) {
     return "::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>";
   }
   if (isSensitiveStringField(field)) {
@@ -347,41 +402,118 @@ function wireType(field) {
 }
 
 function assignmentForField(field) {
-  if (field.type === "::buffa::alloc::vec::Vec<u8>" || isSensitiveStringField(field)) {
+  if (isOptionalByteField(field)) {
+    return `            ${field.name}: wire.${field.name}.as_mut().map(|bytes| ::core::mem::take(&mut **bytes)),`;
+  }
+  if (isRequiredByteField(field) || isSensitiveStringField(field)) {
     return `            ${field.name}: ::core::mem::take(&mut *wire.${field.name}),`;
   }
   return `            ${field.name}: wire.${field.name},`;
 }
 
-function deserializeImpl(messageName, fields) {
-  const wireFields = fields
-    .filter((field) => field.name !== "__buffa_unknown_fields")
-    .map(
-      (field) => `${serdeAttrForWireField(field)}
-            ${field.name}: ${wireType(field)},`,
-    )
-    .join("\n");
-  const assignments = fields
-    .filter((field) => field.name !== "__buffa_unknown_fields")
-    .map(assignmentForField)
-    .join("\n");
+function implementationBody(source, marker) {
+  const start = source.indexOf(marker);
+  if (start < 0) fail("missing generated owner implementation");
+  const open = source.indexOf("{", start);
+  return source.slice(open + 1, findMatchingBrace(source, open));
+}
 
-  return `impl<'de> ::serde::Deserialize<'de> for ${messageName} {
-    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        fn deserialize_zeroizing_bytes<'de, D>(
+function hardenOptionalByteSetters(source, field) {
+  const marker = `pub fn with_${field.name}(`;
+  let offset = 0;
+  while (true) {
+    const start = source.indexOf(marker, offset);
+    if (start < 0) return source;
+    const open = source.indexOf("{", start);
+    const close = findMatchingBrace(source, open);
+    const original = source.slice(open + 1, close);
+    const wipe = `::zeroize::Zeroize::zeroize(&mut self.${field.name});`;
+    const compact = original.replace(/\s+/gu, "");
+    const take = `self.${field.name} = Some(::core::mem::take(&mut *value));`;
+    if (compact.includes(take.replace(/\s+/gu, ""))) {
+      if (!compact.includes(wipe.replace(/\s+/gu, "")) ||
+          !compact.includes("::zeroize::Zeroizing::new(value.into())")) fail("incomplete optional byte setter hardening");
+      offset = close + 1;
+      continue;
+    }
+    if (compact !== `self.${field.name}=Some(value.into());self`) fail("unexpected optional byte setter");
+    const replacement = `
+        let mut value = ::zeroize::Zeroizing::new(value.into());
+        ${wipe}
+        ${take}
+        self
+    `;
+    source = source.slice(0, open + 1) + replacement + source.slice(close);
+    offset = open + 1 + replacement.length + 1;
+  }
+}
+
+function validateOptionalByteOwner(source, messageName, fields) {
+  const optional = fields.filter(isOptionalByteField);
+  if (optional.length === 0) return;
+  const compact = (value) => value.replace(/\s+/gu, "").replace(/,\)/gu, ")").replace(/,>/gu, ">");
+  const deserialize = compact(implementationBody(source, `impl<'de> ::serde::Deserialize<'de> for ${messageName} {`));
+  const drop = compact(implementationBody(source, `impl ::core::ops::Drop for ${messageName} {`));
+  const message = compact(implementationBody(source, `impl ::buffa::Message for ${messageName} {`));
+  for (const field of optional) {
+    const wipe = `::zeroize::Zeroize::zeroize(&mutself.${field.name});`;
+    if (!deserialize.includes(`${field.name}:${wireType(field)},`) ||
+        !deserialize.includes(`${field.name}:wire.${field.name}.as_mut().map(|bytes|::core::mem::take(&mut**bytes))`) ||
+        !deserialize.includes("deserialize_optional_zeroizing_bytes") ||
+        !drop.includes(wipe) || !message.includes(wipe) ||
+        !message.includes(`crate::merge_sensitive::merge_bytes(self.${field.name}.get_or_insert_with(::buffa::alloc::vec::Vec::new),buf)?;`)) {
+      fail("incomplete optional byte ownership hardening");
+    }
+  }
+}
+
+function hardenByteDeserializeHelpers(source, messageName) {
+  const marker = `impl<'de> ::serde::Deserialize<'de> for ${messageName} {`;
+  const start = source.indexOf(marker);
+  if (start < 0) fail("missing generated byte deserializer");
+  const open = source.indexOf("{", start);
+  const close = findMatchingBrace(source, open);
+  let body = source.slice(open + 1, close);
+  body = body.replace(
+    /::buffa::json_helpers::bytes::deserialize\(deserializer\)(?:\s*\.map\(::zeroize::Zeroizing::new\))?/gu,
+    "crate::deserialize_sensitive::deserialize_bytes(deserializer)",
+  );
+  body = body.replaceAll(
+    "::buffa::json_helpers::opt_bytes::deserialize(deserializer)",
+    "crate::deserialize_sensitive::deserialize_optional_bytes(deserializer)",
+  );
+  if (/::buffa::json_helpers::(?:opt_)?bytes::deserialize/gu.test(body)) {
+    fail("incomplete protected JSON byte decoding");
+  }
+  return source.slice(0, open + 1) + body + source.slice(close);
+}
+
+function deserializeImpl(messageName, fields) {
+  const declared = fields.filter((field) => field.name !== "__buffa_unknown_fields");
+  const wireFields = declared.map((field) => `${serdeAttrForWireField(field)}
+            ${field.name}: ${wireType(field)},`).join("\n");
+  const assignments = declared.map(assignmentForField).join("\n");
+  const helpers = [];
+  if (declared.some(isRequiredByteField)) helpers.push(`        fn deserialize_zeroizing_bytes<'de, D>(
             deserializer: D,
         ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
         where
             D: ::serde::Deserializer<'de>,
         {
-            ::buffa::json_helpers::bytes::deserialize(deserializer)
-                .map(::zeroize::Zeroizing::new)
+            crate::deserialize_sensitive::deserialize_bytes(deserializer)
         }
-
-        fn deserialize_zeroizing_string<'de, D>(
+`);
+  if (declared.some(isOptionalByteField)) helpers.push(`        fn deserialize_optional_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::core::option::Option<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            // Null remains absent, while an empty string remains Some(empty).
+            crate::deserialize_sensitive::deserialize_optional_bytes(deserializer)
+        }
+`);
+  if (declared.some(isSensitiveStringField)) helpers.push(`        fn deserialize_zeroizing_string<'de, D>(
             deserializer: D,
         ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::string::String>, D::Error>
         where
@@ -390,14 +522,22 @@ function deserializeImpl(messageName, fields) {
             ::buffa::json_helpers::proto_string::deserialize(deserializer)
                 .map(::zeroize::Zeroizing::new)
         }
-
+`);
+  const mutable = declared.some((field) => isByteField(field) || isSensitiveStringField(field));
+  const binding = declared.length === 0 ? "_wire" : mutable ? "mut wire" : "wire";
+  return `impl<'de> ::serde::Deserialize<'de> for ${messageName} {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+${helpers.join("\n")}
         #[derive(Default, ::serde::Deserialize)]
         #[serde(default, deny_unknown_fields)]
         struct Wire {
 ${wireFields}
         }
 
-        let mut wire = Wire::deserialize(deserializer)?;
+        let ${binding} = Wire::deserialize(deserializer)?;
         Ok(Self {
 ${assignments}
             __buffa_unknown_fields: Default::default(),
@@ -411,7 +551,7 @@ function dropImpl(messageName, fields) {
   const zeroizeLines = fields
     .filter(
       (field) =>
-        field.type === "::buffa::alloc::vec::Vec<u8>" ||
+        isByteField(field) ||
         isSensitiveStringField(field),
     )
     .map((field) => `        ::zeroize::Zeroize::zeroize(&mut self.${field.name});`)
@@ -631,6 +771,37 @@ fn __reallyme_reject_secret_json<S: ::serde::Serializer>(
     ))
 }
 `;
+  const guardedUnknownGroupHelper = `
+// Keep partially decoded groups in a clearing owner until the closing tag is
+// validated. Non-group decoding retains the upstream wire and budget logic.
+fn __reallyme_decode_unknown_field(
+    tag: ::buffa::encoding::Tag,
+    buf: &mut impl ::buffa::bytes::Buf,
+    ctx: ::buffa::DecodeContext<'_>,
+) -> ::core::result::Result<::buffa::UnknownField, ::buffa::DecodeError> {
+    if tag.wire_type() != ::buffa::encoding::WireType::StartGroup {
+        return ::buffa::encoding::decode_unknown_field(tag, buf, ctx);
+    }
+    ctx.register_unknown_field()?;
+    let ctx = ctx.descend()?;
+    let number = tag.field_number();
+    let mut nested = __ReallyMeZeroizingUnknownFields::default();
+    loop {
+        let tag = ::buffa::encoding::Tag::decode(buf)?;
+        if tag.wire_type() == ::buffa::encoding::WireType::EndGroup {
+            if tag.field_number() != number {
+                return Err(::buffa::DecodeError::InvalidEndGroup(tag.field_number()));
+            }
+            break;
+        }
+        nested.push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
+    }
+    Ok(::buffa::UnknownField {
+        number,
+        data: ::buffa::UnknownFieldData::Group(::core::mem::take(&mut nested.0)),
+    })
+}
+`;
   if (!source.includes(generatedHeader)) {
     fail(`${rustGeneratedPath} is missing the generated header`);
   }
@@ -646,6 +817,13 @@ fn __reallyme_reject_secret_json<S: ::serde::Serializer>(
       `${generatedHeader}${rejectSecretJsonHelper}`,
     );
   }
+  if (!source.includes("fn __reallyme_decode_unknown_field(")) {
+    source = source.replace(generatedHeader, `${generatedHeader}${guardedUnknownGroupHelper}`);
+  }
+  source = source.replaceAll(
+    "::buffa::encoding::decode_unknown_field(tag, buf, ctx)?",
+    "__reallyme_decode_unknown_field(tag, buf, ctx)?",
+  );
   for (const messageName of byteBearingMessageNames) {
     const structMarker = `pub struct ${messageName} {`;
     const structStart = source.indexOf(structMarker);
@@ -658,7 +836,7 @@ fn __reallyme_reject_secret_json<S: ::serde::Serializer>(
     const fields = parseStructFields(body);
     const sensitiveFields = fields.filter(
       (field) =>
-        field.type === "::buffa::alloc::vec::Vec<u8>" ||
+        isByteField(field) ||
         isSensitiveStringField(field),
     );
 
@@ -721,6 +899,22 @@ fn __reallyme_reject_secret_json<S: ::serde::Serializer>(
         `::buffa::types::${mergeFunction}(&mut self.${field.name}, buf)?;`,
         `crate::merge_sensitive::${mergeFunction}(&mut self.${field.name}, buf)?;`,
       );
+      if (isOptionalByteField(field)) {
+        // Clear and setters can discard an initialized optional allocation.
+        // Zeroize its owner before the generated None/Some replacement.
+        for (const absent of ["::core::option::Option::None", "None"]) {
+          source = source.replaceAll(
+            `        self.${field.name} = ${absent};`,
+            `        ::zeroize::Zeroize::zeroize(&mut self.${field.name});`,
+          );
+        }
+        const optionalMerge = new RegExp(
+          `::buffa::types::merge_bytes(?=\\(\\s*self\\.${field.name}\\.get_or_insert_with\\(::buffa::alloc::vec::Vec::new\\))`,
+          "gu",
+        );
+        source = source.replace(optionalMerge, "crate::merge_sensitive::merge_bytes");
+        source = hardenOptionalByteSetters(source, field);
+      }
     }
 
     const implMarker = `impl ${messageName} {`;
@@ -732,6 +926,8 @@ fn __reallyme_reject_secret_json<S: ::serde::Serializer>(
       const inserted = `${dropImpl(messageName, fields)}${deserializeImpl(messageName, fields)}`;
       source = `${source.slice(0, implIndex)}${inserted}${source.slice(implIndex)}`;
     }
+    source = hardenByteDeserializeHelpers(source, messageName);
+    validateOptionalByteOwner(source, messageName, fields);
   }
 
   const keyPairMarker = "pub struct CryptoKeyPair {";
@@ -813,6 +1009,17 @@ fn __reallyme_reject_secret_json<S: ::serde::Serializer>(
   }
   for (const messageName of wrappedUnknownFieldOwnerNames) {
     source = hardenUnknownFieldStorage(source, messageName);
+  }
+  // Every marked owner clears its own fields or delegates to guarded child
+  // owners and guarded unknown storage. The marker never adds Clone to native
+  // private-key owners; generated transport DTO copies retain their own wipes.
+  for (const messageName of redactedMessageNames) {
+    const cleanupMarker = `impl ::zeroize::ZeroizeOnDrop for ${messageName} {}`;
+    if (!source.includes(cleanupMarker)) {
+      source = source.replace(
+        `impl ${messageName} {`, `${cleanupMarker}\nimpl ${messageName} {`,
+      );
+    }
   }
   source = hardenExistingSensitiveStringDeserialize(
     source,
@@ -970,7 +1177,7 @@ const swiftPath = join(
   "gen/swift/reallyme/crypto/v1/crypto.pb.swift",
 );
 // Normalize the generated package uniformly so new schema files do not need
-// a second list of SDK filenames just to keep regeneration stable.
+// a second list of Java/Kotlin filenames just to keep regeneration stable.
 const normalizedGeneratedPaths = [
   ["gen/java/me/really/crypto/v1", ".java"],
   ["gen/kotlin/me/really/crypto/v1", ".kt"],

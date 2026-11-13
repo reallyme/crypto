@@ -12,6 +12,9 @@ mod convert_proto_identity;
 mod derive;
 mod material;
 mod profile;
+/// Protected protobuf options and request adapters.
+#[cfg(feature = "proto")]
+pub mod proto_options;
 
 pub use constants::{
     ARGON2ID_DERIVED_KEY_LENGTH, ARGON2ID_SALT_MAX_LENGTH, ARGON2ID_SALT_MIN_LENGTH,

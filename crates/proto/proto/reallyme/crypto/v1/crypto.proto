@@ -6,6 +6,7 @@ syntax = "proto3";
 
 package reallyme.crypto.v1;
 
+import "reallyme/crypto/v1/native_options.proto";
 import "reallyme/crypto/v1/policy.proto";
 
 option java_multiple_files = true;
@@ -615,6 +616,125 @@ message CryptoRsaHashIdentifier {
 // key wrapper identity. DER byte parsing remains the primitive's responsibility.
 message CryptoRsaPublicKeyDerEncodingIdentifier {
   RsaPublicKeyDerEncoding encoding = 1;
+}
+
+// Independent RSA-PSS verification parameters. SHA-1 remains restricted to
+// historical verification callers; these options do not select a new route.
+// Absent salt_length is invalid; an explicitly present zero is a valid value.
+message CryptoRsaPssParams {
+  RsaHashAlgorithm message_hash = 1;
+  RsaHashAlgorithm mgf1_hash = 2;
+  optional uint32 salt_length = 3;
+}
+
+// Fixed-profile native Argon2 request inputs. Profile selection cannot inject
+// arbitrary cost parameters or override the platform validation bounds.
+message CryptoArgon2FixedDeriveRequest {
+  CryptoArgon2idProfileIdentifier profile = 1;
+  bytes secret = 2;
+  bytes salt = 3;
+}
+
+// Existing domain-tag bytes are validated verbatim, without normalization.
+message CryptoHkdfDomainTag {
+  bytes value = 1;
+}
+
+// The native extract-and-expand request preserves absent versus empty salt.
+// Output length remains the caller's native const-generic parameter.
+message CryptoHkdfDeriveInputs {
+  CryptoHkdfSuiteIdentifier suite = 1;
+  bytes input_key_material = 2;
+  optional bytes salt = 3;
+  bytes info = 4;
+}
+
+message CryptoHkdfExtractSha384Request {
+  bytes input_key_material = 1;
+  optional bytes salt = 2;
+}
+
+message CryptoHkdfExtractSha384Result {
+  bytes pseudorandom_key = 1;
+}
+
+message CryptoHkdfExpandSha384Request {
+  bytes pseudorandom_key = 1;
+  bytes info = 2;
+  uint32 output_length = 3;
+}
+
+// Fixed SHA3-256 HKDF, 32-byte output, existing versioned domain-info prefix.
+// Purpose and tag select context only; neither changes the hash or output size.
+message CryptoHkdfDomainKey32Request {
+  bytes input_key_material = 1;
+  optional bytes salt = 2;
+  HkdfDomainKeyPurpose purpose = 3;
+  CryptoHkdfDomainTag domain_tag = 4;
+}
+
+// Native public-JWK serialization flags. KID is exact UTF-8 encoded in a
+// clearing byte owner; absence and present-empty are distinct values.
+message CryptoJwkOptions {
+  bool alg = 1;
+  bool use_sig = 2;
+  bool use_enc = 3;
+  optional bytes kid = 4;
+}
+
+// Existing canonical key identities determine kty/crv. Optional alg/use members
+// retain their exact UTF-8 bytes and must match existing native validation.
+// Coordinate members retain their exact validated base64url UTF-8 bytes.
+message PublicEcJwk {
+  KeyAlgorithm key_algorithm = 1;
+  bytes x_base64url = 2;
+  bytes y_base64url = 3;
+  reserved 4, 5;
+  reserved "alg_present", "use_present";
+  optional bytes kid = 6;
+  optional bytes alg = 7;
+  optional bytes usage = 8;
+}
+
+message PublicOkpJwk {
+  KeyAlgorithm key_algorithm = 1;
+  bytes x_base64url = 2;
+  reserved 3, 4;
+  reserved "alg_present", "use_present";
+  optional bytes kid = 5;
+  optional bytes alg = 6;
+  optional bytes usage = 7;
+}
+
+// AKP alg is mandatory and determined by the existing key identity.
+message PublicAkpJwk {
+  KeyAlgorithm key_algorithm = 1;
+  bytes public_key_base64url = 2;
+  reserved 3;
+  reserved "use_present";
+  optional bytes kid = 4;
+  optional bytes usage = 5;
+}
+
+message PublicJwk {
+  oneof key {
+    PublicEcJwk ec = 1;
+    PublicOkpJwk okp = 2;
+    PublicAkpJwk akp = 3;
+  }
+}
+
+message PublicJwks {
+  repeated PublicJwk keys = 1;
+}
+
+// Standalone reachability for the established canonical JSON document and the
+// typed public variant. This does not add an executable transport operation.
+message PublicJwkDocument {
+  oneof representation {
+    JsonWebKey canonical = 1;
+    PublicJwk typed = 2;
+  }
 }
 
 // CryptoAlgorithmIdentifier is a oneof wrapper for protocol messages that need

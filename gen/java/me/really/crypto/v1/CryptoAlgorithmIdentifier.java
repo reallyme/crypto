@@ -19,6 +19,12 @@ public  final class CryptoAlgorithmIdentifier extends
         CryptoAlgorithmIdentifier, CryptoAlgorithmIdentifier.Builder> implements
     // @@protoc_insertion_point(message_implements:reallyme.crypto.v1.CryptoAlgorithmIdentifier)
     CryptoAlgorithmIdentifierOrBuilder {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  @java.lang.Override
+  public java.lang.String toString() {
+    return "CryptoAlgorithmIdentifier{<redacted>}";
+  }
+
   private CryptoAlgorithmIdentifier() {
   }
   private int algorithmCase_ = 0;

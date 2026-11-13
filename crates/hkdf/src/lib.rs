@@ -17,6 +17,9 @@ mod convert_proto_identity;
 mod derive;
 mod material;
 mod policy;
+/// Protected protobuf options and request adapters.
+#[cfg(feature = "proto")]
+pub mod proto_options;
 mod sha384;
 
 pub use derive::{derive, derive_domain_key_32, DeriveRequest};
