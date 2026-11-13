@@ -1809,7 +1809,9 @@ dependencies = [
 name = "reallyme-crypto-concat-kdf"
 version = "0.4.0"
 dependencies = [
+ "buffa",
  "reallyme-crypto-core",
+ "reallyme-crypto-proto",
  "sha2",
  "zeroize",
 ]

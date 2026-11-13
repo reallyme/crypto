@@ -2825,6 +2825,170 @@ public nonisolated struct ReallyMeProtoCryptoArgon2FixedDeriveRequest: Sendable 
   fileprivate var _profile: ReallyMeProtoCryptoArgon2idProfileIdentifier? = nil
 }
 
+/// Query the existing fixed profile against the platform's immutable bounds.
+/// This request neither selects an execution provider nor starts a derivation.
+public nonisolated struct ReallyMeProtoCryptoArgon2PlatformResolveRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoArgon2PlatformResolveRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var profile: ReallyMeProtoCryptoArgon2idProfileIdentifier {
+    get {_profile ?? ReallyMeProtoCryptoArgon2idProfileIdentifier()}
+    set {_profile = newValue}
+  }
+  /// Returns true if `profile` has been explicitly set.
+  public var hasProfile: Bool {self._profile != nil}
+  /// Clears the value of `profile`. Subsequent reads from it will return its default value.
+  public mutating func clearProfile() {self._profile = nil}
+
+  public var platform: ReallyMeProtoArgon2PlatformClass = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _profile: ReallyMeProtoCryptoArgon2idProfileIdentifier? = nil
+}
+
+/// Query whether a fixed profile fits a caller's current resource budget.
+/// Every budget field must be present; explicit zero is a valid budget that
+/// cannot admit a profile. Arbitrary uint32 budgets preserve the native query
+/// domain. Budgets never override costs, platform policy, or provider authority.
+public nonisolated struct ReallyMeProtoCryptoArgon2BudgetFitRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoArgon2BudgetFitRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var profile: ReallyMeProtoCryptoArgon2idProfileIdentifier {
+    get {_profile ?? ReallyMeProtoCryptoArgon2idProfileIdentifier()}
+    set {_profile = newValue}
+  }
+  /// Returns true if `profile` has been explicitly set.
+  public var hasProfile: Bool {self._profile != nil}
+  /// Clears the value of `profile`. Subsequent reads from it will return its default value.
+  public mutating func clearProfile() {self._profile = nil}
+
+  public var memoryLimitKib: UInt32 {
+    get {_memoryLimitKib ?? 0}
+    set {_memoryLimitKib = newValue}
+  }
+  /// Returns true if `memoryLimitKib` has been explicitly set.
+  public var hasMemoryLimitKib: Bool {self._memoryLimitKib != nil}
+  /// Clears the value of `memoryLimitKib`. Subsequent reads from it will return its default value.
+  public mutating func clearMemoryLimitKib() {self._memoryLimitKib = nil}
+
+  public var timeCostLimit: UInt32 {
+    get {_timeCostLimit ?? 0}
+    set {_timeCostLimit = newValue}
+  }
+  /// Returns true if `timeCostLimit` has been explicitly set.
+  public var hasTimeCostLimit: Bool {self._timeCostLimit != nil}
+  /// Clears the value of `timeCostLimit`. Subsequent reads from it will return its default value.
+  public mutating func clearTimeCostLimit() {self._timeCostLimit = nil}
+
+  public var lanesLimit: UInt32 {
+    get {_lanesLimit ?? 0}
+    set {_lanesLimit = newValue}
+  }
+  /// Returns true if `lanesLimit` has been explicitly set.
+  public var hasLanesLimit: Bool {self._lanesLimit != nil}
+  /// Clears the value of `lanesLimit`. Subsequent reads from it will return its default value.
+  public mutating func clearLanesLimit() {self._lanesLimit = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _profile: ReallyMeProtoCryptoArgon2idProfileIdentifier? = nil
+  fileprivate var _memoryLimitKib: UInt32? = nil
+  fileprivate var _timeCostLimit: UInt32? = nil
+  fileprivate var _lanesLimit: UInt32? = nil
+}
+
+/// Select the existing strongest fixed profile admitted for modern mobile
+/// unlock. The result is CryptoArgon2idProfileIdentifier, not derived key bytes.
+public nonisolated struct ReallyMeProtoCryptoArgon2MobileUnlockRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoArgon2MobileUnlockRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Read-only query of the policy already bound by a native semantic operation.
+/// Caller-supplied policy records cannot alter that enforcement decision.
+public nonisolated struct ReallyMeProtoCryptoMaterialPolicyQueryRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoMaterialPolicyQueryRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var operation: ReallyMeProtoSecretMaterialOperation = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Read-only query of the existing purpose-specific random-fill ownership policy.
+/// The result is OperationSecretMaterialPolicy; this does not select an RNG.
+public nonisolated struct ReallyMeProtoCryptoRandomFillPolicyQueryRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoRandomFillPolicyQueryRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var purpose: ReallyMeProtoRngOutputKind = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Direct standards-level PBKDF2 leaf input, including fixed interoperability
+/// vectors below the modern public-facade floor. This standalone contract never
+/// weakens CryptoKdfDeriveKeyRequest or changes any root execution route.
+public nonisolated struct ReallyMeProtoCryptoPbkdf2StandardsDeriveRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoPbkdf2StandardsDeriveRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var prf: ReallyMeProtoCryptoPbkdf2PrfIdentifier {
+    get {_prf ?? ReallyMeProtoCryptoPbkdf2PrfIdentifier()}
+    set {_prf = newValue}
+  }
+  /// Returns true if `prf` has been explicitly set.
+  public var hasPrf: Bool {self._prf != nil}
+  /// Clears the value of `prf`. Subsequent reads from it will return its default value.
+  public mutating func clearPrf() {self._prf = nil}
+
+  public var password: Data = Data()
+
+  public var salt: Data = Data()
+
+  public var iterations: UInt32 = 0
+
+  public var outputLength: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _prf: ReallyMeProtoCryptoPbkdf2PrfIdentifier? = nil
+}
+
 /// Existing domain-tag bytes are validated verbatim, without normalization.
 public nonisolated struct ReallyMeProtoCryptoHkdfDomainTag: Sendable {
   // Security post-processing: protobuf bytes can contain secrets or PII.
@@ -9395,6 +9559,227 @@ nonisolated extension ReallyMeProtoCryptoArgon2FixedDeriveRequest: SwiftProtobuf
     if lhs._profile != rhs._profile {return false}
     if lhs.secret != rhs.secret {return false}
     if lhs.salt != rhs.salt {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoArgon2PlatformResolveRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoArgon2PlatformResolveRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}profile\0\u{1}platform\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._profile) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.platform) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._profile {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    if self.platform != .unspecified {
+      try visitor.visitSingularEnumField(value: self.platform, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoArgon2PlatformResolveRequest, rhs: ReallyMeProtoCryptoArgon2PlatformResolveRequest) -> Bool {
+    if lhs._profile != rhs._profile {return false}
+    if lhs.platform != rhs.platform {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoArgon2BudgetFitRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoArgon2BudgetFitRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}profile\0\u{3}memory_limit_kib\0\u{3}time_cost_limit\0\u{3}lanes_limit\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._profile) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self._memoryLimitKib) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self._timeCostLimit) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self._lanesLimit) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._profile {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._memoryLimitKib {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._timeCostLimit {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._lanesLimit {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 4)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoArgon2BudgetFitRequest, rhs: ReallyMeProtoCryptoArgon2BudgetFitRequest) -> Bool {
+    if lhs._profile != rhs._profile {return false}
+    if lhs._memoryLimitKib != rhs._memoryLimitKib {return false}
+    if lhs._timeCostLimit != rhs._timeCostLimit {return false}
+    if lhs._lanesLimit != rhs._lanesLimit {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoArgon2MobileUnlockRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoArgon2MobileUnlockRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoArgon2MobileUnlockRequest, rhs: ReallyMeProtoCryptoArgon2MobileUnlockRequest) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoMaterialPolicyQueryRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoMaterialPolicyQueryRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}operation\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.operation) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.operation != .unspecified {
+      try visitor.visitSingularEnumField(value: self.operation, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoMaterialPolicyQueryRequest, rhs: ReallyMeProtoCryptoMaterialPolicyQueryRequest) -> Bool {
+    if lhs.operation != rhs.operation {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoRandomFillPolicyQueryRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoRandomFillPolicyQueryRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}purpose\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.purpose) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.purpose != .unspecified {
+      try visitor.visitSingularEnumField(value: self.purpose, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoRandomFillPolicyQueryRequest, rhs: ReallyMeProtoCryptoRandomFillPolicyQueryRequest) -> Bool {
+    if lhs.purpose != rhs.purpose {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoPbkdf2StandardsDeriveRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoPbkdf2StandardsDeriveRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}prf\0\u{1}password\0\u{1}salt\0\u{1}iterations\0\u{3}output_length\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._prf) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.password) }()
+      case 3: try { try decoder.decodeSingularBytesField(value: &self.salt) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.iterations) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.outputLength) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._prf {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    if !self.password.isEmpty {
+      try visitor.visitSingularBytesField(value: self.password, fieldNumber: 2)
+    }
+    if !self.salt.isEmpty {
+      try visitor.visitSingularBytesField(value: self.salt, fieldNumber: 3)
+    }
+    if self.iterations != 0 {
+      try visitor.visitSingularUInt32Field(value: self.iterations, fieldNumber: 4)
+    }
+    if self.outputLength != 0 {
+      try visitor.visitSingularUInt32Field(value: self.outputLength, fieldNumber: 5)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoPbkdf2StandardsDeriveRequest, rhs: ReallyMeProtoCryptoPbkdf2StandardsDeriveRequest) -> Bool {
+    if lhs._prf != rhs._prf {return false}
+    if lhs.password != rhs.password {return false}
+    if lhs.salt != rhs.salt {return false}
+    if lhs.iterations != rhs.iterations {return false}
+    if lhs.outputLength != rhs.outputLength {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

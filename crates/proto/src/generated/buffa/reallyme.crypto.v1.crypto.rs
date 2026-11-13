@@ -14590,6 +14590,1241 @@ pub const __CRYPTO_ARGON2FIXED_DERIVE_REQUEST_JSON_ANY: ::buffa::type_registry::
     from_json: ::buffa::type_registry::any_from_json::<CryptoArgon2FixedDeriveRequest>,
     is_wkt: false,
 };
+/// Query the existing fixed profile against the platform's immutable bounds.
+/// This request neither selects an execution provider nor starts a derivation.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoArgon2PlatformResolveRequest {
+    /// Field 1: `profile`
+    #[serde(
+        rename = "profile",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub profile: ::buffa::MessageField<
+        CryptoArgon2idProfileIdentifier,
+        ::buffa::Inline<CryptoArgon2idProfileIdentifier>,
+    >,
+    /// Field 2: `platform`
+    #[serde(
+        rename = "platform",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub platform: ::buffa::EnumValue<Argon2PlatformClass>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoArgon2PlatformResolveRequest {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoArgon2PlatformResolveRequest")
+            .field("profile", &self.profile)
+            .field("platform", &self.platform)
+            .finish()
+    }
+}
+impl ::core::ops::Drop for CryptoArgon2PlatformResolveRequest {
+    fn drop(&mut self) {
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoArgon2PlatformResolveRequest {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "profile")]
+            profile: ::buffa::MessageField<
+                CryptoArgon2idProfileIdentifier,
+                ::buffa::Inline<CryptoArgon2idProfileIdentifier>,
+                >,
+            #[serde(rename = "platform", with = "::buffa::json_helpers::proto_enum")]
+            platform: ::buffa::EnumValue<Argon2PlatformClass>,
+        }
+
+        let wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            profile: wire.profile,
+            platform: wire.platform,
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoArgon2PlatformResolveRequest {}
+impl CryptoArgon2PlatformResolveRequest {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoArgon2PlatformResolveRequest";
+}
+::buffa::impl_default_instance!(CryptoArgon2PlatformResolveRequest);
+impl ::buffa::MessageName for CryptoArgon2PlatformResolveRequest {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoArgon2PlatformResolveRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoArgon2PlatformResolveRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoArgon2PlatformResolveRequest";
+}
+impl ::buffa::Message for CryptoArgon2PlatformResolveRequest {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.profile.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.profile.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        {
+            let val = self.platform.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.profile.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.profile.write_to(__cache, buf);
+        }
+        {
+            let val = self.platform.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(2u32, val, buf);
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.profile.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.platform = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.profile = ::buffa::MessageField::none();
+        self.platform = ::buffa::EnumValue::from(0);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoArgon2PlatformResolveRequest {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoArgon2PlatformResolveRequest";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoArgon2PlatformResolveRequest {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_ARGON2PLATFORM_RESOLVE_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoArgon2PlatformResolveRequest",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoArgon2PlatformResolveRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<
+        CryptoArgon2PlatformResolveRequest,
+    >,
+    is_wkt: false,
+};
+/// Query whether a fixed profile fits a caller's current resource budget.
+/// Every budget field must be present; explicit zero is a valid budget that
+/// cannot admit a profile. Arbitrary uint32 budgets preserve the native query
+/// domain. Budgets never override costs, platform policy, or provider authority.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoArgon2BudgetFitRequest {
+    /// Field 1: `profile`
+    #[serde(
+        rename = "profile",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub profile: ::buffa::MessageField<
+        CryptoArgon2idProfileIdentifier,
+        ::buffa::Inline<CryptoArgon2idProfileIdentifier>,
+    >,
+    /// Field 2: `memory_limit_kib`
+    #[serde(
+        rename = "memoryLimitKib",
+        alias = "memory_limit_kib",
+        with = "::buffa::json_helpers::opt_uint32",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub memory_limit_kib: ::core::option::Option<u32>,
+    /// Field 3: `time_cost_limit`
+    #[serde(
+        rename = "timeCostLimit",
+        alias = "time_cost_limit",
+        with = "::buffa::json_helpers::opt_uint32",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub time_cost_limit: ::core::option::Option<u32>,
+    /// Field 4: `lanes_limit`
+    #[serde(
+        rename = "lanesLimit",
+        alias = "lanes_limit",
+        with = "::buffa::json_helpers::opt_uint32",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub lanes_limit: ::core::option::Option<u32>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoArgon2BudgetFitRequest {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoArgon2BudgetFitRequest")
+            .field("profile", &self.profile)
+            .field("memory_limit_kib", &self.memory_limit_kib)
+            .field("time_cost_limit", &self.time_cost_limit)
+            .field("lanes_limit", &self.lanes_limit)
+            .finish()
+    }
+}
+impl ::core::ops::Drop for CryptoArgon2BudgetFitRequest {
+    fn drop(&mut self) {
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoArgon2BudgetFitRequest {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "profile")]
+            profile: ::buffa::MessageField<
+                CryptoArgon2idProfileIdentifier,
+                ::buffa::Inline<CryptoArgon2idProfileIdentifier>,
+                >,
+            #[serde(rename = "memoryLimitKib", alias = "memory_limit_kib", with = "::buffa::json_helpers::opt_uint32")]
+            memory_limit_kib: ::core::option::Option<u32>,
+            #[serde(rename = "timeCostLimit", alias = "time_cost_limit", with = "::buffa::json_helpers::opt_uint32")]
+            time_cost_limit: ::core::option::Option<u32>,
+            #[serde(rename = "lanesLimit", alias = "lanes_limit", with = "::buffa::json_helpers::opt_uint32")]
+            lanes_limit: ::core::option::Option<u32>,
+        }
+
+        let wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            profile: wire.profile,
+            memory_limit_kib: wire.memory_limit_kib,
+            time_cost_limit: wire.time_cost_limit,
+            lanes_limit: wire.lanes_limit,
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoArgon2BudgetFitRequest {}
+impl CryptoArgon2BudgetFitRequest {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoArgon2BudgetFitRequest";
+}
+impl CryptoArgon2BudgetFitRequest {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::memory_limit_kib`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_memory_limit_kib(mut self, value: u32) -> Self {
+        self.memory_limit_kib = Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::time_cost_limit`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_time_cost_limit(mut self, value: u32) -> Self {
+        self.time_cost_limit = Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::lanes_limit`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_lanes_limit(mut self, value: u32) -> Self {
+        self.lanes_limit = Some(value);
+        self
+    }
+}
+::buffa::impl_default_instance!(CryptoArgon2BudgetFitRequest);
+impl ::buffa::MessageName for CryptoArgon2BudgetFitRequest {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoArgon2BudgetFitRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoArgon2BudgetFitRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoArgon2BudgetFitRequest";
+}
+impl ::buffa::Message for CryptoArgon2BudgetFitRequest {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.profile.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.profile.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if let Some(v) = self.memory_limit_kib {
+            size += 1u64 + ::buffa::types::uint32_encoded_len(v) as u64;
+        }
+        if let Some(v) = self.time_cost_limit {
+            size += 1u64 + ::buffa::types::uint32_encoded_len(v) as u64;
+        }
+        if let Some(v) = self.lanes_limit {
+            size += 1u64 + ::buffa::types::uint32_encoded_len(v) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.profile.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.profile.write_to(__cache, buf);
+        }
+        if let Some(v) = self.memory_limit_kib {
+            ::buffa::types::put_uint32_field(2u32, v, buf);
+        }
+        if let Some(v) = self.time_cost_limit {
+            ::buffa::types::put_uint32_field(3u32, v, buf);
+        }
+        if let Some(v) = self.lanes_limit {
+            ::buffa::types::put_uint32_field(4u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.profile.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.memory_limit_kib = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint32(buf)?,
+                );
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.time_cost_limit = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint32(buf)?,
+                );
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.lanes_limit = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint32(buf)?,
+                );
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.profile = ::buffa::MessageField::none();
+        self.memory_limit_kib = ::core::option::Option::None;
+        self.time_cost_limit = ::core::option::Option::None;
+        self.lanes_limit = ::core::option::Option::None;
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoArgon2BudgetFitRequest {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoArgon2BudgetFitRequest";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoArgon2BudgetFitRequest {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_ARGON2BUDGET_FIT_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoArgon2BudgetFitRequest",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoArgon2BudgetFitRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<CryptoArgon2BudgetFitRequest>,
+    is_wkt: false,
+};
+/// Select the existing strongest fixed profile admitted for modern mobile
+/// unlock. The result is CryptoArgon2idProfileIdentifier, not derived key bytes.
+///
+/// This query intentionally accepts no caller-overridable policy.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoArgon2MobileUnlockRequest {
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoArgon2MobileUnlockRequest {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoArgon2MobileUnlockRequest").finish()
+    }
+}
+impl ::core::ops::Drop for CryptoArgon2MobileUnlockRequest {
+    fn drop(&mut self) {
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoArgon2MobileUnlockRequest {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+
+        }
+
+        let _wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoArgon2MobileUnlockRequest {}
+impl CryptoArgon2MobileUnlockRequest {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoArgon2MobileUnlockRequest";
+}
+::buffa::impl_default_instance!(CryptoArgon2MobileUnlockRequest);
+impl ::buffa::MessageName for CryptoArgon2MobileUnlockRequest {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoArgon2MobileUnlockRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoArgon2MobileUnlockRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoArgon2MobileUnlockRequest";
+}
+impl ::buffa::Message for CryptoArgon2MobileUnlockRequest {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoArgon2MobileUnlockRequest {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoArgon2MobileUnlockRequest";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoArgon2MobileUnlockRequest {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_ARGON2MOBILE_UNLOCK_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoArgon2MobileUnlockRequest",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoArgon2MobileUnlockRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<CryptoArgon2MobileUnlockRequest>,
+    is_wkt: false,
+};
+/// Read-only query of the policy already bound by a native semantic operation.
+/// Caller-supplied policy records cannot alter that enforcement decision.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoMaterialPolicyQueryRequest {
+    /// Field 1: `operation`
+    #[serde(
+        rename = "operation",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub operation: ::buffa::EnumValue<SecretMaterialOperation>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoMaterialPolicyQueryRequest {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoMaterialPolicyQueryRequest")
+            .field("operation", &self.operation)
+            .finish()
+    }
+}
+impl ::core::ops::Drop for CryptoMaterialPolicyQueryRequest {
+    fn drop(&mut self) {
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoMaterialPolicyQueryRequest {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "operation", with = "::buffa::json_helpers::proto_enum")]
+            operation: ::buffa::EnumValue<SecretMaterialOperation>,
+        }
+
+        let wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            operation: wire.operation,
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoMaterialPolicyQueryRequest {}
+impl CryptoMaterialPolicyQueryRequest {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoMaterialPolicyQueryRequest";
+}
+::buffa::impl_default_instance!(CryptoMaterialPolicyQueryRequest);
+impl ::buffa::MessageName for CryptoMaterialPolicyQueryRequest {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoMaterialPolicyQueryRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoMaterialPolicyQueryRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoMaterialPolicyQueryRequest";
+}
+impl ::buffa::Message for CryptoMaterialPolicyQueryRequest {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.operation.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.operation.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.operation = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.operation = ::buffa::EnumValue::from(0);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoMaterialPolicyQueryRequest {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoMaterialPolicyQueryRequest";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoMaterialPolicyQueryRequest {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_MATERIAL_POLICY_QUERY_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoMaterialPolicyQueryRequest",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoMaterialPolicyQueryRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<CryptoMaterialPolicyQueryRequest>,
+    is_wkt: false,
+};
+/// Read-only query of the existing purpose-specific random-fill ownership policy.
+/// The result is OperationSecretMaterialPolicy; this does not select an RNG.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoRandomFillPolicyQueryRequest {
+    /// Field 1: `purpose`
+    #[serde(
+        rename = "purpose",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub purpose: ::buffa::EnumValue<RngOutputKind>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoRandomFillPolicyQueryRequest {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoRandomFillPolicyQueryRequest")
+            .field("purpose", &self.purpose)
+            .finish()
+    }
+}
+impl ::core::ops::Drop for CryptoRandomFillPolicyQueryRequest {
+    fn drop(&mut self) {
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoRandomFillPolicyQueryRequest {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "purpose", with = "::buffa::json_helpers::proto_enum")]
+            purpose: ::buffa::EnumValue<RngOutputKind>,
+        }
+
+        let wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            purpose: wire.purpose,
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoRandomFillPolicyQueryRequest {}
+impl CryptoRandomFillPolicyQueryRequest {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoRandomFillPolicyQueryRequest";
+}
+::buffa::impl_default_instance!(CryptoRandomFillPolicyQueryRequest);
+impl ::buffa::MessageName for CryptoRandomFillPolicyQueryRequest {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoRandomFillPolicyQueryRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoRandomFillPolicyQueryRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoRandomFillPolicyQueryRequest";
+}
+impl ::buffa::Message for CryptoRandomFillPolicyQueryRequest {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.purpose.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.purpose.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.purpose = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.purpose = ::buffa::EnumValue::from(0);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoRandomFillPolicyQueryRequest {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoRandomFillPolicyQueryRequest";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoRandomFillPolicyQueryRequest {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_RANDOM_FILL_POLICY_QUERY_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoRandomFillPolicyQueryRequest",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoRandomFillPolicyQueryRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<
+        CryptoRandomFillPolicyQueryRequest,
+    >,
+    is_wkt: false,
+};
+/// Direct standards-level PBKDF2 leaf input, including fixed interoperability
+/// vectors below the modern public-facade floor. This standalone contract never
+/// weakens CryptoKdfDeriveKeyRequest or changes any root execution route.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoPbkdf2StandardsDeriveRequest {
+    /// Field 1: `prf`
+    #[serde(
+        rename = "prf",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub prf: ::buffa::MessageField<
+        CryptoPbkdf2PrfIdentifier,
+        ::buffa::Inline<CryptoPbkdf2PrfIdentifier>,
+    >,
+    /// Field 2: `password`
+    #[serde(
+        rename = "password",
+        with = "::buffa::json_helpers::bytes",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_bytes"
+    )]
+    pub password: ::buffa::alloc::vec::Vec<u8>,
+    /// Field 3: `salt`
+    #[serde(
+        rename = "salt",
+        with = "::buffa::json_helpers::bytes",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_bytes"
+    )]
+    pub salt: ::buffa::alloc::vec::Vec<u8>,
+    /// Field 4: `iterations`
+    #[serde(
+        rename = "iterations",
+        with = "::buffa::json_helpers::uint32",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_zero_u32"
+    )]
+    pub iterations: u32,
+    /// Field 5: `output_length`
+    #[serde(
+        rename = "outputLength",
+        alias = "output_length",
+        with = "::buffa::json_helpers::uint32",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_zero_u32"
+    )]
+    pub output_length: u32,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoPbkdf2StandardsDeriveRequest {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoPbkdf2StandardsDeriveRequest")
+            .field("prf", &self.prf)
+            .field("password", &"<redacted>")
+            .field("salt", &"<redacted>")
+            .field("iterations", &self.iterations)
+            .field("output_length", &self.output_length)
+            .finish()
+    }
+}
+impl ::core::ops::Drop for CryptoPbkdf2StandardsDeriveRequest {
+    fn drop(&mut self) {
+        ::zeroize::Zeroize::zeroize(&mut self.password);
+        ::zeroize::Zeroize::zeroize(&mut self.salt);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoPbkdf2StandardsDeriveRequest {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            crate::deserialize_sensitive::deserialize_bytes(deserializer)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "prf")]
+            prf: ::buffa::MessageField<
+                CryptoPbkdf2PrfIdentifier,
+                ::buffa::Inline<CryptoPbkdf2PrfIdentifier>,
+                >,
+            #[serde(rename = "password", deserialize_with = "deserialize_zeroizing_bytes")]
+            password: ::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>,
+            #[serde(rename = "salt", deserialize_with = "deserialize_zeroizing_bytes")]
+            salt: ::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>,
+            #[serde(rename = "iterations", with = "::buffa::json_helpers::uint32")]
+            iterations: u32,
+            #[serde(rename = "outputLength", alias = "output_length", with = "::buffa::json_helpers::uint32")]
+            output_length: u32,
+        }
+
+        let mut wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            prf: wire.prf,
+            password: ::core::mem::take(&mut *wire.password),
+            salt: ::core::mem::take(&mut *wire.salt),
+            iterations: wire.iterations,
+            output_length: wire.output_length,
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoPbkdf2StandardsDeriveRequest {}
+impl CryptoPbkdf2StandardsDeriveRequest {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPbkdf2StandardsDeriveRequest";
+}
+::buffa::impl_default_instance!(CryptoPbkdf2StandardsDeriveRequest);
+impl ::buffa::MessageName for CryptoPbkdf2StandardsDeriveRequest {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoPbkdf2StandardsDeriveRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoPbkdf2StandardsDeriveRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPbkdf2StandardsDeriveRequest";
+}
+impl ::buffa::Message for CryptoPbkdf2StandardsDeriveRequest {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.prf.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.prf.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if !self.password.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.password) as u64;
+        }
+        if !self.salt.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.salt) as u64;
+        }
+        if self.iterations != 0u32 {
+            size += 1u64 + ::buffa::types::uint32_encoded_len(self.iterations) as u64;
+        }
+        if self.output_length != 0u32 {
+            size += 1u64 + ::buffa::types::uint32_encoded_len(self.output_length) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.prf.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.prf.write_to(__cache, buf);
+        }
+        if !self.password.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.password, buf);
+        }
+        if !self.salt.is_empty() {
+            ::buffa::types::put_shared_bytes_field(3u32, &self.salt, buf);
+        }
+        if self.iterations != 0u32 {
+            ::buffa::types::put_uint32_field(4u32, self.iterations, buf);
+        }
+        if self.output_length != 0u32 {
+            ::buffa::types::put_uint32_field(5u32, self.output_length, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.prf.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                crate::merge_sensitive::merge_bytes(&mut self.password, buf)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                crate::merge_sensitive::merge_bytes(&mut self.salt, buf)?;
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.iterations = ::buffa::types::decode_uint32(buf)?;
+            }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.output_length = ::buffa::types::decode_uint32(buf)?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.prf = ::buffa::MessageField::none();
+        ::zeroize::Zeroize::zeroize(&mut self.password);
+        ::zeroize::Zeroize::zeroize(&mut self.salt);
+        self.iterations = 0u32;
+        self.output_length = 0u32;
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoPbkdf2StandardsDeriveRequest {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoPbkdf2StandardsDeriveRequest";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoPbkdf2StandardsDeriveRequest {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_PBKDF2STANDARDS_DERIVE_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoPbkdf2StandardsDeriveRequest",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoPbkdf2StandardsDeriveRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<
+        CryptoPbkdf2StandardsDeriveRequest,
+    >,
+    is_wkt: false,
+};
 /// Existing domain-tag bytes are validated verbatim, without normalization.
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize)]

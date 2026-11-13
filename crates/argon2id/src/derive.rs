@@ -4,7 +4,7 @@
 
 use argon2::{Algorithm, Argon2, Block, Params, Version};
 use crypto_core::CryptoError;
-use zeroize::{Zeroize, Zeroizing};
+use zeroize::Zeroizing;
 
 use crate::constants::ARGON2ID_DERIVED_KEY_LENGTH;
 use crate::material::{Argon2Salt, Argon2Secret, Argon2idDerivedKey};
@@ -21,8 +21,8 @@ pub struct DeriveKeyRequest<'a> {
 }
 
 /// Derives a 32-byte key with Argon2id using the request's profile, secret, and
-/// salt. Returns an error on invalid parameters or derivation failure. The
-/// intermediate output buffer is zeroized before returning.
+/// salt. Returns an error on invalid parameters or derivation failure. Derived
+/// bytes are written directly into their final clearing owner.
 pub fn derive_key(request: &DeriveKeyRequest<'_>) -> Result<Argon2idDerivedKey, CryptoError> {
     let profile = request.profile;
     let (m_cost, t_cost, p_cost) = profile.params_tuple();
@@ -44,21 +44,19 @@ pub fn derive_key(request: &DeriveKeyRequest<'_>) -> Result<Argon2idDerivedKey, 
     blocks.resize(block_count, Block::default());
     let mut blocks = Zeroizing::new(blocks);
 
-    let mut output = Zeroizing::new(vec![0u8; ARGON2ID_DERIVED_KEY_LENGTH]);
+    // Establish the final clearing owner before the backend writes any derived
+    // bytes. Partial output is cleared if hashing returns an error.
+    let mut output = Argon2idDerivedKey::zeroed();
     argon2
         .hash_password_into_with_memory(
             request.secret.as_bytes(),
             request.salt.as_bytes(),
-            &mut output,
+            output.as_mut_slice(),
             blocks.as_mut_slice(),
         )
         .map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
 
-    let mut bytes = [0u8; ARGON2ID_DERIVED_KEY_LENGTH];
-    bytes.copy_from_slice(&output);
-    output.zeroize();
-
-    Ok(Argon2idDerivedKey::from_array(bytes))
+    Ok(output)
 }
 
 /// Derives a 32-byte key from raw secret and salt bytes, selecting the profile

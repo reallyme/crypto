@@ -352,6 +352,28 @@ protocol vocabulary and the accepted upstream coordinate-temporary gap.
 Format tests use static PEM fixtures, so metadata validation does not broaden
 production dependencies. Regression sources remain unexecuted.
 
+## Leaf queries and parameter domains
+
+Argon2id profile, platform-budget and mobile-unlock queries now have explicit
+schema requests and native adapters. Queries return the existing fixed cost
+tuples and retain the native resource admission rules; they do not grant
+provider authority. Material and random-fill policy queries likewise return
+read-only decisions from the existing native policy.
+
+The standards-level PBKDF2 leaf has its own request covering the native
+iteration domain. The root operation keeps its established modern minimum.
+Concat KDF adapters cover every admitted native output width with checked
+bit-length encoding; root dispatch retains its existing fixed width set.
+AlgorithmID and party bytes remain exact, including embedded zero bytes.
+
+Argon2id writes directly into its final clearing output owner. Concat KDF
+immediately guards each finalized SHA-256 block and copies into its final
+clearing owner. Arbitrary AlgorithmID bytes have redacted debugging and
+independently clearing clones. These ownership repairs are tracked separately
+from protocol identities and the accepted upstream coordinate issue.
+Parity, invalid-domain and ownership regression sources are added; execution
+remains deferred.
+
 ## Remaining work
 
 - Migrate the remaining options, policies, content modes, key-source contracts,

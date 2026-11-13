@@ -66,6 +66,12 @@ pub mod __buffa {
         );
         reg.register_json_any(super::__CRYPTO_RSA_PSS_PARAMS_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_ARGON2FIXED_DERIVE_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_ARGON2PLATFORM_RESOLVE_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_ARGON2BUDGET_FIT_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_ARGON2MOBILE_UNLOCK_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_MATERIAL_POLICY_QUERY_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_RANDOM_FILL_POLICY_QUERY_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_PBKDF2STANDARDS_DERIVE_REQUEST_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_HKDF_DOMAIN_TAG_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_HKDF_DERIVE_INPUTS_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_HKDF_EXTRACT_SHA384REQUEST_JSON_ANY);
@@ -404,6 +410,30 @@ pub use self::__buffa::view::CryptoRsaPssParamsOwnedView;
 pub use self::__buffa::view::CryptoArgon2FixedDeriveRequestView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoArgon2FixedDeriveRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoArgon2PlatformResolveRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoArgon2PlatformResolveRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoArgon2BudgetFitRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoArgon2BudgetFitRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoArgon2MobileUnlockRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoArgon2MobileUnlockRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoMaterialPolicyQueryRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoMaterialPolicyQueryRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRandomFillPolicyQueryRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRandomFillPolicyQueryRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoPbkdf2StandardsDeriveRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoPbkdf2StandardsDeriveRequestOwnedView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoHkdfDomainTagView;
 #[doc(inline)]

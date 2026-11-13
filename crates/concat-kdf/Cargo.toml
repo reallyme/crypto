@@ -17,14 +17,21 @@ repository.workspace = true
 name = "crypto_concat_kdf"
 
 [features]
+# Data-shape adapters do not select an execution provider.
+proto = ["dep:crypto-proto", "dep:buffa"]
 default = []
 native = []
 wasm = []
 
 [dependencies]
+buffa = { workspace = true, optional = true }
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../proto", optional = true, default-features = false, features = ["generated"] }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.4.0", path = "../crypto/core" }
 sha2 = { workspace = true }
 zeroize = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+buffa = { workspace = true }
 
 [lints]
 workspace = true

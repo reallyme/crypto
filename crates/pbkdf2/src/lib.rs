@@ -14,6 +14,9 @@ mod constants;
 mod convert_proto_identity;
 #[cfg(any(feature = "native", feature = "wasm"))]
 mod derive_key;
+/// Protected standalone standards-level leaf inputs, separate from modern facades.
+#[cfg(all(feature = "proto", any(feature = "native", feature = "wasm")))]
+pub mod proto_inputs;
 mod types;
 
 pub use constants::{

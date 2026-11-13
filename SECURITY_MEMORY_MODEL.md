@@ -272,3 +272,14 @@ existing parsing, canonicalization and cryptographic bytes. They do not alter
 the separately tracked upstream prime-field serialization limitation or claim
 control over serializer/compiler-internal copies. Runtime regression execution
 remains deferred.
+
+### Argon2id and Concat KDF leaf outputs
+
+Argon2id initializes its final derived-key owner before backend output begins;
+partial output and the separately guarded memory matrix clear on failure.
+Concat KDF guards every finalized SHA-256 output immediately and copies derived
+bytes directly into its final clearing owner. Its arbitrary-byte AlgorithmID
+owner clears on drop, redacts debugging, and gives every clone independent
+clearing storage. These are source-level ownership guarantees, not claims about
+erasing every compiler or register copy. They do not repair the separately
+accepted upstream prime-field encoding temporary.
