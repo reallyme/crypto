@@ -9,6 +9,8 @@
 #[cfg(feature = "native")]
 mod agreement;
 mod constants;
+#[cfg(all(feature = "proto", feature = "native"))]
+pub mod contract;
 #[cfg(feature = "native")]
 mod keypair;
 #[cfg(feature = "native")]

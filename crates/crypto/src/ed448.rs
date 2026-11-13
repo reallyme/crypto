@@ -13,6 +13,9 @@ mod scalar;
 mod transcript;
 mod verify;
 
+#[cfg(feature = "operation-response")]
+pub mod contract;
+
 use crypto_core::CryptoError;
 pub use key::Ed448Key;
 pub use verify::verify;

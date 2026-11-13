@@ -40673,3 +40673,11825 @@ impl ::serde::Serialize for JsonWebKeySetOwnedView {
         ))
     }
 }
+/// Standalone native primitive contracts below do not extend executable root
+/// operation oneofs. A software key/scalar owner is passed as a typed native
+/// argument and returned by generation/import; no private-key export, serialized
+/// trait object, state registry, or reusable context is introduced here.
+///
+/// Output-only capability/lifecycle facts about the existing native API.
+/// Method support is not an assertion of current key validity or authorization;
+/// each native operation still performs its own validation and provider checks.
+/// An opaque signer owns its cleanup; no unobserved hardware or erasure claim
+/// is inferred from its public key or this descriptor.
+#[derive(Clone, Default)]
+pub struct CryptoNativeKeyCapabilitiesView<'a> {
+    /// Field 1: `source`
+    pub source: ::buffa::EnumValue<super::super::NativeKeySource>,
+    /// Field 2: `supports_signing`
+    pub supports_signing: bool,
+    /// Field 3: `supports_agreement`
+    pub supports_agreement: bool,
+    /// Field 4: `exposes_private_bytes`
+    pub exposes_private_bytes: bool,
+    /// Field 5: `supports_explicit_zeroize`
+    pub supports_explicit_zeroize: bool,
+    /// Field 6: `zeroizes_private_storage_on_drop`
+    pub zeroizes_private_storage_on_drop: bool,
+    /// Field 7: `provider_managed_cleanup`
+    pub provider_managed_cleanup: bool,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoNativeKeyCapabilitiesView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoNativeKeyCapabilitiesView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoNativeKeyCapabilitiesView<'a> {
+    type Owned = super::super::CryptoNativeKeyCapabilities;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.source = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(&mut cur)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.supports_signing = ::buffa::types::decode_bool(&mut cur)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.supports_agreement = ::buffa::types::decode_bool(&mut cur)?;
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.exposes_private_bytes = ::buffa::types::decode_bool(&mut cur)?;
+            }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.supports_explicit_zeroize = ::buffa::types::decode_bool(&mut cur)?;
+            }
+            6u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.zeroizes_private_storage_on_drop = ::buffa::types::decode_bool(
+                    &mut cur,
+                )?;
+            }
+            7u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.provider_managed_cleanup = ::buffa::types::decode_bool(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoNativeKeyCapabilities,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoNativeKeyCapabilities,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoNativeKeyCapabilities {
+            source: self.source,
+            supports_signing: self.supports_signing,
+            supports_agreement: self.supports_agreement,
+            exposes_private_bytes: self.exposes_private_bytes,
+            supports_explicit_zeroize: self.supports_explicit_zeroize,
+            zeroizes_private_storage_on_drop: self.zeroizes_private_storage_on_drop,
+            provider_managed_cleanup: self.provider_managed_cleanup,
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoNativeKeyCapabilitiesView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.source.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        if self.supports_signing {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        if self.supports_agreement {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        if self.exposes_private_bytes {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        if self.supports_explicit_zeroize {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        if self.zeroizes_private_storage_on_drop {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        if self.provider_managed_cleanup {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.source.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        if self.supports_signing {
+            ::buffa::types::put_bool_field(2u32, self.supports_signing, buf);
+        }
+        if self.supports_agreement {
+            ::buffa::types::put_bool_field(3u32, self.supports_agreement, buf);
+        }
+        if self.exposes_private_bytes {
+            ::buffa::types::put_bool_field(4u32, self.exposes_private_bytes, buf);
+        }
+        if self.supports_explicit_zeroize {
+            ::buffa::types::put_bool_field(5u32, self.supports_explicit_zeroize, buf);
+        }
+        if self.zeroizes_private_storage_on_drop {
+            ::buffa::types::put_bool_field(
+                6u32,
+                self.zeroizes_private_storage_on_drop,
+                buf,
+            );
+        }
+        if self.provider_managed_cleanup {
+            ::buffa::types::put_bool_field(7u32, self.provider_managed_cleanup, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoNativeKeyCapabilitiesView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoNativeKeyCapabilitiesView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoNativeKeyCapabilities";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoNativeKeyCapabilities";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoNativeKeyCapabilities";
+}
+::buffa::impl_default_view_instance!(CryptoNativeKeyCapabilitiesView);
+::buffa::impl_view_reborrow!(CryptoNativeKeyCapabilitiesView);
+/** Self-contained, `'static` owned view of a `CryptoNativeKeyCapabilities` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoNativeKeyCapabilitiesView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoNativeKeyCapabilitiesView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoNativeKeyCapabilitiesOwnedView(
+    ::buffa::OwnedView<CryptoNativeKeyCapabilitiesView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoNativeKeyCapabilitiesOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoNativeKeyCapabilitiesOwnedView(<redacted>)")
+    }
+}
+impl CryptoNativeKeyCapabilitiesOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativeKeyCapabilitiesOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativeKeyCapabilitiesOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoNativeKeyCapabilities,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativeKeyCapabilitiesOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoNativeKeyCapabilitiesView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoNativeKeyCapabilitiesView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoNativeKeyCapabilities {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `source`
+    #[must_use]
+    pub fn source(&self) -> ::buffa::EnumValue<super::super::NativeKeySource> {
+        self.0.reborrow().source
+    }
+    /// Field 2: `supports_signing`
+    #[must_use]
+    pub fn supports_signing(&self) -> bool {
+        self.0.reborrow().supports_signing
+    }
+    /// Field 3: `supports_agreement`
+    #[must_use]
+    pub fn supports_agreement(&self) -> bool {
+        self.0.reborrow().supports_agreement
+    }
+    /// Field 4: `exposes_private_bytes`
+    #[must_use]
+    pub fn exposes_private_bytes(&self) -> bool {
+        self.0.reborrow().exposes_private_bytes
+    }
+    /// Field 5: `supports_explicit_zeroize`
+    #[must_use]
+    pub fn supports_explicit_zeroize(&self) -> bool {
+        self.0.reborrow().supports_explicit_zeroize
+    }
+    /// Field 6: `zeroizes_private_storage_on_drop`
+    #[must_use]
+    pub fn zeroizes_private_storage_on_drop(&self) -> bool {
+        self.0.reborrow().zeroizes_private_storage_on_drop
+    }
+    /// Field 7: `provider_managed_cleanup`
+    #[must_use]
+    pub fn provider_managed_cleanup(&self) -> bool {
+        self.0.reborrow().provider_managed_cleanup
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoNativeKeyCapabilitiesView<'static>>>
+for CryptoNativeKeyCapabilitiesOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoNativeKeyCapabilitiesView<'static>>,
+    ) -> Self {
+        CryptoNativeKeyCapabilitiesOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoNativeKeyCapabilitiesOwnedView>
+for ::buffa::OwnedView<CryptoNativeKeyCapabilitiesView<'static>> {
+    fn from(wrapper: CryptoNativeKeyCapabilitiesOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoNativeKeyCapabilitiesView<'static>>>
+for CryptoNativeKeyCapabilitiesOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoNativeKeyCapabilitiesView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoNativeKeyCapabilities {
+    type View<'a> = CryptoNativeKeyCapabilitiesView<'a>;
+    type ViewHandle = CryptoNativeKeyCapabilitiesOwnedView;
+}
+impl ::serde::Serialize for CryptoNativeKeyCapabilitiesOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// Empty native request shapes reject unknown modifiers. The adapter module
+/// selects the existing primitive; there is no generic algorithm fallback.
+///
+/// No caller-selected parameters are supported by this fixed primitive.
+#[derive(Clone, Default)]
+pub struct CryptoNativeKeyGenerateRequestView<'a> {
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoNativeKeyGenerateRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoNativeKeyGenerateRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoNativeKeyGenerateRequestView<'a> {
+    type Owned = super::super::CryptoNativeKeyGenerateRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoNativeKeyGenerateRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoNativeKeyGenerateRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoNativeKeyGenerateRequest {
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoNativeKeyGenerateRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoNativeKeyGenerateRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoNativeKeyGenerateRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoNativeKeyGenerateRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoNativeKeyGenerateRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoNativeKeyGenerateRequest";
+}
+::buffa::impl_default_view_instance!(CryptoNativeKeyGenerateRequestView);
+::buffa::impl_view_reborrow!(CryptoNativeKeyGenerateRequestView);
+/** Self-contained, `'static` owned view of a `CryptoNativeKeyGenerateRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoNativeKeyGenerateRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoNativeKeyGenerateRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoNativeKeyGenerateRequestOwnedView(
+    ::buffa::OwnedView<CryptoNativeKeyGenerateRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoNativeKeyGenerateRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoNativeKeyGenerateRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoNativeKeyGenerateRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativeKeyGenerateRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativeKeyGenerateRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoNativeKeyGenerateRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativeKeyGenerateRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoNativeKeyGenerateRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoNativeKeyGenerateRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoNativeKeyGenerateRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoNativeKeyGenerateRequestView<'static>>,
+> for CryptoNativeKeyGenerateRequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoNativeKeyGenerateRequestView<'static>>,
+    ) -> Self {
+        CryptoNativeKeyGenerateRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoNativeKeyGenerateRequestOwnedView>
+for ::buffa::OwnedView<CryptoNativeKeyGenerateRequestView<'static>> {
+    fn from(wrapper: CryptoNativeKeyGenerateRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoNativeKeyGenerateRequestView<'static>>,
+> for CryptoNativeKeyGenerateRequestOwnedView {
+    fn as_ref(
+        &self,
+    ) -> &::buffa::OwnedView<CryptoNativeKeyGenerateRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoNativeKeyGenerateRequest {
+    type View<'a> = CryptoNativeKeyGenerateRequestView<'a>;
+    type ViewHandle = CryptoNativeKeyGenerateRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoNativeKeyGenerateRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// The associated key owner is an explicit borrowed native argument.
+#[derive(Clone, Default)]
+pub struct CryptoNativePublicKeyRequestView<'a> {
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoNativePublicKeyRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoNativePublicKeyRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoNativePublicKeyRequestView<'a> {
+    type Owned = super::super::CryptoNativePublicKeyRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoNativePublicKeyRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoNativePublicKeyRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoNativePublicKeyRequest {
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoNativePublicKeyRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoNativePublicKeyRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoNativePublicKeyRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoNativePublicKeyRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoNativePublicKeyRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoNativePublicKeyRequest";
+}
+::buffa::impl_default_view_instance!(CryptoNativePublicKeyRequestView);
+::buffa::impl_view_reborrow!(CryptoNativePublicKeyRequestView);
+/** Self-contained, `'static` owned view of a `CryptoNativePublicKeyRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoNativePublicKeyRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoNativePublicKeyRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoNativePublicKeyRequestOwnedView(
+    ::buffa::OwnedView<CryptoNativePublicKeyRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoNativePublicKeyRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoNativePublicKeyRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoNativePublicKeyRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativePublicKeyRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativePublicKeyRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoNativePublicKeyRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativePublicKeyRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoNativePublicKeyRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoNativePublicKeyRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoNativePublicKeyRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoNativePublicKeyRequestView<'static>>>
+for CryptoNativePublicKeyRequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoNativePublicKeyRequestView<'static>>,
+    ) -> Self {
+        CryptoNativePublicKeyRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoNativePublicKeyRequestOwnedView>
+for ::buffa::OwnedView<CryptoNativePublicKeyRequestView<'static>> {
+    fn from(wrapper: CryptoNativePublicKeyRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoNativePublicKeyRequestView<'static>>,
+> for CryptoNativePublicKeyRequestOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoNativePublicKeyRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoNativePublicKeyRequest {
+    type View<'a> = CryptoNativePublicKeyRequestView<'a>;
+    type ViewHandle = CryptoNativePublicKeyRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoNativePublicKeyRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// Message input may be present and empty. Prehash input must have the exact
+/// selected SHA-256/384/512 width. Neither variant adds labels or re-encodes data.
+#[derive(Clone, Default)]
+pub struct CryptoEcdsaMessageInputView<'a> {
+    /// Field 1: `hash`
+    pub hash: ::buffa::EnumValue<super::super::HashAlgorithm>,
+    /// Field 2: `message`
+    pub message: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoEcdsaMessageInputView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaMessageInputView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEcdsaMessageInputView<'a> {
+    type Owned = super::super::CryptoEcdsaMessageInput;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.hash = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(&mut cur)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.message = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaMessageInput,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaMessageInput,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoEcdsaMessageInput {
+            hash: self.hash,
+            message: (self.message).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEcdsaMessageInputView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.hash.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        if !self.message.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.message) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.hash.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        if !self.message.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.message, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoEcdsaMessageInputView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEcdsaMessageInputView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEcdsaMessageInput";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEcdsaMessageInput";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEcdsaMessageInput";
+}
+::buffa::impl_default_view_instance!(CryptoEcdsaMessageInputView);
+::buffa::impl_view_reborrow!(CryptoEcdsaMessageInputView);
+/** Self-contained, `'static` owned view of a `CryptoEcdsaMessageInput` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoEcdsaMessageInputView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoEcdsaMessageInputView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoEcdsaMessageInputOwnedView(
+    ::buffa::OwnedView<CryptoEcdsaMessageInputView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoEcdsaMessageInputOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaMessageInputOwnedView(<redacted>)")
+    }
+}
+impl CryptoEcdsaMessageInputOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaMessageInputOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaMessageInputOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoEcdsaMessageInput,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaMessageInputOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoEcdsaMessageInputView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoEcdsaMessageInputView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoEcdsaMessageInput {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `hash`
+    #[must_use]
+    pub fn hash(&self) -> ::buffa::EnumValue<super::super::HashAlgorithm> {
+        self.0.reborrow().hash
+    }
+    /// Field 2: `message`
+    #[must_use]
+    pub fn message(&self) -> &'_ [u8] {
+        self.0.reborrow().message
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoEcdsaMessageInputView<'static>>>
+for CryptoEcdsaMessageInputOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoEcdsaMessageInputView<'static>>) -> Self {
+        CryptoEcdsaMessageInputOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoEcdsaMessageInputOwnedView>
+for ::buffa::OwnedView<CryptoEcdsaMessageInputView<'static>> {
+    fn from(wrapper: CryptoEcdsaMessageInputOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoEcdsaMessageInputView<'static>>>
+for CryptoEcdsaMessageInputOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoEcdsaMessageInputView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoEcdsaMessageInput {
+    type View<'a> = CryptoEcdsaMessageInputView<'a>;
+    type ViewHandle = CryptoEcdsaMessageInputOwnedView;
+}
+impl ::serde::Serialize for CryptoEcdsaMessageInputOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoEcdsaPrehashInputView<'a> {
+    /// Field 1: `hash`
+    pub hash: ::buffa::EnumValue<super::super::HashAlgorithm>,
+    /// Field 2: `digest`
+    pub digest: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoEcdsaPrehashInputView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaPrehashInputView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEcdsaPrehashInputView<'a> {
+    type Owned = super::super::CryptoEcdsaPrehashInput;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.hash = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(&mut cur)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.digest = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaPrehashInput,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaPrehashInput,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoEcdsaPrehashInput {
+            hash: self.hash,
+            digest: (self.digest).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEcdsaPrehashInputView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.hash.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        if !self.digest.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.digest) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.hash.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        if !self.digest.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.digest, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoEcdsaPrehashInputView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEcdsaPrehashInputView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEcdsaPrehashInput";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEcdsaPrehashInput";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEcdsaPrehashInput";
+}
+::buffa::impl_default_view_instance!(CryptoEcdsaPrehashInputView);
+::buffa::impl_view_reborrow!(CryptoEcdsaPrehashInputView);
+/** Self-contained, `'static` owned view of a `CryptoEcdsaPrehashInput` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoEcdsaPrehashInputView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoEcdsaPrehashInputView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoEcdsaPrehashInputOwnedView(
+    ::buffa::OwnedView<CryptoEcdsaPrehashInputView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoEcdsaPrehashInputOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaPrehashInputOwnedView(<redacted>)")
+    }
+}
+impl CryptoEcdsaPrehashInputOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaPrehashInputOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaPrehashInputOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoEcdsaPrehashInput,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaPrehashInputOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoEcdsaPrehashInputView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoEcdsaPrehashInputView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoEcdsaPrehashInput {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `hash`
+    #[must_use]
+    pub fn hash(&self) -> ::buffa::EnumValue<super::super::HashAlgorithm> {
+        self.0.reborrow().hash
+    }
+    /// Field 2: `digest`
+    #[must_use]
+    pub fn digest(&self) -> &'_ [u8] {
+        self.0.reborrow().digest
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoEcdsaPrehashInputView<'static>>>
+for CryptoEcdsaPrehashInputOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoEcdsaPrehashInputView<'static>>) -> Self {
+        CryptoEcdsaPrehashInputOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoEcdsaPrehashInputOwnedView>
+for ::buffa::OwnedView<CryptoEcdsaPrehashInputView<'static>> {
+    fn from(wrapper: CryptoEcdsaPrehashInputOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoEcdsaPrehashInputView<'static>>>
+for CryptoEcdsaPrehashInputOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoEcdsaPrehashInputView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoEcdsaPrehashInput {
+    type View<'a> = CryptoEcdsaPrehashInputView<'a>;
+    type ViewHandle = CryptoEcdsaPrehashInputOwnedView;
+}
+impl ::serde::Serialize for CryptoEcdsaPrehashInputOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoEcdsaInputView<'a> {
+    pub input: ::core::option::Option<
+        super::super::__buffa::view::oneof::crypto_ecdsa_input::Input<'a>,
+    >,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoEcdsaInputView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaInputView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEcdsaInputView<'a> {
+    type Owned = super::super::CryptoEcdsaInput;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::crypto_ecdsa_input::Input::Message(
+                        ref mut existing,
+                    ),
+                ) = view.input
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.input = Some(
+                        super::super::__buffa::view::oneof::crypto_ecdsa_input::Input::Message(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::CryptoEcdsaMessageInputView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::crypto_ecdsa_input::Input::Prehash(
+                        ref mut existing,
+                    ),
+                ) = view.input
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.input = Some(
+                        super::super::__buffa::view::oneof::crypto_ecdsa_input::Input::Prehash(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::CryptoEcdsaPrehashInputView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<super::super::CryptoEcdsaInput, ::buffa::DecodeError> {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<super::super::CryptoEcdsaInput, ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoEcdsaInput {
+            input: match self.input.as_ref() {
+                ::core::option::Option::Some(v) => {
+                    ::core::option::Option::Some(
+                        match v {
+                            super::super::__buffa::view::oneof::crypto_ecdsa_input::Input::Message(
+                                v,
+                            ) => {
+                                super::super::__buffa::oneof::crypto_ecdsa_input::Input::Message(
+                                    ::buffa::alloc::boxed::Box::new(
+                                        v.to_owned_from_source(__buffa_src)?,
+                                    ),
+                                )
+                            }
+                            super::super::__buffa::view::oneof::crypto_ecdsa_input::Input::Prehash(
+                                v,
+                            ) => {
+                                super::super::__buffa::oneof::crypto_ecdsa_input::Input::Prehash(
+                                    ::buffa::alloc::boxed::Box::new(
+                                        v.to_owned_from_source(__buffa_src)?,
+                                    ),
+                                )
+                            }
+                        },
+                    )
+                }
+                ::core::option::Option::None => ::core::option::Option::None,
+            },
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEcdsaInputView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(ref v) = self.input {
+            match v {
+                super::super::__buffa::view::oneof::crypto_ecdsa_input::Input::Message(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::crypto_ecdsa_input::Input::Prehash(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(ref v) = self.input {
+            match v {
+                super::super::__buffa::view::oneof::crypto_ecdsa_input::Input::Message(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                super::super::__buffa::view::oneof::crypto_ecdsa_input::Input::Prehash(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        2u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoEcdsaInputView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEcdsaInputView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEcdsaInput";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEcdsaInput";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEcdsaInput";
+}
+::buffa::impl_default_view_instance!(CryptoEcdsaInputView);
+::buffa::impl_view_reborrow!(CryptoEcdsaInputView);
+/** Self-contained, `'static` owned view of a `CryptoEcdsaInput` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoEcdsaInputView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoEcdsaInputView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoEcdsaInputOwnedView(::buffa::OwnedView<CryptoEcdsaInputView<'static>>);
+impl ::core::fmt::Debug for CryptoEcdsaInputOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaInputOwnedView(<redacted>)")
+    }
+}
+impl CryptoEcdsaInputOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaInputOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaInputOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoEcdsaInput,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaInputOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoEcdsaInputView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoEcdsaInputView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoEcdsaInput {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Oneof `input`.
+    #[must_use]
+    pub fn input(
+        &self,
+    ) -> ::core::option::Option<
+        &super::super::__buffa::view::oneof::crypto_ecdsa_input::Input<'_>,
+    > {
+        self.0.reborrow().input.as_ref()
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoEcdsaInputView<'static>>>
+for CryptoEcdsaInputOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoEcdsaInputView<'static>>) -> Self {
+        CryptoEcdsaInputOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoEcdsaInputOwnedView>
+for ::buffa::OwnedView<CryptoEcdsaInputView<'static>> {
+    fn from(wrapper: CryptoEcdsaInputOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoEcdsaInputView<'static>>>
+for CryptoEcdsaInputOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoEcdsaInputView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoEcdsaInput {
+    type View<'a> = CryptoEcdsaInputView<'a>;
+    type ViewHandle = CryptoEcdsaInputOwnedView;
+}
+impl ::serde::Serialize for CryptoEcdsaInputOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoEcdsaSignOptionsView<'a> {
+    /// Field 1: `encoding`
+    pub encoding: ::buffa::EnumValue<super::super::EcdsaEncoding>,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoEcdsaSignOptionsView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaSignOptionsView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEcdsaSignOptionsView<'a> {
+    type Owned = super::super::CryptoEcdsaSignOptions;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.encoding = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(&mut cur)?,
+                );
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaSignOptions,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaSignOptions,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoEcdsaSignOptions {
+            encoding: self.encoding,
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEcdsaSignOptionsView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.encoding.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.encoding.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoEcdsaSignOptionsView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEcdsaSignOptionsView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEcdsaSignOptions";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEcdsaSignOptions";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEcdsaSignOptions";
+}
+::buffa::impl_default_view_instance!(CryptoEcdsaSignOptionsView);
+::buffa::impl_view_reborrow!(CryptoEcdsaSignOptionsView);
+/** Self-contained, `'static` owned view of a `CryptoEcdsaSignOptions` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoEcdsaSignOptionsView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoEcdsaSignOptionsView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoEcdsaSignOptionsOwnedView(
+    ::buffa::OwnedView<CryptoEcdsaSignOptionsView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoEcdsaSignOptionsOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaSignOptionsOwnedView(<redacted>)")
+    }
+}
+impl CryptoEcdsaSignOptionsOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaSignOptionsOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaSignOptionsOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoEcdsaSignOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaSignOptionsOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoEcdsaSignOptionsView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoEcdsaSignOptionsView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoEcdsaSignOptions {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `encoding`
+    #[must_use]
+    pub fn encoding(&self) -> ::buffa::EnumValue<super::super::EcdsaEncoding> {
+        self.0.reborrow().encoding
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoEcdsaSignOptionsView<'static>>>
+for CryptoEcdsaSignOptionsOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoEcdsaSignOptionsView<'static>>) -> Self {
+        CryptoEcdsaSignOptionsOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoEcdsaSignOptionsOwnedView>
+for ::buffa::OwnedView<CryptoEcdsaSignOptionsView<'static>> {
+    fn from(wrapper: CryptoEcdsaSignOptionsOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoEcdsaSignOptionsView<'static>>>
+for CryptoEcdsaSignOptionsOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoEcdsaSignOptionsView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoEcdsaSignOptions {
+    type View<'a> = CryptoEcdsaSignOptionsView<'a>;
+    type ViewHandle = CryptoEcdsaSignOptionsOwnedView;
+}
+impl ::serde::Serialize for CryptoEcdsaSignOptionsOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoEcdsaKeyGenerateRequestView<'a> {
+    /// Field 1: `curve`
+    pub curve: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaCurveIdentifierView<'a>,
+    >,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoEcdsaKeyGenerateRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaKeyGenerateRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEcdsaKeyGenerateRequestView<'a> {
+    type Owned = super::super::CryptoEcdsaKeyGenerateRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.curve.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.curve = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoEcdsaCurveIdentifierView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaKeyGenerateRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaKeyGenerateRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoEcdsaKeyGenerateRequest {
+            curve: match self.curve.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoEcdsaCurveIdentifier,
+                        ::buffa::Inline<super::super::CryptoEcdsaCurveIdentifier>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEcdsaKeyGenerateRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.curve.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.curve.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.curve.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.curve.write_to(__cache, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoEcdsaKeyGenerateRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEcdsaKeyGenerateRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEcdsaKeyGenerateRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEcdsaKeyGenerateRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEcdsaKeyGenerateRequest";
+}
+::buffa::impl_default_view_instance!(CryptoEcdsaKeyGenerateRequestView);
+::buffa::impl_view_reborrow!(CryptoEcdsaKeyGenerateRequestView);
+/** Self-contained, `'static` owned view of a `CryptoEcdsaKeyGenerateRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoEcdsaKeyGenerateRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoEcdsaKeyGenerateRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoEcdsaKeyGenerateRequestOwnedView(
+    ::buffa::OwnedView<CryptoEcdsaKeyGenerateRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoEcdsaKeyGenerateRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaKeyGenerateRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoEcdsaKeyGenerateRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaKeyGenerateRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaKeyGenerateRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoEcdsaKeyGenerateRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaKeyGenerateRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoEcdsaKeyGenerateRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoEcdsaKeyGenerateRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoEcdsaKeyGenerateRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `curve`
+    #[must_use]
+    pub fn curve(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaCurveIdentifierView<'_>,
+    > {
+        &self.0.reborrow().curve
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoEcdsaKeyGenerateRequestView<'static>>,
+> for CryptoEcdsaKeyGenerateRequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoEcdsaKeyGenerateRequestView<'static>>,
+    ) -> Self {
+        CryptoEcdsaKeyGenerateRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoEcdsaKeyGenerateRequestOwnedView>
+for ::buffa::OwnedView<CryptoEcdsaKeyGenerateRequestView<'static>> {
+    fn from(wrapper: CryptoEcdsaKeyGenerateRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoEcdsaKeyGenerateRequestView<'static>>,
+> for CryptoEcdsaKeyGenerateRequestOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoEcdsaKeyGenerateRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoEcdsaKeyGenerateRequest {
+    type View<'a> = CryptoEcdsaKeyGenerateRequestView<'a>;
+    type ViewHandle = CryptoEcdsaKeyGenerateRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoEcdsaKeyGenerateRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// Input only: adapters never populate scalar bytes from a native key owner.
+#[derive(Clone, Default)]
+pub struct CryptoEcdsaKeyImportRequestView<'a> {
+    /// Field 1: `curve`
+    pub curve: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaCurveIdentifierView<'a>,
+    >,
+    /// Field 2: `scalar`
+    pub scalar: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoEcdsaKeyImportRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaKeyImportRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEcdsaKeyImportRequestView<'a> {
+    type Owned = super::super::CryptoEcdsaKeyImportRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.curve.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.curve = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoEcdsaCurveIdentifierView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.scalar = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaKeyImportRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaKeyImportRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoEcdsaKeyImportRequest {
+            curve: match self.curve.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoEcdsaCurveIdentifier,
+                        ::buffa::Inline<super::super::CryptoEcdsaCurveIdentifier>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            scalar: (self.scalar).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEcdsaKeyImportRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.curve.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.curve.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if !self.scalar.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.scalar) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.curve.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.curve.write_to(__cache, buf);
+        }
+        if !self.scalar.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.scalar, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoEcdsaKeyImportRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEcdsaKeyImportRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEcdsaKeyImportRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEcdsaKeyImportRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEcdsaKeyImportRequest";
+}
+::buffa::impl_default_view_instance!(CryptoEcdsaKeyImportRequestView);
+::buffa::impl_view_reborrow!(CryptoEcdsaKeyImportRequestView);
+/** Self-contained, `'static` owned view of a `CryptoEcdsaKeyImportRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoEcdsaKeyImportRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoEcdsaKeyImportRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoEcdsaKeyImportRequestOwnedView(
+    ::buffa::OwnedView<CryptoEcdsaKeyImportRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoEcdsaKeyImportRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaKeyImportRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoEcdsaKeyImportRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaKeyImportRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaKeyImportRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoEcdsaKeyImportRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaKeyImportRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoEcdsaKeyImportRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoEcdsaKeyImportRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoEcdsaKeyImportRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `curve`
+    #[must_use]
+    pub fn curve(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaCurveIdentifierView<'_>,
+    > {
+        &self.0.reborrow().curve
+    }
+    /// Field 2: `scalar`
+    #[must_use]
+    pub fn scalar(&self) -> &'_ [u8] {
+        self.0.reborrow().scalar
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoEcdsaKeyImportRequestView<'static>>>
+for CryptoEcdsaKeyImportRequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoEcdsaKeyImportRequestView<'static>>,
+    ) -> Self {
+        CryptoEcdsaKeyImportRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoEcdsaKeyImportRequestOwnedView>
+for ::buffa::OwnedView<CryptoEcdsaKeyImportRequestView<'static>> {
+    fn from(wrapper: CryptoEcdsaKeyImportRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoEcdsaKeyImportRequestView<'static>>>
+for CryptoEcdsaKeyImportRequestOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoEcdsaKeyImportRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoEcdsaKeyImportRequest {
+    type View<'a> = CryptoEcdsaKeyImportRequestView<'a>;
+    type ViewHandle = CryptoEcdsaKeyImportRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoEcdsaKeyImportRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoEcdsaPublicKeyView<'a> {
+    /// Field 1: `curve`
+    pub curve: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaCurveIdentifierView<'a>,
+    >,
+    /// Field 2: `sec1`
+    pub sec1: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoEcdsaPublicKeyView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaPublicKeyView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEcdsaPublicKeyView<'a> {
+    type Owned = super::super::CryptoEcdsaPublicKey;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.curve.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.curve = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoEcdsaCurveIdentifierView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.sec1 = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaPublicKey,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaPublicKey,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoEcdsaPublicKey {
+            curve: match self.curve.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoEcdsaCurveIdentifier,
+                        ::buffa::Inline<super::super::CryptoEcdsaCurveIdentifier>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            sec1: (self.sec1).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEcdsaPublicKeyView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.curve.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.curve.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if !self.sec1.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.sec1) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.curve.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.curve.write_to(__cache, buf);
+        }
+        if !self.sec1.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.sec1, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoEcdsaPublicKeyView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEcdsaPublicKeyView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEcdsaPublicKey";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEcdsaPublicKey";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEcdsaPublicKey";
+}
+::buffa::impl_default_view_instance!(CryptoEcdsaPublicKeyView);
+::buffa::impl_view_reborrow!(CryptoEcdsaPublicKeyView);
+/** Self-contained, `'static` owned view of a `CryptoEcdsaPublicKey` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoEcdsaPublicKeyView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoEcdsaPublicKeyView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoEcdsaPublicKeyOwnedView(
+    ::buffa::OwnedView<CryptoEcdsaPublicKeyView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoEcdsaPublicKeyOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaPublicKeyOwnedView(<redacted>)")
+    }
+}
+impl CryptoEcdsaPublicKeyOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaPublicKeyOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaPublicKeyOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoEcdsaPublicKey,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaPublicKeyOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoEcdsaPublicKeyView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoEcdsaPublicKeyView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoEcdsaPublicKey {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `curve`
+    #[must_use]
+    pub fn curve(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaCurveIdentifierView<'_>,
+    > {
+        &self.0.reborrow().curve
+    }
+    /// Field 2: `sec1`
+    #[must_use]
+    pub fn sec1(&self) -> &'_ [u8] {
+        self.0.reborrow().sec1
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoEcdsaPublicKeyView<'static>>>
+for CryptoEcdsaPublicKeyOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoEcdsaPublicKeyView<'static>>) -> Self {
+        CryptoEcdsaPublicKeyOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoEcdsaPublicKeyOwnedView>
+for ::buffa::OwnedView<CryptoEcdsaPublicKeyView<'static>> {
+    fn from(wrapper: CryptoEcdsaPublicKeyOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoEcdsaPublicKeyView<'static>>>
+for CryptoEcdsaPublicKeyOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoEcdsaPublicKeyView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoEcdsaPublicKey {
+    type View<'a> = CryptoEcdsaPublicKeyView<'a>;
+    type ViewHandle = CryptoEcdsaPublicKeyOwnedView;
+}
+impl ::serde::Serialize for CryptoEcdsaPublicKeyOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoEcdsaKeyDescriptorView<'a> {
+    /// Field 1: `public_key`
+    pub public_key: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaPublicKeyView<'a>,
+    >,
+    /// Field 2: `capabilities`
+    pub capabilities: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoNativeKeyCapabilitiesView<'a>,
+    >,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoEcdsaKeyDescriptorView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaKeyDescriptorView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEcdsaKeyDescriptorView<'a> {
+    type Owned = super::super::CryptoEcdsaKeyDescriptor;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.public_key.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.public_key = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoEcdsaPublicKeyView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.capabilities.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.capabilities = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoNativeKeyCapabilitiesView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaKeyDescriptor,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaKeyDescriptor,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoEcdsaKeyDescriptor {
+            public_key: match self.public_key.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoEcdsaPublicKey,
+                        ::buffa::Inline<super::super::CryptoEcdsaPublicKey>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            capabilities: match self.capabilities.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoNativeKeyCapabilities,
+                        ::buffa::Inline<super::super::CryptoNativeKeyCapabilities>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEcdsaKeyDescriptorView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.public_key.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.public_key.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if self.capabilities.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.capabilities.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.public_key.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.public_key.write_to(__cache, buf);
+        }
+        if self.capabilities.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                2u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.capabilities.write_to(__cache, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoEcdsaKeyDescriptorView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEcdsaKeyDescriptorView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEcdsaKeyDescriptor";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEcdsaKeyDescriptor";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEcdsaKeyDescriptor";
+}
+::buffa::impl_default_view_instance!(CryptoEcdsaKeyDescriptorView);
+::buffa::impl_view_reborrow!(CryptoEcdsaKeyDescriptorView);
+/** Self-contained, `'static` owned view of a `CryptoEcdsaKeyDescriptor` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoEcdsaKeyDescriptorView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoEcdsaKeyDescriptorView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoEcdsaKeyDescriptorOwnedView(
+    ::buffa::OwnedView<CryptoEcdsaKeyDescriptorView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoEcdsaKeyDescriptorOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaKeyDescriptorOwnedView(<redacted>)")
+    }
+}
+impl CryptoEcdsaKeyDescriptorOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaKeyDescriptorOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaKeyDescriptorOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoEcdsaKeyDescriptor,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaKeyDescriptorOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoEcdsaKeyDescriptorView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoEcdsaKeyDescriptorView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoEcdsaKeyDescriptor {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `public_key`
+    #[must_use]
+    pub fn public_key(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaPublicKeyView<'_>,
+    > {
+        &self.0.reborrow().public_key
+    }
+    /// Field 2: `capabilities`
+    #[must_use]
+    pub fn capabilities(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoNativeKeyCapabilitiesView<'_>,
+    > {
+        &self.0.reborrow().capabilities
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoEcdsaKeyDescriptorView<'static>>>
+for CryptoEcdsaKeyDescriptorOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoEcdsaKeyDescriptorView<'static>>) -> Self {
+        CryptoEcdsaKeyDescriptorOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoEcdsaKeyDescriptorOwnedView>
+for ::buffa::OwnedView<CryptoEcdsaKeyDescriptorView<'static>> {
+    fn from(wrapper: CryptoEcdsaKeyDescriptorOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoEcdsaKeyDescriptorView<'static>>>
+for CryptoEcdsaKeyDescriptorOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoEcdsaKeyDescriptorView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoEcdsaKeyDescriptor {
+    type View<'a> = CryptoEcdsaKeyDescriptorView<'a>;
+    type ViewHandle = CryptoEcdsaKeyDescriptorOwnedView;
+}
+impl ::serde::Serialize for CryptoEcdsaKeyDescriptorOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// The associated software owner or opaque signer is an explicit borrowed
+/// native argument, never a serialized private-key handle in this request.
+#[derive(Clone, Default)]
+pub struct CryptoEcdsaSignRequestView<'a> {
+    /// Field 1: `input`
+    pub input: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaInputView<'a>,
+    >,
+    /// Field 2: `options`
+    pub options: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaSignOptionsView<'a>,
+    >,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoEcdsaSignRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaSignRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEcdsaSignRequestView<'a> {
+    type Owned = super::super::CryptoEcdsaSignRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.input.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.input = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoEcdsaInputView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.options.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.options = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoEcdsaSignOptionsView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaSignRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaSignRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoEcdsaSignRequest {
+            input: match self.input.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoEcdsaInput,
+                        ::buffa::Inline<super::super::CryptoEcdsaInput>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            options: match self.options.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoEcdsaSignOptions,
+                        ::buffa::Inline<super::super::CryptoEcdsaSignOptions>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEcdsaSignRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.input.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.input.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if self.options.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.options.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.input.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.input.write_to(__cache, buf);
+        }
+        if self.options.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                2u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.options.write_to(__cache, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoEcdsaSignRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEcdsaSignRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEcdsaSignRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEcdsaSignRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEcdsaSignRequest";
+}
+::buffa::impl_default_view_instance!(CryptoEcdsaSignRequestView);
+::buffa::impl_view_reborrow!(CryptoEcdsaSignRequestView);
+/** Self-contained, `'static` owned view of a `CryptoEcdsaSignRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoEcdsaSignRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoEcdsaSignRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoEcdsaSignRequestOwnedView(
+    ::buffa::OwnedView<CryptoEcdsaSignRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoEcdsaSignRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaSignRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoEcdsaSignRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaSignRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaSignRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoEcdsaSignRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaSignRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoEcdsaSignRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoEcdsaSignRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoEcdsaSignRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `input`
+    #[must_use]
+    pub fn input(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaInputView<'_>,
+    > {
+        &self.0.reborrow().input
+    }
+    /// Field 2: `options`
+    #[must_use]
+    pub fn options(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaSignOptionsView<'_>,
+    > {
+        &self.0.reborrow().options
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoEcdsaSignRequestView<'static>>>
+for CryptoEcdsaSignRequestOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoEcdsaSignRequestView<'static>>) -> Self {
+        CryptoEcdsaSignRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoEcdsaSignRequestOwnedView>
+for ::buffa::OwnedView<CryptoEcdsaSignRequestView<'static>> {
+    fn from(wrapper: CryptoEcdsaSignRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoEcdsaSignRequestView<'static>>>
+for CryptoEcdsaSignRequestOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoEcdsaSignRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoEcdsaSignRequest {
+    type View<'a> = CryptoEcdsaSignRequestView<'a>;
+    type ViewHandle = CryptoEcdsaSignRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoEcdsaSignRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoNativeSignatureResultView<'a> {
+    /// Field 1: `signature`
+    pub signature: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoNativeSignatureResultView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoNativeSignatureResultView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoNativeSignatureResultView<'a> {
+    type Owned = super::super::CryptoNativeSignatureResult;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.signature = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoNativeSignatureResult,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoNativeSignatureResult,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoNativeSignatureResult {
+            signature: (self.signature).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoNativeSignatureResultView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.signature.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.signature) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.signature.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.signature, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoNativeSignatureResultView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoNativeSignatureResultView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoNativeSignatureResult";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoNativeSignatureResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoNativeSignatureResult";
+}
+::buffa::impl_default_view_instance!(CryptoNativeSignatureResultView);
+::buffa::impl_view_reborrow!(CryptoNativeSignatureResultView);
+/** Self-contained, `'static` owned view of a `CryptoNativeSignatureResult` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoNativeSignatureResultView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoNativeSignatureResultView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoNativeSignatureResultOwnedView(
+    ::buffa::OwnedView<CryptoNativeSignatureResultView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoNativeSignatureResultOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoNativeSignatureResultOwnedView(<redacted>)")
+    }
+}
+impl CryptoNativeSignatureResultOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativeSignatureResultOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativeSignatureResultOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoNativeSignatureResult,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativeSignatureResultOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoNativeSignatureResultView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoNativeSignatureResultView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoNativeSignatureResult {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `signature`
+    #[must_use]
+    pub fn signature(&self) -> &'_ [u8] {
+        self.0.reborrow().signature
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoNativeSignatureResultView<'static>>>
+for CryptoNativeSignatureResultOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoNativeSignatureResultView<'static>>,
+    ) -> Self {
+        CryptoNativeSignatureResultOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoNativeSignatureResultOwnedView>
+for ::buffa::OwnedView<CryptoNativeSignatureResultView<'static>> {
+    fn from(wrapper: CryptoNativeSignatureResultOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoNativeSignatureResultView<'static>>>
+for CryptoNativeSignatureResultOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoNativeSignatureResultView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoNativeSignatureResult {
+    type View<'a> = CryptoNativeSignatureResultView<'a>;
+    type ViewHandle = CryptoNativeSignatureResultOwnedView;
+}
+impl ::serde::Serialize for CryptoNativeSignatureResultOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoEcdsaVerifyRequestView<'a> {
+    /// Field 1: `public_key`
+    pub public_key: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaPublicKeyView<'a>,
+    >,
+    /// Field 2: `input`
+    pub input: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaInputView<'a>,
+    >,
+    /// Field 3: `signature`
+    pub signature: &'a [u8],
+    /// Field 4: `options`
+    pub options: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaSignOptionsView<'a>,
+    >,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoEcdsaVerifyRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaVerifyRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEcdsaVerifyRequestView<'a> {
+    type Owned = super::super::CryptoEcdsaVerifyRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.public_key.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.public_key = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoEcdsaPublicKeyView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.input.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.input = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoEcdsaInputView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.signature = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.options.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.options = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoEcdsaSignOptionsView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaVerifyRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaVerifyRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoEcdsaVerifyRequest {
+            public_key: match self.public_key.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoEcdsaPublicKey,
+                        ::buffa::Inline<super::super::CryptoEcdsaPublicKey>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            input: match self.input.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoEcdsaInput,
+                        ::buffa::Inline<super::super::CryptoEcdsaInput>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            signature: (self.signature).to_vec(),
+            options: match self.options.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoEcdsaSignOptions,
+                        ::buffa::Inline<super::super::CryptoEcdsaSignOptions>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEcdsaVerifyRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.public_key.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.public_key.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if self.input.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.input.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if !self.signature.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.signature) as u64;
+        }
+        if self.options.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.options.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.public_key.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.public_key.write_to(__cache, buf);
+        }
+        if self.input.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                2u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.input.write_to(__cache, buf);
+        }
+        if !self.signature.is_empty() {
+            ::buffa::types::put_shared_bytes_field(3u32, &self.signature, buf);
+        }
+        if self.options.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                4u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.options.write_to(__cache, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoEcdsaVerifyRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEcdsaVerifyRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEcdsaVerifyRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEcdsaVerifyRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEcdsaVerifyRequest";
+}
+::buffa::impl_default_view_instance!(CryptoEcdsaVerifyRequestView);
+::buffa::impl_view_reborrow!(CryptoEcdsaVerifyRequestView);
+/** Self-contained, `'static` owned view of a `CryptoEcdsaVerifyRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoEcdsaVerifyRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoEcdsaVerifyRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoEcdsaVerifyRequestOwnedView(
+    ::buffa::OwnedView<CryptoEcdsaVerifyRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoEcdsaVerifyRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaVerifyRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoEcdsaVerifyRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaVerifyRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaVerifyRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoEcdsaVerifyRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaVerifyRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoEcdsaVerifyRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoEcdsaVerifyRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoEcdsaVerifyRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `public_key`
+    #[must_use]
+    pub fn public_key(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaPublicKeyView<'_>,
+    > {
+        &self.0.reborrow().public_key
+    }
+    /// Field 2: `input`
+    #[must_use]
+    pub fn input(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaInputView<'_>,
+    > {
+        &self.0.reborrow().input
+    }
+    /// Field 3: `signature`
+    #[must_use]
+    pub fn signature(&self) -> &'_ [u8] {
+        self.0.reborrow().signature
+    }
+    /// Field 4: `options`
+    #[must_use]
+    pub fn options(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEcdsaSignOptionsView<'_>,
+    > {
+        &self.0.reborrow().options
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoEcdsaVerifyRequestView<'static>>>
+for CryptoEcdsaVerifyRequestOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoEcdsaVerifyRequestView<'static>>) -> Self {
+        CryptoEcdsaVerifyRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoEcdsaVerifyRequestOwnedView>
+for ::buffa::OwnedView<CryptoEcdsaVerifyRequestView<'static>> {
+    fn from(wrapper: CryptoEcdsaVerifyRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoEcdsaVerifyRequestView<'static>>>
+for CryptoEcdsaVerifyRequestOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoEcdsaVerifyRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoEcdsaVerifyRequest {
+    type View<'a> = CryptoEcdsaVerifyRequestView<'a>;
+    type ViewHandle = CryptoEcdsaVerifyRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoEcdsaVerifyRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// Adapters return VALID only after complete native verification. Invalid
+/// signatures and other failures remain canonical errors, never success flags.
+#[derive(Clone, Default)]
+pub struct CryptoNativeVerificationResultView<'a> {
+    /// Field 1: `status`
+    pub status: ::buffa::EnumValue<super::super::CryptoVerificationStatus>,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoNativeVerificationResultView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoNativeVerificationResultView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoNativeVerificationResultView<'a> {
+    type Owned = super::super::CryptoNativeVerificationResult;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.status = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(&mut cur)?,
+                );
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoNativeVerificationResult,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoNativeVerificationResult,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoNativeVerificationResult {
+            status: self.status,
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoNativeVerificationResultView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.status.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.status.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoNativeVerificationResultView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoNativeVerificationResultView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoNativeVerificationResult";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoNativeVerificationResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoNativeVerificationResult";
+}
+::buffa::impl_default_view_instance!(CryptoNativeVerificationResultView);
+::buffa::impl_view_reborrow!(CryptoNativeVerificationResultView);
+/** Self-contained, `'static` owned view of a `CryptoNativeVerificationResult` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoNativeVerificationResultView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoNativeVerificationResultView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoNativeVerificationResultOwnedView(
+    ::buffa::OwnedView<CryptoNativeVerificationResultView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoNativeVerificationResultOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoNativeVerificationResultOwnedView(<redacted>)")
+    }
+}
+impl CryptoNativeVerificationResultOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativeVerificationResultOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativeVerificationResultOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoNativeVerificationResult,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativeVerificationResultOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoNativeVerificationResultView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoNativeVerificationResultView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoNativeVerificationResult {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `status`
+    #[must_use]
+    pub fn status(&self) -> ::buffa::EnumValue<super::super::CryptoVerificationStatus> {
+        self.0.reborrow().status
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoNativeVerificationResultView<'static>>,
+> for CryptoNativeVerificationResultOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoNativeVerificationResultView<'static>>,
+    ) -> Self {
+        CryptoNativeVerificationResultOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoNativeVerificationResultOwnedView>
+for ::buffa::OwnedView<CryptoNativeVerificationResultView<'static>> {
+    fn from(wrapper: CryptoNativeVerificationResultOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoNativeVerificationResultView<'static>>,
+> for CryptoNativeVerificationResultOwnedView {
+    fn as_ref(
+        &self,
+    ) -> &::buffa::OwnedView<CryptoNativeVerificationResultView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoNativeVerificationResult {
+    type View<'a> = CryptoNativeVerificationResultView<'a>;
+    type ViewHandle = CryptoNativeVerificationResultOwnedView;
+}
+impl ::serde::Serialize for CryptoNativeVerificationResultOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoEcdsaAgreementRequestView<'a> {
+    /// Field 1: `peer_sec1`
+    pub peer_sec1: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoEcdsaAgreementRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaAgreementRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEcdsaAgreementRequestView<'a> {
+    type Owned = super::super::CryptoEcdsaAgreementRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.peer_sec1 = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaAgreementRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaAgreementRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoEcdsaAgreementRequest {
+            peer_sec1: (self.peer_sec1).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEcdsaAgreementRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.peer_sec1.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.peer_sec1) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.peer_sec1.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.peer_sec1, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoEcdsaAgreementRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEcdsaAgreementRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEcdsaAgreementRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEcdsaAgreementRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEcdsaAgreementRequest";
+}
+::buffa::impl_default_view_instance!(CryptoEcdsaAgreementRequestView);
+::buffa::impl_view_reborrow!(CryptoEcdsaAgreementRequestView);
+/** Self-contained, `'static` owned view of a `CryptoEcdsaAgreementRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoEcdsaAgreementRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoEcdsaAgreementRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoEcdsaAgreementRequestOwnedView(
+    ::buffa::OwnedView<CryptoEcdsaAgreementRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoEcdsaAgreementRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEcdsaAgreementRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoEcdsaAgreementRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaAgreementRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaAgreementRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoEcdsaAgreementRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEcdsaAgreementRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoEcdsaAgreementRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoEcdsaAgreementRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoEcdsaAgreementRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `peer_sec1`
+    #[must_use]
+    pub fn peer_sec1(&self) -> &'_ [u8] {
+        self.0.reborrow().peer_sec1
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoEcdsaAgreementRequestView<'static>>>
+for CryptoEcdsaAgreementRequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoEcdsaAgreementRequestView<'static>>,
+    ) -> Self {
+        CryptoEcdsaAgreementRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoEcdsaAgreementRequestOwnedView>
+for ::buffa::OwnedView<CryptoEcdsaAgreementRequestView<'static>> {
+    fn from(wrapper: CryptoEcdsaAgreementRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoEcdsaAgreementRequestView<'static>>>
+for CryptoEcdsaAgreementRequestOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoEcdsaAgreementRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoEcdsaAgreementRequest {
+    type View<'a> = CryptoEcdsaAgreementRequestView<'a>;
+    type ViewHandle = CryptoEcdsaAgreementRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoEcdsaAgreementRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoNativeAgreementResultView<'a> {
+    /// Field 1: `shared_secret`
+    pub shared_secret: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoNativeAgreementResultView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoNativeAgreementResultView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoNativeAgreementResultView<'a> {
+    type Owned = super::super::CryptoNativeAgreementResult;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.shared_secret = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoNativeAgreementResult,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoNativeAgreementResult,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoNativeAgreementResult {
+            shared_secret: (self.shared_secret).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoNativeAgreementResultView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.shared_secret.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.shared_secret) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.shared_secret.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.shared_secret, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoNativeAgreementResultView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoNativeAgreementResultView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoNativeAgreementResult";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoNativeAgreementResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoNativeAgreementResult";
+}
+::buffa::impl_default_view_instance!(CryptoNativeAgreementResultView);
+::buffa::impl_view_reborrow!(CryptoNativeAgreementResultView);
+/** Self-contained, `'static` owned view of a `CryptoNativeAgreementResult` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoNativeAgreementResultView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoNativeAgreementResultView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoNativeAgreementResultOwnedView(
+    ::buffa::OwnedView<CryptoNativeAgreementResultView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoNativeAgreementResultOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoNativeAgreementResultOwnedView(<redacted>)")
+    }
+}
+impl CryptoNativeAgreementResultOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativeAgreementResultOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativeAgreementResultOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoNativeAgreementResult,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoNativeAgreementResultOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoNativeAgreementResultView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoNativeAgreementResultView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoNativeAgreementResult {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `shared_secret`
+    #[must_use]
+    pub fn shared_secret(&self) -> &'_ [u8] {
+        self.0.reborrow().shared_secret
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoNativeAgreementResultView<'static>>>
+for CryptoNativeAgreementResultOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoNativeAgreementResultView<'static>>,
+    ) -> Self {
+        CryptoNativeAgreementResultOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoNativeAgreementResultOwnedView>
+for ::buffa::OwnedView<CryptoNativeAgreementResultView<'static>> {
+    fn from(wrapper: CryptoNativeAgreementResultOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoNativeAgreementResultView<'static>>>
+for CryptoNativeAgreementResultOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoNativeAgreementResultView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoNativeAgreementResult {
+    type View<'a> = CryptoNativeAgreementResultView<'a>;
+    type ViewHandle = CryptoNativeAgreementResultOwnedView;
+}
+impl ::serde::Serialize for CryptoNativeAgreementResultOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// Ordinary Ed448 is fixed to RFC 8032 empty context, without prehash. Unknown
+/// modifier fields are rejected, so a context/ph request cannot be ignored.
+#[derive(Clone, Default)]
+pub struct CryptoEd448SupportRequestView<'a> {
+    /// Field 1: `operation`
+    pub operation: ::buffa::EnumValue<super::super::Ed448Operation>,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoEd448SupportRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEd448SupportRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEd448SupportRequestView<'a> {
+    type Owned = super::super::CryptoEd448SupportRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.operation = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(&mut cur)?,
+                );
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoEd448SupportRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoEd448SupportRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoEd448SupportRequest {
+            operation: self.operation,
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEd448SupportRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.operation.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.operation.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoEd448SupportRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEd448SupportRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEd448SupportRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEd448SupportRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEd448SupportRequest";
+}
+::buffa::impl_default_view_instance!(CryptoEd448SupportRequestView);
+::buffa::impl_view_reborrow!(CryptoEd448SupportRequestView);
+/** Self-contained, `'static` owned view of a `CryptoEd448SupportRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoEd448SupportRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoEd448SupportRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoEd448SupportRequestOwnedView(
+    ::buffa::OwnedView<CryptoEd448SupportRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoEd448SupportRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEd448SupportRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoEd448SupportRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448SupportRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448SupportRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoEd448SupportRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448SupportRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoEd448SupportRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoEd448SupportRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoEd448SupportRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `operation`
+    #[must_use]
+    pub fn operation(&self) -> ::buffa::EnumValue<super::super::Ed448Operation> {
+        self.0.reborrow().operation
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoEd448SupportRequestView<'static>>>
+for CryptoEd448SupportRequestOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoEd448SupportRequestView<'static>>) -> Self {
+        CryptoEd448SupportRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoEd448SupportRequestOwnedView>
+for ::buffa::OwnedView<CryptoEd448SupportRequestView<'static>> {
+    fn from(wrapper: CryptoEd448SupportRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoEd448SupportRequestView<'static>>>
+for CryptoEd448SupportRequestOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoEd448SupportRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoEd448SupportRequest {
+    type View<'a> = CryptoEd448SupportRequestView<'a>;
+    type ViewHandle = CryptoEd448SupportRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoEd448SupportRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoEd448KeyImportRequestView<'a> {
+    /// Field 1: `seed`
+    pub seed: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoEd448KeyImportRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEd448KeyImportRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEd448KeyImportRequestView<'a> {
+    type Owned = super::super::CryptoEd448KeyImportRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.seed = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoEd448KeyImportRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoEd448KeyImportRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoEd448KeyImportRequest {
+            seed: (self.seed).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEd448KeyImportRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.seed.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.seed) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.seed.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.seed, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoEd448KeyImportRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEd448KeyImportRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEd448KeyImportRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEd448KeyImportRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEd448KeyImportRequest";
+}
+::buffa::impl_default_view_instance!(CryptoEd448KeyImportRequestView);
+::buffa::impl_view_reborrow!(CryptoEd448KeyImportRequestView);
+/** Self-contained, `'static` owned view of a `CryptoEd448KeyImportRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoEd448KeyImportRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoEd448KeyImportRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoEd448KeyImportRequestOwnedView(
+    ::buffa::OwnedView<CryptoEd448KeyImportRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoEd448KeyImportRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEd448KeyImportRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoEd448KeyImportRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448KeyImportRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448KeyImportRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoEd448KeyImportRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448KeyImportRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoEd448KeyImportRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoEd448KeyImportRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoEd448KeyImportRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `seed`
+    #[must_use]
+    pub fn seed(&self) -> &'_ [u8] {
+        self.0.reborrow().seed
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoEd448KeyImportRequestView<'static>>>
+for CryptoEd448KeyImportRequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoEd448KeyImportRequestView<'static>>,
+    ) -> Self {
+        CryptoEd448KeyImportRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoEd448KeyImportRequestOwnedView>
+for ::buffa::OwnedView<CryptoEd448KeyImportRequestView<'static>> {
+    fn from(wrapper: CryptoEd448KeyImportRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoEd448KeyImportRequestView<'static>>>
+for CryptoEd448KeyImportRequestOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoEd448KeyImportRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoEd448KeyImportRequest {
+    type View<'a> = CryptoEd448KeyImportRequestView<'a>;
+    type ViewHandle = CryptoEd448KeyImportRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoEd448KeyImportRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoEd448PublicKeyView<'a> {
+    /// Field 1: `public_key`
+    pub public_key: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoEd448PublicKeyView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEd448PublicKeyView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEd448PublicKeyView<'a> {
+    type Owned = super::super::CryptoEd448PublicKey;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.public_key = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoEd448PublicKey,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoEd448PublicKey,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoEd448PublicKey {
+            public_key: (self.public_key).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEd448PublicKeyView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.public_key.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.public_key) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.public_key.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.public_key, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoEd448PublicKeyView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEd448PublicKeyView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEd448PublicKey";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEd448PublicKey";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEd448PublicKey";
+}
+::buffa::impl_default_view_instance!(CryptoEd448PublicKeyView);
+::buffa::impl_view_reborrow!(CryptoEd448PublicKeyView);
+/** Self-contained, `'static` owned view of a `CryptoEd448PublicKey` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoEd448PublicKeyView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoEd448PublicKeyView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoEd448PublicKeyOwnedView(
+    ::buffa::OwnedView<CryptoEd448PublicKeyView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoEd448PublicKeyOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEd448PublicKeyOwnedView(<redacted>)")
+    }
+}
+impl CryptoEd448PublicKeyOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448PublicKeyOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448PublicKeyOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoEd448PublicKey,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448PublicKeyOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoEd448PublicKeyView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoEd448PublicKeyView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoEd448PublicKey {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `public_key`
+    #[must_use]
+    pub fn public_key(&self) -> &'_ [u8] {
+        self.0.reborrow().public_key
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoEd448PublicKeyView<'static>>>
+for CryptoEd448PublicKeyOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoEd448PublicKeyView<'static>>) -> Self {
+        CryptoEd448PublicKeyOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoEd448PublicKeyOwnedView>
+for ::buffa::OwnedView<CryptoEd448PublicKeyView<'static>> {
+    fn from(wrapper: CryptoEd448PublicKeyOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoEd448PublicKeyView<'static>>>
+for CryptoEd448PublicKeyOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoEd448PublicKeyView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoEd448PublicKey {
+    type View<'a> = CryptoEd448PublicKeyView<'a>;
+    type ViewHandle = CryptoEd448PublicKeyOwnedView;
+}
+impl ::serde::Serialize for CryptoEd448PublicKeyOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoEd448KeyDescriptorView<'a> {
+    /// Field 1: `public_key`
+    pub public_key: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEd448PublicKeyView<'a>,
+    >,
+    /// Field 2: `capabilities`
+    pub capabilities: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoNativeKeyCapabilitiesView<'a>,
+    >,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoEd448KeyDescriptorView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEd448KeyDescriptorView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEd448KeyDescriptorView<'a> {
+    type Owned = super::super::CryptoEd448KeyDescriptor;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.public_key.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.public_key = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoEd448PublicKeyView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.capabilities.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.capabilities = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoNativeKeyCapabilitiesView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoEd448KeyDescriptor,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoEd448KeyDescriptor,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoEd448KeyDescriptor {
+            public_key: match self.public_key.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoEd448PublicKey,
+                        ::buffa::Inline<super::super::CryptoEd448PublicKey>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            capabilities: match self.capabilities.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoNativeKeyCapabilities,
+                        ::buffa::Inline<super::super::CryptoNativeKeyCapabilities>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEd448KeyDescriptorView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.public_key.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.public_key.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if self.capabilities.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.capabilities.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.public_key.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.public_key.write_to(__cache, buf);
+        }
+        if self.capabilities.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                2u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.capabilities.write_to(__cache, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoEd448KeyDescriptorView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEd448KeyDescriptorView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEd448KeyDescriptor";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEd448KeyDescriptor";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEd448KeyDescriptor";
+}
+::buffa::impl_default_view_instance!(CryptoEd448KeyDescriptorView);
+::buffa::impl_view_reborrow!(CryptoEd448KeyDescriptorView);
+/** Self-contained, `'static` owned view of a `CryptoEd448KeyDescriptor` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoEd448KeyDescriptorView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoEd448KeyDescriptorView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoEd448KeyDescriptorOwnedView(
+    ::buffa::OwnedView<CryptoEd448KeyDescriptorView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoEd448KeyDescriptorOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEd448KeyDescriptorOwnedView(<redacted>)")
+    }
+}
+impl CryptoEd448KeyDescriptorOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448KeyDescriptorOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448KeyDescriptorOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoEd448KeyDescriptor,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448KeyDescriptorOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoEd448KeyDescriptorView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoEd448KeyDescriptorView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoEd448KeyDescriptor {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `public_key`
+    #[must_use]
+    pub fn public_key(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoEd448PublicKeyView<'_>,
+    > {
+        &self.0.reborrow().public_key
+    }
+    /// Field 2: `capabilities`
+    #[must_use]
+    pub fn capabilities(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoNativeKeyCapabilitiesView<'_>,
+    > {
+        &self.0.reborrow().capabilities
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoEd448KeyDescriptorView<'static>>>
+for CryptoEd448KeyDescriptorOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoEd448KeyDescriptorView<'static>>) -> Self {
+        CryptoEd448KeyDescriptorOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoEd448KeyDescriptorOwnedView>
+for ::buffa::OwnedView<CryptoEd448KeyDescriptorView<'static>> {
+    fn from(wrapper: CryptoEd448KeyDescriptorOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoEd448KeyDescriptorView<'static>>>
+for CryptoEd448KeyDescriptorOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoEd448KeyDescriptorView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoEd448KeyDescriptor {
+    type View<'a> = CryptoEd448KeyDescriptorView<'a>;
+    type ViewHandle = CryptoEd448KeyDescriptorOwnedView;
+}
+impl ::serde::Serialize for CryptoEd448KeyDescriptorOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoEd448OrdinarySignRequestView<'a> {
+    /// Field 1: `message`
+    pub message: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoEd448OrdinarySignRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEd448OrdinarySignRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEd448OrdinarySignRequestView<'a> {
+    type Owned = super::super::CryptoEd448OrdinarySignRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.message = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoEd448OrdinarySignRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoEd448OrdinarySignRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoEd448OrdinarySignRequest {
+            message: (self.message).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEd448OrdinarySignRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.message.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.message) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.message.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.message, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoEd448OrdinarySignRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEd448OrdinarySignRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEd448OrdinarySignRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEd448OrdinarySignRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEd448OrdinarySignRequest";
+}
+::buffa::impl_default_view_instance!(CryptoEd448OrdinarySignRequestView);
+::buffa::impl_view_reborrow!(CryptoEd448OrdinarySignRequestView);
+/** Self-contained, `'static` owned view of a `CryptoEd448OrdinarySignRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoEd448OrdinarySignRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoEd448OrdinarySignRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoEd448OrdinarySignRequestOwnedView(
+    ::buffa::OwnedView<CryptoEd448OrdinarySignRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoEd448OrdinarySignRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEd448OrdinarySignRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoEd448OrdinarySignRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448OrdinarySignRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448OrdinarySignRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoEd448OrdinarySignRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448OrdinarySignRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoEd448OrdinarySignRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoEd448OrdinarySignRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoEd448OrdinarySignRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `message`
+    #[must_use]
+    pub fn message(&self) -> &'_ [u8] {
+        self.0.reborrow().message
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoEd448OrdinarySignRequestView<'static>>,
+> for CryptoEd448OrdinarySignRequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoEd448OrdinarySignRequestView<'static>>,
+    ) -> Self {
+        CryptoEd448OrdinarySignRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoEd448OrdinarySignRequestOwnedView>
+for ::buffa::OwnedView<CryptoEd448OrdinarySignRequestView<'static>> {
+    fn from(wrapper: CryptoEd448OrdinarySignRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoEd448OrdinarySignRequestView<'static>>,
+> for CryptoEd448OrdinarySignRequestOwnedView {
+    fn as_ref(
+        &self,
+    ) -> &::buffa::OwnedView<CryptoEd448OrdinarySignRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoEd448OrdinarySignRequest {
+    type View<'a> = CryptoEd448OrdinarySignRequestView<'a>;
+    type ViewHandle = CryptoEd448OrdinarySignRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoEd448OrdinarySignRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoEd448OrdinaryVerifyRequestView<'a> {
+    /// Field 1: `public_key`
+    pub public_key: &'a [u8],
+    /// Field 2: `message`
+    pub message: &'a [u8],
+    /// Field 3: `signature`
+    pub signature: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoEd448OrdinaryVerifyRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEd448OrdinaryVerifyRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEd448OrdinaryVerifyRequestView<'a> {
+    type Owned = super::super::CryptoEd448OrdinaryVerifyRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.public_key = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.message = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.signature = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoEd448OrdinaryVerifyRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoEd448OrdinaryVerifyRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoEd448OrdinaryVerifyRequest {
+            public_key: (self.public_key).to_vec(),
+            message: (self.message).to_vec(),
+            signature: (self.signature).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEd448OrdinaryVerifyRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.public_key.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.public_key) as u64;
+        }
+        if !self.message.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.message) as u64;
+        }
+        if !self.signature.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.signature) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.public_key.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.public_key, buf);
+        }
+        if !self.message.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.message, buf);
+        }
+        if !self.signature.is_empty() {
+            ::buffa::types::put_shared_bytes_field(3u32, &self.signature, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoEd448OrdinaryVerifyRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEd448OrdinaryVerifyRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEd448OrdinaryVerifyRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEd448OrdinaryVerifyRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEd448OrdinaryVerifyRequest";
+}
+::buffa::impl_default_view_instance!(CryptoEd448OrdinaryVerifyRequestView);
+::buffa::impl_view_reborrow!(CryptoEd448OrdinaryVerifyRequestView);
+/** Self-contained, `'static` owned view of a `CryptoEd448OrdinaryVerifyRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoEd448OrdinaryVerifyRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoEd448OrdinaryVerifyRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoEd448OrdinaryVerifyRequestOwnedView(
+    ::buffa::OwnedView<CryptoEd448OrdinaryVerifyRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoEd448OrdinaryVerifyRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoEd448OrdinaryVerifyRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoEd448OrdinaryVerifyRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448OrdinaryVerifyRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448OrdinaryVerifyRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoEd448OrdinaryVerifyRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoEd448OrdinaryVerifyRequestOwnedView(
+                ::buffa::OwnedView::from_owned(msg)?,
+            ),
+        )
+    }
+    /// Borrow the full [`CryptoEd448OrdinaryVerifyRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoEd448OrdinaryVerifyRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoEd448OrdinaryVerifyRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `public_key`
+    #[must_use]
+    pub fn public_key(&self) -> &'_ [u8] {
+        self.0.reborrow().public_key
+    }
+    /// Field 2: `message`
+    #[must_use]
+    pub fn message(&self) -> &'_ [u8] {
+        self.0.reborrow().message
+    }
+    /// Field 3: `signature`
+    #[must_use]
+    pub fn signature(&self) -> &'_ [u8] {
+        self.0.reborrow().signature
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoEd448OrdinaryVerifyRequestView<'static>>,
+> for CryptoEd448OrdinaryVerifyRequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoEd448OrdinaryVerifyRequestView<'static>>,
+    ) -> Self {
+        CryptoEd448OrdinaryVerifyRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoEd448OrdinaryVerifyRequestOwnedView>
+for ::buffa::OwnedView<CryptoEd448OrdinaryVerifyRequestView<'static>> {
+    fn from(wrapper: CryptoEd448OrdinaryVerifyRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoEd448OrdinaryVerifyRequestView<'static>>,
+> for CryptoEd448OrdinaryVerifyRequestOwnedView {
+    fn as_ref(
+        &self,
+    ) -> &::buffa::OwnedView<CryptoEd448OrdinaryVerifyRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoEd448OrdinaryVerifyRequest {
+    type View<'a> = CryptoEd448OrdinaryVerifyRequestView<'a>;
+    type ViewHandle = CryptoEd448OrdinaryVerifyRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoEd448OrdinaryVerifyRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// Prime-group scalar input is accepted only by import, and is never emitted
+/// from a native GroupScalar. Elements can be secret intermediates and keep
+/// clearing ownership even when their standard-generator result is public.
+#[derive(Clone, Default)]
+pub struct CryptoPrimeGroupScalarGenerateRequestView<'a> {
+    /// Field 1: `group`
+    pub group: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupIdentifierView<'a>,
+    >,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoPrimeGroupScalarGenerateRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupScalarGenerateRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoPrimeGroupScalarGenerateRequestView<'a> {
+    type Owned = super::super::CryptoPrimeGroupScalarGenerateRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.group.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.group = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoPrimeGroupIdentifierView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupScalarGenerateRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupScalarGenerateRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoPrimeGroupScalarGenerateRequest {
+            group: match self.group.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoPrimeGroupIdentifier,
+                        ::buffa::Inline<super::super::CryptoPrimeGroupIdentifier>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoPrimeGroupScalarGenerateRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.group.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.group.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.group.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.group.write_to(__cache, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoPrimeGroupScalarGenerateRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoPrimeGroupScalarGenerateRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoPrimeGroupScalarGenerateRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoPrimeGroupScalarGenerateRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupScalarGenerateRequest";
+}
+::buffa::impl_default_view_instance!(CryptoPrimeGroupScalarGenerateRequestView);
+::buffa::impl_view_reborrow!(CryptoPrimeGroupScalarGenerateRequestView);
+/** Self-contained, `'static` owned view of a `CryptoPrimeGroupScalarGenerateRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoPrimeGroupScalarGenerateRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoPrimeGroupScalarGenerateRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoPrimeGroupScalarGenerateRequestOwnedView(
+    ::buffa::OwnedView<CryptoPrimeGroupScalarGenerateRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoPrimeGroupScalarGenerateRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupScalarGenerateRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoPrimeGroupScalarGenerateRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupScalarGenerateRequestOwnedView(
+                ::buffa::OwnedView::decode(bytes)?,
+            ),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupScalarGenerateRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoPrimeGroupScalarGenerateRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupScalarGenerateRequestOwnedView(
+                ::buffa::OwnedView::from_owned(msg)?,
+            ),
+        )
+    }
+    /// Borrow the full [`CryptoPrimeGroupScalarGenerateRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoPrimeGroupScalarGenerateRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(
+        &self,
+    ) -> super::super::CryptoPrimeGroupScalarGenerateRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `group`
+    #[must_use]
+    pub fn group(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupIdentifierView<'_>,
+    > {
+        &self.0.reborrow().group
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoPrimeGroupScalarGenerateRequestView<'static>>,
+> for CryptoPrimeGroupScalarGenerateRequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoPrimeGroupScalarGenerateRequestView<'static>>,
+    ) -> Self {
+        CryptoPrimeGroupScalarGenerateRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoPrimeGroupScalarGenerateRequestOwnedView>
+for ::buffa::OwnedView<CryptoPrimeGroupScalarGenerateRequestView<'static>> {
+    fn from(wrapper: CryptoPrimeGroupScalarGenerateRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoPrimeGroupScalarGenerateRequestView<'static>>,
+> for CryptoPrimeGroupScalarGenerateRequestOwnedView {
+    fn as_ref(
+        &self,
+    ) -> &::buffa::OwnedView<CryptoPrimeGroupScalarGenerateRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoPrimeGroupScalarGenerateRequest {
+    type View<'a> = CryptoPrimeGroupScalarGenerateRequestView<'a>;
+    type ViewHandle = CryptoPrimeGroupScalarGenerateRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoPrimeGroupScalarGenerateRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoPrimeGroupScalarImportRequestView<'a> {
+    /// Field 1: `group`
+    pub group: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupIdentifierView<'a>,
+    >,
+    /// Field 2: `scalar`
+    pub scalar: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoPrimeGroupScalarImportRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupScalarImportRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoPrimeGroupScalarImportRequestView<'a> {
+    type Owned = super::super::CryptoPrimeGroupScalarImportRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.group.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.group = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoPrimeGroupIdentifierView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.scalar = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupScalarImportRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupScalarImportRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoPrimeGroupScalarImportRequest {
+            group: match self.group.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoPrimeGroupIdentifier,
+                        ::buffa::Inline<super::super::CryptoPrimeGroupIdentifier>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            scalar: (self.scalar).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoPrimeGroupScalarImportRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.group.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.group.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if !self.scalar.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.scalar) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.group.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.group.write_to(__cache, buf);
+        }
+        if !self.scalar.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.scalar, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoPrimeGroupScalarImportRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoPrimeGroupScalarImportRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoPrimeGroupScalarImportRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoPrimeGroupScalarImportRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupScalarImportRequest";
+}
+::buffa::impl_default_view_instance!(CryptoPrimeGroupScalarImportRequestView);
+::buffa::impl_view_reborrow!(CryptoPrimeGroupScalarImportRequestView);
+/** Self-contained, `'static` owned view of a `CryptoPrimeGroupScalarImportRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoPrimeGroupScalarImportRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoPrimeGroupScalarImportRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoPrimeGroupScalarImportRequestOwnedView(
+    ::buffa::OwnedView<CryptoPrimeGroupScalarImportRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoPrimeGroupScalarImportRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupScalarImportRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoPrimeGroupScalarImportRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupScalarImportRequestOwnedView(
+                ::buffa::OwnedView::decode(bytes)?,
+            ),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupScalarImportRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoPrimeGroupScalarImportRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupScalarImportRequestOwnedView(
+                ::buffa::OwnedView::from_owned(msg)?,
+            ),
+        )
+    }
+    /// Borrow the full [`CryptoPrimeGroupScalarImportRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoPrimeGroupScalarImportRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoPrimeGroupScalarImportRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `group`
+    #[must_use]
+    pub fn group(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupIdentifierView<'_>,
+    > {
+        &self.0.reborrow().group
+    }
+    /// Field 2: `scalar`
+    #[must_use]
+    pub fn scalar(&self) -> &'_ [u8] {
+        self.0.reborrow().scalar
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoPrimeGroupScalarImportRequestView<'static>>,
+> for CryptoPrimeGroupScalarImportRequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoPrimeGroupScalarImportRequestView<'static>>,
+    ) -> Self {
+        CryptoPrimeGroupScalarImportRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoPrimeGroupScalarImportRequestOwnedView>
+for ::buffa::OwnedView<CryptoPrimeGroupScalarImportRequestView<'static>> {
+    fn from(wrapper: CryptoPrimeGroupScalarImportRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoPrimeGroupScalarImportRequestView<'static>>,
+> for CryptoPrimeGroupScalarImportRequestOwnedView {
+    fn as_ref(
+        &self,
+    ) -> &::buffa::OwnedView<CryptoPrimeGroupScalarImportRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoPrimeGroupScalarImportRequest {
+    type View<'a> = CryptoPrimeGroupScalarImportRequestView<'a>;
+    type ViewHandle = CryptoPrimeGroupScalarImportRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoPrimeGroupScalarImportRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoPrimeGroupElementView<'a> {
+    /// Field 1: `group`
+    pub group: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupIdentifierView<'a>,
+    >,
+    /// Field 2: `encoding`
+    pub encoding: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoPrimeGroupElementView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupElementView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoPrimeGroupElementView<'a> {
+    type Owned = super::super::CryptoPrimeGroupElement;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.group.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.group = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoPrimeGroupIdentifierView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.encoding = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupElement,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupElement,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoPrimeGroupElement {
+            group: match self.group.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoPrimeGroupIdentifier,
+                        ::buffa::Inline<super::super::CryptoPrimeGroupIdentifier>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            encoding: (self.encoding).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoPrimeGroupElementView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.group.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.group.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if !self.encoding.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.encoding) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.group.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.group.write_to(__cache, buf);
+        }
+        if !self.encoding.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.encoding, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoPrimeGroupElementView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoPrimeGroupElementView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoPrimeGroupElement";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoPrimeGroupElement";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupElement";
+}
+::buffa::impl_default_view_instance!(CryptoPrimeGroupElementView);
+::buffa::impl_view_reborrow!(CryptoPrimeGroupElementView);
+/** Self-contained, `'static` owned view of a `CryptoPrimeGroupElement` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoPrimeGroupElementView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoPrimeGroupElementView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoPrimeGroupElementOwnedView(
+    ::buffa::OwnedView<CryptoPrimeGroupElementView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoPrimeGroupElementOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupElementOwnedView(<redacted>)")
+    }
+}
+impl CryptoPrimeGroupElementOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupElementOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupElementOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoPrimeGroupElement,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupElementOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoPrimeGroupElementView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoPrimeGroupElementView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoPrimeGroupElement {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `group`
+    #[must_use]
+    pub fn group(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupIdentifierView<'_>,
+    > {
+        &self.0.reborrow().group
+    }
+    /// Field 2: `encoding`
+    #[must_use]
+    pub fn encoding(&self) -> &'_ [u8] {
+        self.0.reborrow().encoding
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoPrimeGroupElementView<'static>>>
+for CryptoPrimeGroupElementOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoPrimeGroupElementView<'static>>) -> Self {
+        CryptoPrimeGroupElementOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoPrimeGroupElementOwnedView>
+for ::buffa::OwnedView<CryptoPrimeGroupElementView<'static>> {
+    fn from(wrapper: CryptoPrimeGroupElementOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoPrimeGroupElementView<'static>>>
+for CryptoPrimeGroupElementOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoPrimeGroupElementView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoPrimeGroupElement {
+    type View<'a> = CryptoPrimeGroupElementView<'a>;
+    type ViewHandle = CryptoPrimeGroupElementOwnedView;
+}
+impl ::serde::Serialize for CryptoPrimeGroupElementOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoPrimeGroupScalarDescriptorView<'a> {
+    /// Field 1: `public_element`
+    pub public_element: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupElementView<'a>,
+    >,
+    /// Field 2: `capabilities`
+    pub capabilities: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoNativeKeyCapabilitiesView<'a>,
+    >,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoPrimeGroupScalarDescriptorView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupScalarDescriptorView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoPrimeGroupScalarDescriptorView<'a> {
+    type Owned = super::super::CryptoPrimeGroupScalarDescriptor;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.public_element.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.public_element = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoPrimeGroupElementView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.capabilities.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.capabilities = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoNativeKeyCapabilitiesView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupScalarDescriptor,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupScalarDescriptor,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoPrimeGroupScalarDescriptor {
+            public_element: match self.public_element.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoPrimeGroupElement,
+                        ::buffa::Inline<super::super::CryptoPrimeGroupElement>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            capabilities: match self.capabilities.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoNativeKeyCapabilities,
+                        ::buffa::Inline<super::super::CryptoNativeKeyCapabilities>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoPrimeGroupScalarDescriptorView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.public_element.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.public_element.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if self.capabilities.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.capabilities.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.public_element.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.public_element.write_to(__cache, buf);
+        }
+        if self.capabilities.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                2u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.capabilities.write_to(__cache, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoPrimeGroupScalarDescriptorView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoPrimeGroupScalarDescriptorView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoPrimeGroupScalarDescriptor";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoPrimeGroupScalarDescriptor";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupScalarDescriptor";
+}
+::buffa::impl_default_view_instance!(CryptoPrimeGroupScalarDescriptorView);
+::buffa::impl_view_reborrow!(CryptoPrimeGroupScalarDescriptorView);
+/** Self-contained, `'static` owned view of a `CryptoPrimeGroupScalarDescriptor` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoPrimeGroupScalarDescriptorView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoPrimeGroupScalarDescriptorView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoPrimeGroupScalarDescriptorOwnedView(
+    ::buffa::OwnedView<CryptoPrimeGroupScalarDescriptorView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoPrimeGroupScalarDescriptorOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupScalarDescriptorOwnedView(<redacted>)")
+    }
+}
+impl CryptoPrimeGroupScalarDescriptorOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupScalarDescriptorOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupScalarDescriptorOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoPrimeGroupScalarDescriptor,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupScalarDescriptorOwnedView(
+                ::buffa::OwnedView::from_owned(msg)?,
+            ),
+        )
+    }
+    /// Borrow the full [`CryptoPrimeGroupScalarDescriptorView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoPrimeGroupScalarDescriptorView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoPrimeGroupScalarDescriptor {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `public_element`
+    #[must_use]
+    pub fn public_element(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupElementView<'_>,
+    > {
+        &self.0.reborrow().public_element
+    }
+    /// Field 2: `capabilities`
+    #[must_use]
+    pub fn capabilities(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoNativeKeyCapabilitiesView<'_>,
+    > {
+        &self.0.reborrow().capabilities
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoPrimeGroupScalarDescriptorView<'static>>,
+> for CryptoPrimeGroupScalarDescriptorOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoPrimeGroupScalarDescriptorView<'static>>,
+    ) -> Self {
+        CryptoPrimeGroupScalarDescriptorOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoPrimeGroupScalarDescriptorOwnedView>
+for ::buffa::OwnedView<CryptoPrimeGroupScalarDescriptorView<'static>> {
+    fn from(wrapper: CryptoPrimeGroupScalarDescriptorOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoPrimeGroupScalarDescriptorView<'static>>,
+> for CryptoPrimeGroupScalarDescriptorOwnedView {
+    fn as_ref(
+        &self,
+    ) -> &::buffa::OwnedView<CryptoPrimeGroupScalarDescriptorView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoPrimeGroupScalarDescriptor {
+    type View<'a> = CryptoPrimeGroupScalarDescriptorView<'a>;
+    type ViewHandle = CryptoPrimeGroupScalarDescriptorOwnedView;
+}
+impl ::serde::Serialize for CryptoPrimeGroupScalarDescriptorOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoPrimeGroupMultiplyRequestView<'a> {
+    /// Field 1: `base`
+    pub base: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupElementView<'a>,
+    >,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoPrimeGroupMultiplyRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupMultiplyRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoPrimeGroupMultiplyRequestView<'a> {
+    type Owned = super::super::CryptoPrimeGroupMultiplyRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.base.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.base = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoPrimeGroupElementView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupMultiplyRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupMultiplyRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoPrimeGroupMultiplyRequest {
+            base: match self.base.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoPrimeGroupElement,
+                        ::buffa::Inline<super::super::CryptoPrimeGroupElement>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoPrimeGroupMultiplyRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.base.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.base.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.base.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.base.write_to(__cache, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoPrimeGroupMultiplyRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoPrimeGroupMultiplyRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoPrimeGroupMultiplyRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoPrimeGroupMultiplyRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupMultiplyRequest";
+}
+::buffa::impl_default_view_instance!(CryptoPrimeGroupMultiplyRequestView);
+::buffa::impl_view_reborrow!(CryptoPrimeGroupMultiplyRequestView);
+/** Self-contained, `'static` owned view of a `CryptoPrimeGroupMultiplyRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoPrimeGroupMultiplyRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoPrimeGroupMultiplyRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoPrimeGroupMultiplyRequestOwnedView(
+    ::buffa::OwnedView<CryptoPrimeGroupMultiplyRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoPrimeGroupMultiplyRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupMultiplyRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoPrimeGroupMultiplyRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupMultiplyRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupMultiplyRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoPrimeGroupMultiplyRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupMultiplyRequestOwnedView(
+                ::buffa::OwnedView::from_owned(msg)?,
+            ),
+        )
+    }
+    /// Borrow the full [`CryptoPrimeGroupMultiplyRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoPrimeGroupMultiplyRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoPrimeGroupMultiplyRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `base`
+    #[must_use]
+    pub fn base(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupElementView<'_>,
+    > {
+        &self.0.reborrow().base
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoPrimeGroupMultiplyRequestView<'static>>,
+> for CryptoPrimeGroupMultiplyRequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoPrimeGroupMultiplyRequestView<'static>>,
+    ) -> Self {
+        CryptoPrimeGroupMultiplyRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoPrimeGroupMultiplyRequestOwnedView>
+for ::buffa::OwnedView<CryptoPrimeGroupMultiplyRequestView<'static>> {
+    fn from(wrapper: CryptoPrimeGroupMultiplyRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoPrimeGroupMultiplyRequestView<'static>>,
+> for CryptoPrimeGroupMultiplyRequestOwnedView {
+    fn as_ref(
+        &self,
+    ) -> &::buffa::OwnedView<CryptoPrimeGroupMultiplyRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoPrimeGroupMultiplyRequest {
+    type View<'a> = CryptoPrimeGroupMultiplyRequestView<'a>;
+    type ViewHandle = CryptoPrimeGroupMultiplyRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoPrimeGroupMultiplyRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// EC: \[n\] base + offset. DH: base^n * offset. The native bounded unsigned
+/// coefficient is reduced modulo q; zero is allowed, final identity is not.
+#[derive(Clone, Default)]
+pub struct CryptoPrimeGroupLinearCombinationRequestView<'a> {
+    /// Field 1: `group`
+    pub group: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupIdentifierView<'a>,
+    >,
+    /// Field 2: `coefficient`
+    pub coefficient: &'a [u8],
+    /// Field 3: `base`
+    pub base: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupElementView<'a>,
+    >,
+    /// Field 4: `offset`
+    pub offset: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupElementView<'a>,
+    >,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoPrimeGroupLinearCombinationRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupLinearCombinationRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoPrimeGroupLinearCombinationRequestView<'a> {
+    type Owned = super::super::CryptoPrimeGroupLinearCombinationRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.group.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.group = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoPrimeGroupIdentifierView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.coefficient = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.base.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.base = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoPrimeGroupElementView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.offset.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.offset = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoPrimeGroupElementView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupLinearCombinationRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupLinearCombinationRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoPrimeGroupLinearCombinationRequest {
+            group: match self.group.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoPrimeGroupIdentifier,
+                        ::buffa::Inline<super::super::CryptoPrimeGroupIdentifier>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            coefficient: (self.coefficient).to_vec(),
+            base: match self.base.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoPrimeGroupElement,
+                        ::buffa::Inline<super::super::CryptoPrimeGroupElement>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            offset: match self.offset.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoPrimeGroupElement,
+                        ::buffa::Inline<super::super::CryptoPrimeGroupElement>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoPrimeGroupLinearCombinationRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.group.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.group.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if !self.coefficient.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.coefficient) as u64;
+        }
+        if self.base.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.base.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if self.offset.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.offset.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.group.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.group.write_to(__cache, buf);
+        }
+        if !self.coefficient.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.coefficient, buf);
+        }
+        if self.base.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                3u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.base.write_to(__cache, buf);
+        }
+        if self.offset.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                4u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.offset.write_to(__cache, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoPrimeGroupLinearCombinationRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoPrimeGroupLinearCombinationRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoPrimeGroupLinearCombinationRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoPrimeGroupLinearCombinationRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupLinearCombinationRequest";
+}
+::buffa::impl_default_view_instance!(CryptoPrimeGroupLinearCombinationRequestView);
+::buffa::impl_view_reborrow!(CryptoPrimeGroupLinearCombinationRequestView);
+/** Self-contained, `'static` owned view of a `CryptoPrimeGroupLinearCombinationRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoPrimeGroupLinearCombinationRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoPrimeGroupLinearCombinationRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoPrimeGroupLinearCombinationRequestOwnedView(
+    ::buffa::OwnedView<CryptoPrimeGroupLinearCombinationRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoPrimeGroupLinearCombinationRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupLinearCombinationRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoPrimeGroupLinearCombinationRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupLinearCombinationRequestOwnedView(
+                ::buffa::OwnedView::decode(bytes)?,
+            ),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupLinearCombinationRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoPrimeGroupLinearCombinationRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupLinearCombinationRequestOwnedView(
+                ::buffa::OwnedView::from_owned(msg)?,
+            ),
+        )
+    }
+    /// Borrow the full [`CryptoPrimeGroupLinearCombinationRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoPrimeGroupLinearCombinationRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(
+        &self,
+    ) -> super::super::CryptoPrimeGroupLinearCombinationRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `group`
+    #[must_use]
+    pub fn group(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupIdentifierView<'_>,
+    > {
+        &self.0.reborrow().group
+    }
+    /// Field 2: `coefficient`
+    #[must_use]
+    pub fn coefficient(&self) -> &'_ [u8] {
+        self.0.reborrow().coefficient
+    }
+    /// Field 3: `base`
+    #[must_use]
+    pub fn base(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupElementView<'_>,
+    > {
+        &self.0.reborrow().base
+    }
+    /// Field 4: `offset`
+    #[must_use]
+    pub fn offset(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupElementView<'_>,
+    > {
+        &self.0.reborrow().offset
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoPrimeGroupLinearCombinationRequestView<'static>>,
+> for CryptoPrimeGroupLinearCombinationRequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoPrimeGroupLinearCombinationRequestView<'static>>,
+    ) -> Self {
+        CryptoPrimeGroupLinearCombinationRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoPrimeGroupLinearCombinationRequestOwnedView>
+for ::buffa::OwnedView<CryptoPrimeGroupLinearCombinationRequestView<'static>> {
+    fn from(wrapper: CryptoPrimeGroupLinearCombinationRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoPrimeGroupLinearCombinationRequestView<'static>>,
+> for CryptoPrimeGroupLinearCombinationRequestOwnedView {
+    fn as_ref(
+        &self,
+    ) -> &::buffa::OwnedView<CryptoPrimeGroupLinearCombinationRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoPrimeGroupLinearCombinationRequest {
+    type View<'a> = CryptoPrimeGroupLinearCombinationRequestView<'a>;
+    type ViewHandle = CryptoPrimeGroupLinearCombinationRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoPrimeGroupLinearCombinationRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoPrimeGroupReduceToFieldRequestView<'a> {
+    /// Field 1: `group`
+    pub group: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupIdentifierView<'a>,
+    >,
+    /// Field 2: `input`
+    pub input: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoPrimeGroupReduceToFieldRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupReduceToFieldRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoPrimeGroupReduceToFieldRequestView<'a> {
+    type Owned = super::super::CryptoPrimeGroupReduceToFieldRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.group.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.group = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoPrimeGroupIdentifierView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.input = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupReduceToFieldRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupReduceToFieldRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoPrimeGroupReduceToFieldRequest {
+            group: match self.group.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoPrimeGroupIdentifier,
+                        ::buffa::Inline<super::super::CryptoPrimeGroupIdentifier>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            input: (self.input).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoPrimeGroupReduceToFieldRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.group.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.group.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if !self.input.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.input) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.group.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.group.write_to(__cache, buf);
+        }
+        if !self.input.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.input, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoPrimeGroupReduceToFieldRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoPrimeGroupReduceToFieldRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoPrimeGroupReduceToFieldRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoPrimeGroupReduceToFieldRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupReduceToFieldRequest";
+}
+::buffa::impl_default_view_instance!(CryptoPrimeGroupReduceToFieldRequestView);
+::buffa::impl_view_reborrow!(CryptoPrimeGroupReduceToFieldRequestView);
+/** Self-contained, `'static` owned view of a `CryptoPrimeGroupReduceToFieldRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoPrimeGroupReduceToFieldRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoPrimeGroupReduceToFieldRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoPrimeGroupReduceToFieldRequestOwnedView(
+    ::buffa::OwnedView<CryptoPrimeGroupReduceToFieldRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoPrimeGroupReduceToFieldRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupReduceToFieldRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoPrimeGroupReduceToFieldRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupReduceToFieldRequestOwnedView(
+                ::buffa::OwnedView::decode(bytes)?,
+            ),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupReduceToFieldRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoPrimeGroupReduceToFieldRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupReduceToFieldRequestOwnedView(
+                ::buffa::OwnedView::from_owned(msg)?,
+            ),
+        )
+    }
+    /// Borrow the full [`CryptoPrimeGroupReduceToFieldRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoPrimeGroupReduceToFieldRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(
+        &self,
+    ) -> super::super::CryptoPrimeGroupReduceToFieldRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `group`
+    #[must_use]
+    pub fn group(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupIdentifierView<'_>,
+    > {
+        &self.0.reborrow().group
+    }
+    /// Field 2: `input`
+    #[must_use]
+    pub fn input(&self) -> &'_ [u8] {
+        self.0.reborrow().input
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoPrimeGroupReduceToFieldRequestView<'static>>,
+> for CryptoPrimeGroupReduceToFieldRequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoPrimeGroupReduceToFieldRequestView<'static>>,
+    ) -> Self {
+        CryptoPrimeGroupReduceToFieldRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoPrimeGroupReduceToFieldRequestOwnedView>
+for ::buffa::OwnedView<CryptoPrimeGroupReduceToFieldRequestView<'static>> {
+    fn from(wrapper: CryptoPrimeGroupReduceToFieldRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoPrimeGroupReduceToFieldRequestView<'static>>,
+> for CryptoPrimeGroupReduceToFieldRequestOwnedView {
+    fn as_ref(
+        &self,
+    ) -> &::buffa::OwnedView<CryptoPrimeGroupReduceToFieldRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoPrimeGroupReduceToFieldRequest {
+    type View<'a> = CryptoPrimeGroupReduceToFieldRequestView<'a>;
+    type ViewHandle = CryptoPrimeGroupReduceToFieldRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoPrimeGroupReduceToFieldRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// Exact-width canonical field bytes for encode_field, or protected reduction
+/// output. No transcript, hashing, proof system or protocol domain is inferred.
+#[derive(Clone, Default)]
+pub struct CryptoPrimeGroupFieldValueView<'a> {
+    /// Field 1: `group`
+    pub group: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupIdentifierView<'a>,
+    >,
+    /// Field 2: `value`
+    pub value: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoPrimeGroupFieldValueView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupFieldValueView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoPrimeGroupFieldValueView<'a> {
+    type Owned = super::super::CryptoPrimeGroupFieldValue;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.group.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.group = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoPrimeGroupIdentifierView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.value = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupFieldValue,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupFieldValue,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoPrimeGroupFieldValue {
+            group: match self.group.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoPrimeGroupIdentifier,
+                        ::buffa::Inline<super::super::CryptoPrimeGroupIdentifier>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            value: (self.value).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoPrimeGroupFieldValueView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.group.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.group.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if !self.value.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.value) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.group.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.group.write_to(__cache, buf);
+        }
+        if !self.value.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.value, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoPrimeGroupFieldValueView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoPrimeGroupFieldValueView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoPrimeGroupFieldValue";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoPrimeGroupFieldValue";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupFieldValue";
+}
+::buffa::impl_default_view_instance!(CryptoPrimeGroupFieldValueView);
+::buffa::impl_view_reborrow!(CryptoPrimeGroupFieldValueView);
+/** Self-contained, `'static` owned view of a `CryptoPrimeGroupFieldValue` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoPrimeGroupFieldValueView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoPrimeGroupFieldValueView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoPrimeGroupFieldValueOwnedView(
+    ::buffa::OwnedView<CryptoPrimeGroupFieldValueView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoPrimeGroupFieldValueOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupFieldValueOwnedView(<redacted>)")
+    }
+}
+impl CryptoPrimeGroupFieldValueOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupFieldValueOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupFieldValueOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoPrimeGroupFieldValue,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupFieldValueOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoPrimeGroupFieldValueView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoPrimeGroupFieldValueView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoPrimeGroupFieldValue {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `group`
+    #[must_use]
+    pub fn group(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupIdentifierView<'_>,
+    > {
+        &self.0.reborrow().group
+    }
+    /// Field 2: `value`
+    #[must_use]
+    pub fn value(&self) -> &'_ [u8] {
+        self.0.reborrow().value
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoPrimeGroupFieldValueView<'static>>>
+for CryptoPrimeGroupFieldValueOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoPrimeGroupFieldValueView<'static>>) -> Self {
+        CryptoPrimeGroupFieldValueOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoPrimeGroupFieldValueOwnedView>
+for ::buffa::OwnedView<CryptoPrimeGroupFieldValueView<'static>> {
+    fn from(wrapper: CryptoPrimeGroupFieldValueOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoPrimeGroupFieldValueView<'static>>>
+for CryptoPrimeGroupFieldValueOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoPrimeGroupFieldValueView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoPrimeGroupFieldValue {
+    type View<'a> = CryptoPrimeGroupFieldValueView<'a>;
+    type ViewHandle = CryptoPrimeGroupFieldValueOwnedView;
+}
+impl ::serde::Serialize for CryptoPrimeGroupFieldValueOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoPrimeGroupDomainRequestView<'a> {
+    /// Field 1: `group`
+    pub group: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupIdentifierView<'a>,
+    >,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoPrimeGroupDomainRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupDomainRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoPrimeGroupDomainRequestView<'a> {
+    type Owned = super::super::CryptoPrimeGroupDomainRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.group.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.group = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoPrimeGroupIdentifierView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupDomainRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupDomainRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoPrimeGroupDomainRequest {
+            group: match self.group.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoPrimeGroupIdentifier,
+                        ::buffa::Inline<super::super::CryptoPrimeGroupIdentifier>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoPrimeGroupDomainRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.group.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.group.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.group.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.group.write_to(__cache, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoPrimeGroupDomainRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoPrimeGroupDomainRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoPrimeGroupDomainRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoPrimeGroupDomainRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupDomainRequest";
+}
+::buffa::impl_default_view_instance!(CryptoPrimeGroupDomainRequestView);
+::buffa::impl_view_reborrow!(CryptoPrimeGroupDomainRequestView);
+/** Self-contained, `'static` owned view of a `CryptoPrimeGroupDomainRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoPrimeGroupDomainRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoPrimeGroupDomainRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoPrimeGroupDomainRequestOwnedView(
+    ::buffa::OwnedView<CryptoPrimeGroupDomainRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoPrimeGroupDomainRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupDomainRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoPrimeGroupDomainRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupDomainRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupDomainRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoPrimeGroupDomainRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupDomainRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoPrimeGroupDomainRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoPrimeGroupDomainRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoPrimeGroupDomainRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `group`
+    #[must_use]
+    pub fn group(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupIdentifierView<'_>,
+    > {
+        &self.0.reborrow().group
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoPrimeGroupDomainRequestView<'static>>,
+> for CryptoPrimeGroupDomainRequestOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoPrimeGroupDomainRequestView<'static>>,
+    ) -> Self {
+        CryptoPrimeGroupDomainRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoPrimeGroupDomainRequestOwnedView>
+for ::buffa::OwnedView<CryptoPrimeGroupDomainRequestView<'static>> {
+    fn from(wrapper: CryptoPrimeGroupDomainRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoPrimeGroupDomainRequestView<'static>>,
+> for CryptoPrimeGroupDomainRequestOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoPrimeGroupDomainRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoPrimeGroupDomainRequest {
+    type View<'a> = CryptoPrimeGroupDomainRequestView<'a>;
+    type ViewHandle = CryptoPrimeGroupDomainRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoPrimeGroupDomainRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoPrimeGroupCurveCoefficientsView<'a> {
+    /// Field 1: `a`
+    pub a: &'a [u8],
+    /// Field 2: `b`
+    pub b: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoPrimeGroupCurveCoefficientsView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupCurveCoefficientsView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoPrimeGroupCurveCoefficientsView<'a> {
+    type Owned = super::super::CryptoPrimeGroupCurveCoefficients;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.a = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.b = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupCurveCoefficients,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupCurveCoefficients,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoPrimeGroupCurveCoefficients {
+            a: (self.a).to_vec(),
+            b: (self.b).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoPrimeGroupCurveCoefficientsView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.a.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.a) as u64;
+        }
+        if !self.b.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.b) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.a.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.a, buf);
+        }
+        if !self.b.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.b, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoPrimeGroupCurveCoefficientsView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoPrimeGroupCurveCoefficientsView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoPrimeGroupCurveCoefficients";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoPrimeGroupCurveCoefficients";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupCurveCoefficients";
+}
+::buffa::impl_default_view_instance!(CryptoPrimeGroupCurveCoefficientsView);
+::buffa::impl_view_reborrow!(CryptoPrimeGroupCurveCoefficientsView);
+/** Self-contained, `'static` owned view of a `CryptoPrimeGroupCurveCoefficients` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoPrimeGroupCurveCoefficientsView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoPrimeGroupCurveCoefficientsView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoPrimeGroupCurveCoefficientsOwnedView(
+    ::buffa::OwnedView<CryptoPrimeGroupCurveCoefficientsView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoPrimeGroupCurveCoefficientsOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupCurveCoefficientsOwnedView(<redacted>)")
+    }
+}
+impl CryptoPrimeGroupCurveCoefficientsOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupCurveCoefficientsOwnedView(
+                ::buffa::OwnedView::decode(bytes)?,
+            ),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupCurveCoefficientsOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoPrimeGroupCurveCoefficients,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupCurveCoefficientsOwnedView(
+                ::buffa::OwnedView::from_owned(msg)?,
+            ),
+        )
+    }
+    /// Borrow the full [`CryptoPrimeGroupCurveCoefficientsView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoPrimeGroupCurveCoefficientsView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoPrimeGroupCurveCoefficients {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `a`
+    #[must_use]
+    pub fn a(&self) -> &'_ [u8] {
+        self.0.reborrow().a
+    }
+    /// Field 2: `b`
+    #[must_use]
+    pub fn b(&self) -> &'_ [u8] {
+        self.0.reborrow().b
+    }
+}
+impl ::core::convert::From<
+    ::buffa::OwnedView<CryptoPrimeGroupCurveCoefficientsView<'static>>,
+> for CryptoPrimeGroupCurveCoefficientsOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoPrimeGroupCurveCoefficientsView<'static>>,
+    ) -> Self {
+        CryptoPrimeGroupCurveCoefficientsOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoPrimeGroupCurveCoefficientsOwnedView>
+for ::buffa::OwnedView<CryptoPrimeGroupCurveCoefficientsView<'static>> {
+    fn from(wrapper: CryptoPrimeGroupCurveCoefficientsOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoPrimeGroupCurveCoefficientsView<'static>>,
+> for CryptoPrimeGroupCurveCoefficientsOwnedView {
+    fn as_ref(
+        &self,
+    ) -> &::buffa::OwnedView<CryptoPrimeGroupCurveCoefficientsView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoPrimeGroupCurveCoefficients {
+    type View<'a> = CryptoPrimeGroupCurveCoefficientsView<'a>;
+    type ViewHandle = CryptoPrimeGroupCurveCoefficientsOwnedView;
+}
+impl ::serde::Serialize for CryptoPrimeGroupCurveCoefficientsOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// Read-only standard domain output. This is not a caller-defined parameter
+/// set; legacy RFC5114 identity does not imply protocol-strength approval.
+#[derive(Clone, Default)]
+pub struct CryptoPrimeGroupDomainResultView<'a> {
+    /// Field 1: `group`
+    pub group: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupIdentifierView<'a>,
+    >,
+    /// Field 2: `field_length`
+    pub field_length: u32,
+    /// Field 3: `scalar_length`
+    pub scalar_length: u32,
+    /// Field 4: `element_length`
+    pub element_length: u32,
+    /// Field 5: `modulus`
+    pub modulus: &'a [u8],
+    /// Field 6: `subgroup_order`
+    pub subgroup_order: &'a [u8],
+    /// Field 7: `standard_generator`
+    pub standard_generator: &'a [u8],
+    /// Field 8: `curve_coefficients`
+    pub curve_coefficients: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupCurveCoefficientsView<'a>,
+    >,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoPrimeGroupDomainResultView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupDomainResultView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoPrimeGroupDomainResultView<'a> {
+    type Owned = super::super::CryptoPrimeGroupDomainResult;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.group.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.group = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoPrimeGroupIdentifierView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.field_length = ::buffa::types::decode_uint32(&mut cur)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.scalar_length = ::buffa::types::decode_uint32(&mut cur)?;
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.element_length = ::buffa::types::decode_uint32(&mut cur)?;
+            }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.modulus = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            6u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.subgroup_order = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            7u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.standard_generator = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            8u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.curve_coefficients.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.curve_coefficients = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoPrimeGroupCurveCoefficientsView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupDomainResult,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoPrimeGroupDomainResult,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoPrimeGroupDomainResult {
+            group: match self.group.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoPrimeGroupIdentifier,
+                        ::buffa::Inline<super::super::CryptoPrimeGroupIdentifier>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            field_length: self.field_length,
+            scalar_length: self.scalar_length,
+            element_length: self.element_length,
+            modulus: (self.modulus).to_vec(),
+            subgroup_order: (self.subgroup_order).to_vec(),
+            standard_generator: (self.standard_generator).to_vec(),
+            curve_coefficients: match self.curve_coefficients.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoPrimeGroupCurveCoefficients,
+                        ::buffa::Inline<super::super::CryptoPrimeGroupCurveCoefficients>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoPrimeGroupDomainResultView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.group.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.group.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if self.field_length != 0u32 {
+            size += 1u64 + ::buffa::types::uint32_encoded_len(self.field_length) as u64;
+        }
+        if self.scalar_length != 0u32 {
+            size += 1u64 + ::buffa::types::uint32_encoded_len(self.scalar_length) as u64;
+        }
+        if self.element_length != 0u32 {
+            size
+                += 1u64 + ::buffa::types::uint32_encoded_len(self.element_length) as u64;
+        }
+        if !self.modulus.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.modulus) as u64;
+        }
+        if !self.subgroup_order.is_empty() {
+            size
+                += 1u64 + ::buffa::types::bytes_encoded_len(&self.subgroup_order) as u64;
+        }
+        if !self.standard_generator.is_empty() {
+            size
+                += 1u64
+                    + ::buffa::types::bytes_encoded_len(&self.standard_generator) as u64;
+        }
+        if self.curve_coefficients.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.curve_coefficients.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.group.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.group.write_to(__cache, buf);
+        }
+        if self.field_length != 0u32 {
+            ::buffa::types::put_uint32_field(2u32, self.field_length, buf);
+        }
+        if self.scalar_length != 0u32 {
+            ::buffa::types::put_uint32_field(3u32, self.scalar_length, buf);
+        }
+        if self.element_length != 0u32 {
+            ::buffa::types::put_uint32_field(4u32, self.element_length, buf);
+        }
+        if !self.modulus.is_empty() {
+            ::buffa::types::put_shared_bytes_field(5u32, &self.modulus, buf);
+        }
+        if !self.subgroup_order.is_empty() {
+            ::buffa::types::put_shared_bytes_field(6u32, &self.subgroup_order, buf);
+        }
+        if !self.standard_generator.is_empty() {
+            ::buffa::types::put_shared_bytes_field(7u32, &self.standard_generator, buf);
+        }
+        if self.curve_coefficients.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                8u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.curve_coefficients.write_to(__cache, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoPrimeGroupDomainResultView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoPrimeGroupDomainResultView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoPrimeGroupDomainResult";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoPrimeGroupDomainResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupDomainResult";
+}
+::buffa::impl_default_view_instance!(CryptoPrimeGroupDomainResultView);
+::buffa::impl_view_reborrow!(CryptoPrimeGroupDomainResultView);
+/** Self-contained, `'static` owned view of a `CryptoPrimeGroupDomainResult` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoPrimeGroupDomainResultView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoPrimeGroupDomainResultView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoPrimeGroupDomainResultOwnedView(
+    ::buffa::OwnedView<CryptoPrimeGroupDomainResultView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoPrimeGroupDomainResultOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoPrimeGroupDomainResultOwnedView(<redacted>)")
+    }
+}
+impl CryptoPrimeGroupDomainResultOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupDomainResultOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupDomainResultOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoPrimeGroupDomainResult,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoPrimeGroupDomainResultOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoPrimeGroupDomainResultView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoPrimeGroupDomainResultView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoPrimeGroupDomainResult {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `group`
+    #[must_use]
+    pub fn group(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupIdentifierView<'_>,
+    > {
+        &self.0.reborrow().group
+    }
+    /// Field 2: `field_length`
+    #[must_use]
+    pub fn field_length(&self) -> u32 {
+        self.0.reborrow().field_length
+    }
+    /// Field 3: `scalar_length`
+    #[must_use]
+    pub fn scalar_length(&self) -> u32 {
+        self.0.reborrow().scalar_length
+    }
+    /// Field 4: `element_length`
+    #[must_use]
+    pub fn element_length(&self) -> u32 {
+        self.0.reborrow().element_length
+    }
+    /// Field 5: `modulus`
+    #[must_use]
+    pub fn modulus(&self) -> &'_ [u8] {
+        self.0.reborrow().modulus
+    }
+    /// Field 6: `subgroup_order`
+    #[must_use]
+    pub fn subgroup_order(&self) -> &'_ [u8] {
+        self.0.reborrow().subgroup_order
+    }
+    /// Field 7: `standard_generator`
+    #[must_use]
+    pub fn standard_generator(&self) -> &'_ [u8] {
+        self.0.reborrow().standard_generator
+    }
+    /// Field 8: `curve_coefficients`
+    #[must_use]
+    pub fn curve_coefficients(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoPrimeGroupCurveCoefficientsView<'_>,
+    > {
+        &self.0.reborrow().curve_coefficients
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoPrimeGroupDomainResultView<'static>>>
+for CryptoPrimeGroupDomainResultOwnedView {
+    fn from(
+        inner: ::buffa::OwnedView<CryptoPrimeGroupDomainResultView<'static>>,
+    ) -> Self {
+        CryptoPrimeGroupDomainResultOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoPrimeGroupDomainResultOwnedView>
+for ::buffa::OwnedView<CryptoPrimeGroupDomainResultView<'static>> {
+    fn from(wrapper: CryptoPrimeGroupDomainResultOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<
+    ::buffa::OwnedView<CryptoPrimeGroupDomainResultView<'static>>,
+> for CryptoPrimeGroupDomainResultOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoPrimeGroupDomainResultView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoPrimeGroupDomainResult {
+    type View<'a> = CryptoPrimeGroupDomainResultView<'a>;
+    type ViewHandle = CryptoPrimeGroupDomainResultOwnedView;
+}
+impl ::serde::Serialize for CryptoPrimeGroupDomainResultOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+/// X448 follows the existing RFC7748 owner APIs. Import input does not add an
+/// export route; the existing native private owner retains its published API.
+#[derive(Clone, Default)]
+pub struct CryptoX448PrivateKeyInputView<'a> {
+    /// Field 1: `scalar`
+    pub scalar: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoX448PrivateKeyInputView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoX448PrivateKeyInputView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoX448PrivateKeyInputView<'a> {
+    type Owned = super::super::CryptoX448PrivateKeyInput;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.scalar = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoX448PrivateKeyInput,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoX448PrivateKeyInput,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoX448PrivateKeyInput {
+            scalar: (self.scalar).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoX448PrivateKeyInputView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.scalar.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.scalar) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.scalar.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.scalar, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoX448PrivateKeyInputView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoX448PrivateKeyInputView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoX448PrivateKeyInput";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoX448PrivateKeyInput";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoX448PrivateKeyInput";
+}
+::buffa::impl_default_view_instance!(CryptoX448PrivateKeyInputView);
+::buffa::impl_view_reborrow!(CryptoX448PrivateKeyInputView);
+/** Self-contained, `'static` owned view of a `CryptoX448PrivateKeyInput` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoX448PrivateKeyInputView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoX448PrivateKeyInputView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoX448PrivateKeyInputOwnedView(
+    ::buffa::OwnedView<CryptoX448PrivateKeyInputView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoX448PrivateKeyInputOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoX448PrivateKeyInputOwnedView(<redacted>)")
+    }
+}
+impl CryptoX448PrivateKeyInputOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoX448PrivateKeyInputOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoX448PrivateKeyInputOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoX448PrivateKeyInput,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoX448PrivateKeyInputOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoX448PrivateKeyInputView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoX448PrivateKeyInputView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoX448PrivateKeyInput {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `scalar`
+    #[must_use]
+    pub fn scalar(&self) -> &'_ [u8] {
+        self.0.reborrow().scalar
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoX448PrivateKeyInputView<'static>>>
+for CryptoX448PrivateKeyInputOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoX448PrivateKeyInputView<'static>>) -> Self {
+        CryptoX448PrivateKeyInputOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoX448PrivateKeyInputOwnedView>
+for ::buffa::OwnedView<CryptoX448PrivateKeyInputView<'static>> {
+    fn from(wrapper: CryptoX448PrivateKeyInputOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoX448PrivateKeyInputView<'static>>>
+for CryptoX448PrivateKeyInputOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoX448PrivateKeyInputView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoX448PrivateKeyInput {
+    type View<'a> = CryptoX448PrivateKeyInputView<'a>;
+    type ViewHandle = CryptoX448PrivateKeyInputOwnedView;
+}
+impl ::serde::Serialize for CryptoX448PrivateKeyInputOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoX448PublicKeyView<'a> {
+    /// Field 1: `u_coordinate`
+    pub u_coordinate: &'a [u8],
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoX448PublicKeyView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoX448PublicKeyView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoX448PublicKeyView<'a> {
+    type Owned = super::super::CryptoX448PublicKey;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.u_coordinate = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoX448PublicKey,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoX448PublicKey,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoX448PublicKey {
+            u_coordinate: (self.u_coordinate).to_vec(),
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoX448PublicKeyView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.u_coordinate.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.u_coordinate) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.u_coordinate.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.u_coordinate, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoX448PublicKeyView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoX448PublicKeyView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoX448PublicKey";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoX448PublicKey";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoX448PublicKey";
+}
+::buffa::impl_default_view_instance!(CryptoX448PublicKeyView);
+::buffa::impl_view_reborrow!(CryptoX448PublicKeyView);
+/** Self-contained, `'static` owned view of a `CryptoX448PublicKey` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoX448PublicKeyView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoX448PublicKeyView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoX448PublicKeyOwnedView(
+    ::buffa::OwnedView<CryptoX448PublicKeyView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoX448PublicKeyOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoX448PublicKeyOwnedView(<redacted>)")
+    }
+}
+impl CryptoX448PublicKeyOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoX448PublicKeyOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoX448PublicKeyOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoX448PublicKey,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoX448PublicKeyOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoX448PublicKeyView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoX448PublicKeyView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoX448PublicKey {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `u_coordinate`
+    #[must_use]
+    pub fn u_coordinate(&self) -> &'_ [u8] {
+        self.0.reborrow().u_coordinate
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoX448PublicKeyView<'static>>>
+for CryptoX448PublicKeyOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoX448PublicKeyView<'static>>) -> Self {
+        CryptoX448PublicKeyOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoX448PublicKeyOwnedView>
+for ::buffa::OwnedView<CryptoX448PublicKeyView<'static>> {
+    fn from(wrapper: CryptoX448PublicKeyOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoX448PublicKeyView<'static>>>
+for CryptoX448PublicKeyOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoX448PublicKeyView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoX448PublicKey {
+    type View<'a> = CryptoX448PublicKeyView<'a>;
+    type ViewHandle = CryptoX448PublicKeyOwnedView;
+}
+impl ::serde::Serialize for CryptoX448PublicKeyOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoX448KeyDescriptorView<'a> {
+    /// Field 1: `public_key`
+    pub public_key: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoX448PublicKeyView<'a>,
+    >,
+    /// Field 2: `capabilities`
+    pub capabilities: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoNativeKeyCapabilitiesView<'a>,
+    >,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoX448KeyDescriptorView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoX448KeyDescriptorView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoX448KeyDescriptorView<'a> {
+    type Owned = super::super::CryptoX448KeyDescriptor;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.public_key.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.public_key = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoX448PublicKeyView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.capabilities.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.capabilities = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoNativeKeyCapabilitiesView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoX448KeyDescriptor,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoX448KeyDescriptor,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoX448KeyDescriptor {
+            public_key: match self.public_key.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoX448PublicKey,
+                        ::buffa::Inline<super::super::CryptoX448PublicKey>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            capabilities: match self.capabilities.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoNativeKeyCapabilities,
+                        ::buffa::Inline<super::super::CryptoNativeKeyCapabilities>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoX448KeyDescriptorView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.public_key.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.public_key.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if self.capabilities.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.capabilities.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.public_key.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.public_key.write_to(__cache, buf);
+        }
+        if self.capabilities.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                2u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.capabilities.write_to(__cache, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoX448KeyDescriptorView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoX448KeyDescriptorView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoX448KeyDescriptor";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoX448KeyDescriptor";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoX448KeyDescriptor";
+}
+::buffa::impl_default_view_instance!(CryptoX448KeyDescriptorView);
+::buffa::impl_view_reborrow!(CryptoX448KeyDescriptorView);
+/** Self-contained, `'static` owned view of a `CryptoX448KeyDescriptor` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoX448KeyDescriptorView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoX448KeyDescriptorView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoX448KeyDescriptorOwnedView(
+    ::buffa::OwnedView<CryptoX448KeyDescriptorView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoX448KeyDescriptorOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoX448KeyDescriptorOwnedView(<redacted>)")
+    }
+}
+impl CryptoX448KeyDescriptorOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoX448KeyDescriptorOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoX448KeyDescriptorOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoX448KeyDescriptor,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoX448KeyDescriptorOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoX448KeyDescriptorView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoX448KeyDescriptorView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoX448KeyDescriptor {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `public_key`
+    #[must_use]
+    pub fn public_key(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoX448PublicKeyView<'_>,
+    > {
+        &self.0.reborrow().public_key
+    }
+    /// Field 2: `capabilities`
+    #[must_use]
+    pub fn capabilities(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoNativeKeyCapabilitiesView<'_>,
+    > {
+        &self.0.reborrow().capabilities
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoX448KeyDescriptorView<'static>>>
+for CryptoX448KeyDescriptorOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoX448KeyDescriptorView<'static>>) -> Self {
+        CryptoX448KeyDescriptorOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoX448KeyDescriptorOwnedView>
+for ::buffa::OwnedView<CryptoX448KeyDescriptorView<'static>> {
+    fn from(wrapper: CryptoX448KeyDescriptorOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoX448KeyDescriptorView<'static>>>
+for CryptoX448KeyDescriptorOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoX448KeyDescriptorView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoX448KeyDescriptor {
+    type View<'a> = CryptoX448KeyDescriptorView<'a>;
+    type ViewHandle = CryptoX448KeyDescriptorOwnedView;
+}
+impl ::serde::Serialize for CryptoX448KeyDescriptorOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+#[derive(Clone, Default)]
+pub struct CryptoX448AgreementRequestView<'a> {
+    /// Field 1: `peer_public_key`
+    pub peer_public_key: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoX448PublicKeyView<'a>,
+    >,
+    pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for CryptoX448AgreementRequestView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoX448AgreementRequestView(<redacted>)")
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoX448AgreementRequestView<'a> {
+    type Owned = super::super::CryptoX448AgreementRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.peer_public_key.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.peer_public_key = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoX448PublicKeyView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                let span_len = before_tag.len() - cur.len();
+                view.__buffa_unknown_fields.push_record(before_tag, span_len, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoX448AgreementRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(clippy::useless_conversion, clippy::needless_update)]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoX448AgreementRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        ::core::result::Result::Ok(super::super::CryptoX448AgreementRequest {
+            peer_public_key: match self.peer_public_key.as_option() {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::CryptoX448PublicKey,
+                        ::buffa::Inline<super::super::CryptoX448PublicKey>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
+            ..::core::default::Default::default()
+        })
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoX448AgreementRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.peer_public_key.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.peer_public_key.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.peer_public_key.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.peer_public_key.write_to(__cache, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+}
+/// Serialization is disabled because this generated view can contain
+/// sensitive or privacy-bearing bytes. Use only a policy-approved owned
+/// message at an explicit ProtoJSON boundary.
+impl<'__a> ::serde::Serialize for CryptoX448AgreementRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoX448AgreementRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoX448AgreementRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoX448AgreementRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoX448AgreementRequest";
+}
+::buffa::impl_default_view_instance!(CryptoX448AgreementRequestView);
+::buffa::impl_view_reborrow!(CryptoX448AgreementRequestView);
+/** Self-contained, `'static` owned view of a `CryptoX448AgreementRequest` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CryptoX448AgreementRequestView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CryptoX448AgreementRequestView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+pub struct CryptoX448AgreementRequestOwnedView(
+    ::buffa::OwnedView<CryptoX448AgreementRequestView<'static>>,
+);
+impl ::core::fmt::Debug for CryptoX448AgreementRequestOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("CryptoX448AgreementRequestOwnedView(<redacted>)")
+    }
+}
+impl CryptoX448AgreementRequestOwnedView {
+    /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+    ///
+    /// The view borrows directly from the buffer's data; the buffer is
+    /// retained inside the returned handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+    /// protobuf data.
+    pub fn decode(
+        bytes: ::buffa::bytes::Bytes,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoX448AgreementRequestOwnedView(::buffa::OwnedView::decode(bytes)?),
+        )
+    }
+    /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+    /// max message size).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+    /// exceeds the configured limits.
+    pub fn decode_with_options(
+        bytes: ::buffa::bytes::Bytes,
+        opts: &::buffa::DecodeOptions,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoX448AgreementRequestOwnedView(
+                ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+            ),
+        )
+    }
+    /// Build from an owned message via an encode → decode round-trip.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`::buffa::DecodeError::MessageTooLarge`] if the
+    /// message's encoded size exceeds the 2 GiB protobuf limit, or
+    /// another [`::buffa::DecodeError`] if the re-encoded bytes are
+    /// somehow invalid (should not happen for well-formed messages).
+    pub fn from_owned(
+        msg: &super::super::CryptoX448AgreementRequest,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        ::core::result::Result::Ok(
+            CryptoX448AgreementRequestOwnedView(::buffa::OwnedView::from_owned(msg)?),
+        )
+    }
+    /// Borrow the full [`CryptoX448AgreementRequestView`] with its lifetime tied to `&self`.
+    #[must_use]
+    pub fn view(&self) -> &CryptoX448AgreementRequestView<'_> {
+        self.0.reborrow()
+    }
+    /// Convert to the owned message type.
+    ///
+    /// Infallible: this type's constructors wire-decode their
+    /// buffer, and a view produced by wire decoding always
+    /// converts. Delegates to [`::buffa::OwnedView::to_owned_message`],
+    /// whose contract also governs handles converted from a raw
+    /// [`::buffa::OwnedView`].
+    #[must_use]
+    pub fn to_owned_message(&self) -> super::super::CryptoX448AgreementRequest {
+        self.0.to_owned_message()
+    }
+    /// The underlying bytes buffer.
+    #[must_use]
+    pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+        self.0.bytes()
+    }
+    /// Consume the handle, returning the underlying bytes buffer.
+    #[must_use]
+    pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+        self.0.into_bytes()
+    }
+    /// Field 1: `peer_public_key`
+    #[must_use]
+    pub fn peer_public_key(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoX448PublicKeyView<'_>,
+    > {
+        &self.0.reborrow().peer_public_key
+    }
+}
+impl ::core::convert::From<::buffa::OwnedView<CryptoX448AgreementRequestView<'static>>>
+for CryptoX448AgreementRequestOwnedView {
+    fn from(inner: ::buffa::OwnedView<CryptoX448AgreementRequestView<'static>>) -> Self {
+        CryptoX448AgreementRequestOwnedView(inner)
+    }
+}
+impl ::core::convert::From<CryptoX448AgreementRequestOwnedView>
+for ::buffa::OwnedView<CryptoX448AgreementRequestView<'static>> {
+    fn from(wrapper: CryptoX448AgreementRequestOwnedView) -> Self {
+        wrapper.0
+    }
+}
+impl ::core::convert::AsRef<::buffa::OwnedView<CryptoX448AgreementRequestView<'static>>>
+for CryptoX448AgreementRequestOwnedView {
+    fn as_ref(&self) -> &::buffa::OwnedView<CryptoX448AgreementRequestView<'static>> {
+        &self.0
+    }
+}
+impl ::buffa::HasMessageView for super::super::CryptoX448AgreementRequest {
+    type View<'a> = CryptoX448AgreementRequestView<'a>;
+    type ViewHandle = CryptoX448AgreementRequestOwnedView;
+}
+impl ::serde::Serialize for CryptoX448AgreementRequestOwnedView {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::core::result::Result::Err(<__S::Error as ::serde::ser::Error>::custom(
+            "serialization of sensitive protobuf views is disabled",
+        ))
+    }
+}

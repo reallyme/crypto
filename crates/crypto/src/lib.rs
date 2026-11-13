@@ -60,6 +60,16 @@ compile_error!(
      backend lane, or include `native` when running all-feature host checks."
 );
 
+#[cfg(all(
+    feature = "operation-response",
+    any(
+        feature = "ecdsa-explicit",
+        feature = "ed448",
+        feature = "prime-groups"
+    )
+))]
+mod native_contract_support;
+
 pub use crypto_core as core;
 pub use crypto_core::{
     AeadAlgorithm, Algorithm, CryptoError, HashAlgorithm, KeyWrapAlgorithm, MacAlgorithm,

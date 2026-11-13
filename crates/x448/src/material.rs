@@ -4,24 +4,42 @@
 
 use crypto_core::CryptoError;
 use x448::{PublicKey, StaticSecret};
-use zeroize::{Zeroize, ZeroizeOnDrop};
+use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 use crate::{X448_PRIVATE_KEY_LEN, X448_PUBLIC_KEY_LEN, X448_SHARED_SECRET_LEN};
 
 /// An X448 private scalar with zeroize-on-drop ownership.
+///
+/// ```compile_fail
+/// use crypto_x448::X448PrivateKey;
+/// fn duplicate(key: X448PrivateKey) { let _ = key.clone(); }
+/// ```
+/// ```compile_fail
+/// use crypto_x448::X448PrivateKey;
+/// fn disclose(key: X448PrivateKey) { let _ = format!("{key:?}"); }
+/// ```
 pub struct X448PrivateKey(StaticSecret);
 
 impl X448PrivateKey {
     /// Imports a fixed-size scalar. X448 clamping is applied by the backend.
-    pub fn from_array(bytes: [u8; X448_PRIVATE_KEY_LEN]) -> Self {
-        Self(StaticSecret::from(bytes))
+    pub fn from_array(mut bytes: [u8; X448_PRIVATE_KEY_LEN]) -> Self {
+        // Arrays are Copy: install a clearing owner, then explicitly wipe the
+        // input parameter instead of relying on a shadowed binding or move.
+        // The remaining copy enters the clearing StaticSecret owner directly.
+        let scalar = Zeroizing::new(bytes);
+        bytes.zeroize();
+        Self(StaticSecret::from(*scalar))
     }
 
     /// Imports a 56-byte scalar. X448 clamping is applied by the backend.
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, CryptoError> {
-        let scalar = <[u8; X448_PRIVATE_KEY_LEN]>::try_from(bytes)
+        // Validate the borrowed source before copying. This leaves no named
+        // plain scalar array between the caller's storage and the two clearing
+        // owners. Source-level guards do not promise to erase compiler copies.
+        let scalar = <&[u8; X448_PRIVATE_KEY_LEN]>::try_from(bytes)
             .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
-        Ok(Self::from_array(scalar))
+        let scalar = Zeroizing::new(*scalar);
+        Ok(Self(StaticSecret::from(*scalar)))
     }
 
     /// Exposes the scalar to protocol adapters that must serialize HPKE keys.

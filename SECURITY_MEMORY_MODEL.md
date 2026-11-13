@@ -251,3 +251,13 @@ and unwinding, including partial writes by an injected entropy source. This
 protects the named source allocation as well as the returned owner; it does not
 claim erasure of every compiler or register copy. Native Clippy and test-source
 compilation pass for this repair. Runtime test execution is deferred.
+
+### X448 scalar import ownership
+
+The X448 leaf validates borrowed scalar width before copying and immediately
+places the named scalar copy in a clearing guard before constructing its
+existing protected backend owner. Its owned-array constructor also clears the
+Copy input parameter explicitly. Caller-owned inputs remain unchanged. This is
+a local named-buffer repair, independent of the separately accepted upstream
+prime-field serialization gap; it does not promise erasure of every compiler
+or register copy. Runtime regression execution remains deferred.

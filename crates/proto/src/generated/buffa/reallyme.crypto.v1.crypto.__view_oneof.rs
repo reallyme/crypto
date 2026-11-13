@@ -535,3 +535,24 @@ pub mod platform_key_policy {
         ),
     }
 }
+pub mod crypto_ecdsa_input {
+    #[allow(unused_imports)]
+    use super::*;
+    #[derive(Clone, Debug)]
+    pub enum Input<'a> {
+        Message(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::CryptoEcdsaMessageInputView<
+                    'a,
+                >,
+            >,
+        ),
+        Prehash(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::CryptoEcdsaPrehashInputView<
+                    'a,
+                >,
+            >,
+        ),
+    }
+}
