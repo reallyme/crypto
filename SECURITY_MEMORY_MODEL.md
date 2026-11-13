@@ -242,3 +242,12 @@ Run the [conformance validation](docs/conformance.md#full-release-wall), includi
 `node scripts/check_release_readiness.mjs`, before accepting changes to secret
 ownership or boundary handling. Record skipped hardware tests and their scope
 in release evidence.
+
+### Random-output source ownership
+
+The CSPRNG leaf fills a `Zeroizing<[u8; N]>` source and copies directly into the
+returned clearing owner. The source guard clears on success, entropy failure
+and unwinding, including partial writes by an injected entropy source. This
+protects the named source allocation as well as the returned owner; it does not
+claim erasure of every compiler or register copy. Native Clippy and test-source
+compilation pass for this repair. Runtime test execution is deferred.
