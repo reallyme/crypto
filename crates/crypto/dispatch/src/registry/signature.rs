@@ -124,7 +124,7 @@ pub fn sign(alg: Algorithm, secret: &[u8], msg: &[u8]) -> Result<Vec<u8>, Algori
 /// Verify a detached signature.
 ///
 /// Fails closed: a signature that does not verify is an
-/// [`AlgorithmError::SignatureInvalid`] error, never a boolean, so a
+/// [`AlgorithmError::PRIMITIVE_INVALID_SIGNATURE`] error, never a boolean, so a
 /// forgotten result check cannot be mistaken for success.
 ///
 /// The crate README contains the compile-checked fail-closed verification
