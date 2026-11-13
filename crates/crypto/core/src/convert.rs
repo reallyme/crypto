@@ -20,7 +20,7 @@
 //!   *compile error* here, which is what prevents the contract and the
 //!   runtime from silently drifting apart.
 //!
-//! The internal [`Algorithm`](crate::Algorithm) is operation-agnostic
+//! The internal [`Algorithm`] is operation-agnostic
 //! (a curve/key type), whereas the protobuf splits by operation, so a key
 //! type such as P-256 maps into *both* the signature and key-agreement
 //! protobuf enums.
