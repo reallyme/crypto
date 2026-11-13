@@ -46,8 +46,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.sha }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || (github.event_name == 'push' && github.ref) || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
 
 env:
   BUFFA_VERSION: 0.9.2
@@ -72,27 +72,17 @@ jobs:
       - name: Verify release readiness pins
         run: node scripts/run_pinned_release_readiness.mjs --check-pins
 
-      - name: Install TypeScript package dependencies
-        run: npm ci --prefix packages/ts
-
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: 1.100.0
           components: rustfmt
 
-      - name: Install wasm-pack
-        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # wasm-pack
-        with:
-          tool: wasm-pack@0.15.1
-
-      - name: Install wasm-bindgen-cli
-        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # wasm-bindgen-cli
-        with:
-          tool: wasm-bindgen-cli@0.2.130
-
       - name: Cache Cargo
         uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: protobuf-generators
+          cache-bin: true
 
       - name: Install buf
         uses: bufbuild/buf-action@37ac33d8960807670a6e9719080e885197b09cc6 # v1.7.0
@@ -106,20 +96,7 @@ jobs:
           cargo install protoc-gen-buffa --version "$BUFFA_VERSION" --locked
           cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked
 
-      # Exact numeric tests and encoded-wire goldens are the immutable selector
-      # baseline and run on every protobuf change.
-      - name: Check immutable crypto protobuf contracts
-        run: |
-          set -euo pipefail
-          cargo test -p reallyme-crypto-proto --all-features
-          for name in contract_tests::protobuf_algorithm_enum_numbers_are_stable contract_tests::every_public_algorithm_has_exactly_one_proto_selector; do
-            output="$(cargo test -p crypto-conformance-vectors --test vectors_tests --all-features "$name" -- --exact)"
-            printf '%s\n' "$output"
-            if ! grep -Fq 'test result: ok. 1 passed; 0 failed;' <<< "$output"; then
-              echo "::error::protobuf contract test ${name} did not execute exactly once"
-              exit 1
-            fi
-          done
-
+      # The all-feature Rust suite owns immutable selectors and wire goldens.
+      # This lane owns reproducible generation and committed-byte freshness.
       - name: Check release readiness generated freshness
         run: node scripts/run_pinned_release_readiness.mjs --generated-freshness

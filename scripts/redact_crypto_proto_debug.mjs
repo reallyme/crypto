@@ -102,6 +102,14 @@ for (const argument of process.argv.slice(2)) {
 }
 const checkIdempotent = suppliedArguments.has("--check-idempotent");
 
+function writeGeneratedIfChanged(path, source) {
+  // Validation must not invalidate compiler caches for byte-identical input.
+  // Regenerated files still receive every hardening transformation below.
+  if (readFileSync(path, "utf8") !== source) {
+    writeFileSync(path, source);
+  }
+}
+
 function findMatchingBrace(source, openIndex) {
   let depth = 0;
   for (let index = openIndex; index < source.length; index += 1) {
@@ -787,7 +795,7 @@ fn __reallyme_reject_secret_json<S: ::serde::Serializer>(
   source = source.replaceAll(ignoredUnknownField, strictUnknownField);
   source = source.replaceAll(qualifiedIgnoredUnknownField, strictUnknownField);
 
-  writeFileSync(rustGeneratedPath, source);
+  writeGeneratedIfChanged(rustGeneratedPath, source);
 }
 
 function hardenViewRust() {
@@ -878,7 +886,7 @@ pub struct ${ownedViewName}(`;
     );
   }
 
-  writeFileSync(rustGeneratedViewPath, source);
+  writeGeneratedIfChanged(rustGeneratedViewPath, source);
 }
 
 const swiftPath = join(
@@ -943,7 +951,7 @@ for (const messageName of redactedMessageNames) {
     swiftSource = swiftSource.replace(declaration, replacement);
   }
 }
-writeFileSync(swiftPath, swiftSource);
+writeGeneratedIfChanged(swiftPath, swiftSource);
 
 for (const messageName of redactedMessageNames) {
   const javaPath = join(
@@ -969,7 +977,7 @@ for (const messageName of redactedMessageNames) {
   }
 `;
   javaSource = `${javaSource.slice(0, bodyStart + 1)}${redaction}${javaSource.slice(bodyStart + 1)}`;
-  writeFileSync(javaPath, javaSource);
+  writeGeneratedIfChanged(javaPath, javaSource);
 }
 
 function normalizeGeneratedTextFile(path) {

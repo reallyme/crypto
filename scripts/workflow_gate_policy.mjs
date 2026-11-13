@@ -17,7 +17,11 @@ export const REQUIRED_WORKFLOW_GATES = [
     "cargo nextest run --locked --workspace --no-default-features --features native",
     "cargo nextest run --locked --workspace --all-features",
     "cargo deny check",
-    "node scripts/run_pinned_release_readiness.mjs",
+    "node scripts/run_pinned_release_readiness.mjs --ci-policy",
+    "node scripts/run_pinned_release_readiness.mjs --typescript-source",
+    "node scripts/run_pinned_release_readiness.mjs --swift-source",
+    "node scripts/run_pinned_release_readiness.mjs --kotlin-source",
+    "node packages/ts/scripts/browser-wasm-test.mjs",
   ]],
   [".github/workflows/dependency-security.yml", [
     "python3 scripts/gradle_runtime_lockfiles.py --check",

@@ -53,6 +53,9 @@ const {
   assertTextPolicy,
   assertWorkflowPermissionsPolicy,
   assertWorkflowPolicy,
+  assertTypeScriptSourcePolicy,
+  assertSwiftSourcePolicy,
+  assertKotlinSourcePolicy,
 } = createReleaseReadinessContext({
   scriptUrl: import.meta.url,
   requireTrackedFiles: true,
@@ -152,8 +155,20 @@ const releaseReadinessCommit = "18a6d91d99837e80f92e41fe04effb0b043d754e";
 const releaseReadinessCommand = "node scripts/run_pinned_release_readiness.mjs";
 const gradleWrapperValidationAction =
   "gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c";
-const releasePackagesMode = process.argv.includes("--release-packages");
-const generatedFreshnessMode = process.argv.includes("--generated-freshness");
+const checkerModes = new Set([
+  "--generated-freshness", "--release-packages", "--ci-policy",
+  "--typescript-source", "--swift-source", "--kotlin-source",
+]);
+const checkerArguments = process.argv.slice(2);
+if (checkerArguments.length > 1 || checkerArguments.some((mode) => !checkerModes.has(mode))) {
+  fail("select at most one supported checker mode");
+}
+const checkerMode = checkerArguments[0];
+const releasePackagesMode = checkerMode === "--release-packages";
+const generatedFreshnessMode = checkerMode === "--generated-freshness";
+const ciPolicyMode = checkerMode === "--ci-policy";
+const sdkSourceMode = checkerMode?.endsWith("-source") === true ? checkerMode : undefined;
+const ciReadinessCommand = `${releaseReadinessCommand} --ci-policy`;
 const requiredLanes = ["swift", "kotlin_jvm", "kotlin_android", "typescript_wasm"];
 const allowedStatuses = new Set(["supported", "provider_aware", "partial", "unsupported"]);
 const allowedFallbacks = new Set([
@@ -235,7 +250,11 @@ runNodeCheck("scripts/check_provider_routing.mjs");
 runNodeCheck("scripts/check_negative_vectors.mjs");
 // Discover the same tests as the independent CI job. Adding a regression test
 // must not require changing this pinned policy entry point just to register it.
-runNodeCheck("--test", ["--test-concurrency=4", "scripts/**/*.test.mjs", "packages/ts/scripts/*.test.mjs"]);
+// CI owns these tests in its cross-platform tooling jobs. Full local/release
+// validation remains self-contained; protobuf and SDK jobs do not repeat them.
+if (!ciPolicyMode && !generatedFreshnessMode && sdkSourceMode === undefined) {
+  runNodeCheck("--test", ["--test-concurrency=4", "scripts/**/*.test.mjs", "packages/ts/scripts/*.test.mjs"]);
+}
 runNodeCheck("scripts/publish_crates_in_order.mjs", ["order"]);
 runNodeCheck("scripts/redact_crypto_proto_debug.mjs", ["--check-idempotent"]);
 const byId = new Map();
@@ -1752,9 +1771,9 @@ assertContains(
   "p256|p521|k256|x448|reallyme-crypto-secp256k1|reallyme-crypto-x448",
 );
 assertContains(".github/workflows/rust-ci.yml", "node scripts/generate_provider_matrix.mjs --check");
-assertContains(".github/workflows/rust-ci.yml", releaseReadinessCommand);
+assertContains(".github/workflows/rust-ci.yml", ciReadinessCommand);
 assertContains(".github/workflows/rust-ci.yml", "REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI");
-assertContains(".github/workflows/rust-ci.yml", "npm --prefix packages/ts run test:browser");
+assertContains(".github/workflows/rust-ci.yml", "node packages/ts/scripts/browser-wasm-test.mjs");
 assertContains(".github/workflows/rust-ci.yml", "bash scripts/check_wasm_browser_backends.sh");
 assertContains(".github/workflows/rust-ci.yml", "toolchain: 1.96.0");
 assertContains(".github/workflows/rust-ci.yml", "--target aarch64-linux-android");
@@ -2309,14 +2328,10 @@ assertContains(".github/workflows/protobuf-ci.yml", "setup_only: true");
 assertContains(".github/workflows/protobuf-ci.yml", "scripts/release-readiness/core.mjs");
 assertContains(".github/workflows/protobuf-ci.yml", "scripts/run_pinned_release_readiness.mjs");
 assertNotContains(".github/workflows/protobuf-ci.yml", "buf breaking");
-assertContains(
-  ".github/workflows/protobuf-ci.yml",
-  "contract_tests::protobuf_algorithm_enum_numbers_are_stable",
-);
-assertContains(
-  ".github/workflows/protobuf-ci.yml",
-  "contract_tests::every_public_algorithm_has_exactly_one_proto_selector",
-);
+// The full Rust suite executes immutable-selector and wire-golden tests once.
+// Protobuf CI independently verifies generation against committed bytes.
+assertNotContains(".github/workflows/protobuf-ci.yml", "cargo test -p");
+assertContains(".github/workflows/rust-ci.yml", "cargo nextest run --locked --workspace --all-features");
 assertContains("scripts/release-readiness/core.mjs", "assertReallyMeProtobufReleasePolicy");
 const protobufReleasePolicy = {
   workflowMode: "delegated",
@@ -2637,10 +2652,9 @@ const repositoryPolicy = {
     // modules beyond the shared 500-line production ceiling.
     moduleHardLines: 250,
   },
-  // Generated freshness is a protobuf-only gate. The full Code Checks workflow
-  // owns SDK source policy and verification, so repeating those suites here
-  // adds several minutes without increasing coverage.
-  typescriptSource: generatedFreshnessMode ? undefined : {
+  // SDK jobs own source policy and runtime checks in CI. Full local and release
+  // validation still execute all three policies through this same definition.
+  typescriptSource: (generatedFreshnessMode || ciPolicyMode) ? undefined : {
     roots: ["."],
     generatedPrefixes: [
       "gen/es",
@@ -2674,7 +2688,7 @@ const repositoryPolicy = {
       },
     ],
   },
-  swiftSource: generatedFreshnessMode ? undefined : {
+  swiftSource: (generatedFreshnessMode || ciPolicyMode) ? undefined : {
     roots: ["."],
     generatedPrefixes: ["gen/swift"],
     configuration: {
@@ -2700,7 +2714,7 @@ const repositoryPolicy = {
           required: [
             "name: swift package + vector conformance",
             "runs-on: macos-26",
-            "run: scripts/check_swift_source_policy.sh",
+            "run: node scripts/run_pinned_release_readiness.mjs --swift-source",
           ],
         },
       ],
@@ -2713,7 +2727,7 @@ const repositoryPolicy = {
       },
     ],
   },
-  kotlinSource: generatedFreshnessMode ? undefined : {
+  kotlinSource: (generatedFreshnessMode || ciPolicyMode) ? undefined : {
     roots: ["."],
     generatedPrefixes: ["gen/kotlin"],
     configuration: {
@@ -2762,7 +2776,10 @@ const repositoryPolicy = {
   protobufBoundary: primaryOperationBoundaryPolicy,
   protobufRelease: protobufReleasePolicy,
   cargoMetadata: {
-    reallyMeLatestStableDependencies: {
+    // Push CI validates the reviewed manifest/lockfile below. Publication
+    // freshness belongs to full local/release validation; a new upstream
+    // release must not invalidate an unchanged, already-reviewed source graph.
+    reallyMeLatestStableDependencies: (ciPolicyMode || generatedFreshnessMode) ? undefined : {
       names: [
         "reallyme-codec-base64url",
         "reallyme-codec-jcs",
@@ -2924,21 +2941,10 @@ const repositoryPolicy = {
   workflows: [
     {
       path: ".github/workflows/rust-ci.yml",
-      runSteps: [{ name: "Release readiness", run: releaseReadinessCommand }],
+      runSteps: [{ name: "Release readiness", run: ciReadinessCommand }],
     },
     {
       path: ".github/workflows/protobuf-ci.yml",
-      required: ["wasm-pack@0.15.1", "wasm-bindgen-cli@0.2.130"],
-      usesSteps: [
-        {
-          name: "Install wasm-pack",
-          uses: "taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39",
-        },
-        {
-          name: "Install wasm-bindgen-cli",
-          uses: "taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39",
-        },
-      ],
       runSteps: [
         {
           name: "Check release readiness generated freshness",
@@ -2948,6 +2954,22 @@ const repositoryPolicy = {
     },
   ],
 };
+
+// Each attested SDK job runs the real source policy and its verification
+// commands. Routing selects an owner; it never substitutes a successful no-op.
+if (sdkSourceMode !== undefined) {
+  const sourcePolicies = new Map([
+    ["--typescript-source", [assertTypeScriptSourcePolicy, repositoryPolicy.typescriptSource]],
+    ["--swift-source", [assertSwiftSourcePolicy, repositoryPolicy.swiftSource]],
+    ["--kotlin-source", [assertKotlinSourcePolicy, repositoryPolicy.kotlinSource]],
+  ]);
+  const selected = sourcePolicies.get(sdkSourceMode);
+  if (selected === undefined || selected[1] === undefined) {
+    fail("SDK source policy is unavailable");
+  }
+  selected[0](selected[1]);
+  process.exit(0);
+}
 
 const primaryOperationBoundaryReady = () => {
   const proto = readText(primaryOperationBoundaryPolicy.protoPath);
@@ -3310,7 +3332,7 @@ assertContains("scripts/verify_swift_release_artifact.mjs", '"compute-checksum"'
 assertContains("scripts/verify_swift_release_artifact.mjs", "Package.swift checksum does not match");
 assertContains("scripts/verify_swift_release_artifact.test.mjs", "rejects a forged sidecar");
 assertContains(".github/workflows/rust-ci.yml", "tool: nextest@0.9.140");
-assertContains(".github/workflows/rust-ci.yml", "cargo install cargo-deny --version 0.20.2 --locked");
+assertContains(".github/workflows/rust-ci.yml", "tool: cargo-deny@0.20.2");
 assertContains(".github/workflows/rust-ci.yml", "tool: cargo-audit@0.22.2");
 for (const path of [
   ".github/workflows/rust-ci.yml",
@@ -3319,8 +3341,8 @@ for (const path of [
   ".github/workflows/dependency-security.yml",
   ".github/workflows/codeql.yml",
 ]) {
-  assertContains(path, 'group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.sha }}');
-  assertContains(path, "cancel-in-progress: ${{ github.event_name == 'pull_request' }}");
+  assertContains(path, "group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || (github.event_name == 'push' && github.ref) || github.sha }}");
+  assertContains(path, "cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}");
 }
 for (const path of [
   ".github/workflows/rust-ci.yml",

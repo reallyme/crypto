@@ -4,7 +4,7 @@
 
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
@@ -35,8 +35,16 @@ for (const namespace of ["serde", "::serde"]) {
       const result = spawnSync(process.execPath, [script], { encoding: "utf8" });
       assert.equal(result.status, 0, result.stderr);
       assert.equal(readFileSync(join(root, ownedPath), "utf8"), original);
+      const stablePaths = [ownedPath,
+        "crates/proto/src/generated/buffa/reallyme.crypto.v1.crypto.__view.rs",
+        "gen/swift/reallyme/crypto/v1/crypto.pb.swift"];
+      const past = new Date("2000-01-01T00:00:00Z");
+      for (const path of stablePaths) utimesSync(join(root, path), past, past);
+      const timestamps = stablePaths.map((path) => statSync(join(root, path)).mtimeMs);
       const repeated = spawnSync(process.execPath, [script, "--check-idempotent"], { encoding: "utf8" });
       assert.equal(repeated.status, 0, repeated.stderr);
+      assert.deepEqual(stablePaths.map((path) => statSync(join(root, path)).mtimeMs), timestamps,
+        "idempotent verification must preserve incremental-build timestamps");
 
       // A partially changed template must fail closed instead of silently
       // leaving an unknown-field acceptance route in the generated decoder.
