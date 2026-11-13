@@ -641,6 +641,53 @@ message CryptoArgon2FixedDeriveRequest {
   bytes salt = 3;
 }
 
+// Query the existing fixed profile against the platform's immutable bounds.
+// This request neither selects an execution provider nor starts a derivation.
+message CryptoArgon2PlatformResolveRequest {
+  CryptoArgon2idProfileIdentifier profile = 1;
+  Argon2PlatformClass platform = 2;
+}
+
+// Query whether a fixed profile fits a caller's current resource budget.
+// Every budget field must be present; explicit zero is a valid budget that
+// cannot admit a profile. Arbitrary uint32 budgets preserve the native query
+// domain. Budgets never override costs, platform policy, or provider authority.
+message CryptoArgon2BudgetFitRequest {
+  CryptoArgon2idProfileIdentifier profile = 1;
+  optional uint32 memory_limit_kib = 2;
+  optional uint32 time_cost_limit = 3;
+  optional uint32 lanes_limit = 4;
+}
+
+// Select the existing strongest fixed profile admitted for modern mobile
+// unlock. The result is CryptoArgon2idProfileIdentifier, not derived key bytes.
+message CryptoArgon2MobileUnlockRequest {
+  // This query intentionally accepts no caller-overridable policy.
+}
+
+// Read-only query of the policy already bound by a native semantic operation.
+// Caller-supplied policy records cannot alter that enforcement decision.
+message CryptoMaterialPolicyQueryRequest {
+  SecretMaterialOperation operation = 1;
+}
+
+// Read-only query of the existing purpose-specific random-fill ownership policy.
+// The result is OperationSecretMaterialPolicy; this does not select an RNG.
+message CryptoRandomFillPolicyQueryRequest {
+  RngOutputKind purpose = 1;
+}
+
+// Direct standards-level PBKDF2 leaf input, including fixed interoperability
+// vectors below the modern public-facade floor. This standalone contract never
+// weakens CryptoKdfDeriveKeyRequest or changes any root execution route.
+message CryptoPbkdf2StandardsDeriveRequest {
+  CryptoPbkdf2PrfIdentifier prf = 1;
+  bytes password = 2;
+  bytes salt = 3;
+  uint32 iterations = 4;
+  uint32 output_length = 5;
+}
+
 // Existing domain-tag bytes are validated verbatim, without normalization.
 message CryptoHkdfDomainTag {
   bytes value = 1;

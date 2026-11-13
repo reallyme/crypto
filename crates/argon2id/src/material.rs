@@ -87,7 +87,17 @@ impl Argon2idDerivedKey {
         &self.bytes
     }
 
-    pub(crate) fn from_array(bytes: [u8; ARGON2ID_DERIVED_KEY_LENGTH]) -> Self {
-        Self { bytes }
+    pub(crate) fn zeroed() -> Self {
+        Self {
+            bytes: [0u8; ARGON2ID_DERIVED_KEY_LENGTH],
+        }
+    }
+
+    pub(crate) fn as_mut_slice(&mut self) -> &mut [u8] {
+        &mut self.bytes
     }
 }
+
+#[cfg(test)]
+#[path = "material_tests.rs"]
+mod tests;

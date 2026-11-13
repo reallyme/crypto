@@ -6,6 +6,26 @@ use crypto_core::CryptoError;
 use sha2::{Digest, Sha256};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
+// The digest output is a Copy array without automatic cleanup. Keep a local
+// clearing owner independent of optional upstream array feature unification.
+struct FinalizedSha256Output {
+    bytes: sha2::digest::Output<Sha256>,
+}
+
+impl Zeroize for FinalizedSha256Output {
+    fn zeroize(&mut self) {
+        self.bytes[..].zeroize();
+    }
+}
+
+impl Drop for FinalizedSha256Output {
+    fn drop(&mut self) {
+        self.zeroize();
+    }
+}
+
+impl ZeroizeOnDrop for FinalizedSha256Output {}
+
 /// SHA-256 digest length in bytes for the JWA Concat KDF profile.
 pub const JWA_CONCAT_KDF_SHA256_DIGEST_LENGTH: usize =
     crypto_core::contract_constants::concat_kdf::JWA_CONCAT_KDF_SHA256_DIGEST_LENGTH;
@@ -43,7 +63,11 @@ impl JwaSharedSecret {
 }
 
 /// JOSE/JWA `AlgorithmID` value before its 32-bit length prefix is applied.
-#[derive(Debug, Clone, PartialEq, Eq)]
+///
+/// The constructor accepts arbitrary caller bytes, so debugging never renders
+/// their contents or length. Cloning preserves the existing public metadata
+/// API; each clone owns an independent allocation and clears it on drop.
+#[derive(Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
 pub struct JwaAlgorithmId {
     bytes: Vec<u8>,
 }
@@ -65,6 +89,12 @@ impl JwaAlgorithmId {
 
     fn as_bytes(&self) -> &[u8] {
         &self.bytes
+    }
+}
+
+impl core::fmt::Debug for JwaAlgorithmId {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        formatter.write_str("JwaAlgorithmId(<redacted>)")
     }
 }
 
@@ -170,15 +200,20 @@ pub fn derive_jwa_concat_kdf_sha256<const N: usize>(
         hasher.update(counter.to_be_bytes());
         hasher.update(request.shared_secret.as_bytes());
         hasher.update(&other_info);
-        let mut digest = hasher.finalize();
-        derived[offset..end].copy_from_slice(&digest);
-        digest[..].zeroize();
+        // Install drop cleanup at finalization, including any future early
+        // return between finalization and consumption of this block.
+        let digest = FinalizedSha256Output {
+            bytes: hasher.finalize(),
+        };
+        derived[offset..end].copy_from_slice(&digest.bytes);
     }
 
-    let mut bytes = [0u8; N];
-    bytes.copy_from_slice(&derived[..N]);
+    // The final output owns its initialized storage before derived bytes are
+    // copied, so no plain named output array remains outside a clearing owner.
+    let mut output = JwaConcatKdfOutput { bytes: [0u8; N] };
+    output.bytes.copy_from_slice(&derived[..N]);
 
-    Ok(JwaConcatKdfOutput { bytes })
+    Ok(output)
 }
 
 fn build_other_info(
@@ -216,3 +251,11 @@ fn append_length_prefixed(output: &mut Vec<u8>, input: &[u8]) -> Result<(), Cryp
     output.extend_from_slice(input);
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "output_ownership_tests.rs"]
+mod output_ownership_tests;
+
+#[cfg(test)]
+#[path = "algorithm_id_privacy_tests.rs"]
+mod algorithm_id_privacy_tests;

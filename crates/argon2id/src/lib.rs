@@ -15,6 +15,9 @@ mod profile;
 /// Protected protobuf options and request adapters.
 #[cfg(feature = "proto")]
 pub mod proto_options;
+/// Standalone fixed-profile admission queries; they do not derive keys.
+#[cfg(feature = "proto")]
+pub mod proto_queries;
 
 pub use constants::{
     ARGON2ID_DERIVED_KEY_LENGTH, ARGON2ID_SALT_MAX_LENGTH, ARGON2ID_SALT_MIN_LENGTH,

@@ -1466,7 +1466,9 @@ dependencies = [
 name = "reallyme-crypto-concat-kdf"
 version = "0.4.0"
 dependencies = [
+ "buffa",
  "reallyme-crypto-core",
+ "reallyme-crypto-proto",
  "sha2",
  "zeroize",
 ]
@@ -1722,6 +1724,7 @@ dependencies = [
 name = "reallyme-crypto-pbkdf2"
 version = "0.4.0"
 dependencies = [
+ "buffa",
  "pbkdf2",
  "reallyme-crypto-core",
  "reallyme-crypto-proto",

@@ -226,6 +226,7 @@ operation-response = [
     # Identity adapters follow only leaves the caller already selected.
     "crypto-hkdf?/proto",
     "crypto-pbkdf2?/proto",
+    "crypto-concat-kdf?/proto",
     "crypto-argon2id?/proto",
     "crypto-rsa?/proto",
     "envelopes-jwk?/proto",

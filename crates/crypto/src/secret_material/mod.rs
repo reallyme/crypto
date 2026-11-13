@@ -7,6 +7,9 @@
 //! These records describe the security contract enforced by semantic
 //! operation entry points. They never contain runtime key material.
 
+/// Read-only schema-backed policy queries.
+#[cfg(feature = "operation-response")]
+pub mod contract;
 #[cfg(feature = "operation-response")]
 mod convert_proto_policy;
 mod destruction;

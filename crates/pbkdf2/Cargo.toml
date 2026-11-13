@@ -18,12 +18,13 @@ name = "crypto_pbkdf2"
 
 [features]
 # Metadata conversion does not select an execution backend.
-proto = ["dep:crypto-proto"]
+proto = ["dep:crypto-proto", "dep:buffa"]
 default = []
 native = []
 wasm = []
 
 [dependencies]
+buffa = { workspace = true, optional = true }
 crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../proto", optional = true, default-features = false, features = ["generated"] }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.4.0", path = "../crypto/core" }
 pbkdf2 = { workspace = true }

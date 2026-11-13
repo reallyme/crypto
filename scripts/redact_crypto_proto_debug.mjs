@@ -111,6 +111,11 @@ for (const name of [
   "CryptoP256CompressedPublicKeyRequest",
   "CryptoGenerateMultikeyKeypairRequest",
   "CryptoVerificationMethodMultikeyResult",
+  "CryptoArgon2PlatformResolveRequest",
+  "CryptoArgon2BudgetFitRequest",
+  "CryptoArgon2MobileUnlockRequest",
+  "CryptoMaterialPolicyQueryRequest",
+  "CryptoRandomFillPolicyQueryRequest",
 ]) {
   if (messageBodies.has(name)) scalarMetadataMessageNames.add(name);
 }

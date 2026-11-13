@@ -4,6 +4,9 @@
 
 //! JWA ECDH-ES Concat KDF over SHA-256.
 
+/// Protected schema-backed inputs for arbitrary native const-generic output widths.
+#[cfg(feature = "proto")]
+pub mod proto_inputs;
 mod types;
 pub use types::{
     derive_jwa_concat_kdf_sha256, JwaAlgorithmId, JwaConcatKdfOutput, JwaConcatKdfRequest,
