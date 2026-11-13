@@ -26,7 +26,7 @@ use buffa::MessageField;
         feature = "x-wing"
     )
 ))]
-use crypto_proto::convert::kem_algorithm_to_proto;
+use crypto_core::convert::kem_algorithm_to_proto;
 #[cfg(all(
     feature = "dispatch",
     any(
@@ -36,7 +36,7 @@ use crypto_proto::convert::kem_algorithm_to_proto;
         feature = "p521"
     )
 ))]
-use crypto_proto::convert::key_agreement_algorithm_to_proto;
+use crypto_core::convert::key_agreement_algorithm_to_proto;
 #[cfg(all(
     feature = "dispatch",
     any(

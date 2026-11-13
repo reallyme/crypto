@@ -24,7 +24,7 @@ impl Aes128KwKek {
             return Err(key_wrap_error(
                 KeyWrapAlgorithm::Aes128Kw,
                 KeyWrapOperation::Wrap,
-                KeyWrapFailureKind::InvalidKekLength,
+                crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
             ));
         }
 
@@ -52,7 +52,7 @@ impl Aes192KwKek {
             return Err(key_wrap_error(
                 KeyWrapAlgorithm::Aes192Kw,
                 KeyWrapOperation::Wrap,
-                KeyWrapFailureKind::InvalidKekLength,
+                crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
             ));
         }
 
@@ -80,7 +80,7 @@ impl Aes256KwKek {
             return Err(key_wrap_error(
                 KeyWrapAlgorithm::Aes256Kw,
                 KeyWrapOperation::Wrap,
-                KeyWrapFailureKind::InvalidKekLength,
+                crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
             ));
         }
 
@@ -195,15 +195,11 @@ impl core::fmt::Debug for AesKwWrappedKey {
 }
 
 pub(crate) fn key_wrap_error(
-    algorithm: KeyWrapAlgorithm,
-    operation: KeyWrapOperation,
+    _algorithm: KeyWrapAlgorithm,
+    _operation: KeyWrapOperation,
     kind: KeyWrapFailureKind,
 ) -> CryptoError {
-    CryptoError::KeyWrap {
-        algorithm,
-        operation,
-        kind,
-    }
+    kind
 }
 
 #[cfg(any(feature = "native", feature = "wasm"))]
@@ -217,7 +213,7 @@ pub(crate) fn validate_plaintext_len(
         return Err(key_wrap_error(
             algorithm,
             KeyWrapOperation::Wrap,
-            KeyWrapFailureKind::InvalidPlaintextLength,
+            crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
         ));
     }
     Ok(())
@@ -234,7 +230,7 @@ pub(crate) fn validate_wrapped_len(
             key_wrap_error(
                 algorithm,
                 KeyWrapOperation::Unwrap,
-                KeyWrapFailureKind::LengthOverflow,
+                crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
             )
         })?;
 
@@ -244,7 +240,7 @@ pub(crate) fn validate_wrapped_len(
         return Err(key_wrap_error(
             algorithm,
             KeyWrapOperation::Unwrap,
-            KeyWrapFailureKind::InvalidWrappedLength,
+            crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
         ));
     }
     Ok(())

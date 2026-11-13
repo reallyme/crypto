@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, KdfAlgorithm, KdfFailureKind, KdfProfile};
+use crypto_core::{CryptoError, KdfFailureKind};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 use crate::constants::{
@@ -22,15 +22,6 @@ pub enum Pbkdf2Prf {
     HmacSha512,
 }
 
-impl Pbkdf2Prf {
-    pub(crate) fn profile(self) -> KdfProfile {
-        match self {
-            Pbkdf2Prf::HmacSha256 => KdfProfile::Pbkdf2HmacSha256,
-            Pbkdf2Prf::HmacSha512 => KdfProfile::Pbkdf2HmacSha512,
-        }
-    }
-}
-
 /// Password/secret input to PBKDF2.
 #[derive(Zeroize, ZeroizeOnDrop)]
 pub struct Pbkdf2Password {
@@ -41,7 +32,10 @@ impl Pbkdf2Password {
     /// Constructs a PBKDF2 password input from raw bytes.
     pub fn from_slice(input: &[u8], prf: Pbkdf2Prf) -> Result<Self, CryptoError> {
         if !(PBKDF2_MIN_PASSWORD_LENGTH..=PBKDF2_MAX_PASSWORD_LENGTH).contains(&input.len()) {
-            return Err(kdf_error(prf, KdfFailureKind::InvalidSecretLength));
+            return Err(kdf_error(
+                prf,
+                crypto_core::CryptoError::PRIMITIVE_INVALID_PASSWORD,
+            ));
         }
 
         Ok(Self {
@@ -65,7 +59,10 @@ impl Pbkdf2Salt {
     /// Constructs a PBKDF2 salt from raw bytes.
     pub fn from_slice(input: &[u8], prf: Pbkdf2Prf) -> Result<Self, CryptoError> {
         if !(PBKDF2_MIN_SALT_LENGTH..=PBKDF2_MAX_SALT_LENGTH).contains(&input.len()) {
-            return Err(kdf_error(prf, KdfFailureKind::InvalidSaltLength));
+            return Err(kdf_error(
+                prf,
+                crypto_core::CryptoError::PRIMITIVE_INVALID_SALT,
+            ));
         }
 
         Ok(Self {
@@ -98,7 +95,10 @@ impl Pbkdf2Iterations {
     /// Constructs the standards-level count for fixed interoperability vectors.
     pub fn from_u32_conformance_only(value: u32, prf: Pbkdf2Prf) -> Result<Self, CryptoError> {
         if !(PBKDF2_STANDARD_MIN_ITERATIONS..=PBKDF2_MAX_ITERATIONS).contains(&value) {
-            return Err(kdf_error(prf, KdfFailureKind::InvalidIterationCount));
+            return Err(kdf_error(
+                prf,
+                crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER,
+            ));
         }
         Ok(Self { value })
     }
@@ -110,7 +110,10 @@ impl Pbkdf2Iterations {
     /// factor cannot be selected accidentally.
     pub fn from_u32_modern(value: u32, prf: Pbkdf2Prf) -> Result<Self, CryptoError> {
         if !(PBKDF2_MODERN_MIN_ITERATIONS..=PBKDF2_MAX_ITERATIONS).contains(&value) {
-            return Err(kdf_error(prf, KdfFailureKind::InvalidIterationCount));
+            return Err(kdf_error(
+                prf,
+                crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER,
+            ));
         }
         Ok(Self { value })
     }
@@ -172,15 +175,14 @@ impl core::fmt::Debug for Pbkdf2Output {
 #[cfg(any(feature = "native", feature = "wasm"))]
 pub(crate) fn validate_output_len(len: usize, prf: Pbkdf2Prf) -> Result<(), CryptoError> {
     if !(PBKDF2_MIN_OUTPUT_LENGTH..=PBKDF2_MAX_OUTPUT_LENGTH).contains(&len) {
-        return Err(kdf_error(prf, KdfFailureKind::InvalidOutputLength));
+        return Err(kdf_error(
+            prf,
+            crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
+        ));
     }
     Ok(())
 }
 
-pub(crate) fn kdf_error(prf: Pbkdf2Prf, kind: KdfFailureKind) -> CryptoError {
-    CryptoError::Kdf {
-        algorithm: KdfAlgorithm::Pbkdf2,
-        profile: prf.profile(),
-        kind,
-    }
+pub(crate) fn kdf_error(_prf: Pbkdf2Prf, kind: KdfFailureKind) -> CryptoError {
+    kind
 }

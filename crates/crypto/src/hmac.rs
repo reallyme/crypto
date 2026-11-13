@@ -5,7 +5,7 @@
 //! HMAC facade routes backed by the semantic MAC operation owner.
 
 #[cfg(any(feature = "native", feature = "wasm"))]
-use crypto_core::{CryptoError, MacAlgorithm, MacFailureKind, MacHash};
+use crypto_core::{CryptoError, MacAlgorithm};
 
 pub use crypto_hmac::{
     HmacKey, HmacTag, HMAC_MAX_KEY_LENGTH, HMAC_SHA256_TAG_LENGTH, HMAC_SHA384_TAG_LENGTH,
@@ -37,36 +37,8 @@ pub fn verify(
 
 #[cfg(any(feature = "native", feature = "wasm"))]
 fn crypto_error_from_operation_error(
-    algorithm: MacAlgorithm,
+    _algorithm: MacAlgorithm,
     error: crate::operations::OperationError,
 ) -> CryptoError {
-    let kind = match error {
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::InvalidKey,
-        } => MacFailureKind::InvalidKeyLength,
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::InvalidLength,
-        } => MacFailureKind::InvalidTagLength,
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::VerificationFailed,
-        } => MacFailureKind::VerificationFailed,
-        crate::operations::OperationError::Provider {
-            reason: crate::operations::ProviderErrorReason::UnsupportedAlgorithm,
-        } => return CryptoError::Unsupported,
-        _ => MacFailureKind::BackendFailure,
-    };
-
-    CryptoError::Mac {
-        hash: mac_hash(algorithm),
-        kind,
-    }
-}
-
-#[cfg(any(feature = "native", feature = "wasm"))]
-fn mac_hash(algorithm: MacAlgorithm) -> MacHash {
-    match algorithm {
-        MacAlgorithm::HmacSha256 => MacHash::Sha2_256,
-        MacAlgorithm::HmacSha384 => MacHash::Sha2_384,
-        MacAlgorithm::HmacSha512 => MacHash::Sha2_512,
-    }
+    error
 }

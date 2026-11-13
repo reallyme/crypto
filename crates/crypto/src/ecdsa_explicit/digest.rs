@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use super::{EcdsaError, EcdsaHash, EcdsaInput};
+use super::{CryptoError, EcdsaHash, EcdsaInput};
 
 pub(super) fn with_digest<T>(
     input: EcdsaInput<'_>,
-    operation: impl FnOnce(EcdsaHash, &[u8]) -> Result<T, EcdsaError>,
-) -> Result<T, EcdsaError> {
+    operation: impl FnOnce(EcdsaHash, &[u8]) -> Result<T, CryptoError>,
+) -> Result<T, CryptoError> {
     match input {
         EcdsaInput::Message {
             hash: EcdsaHash::Sha256,
@@ -37,7 +37,7 @@ pub(super) fn with_digest<T>(
                 EcdsaHash::Sha512 => crypto_sha2::SHA2_512_DIGEST_LENGTH,
             };
             if bytes.len() != length {
-                return Err(EcdsaError::InvalidPrehashLength);
+                return Err(CryptoError::PRIMITIVE_INVALID_LENGTH);
             }
             operation(hash, bytes)
         }

@@ -44,41 +44,7 @@ impl core::fmt::Display for RngOutputKind {
 }
 
 /// Specific reason secure random generation failed.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[non_exhaustive]
-pub enum RngFailureKind {
-    /// The system entropy source was unavailable.
-    EntropyUnavailable,
-    /// The requested output length was unacceptable.
-    InvalidOutputLength,
-}
-
-impl core::fmt::Display for RngFailureKind {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let detail = match self {
-            RngFailureKind::EntropyUnavailable => "entropy unavailable",
-            RngFailureKind::InvalidOutputLength => "invalid output length",
-        };
-        write!(f, "{detail}")
-    }
-}
+pub type RngFailureKind = super::CryptoError;
 
 /// Specific reason a constant-time comparison did not match.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[non_exhaustive]
-pub enum ConstantTimeFailureKind {
-    /// The two inputs had different lengths.
-    LengthMismatch,
-    /// The two inputs had equal length but unequal contents.
-    NotEqual,
-}
-
-impl core::fmt::Display for ConstantTimeFailureKind {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let detail = match self {
-            ConstantTimeFailureKind::LengthMismatch => "length mismatch",
-            ConstantTimeFailureKind::NotEqual => "not equal",
-        };
-        write!(f, "{detail}")
-    }
-}
+pub type ConstantTimeFailureKind = super::CryptoError;

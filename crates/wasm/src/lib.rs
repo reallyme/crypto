@@ -16,6 +16,7 @@ mod ml_dsa;
 mod ml_kem;
 mod operation_response;
 mod rsa;
+mod set_bytes;
 mod slh_dsa;
 mod validate_bytes;
 mod x_wing;

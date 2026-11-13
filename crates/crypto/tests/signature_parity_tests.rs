@@ -14,7 +14,7 @@
 #![allow(clippy::expect_used)]
 
 use crypto_core::Algorithm;
-use reallyme_crypto::operations::{OperationError, PrimitiveErrorReason};
+use reallyme_crypto::operations::OperationError;
 
 const MESSAGE: &[u8] = b"complete signature parity";
 
@@ -102,16 +102,12 @@ fn every_signature_algorithm_rejects_invalid_keys_and_tampering_with_typed_error
         let short_secret = &case.secret_key[..case.secret_key.len() - 1];
         assert_eq!(
             derive_key_pair_error(case.algorithm, short_secret),
-            Some(OperationError::Primitive {
-                reason: PrimitiveErrorReason::InvalidKey,
-            })
+            Some(crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)
         );
         assert_eq!(
             reallyme_crypto::operations::signature::sign(case.algorithm, short_secret, MESSAGE)
                 .expect_err("short signing secret must fail"),
-            OperationError::Primitive {
-                reason: PrimitiveErrorReason::InvalidKey,
-            }
+            crypto_core::CryptoError::PRIMITIVE_INVALID_KEY
         );
 
         let key_pair = reallyme_crypto::operations::signature::derive_key_pair(
@@ -139,9 +135,7 @@ fn every_signature_algorithm_rejects_invalid_keys_and_tampering_with_typed_error
                 &signature,
             )
             .expect_err("tampered signature must fail"),
-            OperationError::Primitive {
-                reason: PrimitiveErrorReason::VerificationFailed,
-            }
+            crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE
         );
         assert_eq!(
             reallyme_crypto::operations::signature::verify(
@@ -151,9 +145,7 @@ fn every_signature_algorithm_rejects_invalid_keys_and_tampering_with_typed_error
                 &primitive_signature(case.algorithm, &case.secret_key, MESSAGE),
             )
             .expect_err("wrong message must fail"),
-            OperationError::Primitive {
-                reason: PrimitiveErrorReason::VerificationFailed,
-            }
+            crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE
         );
         assert_eq!(
             reallyme_crypto::operations::signature::verify(
@@ -163,9 +155,7 @@ fn every_signature_algorithm_rejects_invalid_keys_and_tampering_with_typed_error
                 &primitive_signature(case.algorithm, &case.secret_key, MESSAGE),
             )
             .expect_err("invalid public key must fail"),
-            OperationError::Primitive {
-                reason: PrimitiveErrorReason::InvalidKey,
-            }
+            crypto_core::CryptoError::PRIMITIVE_INVALID_KEY
         );
     }
 }

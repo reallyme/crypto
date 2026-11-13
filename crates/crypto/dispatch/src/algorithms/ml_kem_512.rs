@@ -29,7 +29,7 @@ impl MlKem512Algo {
 
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         {
-            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
     }
 
@@ -38,7 +38,7 @@ impl MlKem512Algo {
         #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
         {
             let seed = <&[u8; crypto_ml_kem_512::ML_KEM_512_SECRET_KEY_LEN]>::try_from(secret)
-                .map_err(|_| AlgorithmError::InvalidKey(Self::ALG))?;
+                .map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY)?;
             return crate::algorithms::KeypairResultExt::into_algorithm_keypair(
                 crypto_ml_kem_512::generate_ml_kem_512_keypair_from_seed(seed),
                 Self::ALG,
@@ -48,7 +48,7 @@ impl MlKem512Algo {
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         {
             let _ = secret;
-            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
     }
 
@@ -59,8 +59,7 @@ impl MlKem512Algo {
     pub fn encapsulate(public_key: &[u8]) -> Result<(Zeroizing<Vec<u8>>, Vec<u8>), AlgorithmError> {
         #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
         {
-            let (ct, ss) = crypto_ml_kem_512::ml_kem_512_encapsulate(public_key)
-                .map_err(AlgorithmError::from)?;
+            let (ct, ss) = crypto_ml_kem_512::ml_kem_512_encapsulate(public_key)?;
 
             return Ok((ss, ct));
         }
@@ -68,7 +67,7 @@ impl MlKem512Algo {
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         {
             let _ = public_key;
-            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
     }
 
@@ -81,14 +80,13 @@ impl MlKem512Algo {
     ) -> Result<Zeroizing<Vec<u8>>, AlgorithmError> {
         #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
         {
-            return crypto_ml_kem_512::ml_kem_512_decapsulate(ciphertext, secret_key)
-                .map_err(AlgorithmError::from);
+            return crypto_ml_kem_512::ml_kem_512_decapsulate(ciphertext, secret_key);
         }
 
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         {
             let _ = (ciphertext, secret_key);
-            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
     }
 }

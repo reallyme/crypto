@@ -23,8 +23,7 @@ fn facade_enforces_exact_key_and_nonce_lengths() {
         let bytes = vec![0_u8; length];
         assert!(matches!(
             Aes256GcmKey::from_slice(&bytes),
-            Err(CryptoError::InvalidAeadKeyLength { expected, actual })
-                if expected == AES_256_GCM_KEY_LEN && actual == length
+            Err(CryptoError::PRIMITIVE_INVALID_KEY)
         ));
     }
 
@@ -32,8 +31,7 @@ fn facade_enforces_exact_key_and_nonce_lengths() {
         let bytes = vec![0_u8; length];
         assert!(matches!(
             Aes256GcmNonce::from_slice(&bytes),
-            Err(CryptoError::InvalidAeadNonceLength { expected, actual })
-                if expected == AES_256_GCM_NONCE_LEN && actual == length
+            Err(CryptoError::PRIMITIVE_INVALID_NONCE)
         ));
     }
 }
@@ -52,8 +50,7 @@ fn facade_appends_and_requires_the_full_authentication_tag() {
     for length in 0..AES_256_GCM_TAG_LEN {
         assert!(matches!(
             CiphertextWithTag::from_vec(vec![0_u8; length]),
-            Err(CryptoError::InvalidCiphertextLength { minimum, actual })
-                if minimum == AES_256_GCM_TAG_LEN && actual == length
+            Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
         ));
     }
 }
@@ -112,5 +109,8 @@ fn nonce() -> Aes256GcmNonce {
 }
 
 fn assert_authentication_failure(result: Result<Vec<u8>, CryptoError>) {
-    assert!(matches!(result, Err(CryptoError::AeadDecrypt { .. })));
+    assert!(matches!(
+        result,
+        Err(CryptoError::PRIMITIVE_AUTHENTICATION_FAILED)
+    ));
 }

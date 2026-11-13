@@ -189,7 +189,5 @@ fn digest_sha3_512_bytes(
 
 #[cfg(any(not(feature = "sha2"), not(feature = "sha3")))]
 fn unsupported_hash<T>(_algorithm: HashAlgorithm) -> Result<T, OperationError> {
-    Err(OperationError::Provider {
-        reason: super::ProviderErrorReason::UnsupportedAlgorithm,
-    })
+    Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
 }

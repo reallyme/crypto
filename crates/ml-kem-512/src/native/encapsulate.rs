@@ -10,8 +10,6 @@ use ml_kem::{
 };
 use zeroize::{Zeroize, Zeroizing};
 
-const ML_KEM_512_CIPHERTEXT_LEN: usize = 768;
-
 /// Encapsulate a shared secret to an ML-KEM-512 public key.
 ///
 /// Returns (ciphertext, shared_secret); the shared secret is returned in a
@@ -27,17 +25,14 @@ fn encapsulate_with_rng(
     rng: &mut impl getrandom::rand_core::TryCryptoRng,
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
     let public_key = ml_kem::Key::<EncapsulationKey>::try_from(public_key)
-        .map_err(|_| CryptoError::InvalidKey)?;
-    let pk = EncapsulationKey::new(&public_key).map_err(|_| CryptoError::InvalidKey)?;
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    let pk = EncapsulationKey::new(&public_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
 
     // The provider's convenience encapsulate() unwraps OS entropy failures.
     // Own and wipe the randomness even if the OS only partially fills it.
     let mut randomness = Zeroizing::new(B32::default());
     rng.try_fill_bytes(randomness.as_mut_slice())
-        .map_err(|_| CryptoError::Rng {
-            output: crypto_core::RngOutputKind::Generic,
-            kind: crypto_core::RngFailureKind::EntropyUnavailable,
-        })?;
+        .map_err(|_| crypto_core::CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)?;
     let (ct, mut ss) = pk.encapsulate_deterministic(&randomness);
 
     // Wipe the temporary stack copy of the shared secret after moving it to
@@ -58,9 +53,10 @@ pub fn ml_kem_512_encapsulate_derand(
     randomness: &[u8],
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
     let public_key = ml_kem::Key::<EncapsulationKey>::try_from(public_key)
-        .map_err(|_| CryptoError::InvalidKey)?;
-    let pk = EncapsulationKey::new(&public_key).map_err(|_| CryptoError::InvalidKey)?;
-    let m = Zeroizing::new(B32::try_from(randomness).map_err(|_| CryptoError::InvalidKey)?);
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    let pk = EncapsulationKey::new(&public_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    let m =
+        Zeroizing::new(B32::try_from(randomness).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?);
 
     let (ct, mut ss) = pk.encapsulate_deterministic(&m);
 
@@ -79,13 +75,10 @@ pub fn ml_kem_512_decapsulate(
     secret_key: &[u8],
 ) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
     let secret_seed =
-        Zeroizing::new(Seed::try_from(secret_key).map_err(|_| CryptoError::InvalidKey)?);
+        Zeroizing::new(Seed::try_from(secret_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?);
     let sk = DecapsulationKey::from_seed(*secret_seed);
     let ciphertext =
-        Ciphertext::try_from(ciphertext).map_err(|_| CryptoError::InvalidCiphertextLength {
-            minimum: ML_KEM_512_CIPHERTEXT_LEN,
-            actual: ciphertext.len(),
-        })?;
+        Ciphertext::try_from(ciphertext).map_err(|_| CryptoError::PRIMITIVE_INVALID_LENGTH)?;
 
     let mut ss = sk.decapsulate(&ciphertext);
     let shared_secret = Zeroizing::new(ss.to_vec());

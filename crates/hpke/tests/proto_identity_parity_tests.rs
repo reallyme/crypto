@@ -4,13 +4,13 @@
 
 //! Registry identity parity is separate from executable provider support.
 
-#![cfg(feature = "hpke-identities")]
+#![cfg(feature = "proto")]
 #![allow(missing_docs)]
 #![allow(clippy::expect_used)]
 
 use buffa::{EnumValue, Enumeration, Message};
-use reallyme_crypto_proto::convert::UnsupportedProtoAlgorithm;
-use reallyme_crypto_proto::generated::proto::reallyme::crypto::v1::{
+use crypto_hpke::HpkeError;
+use crypto_proto::generated::proto::reallyme::crypto::v1::{
     HpkeAeadId, HpkeKdfId, HpkeKemId, HpkeSuiteIdentifier,
 };
 
@@ -27,7 +27,7 @@ fn every_registered_generated_component_combination_round_trips() {
                 };
                 let converted = crypto_hpke::HpkeSuite::try_from(&value);
                 if kem.to_i32() == 0 || kdf.to_i32() == 0 || aead.to_i32() == 0 {
-                    assert_eq!(converted, Err(UnsupportedProtoAlgorithm));
+                    assert_eq!(converted, Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM));
                 } else {
                     let native = converted
                         .expect("registered identity converts without selecting a backend");
@@ -53,19 +53,21 @@ fn unknown_negative_and_out_of_range_components_are_rejected() {
         for invalid in [kem, kdf, aead] {
             assert_eq!(
                 crypto_hpke::HpkeSuite::try_from(&invalid),
-                Err(UnsupportedProtoAlgorithm)
+                Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM)
             );
         }
     }
 }
 
 #[test]
-fn unknown_suite_fields_do_not_become_ignored_policy() -> Result<(), buffa::DecodeError> {
+fn unknown_suite_fields_do_not_become_ignored_policy() -> Result<(), HpkeError> {
     let mut suite = base_profile();
-    suite.merge_from_slice(&[0xa0, 0x06, 0x01])?;
+    suite
+        .merge_from_slice(&[0xa0, 0x06, 0x01])
+        .map_err(|_| HpkeError::PRIMITIVE_MALFORMED_PROTOBUF)?;
     assert_eq!(
         crypto_hpke::HpkeSuite::try_from(&suite),
-        Err(UnsupportedProtoAlgorithm)
+        Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM)
     );
     Ok(())
 }

@@ -22,7 +22,9 @@ mod parameters;
 mod scalar;
 mod secret;
 
+use crypto_core::CryptoError;
+
 pub use domain::PrimeGroup;
 pub use element::GroupElement;
-pub use error::{GroupError, GroupErrorReason};
+pub use error::GroupError;
 pub use scalar::GroupScalar;

@@ -11,7 +11,7 @@ use crypto_argon2id::{
     ARGON2ID_V1_MEMORY_COST_KIB, ARGON2ID_V1_TIME_COST, ARGON2ID_V2_LANES,
     ARGON2ID_V2_MEMORY_COST_KIB, ARGON2ID_V2_TIME_COST,
 };
-use crypto_core::{CryptoError, KdfAlgorithm, KdfFailureKind, KdfProfile};
+use crypto_core::CryptoError;
 use zeroize::Zeroizing;
 
 #[test]
@@ -169,11 +169,7 @@ fn rejects_empty_secret() {
 
     assert!(matches!(
         result,
-        Err(CryptoError::Kdf {
-            algorithm: KdfAlgorithm::Argon2id,
-            profile: KdfProfile::Argon2idV1,
-            kind: KdfFailureKind::InvalidSecretLength,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_PASSWORD)
     ));
 }
 
@@ -183,14 +179,7 @@ fn rejects_invalid_salt_lengths() {
 
     for len in [0usize, 1, 15, 33, 64] {
         let result = Argon2Salt::from_slice(&vec![9u8; len], profile);
-        assert!(matches!(
-            result,
-            Err(CryptoError::Kdf {
-                algorithm: KdfAlgorithm::Argon2id,
-                profile: KdfProfile::Argon2idV1,
-                kind: KdfFailureKind::InvalidSaltLength,
-            })
-        ));
+        assert!(matches!(result, Err(CryptoError::PRIMITIVE_INVALID_SALT)));
     }
 }
 
@@ -299,10 +288,7 @@ fn rejects_secret_input_above_boundary_limit() {
     let result = Argon2Secret::from_slice(&oversized_secret, Argon2Profile::V1);
     assert!(matches!(
         result,
-        Err(CryptoError::Kdf {
-            kind: KdfFailureKind::InvalidSecretLength,
-            ..
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_PASSWORD)
     ));
 }
 
@@ -317,11 +303,7 @@ fn kdf_version_mapping_is_strict() {
         let result = Argon2KdfVersion::try_from(invalid);
         assert!(matches!(
             result,
-            Err(CryptoError::Kdf {
-                algorithm: KdfAlgorithm::Argon2id,
-                profile: KdfProfile::Argon2idV1,
-                kind: KdfFailureKind::InvalidParams,
-            })
+            Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
         ));
     }
 }
@@ -336,21 +318,13 @@ fn derive_for_kdf_version_enforces_version_and_lengths() {
     let invalid_version = derive_key_for_version(99, b"passphrase", &[7u8; 16]);
     assert!(matches!(
         invalid_version,
-        Err(CryptoError::Kdf {
-            algorithm: KdfAlgorithm::Argon2id,
-            profile: KdfProfile::Argon2idV1,
-            kind: KdfFailureKind::InvalidParams,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
     ));
 
     let invalid_salt = derive_key_for_version(1, b"passphrase", &[7u8; 8]);
     assert!(matches!(
         invalid_salt,
-        Err(CryptoError::Kdf {
-            algorithm: KdfAlgorithm::Argon2id,
-            profile: KdfProfile::Argon2idV1,
-            kind: KdfFailureKind::InvalidSaltLength,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_SALT)
     ));
 }
 
@@ -380,11 +354,7 @@ fn profile_resolution_respects_platform_caps() {
     let capped = resolve_profile_params_with_caps(1, restricted_caps);
     assert!(matches!(
         capped,
-        Err(CryptoError::Kdf {
-            algorithm: KdfAlgorithm::Argon2id,
-            profile: KdfProfile::Argon2idV1,
-            kind: KdfFailureKind::InvalidParams,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
     ));
 }
 

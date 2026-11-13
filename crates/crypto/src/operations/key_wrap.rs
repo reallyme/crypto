@@ -5,12 +5,8 @@
 //! Semantic owner for AES-KW wrap and unwrap operations.
 
 use crypto_core::KeyWrapAlgorithm;
-#[cfg(any(feature = "native", feature = "wasm"))]
-use crypto_core::{CryptoError, KeyWrapFailureKind};
 
 use super::OperationError;
-#[cfg(any(feature = "native", feature = "wasm"))]
-use super::{BackendErrorReason, PrimitiveErrorReason};
 use crate::secret_material::{bind_operation_policy, SecretMaterialOperation};
 
 /// Wraps plaintext key material with the selected RFC 3394 AES-KW suite.
@@ -27,28 +23,24 @@ pub fn wrap_key(
     #[cfg(any(feature = "native", feature = "wasm"))]
     match algorithm {
         KeyWrapAlgorithm::Aes128Kw => {
-            let kek = crypto_aes_kw::Aes128KwKek::from_slice(kek).map_err(map_key_wrap_error)?;
-            crypto_aes_kw::wrap_key_aes128(&kek, key_data).map_err(map_key_wrap_error)
+            let kek = crypto_aes_kw::Aes128KwKek::from_slice(kek)?;
+            crypto_aes_kw::wrap_key_aes128(&kek, key_data)
         }
         KeyWrapAlgorithm::Aes192Kw => {
-            let kek = crypto_aes_kw::Aes192KwKek::from_slice(kek).map_err(map_key_wrap_error)?;
-            crypto_aes_kw::wrap_key_aes192(&kek, key_data).map_err(map_key_wrap_error)
+            let kek = crypto_aes_kw::Aes192KwKek::from_slice(kek)?;
+            crypto_aes_kw::wrap_key_aes192(&kek, key_data)
         }
         KeyWrapAlgorithm::Aes256Kw => {
-            let kek = crypto_aes_kw::Aes256KwKek::from_slice(kek).map_err(map_key_wrap_error)?;
-            crypto_aes_kw::wrap_key_aes256(&kek, key_data).map_err(map_key_wrap_error)
+            let kek = crypto_aes_kw::Aes256KwKek::from_slice(kek)?;
+            crypto_aes_kw::wrap_key_aes256(&kek, key_data)
         }
-        _ => Err(OperationError::Provider {
-            reason: super::ProviderErrorReason::UnsupportedAlgorithm,
-        }),
+        _ => Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
     }
 
     #[cfg(not(any(feature = "native", feature = "wasm")))]
     {
         let _ = (algorithm, kek, key_data);
-        Err(OperationError::Provider {
-            reason: super::ProviderErrorReason::UnsupportedAlgorithm,
-        })
+        Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }
 
@@ -65,70 +57,23 @@ pub fn unwrap_key(
     #[cfg(any(feature = "native", feature = "wasm"))]
     match algorithm {
         KeyWrapAlgorithm::Aes128Kw => {
-            let kek = crypto_aes_kw::Aes128KwKek::from_slice(kek).map_err(map_key_wrap_error)?;
-            crypto_aes_kw::unwrap_key_aes128(&kek, wrapped_key).map_err(map_key_wrap_error)
+            let kek = crypto_aes_kw::Aes128KwKek::from_slice(kek)?;
+            crypto_aes_kw::unwrap_key_aes128(&kek, wrapped_key)
         }
         KeyWrapAlgorithm::Aes192Kw => {
-            let kek = crypto_aes_kw::Aes192KwKek::from_slice(kek).map_err(map_key_wrap_error)?;
-            crypto_aes_kw::unwrap_key_aes192(&kek, wrapped_key).map_err(map_key_wrap_error)
+            let kek = crypto_aes_kw::Aes192KwKek::from_slice(kek)?;
+            crypto_aes_kw::unwrap_key_aes192(&kek, wrapped_key)
         }
         KeyWrapAlgorithm::Aes256Kw => {
-            let kek = crypto_aes_kw::Aes256KwKek::from_slice(kek).map_err(map_key_wrap_error)?;
-            crypto_aes_kw::unwrap_key_aes256(&kek, wrapped_key).map_err(map_key_wrap_error)
+            let kek = crypto_aes_kw::Aes256KwKek::from_slice(kek)?;
+            crypto_aes_kw::unwrap_key_aes256(&kek, wrapped_key)
         }
-        _ => Err(OperationError::Provider {
-            reason: super::ProviderErrorReason::UnsupportedAlgorithm,
-        }),
+        _ => Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
     }
 
     #[cfg(not(any(feature = "native", feature = "wasm")))]
     {
         let _ = (algorithm, kek, wrapped_key);
-        Err(OperationError::Provider {
-            reason: super::ProviderErrorReason::UnsupportedAlgorithm,
-        })
-    }
-}
-
-#[cfg(any(feature = "native", feature = "wasm"))]
-fn map_key_wrap_error(error: CryptoError) -> OperationError {
-    match error {
-        CryptoError::KeyWrap {
-            kind: KeyWrapFailureKind::InvalidKekLength,
-            ..
-        } => OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey,
-        },
-        CryptoError::KeyWrap {
-            kind:
-                KeyWrapFailureKind::InvalidPlaintextLength | KeyWrapFailureKind::InvalidWrappedLength,
-            ..
-        } => OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidLength,
-        },
-        CryptoError::KeyWrap {
-            kind: KeyWrapFailureKind::LengthOverflow,
-            ..
-        } => OperationError::Primitive {
-            reason: PrimitiveErrorReason::LengthOverflow,
-        },
-        CryptoError::KeyWrap {
-            kind: KeyWrapFailureKind::IntegrityCheckFailed,
-            ..
-        } => OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed,
-        },
-        CryptoError::KeyWrap {
-            kind: KeyWrapFailureKind::BackendFailure,
-            ..
-        } => OperationError::Backend {
-            reason: BackendErrorReason::Internal,
-        },
-        CryptoError::Unsupported => OperationError::Provider {
-            reason: super::ProviderErrorReason::UnsupportedAlgorithm,
-        },
-        _ => OperationError::Backend {
-            reason: BackendErrorReason::Internal,
-        },
+        Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }

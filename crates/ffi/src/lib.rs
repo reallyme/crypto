@@ -63,6 +63,7 @@ pub mod csprng;
 /// C ABI surface for Ed25519 signing, verification, and key encoding.
 #[allow(unsafe_code)]
 pub mod ed25519;
+mod error_status;
 pub mod guard;
 /// C ABI surface for HKDF key derivation (SHA-256 / SHA3-256 suites).
 #[allow(unsafe_code)]

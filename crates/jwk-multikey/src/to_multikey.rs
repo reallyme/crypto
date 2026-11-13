@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use codec_multikey::encode_multikey;
-use envelopes_jwk::{Jwk, JwtError};
+use envelopes_jwk::Jwk;
 
 use crate::JwkMultikeyError;
 
@@ -15,13 +15,13 @@ pub fn jwk_to_multikey(jwk: &Jwk) -> Result<String, JwkMultikeyError> {
     if matches!(jwk, Jwk::Ec(_)) {
         // Cargo can unify the JWK dependency's backend feature through a
         // sibling crate. This adapter's own feature contract remains closed.
-        return Err(JwkMultikeyError::UnsupportedAlgorithm);
+        return Err(JwkMultikeyError::PROVIDER_UNSUPPORTED_ALGORITHM);
     }
     let codec_name = match jwk {
         Jwk::Okp(okp) => match okp.crv.as_str() {
             "Ed25519" => "ed25519-pub",
             "X25519" => "x25519-pub",
-            _ => return Err(JwkMultikeyError::UnsupportedAlgorithm),
+            _ => return Err(JwkMultikeyError::PROVIDER_UNSUPPORTED_ALGORITHM),
         },
         Jwk::Akp(akp) => match akp.alg.as_str() {
             "ML-DSA-44" => "mldsa-44-pub",
@@ -30,21 +30,20 @@ pub fn jwk_to_multikey(jwk: &Jwk) -> Result<String, JwkMultikeyError> {
             "ML-KEM-512" => "mlkem-512-pub",
             "ML-KEM-768" => "mlkem-768-pub",
             "ML-KEM-1024" => "mlkem-1024-pub",
-            _ => return Err(JwkMultikeyError::UnsupportedAlgorithm),
+            _ => return Err(JwkMultikeyError::PROVIDER_UNSUPPORTED_ALGORITHM),
         },
         Jwk::Ec(ec) => match ec.crv.as_str() {
             "P-256" => "p256-pub",
             "secp256k1" => "secp256k1-pub",
-            _ => return Err(JwkMultikeyError::UnsupportedAlgorithm),
+            _ => return Err(JwkMultikeyError::PROVIDER_UNSUPPORTED_ALGORITHM),
         },
     };
 
     // The JWK crate owns key-shape, metadata, length, and exact-coordinate
     // validation. Reusing that boundary prevents this adapter from drifting
     // into a second envelope parser with weaker policy.
-    let public_key = jwk.public_key_bytes().map_err(|error| match error {
-        JwtError::BackendUnavailable => JwkMultikeyError::UnsupportedAlgorithm,
-        _ => JwkMultikeyError::InvalidJwk,
-    })?;
-    encode_multikey(codec_name, &public_key).map_err(|_| JwkMultikeyError::EncodingError)
+    let public_key = jwk.public_key_bytes()?;
+    // The codec receives a fixed reviewed name and already validated public
+    // bytes. A rejection here is a trusted table/output invariant failure.
+    encode_multikey(codec_name, &public_key).map_err(|_| JwkMultikeyError::BACKEND_INTERNAL)
 }

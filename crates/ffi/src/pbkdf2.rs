@@ -2,12 +2,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::error_status::kdf_status as map_error;
 use crate::guard::ffi_guard;
 use crate::pointer::{read_slice, write_fixed};
-use crate::status::{
-    CryptoStatus, CRYPTO_INTERNAL_ERROR, CRYPTO_INVALID_ARGUMENT, CRYPTO_INVALID_KEY, CRYPTO_OK,
-};
-use reallyme_crypto::operations::{OperationError, PrimitiveErrorReason};
+use crate::status::{CryptoStatus, CRYPTO_INVALID_ARGUMENT, CRYPTO_OK};
 use reallyme_crypto::pbkdf2::{
     Pbkdf2Prf, PBKDF2_MAX_ITERATIONS, PBKDF2_MAX_OUTPUT_LENGTH, PBKDF2_MAX_PASSWORD_LENGTH,
     PBKDF2_MAX_SALT_LENGTH, PBKDF2_MIN_OUTPUT_LENGTH, PBKDF2_MIN_PASSWORD_LENGTH,
@@ -30,18 +28,6 @@ pub const PBKDF2_ITERATIONS_MAX: u32 = PBKDF2_MAX_ITERATIONS;
 pub const PBKDF2_OUTPUT_MIN_LEN: usize = PBKDF2_MIN_OUTPUT_LENGTH;
 /// Maximum PBKDF2 output length accepted by the ABI.
 pub const PBKDF2_OUTPUT_MAX_LEN: usize = PBKDF2_MAX_OUTPUT_LENGTH;
-
-fn map_error(error: OperationError) -> CryptoStatus {
-    match error {
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey,
-        } => CRYPTO_INVALID_KEY,
-        OperationError::Primitive { .. } => CRYPTO_INVALID_ARGUMENT,
-        OperationError::Backend { .. } => CRYPTO_INTERNAL_ERROR,
-        OperationError::Provider { .. } => CRYPTO_INVALID_ARGUMENT,
-        _ => CRYPTO_INTERNAL_ERROR,
-    }
-}
 
 struct Pbkdf2FfiRequest {
     prf: Pbkdf2Prf,

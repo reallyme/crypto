@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #![allow(missing_docs)]
-use crypto_core::{CryptoError, RngFailureKind, RngOutputKind};
+use crypto_core::{CryptoError, RngOutputKind};
 use crypto_csprng::{
     generate_aead_nonce_12, generate_aes256_gcm_key, generate_argon2_salt_16,
     generate_argon2_salt_32, generate_bytes, generate_ml_dsa_87_seed, generate_ml_kem_1024_seed,
@@ -35,11 +35,8 @@ impl SecureRandom for DeterministicRng {
 struct FailingRng;
 
 impl SecureRandom for FailingRng {
-    fn fill_secure(&mut self, _output: &mut [u8], kind: RngOutputKind) -> Result<(), CryptoError> {
-        Err(CryptoError::Rng {
-            output: kind,
-            kind: RngFailureKind::EntropyUnavailable,
-        })
+    fn fill_secure(&mut self, _output: &mut [u8], _kind: RngOutputKind) -> Result<(), CryptoError> {
+        Err(CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)
     }
 }
 
@@ -150,13 +147,7 @@ fn generic_output_rejects_zero_length() {
     let mut rng = DeterministicRng::new(0);
     let result = generate_bytes::<0>(&mut rng, RngOutputKind::Generic);
 
-    assert!(matches!(
-        result,
-        Err(CryptoError::Rng {
-            output: RngOutputKind::Generic,
-            kind: RngFailureKind::InvalidOutputLength,
-        })
-    ));
+    assert!(matches!(result, Err(CryptoError::PRIMITIVE_INVALID_LENGTH)));
 }
 
 #[test]
@@ -164,38 +155,32 @@ fn entropy_failure_is_propagated() {
     let mut rng = FailingRng;
     let result = generate_aead_nonce_12(&mut rng);
 
-    assert_eq!(
-        result,
-        Err(CryptoError::Rng {
-            output: RngOutputKind::AeadNonce12,
-            kind: RngFailureKind::EntropyUnavailable,
-        })
-    );
+    assert_eq!(result, Err(CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE));
 }
 
 #[test]
-fn ssp_entropy_failures_preserve_output_kind() {
+fn ssp_entropy_failures_preserve_the_canonical_reason() {
     let mut rng = FailingRng;
 
     assert!(matches!(
         generate_aes256_gcm_key(&mut rng),
-        Err(CryptoError::Rng {
-            output: RngOutputKind::Aes256GcmKey,
-            kind: RngFailureKind::EntropyUnavailable,
-        })
+        Err(CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)
     ));
     assert!(matches!(
         generate_ml_kem_1024_seed(&mut rng),
-        Err(CryptoError::Rng {
-            output: RngOutputKind::MlKem1024Seed,
-            kind: RngFailureKind::EntropyUnavailable,
-        })
+        Err(CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)
     ));
     assert!(matches!(
         generate_ml_dsa_87_seed(&mut rng),
-        Err(CryptoError::Rng {
-            output: RngOutputKind::MlDsa87Seed,
-            kind: RngFailureKind::EntropyUnavailable,
-        })
+        Err(CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)
     ));
+}
+
+#[test]
+fn generated_secret_owners_still_clear_on_drop() {
+    fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
+    require_cleanup::<Aes256GcmKeyMaterial>();
+    require_cleanup::<MlKem1024Seed>();
+    require_cleanup::<MlDsa87Seed>();
+    require_cleanup::<crypto_csprng::RandomBytes<32>>();
 }

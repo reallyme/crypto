@@ -15,18 +15,17 @@ impl XWing768Algo {
 
     /// Generate an X-Wing-768 keypair.
     pub fn generate_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), AlgorithmError> {
-        crypto_x_wing::generate_x_wing_768_keypair().map_err(AlgorithmError::from)
+        crypto_x_wing::generate_x_wing_768_keypair()
     }
 
     /// Reconstruct an X-Wing-768 keypair from an existing 32-byte secret key.
     pub fn derive_keypair(secret: &[u8]) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), AlgorithmError> {
-        crypto_x_wing::generate_x_wing_768_keypair_derand(secret).map_err(AlgorithmError::from)
+        crypto_x_wing::generate_x_wing_768_keypair_derand(secret)
     }
 
     /// Encapsulate using the public key.
     pub fn encapsulate(public_key: &[u8]) -> Result<(Zeroizing<Vec<u8>>, Vec<u8>), AlgorithmError> {
-        let (ciphertext, shared_secret) =
-            crypto_x_wing::x_wing_768_encapsulate(public_key).map_err(AlgorithmError::from)?;
+        let (ciphertext, shared_secret) = crypto_x_wing::x_wing_768_encapsulate(public_key)?;
         Ok((shared_secret, ciphertext))
     }
 
@@ -35,6 +34,6 @@ impl XWing768Algo {
         ciphertext: &[u8],
         secret_key: &[u8],
     ) -> Result<Zeroizing<Vec<u8>>, AlgorithmError> {
-        crypto_x_wing::x_wing_768_decapsulate(ciphertext, secret_key).map_err(AlgorithmError::from)
+        crypto_x_wing::x_wing_768_decapsulate(ciphertext, secret_key)
     }
 }

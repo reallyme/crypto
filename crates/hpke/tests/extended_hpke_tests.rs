@@ -188,7 +188,7 @@ fn psk_mode_roundtrips_and_rejects_wrong_psk() {
     })
     .err()
     .expect("wrong PSK must fail authentication");
-    assert_eq!(error, HpkeError::OpenFailed);
+    assert_eq!(error, HpkeError::PRIMITIVE_AUTHENTICATION_FAILED);
 }
 
 #[test]
@@ -294,7 +294,7 @@ fn malformed_psk_info_and_export_lengths_are_rejected_before_backend_setup() {
     })
     .err()
     .expect("short PSK must fail");
-    assert_eq!(error, HpkeError::InvalidPsk);
+    assert_eq!(error, HpkeError::PRIMITIVE_INVALID_PARAMETER);
 
     let oversized_info = vec![0_u8; (1_usize << 16) - 5];
     let error = seal_base(&HpkeSealRequest {
@@ -306,7 +306,7 @@ fn malformed_psk_info_and_export_lengths_are_rejected_before_backend_setup() {
     })
     .err()
     .expect("oversized info must fail before backend setup");
-    assert_eq!(error, HpkeError::InvalidInfoLength);
+    assert_eq!(error, HpkeError::PRIMITIVE_INVALID_LENGTH);
 
     let export_only_suite =
         HpkeSuite::new(suite.kem, HpkeKdfId::HkdfSha256, HpkeAeadId::ExportOnly);
@@ -319,7 +319,7 @@ fn malformed_psk_info_and_export_lengths_are_rejected_before_backend_setup() {
     })
     .err()
     .expect("empty export must fail");
-    assert_eq!(error, HpkeError::InvalidExporterLength);
+    assert_eq!(error, HpkeError::PRIMITIVE_INVALID_LENGTH);
 
     let error = sender_export(&HpkeSenderExportRequest {
         suite: export_only_suite,
@@ -330,7 +330,7 @@ fn malformed_psk_info_and_export_lengths_are_rejected_before_backend_setup() {
     })
     .err()
     .expect("oversized SHAKE export must fail");
-    assert_eq!(error, HpkeError::InvalidExporterLength);
+    assert_eq!(error, HpkeError::PRIMITIVE_INVALID_LENGTH);
 
     let unsafe_backend_combination =
         HpkeSuite::new(suite.kem, HpkeKdfId::Shake256, HpkeAeadId::ExportOnly);
@@ -343,7 +343,7 @@ fn malformed_psk_info_and_export_lengths_are_rejected_before_backend_setup() {
     })
     .err()
     .expect("provider panic path must fail closed");
-    assert_eq!(error, HpkeError::UnsupportedSuite);
+    assert_eq!(error, HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM);
 }
 
 fn assert_base_roundtrip(suite: HpkeSuite) {

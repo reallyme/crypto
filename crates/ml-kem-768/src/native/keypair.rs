@@ -19,9 +19,7 @@ pub const ML_KEM_768_SECRET_KEY_LEN: usize = 64;
 /// zeroizing wrapper so it is wiped when the caller drops it.
 pub fn generate_ml_kem_768_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
     let decapsulation_key =
-        DecapsulationKey::try_generate().map_err(|_| CryptoError::KemFailure {
-            kind: crypto_core::KemFailureKind::KeyGenerationFailed,
-        })?;
+        DecapsulationKey::try_generate().map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
     let encapsulation_key = decapsulation_key.encapsulation_key();
     // Wipe the temporary stack copy of the seed after moving it to the heap.
     let mut secret_seed = decapsulation_key.to_bytes();
@@ -43,7 +41,8 @@ pub fn generate_ml_kem_768_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), Cr
 pub fn generate_ml_kem_768_keypair_from_seed(
     seed: &[u8; ML_KEM_768_SECRET_KEY_LEN],
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
-    let ml_seed = Zeroizing::new(Seed::try_from(&seed[..]).map_err(|_| CryptoError::InvalidKey)?);
+    let ml_seed =
+        Zeroizing::new(Seed::try_from(&seed[..]).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?);
     let decapsulation_key = DecapsulationKey::from_seed(*ml_seed);
     let encapsulation_key = decapsulation_key.encapsulation_key();
     let secret = Zeroizing::new(seed.to_vec());

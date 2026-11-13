@@ -4,7 +4,7 @@
 
 //! Semantic owner for constant-time equality operations.
 
-use super::{OperationError, PrimitiveErrorReason};
+use super::OperationError;
 use crate::secret_material::{bind_operation_policy, SecretMaterialOperation};
 
 /// Compare same-length byte slices without data-dependent early exit.
@@ -29,16 +29,12 @@ pub fn equal_fixed<const N: usize>(left: &[u8; N], right: &[u8; N]) -> bool {
 pub fn require_equal(left: &[u8], right: &[u8]) -> Result<(), OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::ConstantTimeCompare);
     if left.len() != right.len() {
-        return Err(OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidLength,
-        });
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
 
     if equal(left, right) {
         return Ok(());
     }
 
-    Err(OperationError::Primitive {
-        reason: PrimitiveErrorReason::VerificationFailed,
-    })
+    Err(crypto_core::CryptoError::PRIMITIVE_VERIFICATION_FAILED)
 }

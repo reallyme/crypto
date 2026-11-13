@@ -48,7 +48,7 @@ use serde_json::Value;
 fn decode_base64url(value: &str) -> Result<Vec<u8>, crypto_core::CryptoError> {
     URL_SAFE_NO_PAD
         .decode(value)
-        .map_err(|_| crypto_core::CryptoError::InvalidKey)
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)
 }
 
 fn load_shared_vector(name: &str) -> Value {

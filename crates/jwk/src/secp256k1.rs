@@ -9,9 +9,9 @@
 
 use crate::{EcJwk, JwkOptions, JwtError};
 
+use crate::canonicalize_jwk::canonicalize_jwk;
 #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use codec_base64url::bytes_to_base64url;
-use codec_jcs::canonicalize_trusted_json_value;
 
 #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use crypto_secp256k1::decompress_public_key;
@@ -25,19 +25,19 @@ pub fn secp256k1_public_key_to_jwk(
     options: JwkOptions,
 ) -> Result<EcJwk, JwtError> {
     if compressed_sec1.len() != 33 {
-        return Err(JwtError::InvalidSecp256k1Key);
+        return Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY);
     }
 
     #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
     {
         let _ = options;
-        return Err(JwtError::BackendUnavailable);
+        return Err(JwtError::PROVIDER_UNSUPPORTED_BACKEND);
     }
 
     #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
     {
         let (x, y) =
-            decompress_public_key(compressed_sec1).map_err(|_| JwtError::InvalidSecp256k1Key)?;
+            decompress_public_key(compressed_sec1).map_err(crate::error::public_key_error)?;
 
         let mut jwk = EcJwk {
             kty: "EC".to_string(),
@@ -67,7 +67,5 @@ pub fn secp256k1_public_key_to_jwk_jcs(
 ) -> Result<String, JwtError> {
     let jwk = secp256k1_public_key_to_jwk(compressed_sec1, options)?;
 
-    let value = serde_json::to_value(&jwk).map_err(|_| JwtError::EncodingError)?;
-
-    canonicalize_trusted_json_value(&value).map_err(|_| JwtError::EncodingError)
+    canonicalize_jwk(&jwk)
 }

@@ -5,7 +5,6 @@
 #![allow(missing_docs)]
 
 use reallyme_crypto::core::RngOutputKind;
-use reallyme_crypto::operations::{OperationError, ProviderErrorReason};
 use reallyme_crypto::secret_material::{
     operation_secret_material_policy, random_fill_secret_material_policy, BufferOwner,
     DestructionPolicy, ExportPolicy, OutputMaterial, SecretMaterialOperation, SecretSensitivity,
@@ -197,37 +196,37 @@ fn key_generation_does_not_invent_a_secret_input_owner() {
 fn platform_lifecycle_failures_are_fixed_provider_reasons() {
     let reasons = [
         (
-            ProviderErrorReason::KeyExists,
+            crypto_core::CryptoError::PROVIDER_KEY_EXISTS,
             "provider operation failure: key exists",
         ),
         (
-            ProviderErrorReason::KeyNotFound,
+            crypto_core::CryptoError::PROVIDER_KEY_NOT_FOUND,
             "provider operation failure: key not found",
         ),
         (
-            ProviderErrorReason::AccessDenied,
+            crypto_core::CryptoError::PROVIDER_ACCESS_DENIED,
             "provider operation failure: access denied",
         ),
         (
-            ProviderErrorReason::UserAuthenticationRequired,
+            crypto_core::CryptoError::PROVIDER_USER_AUTHENTICATION_REQUIRED,
             "provider operation failure: user authentication required",
         ),
         (
-            ProviderErrorReason::UserCanceled,
+            crypto_core::CryptoError::PROVIDER_USER_CANCELED,
             "provider operation failure: user canceled",
         ),
         (
-            ProviderErrorReason::HardwareUnavailable,
+            crypto_core::CryptoError::PROVIDER_HARDWARE_UNAVAILABLE,
             "provider operation failure: hardware unavailable",
         ),
         (
-            ProviderErrorReason::HardwareRejectedKey,
+            crypto_core::CryptoError::PROVIDER_HARDWARE_REJECTED_KEY,
             "provider operation failure: hardware rejected key",
         ),
     ];
 
     for (reason, expected) in reasons {
-        let error = OperationError::Provider { reason };
+        let error = reason;
         assert_eq!(error.to_string(), expected);
     }
 }

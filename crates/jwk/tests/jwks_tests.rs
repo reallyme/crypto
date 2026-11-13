@@ -34,7 +34,7 @@ fn public_key_extractor_rejects_malformed_akp_key() {
 
     assert_eq!(
         public_key_bytes_from_jwk(&jwk),
-        Err(JwtError::InvalidMlDsa44Key)
+        Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY)
     );
 }
 
@@ -49,7 +49,7 @@ fn public_key_extractor_rejects_wrong_ed25519_length() {
 
     assert_eq!(
         public_key_bytes_from_jwk(&jwk),
-        Err(JwtError::InvalidEd25519Key)
+        Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY)
     );
 }
 
@@ -129,5 +129,5 @@ fn private_member_is_rejected_before_its_value_is_deserialized() {
     let error = serde_json::from_str::<Jwk>(r#"{"d":"\u0041"#).unwrap_err();
     assert!(error
         .to_string()
-        .starts_with(&JwtError::PrivateKeyMaterial.to_string()));
+        .starts_with(&JwtError::PRIMITIVE_INVALID_PARAMETER.to_string()));
 }

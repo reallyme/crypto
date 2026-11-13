@@ -2,14 +2,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{
-    AeadFailureKind, ConstantTimeFailureKind, CryptoError, HkdfFailureKind, KdfFailureKind,
-    KeyAgreementFailureKind, KeyWrapFailureKind, MacFailureKind, RngFailureKind,
-    SignatureFailureKind, SignatureOperation,
-};
+use crypto_core::{CryptoError, CryptoErrorReason};
 use wasm_bindgen::JsValue;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum WasmErrorCode {
     InvalidInput,
     InvalidSignature,
@@ -30,9 +26,8 @@ impl WasmErrorCode {
     }
 
     fn into_js_value(self) -> JsValue {
-        // JavaScript numbers represent every u32 exactly. A numeric boundary
-        // code keeps the raw WASM transport deterministic without turning an
-        // error category into an allocated or attacker-influenced string.
+        // Every u32 is represented exactly by a JavaScript number. No provider
+        // text or caller bytes are carried into this numeric projection.
         JsValue::from_f64(f64::from(self.value()))
     }
 }
@@ -40,125 +35,75 @@ impl WasmErrorCode {
 pub(crate) fn invalid_input() -> JsValue {
     WasmErrorCode::InvalidInput.into_js_value()
 }
-
 pub(crate) fn provider_failure() -> JsValue {
     WasmErrorCode::ProviderFailure.into_js_value()
 }
-
 pub(crate) fn invalid_signature() -> JsValue {
     WasmErrorCode::InvalidSignature.into_js_value()
 }
-
 pub(crate) fn authentication_failed() -> JsValue {
     WasmErrorCode::AuthenticationFailed.into_js_value()
 }
-
 pub(crate) fn unsupported_algorithm() -> JsValue {
     WasmErrorCode::UnsupportedAlgorithm.into_js_value()
 }
 
-pub(crate) fn map_crypto_error(error: CryptoError) -> JsValue {
-    match error {
-        CryptoError::InvalidKey
-        | CryptoError::InvalidAeadKeyLength { .. }
-        | CryptoError::InvalidAeadNonceLength { .. }
-        | CryptoError::InvalidCiphertextLength { .. } => invalid_input(),
-        CryptoError::Unsupported => unsupported_algorithm(),
-        CryptoError::Signature {
-            kind: SignatureFailureKind::InvalidPrivateKey | SignatureFailureKind::InvalidPublicKey,
-            ..
-        } => invalid_input(),
-        CryptoError::Signature {
-            kind: SignatureFailureKind::InvalidMessage,
-            ..
-        } => invalid_input(),
-        CryptoError::Signature {
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-            ..
-        } => invalid_signature(),
-        CryptoError::KeyWrap {
-            kind:
-                KeyWrapFailureKind::InvalidKekLength
-                | KeyWrapFailureKind::InvalidPlaintextLength
-                | KeyWrapFailureKind::InvalidWrappedLength
-                | KeyWrapFailureKind::LengthOverflow,
-            ..
-        } => invalid_input(),
-        CryptoError::AeadEncrypt {
-            kind:
-                AeadFailureKind::InvalidKeyMaterial
-                | AeadFailureKind::LengthOverflow
-                | AeadFailureKind::InvalidOutputLength,
-            ..
+fn classify(error: CryptoError) -> WasmErrorCode {
+    match error.reason() {
+        CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SIGNATURE => {
+            WasmErrorCode::InvalidSignature
         }
-        | CryptoError::AeadDecrypt {
-            kind:
-                AeadFailureKind::InvalidKeyMaterial
-                | AeadFailureKind::LengthOverflow
-                | AeadFailureKind::ShortCiphertext
-                | AeadFailureKind::InvalidOutputLength,
-            ..
+        CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_VERIFICATION_FAILED => {
+            WasmErrorCode::AuthenticationFailed
         }
-        | CryptoError::Hkdf {
-            kind:
-                HkdfFailureKind::InvalidIkmLength
-                | HkdfFailureKind::InvalidDomainTagLength
-                | HkdfFailureKind::InvalidDomainTagByte
-                | HkdfFailureKind::LengthOverflow
-                | HkdfFailureKind::InvalidOutputLength,
-            ..
+        CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_ALGORITHM
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_BACKEND => {
+            WasmErrorCode::UnsupportedAlgorithm
         }
-        | CryptoError::Kdf {
-            kind:
-                KdfFailureKind::InvalidSecretLength
-                | KdfFailureKind::InvalidSaltLength
-                | KdfFailureKind::InvalidOutputLength
-                | KdfFailureKind::InvalidIterationCount
-                | KdfFailureKind::InvalidParams,
-            ..
+        CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PARAMETER
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PUBLIC_KEY
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PRIVATE_KEY
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_NONCE
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SALT
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PASSWORD
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_ENCODING
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_CIPHERTEXT
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_TAG
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SHARED_SECRET
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_PROTOBUF
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_JSON
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_RESOURCE_LIMIT_EXCEEDED
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_MISSING_OPERATION => {
+            WasmErrorCode::InvalidInput
         }
-        | CryptoError::KeyAgreementFailure {
-            kind: KeyAgreementFailureKind::DeriveSharedSecretFailed,
-        }
-        | CryptoError::Mac {
-            kind: MacFailureKind::InvalidKeyLength | MacFailureKind::InvalidTagLength,
-            ..
-        }
-        | CryptoError::Rng {
-            kind: RngFailureKind::InvalidOutputLength,
-            ..
-        } => invalid_input(),
-        CryptoError::AeadDecrypt {
-            kind: AeadFailureKind::AuthenticationFailed,
-            ..
-        }
-        | CryptoError::KeyWrap {
-            kind: KeyWrapFailureKind::IntegrityCheckFailed,
-            ..
-        }
-        | CryptoError::Mac {
-            kind: MacFailureKind::VerificationFailed,
-            ..
-        } => authentication_failed(),
-        CryptoError::ConstantTimeComparison {
-            kind: ConstantTimeFailureKind::LengthMismatch,
-            ..
-        } => invalid_input(),
-        CryptoError::ConstantTimeComparison {
-            kind: ConstantTimeFailureKind::NotEqual,
-            ..
-        } => invalid_signature(),
-        CryptoError::AeadEncrypt { .. }
-        | CryptoError::AeadDecrypt { .. }
-        | CryptoError::Hkdf { .. }
-        | CryptoError::Kdf { .. }
-        | CryptoError::KemFailure { .. }
-        | CryptoError::KeyAgreementFailure { .. }
-        | CryptoError::KeyWrap { .. }
-        | CryptoError::Mac { .. }
-        | CryptoError::Rng { .. }
-        | CryptoError::Signature { .. } => provider_failure(),
-        _ => provider_failure(),
+        CryptoErrorReason::CRYPTO_ERROR_REASON_UNSPECIFIED
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_UNAVAILABLE
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_KEY_EXISTS
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_KEY_NOT_FOUND
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_ACCESS_DENIED
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_USER_AUTHENTICATION_REQUIRED
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_USER_CANCELED
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_HARDWARE_UNAVAILABLE
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_HARDWARE_REJECTED_KEY
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_BACKEND_INVALID_STATE
+        | CryptoErrorReason::CRYPTO_ERROR_REASON_BACKEND_INTERNAL => WasmErrorCode::ProviderFailure,
     }
 }
+
+pub(crate) fn map_crypto_error(error: CryptoError) -> JsValue {
+    match classify(error) {
+        WasmErrorCode::InvalidInput => invalid_input(),
+        WasmErrorCode::InvalidSignature => invalid_signature(),
+        WasmErrorCode::AuthenticationFailed => authentication_failed(),
+        WasmErrorCode::ProviderFailure => provider_failure(),
+        WasmErrorCode::UnsupportedAlgorithm => unsupported_algorithm(),
+    }
+}
+
+#[cfg(test)]
+#[path = "map_error_tests.rs"]
+mod tests;

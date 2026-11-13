@@ -4,7 +4,7 @@
 
 // verify.rs
 
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 use ecdsa::signature::hazmat::PrehashVerifier;
 use k256::ecdsa::{Signature, VerifyingKey};
 use k256::PublicKey;
@@ -27,22 +27,16 @@ pub fn verify_secp256k1(
     public_key_sec1: &[u8],
 ) -> Result<(), CryptoError> {
     if signature.len() != 64 {
-        return Err(CryptoError::Signature {
-            backend: crypto_core::SignatureBackend::Native,
-            operation: crypto_core::SignatureOperation::Verify,
-            kind: crypto_core::SignatureFailureKind::InvalidSignature,
-        });
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE);
     }
 
-    let pk = PublicKey::from_sec1_bytes(public_key_sec1).map_err(|_| CryptoError::InvalidKey)?;
+    let pk = PublicKey::from_sec1_bytes(public_key_sec1)
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
 
     let vk = VerifyingKey::from(pk);
 
-    let sig = Signature::try_from(signature).map_err(|_| CryptoError::Signature {
-        backend: crypto_core::SignatureBackend::Native,
-        operation: crypto_core::SignatureOperation::Verify,
-        kind: crypto_core::SignatureFailureKind::InvalidSignature,
-    })?;
+    let sig = Signature::try_from(signature)
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
 
     // Enforce low-S (BIP 0062): reject the malleated high-S twin so a
     // signature has a single canonical encoding. Signing already
@@ -50,11 +44,7 @@ pub fn verify_secp256k1(
     // rejects the second, equally valid (r, n-s) form that would otherwise
     // let one message carry two distinct verifying signatures.
     if sig.normalize_s() != sig {
-        return Err(CryptoError::Signature {
-            backend: crypto_core::SignatureBackend::Native,
-            operation: crypto_core::SignatureOperation::Verify,
-            kind: crypto_core::SignatureFailureKind::InvalidSignature,
-        });
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE);
     }
 
     if vk
@@ -63,10 +53,6 @@ pub fn verify_secp256k1(
     {
         Ok(())
     } else {
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })
+        Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     }
 }

@@ -9,10 +9,7 @@
     clippy::print_stdout,
     clippy::unwrap_used
 )]
-use crypto_core::{
-    AeadAlgorithm, AeadBackend, AeadFailureKind, Algorithm, CryptoError, HashAlgorithm,
-    MacAlgorithm, MacFailureKind, MacHash, SignatureBackend, SignatureOperation,
-};
+use crypto_core::{AeadAlgorithm, Algorithm, CryptoError, HashAlgorithm, MacAlgorithm};
 
 #[test]
 fn signature_algorithms_are_correct() {
@@ -75,37 +72,27 @@ fn mac_algorithm_string_mapping_is_stable() {
 
 #[test]
 fn typed_aead_error_taxonomy_is_stable() {
-    let error = CryptoError::AeadDecrypt {
-        backend: AeadBackend::Swift,
-        kind: AeadFailureKind::AuthenticationFailed,
-    };
+    let error = CryptoError::PRIMITIVE_AUTHENTICATION_FAILED;
     assert_eq!(
         error.to_string(),
-        "AEAD decryption failed in swift backend: authentication failed"
+        "CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED"
     );
 }
 
 #[test]
 fn typed_signature_error_taxonomy_is_stable() {
-    let error = CryptoError::Signature {
-        backend: SignatureBackend::Native,
-        operation: SignatureOperation::Verify,
-        kind: crypto_core::SignatureFailureKind::InvalidSignature,
-    };
+    let error = CryptoError::PRIMITIVE_INVALID_SIGNATURE;
     assert_eq!(
         error.to_string(),
-        "signature failed in native backend during verify: invalid signature"
+        "CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SIGNATURE"
     );
 }
 
 #[test]
 fn typed_mac_error_taxonomy_is_stable() {
-    let error = CryptoError::Mac {
-        hash: MacHash::Sha2_512,
-        kind: MacFailureKind::VerificationFailed,
-    };
+    let error = CryptoError::PRIMITIVE_VERIFICATION_FAILED;
     assert_eq!(
         error.to_string(),
-        "HMAC failed for SHA-512: verification failed"
+        "CRYPTO_ERROR_REASON_PRIMITIVE_VERIFICATION_FAILED"
     );
 }

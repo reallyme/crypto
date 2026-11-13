@@ -13,10 +13,8 @@ use zeroize::{Zeroize, Zeroizing};
 /// The public key is returned as compressed SEC1; the secret key is the raw
 /// scalar in a zeroizing heap buffer owned by the caller.
 pub fn generate_p521_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
-    let secret_key = SecretKey::try_generate().map_err(|_| CryptoError::Rng {
-        output: crypto_core::RngOutputKind::Generic,
-        kind: crypto_core::RngFailureKind::EntropyUnavailable,
-    })?;
+    let secret_key = SecretKey::try_generate()
+        .map_err(|_| crypto_core::CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)?;
     let signing_key = SigningKey::from(&secret_key);
     let verifying_key = signing_key.verifying_key();
 
@@ -35,7 +33,8 @@ pub fn generate_p521_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoEr
 pub fn generate_p521_keypair_from_secret_key(
     secret_key: &[u8; 66],
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
-    let secret = SecretKey::from_slice(secret_key).map_err(|_| CryptoError::InvalidKey)?;
+    let secret =
+        SecretKey::from_slice(secret_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     let signing_key = SigningKey::from(&secret);
     let verifying_key = signing_key.verifying_key();
 

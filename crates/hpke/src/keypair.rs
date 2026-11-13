@@ -18,7 +18,7 @@ pub fn keygen(suite: HpkeSuite) -> Result<HpkeKeyPair, HpkeError> {
     let input_length = kem_parameters(suite.kem)?.private_key_len;
     let mut input_key_material = Zeroizing::new(vec![0_u8; input_length]);
     getrandom::fill(input_key_material.as_mut_slice())
-        .map_err(|_| HpkeError::RandomnessUnavailable)?;
+        .map_err(|_| HpkeError::PROVIDER_RANDOMNESS_UNAVAILABLE)?;
     derive_keypair(suite, input_key_material.as_slice())
 }
 
@@ -30,7 +30,7 @@ pub fn derive_keypair(
 ) -> Result<HpkeKeyPair, HpkeError> {
     require_executable_suite(suite)?;
     if input_key_material.len() != kem_parameters(suite.kem)?.private_key_len {
-        return Err(HpkeError::InvalidInputKeyMaterial);
+        return Err(HpkeError::PRIMITIVE_INVALID_LENGTH);
     }
 
     derive_keypair_from_ikm(suite, input_key_material)
@@ -53,7 +53,7 @@ pub fn derive_keypair_from_ikm(
 ) -> Result<HpkeKeyPair, HpkeError> {
     require_executable_suite(suite)?;
     if input_key_material.len() < MIN_INPUT_KEY_MATERIAL_LEN {
-        return Err(HpkeError::InvalidInputKeyMaterial);
+        return Err(HpkeError::PRIMITIVE_INVALID_LENGTH);
     }
 
     dispatch_kem!(suite.kem, derive_keypair_for, suite, input_key_material)
@@ -76,7 +76,7 @@ where
     if public_key.len() != parameters.public_key_len
         || private_key.as_slice().len() != parameters.private_key_len
     {
-        return Err(HpkeError::KeyGenerationFailed);
+        return Err(HpkeError::BACKEND_INTERNAL);
     }
 
     Ok(HpkeKeyPair::new(public_key, private_key))

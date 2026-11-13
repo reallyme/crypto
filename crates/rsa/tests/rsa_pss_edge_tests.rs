@@ -7,17 +7,13 @@
 #![allow(clippy::expect_used)]
 
 use base64::{engine::general_purpose::STANDARD, Engine as _};
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 use crypto_rsa::{verify_rsa_pss, RsaHash, RsaPssParams, RsaPublicKeyDerEncoding};
 
 fn assert_invalid_signature(result: Result<(), CryptoError>) {
     assert!(matches!(
         result,
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     ));
 }
 

@@ -25,7 +25,7 @@ impl SignatureAlgorithm for MlDsa44Algo {
 
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         {
-            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
     }
 
@@ -33,7 +33,7 @@ impl SignatureAlgorithm for MlDsa44Algo {
         #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
         {
             let seed =
-                <&[u8; 32]>::try_from(secret).map_err(|_| AlgorithmError::InvalidKey(Self::ALG))?;
+                <&[u8; 32]>::try_from(secret).map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY)?;
             return crate::algorithms::KeypairResultExt::into_algorithm_keypair(
                 crypto_ml_dsa_44::generate_ml_dsa_44_keypair_from_seed(seed),
                 Self::ALG,
@@ -43,20 +43,20 @@ impl SignatureAlgorithm for MlDsa44Algo {
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         {
             let _ = secret;
-            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
     }
 
     fn sign(secret: &[u8], msg: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
         #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
         {
-            return crypto_ml_dsa_44::sign_ml_dsa_44(secret, msg).map_err(AlgorithmError::from);
+            return crypto_ml_dsa_44::sign_ml_dsa_44(secret, msg);
         }
 
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         {
             let _ = (secret, msg);
-            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
     }
 
@@ -70,7 +70,7 @@ impl SignatureAlgorithm for MlDsa44Algo {
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         {
             let _ = (public, msg, sig);
-            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
     }
 }

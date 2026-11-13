@@ -8,7 +8,6 @@
 
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use crypto_core::Algorithm;
-use reallyme_crypto::operations::{OperationError, PrimitiveErrorReason};
 use reallyme_crypto::rsa::{RsaHash, RsaPssParams, RsaPublicKeyDerEncoding};
 
 const MESSAGE: &[u8] = b"signature operation parity";
@@ -62,12 +61,7 @@ fn ed25519_operation_matches_primitive_and_rejects_expanded_keys() {
     let error =
         reallyme_crypto::operations::signature::sign(Algorithm::Ed25519, &expanded, MESSAGE)
             .expect_err("expanded Ed25519 keys are rejected");
-    assert_eq!(
-        error,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey
-        }
-    );
+    assert_eq!(error, crypto_core::CryptoError::PRIMITIVE_INVALID_KEY);
 }
 
 #[test]
@@ -100,12 +94,7 @@ fn secp256k1_ecdsa_operation_matches_primitive_and_rejects_tampering() {
         &tampered,
     )
     .expect_err("tampered signature fails");
-    assert_eq!(
-        error,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed
-        }
-    );
+    assert_eq!(error, crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE);
 }
 
 #[test]
@@ -137,9 +126,7 @@ fn bip340_schnorr_operation_matches_official_vector_and_rejects_invalids() {
     .expect_err("short BIP-340 messages are rejected");
     assert_eq!(
         short_message_error,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidLength
-        }
+        crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER
     );
 
     let mut tampered = signature;
@@ -152,9 +139,7 @@ fn bip340_schnorr_operation_matches_official_vector_and_rejects_invalids() {
     .expect_err("tampered BIP-340 signatures are rejected");
     assert_eq!(
         tampered_error,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed
-        }
+        crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE
     );
 }
 
@@ -204,9 +189,7 @@ fn rsa_operation_rejects_invalid_key_and_tampered_signature() {
     .expect_err("tampered RSA signature fails");
     assert_eq!(
         tampered,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed
-        }
+        crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE
     );
 
     let invalid_key = reallyme_crypto::operations::signature::verify_rsa_pkcs1v15(
@@ -217,12 +200,7 @@ fn rsa_operation_rejects_invalid_key_and_tampered_signature() {
         &signature,
     )
     .expect_err("malformed RSA public key fails");
-    assert_eq!(
-        invalid_key,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey
-        }
-    );
+    assert_eq!(invalid_key, crypto_core::CryptoError::PRIMITIVE_INVALID_KEY);
 }
 
 fn p256_round_trip() {

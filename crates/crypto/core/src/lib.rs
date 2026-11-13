@@ -20,8 +20,13 @@ pub mod error;
 
 pub use algorithm::{AeadAlgorithm, Algorithm, HashAlgorithm, MacAlgorithm};
 pub use error::{
-    AeadBackend, AeadFailureKind, ConstantTimeFailureKind, CryptoError, HkdfFailureKind, HkdfHash,
-    KdfAlgorithm, KdfFailureKind, KdfProfile, KemFailureKind, KeyAgreementFailureKind,
-    KeyWrapAlgorithm, KeyWrapFailureKind, KeyWrapOperation, MacFailureKind, MacHash,
-    RngFailureKind, RngOutputKind, SignatureBackend, SignatureFailureKind, SignatureOperation,
+    AeadBackend, AeadFailureKind, ConstantTimeFailureKind, CryptoError, CryptoErrorBranch,
+    CryptoErrorReason, HkdfFailureKind, HkdfHash, KdfAlgorithm, KdfFailureKind, KdfProfile,
+    KemFailureKind, KeyAgreementFailureKind, KeyWrapAlgorithm, KeyWrapFailureKind,
+    KeyWrapOperation, MacFailureKind, MacHash, RngFailureKind, RngOutputKind, SignatureBackend,
+    SignatureFailureKind, SignatureOperation,
 };
+
+/// Owner-local conversions from schema-defined algorithm identities.
+#[cfg(feature = "protobuf")]
+pub mod convert;

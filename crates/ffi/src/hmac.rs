@@ -2,14 +2,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::error_status::mac_status as status_from_error;
 use crate::guard::ffi_guard;
 use crate::pointer::{read_slice, write_fixed};
-use crate::status::{
-    CryptoStatus, CRYPTO_AUTHENTICATION_FAILED, CRYPTO_INTERNAL_ERROR, CRYPTO_INVALID_ARGUMENT,
-    CRYPTO_INVALID_KEY,
-};
+use crate::status::{CryptoStatus, CRYPTO_INVALID_ARGUMENT};
 use crypto_core::MacAlgorithm;
-use reallyme_crypto::operations::{OperationError, PrimitiveErrorReason, ProviderErrorReason};
 
 /// Suite selector value requesting HMAC-SHA-256 (`1`).
 pub const HMAC_SUITE_SHA256: u32 = 1;
@@ -25,27 +22,6 @@ fn suite_from_u32(value: u32) -> Result<MacAlgorithm, CryptoStatus> {
         HMAC_SUITE_SHA256 => Ok(MacAlgorithm::HmacSha256),
         HMAC_SUITE_SHA512 => Ok(MacAlgorithm::HmacSha512),
         _ => Err(CRYPTO_INVALID_ARGUMENT),
-    }
-}
-
-fn status_from_error(error: OperationError) -> CryptoStatus {
-    match error {
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey,
-        } => CRYPTO_INVALID_KEY,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidLength,
-        } => CRYPTO_INVALID_ARGUMENT,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed,
-        } => CRYPTO_AUTHENTICATION_FAILED,
-        OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        } => CRYPTO_INTERNAL_ERROR,
-        OperationError::Primitive { .. }
-        | OperationError::Provider { .. }
-        | OperationError::Backend { .. }
-        | _ => CRYPTO_INTERNAL_ERROR,
     }
 }
 
@@ -103,7 +79,7 @@ pub unsafe extern "C" fn rm_crypto_hmac_authenticate(
 /// (message may be null only when `message_len == 0`). The tag length must be
 /// exact for the selected suite: 32 bytes for SHA-256 or 64 bytes for SHA-512.
 /// The status is [`CRYPTO_OK`](crate::status::CRYPTO_OK) on success and
-/// [`CRYPTO_AUTHENTICATION_FAILED`] when the tag is well-formed but invalid.
+/// [`crate::status::CRYPTO_AUTHENTICATION_FAILED`] when the tag is well-formed but invalid.
 #[no_mangle]
 pub unsafe extern "C" fn rm_crypto_hmac_verify(
     suite: u32,

@@ -8,9 +8,10 @@ use slh_dsa::{Sha2_128s, VerifyingKey};
 
 fn validate_slh_dsa_sha2_128s_public_key(public_key: &[u8]) -> Result<(), CryptoError> {
     if public_key.len() != SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
-    VerifyingKey::<Sha2_128s>::try_from(public_key).map_err(|_| CryptoError::InvalidKey)?;
+    VerifyingKey::<Sha2_128s>::try_from(public_key)
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     Ok(())
 }
 

@@ -39,21 +39,21 @@ fn dispatch_rejects_malformed_signature_key_and_signature_lengths() {
         assert!(
             matches!(
                 sign(algorithm, &[], MESSAGE),
-                Err(AlgorithmError::Crypto(CryptoError::InvalidKey))
+                Err(CryptoError::PRIMITIVE_INVALID_KEY)
             ),
             "{algorithm:?} must reject an empty signing key"
         );
         assert!(
             matches!(
                 verify(algorithm, &[], MESSAGE, &signature),
-                Err(AlgorithmError::Crypto(CryptoError::InvalidKey))
+                Err(CryptoError::PRIMITIVE_INVALID_KEY)
             ),
             "{algorithm:?} must reject an empty verification key"
         );
         assert!(
             matches!(
                 verify(algorithm, &public_key, MESSAGE, &[]),
-                Err(AlgorithmError::SignatureInvalid(found)) if found == algorithm
+                Err(AlgorithmError::PRIMITIVE_INVALID_SIGNATURE)
             ),
             "{algorithm:?} must reject an empty signature"
         );
@@ -69,14 +69,14 @@ fn dispatch_rejects_malformed_key_agreement_lengths() {
         assert!(
             matches!(
                 derive_shared_secret(algorithm, &[], &public_key),
-                Err(AlgorithmError::Crypto(CryptoError::InvalidKey))
+                Err(CryptoError::PRIMITIVE_INVALID_KEY)
             ),
             "{algorithm:?} must reject an empty secret key"
         );
         assert!(
             matches!(
                 derive_shared_secret(algorithm, &secret_key, &[]),
-                Err(AlgorithmError::Crypto(CryptoError::InvalidKey))
+                Err(CryptoError::PRIMITIVE_INVALID_KEY)
             ),
             "{algorithm:?} must reject an empty public key"
         );
@@ -94,23 +94,21 @@ fn dispatch_rejects_malformed_kem_key_and_ciphertext_lengths() {
         assert!(
             matches!(
                 kem_encapsulate(algorithm, &[]),
-                Err(AlgorithmError::Crypto(CryptoError::InvalidKey))
+                Err(CryptoError::PRIMITIVE_INVALID_KEY)
             ),
             "{algorithm:?} must reject an empty public key"
         );
         assert!(
             matches!(
                 kem_decapsulate(algorithm, &[], &secret_key),
-                Err(AlgorithmError::Crypto(
-                    CryptoError::InvalidCiphertextLength { .. }
-                ))
+                Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
             ),
             "{algorithm:?} must reject an empty ciphertext"
         );
         assert!(
             matches!(
                 kem_decapsulate(algorithm, &ciphertext, &[]),
-                Err(AlgorithmError::Crypto(CryptoError::InvalidKey))
+                Err(CryptoError::PRIMITIVE_INVALID_KEY)
             ),
             "{algorithm:?} must reject an empty secret key"
         );

@@ -13,8 +13,8 @@
 
 use crate::{JwkOptions, JwtError};
 
+use crate::canonicalize_jwk::canonicalize_jwk;
 use codec_base64url::bytes_to_base64url;
-use codec_jcs::canonicalize_trusted_json_value;
 
 use serde::Serialize;
 
@@ -50,7 +50,7 @@ pub fn ed25519_public_key_to_jwk(
     options: JwkOptions,
 ) -> Result<Ed25519Jwk, JwtError> {
     crypto_ed25519::validate_public_key_identity(public_key)
-        .map_err(|_| JwtError::InvalidEd25519Key)?;
+        .map_err(crate::error::public_key_error)?;
 
     let mut jwk = Ed25519Jwk {
         kty: "OKP",
@@ -79,7 +79,5 @@ pub fn ed25519_public_key_to_jwk_jcs(
 ) -> Result<String, JwtError> {
     let jwk = ed25519_public_key_to_jwk(public_key, options)?;
 
-    let value = serde_json::to_value(&jwk).map_err(|_| JwtError::EncodingError)?;
-
-    canonicalize_trusted_json_value(&value).map_err(|_| JwtError::EncodingError)
+    canonicalize_jwk(&jwk)
 }

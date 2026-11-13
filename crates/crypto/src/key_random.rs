@@ -4,8 +4,6 @@
 
 //! Fallible entropy injection for protected key generation.
 
-use thiserror::Error;
-
 /// Cryptographic entropy source for key generation. A successful call must
 /// fill the complete destination with fresh, unpredictable bytes.
 pub trait KeyRng {
@@ -13,18 +11,13 @@ pub trait KeyRng {
     fn fill(&mut self, destination: &mut [u8]) -> Result<(), KeyRandomError>;
 }
 
-/// Secret-free entropy failure.
-#[derive(Clone, Copy, Debug, Error, Eq, PartialEq)]
-pub enum KeyRandomError {
-    /// Cryptographic entropy could not be supplied.
-    #[error("key randomness unavailable")]
-    Unavailable,
-}
+/// Canonical schema-defined entropy failure.
+pub use crypto_core::CryptoError as KeyRandomError;
 
 pub(crate) struct SystemKeyRng;
 
 impl KeyRng for SystemKeyRng {
     fn fill(&mut self, destination: &mut [u8]) -> Result<(), KeyRandomError> {
-        getrandom::fill(destination).map_err(|_| KeyRandomError::Unavailable)
+        getrandom::fill(destination).map_err(|_| KeyRandomError::PROVIDER_RANDOMNESS_UNAVAILABLE)
     }
 }

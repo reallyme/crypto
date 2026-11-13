@@ -54,14 +54,14 @@ fn dispatch_verifier_accepts_valid_and_rejects_tampered() {
     let error = verifier
         .verify(message, &signature)
         .expect_err("tampered signature must not verify");
-    assert!(error.is_signature_invalid());
+    assert_eq!(error, crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE);
 
     // A tampered message must fail the same way.
     signature[0] ^= 0x01;
     let error = verifier
         .verify(b"different message", &signature)
         .expect_err("wrong message must not verify");
-    assert!(error.is_signature_invalid());
+    assert_eq!(error, crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE);
 }
 
 #[cfg(feature = "wasm")]

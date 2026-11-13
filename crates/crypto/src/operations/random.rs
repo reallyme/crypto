@@ -6,7 +6,7 @@
 
 use crypto_core::RngOutputKind;
 
-use super::{OperationError, ProviderErrorReason};
+use super::OperationError;
 use crate::secret_material::{
     bind_operation_policy, bind_random_fill_policy, SecretMaterialOperation,
 };
@@ -55,14 +55,10 @@ pub fn generate_argon2_salt_32() -> Result<crypto_csprng::Argon2Salt32, Operatio
 }
 
 fn randomness_unavailable() -> OperationError {
-    OperationError::Provider {
-        reason: ProviderErrorReason::RandomnessUnavailable,
-    }
+    crypto_core::CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE
 }
 
 #[cfg(not(feature = "csprng"))]
 fn unsupported_algorithm() -> OperationError {
-    OperationError::Provider {
-        reason: ProviderErrorReason::UnsupportedAlgorithm,
-    }
+    crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM
 }

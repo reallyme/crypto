@@ -118,11 +118,7 @@ fn slh_dsa_sha2_128s_vector_known_answer() -> Result<(), VectorTestError> {
             &message,
             &expected_signature[..expected_signature.len() - 1],
         ),
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })
+        Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     ));
 
     let mut tampered = expected_signature.clone();

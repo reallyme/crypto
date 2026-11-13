@@ -20,7 +20,7 @@ fn canonical_encoding_check_rejects_an_aliased_decompressed_point() {
     assert!(!is_canonical_point_encoding(&point, &alias));
     assert_eq!(
         validate_public_key_identity(&alias),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     );
 }
 
@@ -33,6 +33,6 @@ fn mixed_order_canonical_point_is_not_an_identity() {
     assert!(!mixed.is_torsion_free());
     assert_eq!(
         validate_public_key_identity(&encoded),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     );
 }

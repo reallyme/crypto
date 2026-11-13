@@ -24,5 +24,4 @@ pub use verify::{verify_rsa_pkcs1v15, verify_rsa_pss};
 
 pub use representative::{
     rsa_public_representatives, RsaPublicRepresentatives, RsaRepresentativeError,
-    RsaRepresentativeErrorReason,
 };

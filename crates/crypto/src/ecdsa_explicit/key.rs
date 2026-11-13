@@ -8,7 +8,7 @@ use secrecy::{ExposeSecret, SecretSlice};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 use super::{
-    digest::with_digest, encode::encode, EcdsaCurve, EcdsaEncoding, EcdsaError, EcdsaInput,
+    digest::with_digest, encode::encode, CryptoError, EcdsaCurve, EcdsaEncoding, EcdsaInput,
 };
 use crate::key_random::{KeyRng, SystemKeyRng};
 
@@ -27,14 +27,14 @@ pub struct EcdsaKey {
 impl EcdsaKey {
     /// Import a fixed-width big-endian private scalar. The borrowed source
     /// remains the caller's cleanup responsibility.
-    pub fn import(curve: EcdsaCurve, scalar: &[u8]) -> Result<Self, EcdsaError> {
+    pub fn import(curve: EcdsaCurve, scalar: &[u8]) -> Result<Self, CryptoError> {
         if scalar.len() != curve.scalar_len()? {
-            return Err(EcdsaError::InvalidPrivateKey);
+            return Err(CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY);
         }
         macro_rules! public_key {
             ($backend:ident) => {{
                 let key = $backend::SecretKey::from_slice(scalar)
-                    .map_err(|_| EcdsaError::InvalidPrivateKey)?;
+                    .map_err(|_| CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY)?;
                 key.public_key().to_sec1_point(false).as_bytes().to_vec()
             }};
         }
@@ -53,7 +53,7 @@ impl EcdsaKey {
                 feature = "brainpool",
                 all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
             )))]
-            _ => return Err(EcdsaError::UnsupportedCurve),
+            _ => return Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
         };
         Ok(Self {
             curve,
@@ -64,28 +64,32 @@ impl EcdsaKey {
 
     /// Generate a uniformly sampled nonzero scalar with OS entropy. The
     /// bounded rejection loop fails closed if the entropy provider is faulty.
-    pub fn generate(curve: EcdsaCurve) -> Result<Self, EcdsaError> {
+    pub fn generate(curve: EcdsaCurve) -> Result<Self, CryptoError> {
         Self::generate_with_rng(curve, &mut SystemKeyRng)
     }
 
     /// Generate with an injected cryptographic entropy source. Partially
     /// filled or rejected candidate scalars remain in clearing storage.
-    pub fn generate_with_rng(curve: EcdsaCurve, rng: &mut impl KeyRng) -> Result<Self, EcdsaError> {
+    pub fn generate_with_rng(
+        curve: EcdsaCurve,
+        rng: &mut impl KeyRng,
+    ) -> Result<Self, CryptoError> {
         let length = curve.scalar_len()?;
         let mut scalar = Zeroizing::new([0; MAX_SCALAR_LEN]);
         for _ in 0..GENERATION_ATTEMPTS {
-            rng.fill(&mut scalar[..length])
-                .map_err(|_| EcdsaError::RandomnessUnavailable)?;
+            rng.fill(&mut scalar[..length])?;
             if curve == EcdsaCurve::P521 {
                 scalar[0] &= P521_HIGH_BYTE_MASK;
             }
             match Self::import(curve, &scalar[..length]) {
                 Ok(key) => return Ok(key),
-                Err(EcdsaError::InvalidPrivateKey) => scalar.zeroize(),
+                Err(error) if error == CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY => {
+                    scalar.zeroize()
+                }
                 Err(error) => return Err(error),
             }
         }
-        Err(EcdsaError::RandomnessUnavailable)
+        Err(CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)
     }
 
     /// Curve associated with this key.
@@ -100,20 +104,20 @@ impl EcdsaKey {
 
     /// ECDSA with explicit hashing and output representation. Portable NIST
     /// signing uses RFC 6979; the optional Brainpool provider uses randomized
-    /// ECDSA and maps provider/entropy failures to `ProviderFailed`.
+    /// ECDSA and maps provider/entropy failures to `BACKEND_INTERNAL`.
     pub fn sign(
         &self,
         input: EcdsaInput<'_>,
         encoding: EcdsaEncoding,
-    ) -> Result<Vec<u8>, EcdsaError> {
+    ) -> Result<Vec<u8>, CryptoError> {
         with_digest(input, |_, digest| {
             macro_rules! sign_curve {
                 ($backend:ident) => {{
                     let key = $backend::ecdsa::SigningKey::from_slice(self.private.expose_secret())
-                        .map_err(|_| EcdsaError::InvalidPrivateKey)?;
+                        .map_err(|_| CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY)?;
                     let signature: $backend::ecdsa::Signature = key
                         .sign_prehash(digest)
-                        .map_err(|_| EcdsaError::ProviderFailed)?;
+                        .map_err(|_| CryptoError::BACKEND_INTERNAL)?;
                     encode(self.curve, signature.to_der().as_bytes().to_vec(), encoding)
                 }};
             }
@@ -139,20 +143,20 @@ impl EcdsaKey {
                     feature = "brainpool",
                     all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
                 )))]
-                _ => Err(EcdsaError::UnsupportedCurve),
+                _ => Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
             }
         })
     }
 
     /// Raw ECDH x-coordinate, fixed-width big-endian with leading zeros kept.
     /// No KDF, transcript processing or protocol labels are applied here.
-    pub fn agree(&self, peer_sec1: &[u8]) -> Result<SecretSlice<u8>, EcdsaError> {
+    pub fn agree(&self, peer_sec1: &[u8]) -> Result<SecretSlice<u8>, CryptoError> {
         macro_rules! agree_curve {
             ($backend:ident) => {{
                 let private = $backend::SecretKey::from_slice(self.private.expose_secret())
-                    .map_err(|_| EcdsaError::InvalidPrivateKey)?;
+                    .map_err(|_| CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY)?;
                 let public = $backend::PublicKey::from_sec1_bytes(peer_sec1)
-                    .map_err(|_| EcdsaError::InvalidPublicKey)?;
+                    .map_err(|_| CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY)?;
                 let shared =
                     $backend::ecdh::diffie_hellman(private.to_nonzero_scalar(), public.as_affine());
                 secret_copy(shared.raw_secret_bytes().as_slice())
@@ -175,7 +179,7 @@ impl EcdsaKey {
                 feature = "brainpool",
                 all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
             )))]
-            _ => Err(EcdsaError::UnsupportedCurve),
+            _ => Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
         }
     }
 }
@@ -188,15 +192,15 @@ impl Zeroize for EcdsaKey {
 
 impl ZeroizeOnDrop for EcdsaKey {}
 
-pub(super) fn secret_copy(bytes: &[u8]) -> Result<SecretSlice<u8>, EcdsaError> {
+pub(super) fn secret_copy(bytes: &[u8]) -> Result<SecretSlice<u8>, CryptoError> {
     use secrecy::ExposeSecretMut;
     let mut storage = Zeroizing::new(Vec::new());
     storage
         .try_reserve_exact(bytes.len())
-        .map_err(|_| EcdsaError::AllocationFailed)?;
+        .map_err(|_| CryptoError::BACKEND_INTERNAL)?;
     storage.resize(bytes.len(), 0);
     if storage.capacity() != bytes.len() {
-        return Err(EcdsaError::AllocationFailed);
+        return Err(CryptoError::BACKEND_INTERNAL);
     }
     // Allocate and box while the buffer still contains zeros, then install the
     // secrecy owner before copying any private or shared-secret material.

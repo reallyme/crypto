@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::error_status::kdf_status as map_error;
 use crate::guard::ffi_guard;
 use crate::pointer::{read_slice, write_fixed};
 use crate::status::{
     CryptoStatus, CRYPTO_INTERNAL_ERROR, CRYPTO_INVALID_ARGUMENT, CRYPTO_INVALID_KEY, CRYPTO_OK,
 };
-use crypto_core::{CryptoError, KdfFailureKind};
 use reallyme_crypto::kmac::{
     Kmac256Key, KMAC256_MAX_CONTEXT_LENGTH, KMAC256_MAX_CUSTOMIZATION_LENGTH,
     KMAC256_MAX_KEY_LENGTH, KMAC256_MAX_OUTPUT_LENGTH, KMAC256_MIN_KEY_LENGTH,
@@ -23,20 +23,6 @@ pub const KMAC256_MAX_CONTEXT_LEN: usize = KMAC256_MAX_CONTEXT_LENGTH;
 pub const KMAC256_MAX_CUSTOMIZATION_LEN: usize = KMAC256_MAX_CUSTOMIZATION_LENGTH;
 /// Maximum KMAC256 output length accepted by this ABI.
 pub const KMAC256_MAX_OUTPUT_LEN: usize = KMAC256_MAX_OUTPUT_LENGTH;
-
-fn map_error(error: CryptoError) -> CryptoStatus {
-    match error {
-        CryptoError::Kdf {
-            kind: KdfFailureKind::InvalidSecretLength,
-            ..
-        } => CRYPTO_INVALID_KEY,
-        CryptoError::Kdf {
-            kind: KdfFailureKind::InvalidOutputLength | KdfFailureKind::InvalidParams,
-            ..
-        } => CRYPTO_INVALID_ARGUMENT,
-        _ => CRYPTO_INTERNAL_ERROR,
-    }
-}
 
 /// Derives key material with KMAC256.
 ///

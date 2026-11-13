@@ -36,11 +36,14 @@ fn rejects_wrong_length_ec_coordinates() {
     });
 
     #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
-    assert_eq!(jwk_to_multikey(&jwk), Err(JwkMultikeyError::InvalidJwk));
+    assert_eq!(
+        jwk_to_multikey(&jwk),
+        Err(JwkMultikeyError::PRIMITIVE_INVALID_PUBLIC_KEY)
+    );
     #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
     assert_eq!(
         jwk_to_multikey(&jwk),
-        Err(JwkMultikeyError::UnsupportedAlgorithm)
+        Err(JwkMultikeyError::PROVIDER_UNSUPPORTED_ALGORITHM)
     );
 }
 
@@ -57,12 +60,15 @@ fn rejects_coordinates_that_are_not_a_curve_point() {
     });
 
     #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
-    assert_eq!(jwk_to_multikey(&jwk), Err(JwkMultikeyError::InvalidJwk));
+    assert_eq!(
+        jwk_to_multikey(&jwk),
+        Err(JwkMultikeyError::PRIMITIVE_INVALID_PUBLIC_KEY)
+    );
 
     #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
     assert_eq!(
         jwk_to_multikey(&jwk),
-        Err(JwkMultikeyError::UnsupportedAlgorithm)
+        Err(JwkMultikeyError::PROVIDER_UNSUPPORTED_ALGORITHM)
     );
 }
 
@@ -77,7 +83,10 @@ fn rejects_jwk_metadata_that_conflicts_with_public_key_type() {
         kid: None,
     });
 
-    assert_eq!(jwk_to_multikey(&jwk), Err(JwkMultikeyError::InvalidJwk));
+    assert_eq!(
+        jwk_to_multikey(&jwk),
+        Err(JwkMultikeyError::PRIMITIVE_INVALID_PARAMETER)
+    );
 }
 
 #[test]
@@ -103,11 +112,14 @@ fn rejects_mismatched_ec_coordinates_through_shared_jwk_validator() {
     // Exact point validation needs the EC backend; a backendless build must
     // fail closed without claiming it checked the coordinates.
     #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
-    assert_eq!(jwk_to_multikey(&jwk), Err(JwkMultikeyError::InvalidJwk));
+    assert_eq!(
+        jwk_to_multikey(&jwk),
+        Err(JwkMultikeyError::PRIMITIVE_INVALID_PUBLIC_KEY)
+    );
 
     #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
     assert_eq!(
         jwk_to_multikey(&jwk),
-        Err(JwkMultikeyError::UnsupportedAlgorithm)
+        Err(JwkMultikeyError::PROVIDER_UNSUPPORTED_ALGORITHM)
     );
 }

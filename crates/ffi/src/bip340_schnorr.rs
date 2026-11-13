@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::error_status::sign_status as bip340_sign_status;
 use crate::guard::ffi_guard;
 use crate::pointer::{read_slice, write_fixed};
 use crate::signature_status::{key_management_status, verify_status};
@@ -187,7 +188,7 @@ pub unsafe extern "C" fn rm_crypto_bip340_schnorr_encode_public_key(
             // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
             // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(public_key) => unsafe { write_fixed(out, out_len, &public_key) },
-            Err(_) => CRYPTO_INVALID_KEY,
+            Err(error) => crate::error_status::key_management_status(error),
         }
     })
 }
@@ -216,25 +217,7 @@ pub unsafe extern "C" fn rm_crypto_bip340_schnorr_decode_public_key(
             // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
             // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(public_key) => unsafe { write_fixed(out, out_len, &public_key) },
-            Err(_) => CRYPTO_INVALID_KEY,
+            Err(error) => crate::error_status::key_management_status(error),
         }
     })
-}
-
-fn bip340_sign_status(error: reallyme_crypto::operations::OperationError) -> CryptoStatus {
-    match error {
-        reallyme_crypto::operations::OperationError::Primitive {
-            reason: reallyme_crypto::operations::PrimitiveErrorReason::InvalidKey,
-        } => CRYPTO_INVALID_KEY,
-        reallyme_crypto::operations::OperationError::Primitive {
-            reason: reallyme_crypto::operations::PrimitiveErrorReason::InvalidLength,
-        }
-        | reallyme_crypto::operations::OperationError::Primitive {
-            reason: reallyme_crypto::operations::PrimitiveErrorReason::LengthOverflow,
-        } => CRYPTO_INVALID_ARGUMENT,
-        reallyme_crypto::operations::OperationError::Primitive {
-            reason: reallyme_crypto::operations::PrimitiveErrorReason::VerificationFailed,
-        } => CRYPTO_INVALID_SIGNATURE,
-        _ => crate::signature_status::sign_status(error),
-    }
 }

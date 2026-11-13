@@ -46,14 +46,11 @@ fn verify_pbkdf2_case(v: &Value, field_name: &str, prf: Pbkdf2Prf) -> Result<(),
     if field_name == "pbkdf2_hmac_sha256" {
         assert!(matches!(
             Pbkdf2Iterations::from_u32_modern(iterations - 1, prf),
-            Err(crypto_core::CryptoError::Kdf {
-                kind: crypto_core::KdfFailureKind::InvalidIterationCount,
-                ..
-            })
+            Err(crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER)
         ));
     }
-    let iterations =
-        Pbkdf2Iterations::from_u32_conformance_only(iterations, prf).map_err(|_| VectorTestError::Pbkdf2)?;
+    let iterations = Pbkdf2Iterations::from_u32_conformance_only(iterations, prf)
+        .map_err(|_| VectorTestError::Pbkdf2)?;
     let output = derive_pbkdf2_key(&Pbkdf2Request {
         prf,
         password: &password,

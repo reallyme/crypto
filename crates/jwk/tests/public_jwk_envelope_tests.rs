@@ -48,25 +48,37 @@ fn okp_jwk_rejects_conflicting_alg_and_use_when_present() {
         serde_json::to_value(&ed25519).expect("JWK serializes for mutation");
     ed25519_as_x25519["alg"] = json!("ECDH-ES");
     let jwk: Jwk = serde_json::from_value(ed25519_as_x25519).expect("OKP shape parses");
-    assert_eq!(jwk.public_key_bytes(), Err(JwtError::UnsupportedKeyFormat));
+    assert_eq!(
+        jwk.public_key_bytes(),
+        Err(JwtError::PRIMITIVE_INVALID_PARAMETER)
+    );
 
     let mut ed25519_wrong_use =
         serde_json::to_value(&ed25519).expect("JWK serializes for mutation");
     ed25519_wrong_use["use"] = json!("enc");
     let jwk: Jwk = serde_json::from_value(ed25519_wrong_use).expect("OKP shape parses");
-    assert_eq!(jwk.public_key_bytes(), Err(JwtError::UnsupportedKeyFormat));
+    assert_eq!(
+        jwk.public_key_bytes(),
+        Err(JwtError::PRIMITIVE_INVALID_PARAMETER)
+    );
 
     let x25519 =
         x25519_public_key_to_jwk(&[0x22; 32], JwkOptions::default()).expect("valid X25519 JWK");
     let mut x25519_as_ed25519 = serde_json::to_value(&x25519).expect("JWK serializes for mutation");
     x25519_as_ed25519["alg"] = json!("EdDSA");
     let jwk: Jwk = serde_json::from_value(x25519_as_ed25519).expect("OKP shape parses");
-    assert_eq!(jwk.public_key_bytes(), Err(JwtError::UnsupportedKeyFormat));
+    assert_eq!(
+        jwk.public_key_bytes(),
+        Err(JwtError::PRIMITIVE_INVALID_PARAMETER)
+    );
 
     let mut x25519_wrong_use = serde_json::to_value(&x25519).expect("JWK serializes for mutation");
     x25519_wrong_use["use"] = json!("sig");
     let jwk: Jwk = serde_json::from_value(x25519_wrong_use).expect("OKP shape parses");
-    assert_eq!(jwk.public_key_bytes(), Err(JwtError::UnsupportedKeyFormat));
+    assert_eq!(
+        jwk.public_key_bytes(),
+        Err(JwtError::PRIMITIVE_INVALID_PARAMETER)
+    );
 }
 
 #[test]
@@ -104,7 +116,7 @@ fn ed25519_jwk_rejects_torsion_and_noncanonical_point_aliases() {
     for invalid in [identity, aliased_identity, [0_u8; 32]] {
         assert_eq!(
             ed25519_public_key_to_jwk(&invalid, JwkOptions::default()).err(),
-            Some(JwtError::InvalidEd25519Key)
+            Some(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY)
         );
         let jwk = Jwk::Okp(envelopes_jwk::OkpJwk {
             kty: "OKP".to_owned(),
@@ -114,7 +126,10 @@ fn ed25519_jwk_rejects_torsion_and_noncanonical_point_aliases() {
             use_: None,
             kid: None,
         });
-        assert_eq!(jwk.public_key_bytes(), Err(JwtError::InvalidEd25519Key));
+        assert_eq!(
+            jwk.public_key_bytes(),
+            Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY)
+        );
     }
 }
 
@@ -124,7 +139,7 @@ fn x25519_jwk_rejects_masked_high_bit_alias() {
     aliased[31] |= 0x80;
     assert_eq!(
         x25519_public_key_to_jwk(&aliased, JwkOptions::default()).err(),
-        Some(JwtError::InvalidX25519Key)
+        Some(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY)
     );
 
     let jwk = Jwk::Okp(envelopes_jwk::OkpJwk {
@@ -135,7 +150,10 @@ fn x25519_jwk_rejects_masked_high_bit_alias() {
         use_: None,
         kid: None,
     });
-    assert_eq!(jwk.public_key_bytes(), Err(JwtError::InvalidX25519Key));
+    assert_eq!(
+        jwk.public_key_bytes(),
+        Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY)
+    );
 }
 
 #[test]
@@ -149,7 +167,7 @@ fn x25519_jwk_rejects_noncanonical_field_aliases() {
         public_key[0] = low_byte;
         assert_eq!(
             x25519_public_key_to_jwk(&public_key, JwkOptions::default()).err(),
-            Some(JwtError::InvalidX25519Key)
+            Some(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY)
         );
         let jwk = Jwk::Okp(envelopes_jwk::OkpJwk {
             kty: "OKP".to_owned(),
@@ -159,7 +177,10 @@ fn x25519_jwk_rejects_noncanonical_field_aliases() {
             use_: None,
             kid: None,
         });
-        assert_eq!(jwk.public_key_bytes(), Err(JwtError::InvalidX25519Key));
+        assert_eq!(
+            jwk.public_key_bytes(),
+            Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY)
+        );
     }
 }
 
@@ -175,7 +196,10 @@ fn akp_jwk_rejects_public_key_use_conflicts() {
             use_: Some(conflicting_use.to_owned()),
             kid: None,
         });
-        assert_eq!(jwk.public_key_bytes(), Err(JwtError::UnsupportedKeyFormat));
+        assert_eq!(
+            jwk.public_key_bytes(),
+            Err(JwtError::PRIMITIVE_INVALID_PARAMETER)
+        );
     }
 }
 
@@ -256,7 +280,10 @@ fn public_key_extraction_rejects_oversized_members_before_decode() {
         kid: None,
     });
 
-    assert_eq!(jwk.public_key_bytes(), Err(JwtError::InvalidEd25519Key));
+    assert_eq!(
+        jwk.public_key_bytes(),
+        Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY)
+    );
 }
 
 #[derive(Clone, Copy)]
@@ -291,9 +318,15 @@ fn assert_ec_wrong_y_rejected(curve: CurveCase, mutation: YMutation) {
 
     let jwk = Jwk::Ec(jwk);
     match curve {
-        CurveCase::P256 => assert_eq!(jwk.public_key_bytes(), Err(JwtError::InvalidP256Key)),
+        CurveCase::P256 => assert_eq!(
+            jwk.public_key_bytes(),
+            Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY)
+        ),
         CurveCase::Secp256k1 => {
-            assert_eq!(jwk.public_key_bytes(), Err(JwtError::InvalidSecp256k1Key));
+            assert_eq!(
+                jwk.public_key_bytes(),
+                Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY)
+            );
         }
     }
 }

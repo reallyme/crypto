@@ -13,7 +13,7 @@ fn combiner_capacity(failure_kind: KemFailureKind) -> Result<usize, CryptoError>
         .and_then(|value| value.checked_add(X25519_KEY_LEN))
         .and_then(|value| value.checked_add(X25519_KEY_LEN))
         .and_then(|value| value.checked_add(X_WING_LABEL.len()))
-        .ok_or(CryptoError::KemFailure { kind: failure_kind })
+        .ok_or(failure_kind)
 }
 
 pub(crate) fn combine_shared_secret(
@@ -24,7 +24,7 @@ pub(crate) fn combine_shared_secret(
     failure_kind: KemFailureKind,
 ) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
     if ml_kem_shared_secret.len() != ML_KEM_SHARED_SECRET_LEN {
-        return Err(CryptoError::KemFailure { kind: failure_kind });
+        return Err(failure_kind);
     }
 
     let mut input = Zeroizing::new(Vec::with_capacity(combiner_capacity(failure_kind)?));

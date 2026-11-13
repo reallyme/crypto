@@ -31,13 +31,13 @@ fn compress_p256_public_key(input: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
     ))]
     {
         return crypto_p256::compress_p256(input)
-            .map_err(|_| AlgorithmError::InvalidKey(Algorithm::P256));
+            .map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY);
     }
 
     #[cfg(all(feature = "p256", feature = "wasm", target_arch = "wasm32"))]
     {
         return crypto_p256::compress_p256(input)
-            .map_err(|_| AlgorithmError::InvalidKey(Algorithm::P256));
+            .map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY);
     }
 
     #[cfg(not(any(
@@ -50,7 +50,7 @@ fn compress_p256_public_key(input: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
     )))]
     {
         let _ = input;
-        Err(AlgorithmError::UnsupportedAlgorithm(Algorithm::P256))
+        Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }
 
@@ -63,13 +63,13 @@ fn compress_p384_public_key(input: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
     ))]
     {
         return crypto_p384::compress_p384(input)
-            .map_err(|_| AlgorithmError::InvalidKey(Algorithm::P384));
+            .map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY);
     }
 
     #[cfg(all(feature = "p384", feature = "wasm", target_arch = "wasm32"))]
     {
         return crypto_p384::compress_p384(input)
-            .map_err(|_| AlgorithmError::InvalidKey(Algorithm::P384));
+            .map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY);
     }
 
     #[cfg(not(any(
@@ -82,7 +82,7 @@ fn compress_p384_public_key(input: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
     )))]
     {
         let _ = input;
-        Err(AlgorithmError::UnsupportedAlgorithm(Algorithm::P384))
+        Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }
 
@@ -95,13 +95,13 @@ fn compress_p521_public_key(input: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
     ))]
     {
         return crypto_p521::compress_p521(input)
-            .map_err(|_| AlgorithmError::InvalidKey(Algorithm::P521));
+            .map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY);
     }
 
     #[cfg(all(feature = "p521", feature = "wasm", target_arch = "wasm32"))]
     {
         return crypto_p521::compress_p521(input)
-            .map_err(|_| AlgorithmError::InvalidKey(Algorithm::P521));
+            .map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY);
     }
 
     #[cfg(not(any(
@@ -114,7 +114,7 @@ fn compress_p521_public_key(input: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
     )))]
     {
         let _ = input;
-        Err(AlgorithmError::UnsupportedAlgorithm(Algorithm::P521))
+        Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }
 
@@ -136,13 +136,13 @@ fn canonicalize_sec1_public_key(
         len if len == raw_len => {
             let capacity = raw_len
                 .checked_add(1)
-                .ok_or(AlgorithmError::InvalidKey(alg))?;
+                .ok_or(AlgorithmError::PRIMITIVE_INVALID_KEY)?;
             let mut sec1 = Vec::with_capacity(capacity);
             sec1.push(0x04);
             sec1.extend_from_slice(public_key);
             compress(&sec1)
         }
-        _ => Err(AlgorithmError::InvalidKey(alg)),
+        _ => Err(AlgorithmError::PRIMITIVE_INVALID_KEY),
     }
 }
 
@@ -164,7 +164,8 @@ fn canonicalize_sec1_public_key(
 )))]
 pub fn public_key_to_multikey(alg: Algorithm, public_key: &[u8]) -> Result<String, AlgorithmError> {
     let _ = public_key;
-    Err(AlgorithmError::UnsupportedAlgorithm(alg))
+    let _ = alg;
+    Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
 }
 
 /// Multicodec/multikey-encode a public key, canonicalizing P-256 to its
@@ -189,25 +190,25 @@ pub fn public_key_to_multikey(alg: Algorithm, public_key: &[u8]) -> Result<Strin
             #[cfg(feature = "ed25519")]
             {
                 crypto_ed25519::validate_public_key_identity(public_key)
-                    .map_err(|_| AlgorithmError::InvalidKey(alg))?;
+                    .map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY)?;
                 ("ed25519-pub", public_key.to_vec())
             }
             #[cfg(not(feature = "ed25519"))]
             {
-                return Err(AlgorithmError::UnsupportedAlgorithm(alg));
+                return Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM);
             }
         }
         Algorithm::X25519 => {
             #[cfg(feature = "x25519")]
             {
                 if !crate::x25519_identity::is_canonical(public_key) {
-                    return Err(AlgorithmError::InvalidKey(alg));
+                    return Err(AlgorithmError::PRIMITIVE_INVALID_KEY);
                 }
                 ("x25519-pub", public_key.to_vec())
             }
             #[cfg(not(feature = "x25519"))]
             {
-                return Err(AlgorithmError::UnsupportedAlgorithm(alg));
+                return Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM);
             }
         }
         Algorithm::Secp256k1 => {
@@ -218,7 +219,7 @@ pub fn public_key_to_multikey(alg: Algorithm, public_key: &[u8]) -> Result<Strin
             }
             #[cfg(not(feature = "secp256k1"))]
             {
-                return Err(AlgorithmError::UnsupportedAlgorithm(alg));
+                return Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM);
             }
         }
         Algorithm::P384 => {
@@ -238,7 +239,7 @@ pub fn public_key_to_multikey(alg: Algorithm, public_key: &[u8]) -> Result<Strin
             }
             #[cfg(not(feature = "p384"))]
             {
-                return Err(AlgorithmError::UnsupportedAlgorithm(alg));
+                return Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM);
             }
         }
         Algorithm::P521 => {
@@ -258,7 +259,7 @@ pub fn public_key_to_multikey(alg: Algorithm, public_key: &[u8]) -> Result<Strin
             }
             #[cfg(not(feature = "p521"))]
             {
-                return Err(AlgorithmError::UnsupportedAlgorithm(alg));
+                return Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM);
             }
         }
         Algorithm::MlDsa44 => {
@@ -268,7 +269,7 @@ pub fn public_key_to_multikey(alg: Algorithm, public_key: &[u8]) -> Result<Strin
             }
             #[cfg(not(feature = "ml-dsa-44"))]
             {
-                return Err(AlgorithmError::UnsupportedAlgorithm(alg));
+                return Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM);
             }
         }
         Algorithm::MlDsa65 => {
@@ -278,7 +279,7 @@ pub fn public_key_to_multikey(alg: Algorithm, public_key: &[u8]) -> Result<Strin
             }
             #[cfg(not(feature = "ml-dsa-65"))]
             {
-                return Err(AlgorithmError::UnsupportedAlgorithm(alg));
+                return Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM);
             }
         }
         Algorithm::MlDsa87 => {
@@ -288,11 +289,11 @@ pub fn public_key_to_multikey(alg: Algorithm, public_key: &[u8]) -> Result<Strin
             }
             #[cfg(not(feature = "ml-dsa-87"))]
             {
-                return Err(AlgorithmError::UnsupportedAlgorithm(alg));
+                return Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM);
             }
         }
         Algorithm::SlhDsaSha2_128s => {
-            return Err(AlgorithmError::UnsupportedAlgorithm(alg));
+            return Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM);
         }
         Algorithm::MlKem512 => {
             #[cfg(feature = "ml-kem-512")]
@@ -301,7 +302,7 @@ pub fn public_key_to_multikey(alg: Algorithm, public_key: &[u8]) -> Result<Strin
             }
             #[cfg(not(feature = "ml-kem-512"))]
             {
-                return Err(AlgorithmError::UnsupportedAlgorithm(alg));
+                return Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM);
             }
         }
         Algorithm::MlKem768 => {
@@ -311,7 +312,7 @@ pub fn public_key_to_multikey(alg: Algorithm, public_key: &[u8]) -> Result<Strin
             }
             #[cfg(not(feature = "ml-kem-768"))]
             {
-                return Err(AlgorithmError::UnsupportedAlgorithm(alg));
+                return Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM);
             }
         }
         Algorithm::MlKem1024 => {
@@ -321,18 +322,18 @@ pub fn public_key_to_multikey(alg: Algorithm, public_key: &[u8]) -> Result<Strin
             }
             #[cfg(not(feature = "ml-kem-1024"))]
             {
-                return Err(AlgorithmError::UnsupportedAlgorithm(alg));
+                return Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM);
             }
         }
         Algorithm::XWing768 => {
-            return Err(AlgorithmError::UnsupportedAlgorithm(alg));
+            return Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM);
         }
 
         // Canonicalization step: P-256 must be compressed
         Algorithm::P256 => {
             #[cfg(not(feature = "p256"))]
             {
-                return Err(AlgorithmError::UnsupportedAlgorithm(alg));
+                return Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM);
             }
 
             #[cfg(feature = "p256")]
@@ -351,5 +352,5 @@ pub fn public_key_to_multikey(alg: Algorithm, public_key: &[u8]) -> Result<Strin
         }
     };
 
-    encode_multikey(codec, &key_bytes).map_err(|_| AlgorithmError::InvalidKey(alg))
+    encode_multikey(codec, &key_bytes).map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY)
 }

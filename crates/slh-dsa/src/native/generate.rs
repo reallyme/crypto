@@ -3,20 +3,14 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN;
-use crypto_core::{
-    CryptoError, RngOutputKind, SignatureBackend, SignatureFailureKind, SignatureOperation,
-};
+use crypto_core::{CryptoError, RngOutputKind};
 use crypto_csprng::{generate_bytes, OsSecureRandom, SecureRandom};
 use slh_dsa::signature::Keypair;
 use slh_dsa::{Sha2_128s, SigningKey};
 use zeroize::Zeroizing;
 
 fn invalid_key_generation_seed() -> CryptoError {
-    CryptoError::Signature {
-        backend: SignatureBackend::Native,
-        operation: SignatureOperation::KeyManagement,
-        kind: SignatureFailureKind::InvalidPrivateKey,
-    }
+    crypto_core::CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY
 }
 
 /// Generate an SLH-DSA-SHA2-128s keypair.
@@ -29,7 +23,7 @@ fn generate_slh_dsa_sha2_128s_keypair_with_rng(
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
     // FIPS 205 key generation consumes three independent n-byte strings. Draw
     // each through the audited OS-CSPRNG boundary so partial success is wiped
-    // automatically and entropy failure remains a typed CryptoError::Rng.
+    // automatically and entropy failure remains a canonical entropy failure.
     let sk_seed = generate_bytes::<SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN>(
         rng,
         RngOutputKind::SlhDsaSha2_128sSeed,

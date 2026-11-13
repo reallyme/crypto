@@ -5,15 +5,13 @@
 //! Semantic owner for HPKE key management, encryption, and export operations.
 
 use crypto_hpke::{
-    HpkeError, HpkeExporterSecret, HpkeKeyPair, HpkeOpenOutput, HpkeOpenRequest,
-    HpkePskOpenRequest, HpkePskSealRequest, HpkeReceiverExportRequest, HpkeSealOutput,
-    HpkeSealRequest, HpkeSenderExportOutput, HpkeSenderExportRequest, HpkeSuite,
+    HpkeExporterSecret, HpkeKeyPair, HpkeOpenOutput, HpkeOpenRequest, HpkePskOpenRequest,
+    HpkePskSealRequest, HpkeReceiverExportRequest, HpkeSealOutput, HpkeSealRequest,
+    HpkeSenderExportOutput, HpkeSenderExportRequest, HpkeSuite,
 };
 use zeroize::ZeroizeOnDrop;
 
-use crate::operations::{
-    BackendErrorReason, OperationError, PrimitiveErrorReason, ProviderErrorReason,
-};
+use crate::operations::{OperationError, PrimitiveErrorReason};
 use crate::secret_material::{bind_operation_policy, SecretMaterialOperation};
 
 /// Minimum IKM length accepted by raw and serialized HPKE boundaries.
@@ -25,7 +23,7 @@ pub const HPKE_OPERATION_MIN_INPUT_KEY_MATERIAL_LEN: usize = 32;
 /// Generates a recipient keypair for the selected HPKE KEM.
 pub fn keygen(suite: HpkeSuite) -> Result<HpkeKeyPair, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::HpkeKeyGeneration);
-    crypto_hpke::keygen(suite).map_err(map_hpke_error)
+    crypto_hpke::keygen(suite)
 }
 
 /// Deterministically derives a recipient keypair from suite-specific input keying material.
@@ -34,7 +32,7 @@ pub fn derive_keypair(
     input_key_material: &[u8],
 ) -> Result<HpkeKeyPair, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::HpkeKeyDerivation);
-    crypto_hpke::derive_keypair(suite, input_key_material).map_err(map_hpke_error)
+    crypto_hpke::derive_keypair(suite, input_key_material)
 }
 
 /// Deterministically derives a recipient keypair from arbitrary-length input keying material.
@@ -47,9 +45,11 @@ pub fn derive_keypair_from_ikm(
 ) -> Result<HpkeKeyPair, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::HpkeKeyDerivation);
     if input_key_material.len() < HPKE_OPERATION_MIN_INPUT_KEY_MATERIAL_LEN {
-        return Err(primitive(PrimitiveErrorReason::InvalidLength));
+        return Err(primitive(
+            crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
+        ));
     }
-    crypto_hpke::derive_keypair_from_ikm(suite, input_key_material).map_err(map_hpke_error)
+    crypto_hpke::derive_keypair_from_ikm(suite, input_key_material)
 }
 
 /// Result of establishing a live HPKE PSK-mode sender context.
@@ -82,7 +82,7 @@ impl HpkeSenderContext {
     /// Encrypts one message and advances the context sequence number.
     pub fn seal(&mut self, aad: &[u8], plaintext: &[u8]) -> Result<Vec<u8>, OperationError> {
         let _policy = bind_operation_policy(SecretMaterialOperation::HpkeSeal);
-        self.inner.seal(aad, plaintext).map_err(map_hpke_error)
+        self.inner.seal(aad, plaintext)
     }
 }
 
@@ -115,7 +115,7 @@ impl HpkeReceiverContext {
         ciphertext: &[u8],
     ) -> Result<HpkeOpenOutput, OperationError> {
         let _policy = bind_operation_policy(SecretMaterialOperation::HpkeOpen);
-        self.inner.open(aad, ciphertext).map_err(map_hpke_error)
+        self.inner.open(aad, ciphertext)
     }
 }
 
@@ -124,7 +124,7 @@ pub fn setup_sender_psk(
     request: &crypto_hpke::HpkePskSenderSetupRequest<'_>,
 ) -> Result<HpkePskSenderSetupOutput, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::HpkeSenderSetup);
-    let output = crypto_hpke::setup_sender_psk(request).map_err(map_hpke_error)?;
+    let output = crypto_hpke::setup_sender_psk(request)?;
     Ok(HpkePskSenderSetupOutput {
         encapsulated_key: output.encapsulated_key,
         context: HpkeSenderContext {
@@ -138,7 +138,7 @@ pub fn setup_receiver_psk(
     request: &crypto_hpke::HpkePskReceiverSetupRequest<'_>,
 ) -> Result<HpkeReceiverContext, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::HpkeReceiverSetup);
-    let inner = crypto_hpke::setup_receiver_psk(request).map_err(map_hpke_error)?;
+    let inner = crypto_hpke::setup_receiver_psk(request)?;
     Ok(HpkeReceiverContext { inner })
 }
 
@@ -148,13 +148,13 @@ pub fn setup_receiver_psk(
 /// key schedule and fresh KEM encapsulation state inside the protocol owner.
 pub fn seal_base(request: &HpkeSealRequest<'_>) -> Result<HpkeSealOutput, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::HpkeSeal);
-    crypto_hpke::seal_base(request).map_err(map_hpke_error)
+    crypto_hpke::seal_base(request)
 }
 
 /// Opens and authenticates one HPKE Base-mode message.
 pub fn open_base(request: &HpkeOpenRequest<'_>) -> Result<HpkeOpenOutput, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::HpkeOpen);
-    crypto_hpke::open_base(request).map_err(map_hpke_error)
+    crypto_hpke::open_base(request)
 }
 
 /// Establishes an HPKE sender context and exports secret keying material.
@@ -162,7 +162,7 @@ pub fn sender_export(
     request: &HpkeSenderExportRequest<'_>,
 ) -> Result<HpkeSenderExportOutput, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::HpkeExport);
-    crypto_hpke::sender_export(request).map_err(map_hpke_error)
+    crypto_hpke::sender_export(request)
 }
 
 /// Establishes the matching HPKE receiver context and exports secret keying material.
@@ -170,19 +170,19 @@ pub fn receiver_export(
     request: &HpkeReceiverExportRequest<'_>,
 ) -> Result<HpkeExporterSecret, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::HpkeExport);
-    crypto_hpke::receiver_export(request).map_err(map_hpke_error)
+    crypto_hpke::receiver_export(request)
 }
 
 /// Seals one HPKE PSK-mode message with paired high-entropy PSK inputs.
 pub fn seal_psk(request: &HpkePskSealRequest<'_>) -> Result<HpkeSealOutput, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::HpkeSeal);
-    crypto_hpke::seal_psk(request).map_err(map_hpke_error)
+    crypto_hpke::seal_psk(request)
 }
 
 /// Opens and authenticates one HPKE PSK-mode message.
 pub fn open_psk(request: &HpkePskOpenRequest<'_>) -> Result<HpkeOpenOutput, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::HpkeOpen);
-    crypto_hpke::open_psk(request).map_err(map_hpke_error)
+    crypto_hpke::open_psk(request)
 }
 
 /// Seals one Base-mode message with deterministic KEM randomness.
@@ -191,7 +191,7 @@ pub fn seal_base_derand(
     request: &crypto_hpke::HpkeDerandSealRequest<'_>,
 ) -> Result<HpkeSealOutput, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::HpkeSeal);
-    crypto_hpke::seal_base_derand(request).map_err(map_hpke_error)
+    crypto_hpke::seal_base_derand(request)
 }
 
 /// Establishes a deterministic Base-mode sender context and exports secret material.
@@ -200,44 +200,9 @@ pub fn sender_export_derand(
     request: &crypto_hpke::HpkeDerandSenderExportRequest<'_>,
 ) -> Result<HpkeSenderExportOutput, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::HpkeExport);
-    crypto_hpke::sender_export_derand(request).map_err(map_hpke_error)
-}
-
-fn map_hpke_error(error: HpkeError) -> OperationError {
-    match error {
-        HpkeError::UnsupportedKem
-        | HpkeError::UnsupportedKdf
-        | HpkeError::UnsupportedAead
-        | HpkeError::UnsupportedSuite => OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        },
-        HpkeError::InvalidPublicKey => primitive(PrimitiveErrorReason::InvalidPublicKey),
-        HpkeError::InvalidPrivateKey => primitive(PrimitiveErrorReason::InvalidPrivateKey),
-        HpkeError::InvalidEncapsulatedKey | HpkeError::InvalidCiphertext => {
-            primitive(PrimitiveErrorReason::MalformedCiphertext)
-        }
-        HpkeError::InvalidInputKeyMaterial
-        | HpkeError::InvalidInfoLength
-        | HpkeError::InvalidExporterLength => primitive(PrimitiveErrorReason::InvalidLength),
-        HpkeError::LengthOverflow => primitive(PrimitiveErrorReason::LengthOverflow),
-        HpkeError::InvalidPsk | HpkeError::InvalidPskIdentifier | HpkeError::InvalidRandomness => {
-            primitive(PrimitiveErrorReason::InvalidParameter)
-        }
-        HpkeError::OpenFailed => primitive(PrimitiveErrorReason::VerificationFailed),
-        HpkeError::RandomnessUnavailable => OperationError::Provider {
-            reason: ProviderErrorReason::RandomnessUnavailable,
-        },
-        HpkeError::SealFailed | HpkeError::ExportFailed | HpkeError::KeyGenerationFailed => {
-            OperationError::Backend {
-                reason: BackendErrorReason::Internal,
-            }
-        }
-        _ => OperationError::Backend {
-            reason: BackendErrorReason::Internal,
-        },
-    }
+    crypto_hpke::sender_export_derand(request)
 }
 
 fn primitive(reason: PrimitiveErrorReason) -> OperationError {
-    OperationError::Primitive { reason }
+    reason
 }

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 use ecdsa::signature::hazmat::PrehashVerifier;
 use p384::ecdsa::{Signature, VerifyingKey};
 use p384::PublicKey;
@@ -19,24 +19,17 @@ pub fn verify_p384_der_prehash(
     message: &[u8],
     public_key_sec1: &[u8],
 ) -> Result<(), CryptoError> {
-    let public_key =
-        PublicKey::from_sec1_bytes(public_key_sec1).map_err(|_| CryptoError::InvalidKey)?;
+    let public_key = PublicKey::from_sec1_bytes(public_key_sec1)
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     let verifying_key = VerifyingKey::from(public_key);
-    let signature = Signature::from_der(signature_der).map_err(|_| CryptoError::Signature {
-        backend: SignatureBackend::Native,
-        operation: SignatureOperation::Verify,
-        kind: SignatureFailureKind::InvalidSignature,
-    })?;
+    let signature = Signature::from_der(signature_der)
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
     if verifying_key
         .verify_prehash(&Sha384::digest(message), &signature)
         .is_ok()
     {
         Ok(())
     } else {
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })
+        Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     }
 }

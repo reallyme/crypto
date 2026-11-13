@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use thiserror::Error;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 use crate::P256_SHA256_DIGEST_LEN;
@@ -48,7 +47,7 @@ impl P256Sha256Digest {
     /// owns that storage and the digest has privacy sensitivity.
     pub fn try_from_slice(bytes: &[u8]) -> Result<Self, P256Sha256DigestError> {
         let bytes = <[u8; P256_SHA256_DIGEST_LEN]>::try_from(bytes)
-            .map_err(|_| P256Sha256DigestError::InvalidLength)?;
+            .map_err(|_| P256Sha256DigestError::PRIMITIVE_INVALID_LENGTH)?;
         Ok(Self::new(bytes))
     }
 
@@ -66,11 +65,5 @@ impl TryFrom<&[u8]> for P256Sha256Digest {
     }
 }
 
-/// Validation failure for a typed P-256 SHA-256 digest.
-#[derive(Debug, Error, Clone, Copy, PartialEq, Eq)]
-#[non_exhaustive]
-pub enum P256Sha256DigestError {
-    /// The supplied bytes were not exactly one SHA-256 digest.
-    #[error("P-256 SHA-256 digest has an invalid length")]
-    InvalidLength,
-}
+/// Canonical validation error for a typed P-256 SHA-256 digest.
+pub use crypto_core::CryptoError as P256Sha256DigestError;

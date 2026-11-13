@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 use ecdsa::signature::hazmat::PrehashSigner;
 use p384::ecdsa::{Signature, SigningKey};
 use sha2::{Digest, Sha384};
@@ -16,19 +16,15 @@ use crate::constants::P384_SECRET_KEY_LEN;
 /// ECDSA validity is not tied to a unique signature representation here.
 pub fn sign_p384_der_prehash(secret_key: &[u8], message: &[u8]) -> Result<Vec<u8>, CryptoError> {
     if secret_key.len() != P384_SECRET_KEY_LEN {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
 
-    let signing_key = SigningKey::from_slice(secret_key).map_err(|_| CryptoError::InvalidKey)?;
+    let signing_key =
+        SigningKey::from_slice(secret_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     let digest = Sha384::digest(message);
-    let signature: Signature =
-        signing_key
-            .sign_prehash(&digest)
-            .map_err(|_| CryptoError::Signature {
-                backend: SignatureBackend::Native,
-                operation: SignatureOperation::Sign,
-                kind: SignatureFailureKind::BackendFailure,
-            })?;
+    let signature: Signature = signing_key
+        .sign_prehash(&digest)
+        .map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
 
     Ok(signature.to_der().as_bytes().to_vec())
 }

@@ -23,6 +23,8 @@ mod keypair;
 mod mlkem1024p384;
 #[cfg(feature = "kem-ml-kem-512")]
 mod mlkem512;
+#[cfg(feature = "proto")]
+mod proto;
 #[cfg(feature = "backend-native")]
 mod random;
 #[cfg(feature = "backend-native")]

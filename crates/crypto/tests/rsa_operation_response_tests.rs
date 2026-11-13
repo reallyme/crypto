@@ -12,6 +12,7 @@ use base64::{
     Engine as _,
 };
 use buffa::{EnumValue, Message, MessageField};
+use crypto_core::CryptoError;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     __buffa::oneof::crypto_algorithm_identifier::Algorithm as ProtoAlgorithmBranch,
     __buffa::oneof::crypto_error::Error as CryptoErrorBranch,
@@ -23,7 +24,7 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
     SignatureAlgorithm,
 };
 use crypto_proto::operation_response_wire::decode_operation_response;
-use reallyme_crypto::operations::{OperationError, PrimitiveErrorReason};
+use reallyme_crypto::operations::OperationError;
 use reallyme_crypto::rsa::{RsaHash, RsaPssParams, RsaPublicKeyDerEncoding};
 use serde::Deserialize;
 
@@ -159,12 +160,7 @@ fn semantic_owner_supports_rfc8017_short_encoded_message_and_typed_rejection() {
 
     let error = verify_with_owner(suite, &public_key, b"wrong message", &signature)
         .expect_err("wrong message is a verification mismatch");
-    assert_eq!(
-        error,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed
-        }
-    );
+    assert_eq!(error, CryptoError::PRIMITIVE_INVALID_SIGNATURE);
 }
 
 fn cases(vectors: &RsaVectors) -> [RsaCase<'_>; 8] {

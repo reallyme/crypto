@@ -15,10 +15,8 @@ use zeroize::{Zeroize, Zeroizing};
 /// - secret key: 32-byte scalar, in a zeroizing wrapper so it is wiped when
 ///   the caller drops it
 pub fn generate_p256_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
-    let sk = SecretKey::try_generate().map_err(|_| CryptoError::Rng {
-        output: crypto_core::RngOutputKind::Generic,
-        kind: crypto_core::RngFailureKind::EntropyUnavailable,
-    })?;
+    let sk = SecretKey::try_generate()
+        .map_err(|_| crypto_core::CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)?;
 
     let signing_key = SigningKey::from(&sk);
     let verifying_key = signing_key.verifying_key();

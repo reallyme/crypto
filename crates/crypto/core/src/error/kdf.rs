@@ -61,39 +61,7 @@ impl core::fmt::Display for KdfProfile {
 }
 
 /// Specific reason a KDF operation failed.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[non_exhaustive]
-pub enum KdfFailureKind {
-    /// The secret/password input had an unacceptable length.
-    InvalidSecretLength,
-    /// The salt input had an unacceptable length.
-    InvalidSaltLength,
-    /// The requested output length was unacceptable.
-    InvalidOutputLength,
-    /// The iteration count was zero or outside this API's accepted range.
-    InvalidIterationCount,
-    /// The supplied KDF parameters were invalid.
-    InvalidParams,
-    /// The derivation itself did not succeed.
-    DerivationFailed,
-    /// The combined iteration and output-block work exceeds the public bound.
-    ResourceLimitExceeded,
-}
-
-impl core::fmt::Display for KdfFailureKind {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let detail = match self {
-            KdfFailureKind::InvalidSecretLength => "invalid secret length",
-            KdfFailureKind::InvalidSaltLength => "invalid salt length",
-            KdfFailureKind::InvalidOutputLength => "invalid output length",
-            KdfFailureKind::InvalidIterationCount => "invalid iteration count",
-            KdfFailureKind::InvalidParams => "invalid parameters",
-            KdfFailureKind::ResourceLimitExceeded => "resource limit exceeded",
-            KdfFailureKind::DerivationFailed => "derivation failed",
-        };
-        write!(f, "{detail}")
-    }
-}
+pub type KdfFailureKind = super::CryptoError;
 
 /// Hash function underlying an HKDF operation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -119,33 +87,4 @@ impl core::fmt::Display for HkdfHash {
 }
 
 /// Specific reason an HKDF operation failed.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[non_exhaustive]
-pub enum HkdfFailureKind {
-    /// The input key material had an unacceptable length.
-    InvalidIkmLength,
-    /// The domain-separation tag had an unacceptable length.
-    InvalidDomainTagLength,
-    /// The domain-separation tag contained an invalid byte.
-    InvalidDomainTagByte,
-    /// An input length exceeded the representable range.
-    LengthOverflow,
-    /// The requested output length was unacceptable.
-    InvalidOutputLength,
-    /// The HKDF expand step did not succeed.
-    ExpandFailed,
-}
-
-impl core::fmt::Display for HkdfFailureKind {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let detail = match self {
-            HkdfFailureKind::InvalidIkmLength => "invalid input key material length",
-            HkdfFailureKind::InvalidDomainTagLength => "invalid domain tag length",
-            HkdfFailureKind::InvalidDomainTagByte => "invalid domain tag byte",
-            HkdfFailureKind::LengthOverflow => "length overflow",
-            HkdfFailureKind::InvalidOutputLength => "invalid output length",
-            HkdfFailureKind::ExpandFailed => "expand failed",
-        };
-        write!(f, "{detail}")
-    }
-}
+pub type HkdfFailureKind = super::CryptoError;

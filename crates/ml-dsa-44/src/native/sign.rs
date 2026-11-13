@@ -13,15 +13,12 @@ use zeroize::Zeroizing;
 pub fn sign_ml_dsa_44(priv_bytes: &[u8], msg: &[u8]) -> Result<Vec<u8>, CryptoError> {
     // Keep the stack copy of the seed in a zeroizing wrapper so it is wiped
     // when signing completes.
-    let seed = Zeroizing::new(Seed::try_from(priv_bytes).map_err(|_| CryptoError::InvalidKey)?);
+    let seed =
+        Zeroizing::new(Seed::try_from(priv_bytes).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?);
     let signing_key = SigningKey::<MlDsa44>::from_seed(&seed);
     let sig = signing_key
         .try_sign(msg)
-        .map_err(|_| CryptoError::Signature {
-            backend: crypto_core::SignatureBackend::Native,
-            operation: crypto_core::SignatureOperation::Sign,
-            kind: crypto_core::SignatureFailureKind::BackendFailure,
-        })?;
+        .map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
 
     Ok(sig.to_bytes().to_vec())
 }

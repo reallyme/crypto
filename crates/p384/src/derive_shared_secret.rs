@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, KeyAgreementFailureKind};
+use crypto_core::CryptoError;
 use p384::{PublicKey, SecretKey};
 use zeroize::Zeroizing;
 
@@ -18,11 +18,13 @@ pub fn derive_p384_shared_secret(
     public_key: &[u8],
 ) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
     if secret_key.len() != P384_SECRET_KEY_LEN {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
 
-    let secret = SecretKey::from_slice(secret_key).map_err(|_| CryptoError::InvalidKey)?;
-    let public = PublicKey::from_sec1_bytes(public_key).map_err(|_| CryptoError::InvalidKey)?;
+    let secret =
+        SecretKey::from_slice(secret_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    let public =
+        PublicKey::from_sec1_bytes(public_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     let shared = secret.diffie_hellman(&public);
     let shared_bytes = shared.raw_secret_bytes();
     if shared_bytes.len() != P384_SHARED_SECRET_LEN {
@@ -36,7 +38,5 @@ pub fn derive_p384_shared_secret(
 }
 
 fn derive_failed() -> CryptoError {
-    CryptoError::KeyAgreementFailure {
-        kind: KeyAgreementFailureKind::DeriveSharedSecretFailed,
-    }
+    crypto_core::CryptoError::PRIMITIVE_INVALID_SHARED_SECRET
 }

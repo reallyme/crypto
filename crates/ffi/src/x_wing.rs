@@ -11,7 +11,7 @@ use crate::kem_status::{
     kem_decapsulation_status, kem_encapsulation_status, kem_key_management_status,
 };
 use crate::pointer::{read_slice, validate_disjoint_output_pair, write_fixed};
-use crate::status::{CryptoStatus, CRYPTO_INVALID_KEY, CRYPTO_OK};
+use crate::status::{CryptoStatus, CRYPTO_OK};
 
 /// Length in bytes of an X-Wing-768 public key.
 pub const X_WING_768_PUBLIC_KEY_LEN: usize = crypto_x_wing::X_WING_768_PUBLIC_KEY_LEN;
@@ -286,6 +286,6 @@ unsafe fn copy_x_wing_768_public_key(
         // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
         // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
         Ok(value) => unsafe { write_fixed(out, out_len, &value) },
-        Err(_) => CRYPTO_INVALID_KEY,
+        Err(error) => crate::error_status::key_management_status(error),
     }
 }

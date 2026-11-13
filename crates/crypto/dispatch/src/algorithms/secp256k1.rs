@@ -25,7 +25,7 @@ impl SignatureAlgorithm for Secp256k1Algo {
 
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         {
-            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
     }
 
@@ -33,28 +33,27 @@ impl SignatureAlgorithm for Secp256k1Algo {
         #[cfg(feature = "native")]
         {
             let secret_key =
-                <&[u8; 32]>::try_from(secret).map_err(|_| AlgorithmError::InvalidKey(Self::ALG))?;
-            return crypto_secp256k1::generate_secp256k1_keypair_from_secret_key(secret_key)
-                .map_err(AlgorithmError::from);
+                <&[u8; 32]>::try_from(secret).map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY)?;
+            return crypto_secp256k1::generate_secp256k1_keypair_from_secret_key(secret_key);
         }
 
         #[cfg(not(feature = "native"))]
         {
             let _ = secret;
-            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
     }
 
     fn sign(secret: &[u8], msg: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
         #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
         {
-            return crypto_secp256k1::sign_secp256k1(secret, msg).map_err(AlgorithmError::from);
+            return crypto_secp256k1::sign_secp256k1(secret, msg);
         }
 
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         {
             let _ = (secret, msg);
-            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
     }
 
@@ -68,7 +67,7 @@ impl SignatureAlgorithm for Secp256k1Algo {
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         {
             let _ = (public, msg, sig);
-            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
     }
 }

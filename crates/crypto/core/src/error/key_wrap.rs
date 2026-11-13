@@ -46,33 +46,4 @@ impl core::fmt::Display for KeyWrapOperation {
 }
 
 /// Specific reason a key-wrap operation failed.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[non_exhaustive]
-pub enum KeyWrapFailureKind {
-    /// The key-encryption key did not have the required length.
-    InvalidKekLength,
-    /// Plaintext key material was too short for RFC 3394 AES-KW.
-    InvalidPlaintextLength,
-    /// Wrapped key material was too short or malformed for RFC 3394 AES-KW.
-    InvalidWrappedLength,
-    /// An input or output length exceeded the representable range.
-    LengthOverflow,
-    /// The wrapped key integrity check failed.
-    IntegrityCheckFailed,
-    /// The backend reported an unspecified internal failure.
-    BackendFailure,
-}
-
-impl core::fmt::Display for KeyWrapFailureKind {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let detail = match self {
-            KeyWrapFailureKind::InvalidKekLength => "invalid key-encryption key length",
-            KeyWrapFailureKind::InvalidPlaintextLength => "invalid plaintext key length",
-            KeyWrapFailureKind::InvalidWrappedLength => "invalid wrapped key length",
-            KeyWrapFailureKind::LengthOverflow => "length overflow",
-            KeyWrapFailureKind::IntegrityCheckFailed => "integrity check failed",
-            KeyWrapFailureKind::BackendFailure => "backend failure",
-        };
-        write!(f, "{detail}")
-    }
-}
+pub type KeyWrapFailureKind = super::CryptoError;

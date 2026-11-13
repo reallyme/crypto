@@ -2,33 +2,20 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::error_status::kdf_status as map_operation_error;
 use crate::guard::ffi_guard;
 use crate::pointer::{read_slice, write_fixed};
 use crate::status::{
-    CryptoStatus, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INTERNAL_ERROR, CRYPTO_INVALID_ARGUMENT,
-    CRYPTO_INVALID_KEY, CRYPTO_OK,
+    CryptoStatus, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INVALID_ARGUMENT, CRYPTO_INVALID_KEY, CRYPTO_OK,
 };
 use reallyme_crypto::argon2id::{
     Argon2KdfVersion, Argon2Profile, Argon2Salt, Argon2Secret, DeriveKeyRequest,
     ARGON2ID_DERIVED_KEY_LENGTH,
 };
-use reallyme_crypto::operations::{OperationError, PrimitiveErrorReason};
 use zeroize::Zeroize;
 
 /// Length in bytes of the Argon2id-derived key (32).
 pub const ARGON2ID_DERIVED_KEY_LEN: usize = ARGON2ID_DERIVED_KEY_LENGTH;
-
-fn map_operation_error(error: OperationError) -> CryptoStatus {
-    match error {
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey,
-        } => CRYPTO_INVALID_KEY,
-        OperationError::Primitive { .. } => CRYPTO_INVALID_ARGUMENT,
-        OperationError::Provider { .. } => CRYPTO_INVALID_ARGUMENT,
-        OperationError::Backend { .. } => CRYPTO_INTERNAL_ERROR,
-        _ => CRYPTO_INTERNAL_ERROR,
-    }
-}
 
 /// Derives a 32-byte key from `secret` and `salt` using Argon2id, selecting the
 /// cost profile from `kdf_version`, and writes it to `derived_key_out`.

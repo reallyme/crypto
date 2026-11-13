@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#![cfg(feature = "generated")]
+#![cfg(feature = "protobuf")]
 //! Tests for protobuf-to-core algorithm conversion drift guards.
 #![allow(clippy::unwrap_used, clippy::panic)]
 
-use crypto_core::{AeadAlgorithm as CoreAead, Algorithm, HashAlgorithm as CoreHash};
-use reallyme_crypto_proto::convert::{
+use crypto_core::convert::{
     kem_algorithm_to_proto, key_agreement_algorithm_to_proto, signature_algorithm_to_proto,
 };
-use reallyme_crypto_proto::generated::proto::reallyme::crypto::v1::{
+use crypto_core::{AeadAlgorithm as CoreAead, Algorithm, HashAlgorithm as CoreHash};
+use crypto_proto::generated::proto::reallyme::crypto::v1::{
     AeadAlgorithm as ProtoAead, HashAlgorithm as ProtoHash, KemAlgorithm, KeyAgreementAlgorithm,
     SignatureAlgorithm,
 };
@@ -103,17 +103,18 @@ fn hash_algorithms_round_trip() {
 
 #[test]
 fn reserved_and_unspecified_identifiers_are_rejected() {
-    assert!(Algorithm::try_from(SignatureAlgorithm::SIGNATURE_ALGORITHM_UNSPECIFIED).is_err());
-    assert!(
-        Algorithm::try_from(KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_UNSPECIFIED).is_err()
-    );
-    assert!(Algorithm::try_from(KemAlgorithm::KEM_ALGORITHM_UNSPECIFIED).is_err());
-    assert!(Algorithm::try_from(
-        SignatureAlgorithm::SIGNATURE_ALGORITHM_RSA_PSS_SHA256_MGF1_SHA256
-    )
-    .is_err());
-    assert!(Algorithm::try_from(
-        SignatureAlgorithm::SIGNATURE_ALGORITHM_BIP340_SCHNORR_SECP256K1_SHA256
-    )
-    .is_err());
+    for result in [
+        Algorithm::try_from(SignatureAlgorithm::SIGNATURE_ALGORITHM_UNSPECIFIED),
+        Algorithm::try_from(KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_UNSPECIFIED),
+        Algorithm::try_from(KemAlgorithm::KEM_ALGORITHM_UNSPECIFIED),
+        Algorithm::try_from(SignatureAlgorithm::SIGNATURE_ALGORITHM_RSA_PSS_SHA256_MGF1_SHA256),
+        Algorithm::try_from(
+            SignatureAlgorithm::SIGNATURE_ALGORITHM_BIP340_SCHNORR_SECP256K1_SHA256,
+        ),
+    ] {
+        assert_eq!(
+            result,
+            Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+        );
+    }
 }

@@ -56,10 +56,10 @@ where
 {
     let recipient_private_key =
         <Kem::PrivateKey as Deserializable>::from_bytes(request.recipient_private_key)
-            .map_err(|_| HpkeError::InvalidPrivateKey)?;
+            .map_err(|_| HpkeError::PRIMITIVE_INVALID_PRIVATE_KEY)?;
     let encapsulated_key =
         <Kem::EncappedKey as Deserializable>::from_bytes(request.encapsulated_key)
-            .map_err(|_| HpkeError::InvalidEncapsulatedKey)?;
+            .map_err(|_| HpkeError::PRIMITIVE_MALFORMED_CIPHERTEXT)?;
     let context = hpke::setup_receiver::<Aead, Kdf, Kem>(
         &OpModeR::Base,
         &recipient_private_key,
@@ -78,7 +78,7 @@ where
 fn map_receiver_setup_error(error: hpke::HpkeError) -> HpkeError {
     match error {
         hpke::HpkeError::ValidationError | hpke::HpkeError::IncorrectInputLength(_, _) => {
-            HpkeError::InvalidEncapsulatedKey
+            HpkeError::PRIMITIVE_MALFORMED_CIPHERTEXT
         }
         hpke::HpkeError::InvalidPskBundle
         | hpke::HpkeError::DecapError
@@ -86,13 +86,13 @@ fn map_receiver_setup_error(error: hpke::HpkeError) -> HpkeError {
         | hpke::HpkeError::KdfOutputTooLong
         | hpke::HpkeError::MessageLimitReached
         | hpke::HpkeError::OpenError
-        | hpke::HpkeError::SealError => HpkeError::ExportFailed,
+        | hpke::HpkeError::SealError => HpkeError::BACKEND_INTERNAL,
     }
 }
 
 fn map_export_error(error: hpke::HpkeError) -> HpkeError {
     match error {
-        hpke::HpkeError::KdfOutputTooLong => HpkeError::InvalidExporterLength,
+        hpke::HpkeError::KdfOutputTooLong => HpkeError::PRIMITIVE_INVALID_LENGTH,
         hpke::HpkeError::ValidationError
         | hpke::HpkeError::IncorrectInputLength(_, _)
         | hpke::HpkeError::InvalidPskBundle
@@ -100,6 +100,6 @@ fn map_export_error(error: hpke::HpkeError) -> HpkeError {
         | hpke::HpkeError::EncapError
         | hpke::HpkeError::MessageLimitReached
         | hpke::HpkeError::OpenError
-        | hpke::HpkeError::SealError => HpkeError::ExportFailed,
+        | hpke::HpkeError::SealError => HpkeError::BACKEND_INTERNAL,
     }
 }

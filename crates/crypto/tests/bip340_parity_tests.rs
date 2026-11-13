@@ -7,7 +7,7 @@
 #![cfg(feature = "secp256k1")]
 #![allow(clippy::expect_used)]
 
-use reallyme_crypto::operations::{OperationError, PrimitiveErrorReason};
+use reallyme_crypto::operations::OperationError;
 
 const SECRET_KEY: [u8; 32] = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,
@@ -76,7 +76,9 @@ fn bip340_rejects_invalid_scalars_lengths_keys_and_tampering_with_typed_errors()
     assert!(invalid_scalar.is_err());
     assert_eq!(
         invalid_scalar.err(),
-        Some(primitive_error(PrimitiveErrorReason::InvalidKey))
+        Some(primitive_error(
+            crypto_core::CryptoError::PRIMITIVE_INVALID_KEY
+        ))
     );
     assert_eq!(
         reallyme_crypto::operations::signature::sign_bip340(
@@ -85,7 +87,7 @@ fn bip340_rejects_invalid_scalars_lengths_keys_and_tampering_with_typed_errors()
             &AUX_RAND32,
         )
         .expect_err("short message is invalid"),
-        primitive_error(PrimitiveErrorReason::InvalidLength)
+        primitive_error(crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER)
     );
     assert_eq!(
         reallyme_crypto::operations::signature::sign_bip340(
@@ -94,7 +96,7 @@ fn bip340_rejects_invalid_scalars_lengths_keys_and_tampering_with_typed_errors()
             &AUX_RAND32[1..],
         )
         .expect_err("short auxiliary randomness is invalid"),
-        primitive_error(PrimitiveErrorReason::InvalidLength)
+        primitive_error(crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER)
     );
 
     let mut tampered = SIGNATURE;
@@ -102,15 +104,15 @@ fn bip340_rejects_invalid_scalars_lengths_keys_and_tampering_with_typed_errors()
     assert_eq!(
         reallyme_crypto::operations::signature::verify_bip340(&tampered, &MESSAGE32, &PUBLIC_KEY,)
             .expect_err("tampered signature is invalid"),
-        primitive_error(PrimitiveErrorReason::VerificationFailed)
+        primitive_error(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     );
     assert_eq!(
         reallyme_crypto::operations::signature::verify_bip340(&SIGNATURE, &MESSAGE32, &[0xff; 32],)
             .expect_err("non-curve x-only key is invalid"),
-        primitive_error(PrimitiveErrorReason::InvalidKey)
+        primitive_error(crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)
     );
 }
 
-fn primitive_error(reason: PrimitiveErrorReason) -> OperationError {
-    OperationError::Primitive { reason }
+fn primitive_error(reason: OperationError) -> OperationError {
+    reason
 }

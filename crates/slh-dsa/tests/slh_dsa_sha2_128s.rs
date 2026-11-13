@@ -4,7 +4,7 @@
 
 #![allow(missing_docs)]
 
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 use crypto_slh_dsa::{
     decode_slh_dsa_sha2_128s_public_key, derive_slh_dsa_sha2_128s_keypair,
     encode_slh_dsa_sha2_128s_public_key, generate_slh_dsa_sha2_128s_keypair,
@@ -62,11 +62,7 @@ fn verification_rejects_modified_message() -> Result<(), CryptoError> {
 
     assert!(matches!(
         verify_slh_dsa_sha2_128s(&public_key, b"modified message", &signature),
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     ));
 
     Ok(())
@@ -80,11 +76,7 @@ fn verification_rejects_modified_signature() -> Result<(), CryptoError> {
 
     assert!(matches!(
         verify_slh_dsa_sha2_128s(&public_key, MESSAGE, &signature),
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     ));
 
     Ok(())
@@ -98,11 +90,7 @@ fn verification_rejects_wrong_public_key() -> Result<(), CryptoError> {
 
     assert!(matches!(
         verify_slh_dsa_sha2_128s(&wrong_public_key, MESSAGE, &signature),
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     ));
 
     Ok(())
@@ -122,11 +110,11 @@ fn public_key_encode_decode_validate_lengths() -> Result<(), CryptoError> {
     );
     assert!(matches!(
         encode_slh_dsa_sha2_128s_public_key(&public_key[1..]),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
     assert!(matches!(
         decode_slh_dsa_sha2_128s_public_key(&public_key[1..]),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
 
     Ok(())
@@ -139,27 +127,19 @@ fn malformed_inputs_are_rejected() -> Result<(), CryptoError> {
 
     assert!(matches!(
         derive_slh_dsa_sha2_128s_keypair(&[], &[0u8; 16], &[0u8; 16]),
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::KeyManagement,
-            kind: SignatureFailureKind::InvalidPrivateKey,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY)
     ));
     assert!(matches!(
         sign_slh_dsa_sha2_128s(&secret_key[1..], MESSAGE),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
     assert!(matches!(
         verify_slh_dsa_sha2_128s(&public_key[1..], MESSAGE, &signature),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
     assert!(matches!(
         verify_slh_dsa_sha2_128s(&public_key, MESSAGE, &signature[1..]),
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     ));
 
     Ok(())

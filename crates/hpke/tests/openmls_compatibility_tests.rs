@@ -81,11 +81,11 @@ fn arbitrary_ikm_derivation_is_stable_and_rejects_empty_input() {
         );
         assert_eq!(
             derive_keypair_from_ikm(suite, &[]).err(),
-            Some(HpkeError::InvalidInputKeyMaterial)
+            Some(HpkeError::PRIMITIVE_INVALID_LENGTH)
         );
         assert_eq!(
             derive_keypair_from_ikm(suite, &[0x5a; 31]).err(),
-            Some(HpkeError::InvalidInputKeyMaterial)
+            Some(HpkeError::PRIMITIVE_INVALID_LENGTH)
         );
         assert!(derive_keypair_from_ikm(suite, &[0x5a; 32]).is_ok());
     }
@@ -153,7 +153,10 @@ fn split_psk_sender_setup_rejects_invalid_inputs_before_backend_setup() {
     let suite = MLS_192_MLKEM1024_AES256GCM_SHA384_P384;
     let short_psk = [0x41; 31];
     let short_psk_error = HpkePskRef::new(&short_psk).err();
-    assert_eq!(short_psk_error, Some(HpkeError::InvalidPsk));
+    assert_eq!(
+        short_psk_error,
+        Some(HpkeError::PRIMITIVE_INVALID_PARAMETER)
+    );
 
     let malformed_key = [0_u8; 8];
     let malformed_key_error = setup_sender_psk(&HpkePskSenderSetupRequest {
@@ -164,10 +167,16 @@ fn split_psk_sender_setup_rejects_invalid_inputs_before_backend_setup() {
         psk_id: HpkePskIdRef::new(PSK_ID).expect("PSK identifier is valid"),
     })
     .err();
-    assert_eq!(malformed_key_error, Some(HpkeError::InvalidPublicKey));
+    assert_eq!(
+        malformed_key_error,
+        Some(HpkeError::PRIMITIVE_INVALID_PUBLIC_KEY)
+    );
 
     let empty_psk_id_error = HpkePskIdRef::new(&[]).err();
-    assert_eq!(empty_psk_id_error, Some(HpkeError::InvalidPskIdentifier));
+    assert_eq!(
+        empty_psk_id_error,
+        Some(HpkeError::PRIMITIVE_INVALID_PARAMETER)
+    );
 }
 
 #[test]
@@ -199,7 +208,7 @@ fn split_psk_receiver_rejects_malformed_setup_and_tampered_ciphertext() {
     .err();
     assert_eq!(
         malformed_encapsulated_key_error,
-        Some(HpkeError::InvalidEncapsulatedKey)
+        Some(HpkeError::PRIMITIVE_MALFORMED_CIPHERTEXT)
     );
 
     let malformed_private_key = [0_u8; 1];
@@ -214,7 +223,7 @@ fn split_psk_receiver_rejects_malformed_setup_and_tampered_ciphertext() {
     .err();
     assert_eq!(
         malformed_private_key_error,
-        Some(HpkeError::InvalidPrivateKey)
+        Some(HpkeError::PRIMITIVE_INVALID_PRIVATE_KEY)
     );
 
     let mut receiver = setup_receiver_psk(&HpkePskReceiverSetupRequest {
@@ -232,7 +241,7 @@ fn split_psk_receiver_rejects_malformed_setup_and_tampered_ciphertext() {
     }
     assert_eq!(
         receiver.open(AAD, &tampered_ciphertext).err(),
-        Some(HpkeError::OpenFailed)
+        Some(HpkeError::PRIMITIVE_AUTHENTICATION_FAILED)
     );
 }
 

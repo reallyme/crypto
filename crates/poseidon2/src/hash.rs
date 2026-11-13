@@ -5,7 +5,6 @@
 use ark_bn254::Fr;
 use ark_ff::{PrimeField, Zero};
 use taceo_poseidon2::bn254::t4::permutation_in_place;
-use thiserror::Error;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 /// Largest byte preimage supported by the reviewed ReallyMe ZK circuits.
@@ -34,31 +33,8 @@ impl Poseidon2Digest {
     }
 }
 
-/// Stable reasons for rejecting a Poseidon2 input.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Error)]
-#[non_exhaustive]
-pub enum Poseidon2ErrorReason {
-    /// The circuit's reviewed input bound was exceeded.
-    #[error("Poseidon2 input exceeds the supported bound")]
-    InputTooLong,
-    /// The input length could not be represented in the sponge domain tag.
-    #[error("Poseidon2 input length cannot be represented")]
-    InvalidLength,
-}
-
-/// A typed Poseidon2 hashing failure without input or output bytes.
-#[derive(Debug, Error)]
-#[error("{reason}")]
-pub struct Poseidon2Error {
-    reason: Poseidon2ErrorReason,
-}
-
-impl Poseidon2Error {
-    /// Return a stable, data-free failure reason.
-    pub fn reason(&self) -> Poseidon2ErrorReason {
-        self.reason
-    }
-}
+/// Canonical crypto error returned by Poseidon2 admission and invariant checks.
+pub use crypto_core::CryptoError as Poseidon2Error;
 
 /// Hash a byte preimage exactly as `poseidon2_bounded` does in ReallyMe ZK.
 ///
@@ -68,13 +44,10 @@ impl Poseidon2Error {
 /// sensitive preimages at its own boundary.
 pub fn hash_bytes(input: &[u8]) -> Result<Poseidon2Digest, Poseidon2Error> {
     if input.len() > MAX_INPUT_BYTES {
-        return Err(Poseidon2Error {
-            reason: Poseidon2ErrorReason::InputTooLong,
-        });
+        return Err(Poseidon2Error::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED);
     }
-    let input_length = u64::try_from(input.len()).map_err(|_| Poseidon2Error {
-        reason: Poseidon2ErrorReason::InvalidLength,
-    })?;
+    let input_length =
+        u64::try_from(input.len()).map_err(|_| Poseidon2Error::PRIMITIVE_INVALID_LENGTH)?;
     let capacity = Fr::from(input_length) * Fr::from(1_u128 << LENGTH_DOMAIN_SHIFT);
     let mut state = Zeroizing::new([Fr::zero(); WIDTH]);
     state[RATE] = capacity;
@@ -87,13 +60,15 @@ pub fn hash_bytes(input: &[u8]) -> Result<Poseidon2Digest, Poseidon2Error> {
             cache.zeroize();
             cache_length = 0;
         }
-        let cache_slot = cache.get_mut(cache_length).ok_or(Poseidon2Error {
-            reason: Poseidon2ErrorReason::InvalidLength,
-        })?;
+        // After the RATE bound and flush, a cache failure is an internal
+        // sponge invariant violation rather than an invalid caller length.
+        let cache_slot = cache
+            .get_mut(cache_length)
+            .ok_or(Poseidon2Error::BACKEND_INTERNAL)?;
         *cache_slot = Fr::from(*byte);
-        cache_length = cache_length.checked_add(1).ok_or(Poseidon2Error {
-            reason: Poseidon2ErrorReason::InvalidLength,
-        })?;
+        cache_length = cache_length
+            .checked_add(1)
+            .ok_or(Poseidon2Error::BACKEND_INTERNAL)?;
     }
     // Noir's sponge always performs this final duplex, even after a full
     // block and for the empty preimage. Both cases affect cross-lane parity.

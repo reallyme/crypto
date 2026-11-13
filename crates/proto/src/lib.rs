@@ -4,14 +4,18 @@
 
 //! ReallyMe crypto protobuf identifiers with generated Buffa bindings.
 
+/// Schema-generated reasons and validated native errors without message codecs.
+#[cfg(feature = "error-types")]
+#[path = "generated/error_contract.rs"]
+pub mod error_types;
+
 /// Generated protobuf boundary.
 pub mod generated;
 
 #[cfg(feature = "generated")]
 mod merge_sensitive;
 
-/// Conversions between the generated protobuf algorithm identifiers and the
-/// internal [`crypto_core`] enums, with a compile-time drift guard.
+/// Canonical typed failure for generated identity conversions.
 #[cfg(feature = "generated")]
 pub mod convert;
 

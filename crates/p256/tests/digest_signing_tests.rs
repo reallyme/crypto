@@ -7,7 +7,7 @@
 #![allow(missing_docs)]
 #![cfg(any(feature = "native", feature = "wasm"))]
 
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 use crypto_p256::{
     generate_p256_keypair_from_secret_key, p256_ecdsa_der_to_jose_signature,
     p256_ecdsa_jose_signature_to_der, sign_p256_sha256_digest_low_s_der,
@@ -29,25 +29,6 @@ const EXPECTED_DER: [u8; 70] = hex!(
 );
 const P256_ORDER: [u8; 32] =
     hex!("ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551");
-
-fn signature_error(operation: SignatureOperation, kind: SignatureFailureKind) -> CryptoError {
-    CryptoError::Signature {
-        backend: expected_backend(),
-        operation,
-        kind,
-    }
-}
-
-fn expected_backend() -> SignatureBackend {
-    #[cfg(target_arch = "wasm32")]
-    {
-        SignatureBackend::Wasm
-    }
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        SignatureBackend::Native
-    }
-}
 
 fn subtract_scalar(left: &[u8; 32], right: &[u8]) -> [u8; 32] {
     let mut output = [0u8; 32];
@@ -82,10 +63,10 @@ fn digest_owner_validates_length_and_zeroizes_on_drop() {
     assert!(digest.is_ok());
 
     for invalid in [&[][..], &[0u8; 31], &[0u8; 33]] {
-        assert!(matches!(
-            P256Sha256Digest::try_from_slice(invalid),
-            Err(P256Sha256DigestError::InvalidLength)
-        ));
+        assert_eq!(
+            P256Sha256Digest::try_from_slice(invalid).err(),
+            Some(P256Sha256DigestError::PRIMITIVE_INVALID_LENGTH)
+        );
     }
 }
 
@@ -101,12 +82,8 @@ fn direct_digest_signature_is_deterministic_low_s_and_not_double_hashed() -> Res
     assert_eq!(repeated, EXPECTED_DER);
     assert_eq!(message_api_signature, EXPECTED_DER);
 
-    let parsed = P256Signature::from_der(&signature).map_err(|_| {
-        signature_error(
-            SignatureOperation::Verify,
-            SignatureFailureKind::InvalidSignature,
-        )
-    })?;
+    let parsed = P256Signature::from_der(&signature)
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
     assert_eq!(parsed.normalize_s(), parsed);
     Ok(())
 }
@@ -126,25 +103,16 @@ fn signing_rejects_invalid_secret_lengths_with_typed_errors() {
     for invalid_secret in [&[][..], &[0u8; 31], &[0u8; 33]] {
         assert_eq!(
             sign_p256_sha256_digest_low_s_der(invalid_secret, &valid_digest),
-            Err(signature_error(
-                SignatureOperation::Sign,
-                SignatureFailureKind::InvalidPrivateKey,
-            ))
+            Err(CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY)
         );
         assert_eq!(
             sign_p256_sha256_message_low_s_der(invalid_secret, MESSAGE),
-            Err(signature_error(
-                SignatureOperation::Sign,
-                SignatureFailureKind::InvalidPrivateKey,
-            ))
+            Err(CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY)
         );
     }
     assert_eq!(
         sign_p256_sha256_digest_low_s_der(&[0u8; P256_SECRET_KEY_LEN], &valid_digest),
-        Err(signature_error(
-            SignatureOperation::Sign,
-            SignatureFailureKind::InvalidPrivateKey,
-        ))
+        Err(CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY)
     );
 }
 
@@ -153,24 +121,21 @@ fn verification_rejects_tampered_digest_and_signature() -> Result<(), CryptoErro
     let (public_key, _) = generate_p256_keypair_from_secret_key(&SECRET_KEY)?;
     let digest = sha256_digest(MESSAGE);
     let signature = sign_p256_sha256_digest_low_s_der(&SECRET_KEY, &digest)?;
-    let expected_error = signature_error(
-        SignatureOperation::Verify,
-        SignatureFailureKind::InvalidSignature,
-    );
+    let expected_error = CryptoError::PRIMITIVE_INVALID_SIGNATURE;
 
     let mut tampered_digest_bytes = *digest.as_bytes();
     tampered_digest_bytes[0] ^= 0x80;
     let tampered_digest = P256Sha256Digest::new(tampered_digest_bytes);
     assert_eq!(
         verify_p256_sha256_digest_low_s_der(&signature, &tampered_digest, &public_key),
-        Err(expected_error.clone())
+        Err(expected_error)
     );
 
     let mut tampered_signature = signature;
     let final_index = tampered_signature
         .len()
         .checked_sub(1)
-        .ok_or_else(|| expected_error.clone())?;
+        .ok_or(expected_error)?;
     tampered_signature[final_index] ^= 0x01;
     assert_eq!(
         verify_p256_sha256_digest_low_s_der(&tampered_signature, &digest, &public_key),
@@ -192,10 +157,7 @@ fn canonical_digest_verifier_rejects_high_s_twin() -> Result<(), CryptoError> {
 
     assert_eq!(
         verify_p256_sha256_digest_low_s_der(&high_s_der, &digest, &public_key),
-        Err(signature_error(
-            SignatureOperation::Verify,
-            SignatureFailureKind::InvalidSignature,
-        ))
+        Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     );
     verify_p256_sha256_message_der_interoperable(&high_s_der, MESSAGE, &public_key)?;
     Ok(())
@@ -221,23 +183,17 @@ fn deprecated_byte_slice_apis_preserve_existing_semantics() -> Result<(), Crypto
 
     assert_eq!(
         sign_p256_der_prehash(&[0u8; 31], MESSAGE),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     );
 
     for invalid_digest in [&[][..], &[0u8; 31], &[0u8; 33]] {
         assert_eq!(
             sign_p256_digest_der(&SECRET_KEY, invalid_digest),
-            Err(signature_error(
-                SignatureOperation::Sign,
-                SignatureFailureKind::InvalidMessage,
-            ))
+            Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
         );
         assert_eq!(
             verify_p256_digest_der(&legacy_digest_signature, invalid_digest, &public_key),
-            Err(signature_error(
-                SignatureOperation::Verify,
-                SignatureFailureKind::InvalidMessage,
-            ))
+            Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
         );
     }
     Ok(())

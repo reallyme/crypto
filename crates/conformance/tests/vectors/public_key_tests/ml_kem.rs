@@ -37,8 +37,7 @@ fn mlkem768_vector_known_answer() -> Result<(), VectorTestError> {
     let secret_key = b64u_to_bytes(field_string(&v, "secret_key")?)?;
     assert!(matches!(
         ml_kem_768_decapsulate(&ciphertext[..ciphertext.len() - 1], &secret_key),
-        Err(crypto_core::CryptoError::InvalidCiphertextLength { actual, .. })
-            if actual == ciphertext.len() - 1
+        Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)
     ));
     Ok(())
 }

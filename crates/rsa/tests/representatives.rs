@@ -3,10 +3,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 //! Independent integer known answers and public RSA operation boundaries.
-use crypto_rsa::{
-    rsa_public_representatives, RsaPublicKeyDerEncoding, RsaPublicRepresentatives,
-    RsaRepresentativeErrorReason,
-};
+use crypto_core::CryptoError;
+use crypto_rsa::{rsa_public_representatives, RsaPublicKeyDerEncoding, RsaPublicRepresentatives};
 use serde::Deserialize;
 use thiserror::Error;
 
@@ -15,7 +13,7 @@ enum TestErrorReason {
     #[error("invalid synthetic public fixture")]
     Fixture,
     #[error("RSA operation failed")]
-    Rsa(#[from] crypto_rsa::RsaRepresentativeError),
+    Rsa(#[from] CryptoError),
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -86,26 +84,20 @@ fn exact_width_range_key_and_ownership_boundaries_are_explicit() -> Result<(), T
         1025,
     ] {
         assert_eq!(
-            rsa_public_representatives(&key, RsaPublicKeyDerEncoding::Spki, &vec![0; length])
-                .err()
-                .map(|error| error.reason()),
-            Some(RsaRepresentativeErrorReason::Length)
+            rsa_public_representatives(&key, RsaPublicKeyDerEncoding::Spki, &vec![0; length]).err(),
+            Some(CryptoError::PRIMITIVE_INVALID_LENGTH)
         );
     }
     let last = signature.last_mut().ok_or(TestErrorReason::Fixture)?;
     *last = last.checked_add(1).ok_or(TestErrorReason::Fixture)?;
     assert_eq!(
-        rsa_public_representatives(&key, RsaPublicKeyDerEncoding::Spki, &signature)
-            .err()
-            .map(|error| error.reason()),
-        Some(RsaRepresentativeErrorReason::Range)
+        rsa_public_representatives(&key, RsaPublicKeyDerEncoding::Spki, &signature).err(),
+        Some(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     );
     for invalid in [&[][..], &[48, 0][..], &[0; 4097][..]] {
         assert_eq!(
-            rsa_public_representatives(invalid, RsaPublicKeyDerEncoding::Spki, &signature)
-                .err()
-                .map(|error| error.reason()),
-            Some(RsaRepresentativeErrorReason::PublicKey)
+            rsa_public_representatives(invalid, RsaPublicKeyDerEncoding::Spki, &signature).err(),
+            Some(CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY)
         );
     }
     Ok(())

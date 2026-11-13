@@ -110,7 +110,7 @@ fn operation_response_mac_verify_reports_malformed_tag_as_error_result() {
     };
     assert_eq!(
         error.reason.as_known(),
-        Some(CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH)
+        Some(CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_TAG)
     );
 }
 

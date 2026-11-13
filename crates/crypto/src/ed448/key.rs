@@ -6,7 +6,7 @@ use ed448_goldilocks::EdwardsPoint;
 use secrecy::{ExposeSecret, ExposeSecretMut, SecretSlice};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
-use super::{scalar, transcript, Ed448Error, PUBLIC_KEY_LEN, SEED_LEN, SIGNATURE_LEN};
+use super::{scalar, transcript, CryptoError, PUBLIC_KEY_LEN, SEED_LEN, SIGNATURE_LEN};
 use crate::key_random::{KeyRng, SystemKeyRng};
 
 /// Protected software Ed448 seed bound to its public key. The seed is never
@@ -27,9 +27,9 @@ impl Ed448Key {
     /// Import an exact 57-byte RFC 8032 seed. All seed values are valid. The
     /// caller retains responsibility for clearing the borrowed source.
     #[allow(clippy::op_ref)] // Borrow guarded scalars instead of explicitly copying secret operands.
-    pub fn import(seed: &[u8]) -> Result<Self, Ed448Error> {
+    pub fn import(seed: &[u8]) -> Result<Self, CryptoError> {
         if seed.len() != SEED_LEN {
-            return Err(Ed448Error::InvalidPrivateKey);
+            return Err(CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY);
         }
         let expanded = transcript::expand(seed);
         let scalar = scalar::reduce(&expanded[..SEED_LEN])?;
@@ -43,16 +43,15 @@ impl Ed448Key {
     }
 
     /// Generate a seed with operating-system entropy.
-    pub fn generate() -> Result<Self, Ed448Error> {
+    pub fn generate() -> Result<Self, CryptoError> {
         Self::generate_with_rng(&mut SystemKeyRng)
     }
 
     /// Generate using an injected cryptographic entropy source. A partial fill
     /// followed by failure still leaves the candidate in clearing storage.
-    pub fn generate_with_rng(rng: &mut impl KeyRng) -> Result<Self, Ed448Error> {
+    pub fn generate_with_rng(rng: &mut impl KeyRng) -> Result<Self, CryptoError> {
         let mut seed = Zeroizing::new([0; SEED_LEN]);
-        rng.fill(seed.as_mut())
-            .map_err(|_| Ed448Error::RandomnessUnavailable)?;
+        rng.fill(seed.as_mut())?;
         Self::import(seed.as_ref())
     }
 
@@ -63,9 +62,9 @@ impl Ed448Key {
 
     /// Sign exact message bytes with ordinary Ed448 and empty context.
     #[allow(clippy::op_ref)] // Keep scalar operands borrowed from their clearing owners.
-    pub fn sign(&self, message: &[u8]) -> Result<[u8; SIGNATURE_LEN], Ed448Error> {
+    pub fn sign(&self, message: &[u8]) -> Result<[u8; SIGNATURE_LEN], CryptoError> {
         if self.destroyed {
-            return Err(Ed448Error::InvalidPrivateKey);
+            return Err(CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY);
         }
         let expanded = transcript::expand(self.seed.expose_secret());
         let private = scalar::reduce(&expanded[..SEED_LEN])?;
@@ -108,14 +107,14 @@ impl Drop for Ed448Key {
     }
 }
 
-fn secret_copy(seed: &[u8]) -> Result<SecretSlice<u8>, Ed448Error> {
+fn secret_copy(seed: &[u8]) -> Result<SecretSlice<u8>, CryptoError> {
     let mut storage = Zeroizing::new(Vec::new());
     storage
         .try_reserve_exact(SEED_LEN)
-        .map_err(|_| Ed448Error::AllocationFailed)?;
+        .map_err(|_| CryptoError::BACKEND_INTERNAL)?;
     storage.resize(SEED_LEN, 0);
     if storage.capacity() != SEED_LEN {
-        return Err(Ed448Error::AllocationFailed);
+        return Err(CryptoError::BACKEND_INTERNAL);
     }
     let mut owner = SecretSlice::from(core::mem::take(&mut *storage));
     owner.expose_secret_mut().copy_from_slice(seed);

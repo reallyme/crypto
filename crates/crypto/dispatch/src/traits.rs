@@ -22,7 +22,7 @@ pub trait SignatureAlgorithm {
     /// private scalar. This path is not password-based key generation.
     fn derive_keypair(secret: &[u8]) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), AlgorithmError> {
         let _ = secret;
-        Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+        Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
     /// Sign `msg` with `secret`, returning the detached signature bytes.
     fn sign(secret: &[u8], msg: &[u8]) -> Result<Vec<u8>, AlgorithmError>;

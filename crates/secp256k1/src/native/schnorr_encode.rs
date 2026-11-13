@@ -9,17 +9,18 @@ use k256::schnorr::{SigningKey, VerifyingKey};
 /// Derive the BIP-340 x-only public key for a secp256k1 secret scalar.
 pub fn derive_bip340_schnorr_public_key(secret_key: &[u8]) -> Result<Vec<u8>, CryptoError> {
     if secret_key.len() != SECP256K1_SECRET_KEY_LEN {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
-    let signing_key = SigningKey::from_slice(secret_key).map_err(|_| CryptoError::InvalidKey)?;
+    let signing_key =
+        SigningKey::from_slice(secret_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     Ok(signing_key.verifying_key().to_bytes().to_vec())
 }
 
 fn validate_bip340_public_key(public_key: &[u8]) -> Result<(), CryptoError> {
     if public_key.len() != BIP340_SCHNORR_PUBLIC_KEY_LEN {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
-    VerifyingKey::from_slice(public_key).map_err(|_| CryptoError::InvalidKey)?;
+    VerifyingKey::from_slice(public_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     Ok(())
 }
 

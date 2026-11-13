@@ -19,8 +19,8 @@ impl X448PrivateKey {
 
     /// Imports a 56-byte scalar. X448 clamping is applied by the backend.
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, CryptoError> {
-        let scalar =
-            <[u8; X448_PRIVATE_KEY_LEN]>::try_from(bytes).map_err(|_| CryptoError::InvalidKey)?;
+        let scalar = <[u8; X448_PRIVATE_KEY_LEN]>::try_from(bytes)
+            .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
         Ok(Self::from_array(scalar))
     }
 
@@ -49,9 +49,9 @@ pub struct X448PublicKey([u8; X448_PUBLIC_KEY_LEN]);
 impl X448PublicKey {
     /// Imports a public key and rejects low-order points.
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, CryptoError> {
-        let encoded =
-            <[u8; X448_PUBLIC_KEY_LEN]>::try_from(bytes).map_err(|_| CryptoError::InvalidKey)?;
-        PublicKey::from_bytes(&encoded).ok_or(CryptoError::InvalidKey)?;
+        let encoded = <[u8; X448_PUBLIC_KEY_LEN]>::try_from(bytes)
+            .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+        PublicKey::from_bytes(&encoded).ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?;
         Ok(Self(encoded))
     }
 
@@ -61,7 +61,7 @@ impl X448PublicKey {
     }
 
     pub(crate) fn backend(&self) -> Result<PublicKey, CryptoError> {
-        PublicKey::from_bytes(&self.0).ok_or(CryptoError::InvalidKey)
+        PublicKey::from_bytes(&self.0).ok_or(CryptoError::PRIMITIVE_INVALID_KEY)
     }
 }
 

@@ -44,7 +44,7 @@ pub fn sign(alg: Algorithm, secret: &[u8], msg: &[u8]) -> Result<Vec<u8>, Algori
             }
             #[cfg(not(feature = "ed25519"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P256 => {
@@ -54,7 +54,7 @@ pub fn sign(alg: Algorithm, secret: &[u8], msg: &[u8]) -> Result<Vec<u8>, Algori
             }
             #[cfg(not(feature = "p256"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P384 => {
@@ -64,7 +64,7 @@ pub fn sign(alg: Algorithm, secret: &[u8], msg: &[u8]) -> Result<Vec<u8>, Algori
             }
             #[cfg(not(feature = "p384"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P521 => {
@@ -74,7 +74,7 @@ pub fn sign(alg: Algorithm, secret: &[u8], msg: &[u8]) -> Result<Vec<u8>, Algori
             }
             #[cfg(not(feature = "p521"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::Secp256k1 => {
@@ -84,7 +84,7 @@ pub fn sign(alg: Algorithm, secret: &[u8], msg: &[u8]) -> Result<Vec<u8>, Algori
             }
             #[cfg(not(feature = "secp256k1"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlDsa44 => {
@@ -94,7 +94,7 @@ pub fn sign(alg: Algorithm, secret: &[u8], msg: &[u8]) -> Result<Vec<u8>, Algori
             }
             #[cfg(not(feature = "ml-dsa-44"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlDsa65 => {
@@ -104,7 +104,7 @@ pub fn sign(alg: Algorithm, secret: &[u8], msg: &[u8]) -> Result<Vec<u8>, Algori
             }
             #[cfg(not(feature = "ml-dsa-65"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlDsa87 => {
@@ -114,10 +114,10 @@ pub fn sign(alg: Algorithm, secret: &[u8], msg: &[u8]) -> Result<Vec<u8>, Algori
             }
             #[cfg(not(feature = "ml-dsa-87"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
-        _ => Err(AlgorithmError::UnsupportedAlgorithm(alg)),
+        _ => Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM),
     }
 }
 
@@ -151,7 +151,7 @@ pub fn verify(alg: Algorithm, public: &[u8], msg: &[u8], sig: &[u8]) -> Result<(
             }
             #[cfg(not(feature = "ed25519"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P256 => {
@@ -161,7 +161,7 @@ pub fn verify(alg: Algorithm, public: &[u8], msg: &[u8], sig: &[u8]) -> Result<(
             }
             #[cfg(not(feature = "p256"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P384 => {
@@ -171,7 +171,7 @@ pub fn verify(alg: Algorithm, public: &[u8], msg: &[u8], sig: &[u8]) -> Result<(
             }
             #[cfg(not(feature = "p384"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P521 => {
@@ -181,7 +181,7 @@ pub fn verify(alg: Algorithm, public: &[u8], msg: &[u8], sig: &[u8]) -> Result<(
             }
             #[cfg(not(feature = "p521"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::Secp256k1 => {
@@ -191,7 +191,7 @@ pub fn verify(alg: Algorithm, public: &[u8], msg: &[u8], sig: &[u8]) -> Result<(
             }
             #[cfg(not(feature = "secp256k1"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlDsa44 => {
@@ -201,7 +201,7 @@ pub fn verify(alg: Algorithm, public: &[u8], msg: &[u8], sig: &[u8]) -> Result<(
             }
             #[cfg(not(feature = "ml-dsa-44"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlDsa65 => {
@@ -211,7 +211,7 @@ pub fn verify(alg: Algorithm, public: &[u8], msg: &[u8], sig: &[u8]) -> Result<(
             }
             #[cfg(not(feature = "ml-dsa-65"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlDsa87 => {
@@ -221,9 +221,9 @@ pub fn verify(alg: Algorithm, public: &[u8], msg: &[u8], sig: &[u8]) -> Result<(
             }
             #[cfg(not(feature = "ml-dsa-87"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
-        _ => Err(AlgorithmError::UnsupportedAlgorithm(alg)),
+        _ => Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM),
     }
 }

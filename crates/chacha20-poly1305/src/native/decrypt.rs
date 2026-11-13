@@ -4,25 +4,21 @@
 
 use chacha20poly1305::aead::{Aead, KeyInit, Payload};
 use chacha20poly1305::{ChaCha20Poly1305, Nonce, XChaCha20Poly1305, XNonce};
-use crypto_core::{AeadBackend, AeadFailureKind, CryptoError};
+use crypto_core::CryptoError;
 use zeroize::Zeroizing;
 
 use crate::{ChaCha20Poly1305Key, DecryptRequest, XChaCha20Poly1305DecryptRequest};
 
 fn chacha20_cipher(key: &ChaCha20Poly1305Key) -> Result<ChaCha20Poly1305, CryptoError> {
     let key_material = Zeroizing::new(*key.as_bytes());
-    ChaCha20Poly1305::new_from_slice(&*key_material).map_err(|_| CryptoError::AeadDecrypt {
-        backend: AeadBackend::Native,
-        kind: AeadFailureKind::InvalidKeyMaterial,
-    })
+    ChaCha20Poly1305::new_from_slice(&*key_material)
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)
 }
 
 fn xchacha20_cipher(key: &ChaCha20Poly1305Key) -> Result<XChaCha20Poly1305, CryptoError> {
     let key_material = Zeroizing::new(*key.as_bytes());
-    XChaCha20Poly1305::new_from_slice(&*key_material).map_err(|_| CryptoError::AeadDecrypt {
-        backend: AeadBackend::Native,
-        kind: AeadFailureKind::InvalidKeyMaterial,
-    })
+    XChaCha20Poly1305::new_from_slice(&*key_material)
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)
 }
 
 /// Decrypts and authenticates a ChaCha20-Poly1305 `ciphertext || tag`.
@@ -36,10 +32,7 @@ pub fn decrypt(request: &DecryptRequest<'_>) -> Result<Vec<u8>, CryptoError> {
 
     cipher
         .decrypt(&nonce, payload)
-        .map_err(|_| CryptoError::AeadDecrypt {
-            backend: AeadBackend::Native,
-            kind: AeadFailureKind::AuthenticationFailed,
-        })
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_AUTHENTICATION_FAILED)
 }
 
 /// Decrypts ChaCha20-Poly1305 and owns plaintext in a buffer wiped on drop.
@@ -60,10 +53,7 @@ pub fn decrypt_xchacha20_poly1305(
 
     cipher
         .decrypt(&nonce, payload)
-        .map_err(|_| CryptoError::AeadDecrypt {
-            backend: AeadBackend::Native,
-            kind: AeadFailureKind::AuthenticationFailed,
-        })
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_AUTHENTICATION_FAILED)
 }
 
 /// Decrypts XChaCha20-Poly1305 and wipes the plaintext on drop.

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, KemFailureKind, KeyAgreementFailureKind};
+use crypto_core::CryptoError;
 use ml_kem::{
     ml_kem_768::{EncapsulationKey as MlKem768EncapsulationKey, MlKem768},
     EncapsulationKey, Key, B32,
@@ -23,9 +23,7 @@ fn checked_ciphertext_capacity(suite: XWingSuite) -> Result<usize, CryptoError> 
     suite
         .ml_kem_ciphertext_len()
         .checked_add(X25519_KEY_LEN)
-        .ok_or(CryptoError::KemFailure {
-            kind: KemFailureKind::EncapsulateFailed,
-        })
+        .ok_or(crypto_core::CryptoError::BACKEND_INTERNAL)
 }
 
 fn split_public_key(
@@ -33,12 +31,12 @@ fn split_public_key(
     public_key: &[u8],
 ) -> Result<(&[u8], &[u8; X25519_KEY_LEN]), CryptoError> {
     if public_key.len() != suite.public_key_len() {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
     let ml_kem_public_len = suite.ml_kem_public_key_len();
     let (ml_kem_public_key, x25519_public_key) = public_key.split_at(ml_kem_public_len);
     let x25519_public_key = <&[u8; X25519_KEY_LEN]>::try_from(x25519_public_key)
-        .map_err(|_| CryptoError::InvalidKey)?;
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     Ok((ml_kem_public_key, x25519_public_key))
 }
 
@@ -47,10 +45,11 @@ fn ml_kem_encapsulate_derand(
     randomness: &[u8; ML_KEM_SHARED_SECRET_LEN],
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
     let public_key = Key::<EncapsulationKey<MlKem768>>::try_from(public_key)
-        .map_err(|_| CryptoError::InvalidKey)?;
-    let encapsulation_key =
-        MlKem768EncapsulationKey::new(&public_key).map_err(|_| CryptoError::InvalidKey)?;
-    let randomness = B32::try_from(&randomness[..]).map_err(|_| CryptoError::InvalidKey)?;
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    let encapsulation_key = MlKem768EncapsulationKey::new(&public_key)
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    let randomness =
+        B32::try_from(&randomness[..]).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     let (mut ciphertext, mut shared_secret) =
         encapsulation_key.encapsulate_deterministic(&randomness);
     let ciphertext_bytes = ciphertext.as_slice().to_vec();
@@ -67,7 +66,7 @@ fn encapsulate_derand(
     ml_kem_encapsulate_fn: MlKemEncapsulateFn,
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
     if seed.len() != X_WING_ENCAPS_SEED_LEN {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
 
     let (ml_kem_public_key, x25519_public_key) = split_public_key(suite, public_key)?;
@@ -81,9 +80,7 @@ fn encapsulate_derand(
     let x25519_peer = PublicKey::from(*x25519_public_key);
     let x25519_shared = x25519_secret.diffie_hellman(&x25519_peer);
     if !x25519_shared.was_contributory() {
-        return Err(CryptoError::KeyAgreementFailure {
-            kind: KeyAgreementFailureKind::DeriveSharedSecretFailed,
-        });
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SHARED_SECRET);
     }
     let x25519_shared_secret = Zeroizing::new(x25519_shared.to_bytes());
 
@@ -96,7 +93,7 @@ fn encapsulate_derand(
         &x25519_shared_secret,
         &x25519_ciphertext,
         x25519_public_key,
-        KemFailureKind::EncapsulateFailed,
+        crypto_core::CryptoError::BACKEND_INTERNAL,
     )?;
 
     let mut ciphertext = Vec::with_capacity(checked_ciphertext_capacity(suite)?);

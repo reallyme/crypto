@@ -5,9 +5,10 @@
 #![allow(missing_docs, clippy::unwrap_used, clippy::panic)]
 #![cfg(feature = "ecdsa-explicit")]
 
+use crypto_core::CryptoError;
 use reallyme_crypto::ecdsa_explicit::{
     der_to_fixed, fixed_to_der, sign_with_provider, validate_public_key, verify, EcdsaCurve,
-    EcdsaEncoding, EcdsaError, EcdsaHash, EcdsaInput, EcdsaKey, OpaqueEcdsaSigner,
+    EcdsaEncoding, EcdsaHash, EcdsaInput, EcdsaKey, OpaqueEcdsaSigner,
 };
 use secrecy::ExposeSecret;
 use serde_json::Value;
@@ -119,7 +120,7 @@ fn every_enabled_curve_and_hash_executes_independent_known_answers() {
                     &raw,
                     EcdsaEncoding::FixedWidth
                 ),
-                Err(EcdsaError::InvalidSignature)
+                Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
             );
             verify(
                 curve,
@@ -187,7 +188,7 @@ fn every_enabled_curve_and_hash_executes_independent_known_answers() {
                     &raw,
                     EcdsaEncoding::FixedWidth
                 ),
-                Err(EcdsaError::InvalidSignature)
+                Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
             );
             assert_eq!(
                 verify(
@@ -200,11 +201,11 @@ fn every_enabled_curve_and_hash_executes_independent_known_answers() {
                     &raw,
                     EcdsaEncoding::FixedWidth
                 ),
-                Err(EcdsaError::InvalidSignature)
+                Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
             );
             assert_eq!(
                 verify(curve, key.public_key(), input, &raw, EcdsaEncoding::Der),
-                Err(EcdsaError::InvalidSignature)
+                Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
             );
             assert_eq!(
                 verify(
@@ -214,23 +215,23 @@ fn every_enabled_curve_and_hash_executes_independent_known_answers() {
                     &der,
                     EcdsaEncoding::FixedWidth
                 ),
-                Err(EcdsaError::InvalidSignature)
+                Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
             );
             let mut trailing = der.clone();
             trailing.push(0);
             assert_eq!(
                 der_to_fixed(curve, &trailing),
-                Err(EcdsaError::InvalidSignature)
+                Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
             );
             for prefix_length in 0..der.len() {
                 assert_eq!(
                     der_to_fixed(curve, &der[..prefix_length]),
-                    Err(EcdsaError::InvalidSignature)
+                    Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
                 );
             }
             assert_eq!(
                 der_to_fixed(curve, &[0x30; 1024]),
-                Err(EcdsaError::InvalidSignature)
+                Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
             );
         }
     }
@@ -238,20 +239,14 @@ fn every_enabled_curve_and_hash_executes_independent_known_answers() {
 
 struct PartialEntropyFailure;
 impl reallyme_crypto::key_random::KeyRng for PartialEntropyFailure {
-    fn fill(
-        &mut self,
-        destination: &mut [u8],
-    ) -> Result<(), reallyme_crypto::key_random::KeyRandomError> {
+    fn fill(&mut self, destination: &mut [u8]) -> Result<(), CryptoError> {
         destination.fill(0xa5);
-        Err(reallyme_crypto::key_random::KeyRandomError::Unavailable)
+        Err(CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)
     }
 }
 struct ZeroEntropy;
 impl reallyme_crypto::key_random::KeyRng for ZeroEntropy {
-    fn fill(
-        &mut self,
-        destination: &mut [u8],
-    ) -> Result<(), reallyme_crypto::key_random::KeyRandomError> {
+    fn fill(&mut self, destination: &mut [u8]) -> Result<(), CryptoError> {
         destination.fill(0);
         Ok(())
     }
@@ -264,11 +259,11 @@ fn entropy_failure_and_exhausted_rejection_sampling_return_typed_errors() {
         let curve = curve(&vector["curve"]);
         assert!(matches!(
             EcdsaKey::generate_with_rng(curve, &mut PartialEntropyFailure),
-            Err(EcdsaError::RandomnessUnavailable)
+            Err(CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)
         ));
         assert!(matches!(
             EcdsaKey::generate_with_rng(curve, &mut ZeroEntropy),
-            Err(EcdsaError::RandomnessUnavailable)
+            Err(CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)
         ));
     }
 }
@@ -304,7 +299,7 @@ fn certificate_and_crl_verification_uses_exact_tbs_spans_for_every_curve_and_has
                 &signature,
                 EcdsaEncoding::Der
             ),
-            Err(EcdsaError::InvalidSignature)
+            Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
         );
         for position in [0, tbs.len() / 2, tbs.len() - 1] {
             let mut changed = tbs.clone();
@@ -320,7 +315,7 @@ fn certificate_and_crl_verification_uses_exact_tbs_spans_for_every_curve_and_has
                     &signature,
                     EcdsaEncoding::Der
                 ),
-                Err(EcdsaError::InvalidSignature)
+                Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
             );
         }
         executed += 1;
@@ -344,7 +339,7 @@ fn every_curve_rejects_invalid_scalars_points_encodings_and_lengths() {
         ] {
             assert!(matches!(
                 EcdsaKey::import(curve, &scalar),
-                Err(EcdsaError::InvalidPrivateKey)
+                Err(CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY)
             ));
         }
         for public in [
@@ -356,21 +351,24 @@ fn every_curve_rejects_invalid_scalars_points_encodings_and_lengths() {
         ] {
             assert_eq!(
                 validate_public_key(curve, &public),
-                Err(EcdsaError::InvalidPublicKey)
+                Err(CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY)
             );
             assert!(matches!(
                 key.agree(&public),
-                Err(EcdsaError::InvalidPublicKey)
+                Err(CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY)
             ));
         }
         for raw in [vec![], vec![0; 2 * width], vec![1; 2 * width - 1]] {
-            assert_eq!(fixed_to_der(curve, &raw), Err(EcdsaError::InvalidSignature));
+            assert_eq!(
+                fixed_to_der(curve, &raw),
+                Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
+            );
         }
         let mut out_of_range = bytes(&v["order"]);
         out_of_range.extend(vec![1; width]);
         assert_eq!(
             fixed_to_der(curve, &out_of_range),
-            Err(EcdsaError::InvalidSignature)
+            Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
         );
         assert!(matches!(
             key.sign(
@@ -380,7 +378,7 @@ fn every_curve_rejects_invalid_scalars_points_encodings_and_lengths() {
                 },
                 EcdsaEncoding::Der
             ),
-            Err(EcdsaError::InvalidPrehashLength)
+            Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
         ));
         let generated = EcdsaKey::generate(curve).unwrap();
         validate_public_key(curve, generated.public_key()).unwrap();
@@ -441,7 +439,7 @@ fn strict_der_syntax_and_curve_scalar_validation_share_one_contract() {
                 &zero_scalar,
                 EcdsaEncoding::Der,
             ),
-            Err(EcdsaError::InvalidPrehashLength)
+            Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
         );
         assert_eq!(
             verify(
@@ -454,7 +452,7 @@ fn strict_der_syntax_and_curve_scalar_validation_share_one_contract() {
                 &zero_scalar,
                 EcdsaEncoding::Der,
             ),
-            Err(EcdsaError::InvalidPublicKey)
+            Err(CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY)
         );
         let mut fixed = vec![0; 2 * width];
         fixed[width - 1] = 1;
@@ -462,7 +460,10 @@ fn strict_der_syntax_and_curve_scalar_validation_share_one_contract() {
         assert_eq!(der_to_fixed(curve, &minimal).unwrap(), fixed);
         for encoded in malformed {
             let der = hex::decode(encoded).unwrap();
-            assert_eq!(der_to_fixed(curve, &der), Err(EcdsaError::InvalidSignature));
+            assert_eq!(
+                der_to_fixed(curve, &der),
+                Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
+            );
             assert_eq!(
                 verify(
                     curve,
@@ -474,7 +475,7 @@ fn strict_der_syntax_and_curve_scalar_validation_share_one_contract() {
                     &der,
                     EcdsaEncoding::Der,
                 ),
-                Err(EcdsaError::InvalidSignature)
+                Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
             );
         }
     }
@@ -529,7 +530,7 @@ fn der_scalar_orders_are_rejected_without_rejecting_their_predecessors() {
         ] {
             assert_eq!(
                 der_to_fixed(curve, &rejected),
-                Err(EcdsaError::InvalidSignature)
+                Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
             );
             assert_eq!(
                 verify(
@@ -542,7 +543,7 @@ fn der_scalar_orders_are_rejected_without_rejecting_their_predecessors() {
                     &rejected,
                     EcdsaEncoding::Der,
                 ),
-                Err(EcdsaError::InvalidSignature)
+                Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
             );
         }
     }
@@ -561,7 +562,7 @@ impl OpaqueEcdsaSigner for NonExporting {
         hash: EcdsaHash,
         bytes: &[u8],
         encoding: EcdsaEncoding,
-    ) -> Result<Vec<u8>, EcdsaError> {
+    ) -> Result<Vec<u8>, CryptoError> {
         self.0.sign(EcdsaInput::Prehash { hash, bytes }, encoding)
     }
 }
@@ -578,8 +579,8 @@ impl OpaqueEcdsaSigner for Unavailable {
         _: EcdsaHash,
         _: &[u8],
         _: EcdsaEncoding,
-    ) -> Result<Vec<u8>, EcdsaError> {
-        Err(EcdsaError::ProviderFailed)
+    ) -> Result<Vec<u8>, CryptoError> {
+        Err(CryptoError::BACKEND_INTERNAL)
     }
 }
 
@@ -599,7 +600,7 @@ fn opaque_signing_executes_without_private_export_and_preserves_typed_failure() 
         }
         assert_eq!(
             sign_with_provider(&Unavailable(key), input, EcdsaEncoding::Der),
-            Err(EcdsaError::ProviderFailed)
+            Err(CryptoError::BACKEND_INTERNAL)
         );
     }
 }
@@ -622,7 +623,7 @@ fn clearing_owners_fail_closed_after_explicit_destruction() {
             },
             EcdsaEncoding::Der
         ),
-        Err(EcdsaError::InvalidPrivateKey)
+        Err(CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY)
     ));
 }
 
@@ -638,17 +639,39 @@ fn absent_brainpool_provider_reports_unsupported_for_every_operation() {
     ] {
         assert!(matches!(
             EcdsaKey::generate(curve),
-            Err(EcdsaError::UnsupportedCurve)
+            Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
         ));
         assert!(matches!(
             EcdsaKey::import(curve, &[1; 32]),
-            Err(EcdsaError::UnsupportedCurve)
+            Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
         ));
         assert_eq!(
             validate_public_key(curve, &[4; 65]),
-            Err(EcdsaError::UnsupportedCurve)
+            Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
         );
-        assert_eq!(der_to_fixed(curve, &[]), Err(EcdsaError::UnsupportedCurve));
-        assert_eq!(fixed_to_der(curve, &[]), Err(EcdsaError::UnsupportedCurve));
+        assert_eq!(
+            der_to_fixed(curve, &[]),
+            Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+        );
+        assert_eq!(
+            fixed_to_der(curve, &[]),
+            Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+        );
     }
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn canonical_entropy_errors_are_not_collapsed() {
+    struct Failure;
+    impl reallyme_crypto::key_random::KeyRng for Failure {
+        fn fill(&mut self, destination: &mut [u8]) -> Result<(), CryptoError> {
+            destination.fill(0xa5);
+            Err(CryptoError::BACKEND_INVALID_STATE)
+        }
+    }
+    assert_eq!(
+        EcdsaKey::generate_with_rng(EcdsaCurve::P256, &mut Failure).err(),
+        Some(CryptoError::BACKEND_INVALID_STATE)
+    );
 }

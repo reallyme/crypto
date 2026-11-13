@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, KdfAlgorithm, KdfFailureKind};
+use crypto_core::CryptoError;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 use crate::constants::{
@@ -23,13 +23,9 @@ impl Argon2Secret {
     /// Constructs a secret from raw bytes, returning an error if the input is
     /// empty or exceeds [`ARGON2ID_SECRET_MAX_LENGTH`]. The `profile` is used
     /// only to tag any resulting error.
-    pub fn from_slice(input: &[u8], profile: Argon2Profile) -> Result<Self, CryptoError> {
+    pub fn from_slice(input: &[u8], _profile: Argon2Profile) -> Result<Self, CryptoError> {
         if input.is_empty() || input.len() > ARGON2ID_SECRET_MAX_LENGTH {
-            return Err(CryptoError::Kdf {
-                algorithm: KdfAlgorithm::Argon2id,
-                profile: profile.to_kdf_profile(),
-                kind: KdfFailureKind::InvalidSecretLength,
-            });
+            return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_PASSWORD);
         }
 
         Ok(Self {
@@ -57,14 +53,10 @@ impl Argon2Salt {
     /// Constructs a salt from raw bytes, returning an error unless the length is
     /// within [`ARGON2ID_SALT_MIN_LENGTH`]..=[`ARGON2ID_SALT_MAX_LENGTH`]. The
     /// `profile` is used only to tag any resulting error.
-    pub fn from_slice(input: &[u8], profile: Argon2Profile) -> Result<Self, CryptoError> {
+    pub fn from_slice(input: &[u8], _profile: Argon2Profile) -> Result<Self, CryptoError> {
         let length = input.len();
         if !(ARGON2ID_SALT_MIN_LENGTH..=ARGON2ID_SALT_MAX_LENGTH).contains(&length) {
-            return Err(CryptoError::Kdf {
-                algorithm: KdfAlgorithm::Argon2id,
-                profile: profile.to_kdf_profile(),
-                kind: KdfFailureKind::InvalidSaltLength,
-            });
+            return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SALT);
         }
 
         Ok(Self {

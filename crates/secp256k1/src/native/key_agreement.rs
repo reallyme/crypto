@@ -39,16 +39,18 @@ pub fn derive_secp256k1_shared_secret(
     public_key: &[u8],
 ) -> Result<Secp256k1SharedSecret, CryptoError> {
     if private_key.len() != SECP256K1_SHARED_SECRET_LEN {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
     if public_key.len() != SECP256K1_UNCOMPRESSED_PUBLIC_KEY_LEN
         || public_key.first().copied() != Some(SEC1_UNCOMPRESSED_POINT_TAG)
     {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
 
-    let secret_key = SecretKey::from_slice(private_key).map_err(|_| CryptoError::InvalidKey)?;
-    let public_key = PublicKey::from_sec1_bytes(public_key).map_err(|_| CryptoError::InvalidKey)?;
+    let secret_key =
+        SecretKey::from_slice(private_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    let public_key =
+        PublicKey::from_sec1_bytes(public_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     let shared_secret = diffie_hellman(secret_key.to_nonzero_scalar(), public_key.as_affine());
     let mut bytes = [0_u8; SECP256K1_SHARED_SECRET_LEN];
     bytes.copy_from_slice(shared_secret.raw_secret_bytes());

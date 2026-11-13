@@ -33,52 +33,52 @@ pub fn public_key_bytes_from_jwk(jwk: &Jwk) -> Result<Vec<u8>, JwtError> {
 
 fn okp_public_key_bytes(okp: &OkpJwk) -> Result<Vec<u8>, JwtError> {
     if okp.kty != "OKP" {
-        return Err(JwtError::UnsupportedKeyFormat);
+        return Err(JwtError::PRIMITIVE_INVALID_PARAMETER);
     }
     let (invalid_error, expected_alg, expected_use) = match okp.crv.as_str() {
-        "Ed25519" => (JwtError::InvalidEd25519Key, "EdDSA", "sig"),
-        "X25519" => (JwtError::InvalidX25519Key, "ECDH-ES", "enc"),
-        _ => return Err(JwtError::UnsupportedKeyFormat),
+        "Ed25519" => (JwtError::PRIMITIVE_INVALID_PUBLIC_KEY, "EdDSA", "sig"),
+        "X25519" => (JwtError::PRIMITIVE_INVALID_PUBLIC_KEY, "ECDH-ES", "enc"),
+        _ => return Err(JwtError::PROVIDER_UNSUPPORTED_ALGORITHM),
     };
     if okp
         .alg
         .as_deref()
         .is_some_and(|value| value != expected_alg)
     {
-        return Err(JwtError::UnsupportedKeyFormat);
+        return Err(JwtError::PRIMITIVE_INVALID_PARAMETER);
     }
     if okp
         .use_
         .as_deref()
         .is_some_and(|value| value != expected_use)
     {
-        return Err(JwtError::UnsupportedKeyFormat);
+        return Err(JwtError::PRIMITIVE_INVALID_PARAMETER);
     }
     let public_key = decode_fixed_public_key(&okp.x, BASE64URL_LEN_32_BYTES, 32, invalid_error)?;
     if okp.crv == "Ed25519" {
         crypto_ed25519::validate_public_key_identity(&public_key)
-            .map_err(|_| JwtError::InvalidEd25519Key)?;
+            .map_err(crate::error::public_key_error)?;
     }
     if okp.crv == "X25519" && !crate::x25519::is_canonical_identity(&public_key) {
-        return Err(JwtError::InvalidX25519Key);
+        return Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY);
     }
     Ok(public_key)
 }
 
 fn ec_public_key_bytes(ec: &EcJwk) -> Result<Vec<u8>, JwtError> {
     if ec.kty != "EC" {
-        return Err(JwtError::UnsupportedKeyFormat);
+        return Err(JwtError::PRIMITIVE_INVALID_PARAMETER);
     }
     let (invalid_error, alg) = match ec.crv.as_str() {
-        "P-256" => (JwtError::InvalidP256Key, "ES256"),
-        "secp256k1" => (JwtError::InvalidSecp256k1Key, "ES256K"),
-        _ => return Err(JwtError::UnsupportedKeyFormat),
+        "P-256" => (JwtError::PRIMITIVE_INVALID_PUBLIC_KEY, "ES256"),
+        "secp256k1" => (JwtError::PRIMITIVE_INVALID_PUBLIC_KEY, "ES256K"),
+        _ => return Err(JwtError::PROVIDER_UNSUPPORTED_ALGORITHM),
     };
     if ec.alg.as_deref().is_some_and(|value| value != alg) {
-        return Err(JwtError::UnsupportedKeyFormat);
+        return Err(JwtError::PRIMITIVE_INVALID_PARAMETER);
     }
     if ec.use_.as_deref().is_some_and(|value| value != "sig") {
-        return Err(JwtError::UnsupportedKeyFormat);
+        return Err(JwtError::PRIMITIVE_INVALID_PARAMETER);
     }
     let x = decode_fixed_public_key(&ec.x, BASE64URL_LEN_32_BYTES, 32, invalid_error)?;
     let y = decode_fixed_public_key(&ec.y, BASE64URL_LEN_32_BYTES, 32, invalid_error)?;
@@ -91,15 +91,15 @@ fn ec_public_key_bytes(ec: &EcJwk) -> Result<Vec<u8>, JwtError> {
     #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
     {
         let _ = compressed;
-        return Err(JwtError::BackendUnavailable);
+        return Err(JwtError::PROVIDER_UNSUPPORTED_BACKEND);
     }
 
     #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
     {
         match ec.crv.as_str() {
             "P-256" => {
-                let validated_sec1 =
-                    decompress_p256_public_key(&compressed).map_err(|_| invalid_error)?;
+                let validated_sec1 = decompress_p256_public_key(&compressed)
+                    .map_err(crate::error::public_key_error)?;
                 if validated_sec1.len() != 65
                     || validated_sec1.first().copied() != Some(0x04)
                     || validated_sec1.get(1..33) != Some(x.as_slice())
@@ -109,13 +109,13 @@ fn ec_public_key_bytes(ec: &EcJwk) -> Result<Vec<u8>, JwtError> {
                 }
             }
             "secp256k1" => {
-                let (validated_x, validated_y) =
-                    decompress_secp256k1_public_key(&compressed).map_err(|_| invalid_error)?;
+                let (validated_x, validated_y) = decompress_secp256k1_public_key(&compressed)
+                    .map_err(crate::error::public_key_error)?;
                 if validated_x != x || validated_y != y {
                     return Err(invalid_error);
                 }
             }
-            _ => return Err(JwtError::UnsupportedKeyFormat),
+            _ => return Err(JwtError::PROVIDER_UNSUPPORTED_ALGORITHM),
         };
         Ok(compressed)
     }
@@ -123,65 +123,65 @@ fn ec_public_key_bytes(ec: &EcJwk) -> Result<Vec<u8>, JwtError> {
 
 fn akp_public_key_bytes(akp: &AkpJwk) -> Result<Vec<u8>, JwtError> {
     if akp.kty != "AKP" {
-        return Err(JwtError::UnsupportedKeyFormat);
+        return Err(JwtError::PRIMITIVE_INVALID_PARAMETER);
     }
     let (expected_encoded_len, expected_len, invalid_error, expected_use) = match akp.alg.as_str() {
         "ML-DSA-44" => (
             BASE64URL_LEN_ML_DSA_44_PUBLIC_KEY,
             1312,
-            JwtError::InvalidMlDsa44Key,
+            JwtError::PRIMITIVE_INVALID_PUBLIC_KEY,
             "sig",
         ),
         "ML-DSA-65" => (
             BASE64URL_LEN_ML_DSA_65_PUBLIC_KEY,
             1952,
-            JwtError::InvalidMlDsa65Key,
+            JwtError::PRIMITIVE_INVALID_PUBLIC_KEY,
             "sig",
         ),
         "ML-DSA-87" => (
             BASE64URL_LEN_ML_DSA_87_PUBLIC_KEY,
             2592,
-            JwtError::InvalidMlDsa87Key,
+            JwtError::PRIMITIVE_INVALID_PUBLIC_KEY,
             "sig",
         ),
         "ML-KEM-512" => (
             BASE64URL_LEN_ML_KEM_512_PUBLIC_KEY,
             800,
-            JwtError::InvalidMlKem512Key,
+            JwtError::PRIMITIVE_INVALID_PUBLIC_KEY,
             "enc",
         ),
         "ML-KEM-768" => (
             BASE64URL_LEN_ML_KEM_768_PUBLIC_KEY,
             1184,
-            JwtError::InvalidMlKem768Key,
+            JwtError::PRIMITIVE_INVALID_PUBLIC_KEY,
             "enc",
         ),
         "ML-KEM-1024" => (
             BASE64URL_LEN_ML_KEM_1024_PUBLIC_KEY,
             1568,
-            JwtError::InvalidMlKem1024Key,
+            JwtError::PRIMITIVE_INVALID_PUBLIC_KEY,
             "enc",
         ),
         "SLH-DSA-SHA2-128s" => (
             BASE64URL_LEN_32_BYTES,
             32,
-            JwtError::InvalidSlhDsaSha2128sKey,
+            JwtError::PRIMITIVE_INVALID_PUBLIC_KEY,
             "sig",
         ),
         "X-Wing-768" => (
             BASE64URL_LEN_X_WING_768_PUBLIC_KEY,
             1216,
-            JwtError::InvalidXWing768Key,
+            JwtError::PRIMITIVE_INVALID_PUBLIC_KEY,
             "enc",
         ),
-        _ => return Err(JwtError::UnsupportedKeyFormat),
+        _ => return Err(JwtError::PROVIDER_UNSUPPORTED_ALGORITHM),
     };
     if akp
         .use_
         .as_deref()
         .is_some_and(|value| value != expected_use)
     {
-        return Err(JwtError::UnsupportedKeyFormat);
+        return Err(JwtError::PRIMITIVE_INVALID_PARAMETER);
     }
     decode_fixed_public_key(
         &akp.public_key,

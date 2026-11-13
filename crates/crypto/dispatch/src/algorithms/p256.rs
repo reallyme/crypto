@@ -25,7 +25,7 @@ impl SignatureAlgorithm for P256Algo {
 
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         {
-            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
     }
 
@@ -33,15 +33,14 @@ impl SignatureAlgorithm for P256Algo {
         #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
         {
             let secret_key =
-                <&[u8; 32]>::try_from(secret).map_err(|_| AlgorithmError::InvalidKey(Self::ALG))?;
-            return crypto_p256::generate_p256_keypair_from_secret_key(secret_key)
-                .map_err(AlgorithmError::from);
+                <&[u8; 32]>::try_from(secret).map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY)?;
+            return crypto_p256::generate_p256_keypair_from_secret_key(secret_key);
         }
 
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         {
             let _ = secret;
-            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
     }
 
@@ -52,13 +51,13 @@ impl SignatureAlgorithm for P256Algo {
             // The generic operation must retain its byte-for-byte signature
             // contract until a major release. New callers should use the
             // explicit canonical message signer from the P-256 facade.
-            return crypto_p256::sign_p256_der_prehash(secret, msg).map_err(AlgorithmError::from);
+            return crypto_p256::sign_p256_der_prehash(secret, msg);
         }
 
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         {
             let _ = (secret, msg);
-            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
     }
 
@@ -76,7 +75,7 @@ impl SignatureAlgorithm for P256Algo {
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         {
             let _ = (public, msg, sig);
-            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
     }
 }
@@ -90,14 +89,13 @@ impl P256Algo {
     ) -> Result<Zeroizing<Vec<u8>>, AlgorithmError> {
         #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
         {
-            return crypto_p256::derive_p256_shared_secret(secret_key, public_key)
-                .map_err(AlgorithmError::from);
+            return crypto_p256::derive_p256_shared_secret(secret_key, public_key);
         }
 
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         {
             let _ = (secret_key, public_key);
-            Err(AlgorithmError::UnsupportedAlgorithm(Self::ALG))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
     }
 }

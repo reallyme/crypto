@@ -14,8 +14,7 @@
 
 //! Operation-owner tests for KDF routes.
 
-use reallyme_crypto::operations::{OperationError, PrimitiveErrorReason};
-use reallyme_crypto::{core::CryptoError, core::KdfFailureKind};
+use reallyme_crypto::core::CryptoError;
 
 #[test]
 fn pbkdf2_operation_matches_root_facade_and_rejects_invalid_input() {
@@ -49,9 +48,7 @@ fn pbkdf2_operation_matches_root_facade_and_rejects_invalid_input() {
             reallyme_crypto::pbkdf2::PBKDF2_MODERN_MIN_ITERATIONS,
             32,
         ),
-        Err(OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_PASSWORD)
     ));
     assert!(matches!(
         reallyme_crypto::operations::kdf::derive_pbkdf2_from_raw(
@@ -61,9 +58,7 @@ fn pbkdf2_operation_matches_root_facade_and_rejects_invalid_input() {
             reallyme_crypto::pbkdf2::PBKDF2_MAX_ITERATIONS + 1,
             32,
         ),
-        Err(OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidParameter,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
     ));
     assert!(matches!(
         reallyme_crypto::operations::kdf::derive_pbkdf2_from_raw(
@@ -73,9 +68,7 @@ fn pbkdf2_operation_matches_root_facade_and_rejects_invalid_input() {
             reallyme_crypto::pbkdf2::PBKDF2_MODERN_MIN_ITERATIONS - 1,
             32,
         ),
-        Err(OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidParameter,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
     ));
     assert!(matches!(
         reallyme_crypto::operations::kdf::derive_pbkdf2_from_raw(
@@ -85,10 +78,32 @@ fn pbkdf2_operation_matches_root_facade_and_rejects_invalid_input() {
             reallyme_crypto::pbkdf2::PBKDF2_MODERN_MIN_ITERATIONS,
             0,
         ),
-        Err(OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidLength,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
     ));
+}
+
+#[test]
+fn kdf_operations_preserve_distinct_password_and_salt_rejections() {
+    let prf = reallyme_crypto::pbkdf2::Pbkdf2Prf::HmacSha256;
+    assert_eq!(
+        reallyme_crypto::operations::kdf::derive_pbkdf2_from_raw(
+            prf,
+            b"password",
+            b"",
+            reallyme_crypto::pbkdf2::PBKDF2_MODERN_MIN_ITERATIONS,
+            32,
+        )
+        .err(),
+        Some(CryptoError::PRIMITIVE_INVALID_SALT)
+    );
+    assert_eq!(
+        reallyme_crypto::operations::kdf::derive_argon2id_for_version(1, b"", &[0x11; 16]).err(),
+        Some(CryptoError::PRIMITIVE_INVALID_PASSWORD)
+    );
+    assert_eq!(
+        reallyme_crypto::operations::kdf::derive_argon2id_for_version(1, b"password", b"").err(),
+        Some(CryptoError::PRIMITIVE_INVALID_SALT)
+    );
 }
 
 #[test]
@@ -112,16 +127,11 @@ fn pbkdf2_root_facade_preserves_resource_limit_errors() {
 
     assert!(matches!(
         reallyme_crypto::pbkdf2::derive_key(&request),
-        Err(CryptoError::Kdf {
-            kind: KdfFailureKind::ResourceLimitExceeded,
-            ..
-        })
+        Err(CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED)
     ));
     assert!(matches!(
         reallyme_crypto::operations::kdf::derive_pbkdf2(&request),
-        Err(OperationError::Primitive {
-            reason: PrimitiveErrorReason::ResourceLimitExceeded,
-        })
+        Err(CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED)
     ));
 }
 
@@ -189,8 +199,6 @@ fn jwa_concat_kdf_operation_matches_root_facade() {
 fn argon2id_versioned_operation_rejects_unreviewed_profile() {
     assert!(matches!(
         reallyme_crypto::operations::kdf::derive_argon2id_for_version(99, b"password", &[0x11; 16],),
-        Err(OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidParameter,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
     ));
 }

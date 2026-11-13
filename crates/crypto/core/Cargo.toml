@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-core"
-version = "0.3.17"
+version = "0.4.0"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -17,8 +17,17 @@ description = "Shared typed errors and algorithm identifiers for ReallyMe Crypto
 [lib]
 name = "crypto_core"
 
+[features]
+default = []
+protobuf = ["crypto-proto/generated", "dep:buffa"]
+
 [dependencies]
-thiserror = { workspace = true }
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../../proto", default-features = false, features = ["error-types"] }
+buffa = { workspace = true, optional = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+zeroize = { workspace = true }
 
 [lints]
 workspace = true

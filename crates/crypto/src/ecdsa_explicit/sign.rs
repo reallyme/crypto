@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use super::{
-    digest::with_digest, verify, EcdsaCurve, EcdsaEncoding, EcdsaError, EcdsaHash, EcdsaInput,
+    digest::with_digest, verify, CryptoError, EcdsaCurve, EcdsaEncoding, EcdsaHash, EcdsaInput,
 };
 
 /// Non-exporting platform signing boundary. The provider receives a digest
@@ -19,7 +19,7 @@ pub trait OpaqueEcdsaSigner {
         hash: EcdsaHash,
         digest: &[u8],
         encoding: EcdsaEncoding,
-    ) -> Result<Vec<u8>, EcdsaError>;
+    ) -> Result<Vec<u8>, CryptoError>;
 }
 
 /// Hash a message once or validate its prehash, request an opaque signature,
@@ -28,7 +28,7 @@ pub fn sign_with_provider(
     provider: &impl OpaqueEcdsaSigner,
     input: EcdsaInput<'_>,
     encoding: EcdsaEncoding,
-) -> Result<Vec<u8>, EcdsaError> {
+) -> Result<Vec<u8>, CryptoError> {
     let curve = provider.curve();
     let public = provider.public_key();
     super::verify::validate_public_key(curve, public)?;

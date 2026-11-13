@@ -25,8 +25,8 @@
 
 use crate::{JwkOptions, JwtError};
 
+use crate::canonicalize_jwk::canonicalize_jwk;
 use codec_base64url::bytes_to_base64url;
-use codec_jcs::canonicalize_trusted_json_value;
 
 use serde::Serialize;
 
@@ -77,7 +77,7 @@ pub fn x25519_public_key_to_jwk(
     options: JwkOptions,
 ) -> Result<X25519Jwk, JwtError> {
     if !is_canonical_identity(public_key) {
-        return Err(JwtError::InvalidX25519Key);
+        return Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY);
     }
 
     let mut jwk = X25519Jwk {
@@ -103,7 +103,5 @@ pub fn x25519_public_key_to_jwk_jcs(
 ) -> Result<String, JwtError> {
     let jwk = x25519_public_key_to_jwk(public_key, options)?;
 
-    let value = serde_json::to_value(&jwk).map_err(|_| JwtError::EncodingError)?;
-
-    canonicalize_trusted_json_value(&value).map_err(|_| JwtError::EncodingError)
+    canonicalize_jwk(&jwk)
 }

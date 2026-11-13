@@ -58,7 +58,7 @@ macro_rules! dispatch_kem {
             $crate::identifiers::HpkeKemId::XWing => {
                 $callback::<hpke::kem::XWing>($($argument),*)
             }
-            _ => Err($crate::error::HpkeError::UnsupportedKem),
+            _ => Err($crate::error::HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM),
         }
     }};
 }
@@ -83,7 +83,7 @@ macro_rules! dispatch_kdf {
             $crate::identifiers::HpkeKdfId::Shake256 => {
                 $callback::<$kem, hpke::kdf::KdfShake256>($($argument),*)
             }
-            _ => Err($crate::error::HpkeError::UnsupportedKdf),
+            _ => Err($crate::error::HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM),
         }
     }};
 }
@@ -104,7 +104,7 @@ macro_rules! dispatch_sealing_aead {
             $crate::identifiers::HpkeAeadId::ChaCha20Poly1305 => {
                 $callback::<hpke::aead::ChaCha20Poly1305, $kdf, $kem>($($argument),*)
             }
-            _ => Err($crate::error::HpkeError::UnsupportedAead),
+            _ => Err($crate::error::HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM),
         }
     }};
 }
@@ -135,7 +135,7 @@ macro_rules! dispatch_export_aead {
                 feature = "aead-chacha20-poly1305",
                 feature = "aead-export-only"
             )))]
-            _ => Err($crate::error::HpkeError::UnsupportedAead),
+            _ => Err($crate::error::HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM),
         }
     }};
 }

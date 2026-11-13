@@ -16,18 +16,18 @@ fn ed25519_facade_fails_closed_without_a_backend() {
 
     assert!(matches!(
         reallyme_crypto::ed25519::generate_ed25519_keypair(),
-        Err(CryptoError::Unsupported)
+        Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     ));
     assert!(matches!(
         reallyme_crypto::ed25519::generate_ed25519_keypair_from_seed(&seed),
-        Err(CryptoError::Unsupported)
+        Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     ));
     assert!(matches!(
         reallyme_crypto::ed25519::sign_ed25519(&seed, b"message"),
-        Err(CryptoError::Unsupported)
+        Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     ));
     assert!(matches!(
         reallyme_crypto::ed25519::verify_ed25519(&public_key, b"message", &signature),
-        Err(CryptoError::Unsupported)
+        Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     ));
 }

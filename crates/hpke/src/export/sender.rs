@@ -23,7 +23,8 @@ pub fn sender_export(
 ) -> Result<HpkeSenderExportOutput, HpkeError> {
     let randomness_length = request.suite.encapsulation_randomness_len()?;
     let mut randomness = Zeroizing::new(vec![0_u8; randomness_length]);
-    getrandom::fill(randomness.as_mut_slice()).map_err(|_| HpkeError::RandomnessUnavailable)?;
+    getrandom::fill(randomness.as_mut_slice())
+        .map_err(|_| HpkeError::PROVIDER_RANDOMNESS_UNAVAILABLE)?;
     sender_export_with_randomness(request, randomness.as_slice())
 }
 
@@ -52,7 +53,7 @@ fn sender_export_with_randomness(
     validate_key_schedule_inputs(request.suite.kdf, request.info, &[])?;
     validate_export_length(request.suite, request.output_length)?;
     if randomness.len() != request.suite.encapsulation_randomness_len()? {
-        return Err(HpkeError::InvalidRandomness);
+        return Err(HpkeError::PRIMITIVE_INVALID_PARAMETER);
     }
 
     dispatch_kem!(
@@ -108,7 +109,7 @@ where
 {
     let recipient_public_key =
         <Kem::PublicKey as Deserializable>::from_bytes(request.recipient_public_key)
-            .map_err(|_| HpkeError::InvalidPublicKey)?;
+            .map_err(|_| HpkeError::PRIMITIVE_INVALID_PUBLIC_KEY)?;
     let mut rng = FixedRandomness::new(randomness);
     let (encapsulated_key, context) = hpke::setup_sender_with_rng::<Aead, Kdf, Kem>(
         &OpModeS::Base,
@@ -118,12 +119,12 @@ where
     )
     .map_err(map_sender_setup_error)?;
     if !rng.was_consumed_exactly() {
-        return Err(HpkeError::InvalidRandomness);
+        return Err(HpkeError::PRIMITIVE_INVALID_PARAMETER);
     }
 
     let encapsulated_key = encapsulated_key.to_bytes().as_slice().to_vec();
     if encapsulated_key.len() != kem_parameters(request.suite.kem)?.encapsulated_key_len {
-        return Err(HpkeError::ExportFailed);
+        return Err(HpkeError::BACKEND_INTERNAL);
     }
     let mut exporter_secret = Zeroizing::new(vec![0_u8; request.output_length]);
     context
@@ -139,7 +140,7 @@ where
 fn map_sender_setup_error(error: hpke::HpkeError) -> HpkeError {
     match error {
         hpke::HpkeError::ValidationError | hpke::HpkeError::IncorrectInputLength(_, _) => {
-            HpkeError::InvalidPublicKey
+            HpkeError::PRIMITIVE_INVALID_PUBLIC_KEY
         }
         hpke::HpkeError::InvalidPskBundle
         | hpke::HpkeError::DecapError
@@ -147,13 +148,13 @@ fn map_sender_setup_error(error: hpke::HpkeError) -> HpkeError {
         | hpke::HpkeError::KdfOutputTooLong
         | hpke::HpkeError::MessageLimitReached
         | hpke::HpkeError::OpenError
-        | hpke::HpkeError::SealError => HpkeError::ExportFailed,
+        | hpke::HpkeError::SealError => HpkeError::BACKEND_INTERNAL,
     }
 }
 
 fn map_export_error(error: hpke::HpkeError) -> HpkeError {
     match error {
-        hpke::HpkeError::KdfOutputTooLong => HpkeError::InvalidExporterLength,
+        hpke::HpkeError::KdfOutputTooLong => HpkeError::PRIMITIVE_INVALID_LENGTH,
         hpke::HpkeError::ValidationError
         | hpke::HpkeError::IncorrectInputLength(_, _)
         | hpke::HpkeError::InvalidPskBundle
@@ -161,6 +162,6 @@ fn map_export_error(error: hpke::HpkeError) -> HpkeError {
         | hpke::HpkeError::EncapError
         | hpke::HpkeError::MessageLimitReached
         | hpke::HpkeError::OpenError
-        | hpke::HpkeError::SealError => HpkeError::ExportFailed,
+        | hpke::HpkeError::SealError => HpkeError::BACKEND_INTERNAL,
     }
 }

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, KemFailureKind};
+use crypto_core::CryptoError;
 use zeroize::{Zeroize, Zeroizing};
 
 use crate::expand::{expand_decapsulation_key, ml_kem_768_public_key};
@@ -16,9 +16,7 @@ fn compose_public_key(
     let capacity = ml_kem_public_key
         .len()
         .checked_add(x25519_public_key.len())
-        .ok_or(CryptoError::KemFailure {
-            kind: KemFailureKind::KeyGenerationFailed,
-        })?;
+        .ok_or(crypto_core::CryptoError::BACKEND_INTERNAL)?;
     let mut public_key = Vec::with_capacity(capacity);
     public_key.extend_from_slice(ml_kem_public_key);
     public_key.extend_from_slice(x25519_public_key);
@@ -30,7 +28,7 @@ fn generate_keypair_derand(
     ml_kem_public_key_fn: fn(&[u8; 64]) -> Result<Vec<u8>, CryptoError>,
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
     if secret_key.len() != X_WING_SECRET_KEY_LEN {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
 
     let expanded = expand_decapsulation_key(secret_key)?;

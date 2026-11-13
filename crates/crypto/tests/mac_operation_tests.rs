@@ -8,9 +8,8 @@
 
 //! Operation-owner tests for MAC routes.
 
-use crypto_core::{CryptoError, MacAlgorithm, MacFailureKind};
+use crypto_core::{CryptoError, MacAlgorithm};
 use reallyme_crypto::dispatch::MacParams;
-use reallyme_crypto::operations::{OperationError, PrimitiveErrorReason};
 
 #[test]
 fn mac_operation_matches_root_hmac_and_dispatch_facades() {
@@ -59,9 +58,7 @@ fn mac_operation_reports_stable_failure_reasons_for_malicious_inputs() {
 
     assert_eq!(
         reallyme_crypto::operations::mac::authenticate(MacAlgorithm::HmacSha256, &[], message,),
-        Err(OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     );
 
     let oversized_key = vec![0x22u8; reallyme_crypto::hmac::HMAC_MAX_KEY_LENGTH + 1];
@@ -71,9 +68,7 @@ fn mac_operation_reports_stable_failure_reasons_for_malicious_inputs() {
             &oversized_key,
             message,
         ),
-        Err(OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     );
 
     assert_eq!(
@@ -83,9 +78,7 @@ fn mac_operation_reports_stable_failure_reasons_for_malicious_inputs() {
             message,
             &tag[..31]
         ),
-        Err(OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidLength,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_TAG)
     );
     assert_eq!(
         reallyme_crypto::operations::mac::verify(
@@ -94,9 +87,7 @@ fn mac_operation_reports_stable_failure_reasons_for_malicious_inputs() {
             message,
             &tampered_tag,
         ),
-        Err(OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed,
-        })
+        Err(CryptoError::PRIMITIVE_VERIFICATION_FAILED)
     );
 }
 
@@ -119,20 +110,12 @@ fn root_facades_preserve_historical_mac_error_shapes() {
             message,
             &tampered_tag,
         ),
-        Err(reallyme_crypto::dispatch::AlgorithmError::Crypto(
-            CryptoError::Mac {
-                kind: MacFailureKind::VerificationFailed,
-                ..
-            }
-        ))
+        Err(CryptoError::PRIMITIVE_VERIFICATION_FAILED)
     ));
 
     let hmac_key = reallyme_crypto::hmac::HmacKey::from_slice(&key).expect("HMAC key is valid");
     assert!(matches!(
         reallyme_crypto::hmac::verify(MacAlgorithm::HmacSha256, &hmac_key, message, &tag[..31],),
-        Err(CryptoError::Mac {
-            kind: MacFailureKind::InvalidTagLength,
-            ..
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_TAG)
     ));
 }

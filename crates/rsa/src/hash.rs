@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 use sha1::Sha1;
 use sha2::{Digest, Sha256, Sha384, Sha512};
 
@@ -32,51 +32,31 @@ pub(crate) fn mgf1_xor(mask: &mut [u8], hash: RsaHash, seed: &[u8]) -> Result<()
         .checked_add(
             digest_len(hash)
                 .checked_sub(1)
-                .ok_or(CryptoError::Signature {
-                    backend: SignatureBackend::Native,
-                    operation: SignatureOperation::Verify,
-                    kind: SignatureFailureKind::InvalidSignature,
-                })?,
+                .ok_or(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)?,
         )
-        .ok_or(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })?
+        .ok_or(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)?
         / digest_len(hash);
 
-    let max_iterations = usize::try_from(u32::MAX).map_err(|_| CryptoError::Signature {
-        backend: SignatureBackend::Native,
-        operation: SignatureOperation::Verify,
-        kind: SignatureFailureKind::InvalidSignature,
-    })?;
+    let max_iterations = usize::try_from(u32::MAX)
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
 
     if iterations > max_iterations {
-        return Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        });
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE);
     }
 
     let mut offset = 0usize;
     for counter in 0..iterations {
-        let counter_u32 = u32::try_from(counter).map_err(|_| CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })?;
+        let counter_u32 = u32::try_from(counter)
+            .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
         let digest = mgf1_digest(hash, seed, counter_u32);
         for byte in digest {
             if offset >= mask.len() {
                 break;
             }
             mask[offset] ^= byte;
-            offset = offset.checked_add(1).ok_or(CryptoError::Signature {
-                backend: SignatureBackend::Native,
-                operation: SignatureOperation::Verify,
-                kind: SignatureFailureKind::InvalidSignature,
-            })?;
+            offset = offset
+                .checked_add(1)
+                .ok_or(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
         }
     }
 

@@ -21,7 +21,7 @@ impl<'a> HpkePskRef<'a> {
     /// Validates and borrows high-entropy HPKE PSK bytes.
     pub fn new(bytes: &'a [u8]) -> Result<Self, HpkeError> {
         if bytes.len() < HPKE_MIN_PSK_LEN {
-            return Err(HpkeError::InvalidPsk);
+            return Err(HpkeError::PRIMITIVE_INVALID_PARAMETER);
         }
         Ok(Self { bytes })
     }
@@ -44,7 +44,7 @@ impl<'a> HpkePskIdRef<'a> {
     /// Validates and borrows a non-empty HPKE PSK identifier.
     pub fn new(bytes: &'a [u8]) -> Result<Self, HpkeError> {
         if bytes.is_empty() {
-            return Err(HpkeError::InvalidPskIdentifier);
+            return Err(HpkeError::PRIMITIVE_INVALID_PARAMETER);
         }
         Ok(Self { bytes })
     }

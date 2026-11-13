@@ -8,12 +8,12 @@
 #![allow(clippy::expect_used)]
 
 use reallyme_crypto::hpke::{
-    HpkeAeadId, HpkeError, HpkeKdfId, HpkeKemId, HpkeOpenRequest, HpkePskIdRef, HpkePskOpenRequest,
+    HpkeAeadId, HpkeKdfId, HpkeKemId, HpkeOpenRequest, HpkePskIdRef, HpkePskOpenRequest,
     HpkePskReceiverSetupRequest, HpkePskRef, HpkePskSealRequest, HpkePskSenderSetupRequest,
     HpkeReceiverExportRequest, HpkeSealRequest, HpkeSenderExportRequest, HpkeSuite,
     HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM,
 };
-use reallyme_crypto::operations::{OperationError, PrimitiveErrorReason, ProviderErrorReason};
+use reallyme_crypto::operations::OperationError;
 
 const INFO: &[u8] = b"reallyme-hpke-operation-owner-v0.3";
 const AAD: &[u8] = b"authenticated-operation-context";
@@ -133,15 +133,21 @@ fn semantic_owner_preserves_specific_redacted_failure_reasons() {
     let suite = HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM;
     assert_eq!(
         reallyme_crypto::hpke::derive_keypair(suite, &[0_u8; 31]).map(|_| ()),
-        Err(primitive(PrimitiveErrorReason::InvalidLength))
+        Err(primitive(
+            crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH
+        ))
     );
     assert_eq!(
         reallyme_crypto::hpke::derive_keypair_from_ikm(suite, &[]).map(|_| ()),
-        Err(primitive(PrimitiveErrorReason::InvalidLength))
+        Err(primitive(
+            crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH
+        ))
     );
     assert_eq!(
         reallyme_crypto::hpke::derive_keypair_from_ikm(suite, &[0x5a; 31]).map(|_| ()),
-        Err(primitive(PrimitiveErrorReason::InvalidLength))
+        Err(primitive(
+            crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH
+        ))
     );
 
     let key_pair = reallyme_crypto::hpke::derive_keypair(suite, &[0x42; 32])
@@ -155,7 +161,9 @@ fn semantic_owner_preserves_specific_redacted_failure_reasons() {
             plaintext: PLAINTEXT,
         })
         .map(|_| ()),
-        Err(primitive(PrimitiveErrorReason::InvalidPublicKey))
+        Err(primitive(
+            crypto_core::CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY
+        ))
     );
 
     let sealed = reallyme_crypto::hpke::seal_base(&HpkeSealRequest {
@@ -176,7 +184,9 @@ fn semantic_owner_preserves_specific_redacted_failure_reasons() {
             ciphertext: &sealed.ciphertext,
         })
         .map(|_| ()),
-        Err(primitive(PrimitiveErrorReason::InvalidPrivateKey))
+        Err(primitive(
+            crypto_core::CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY
+        ))
     );
     assert_eq!(
         reallyme_crypto::hpke::open_base(&HpkeOpenRequest {
@@ -188,7 +198,9 @@ fn semantic_owner_preserves_specific_redacted_failure_reasons() {
             ciphertext: &sealed.ciphertext,
         })
         .map(|_| ()),
-        Err(primitive(PrimitiveErrorReason::MalformedCiphertext))
+        Err(primitive(
+            crypto_core::CryptoError::PRIMITIVE_MALFORMED_CIPHERTEXT
+        ))
     );
 
     let mut tampered_ciphertext = sealed.ciphertext.clone();
@@ -205,7 +217,9 @@ fn semantic_owner_preserves_specific_redacted_failure_reasons() {
             ciphertext: &tampered_ciphertext,
         })
         .map(|_| ()),
-        Err(primitive(PrimitiveErrorReason::VerificationFailed))
+        Err(primitive(
+            crypto_core::CryptoError::PRIMITIVE_AUTHENTICATION_FAILED
+        ))
     );
 
     assert_eq!(
@@ -219,7 +233,9 @@ fn semantic_owner_preserves_specific_redacted_failure_reasons() {
             psk_id: PSK_ID,
         })
         .map(|_| ()),
-        Err(primitive(PrimitiveErrorReason::InvalidParameter))
+        Err(primitive(
+            crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER
+        ))
     );
     assert_eq!(
         reallyme_crypto::hpke::sender_export(&HpkeSenderExportRequest {
@@ -230,7 +246,9 @@ fn semantic_owner_preserves_specific_redacted_failure_reasons() {
             output_length: 0,
         })
         .map(|_| ()),
-        Err(primitive(PrimitiveErrorReason::InvalidLength))
+        Err(primitive(
+            crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH
+        ))
     );
 }
 
@@ -240,20 +258,24 @@ fn facade_exposes_explicit_raw_and_operation_error_boundaries() {
 
     assert_eq!(
         reallyme_crypto::hpke::derive_keypair_from_ikm_raw(suite, &[]).map(|_| ()),
-        Err(HpkeError::InvalidInputKeyMaterial)
+        Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)
     );
     assert_eq!(
         reallyme_crypto::hpke::derive_keypair_from_ikm_operation(suite, &[]).map(|_| ()),
-        Err(primitive(PrimitiveErrorReason::InvalidLength))
+        Err(primitive(
+            crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH
+        ))
     );
     assert_eq!(
         reallyme_crypto::hpke::derive_keypair_from_ikm_raw(suite, &[0x4d]).map(|_| ()),
-        Err(HpkeError::InvalidInputKeyMaterial)
+        Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)
     );
     assert!(reallyme_crypto::hpke::derive_keypair_from_ikm_raw(suite, &[0x4d; 32]).is_ok());
     assert_eq!(
         reallyme_crypto::hpke::derive_keypair_from_ikm_operation(suite, &[0x4d]).map(|_| ()),
-        Err(primitive(PrimitiveErrorReason::InvalidLength))
+        Err(primitive(
+            crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH
+        ))
     );
 
     let key_pair = reallyme_crypto::hpke::derive_keypair_raw(suite, &[0x61; 32])
@@ -295,9 +317,7 @@ fn registered_unavailable_components_fail_closed_without_fallback() {
     );
     assert_eq!(
         reallyme_crypto::hpke::keygen(unavailable_suite).map(|_| ()),
-        Err(OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        })
+        Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     );
 
     let invalid_combination = HpkeSuite::new(
@@ -316,12 +336,10 @@ fn registered_unavailable_components_fail_closed_without_fallback() {
             plaintext: PLAINTEXT,
         })
         .map(|_| ()),
-        Err(OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        })
+        Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     );
 }
 
-fn primitive(reason: PrimitiveErrorReason) -> OperationError {
-    OperationError::Primitive { reason }
+fn primitive(reason: OperationError) -> OperationError {
+    reason
 }

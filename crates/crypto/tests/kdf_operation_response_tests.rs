@@ -177,6 +177,60 @@ fn operation_response_rejects_excessive_pbkdf2_work_before_derivation() {
 }
 
 #[test]
+fn operation_response_preserves_distinct_password_and_salt_rejections() {
+    let invalid_cases = [
+        (
+            Vec::new(),
+            b"KDF Argon2 salt!".to_vec(),
+            CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PASSWORD,
+        ),
+        (
+            b"KDF password".to_vec(),
+            Vec::new(),
+            CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SALT,
+        ),
+    ];
+    for (password, salt, expected) in invalid_cases {
+        let response = process_response(CryptoOperation::KdfDeriveKey(Box::new(
+            CryptoKdfDeriveKeyRequest {
+                algorithm: MessageField::some(kdf_identifier(
+                    ProtoKdf::KDF_ALGORITHM_PBKDF2_HMAC_SHA256,
+                )),
+                password: password.clone(),
+                salt: salt.clone(),
+                iterations: reallyme_crypto::pbkdf2::PBKDF2_MODERN_MIN_ITERATIONS,
+                output_length: 32,
+                __buffa_unknown_fields: Default::default(),
+            },
+        )));
+        let Some(CryptoOperationOutcome::Error(error)) = response.outcome else {
+            panic!("invalid PBKDF2 inputs did not return an error outcome");
+        };
+        let Some(CryptoErrorBranch::Primitive(error)) = error.error else {
+            panic!("invalid PBKDF2 inputs did not return a primitive error");
+        };
+        assert_eq!(error.reason.as_known(), Some(expected));
+
+        let response = process_response(CryptoOperation::Argon2idDerive(Box::new(
+            CryptoArgon2idDeriveRequest {
+                algorithm: MessageField::some(kdf_identifier(ProtoKdf::KDF_ALGORITHM_ARGON2ID)),
+                kdf_version: EnumValue::from(Argon2idKdfVersion::ARGON2ID_KDF_VERSION_V1),
+                secret: password,
+                salt,
+                __buffa_unknown_fields: Default::default(),
+            },
+        )));
+        let Some(CryptoOperationOutcome::Error(error)) = response.outcome else {
+            panic!("invalid Argon2id inputs did not return an error outcome");
+        };
+        let Some(CryptoErrorBranch::Primitive(error)) = error.error else {
+            panic!("invalid Argon2id inputs did not return a primitive error");
+        };
+        assert_eq!(error.reason.as_known(), Some(expected));
+    }
+}
+
+#[test]
 fn operation_response_preserves_pbkdf2_resource_limit_reason() {
     let response = process_response(CryptoOperation::KdfDeriveKey(Box::new(
         CryptoKdfDeriveKeyRequest {

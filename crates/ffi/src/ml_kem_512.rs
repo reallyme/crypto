@@ -7,7 +7,7 @@ use crate::kem_status::{
     kem_decapsulation_status, kem_encapsulation_status, kem_key_management_status,
 };
 use crate::pointer::{read_slice, validate_disjoint_output_pair, write_fixed};
-use crate::status::{CryptoStatus, CRYPTO_INVALID_KEY, CRYPTO_OK};
+use crate::status::{CryptoStatus, CRYPTO_OK};
 use crypto_core::Algorithm;
 use reallyme_crypto::operations::key_encoding;
 
@@ -117,7 +117,7 @@ pub unsafe extern "C" fn rm_crypto_ml_kem_512_generate_keypair_from_seed(
 /// `ciphertext_out_len` writable bytes (at least 768) and `shared_secret_out`
 /// to at least `shared_secret_out_len` writable bytes (at least 32); both must
 /// be non-null. Returns [`CryptoStatus`] via the return value: [`CRYPTO_OK`]
-/// on success, or [`CRYPTO_INVALID_KEY`] for an invalid public key. The caller
+/// on success, or [`crate::status::CRYPTO_INVALID_KEY`] for an invalid public key. The caller
 /// owns the secret copy in `shared_secret_out` and must zeroize it.
 #[no_mangle]
 pub unsafe extern "C" fn rm_crypto_ml_kem_512_encapsulate(
@@ -253,7 +253,7 @@ pub unsafe extern "C" fn rm_crypto_ml_kem_512_encapsulate_derand(
 /// only when its length is `0`. `shared_secret_out` must be non-null and point
 /// to at least `shared_secret_out_len` writable bytes (at least 32). Returns
 /// [`CryptoStatus`] via the return value: [`CRYPTO_OK`] on success,
-/// [`CRYPTO_INVALID_KEY`] for a bad secret-key length, or
+/// [`crate::status::CRYPTO_INVALID_KEY`] for a bad secret-key length, or
 /// [`crate::status::CRYPTO_INVALID_CIPHERTEXT`] for a bad ciphertext length or
 /// decapsulation error. The caller owns the secret copy in `shared_secret_out`
 /// and must zeroize it.
@@ -304,7 +304,7 @@ pub unsafe extern "C" fn rm_crypto_ml_kem_512_decapsulate(
 /// `public_key` must be valid for `public_key_len` bytes (must be 800; may be
 /// null only when the length is `0`). `out` must be non-null and point to at
 /// least `out_len` writable bytes (at least 800). Returns [`CryptoStatus`]
-/// via the return value: [`CRYPTO_OK`] on success, or [`CRYPTO_INVALID_KEY`]
+/// via the return value: [`CRYPTO_OK`] on success, or [`crate::status::CRYPTO_INVALID_KEY`]
 /// for a bad key length.
 #[no_mangle]
 pub unsafe extern "C" fn rm_crypto_ml_kem_512_encode_public_key(
@@ -324,7 +324,7 @@ pub unsafe extern "C" fn rm_crypto_ml_kem_512_encode_public_key(
             // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
             // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(value) => unsafe { write_fixed(out, out_len, &value) },
-            Err(_) => CRYPTO_INVALID_KEY,
+            Err(error) => crate::error_status::key_management_status(error),
         }
     })
 }
@@ -337,7 +337,7 @@ pub unsafe extern "C" fn rm_crypto_ml_kem_512_encode_public_key(
 /// `public_key` must be valid for `public_key_len` bytes (must be 800; may be
 /// null only when the length is `0`). `out` must be non-null and point to at
 /// least `out_len` writable bytes (at least 800). Returns [`CryptoStatus`]
-/// via the return value: [`CRYPTO_OK`] on success, or [`CRYPTO_INVALID_KEY`]
+/// via the return value: [`CRYPTO_OK`] on success, or [`crate::status::CRYPTO_INVALID_KEY`]
 /// for a bad key length.
 #[no_mangle]
 pub unsafe extern "C" fn rm_crypto_ml_kem_512_decode_public_key(
@@ -357,7 +357,7 @@ pub unsafe extern "C" fn rm_crypto_ml_kem_512_decode_public_key(
             // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
             // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(value) => unsafe { write_fixed(out, out_len, &value) },
-            Err(_) => CRYPTO_INVALID_KEY,
+            Err(error) => crate::error_status::key_management_status(error),
         }
     })
 }

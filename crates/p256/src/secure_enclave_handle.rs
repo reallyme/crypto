@@ -18,7 +18,7 @@ pub fn encode_se_handle(tag: &[u8]) -> Result<Vec<u8>, CryptoError> {
     let capacity = SE_HANDLE_PREFIX
         .len()
         .checked_add(tag.len())
-        .ok_or(CryptoError::InvalidKey)?;
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?;
     let mut out = Vec::with_capacity(capacity);
     out.extend_from_slice(SE_HANDLE_PREFIX);
     out.extend_from_slice(tag);

@@ -26,7 +26,7 @@ mod portable_brainpool;
 mod sign;
 mod verify;
 
-use thiserror::Error;
+use crypto_core::CryptoError;
 
 pub use encode::{der_to_fixed, fixed_to_der};
 pub use key::EcdsaKey;
@@ -93,41 +93,11 @@ pub enum EcdsaEncoding {
     FixedWidth,
 }
 
-/// Deterministic, secret-free ECDSA failures.
-#[derive(Clone, Copy, Debug, Error, Eq, PartialEq)]
-#[non_exhaustive]
-pub enum EcdsaError {
-    /// No reviewed implementation is exposed for this curve.
-    #[error("unsupported ECDSA curve")]
-    UnsupportedCurve,
-    /// The linked native provider is outside the reviewed release policy.
-    #[error("unsupported native ECDSA provider")]
-    UnsupportedProvider,
-    /// Invalid private scalar encoding or range.
-    #[error("invalid ECDSA private key")]
-    InvalidPrivateKey,
-    /// Invalid SEC1 encoding, point at infinity, or off-curve point.
-    #[error("invalid ECDSA public key")]
-    InvalidPublicKey,
-    /// Invalid signature encoding, scalars or mathematical verification.
-    #[error("invalid ECDSA signature")]
-    InvalidSignature,
-    /// Digest length does not match its explicit hash.
-    #[error("invalid ECDSA prehash length")]
-    InvalidPrehashLength,
-    /// Protected storage could not be allocated.
-    #[error("ECDSA allocation failed")]
-    AllocationFailed,
-    /// The entropy provider failed or could not produce a valid scalar.
-    #[error("ECDSA randomness unavailable")]
-    RandomnessUnavailable,
-    /// An opaque provider or signing backend failed.
-    #[error("ECDSA provider failed")]
-    ProviderFailed,
-}
+/// Canonical schema-defined error returned by explicit ECDSA operations.
+pub use crypto_core::CryptoError as EcdsaError;
 
 impl EcdsaCurve {
-    pub(super) fn scalar_len(self) -> Result<usize, EcdsaError> {
+    pub(super) fn scalar_len(self) -> Result<usize, CryptoError> {
         #[cfg(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))]
         if matches!(
             self,
@@ -137,7 +107,7 @@ impl EcdsaCurve {
                 | Self::BrainpoolP512r1
         ) && !crate::native_provider::is_available()
         {
-            return Err(EcdsaError::UnsupportedProvider);
+            return Err(CryptoError::PROVIDER_UNSUPPORTED_BACKEND);
         }
         match self {
             Self::P256 => Ok(constants::P256_SCALAR_LEN),
@@ -167,7 +137,7 @@ impl EcdsaCurve {
                 feature = "brainpool",
                 all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
             )))]
-            _ => Err(EcdsaError::UnsupportedCurve),
+            _ => Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
         }
     }
 }

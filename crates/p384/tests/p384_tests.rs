@@ -6,7 +6,7 @@
 #![allow(clippy::expect_used)]
 #![cfg(feature = "native")]
 
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 use crypto_p384::{
     compress_p384, compress_public_key, decompress_p384, decompress_public_key,
     derive_p384_shared_secret, generate_p384_keypair, generate_p384_keypair_from_secret_key,
@@ -34,7 +34,7 @@ fn secret_key_constructor_is_deterministic_and_rejects_zero() -> Result<(), Cryp
     assert_eq!(secret_a.as_slice(), secret.as_slice());
     assert!(matches!(
         generate_p384_keypair_from_secret_key(&[0u8; 48]),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
 
     let signature = sign_p384_der_prehash(&secret_a, b"seeded p384")?;
@@ -59,11 +59,7 @@ fn verification_fails_on_modified_message() -> Result<(), CryptoError> {
 
     assert!(matches!(
         verify_p384_der_prehash(&signature, b"hell0", &public_key),
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     ));
     Ok(())
 }
@@ -86,25 +82,25 @@ fn compression_helpers_reject_wrong_sec1_shapes() -> Result<(), CryptoError> {
 
     assert!(matches!(
         compress_p384(&compressed),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
     assert!(matches!(
         decompress_p384(&uncompressed),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
 
     let mut wrong_compressed_prefix = compressed;
     wrong_compressed_prefix[0] = 0x04;
     assert!(matches!(
         decompress_p384(&wrong_compressed_prefix),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
 
     let mut wrong_uncompressed_prefix = uncompressed;
     wrong_uncompressed_prefix[0] = 0x02;
     assert!(matches!(
         compress_p384(&wrong_uncompressed_prefix),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
     Ok(())
 }
@@ -163,28 +159,28 @@ fn ecdh_accepts_uncompressed_public_key() -> Result<(), CryptoError> {
 fn invalid_inputs_are_rejected() -> Result<(), CryptoError> {
     assert!(matches!(
         sign_p384_der_prehash(&[0u8; 10], b"message"),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
     assert!(matches!(
         verify_p384_der_prehash(&[0x30, 0x00], b"message", &[0x04; 10]),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
     assert!(matches!(
         compress_p384(&[0x04; 10]),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
     assert!(matches!(
         decompress_p384(&[0x02; 10]),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
     let (public, secret) = generate_p384_keypair()?;
     assert!(matches!(
         derive_p384_shared_secret(&[0u8; 10], &public),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
     assert!(matches!(
         derive_p384_shared_secret(&secret, &[0x02; 10]),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
     Ok(())
 }
@@ -198,11 +194,7 @@ fn signature_does_not_verify_under_different_key() -> Result<(), CryptoError> {
 
     assert!(matches!(
         verify_p384_der_prehash(&signature, message, &public_key_2),
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     ));
     Ok(())
 }
@@ -215,11 +207,7 @@ fn verification_fails_on_modified_signature() -> Result<(), CryptoError> {
     signature[0] ^= 0x01;
     assert!(matches!(
         verify_p384_der_prehash(&signature, message, &public_key),
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     ));
     Ok(())
 }

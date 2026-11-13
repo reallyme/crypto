@@ -4,9 +4,7 @@
 
 //! Root dispatch facade.
 
-use crypto_core::{
-    AeadAlgorithm, CryptoError, HashAlgorithm, MacAlgorithm, MacFailureKind, MacHash,
-};
+use crypto_core::{AeadAlgorithm, HashAlgorithm, MacAlgorithm};
 use zeroize::Zeroizing;
 
 pub use crypto_dispatch::{
@@ -41,12 +39,7 @@ pub struct MacParams<'a> {
 
 /// Compute a digest through the operation-layer semantic owner.
 pub fn hash_digest(algorithm: HashAlgorithm, message: &[u8]) -> Result<Vec<u8>, AlgorithmError> {
-    crate::operations::hash::digest(algorithm, message).map_err(|error| match error {
-        crate::operations::OperationError::Provider {
-            reason: crate::operations::ProviderErrorReason::UnsupportedAlgorithm,
-        } => AlgorithmError::UnsupportedHashAlgorithm(algorithm),
-        _ => AlgorithmError::Crypto(CryptoError::Unsupported),
-    })
+    crate::operations::hash::digest(algorithm, message)
 }
 
 /// Encrypts with an AEAD through the operation-layer semantic owner.
@@ -94,21 +87,14 @@ pub fn aead_decrypt(
 }
 
 fn aead_algorithm_error_from_operation_error(
-    algorithm: AeadAlgorithm,
-    operation: crate::aead_error::AeadOperation,
+    _algorithm: AeadAlgorithm,
+    _operation: crate::aead_error::AeadOperation,
     error: crate::operations::OperationError,
-    key_len: usize,
-    nonce_len: usize,
-    input_len: usize,
+    _key_len: usize,
+    _nonce_len: usize,
+    _input_len: usize,
 ) -> AlgorithmError {
-    match error {
-        crate::operations::OperationError::Provider {
-            reason: crate::operations::ProviderErrorReason::UnsupportedAlgorithm,
-        } => AlgorithmError::UnsupportedAeadAlgorithm(algorithm),
-        _ => AlgorithmError::Crypto(crate::aead_error::crypto_error_from_operation_error(
-            algorithm, operation, error, key_len, nonce_len, input_len,
-        )),
-    }
+    error
 }
 
 /// Computes a MAC tag through the operation-layer semantic owner.
@@ -133,35 +119,8 @@ pub fn mac_verify(
 }
 
 fn mac_algorithm_error_from_operation_error(
-    algorithm: MacAlgorithm,
+    _algorithm: MacAlgorithm,
     error: crate::operations::OperationError,
 ) -> AlgorithmError {
-    let kind = match error {
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::InvalidKey,
-        } => MacFailureKind::InvalidKeyLength,
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::InvalidLength,
-        } => MacFailureKind::InvalidTagLength,
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::VerificationFailed,
-        } => MacFailureKind::VerificationFailed,
-        crate::operations::OperationError::Provider {
-            reason: crate::operations::ProviderErrorReason::UnsupportedAlgorithm,
-        } => return AlgorithmError::UnsupportedMacAlgorithm(algorithm),
-        _ => MacFailureKind::BackendFailure,
-    };
-
-    AlgorithmError::Crypto(CryptoError::Mac {
-        hash: mac_hash(algorithm),
-        kind,
-    })
-}
-
-fn mac_hash(algorithm: MacAlgorithm) -> MacHash {
-    match algorithm {
-        MacAlgorithm::HmacSha256 => MacHash::Sha2_256,
-        MacAlgorithm::HmacSha384 => MacHash::Sha2_384,
-        MacAlgorithm::HmacSha512 => MacHash::Sha2_512,
-    }
+    error
 }

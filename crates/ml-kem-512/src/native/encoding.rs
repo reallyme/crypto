@@ -9,11 +9,11 @@ use ml_kem::ml_kem_512::EncapsulationKey;
 pub const ML_KEM_512_PUBLIC_KEY_LEN: usize = 800;
 
 /// Validate that `pubkey` is a well-formed ML-KEM-512 encapsulation key,
-/// returning it unchanged or [`CryptoError::InvalidKey`] otherwise.
+/// returning it unchanged or [`CryptoError::PRIMITIVE_INVALID_KEY`] otherwise.
 pub fn assert_ml_kem_512_public_key(pubkey: &[u8]) -> Result<&[u8], CryptoError> {
-    let public_key =
-        ml_kem::Key::<EncapsulationKey>::try_from(pubkey).map_err(|_| CryptoError::InvalidKey)?;
-    EncapsulationKey::new(&public_key).map_err(|_| CryptoError::InvalidKey)?;
+    let public_key = ml_kem::Key::<EncapsulationKey>::try_from(pubkey)
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    EncapsulationKey::new(&public_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     Ok(pubkey)
 }
 

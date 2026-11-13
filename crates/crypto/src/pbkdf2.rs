@@ -5,7 +5,7 @@
 //! PBKDF2 facade routes backed by the semantic KDF operation owner.
 
 #[cfg(any(feature = "native", feature = "wasm"))]
-use crypto_core::{CryptoError, KdfAlgorithm, KdfFailureKind, KdfProfile};
+use crypto_core::CryptoError;
 
 pub use crypto_pbkdf2::{
     Pbkdf2Iterations, Pbkdf2Output, Pbkdf2Password, Pbkdf2Prf, Pbkdf2Salt, PBKDF2_MAX_ITERATIONS,
@@ -26,39 +26,8 @@ pub fn derive_key(request: &Pbkdf2Request<'_>) -> Result<Pbkdf2Output, CryptoErr
 
 #[cfg(any(feature = "native", feature = "wasm"))]
 fn crypto_error_from_operation_error(
-    prf: Pbkdf2Prf,
+    _prf: Pbkdf2Prf,
     error: crate::operations::OperationError,
 ) -> CryptoError {
-    let kind = match error {
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::InvalidKey,
-        } => KdfFailureKind::InvalidSecretLength,
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::InvalidLength,
-        } => KdfFailureKind::InvalidOutputLength,
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::LengthOverflow,
-        } => KdfFailureKind::InvalidOutputLength,
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::ResourceLimitExceeded,
-        } => KdfFailureKind::ResourceLimitExceeded,
-        crate::operations::OperationError::Provider {
-            reason: crate::operations::ProviderErrorReason::UnsupportedAlgorithm,
-        } => return CryptoError::Unsupported,
-        _ => KdfFailureKind::DerivationFailed,
-    };
-
-    CryptoError::Kdf {
-        algorithm: KdfAlgorithm::Pbkdf2,
-        profile: pbkdf2_profile(prf),
-        kind,
-    }
-}
-
-#[cfg(any(feature = "native", feature = "wasm"))]
-fn pbkdf2_profile(prf: Pbkdf2Prf) -> KdfProfile {
-    match prf {
-        Pbkdf2Prf::HmacSha256 => KdfProfile::Pbkdf2HmacSha256,
-        Pbkdf2Prf::HmacSha512 => KdfProfile::Pbkdf2HmacSha512,
-    }
+    error
 }

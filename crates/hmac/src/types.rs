@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, MacAlgorithm, MacFailureKind, MacHash};
+use crypto_core::{CryptoError, MacAlgorithm};
 use subtle::ConstantTimeEq;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
@@ -36,10 +36,7 @@ impl HmacKey {
     /// FFI and platform boundaries.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.is_empty() || input.len() > HMAC_MAX_KEY_LENGTH {
-            return Err(CryptoError::Mac {
-                hash: MacHash::Sha2_256,
-                kind: MacFailureKind::InvalidKeyLength,
-            });
+            return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_KEY);
         }
 
         Ok(Self {
@@ -76,10 +73,7 @@ impl HmacTag {
     pub fn from_slice(algorithm: MacAlgorithm, input: &[u8]) -> Result<Self, CryptoError> {
         let expected = tag_length(algorithm);
         if input.len() != expected {
-            return Err(CryptoError::Mac {
-                hash: mac_hash(algorithm),
-                kind: MacFailureKind::InvalidTagLength,
-            });
+            return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_TAG);
         }
 
         let mut bytes = [0u8; HMAC_SHA512_TAG_LENGTH];
@@ -122,13 +116,5 @@ pub(crate) fn tag_length(algorithm: MacAlgorithm) -> usize {
         MacAlgorithm::HmacSha256 => HMAC_SHA256_TAG_LENGTH,
         MacAlgorithm::HmacSha384 => HMAC_SHA384_TAG_LENGTH,
         MacAlgorithm::HmacSha512 => HMAC_SHA512_TAG_LENGTH,
-    }
-}
-
-pub(crate) fn mac_hash(algorithm: MacAlgorithm) -> MacHash {
-    match algorithm {
-        MacAlgorithm::HmacSha256 => MacHash::Sha2_256,
-        MacAlgorithm::HmacSha384 => MacHash::Sha2_384,
-        MacAlgorithm::HmacSha512 => MacHash::Sha2_512,
     }
 }

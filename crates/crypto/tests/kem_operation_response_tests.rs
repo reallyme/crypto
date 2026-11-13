@@ -29,7 +29,6 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoOperationRequest, CryptoOperationResponse, KemAlgorithm,
 };
 use crypto_proto::operation_response_wire::decode_operation_response;
-use reallyme_crypto::operations::{OperationError, ProviderErrorReason};
 use serde::Deserialize;
 #[cfg(feature = "test-vectors")]
 use zeroize::Zeroizing;
@@ -250,9 +249,7 @@ fn generated_response_returns_stable_typed_kem_failures() {
 
     assert_eq!(
         reallyme_crypto::operations::kem::generate_key_pair(Algorithm::Ed25519).err(),
-        Some(OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        })
+        Some(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     );
 }
 
@@ -263,18 +260,18 @@ fn facade_derive_key_pair(
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
     match algorithm {
         Algorithm::MlKem512 => reallyme_crypto::ml_kem_512::generate_ml_kem_512_keypair_from_seed(
-            <&[u8; 64]>::try_from(seed).map_err(|_| CryptoError::InvalidKey)?,
+            <&[u8; 64]>::try_from(seed).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?,
         ),
         Algorithm::MlKem768 => reallyme_crypto::ml_kem_768::generate_ml_kem_768_keypair_from_seed(
-            <&[u8; 64]>::try_from(seed).map_err(|_| CryptoError::InvalidKey)?,
+            <&[u8; 64]>::try_from(seed).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?,
         ),
         Algorithm::MlKem1024 => {
             reallyme_crypto::ml_kem_1024::generate_ml_kem_1024_keypair_from_seed(
-                <&[u8; 64]>::try_from(seed).map_err(|_| CryptoError::InvalidKey)?,
+                <&[u8; 64]>::try_from(seed).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?,
             )
         }
         Algorithm::XWing768 => reallyme_crypto::x_wing::generate_x_wing_768_keypair_derand(seed),
-        _ => Err(CryptoError::Unsupported),
+        _ => Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
     }
 }
 
@@ -297,7 +294,7 @@ fn facade_encapsulate_derand(
         Algorithm::XWing768 => {
             reallyme_crypto::x_wing::x_wing_768_encapsulate_derand(public_key, randomness)
         }
-        _ => Err(CryptoError::Unsupported),
+        _ => Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
     }
 }
 
@@ -318,7 +315,7 @@ fn facade_decapsulate(
             reallyme_crypto::ml_kem_1024::ml_kem_1024_decapsulate(ciphertext, seed)
         }
         Algorithm::XWing768 => reallyme_crypto::x_wing::x_wing_768_decapsulate(ciphertext, seed),
-        _ => Err(CryptoError::Unsupported),
+        _ => Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
     }
 }
 

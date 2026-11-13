@@ -4,12 +4,12 @@
 
 //! Total identity conversion, including unknown generated enum values.
 
-use crypto_core::{
+use crate::{
     AeadAlgorithm as CoreAead, Algorithm as CoreKey, HashAlgorithm as CoreHash,
     KeyWrapAlgorithm as CoreKeyWrap, MacAlgorithm as CoreMac,
 };
 
-use crate::generated::proto::reallyme::crypto::v1::{
+use crypto_proto::generated::proto::reallyme::crypto::v1::{
     __buffa::oneof::crypto_algorithm_identifier::Algorithm as Identity, AeadAlgorithm,
     CryptoAlgorithmIdentifier, CryptoKeyAlgorithmIdentifier, HashAlgorithm, KemAlgorithm,
     KeyAgreementAlgorithm, KeyAlgorithm, KeyWrapAlgorithm, MacAlgorithm, SignatureAlgorithm,
@@ -259,7 +259,6 @@ impl TryFrom<CoreKeyWrap> for KeyWrapAlgorithm {
             CoreKeyWrap::Aes128Kw => Ok(Self::KEY_WRAP_ALGORITHM_AES_128_KW),
             CoreKeyWrap::Aes192Kw => Ok(Self::KEY_WRAP_ALGORITHM_AES_192_KW),
             CoreKeyWrap::Aes256Kw => Ok(Self::KEY_WRAP_ALGORITHM_AES_256_KW),
-            _ => Err(UnsupportedProtoAlgorithm),
         }
     }
 }

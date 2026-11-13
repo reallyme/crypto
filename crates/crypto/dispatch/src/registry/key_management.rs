@@ -37,7 +37,7 @@ pub fn generate_keypair(alg: Algorithm) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>),
             }
             #[cfg(not(feature = "ed25519"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P256 => {
@@ -47,7 +47,7 @@ pub fn generate_keypair(alg: Algorithm) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>),
             }
             #[cfg(not(feature = "p256"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P384 => {
@@ -57,7 +57,7 @@ pub fn generate_keypair(alg: Algorithm) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>),
             }
             #[cfg(not(feature = "p384"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P521 => {
@@ -67,7 +67,7 @@ pub fn generate_keypair(alg: Algorithm) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>),
             }
             #[cfg(not(feature = "p521"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::Secp256k1 => {
@@ -77,7 +77,7 @@ pub fn generate_keypair(alg: Algorithm) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>),
             }
             #[cfg(not(feature = "secp256k1"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlDsa44 => {
@@ -87,7 +87,7 @@ pub fn generate_keypair(alg: Algorithm) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>),
             }
             #[cfg(not(feature = "ml-dsa-44"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlDsa65 => {
@@ -97,7 +97,7 @@ pub fn generate_keypair(alg: Algorithm) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>),
             }
             #[cfg(not(feature = "ml-dsa-65"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlDsa87 => {
@@ -107,10 +107,10 @@ pub fn generate_keypair(alg: Algorithm) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>),
             }
             #[cfg(not(feature = "ml-dsa-87"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
-        Algorithm::SlhDsaSha2_128s => Err(AlgorithmError::UnsupportedAlgorithm(alg)),
+        Algorithm::SlhDsaSha2_128s => Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM),
         Algorithm::X25519 => {
             #[cfg(feature = "x25519")]
             {
@@ -118,7 +118,7 @@ pub fn generate_keypair(alg: Algorithm) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>),
             }
             #[cfg(not(feature = "x25519"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlKem512 => {
@@ -128,7 +128,7 @@ pub fn generate_keypair(alg: Algorithm) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>),
             }
             #[cfg(not(feature = "ml-kem-512"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlKem768 => {
@@ -138,7 +138,7 @@ pub fn generate_keypair(alg: Algorithm) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>),
             }
             #[cfg(not(feature = "ml-kem-768"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlKem1024 => {
@@ -148,7 +148,7 @@ pub fn generate_keypair(alg: Algorithm) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>),
             }
             #[cfg(not(feature = "ml-kem-1024"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::XWing768 => {
@@ -158,7 +158,7 @@ pub fn generate_keypair(alg: Algorithm) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>),
             }
             #[cfg(not(feature = "x-wing"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
     }
@@ -185,7 +185,7 @@ pub fn derive_keypair(
             #[cfg(not(feature = "ed25519"))]
             {
                 let _ = secret;
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P256 => {
@@ -196,7 +196,7 @@ pub fn derive_keypair(
             #[cfg(not(feature = "p256"))]
             {
                 let _ = secret;
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P384 => {
@@ -207,7 +207,7 @@ pub fn derive_keypair(
             #[cfg(not(feature = "p384"))]
             {
                 let _ = secret;
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P521 => {
@@ -218,7 +218,7 @@ pub fn derive_keypair(
             #[cfg(not(feature = "p521"))]
             {
                 let _ = secret;
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::Secp256k1 => {
@@ -229,7 +229,7 @@ pub fn derive_keypair(
             #[cfg(not(feature = "secp256k1"))]
             {
                 let _ = secret;
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlDsa44 => {
@@ -240,7 +240,7 @@ pub fn derive_keypair(
             #[cfg(not(feature = "ml-dsa-44"))]
             {
                 let _ = secret;
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlDsa65 => {
@@ -251,7 +251,7 @@ pub fn derive_keypair(
             #[cfg(not(feature = "ml-dsa-65"))]
             {
                 let _ = secret;
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlDsa87 => {
@@ -262,12 +262,12 @@ pub fn derive_keypair(
             #[cfg(not(feature = "ml-dsa-87"))]
             {
                 let _ = secret;
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::SlhDsaSha2_128s => {
             let _ = secret;
-            Err(AlgorithmError::UnsupportedAlgorithm(alg))
+            Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
         }
         Algorithm::X25519 => {
             #[cfg(feature = "x25519")]
@@ -277,7 +277,7 @@ pub fn derive_keypair(
             #[cfg(not(feature = "x25519"))]
             {
                 let _ = secret;
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlKem512 => {
@@ -288,7 +288,7 @@ pub fn derive_keypair(
             #[cfg(not(feature = "ml-kem-512"))]
             {
                 let _ = secret;
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlKem768 => {
@@ -299,7 +299,7 @@ pub fn derive_keypair(
             #[cfg(not(feature = "ml-kem-768"))]
             {
                 let _ = secret;
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlKem1024 => {
@@ -310,7 +310,7 @@ pub fn derive_keypair(
             #[cfg(not(feature = "ml-kem-1024"))]
             {
                 let _ = secret;
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::XWing768 => {
@@ -321,7 +321,7 @@ pub fn derive_keypair(
             #[cfg(not(feature = "x-wing"))]
             {
                 let _ = secret;
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
     }

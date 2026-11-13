@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-proto"
-version = "0.3.17"
+version = "0.4.0"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -15,17 +15,11 @@ include = ["/proto/**/*.proto", "/src/**/*.rs", "/Cargo.toml", "/README.md", "/L
 
 [features]
 default = []
-generated = ["dep:buffa", "buffa/json", "dep:crypto-core", "dep:serde", "dep:serde_json", "dep:subtle", "dep:thiserror", "dep:zeroize"]
-hpke-identities = ["generated", "dep:crypto-hpke"]
+error-types = ["dep:thiserror"]
+generated = ["error-types", "dep:buffa", "buffa/json", "dep:serde", "dep:serde_json", "dep:subtle", "dep:zeroize"]
 
 [dependencies]
 buffa = { workspace = true, optional = true }
-# Enables the `convert` bridge between the generated protobuf algorithm
-# identifiers and the internal `crypto_core` enums.
-crypto-core = { package = "reallyme-crypto-core", version = "=0.3.17", path = "../crypto/core", optional = true }
-# Registry identity conversion needs only the HPKE vocabulary. Backend and KEM
-# implementations remain selected by the consumer's existing narrow features.
-crypto-hpke = { package = "reallyme-crypto-hpke", version = "=0.3.17", path = "../hpke", optional = true, default-features = false }
 serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
 subtle = { workspace = true, optional = true }

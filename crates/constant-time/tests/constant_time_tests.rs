@@ -4,7 +4,7 @@
 
 #![allow(missing_docs)]
 use crypto_constant_time::{ct_eq, ct_eq_fixed, require_ct_eq};
-use crypto_core::{ConstantTimeFailureKind, CryptoError};
+use crypto_core::CryptoError;
 
 #[test]
 fn equal_buffers_return_true() {
@@ -32,28 +32,14 @@ fn fixed_array_comparison_works() {
 fn require_ct_eq_rejects_length_mismatch() {
     let result = require_ct_eq(b"a", b"ab");
 
-    assert_eq!(
-        result,
-        Err(CryptoError::ConstantTimeComparison {
-            kind: ConstantTimeFailureKind::LengthMismatch,
-            left_len: 1,
-            right_len: 2,
-        })
-    );
+    assert_eq!(result, Err(CryptoError::PRIMITIVE_INVALID_LENGTH));
 }
 
 #[test]
 fn require_ct_eq_rejects_non_equal() {
     let result = require_ct_eq(b"abc", b"abd");
 
-    assert_eq!(
-        result,
-        Err(CryptoError::ConstantTimeComparison {
-            kind: ConstantTimeFailureKind::NotEqual,
-            left_len: 3,
-            right_len: 3,
-        })
-    );
+    assert_eq!(result, Err(CryptoError::PRIMITIVE_VERIFICATION_FAILED));
 }
 
 #[test]

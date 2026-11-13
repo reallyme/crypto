@@ -32,7 +32,7 @@ pub fn derive_shared_secret(
             }
             #[cfg(not(feature = "p256"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P384 => {
@@ -42,7 +42,7 @@ pub fn derive_shared_secret(
             }
             #[cfg(not(feature = "p384"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P521 => {
@@ -52,7 +52,7 @@ pub fn derive_shared_secret(
             }
             #[cfg(not(feature = "p521"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::X25519 => {
@@ -62,10 +62,10 @@ pub fn derive_shared_secret(
             }
             #[cfg(not(feature = "x25519"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
-        _ => Err(AlgorithmError::UnsupportedAlgorithm(alg)),
+        _ => Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM),
     }
 }
 
@@ -96,7 +96,7 @@ pub fn kem_encapsulate(
             }
             #[cfg(not(feature = "ml-kem-512"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlKem768 => {
@@ -106,7 +106,7 @@ pub fn kem_encapsulate(
             }
             #[cfg(not(feature = "ml-kem-768"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlKem1024 => {
@@ -116,7 +116,7 @@ pub fn kem_encapsulate(
             }
             #[cfg(not(feature = "ml-kem-1024"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::XWing768 => {
@@ -126,10 +126,10 @@ pub fn kem_encapsulate(
             }
             #[cfg(not(feature = "x-wing"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
-        _ => Err(AlgorithmError::UnsupportedAlgorithm(alg)),
+        _ => Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM),
     }
 }
 
@@ -156,7 +156,7 @@ pub fn kem_decapsulate(
             }
             #[cfg(not(feature = "ml-kem-512"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlKem768 => {
@@ -166,7 +166,7 @@ pub fn kem_decapsulate(
             }
             #[cfg(not(feature = "ml-kem-768"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlKem1024 => {
@@ -176,7 +176,7 @@ pub fn kem_decapsulate(
             }
             #[cfg(not(feature = "ml-kem-1024"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::XWing768 => {
@@ -186,9 +186,9 @@ pub fn kem_decapsulate(
             }
             #[cfg(not(feature = "x-wing"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(alg))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
-        _ => Err(AlgorithmError::UnsupportedAlgorithm(alg)),
+        _ => Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM),
     }
 }

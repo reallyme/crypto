@@ -111,13 +111,7 @@ fn invalid_key_length_is_rejected() {
             Ok(_) => panic!("invalid key length {actual} must fail"),
         };
 
-        match err {
-            CryptoError::InvalidAeadKeyLength { expected, actual } => {
-                assert_eq!(expected, 32);
-                assert_eq!(actual, input.len());
-            }
-            _ => panic!("unexpected error variant for invalid key length"),
-        }
+        assert_eq!(err, CryptoError::PRIMITIVE_INVALID_KEY);
     }
 }
 
@@ -127,26 +121,14 @@ fn invalid_nonce_lengths_are_rejected() {
         let input = vec![0u8; actual];
         let err = ChaCha20Poly1305Nonce::from_slice(&input).expect_err("invalid nonce must fail");
 
-        match err {
-            CryptoError::InvalidAeadNonceLength { expected, actual } => {
-                assert_eq!(expected, 12);
-                assert_eq!(actual, input.len());
-            }
-            _ => panic!("unexpected error variant for invalid nonce length"),
-        }
+        assert_eq!(err, CryptoError::PRIMITIVE_INVALID_NONCE);
     }
 
     for actual in [0usize, 1, 12, 23, 25] {
         let input = vec![0u8; actual];
         let err = XChaCha20Poly1305Nonce::from_slice(&input).expect_err("invalid nonce must fail");
 
-        match err {
-            CryptoError::InvalidAeadNonceLength { expected, actual } => {
-                assert_eq!(expected, 24);
-                assert_eq!(actual, input.len());
-            }
-            _ => panic!("unexpected error variant for invalid nonce length"),
-        }
+        assert_eq!(err, CryptoError::PRIMITIVE_INVALID_NONCE);
     }
 }
 
@@ -156,13 +138,7 @@ fn too_short_ciphertext_is_rejected() {
         let err = CiphertextWithTag::from_vec(vec![0u8; expected_actual])
             .expect_err("ciphertext shorter than tag must fail");
 
-        match err {
-            CryptoError::InvalidCiphertextLength { minimum, actual } => {
-                assert_eq!(minimum, CHACHA20_POLY1305_TAG_LENGTH);
-                assert_eq!(actual, expected_actual);
-            }
-            _ => panic!("unexpected error variant for invalid ciphertext length"),
-        }
+        assert_eq!(err, CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
 }
 
@@ -190,10 +166,7 @@ fn decryption_fails_with_tampered_ciphertext() {
     })
     .expect_err("tampered ciphertext must fail authentication");
 
-    match err {
-        CryptoError::AeadDecrypt { .. } => {}
-        _ => panic!("unexpected error variant for tampered ciphertext"),
-    }
+    assert_eq!(err, CryptoError::PRIMITIVE_AUTHENTICATION_FAILED);
 }
 
 #[test]
@@ -216,8 +189,5 @@ fn decryption_fails_when_aad_does_not_match() {
     })
     .expect_err("AAD mismatch must fail authentication");
 
-    match err {
-        CryptoError::AeadDecrypt { .. } => {}
-        _ => panic!("unexpected error variant for AAD mismatch"),
-    }
+    assert_eq!(err, CryptoError::PRIMITIVE_AUTHENTICATION_FAILED);
 }

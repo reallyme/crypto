@@ -17,6 +17,6 @@ mod verifier;
 
 pub use dispatch_signer::DispatchSigner;
 pub use dispatch_verifier::DispatchVerifier;
-pub use error::{SignerError, SignerFailureKind, VerifierError, VerifierFailureKind};
+pub use error::{SignerError, VerifierError};
 pub use signer::Signer;
 pub use verifier::Verifier;

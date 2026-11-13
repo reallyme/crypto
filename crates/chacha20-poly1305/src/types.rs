@@ -28,10 +28,7 @@ impl ChaCha20Poly1305Key {
     /// exactly [`CHACHA20_POLY1305_KEY_LENGTH`] bytes.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.len() != CHACHA20_POLY1305_KEY_LENGTH {
-            return Err(CryptoError::InvalidAeadKeyLength {
-                expected: CHACHA20_POLY1305_KEY_LENGTH,
-                actual: input.len(),
-            });
+            return Err(CryptoError::PRIMITIVE_INVALID_KEY);
         }
 
         let mut bytes = [0u8; CHACHA20_POLY1305_KEY_LENGTH];
@@ -62,10 +59,7 @@ impl ChaCha20Poly1305Nonce {
     /// is exactly [`CHACHA20_POLY1305_NONCE_LENGTH`] bytes.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.len() != CHACHA20_POLY1305_NONCE_LENGTH {
-            return Err(CryptoError::InvalidAeadNonceLength {
-                expected: CHACHA20_POLY1305_NONCE_LENGTH,
-                actual: input.len(),
-            });
+            return Err(CryptoError::PRIMITIVE_INVALID_NONCE);
         }
 
         let mut bytes = [0u8; CHACHA20_POLY1305_NONCE_LENGTH];
@@ -93,10 +87,7 @@ impl XChaCha20Poly1305Nonce {
     /// the input is exactly [`XCHACHA20_POLY1305_NONCE_LENGTH`] bytes.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.len() != XCHACHA20_POLY1305_NONCE_LENGTH {
-            return Err(CryptoError::InvalidAeadNonceLength {
-                expected: XCHACHA20_POLY1305_NONCE_LENGTH,
-                actual: input.len(),
-            });
+            return Err(CryptoError::PRIMITIVE_INVALID_NONCE);
         }
 
         let mut bytes = [0u8; XCHACHA20_POLY1305_NONCE_LENGTH];
@@ -121,10 +112,7 @@ impl CiphertextWithTag {
     /// at least [`CHACHA20_POLY1305_TAG_LENGTH`] bytes.
     pub fn from_vec(input: Vec<u8>) -> Result<Self, CryptoError> {
         if input.len() < CHACHA20_POLY1305_TAG_LENGTH {
-            return Err(CryptoError::InvalidCiphertextLength {
-                minimum: CHACHA20_POLY1305_TAG_LENGTH,
-                actual: input.len(),
-            });
+            return Err(CryptoError::PRIMITIVE_INVALID_LENGTH);
         }
 
         Ok(Self { bytes: input })

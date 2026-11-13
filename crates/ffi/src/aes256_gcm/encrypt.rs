@@ -4,10 +4,7 @@
 
 use crate::guard::ffi_guard;
 use crate::pointer::{read_slice, validate_output_len_pair, write_fixed, write_len};
-use crate::status::{
-    CryptoStatus, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INTERNAL_ERROR, CRYPTO_INVALID_ARGUMENT,
-    CRYPTO_INVALID_KEY, CRYPTO_OK,
-};
+use crate::status::{CryptoStatus, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INVALID_ARGUMENT, CRYPTO_OK};
 use crypto_core::AeadAlgorithm;
 use reallyme_crypto::aes::{
     Aes128GcmKey, Aes128GcmNonce, Aes192GcmKey, Aes192GcmNonce, Aes256GcmKey, Aes256GcmNonce,
@@ -52,7 +49,7 @@ pub unsafe extern "C" fn rm_crypto_aes128_gcm_encrypt(
         let key = match unsafe { read_slice(key, key_len) } {
             Ok(value) => match Aes128GcmKey::from_slice(value) {
                 Ok(key) => key,
-                Err(_) => return CRYPTO_INVALID_KEY,
+                Err(error) => return crate::error_status::key_management_status(error),
             },
             Err(status) => return status,
         };
@@ -61,7 +58,7 @@ pub unsafe extern "C" fn rm_crypto_aes128_gcm_encrypt(
         let nonce = match unsafe { read_slice(nonce, nonce_len) } {
             Ok(value) => match Aes128GcmNonce::from_slice(value) {
                 Ok(nonce) => nonce,
-                Err(_) => return CRYPTO_INVALID_ARGUMENT,
+                Err(error) => return crate::error_status::aead_seal_status(error),
             },
             Err(status) => return status,
         };
@@ -94,7 +91,7 @@ pub unsafe extern "C" fn rm_crypto_aes128_gcm_encrypt(
             plaintext,
         ) {
             Ok(value) => value,
-            Err(_) => return CRYPTO_INTERNAL_ERROR,
+            Err(error) => return crate::error_status::aead_seal_status(error),
         };
         // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
         // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
@@ -145,7 +142,7 @@ pub unsafe extern "C" fn rm_crypto_aes192_gcm_encrypt(
         let key = match unsafe { read_slice(key, key_len) } {
             Ok(value) => match Aes192GcmKey::from_slice(value) {
                 Ok(key) => key,
-                Err(_) => return CRYPTO_INVALID_KEY,
+                Err(error) => return crate::error_status::key_management_status(error),
             },
             Err(status) => return status,
         };
@@ -154,7 +151,7 @@ pub unsafe extern "C" fn rm_crypto_aes192_gcm_encrypt(
         let nonce = match unsafe { read_slice(nonce, nonce_len) } {
             Ok(value) => match Aes192GcmNonce::from_slice(value) {
                 Ok(nonce) => nonce,
-                Err(_) => return CRYPTO_INVALID_ARGUMENT,
+                Err(error) => return crate::error_status::aead_seal_status(error),
             },
             Err(status) => return status,
         };
@@ -187,7 +184,7 @@ pub unsafe extern "C" fn rm_crypto_aes192_gcm_encrypt(
             plaintext,
         ) {
             Ok(value) => value,
-            Err(_) => return CRYPTO_INTERNAL_ERROR,
+            Err(error) => return crate::error_status::aead_seal_status(error),
         };
         // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
         // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
@@ -213,7 +210,7 @@ pub unsafe extern "C" fn rm_crypto_aes192_gcm_encrypt(
 /// `ciphertext_out` must point to at least `ciphertext_out_len` writable bytes,
 /// which must be at least `plaintext_len + 16`. `ciphertext_len_out` must be a
 /// non-null writable `usize`. Returns [`CryptoStatus`] via the return value:
-/// [`CRYPTO_OK`] on success, [`CRYPTO_INVALID_KEY`]/[`CRYPTO_INVALID_ARGUMENT`]
+/// [`CRYPTO_OK`] on success, [`crate::status::CRYPTO_INVALID_KEY`]/[`CRYPTO_INVALID_ARGUMENT`]
 /// for bad key/nonce, or [`CRYPTO_BUFFER_TOO_SMALL`].
 #[no_mangle]
 pub unsafe extern "C" fn rm_crypto_aes256_gcm_encrypt(
@@ -240,7 +237,7 @@ pub unsafe extern "C" fn rm_crypto_aes256_gcm_encrypt(
         let key = match unsafe { read_slice(key, key_len) } {
             Ok(value) => match Aes256GcmKey::from_slice(value) {
                 Ok(key) => key,
-                Err(_) => return CRYPTO_INVALID_KEY,
+                Err(error) => return crate::error_status::key_management_status(error),
             },
             Err(status) => return status,
         };
@@ -249,7 +246,7 @@ pub unsafe extern "C" fn rm_crypto_aes256_gcm_encrypt(
         let nonce = match unsafe { read_slice(nonce, nonce_len) } {
             Ok(value) => match Aes256GcmNonce::from_slice(value) {
                 Ok(nonce) => nonce,
-                Err(_) => return CRYPTO_INVALID_ARGUMENT,
+                Err(error) => return crate::error_status::aead_seal_status(error),
             },
             Err(status) => return status,
         };
@@ -282,7 +279,7 @@ pub unsafe extern "C" fn rm_crypto_aes256_gcm_encrypt(
             plaintext,
         ) {
             Ok(value) => value,
-            Err(_) => return CRYPTO_INTERNAL_ERROR,
+            Err(error) => return crate::error_status::aead_seal_status(error),
         };
         // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
         // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.

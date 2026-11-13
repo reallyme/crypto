@@ -5,8 +5,8 @@
 use crate::guard::ffi_guard;
 use crate::pointer::{read_slice, validate_output_len_pair, write_fixed, write_len};
 use crate::status::{
-    CryptoStatus, CRYPTO_AUTHENTICATION_FAILED, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INTERNAL_ERROR,
-    CRYPTO_INVALID_ARGUMENT, CRYPTO_INVALID_CIPHERTEXT, CRYPTO_INVALID_KEY, CRYPTO_OK,
+    CryptoStatus, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INVALID_ARGUMENT, CRYPTO_INVALID_CIPHERTEXT,
+    CRYPTO_OK,
 };
 use crypto_core::AeadAlgorithm;
 use reallyme_crypto::aes_gcm_siv::{
@@ -33,7 +33,7 @@ pub const AES256_GCM_SIV_TAG_LEN: usize = AES_256_GCM_SIV_TAG_LENGTH;
 /// `ciphertext_out` must point to at least `ciphertext_out_len` writable bytes,
 /// which must be at least `plaintext_len + 16`. `ciphertext_len_out` must be a
 /// non-null writable `usize`. Returns [`CryptoStatus`] via the return value:
-/// [`CRYPTO_OK`] on success, [`CRYPTO_INVALID_KEY`]/[`CRYPTO_INVALID_ARGUMENT`]
+/// [`CRYPTO_OK`] on success, [`crate::status::CRYPTO_INVALID_KEY`]/[`CRYPTO_INVALID_ARGUMENT`]
 /// for bad key/nonce, or [`CRYPTO_BUFFER_TOO_SMALL`].
 #[no_mangle]
 pub unsafe extern "C" fn rm_crypto_aes256_gcm_siv_encrypt(
@@ -60,7 +60,7 @@ pub unsafe extern "C" fn rm_crypto_aes256_gcm_siv_encrypt(
         let key = match unsafe { read_slice(key, key_len) } {
             Ok(value) => match Aes256GcmSivKey::from_slice(value) {
                 Ok(key) => key,
-                Err(_) => return CRYPTO_INVALID_KEY,
+                Err(error) => return crate::error_status::key_management_status(error),
             },
             Err(status) => return status,
         };
@@ -69,7 +69,7 @@ pub unsafe extern "C" fn rm_crypto_aes256_gcm_siv_encrypt(
         let nonce = match unsafe { read_slice(nonce, nonce_len) } {
             Ok(value) => match Aes256GcmSivNonce::from_slice(value) {
                 Ok(nonce) => nonce,
-                Err(_) => return CRYPTO_INVALID_ARGUMENT,
+                Err(error) => return crate::error_status::aead_seal_status(error),
             },
             Err(status) => return status,
         };
@@ -102,7 +102,7 @@ pub unsafe extern "C" fn rm_crypto_aes256_gcm_siv_encrypt(
             plaintext,
         ) {
             Ok(value) => value,
-            Err(_) => return CRYPTO_INTERNAL_ERROR,
+            Err(error) => return crate::error_status::aead_seal_status(error),
         };
         // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
         // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
@@ -130,7 +130,7 @@ pub unsafe extern "C" fn rm_crypto_aes256_gcm_siv_encrypt(
 /// `plaintext_len_out` must be a non-null writable `usize`. Returns
 /// [`CryptoStatus`] via the return value: [`CRYPTO_OK`] on success,
 /// [`CRYPTO_INVALID_CIPHERTEXT`] for a malformed ciphertext,
-/// [`CRYPTO_BUFFER_TOO_SMALL`], or [`CRYPTO_AUTHENTICATION_FAILED`] if tag
+/// [`CRYPTO_BUFFER_TOO_SMALL`], or [`crate::status::CRYPTO_AUTHENTICATION_FAILED`] if tag
 /// verification fails.
 #[no_mangle]
 pub unsafe extern "C" fn rm_crypto_aes256_gcm_siv_decrypt(
@@ -157,7 +157,7 @@ pub unsafe extern "C" fn rm_crypto_aes256_gcm_siv_decrypt(
         let key = match unsafe { read_slice(key, key_len) } {
             Ok(value) => match Aes256GcmSivKey::from_slice(value) {
                 Ok(key) => key,
-                Err(_) => return CRYPTO_INVALID_KEY,
+                Err(error) => return crate::error_status::key_management_status(error),
             },
             Err(status) => return status,
         };
@@ -166,7 +166,7 @@ pub unsafe extern "C" fn rm_crypto_aes256_gcm_siv_decrypt(
         let nonce = match unsafe { read_slice(nonce, nonce_len) } {
             Ok(value) => match Aes256GcmSivNonce::from_slice(value) {
                 Ok(nonce) => nonce,
-                Err(_) => return CRYPTO_INVALID_ARGUMENT,
+                Err(error) => return crate::error_status::aead_seal_status(error),
             },
             Err(status) => return status,
         };
@@ -200,7 +200,7 @@ pub unsafe extern "C" fn rm_crypto_aes256_gcm_siv_decrypt(
             ciphertext_bytes,
         ) {
             Ok(value) => value,
-            Err(_) => return CRYPTO_AUTHENTICATION_FAILED,
+            Err(error) => return crate::error_status::aead_open_status(error),
         };
         // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
         // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.

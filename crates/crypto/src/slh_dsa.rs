@@ -42,7 +42,7 @@ pub fn derive_slh_dsa_sha2_128s_keypair(
         || sk_prf.len() != SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN
         || pk_seed.len() != SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN
     {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
     let seed_material_capacity = SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN
         .checked_mul(SLH_DSA_KEYGEN_SEED_PART_COUNT)
