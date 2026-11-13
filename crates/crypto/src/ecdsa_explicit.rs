@@ -15,6 +15,8 @@ mod brainpool;
 mod constants;
 mod digest;
 mod encode;
+#[cfg(feature = "operation-response")]
+mod identity;
 mod key;
 #[cfg(all(
     feature = "brainpool",

@@ -1448,6 +1448,7 @@ version = "0.3.17"
 dependencies = [
  "argon2",
  "reallyme-crypto-core",
+ "reallyme-crypto-proto",
  "zeroize",
 ]
 
@@ -1537,6 +1538,7 @@ dependencies = [
  "hkdf",
  "hybrid-array",
  "reallyme-crypto-core",
+ "reallyme-crypto-proto",
  "sha2",
  "sha3 0.12.0",
  "zeroize",
@@ -1710,6 +1712,7 @@ version = "0.3.17"
 dependencies = [
  "pbkdf2",
  "reallyme-crypto-core",
+ "reallyme-crypto-proto",
  "sha2",
  "zeroize",
 ]
@@ -1731,6 +1734,7 @@ version = "0.3.17"
 dependencies = [
  "buffa",
  "reallyme-crypto-core",
+ "reallyme-crypto-hpke",
  "serde",
  "serde_json",
  "subtle",
@@ -1745,6 +1749,7 @@ dependencies = [
  "const-oid",
  "crypto-bigint",
  "reallyme-crypto-core",
+ "reallyme-crypto-proto",
  "secrecy",
  "sha1",
  "sha2",

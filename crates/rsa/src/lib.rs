@@ -7,6 +7,8 @@
 #![forbid(unsafe_code)]
 
 mod constants;
+#[cfg(feature = "proto")]
+mod convert_proto_identity;
 mod hash;
 mod key;
 mod pss;

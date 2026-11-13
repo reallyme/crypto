@@ -15,6 +15,8 @@ mod ec;
 mod element;
 mod error;
 mod field;
+#[cfg(feature = "operation-response")]
+mod identity;
 mod map;
 mod parameters;
 mod scalar;

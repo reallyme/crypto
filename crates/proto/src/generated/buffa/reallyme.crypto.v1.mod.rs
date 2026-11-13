@@ -39,7 +39,17 @@ pub mod __buffa {
         reg.register_json_any(super::__CRYPTO_OPERATION_REQUEST_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_OPERATION_RESPONSE_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_OPERATION_RESULT_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_KEY_ALGORITHM_IDENTIFIER_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_ECDSA_CURVE_IDENTIFIER_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_PRIME_GROUP_IDENTIFIER_JSON_ANY);
         reg.register_json_any(super::__HPKE_SUITE_IDENTIFIER_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HKDF_SUITE_IDENTIFIER_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_PBKDF2PRF_IDENTIFIER_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_ARGON2ID_PROFILE_IDENTIFIER_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_RSA_HASH_IDENTIFIER_JSON_ANY);
+        reg.register_json_any(
+            super::__CRYPTO_RSA_PUBLIC_KEY_DER_ENCODING_IDENTIFIER_JSON_ANY,
+        );
         reg.register_json_any(super::__CRYPTO_ALGORITHM_IDENTIFIER_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_HASH_REQUEST_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_HASH_RESULT_JSON_ANY);
@@ -172,9 +182,41 @@ pub use self::__buffa::view::CryptoOperationResultView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoOperationResultOwnedView;
 #[doc(inline)]
+pub use self::__buffa::view::CryptoKeyAlgorithmIdentifierView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoKeyAlgorithmIdentifierOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoEcdsaCurveIdentifierView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoEcdsaCurveIdentifierOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoPrimeGroupIdentifierView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoPrimeGroupIdentifierOwnedView;
+#[doc(inline)]
 pub use self::__buffa::view::HpkeSuiteIdentifierView;
 #[doc(inline)]
 pub use self::__buffa::view::HpkeSuiteIdentifierOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHkdfSuiteIdentifierView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHkdfSuiteIdentifierOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoPbkdf2PrfIdentifierView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoPbkdf2PrfIdentifierOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoArgon2idProfileIdentifierView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoArgon2idProfileIdentifierOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRsaHashIdentifierView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRsaHashIdentifierOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRsaPublicKeyDerEncodingIdentifierView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRsaPublicKeyDerEncodingIdentifierOwnedView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoAlgorithmIdentifierView;
 #[doc(inline)]

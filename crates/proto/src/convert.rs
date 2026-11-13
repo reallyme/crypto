@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! Bridge between the generated protobuf algorithm identifiers and the
-//! internal [`crypto_core`] enums.
+//! Compatibility bridges to the canonical schema-defined identities.
 //!
 //! The protobuf enums are the cross-language contract (Rust, TypeScript,
 //! Swift, Kotlin all import them); [`crypto_core::Algorithm`] and its
@@ -26,11 +25,15 @@
 //! type such as P-256 maps into *both* the signature and key-agreement
 //! protobuf enums.
 
+#[cfg(feature = "hpke-identities")]
+mod hpke;
+mod identity;
+
 use crypto_core::{AeadAlgorithm as CoreAead, Algorithm, HashAlgorithm as CoreHash};
 
 use crate::generated::proto::reallyme::crypto::v1::{
-    AeadAlgorithm as ProtoAead, HashAlgorithm as ProtoHash, KemAlgorithm, KeyAgreementAlgorithm,
-    SignatureAlgorithm,
+    AeadAlgorithm as ProtoAead, CryptoAlgorithmIdentifier, CryptoErrorReason,
+    HashAlgorithm as ProtoHash, KemAlgorithm, KeyAgreementAlgorithm, SignatureAlgorithm,
 };
 
 /// A protobuf algorithm identifier has no corresponding operation-agnostic
@@ -42,6 +45,14 @@ use crate::generated::proto::reallyme::crypto::v1::{
 #[error("protobuf algorithm identifier is not a supported crypto-core algorithm")]
 pub struct UnsupportedProtoAlgorithm;
 
+impl UnsupportedProtoAlgorithm {
+    /// Canonical schema reason for every rejected identity conversion.
+    #[must_use]
+    pub const fn reason(self) -> CryptoErrorReason {
+        CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_ALGORITHM
+    }
+}
+
 // ---------------------------------------------------------------------------
 // protobuf -> internal (fallible: suite identifiers may have no core key type)
 // ---------------------------------------------------------------------------
@@ -50,23 +61,12 @@ impl TryFrom<SignatureAlgorithm> for Algorithm {
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(value: SignatureAlgorithm) -> Result<Self, Self::Error> {
-        match value {
-            SignatureAlgorithm::SIGNATURE_ALGORITHM_ED25519 => Ok(Algorithm::Ed25519),
-            SignatureAlgorithm::SIGNATURE_ALGORITHM_ECDSA_P256_SHA256 => Ok(Algorithm::P256),
-            SignatureAlgorithm::SIGNATURE_ALGORITHM_ECDSA_P384_SHA384 => Ok(Algorithm::P384),
-            SignatureAlgorithm::SIGNATURE_ALGORITHM_ECDSA_P521_SHA512 => Ok(Algorithm::P521),
-            SignatureAlgorithm::SIGNATURE_ALGORITHM_ECDSA_SECP256K1_SHA256 => {
-                Ok(Algorithm::Secp256k1)
-            }
-            SignatureAlgorithm::SIGNATURE_ALGORITHM_ML_DSA_44 => Ok(Algorithm::MlDsa44),
-            SignatureAlgorithm::SIGNATURE_ALGORITHM_ML_DSA_65 => Ok(Algorithm::MlDsa65),
-            SignatureAlgorithm::SIGNATURE_ALGORITHM_ML_DSA_87 => Ok(Algorithm::MlDsa87),
-            SignatureAlgorithm::SIGNATURE_ALGORITHM_SLH_DSA_SHA2_128S => {
-                Ok(Algorithm::SlhDsaSha2_128s)
-            }
-            // Suite-specific algorithms use dedicated operation adapters.
-            _ => Err(UnsupportedProtoAlgorithm),
-        }
+        // Retain the published closed-enum conversion while routing every
+        // identity decision through the total generated-message conversion.
+        Self::try_from(&CryptoAlgorithmIdentifier {
+            algorithm: Some(crate::generated::proto::reallyme::crypto::v1::__buffa::oneof::crypto_algorithm_identifier::Algorithm::Signature(value.into())),
+            __buffa_unknown_fields: Default::default(),
+        })
     }
 }
 
@@ -74,13 +74,12 @@ impl TryFrom<KeyAgreementAlgorithm> for Algorithm {
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(value: KeyAgreementAlgorithm) -> Result<Self, Self::Error> {
-        match value {
-            KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_X25519 => Ok(Algorithm::X25519),
-            KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_P256_ECDH => Ok(Algorithm::P256),
-            KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_P384_ECDH => Ok(Algorithm::P384),
-            KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_P521_ECDH => Ok(Algorithm::P521),
-            _ => Err(UnsupportedProtoAlgorithm),
-        }
+        // Retain the published closed-enum conversion while routing every
+        // identity decision through the total generated-message conversion.
+        Self::try_from(&CryptoAlgorithmIdentifier {
+            algorithm: Some(crate::generated::proto::reallyme::crypto::v1::__buffa::oneof::crypto_algorithm_identifier::Algorithm::KeyAgreement(value.into())),
+            __buffa_unknown_fields: Default::default(),
+        })
     }
 }
 
@@ -88,13 +87,12 @@ impl TryFrom<KemAlgorithm> for Algorithm {
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(value: KemAlgorithm) -> Result<Self, Self::Error> {
-        match value {
-            KemAlgorithm::KEM_ALGORITHM_ML_KEM_512 => Ok(Algorithm::MlKem512),
-            KemAlgorithm::KEM_ALGORITHM_ML_KEM_768 => Ok(Algorithm::MlKem768),
-            KemAlgorithm::KEM_ALGORITHM_ML_KEM_1024 => Ok(Algorithm::MlKem1024),
-            KemAlgorithm::KEM_ALGORITHM_X_WING_768 => Ok(Algorithm::XWing768),
-            _ => Err(UnsupportedProtoAlgorithm),
-        }
+        // Retain the published closed-enum conversion while routing every
+        // identity decision through the total generated-message conversion.
+        Self::try_from(&CryptoAlgorithmIdentifier {
+            algorithm: Some(crate::generated::proto::reallyme::crypto::v1::__buffa::oneof::crypto_algorithm_identifier::Algorithm::Kem(value.into())),
+            __buffa_unknown_fields: Default::default(),
+        })
     }
 }
 
@@ -102,15 +100,12 @@ impl TryFrom<ProtoAead> for CoreAead {
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(value: ProtoAead) -> Result<Self, Self::Error> {
-        match value {
-            ProtoAead::AEAD_ALGORITHM_AES_128_GCM => Ok(CoreAead::Aes128Gcm),
-            ProtoAead::AEAD_ALGORITHM_AES_192_GCM => Ok(CoreAead::Aes192Gcm),
-            ProtoAead::AEAD_ALGORITHM_AES_256_GCM => Ok(CoreAead::Aes256Gcm),
-            ProtoAead::AEAD_ALGORITHM_AES_256_GCM_SIV => Ok(CoreAead::Aes256GcmSiv),
-            ProtoAead::AEAD_ALGORITHM_CHACHA20_POLY1305 => Ok(CoreAead::ChaCha20Poly1305),
-            ProtoAead::AEAD_ALGORITHM_XCHACHA20_POLY1305 => Ok(CoreAead::XChaCha20Poly1305),
-            _ => Err(UnsupportedProtoAlgorithm),
-        }
+        // Retain the published closed-enum conversion while routing every
+        // identity decision through the total generated-message conversion.
+        Self::try_from(&CryptoAlgorithmIdentifier {
+            algorithm: Some(crate::generated::proto::reallyme::crypto::v1::__buffa::oneof::crypto_algorithm_identifier::Algorithm::Aead(value.into())),
+            __buffa_unknown_fields: Default::default(),
+        })
     }
 }
 
@@ -118,16 +113,12 @@ impl TryFrom<ProtoHash> for CoreHash {
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(value: ProtoHash) -> Result<Self, Self::Error> {
-        match value {
-            ProtoHash::HASH_ALGORITHM_SHA2_256 => Ok(CoreHash::Sha2_256),
-            ProtoHash::HASH_ALGORITHM_SHA2_384 => Ok(CoreHash::Sha2_384),
-            ProtoHash::HASH_ALGORITHM_SHA2_512 => Ok(CoreHash::Sha2_512),
-            ProtoHash::HASH_ALGORITHM_SHA3_224 => Ok(CoreHash::Sha3_224),
-            ProtoHash::HASH_ALGORITHM_SHA3_256 => Ok(CoreHash::Sha3_256),
-            ProtoHash::HASH_ALGORITHM_SHA3_384 => Ok(CoreHash::Sha3_384),
-            ProtoHash::HASH_ALGORITHM_SHA3_512 => Ok(CoreHash::Sha3_512),
-            _ => Err(UnsupportedProtoAlgorithm),
-        }
+        // Retain the published closed-enum conversion while routing every
+        // identity decision through the total generated-message conversion.
+        Self::try_from(&CryptoAlgorithmIdentifier {
+            algorithm: Some(crate::generated::proto::reallyme::crypto::v1::__buffa::oneof::crypto_algorithm_identifier::Algorithm::Hash(value.into())),
+            __buffa_unknown_fields: Default::default(),
+        })
     }
 }
 

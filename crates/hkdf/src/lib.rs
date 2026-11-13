@@ -12,6 +12,8 @@
 use getrandom as _;
 use hybrid_array as _;
 
+#[cfg(feature = "proto")]
+mod convert_proto_identity;
 mod derive;
 mod material;
 mod policy;

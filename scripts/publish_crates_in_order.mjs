@@ -257,6 +257,7 @@ function requirePublishOrderBefore(dependencyName, dependentName) {
 }
 
 requirePublishOrderBefore("reallyme-crypto-proto", "reallyme-crypto");
+requirePublishOrderBefore("reallyme-crypto-hpke", "reallyme-crypto-proto");
 
 function unresolvedRegistryPackages(output) {
   const missing = [];

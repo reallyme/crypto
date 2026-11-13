@@ -12,18 +12,14 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 };
 use crypto_proto::wire::CryptoWireError;
 
-use super::identifier::algorithm_branch;
+use super::identifier::{algorithm_branch, native_identity};
 use super::wire_error::invalid_parameter;
-use super::wire_error::unsupported_algorithm;
 
 pub(super) fn kem_algorithm(
     identifier: &MessageField<CryptoAlgorithmIdentifier, impl ProtoBox<CryptoAlgorithmIdentifier>>,
 ) -> Result<Algorithm, CryptoWireError> {
     match algorithm_branch(identifier)? {
-        ProtoAlgorithmBranch::Kem(value) => value
-            .as_known()
-            .ok_or_else(unsupported_algorithm)
-            .and_then(|value| Algorithm::try_from(value).map_err(|_| unsupported_algorithm())),
+        ProtoAlgorithmBranch::Kem(_) => native_identity(identifier),
         _ => Err(invalid_parameter()),
     }
 }

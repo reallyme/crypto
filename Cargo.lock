@@ -1787,9 +1787,11 @@ name = "reallyme-crypto-argon2id"
 version = "0.3.17"
 dependencies = [
  "argon2",
+ "buffa",
  "getrandom 0.4.3",
  "hex",
  "reallyme-crypto-core",
+ "reallyme-crypto-proto",
  "zeroize",
 ]
 
@@ -1880,11 +1882,13 @@ dependencies = [
 name = "reallyme-crypto-hkdf"
 version = "0.3.17"
 dependencies = [
+ "buffa",
  "getrandom 0.4.3",
  "hex-literal",
  "hkdf",
  "hybrid-array",
  "reallyme-crypto-core",
+ "reallyme-crypto-proto",
  "sha2",
  "sha3 0.12.0",
  "wasm-bindgen-test",
@@ -2073,9 +2077,11 @@ dependencies = [
 name = "reallyme-crypto-pbkdf2"
 version = "0.3.17"
 dependencies = [
+ "buffa",
  "hex-literal",
  "pbkdf2",
  "reallyme-crypto-core",
+ "reallyme-crypto-proto",
  "sha2",
  "zeroize",
 ]
@@ -2099,6 +2105,7 @@ version = "0.3.17"
 dependencies = [
  "buffa",
  "reallyme-crypto-core",
+ "reallyme-crypto-hpke",
  "serde",
  "serde_json",
  "subtle",
@@ -2111,9 +2118,11 @@ name = "reallyme-crypto-rsa"
 version = "0.3.17"
 dependencies = [
  "base64 0.23.1",
+ "buffa",
  "const-oid",
  "crypto-bigint",
  "reallyme-crypto-core",
+ "reallyme-crypto-proto",
  "secrecy",
  "serde",
  "serde_json",

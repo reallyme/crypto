@@ -17,17 +17,21 @@ repository.workspace = true
 name = "crypto_pbkdf2"
 
 [features]
+# Metadata conversion does not select an execution backend.
+proto = ["dep:crypto-proto"]
 default = []
 native = []
 wasm = []
 
 [dependencies]
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.3.17", path = "../proto", optional = true, default-features = false, features = ["generated"] }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.3.17", path = "../crypto/core" }
 pbkdf2 = { workspace = true }
 sha2 = { workspace = true }
 zeroize = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
+buffa = { workspace = true }
 hex-literal = { workspace = true }
 
 [lints]

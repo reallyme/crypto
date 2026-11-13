@@ -224,6 +224,85 @@ enum CryptoAlgorithmFamily {
   CRYPTO_ALGORITHM_FAMILY_HPKE = 9;
 }
 
+// KeyAlgorithm identifies an asymmetric key type independently of the
+// operation-specific signature or key-agreement suite. These values must not
+// be substituted for SignatureAlgorithm, KeyAgreementAlgorithm or KemAlgorithm
+// numbers. Classical key types occupy 100-299, post-quantum signature keys
+// 1000-1199, post-quantum KEM keys 2000-2099 and hybrid KEM keys 2100-2199.
+enum KeyAlgorithm {
+  KEY_ALGORITHM_UNSPECIFIED = 0;
+  KEY_ALGORITHM_ED25519 = 100;
+  KEY_ALGORITHM_X25519 = 110;
+  KEY_ALGORITHM_P256 = 200;
+  KEY_ALGORITHM_P384 = 210;
+  KEY_ALGORITHM_P521 = 220;
+  KEY_ALGORITHM_SECP256K1 = 230;
+  KEY_ALGORITHM_ML_DSA_44 = 1000;
+  KEY_ALGORITHM_ML_DSA_65 = 1010;
+  KEY_ALGORITHM_ML_DSA_87 = 1020;
+  KEY_ALGORITHM_SLH_DSA_SHA2_128S = 1100;
+  KEY_ALGORITHM_ML_KEM_512 = 2000;
+  KEY_ALGORITHM_ML_KEM_768 = 2010;
+  KEY_ALGORITHM_ML_KEM_1024 = 2020;
+  KEY_ALGORITHM_X_WING_768 = 2100;
+}
+
+// CryptoKeyAlgorithmIdentifier carries operation-independent key metadata.
+// Keeping it separate preserves the published operation-suite oneof and its
+// generated exhaustive match surfaces. It is not an executable suite selector.
+message CryptoKeyAlgorithmIdentifier {
+  KeyAlgorithm algorithm = 1;
+}
+
+// EcdsaCurve is curve identity metadata, independent of the signature hash,
+// encoding and provider. Its numbers are permanent and append-only: 100-199
+// identify NIST prime curves and 200-299 identify Brainpool prime curves.
+// A registered identity does not assert that an execution backend is enabled.
+enum EcdsaCurve {
+  ECDSA_CURVE_UNSPECIFIED = 0;
+  reserved 1 to 99;
+  ECDSA_CURVE_NIST_P256 = 100;
+  ECDSA_CURVE_NIST_P384 = 110;
+  ECDSA_CURVE_NIST_P521 = 120;
+  ECDSA_CURVE_BRAINPOOL_P256R1 = 200;
+  ECDSA_CURVE_BRAINPOOL_P320R1 = 210;
+  ECDSA_CURVE_BRAINPOOL_P384R1 = 220;
+  ECDSA_CURVE_BRAINPOOL_P512R1 = 230;
+}
+
+// CryptoEcdsaCurveIdentifier carries a single explicit curve identity. Omitted
+// and UNSPECIFIED curves are equally invalid; unknown modifier fields must be
+// rejected by the native conversion. This is not an executable suite selector.
+message CryptoEcdsaCurveIdentifier {
+  EcdsaCurve curve = 1;
+}
+
+// PrimeGroup identifies an exact reviewed prime-order domain. Numbers are
+// permanent and append-only: 100-199 are NIST curves, 200-299 are Brainpool
+// curves, and 300-399 are the finite-field groups from RFC 5114 sections 2.1-2.3.
+// Legacy group registration does not constitute a protocol-strength policy.
+enum PrimeGroup {
+  PRIME_GROUP_UNSPECIFIED = 0;
+  reserved 1 to 99;
+  PRIME_GROUP_NIST_P256 = 100;
+  PRIME_GROUP_NIST_P384 = 110;
+  PRIME_GROUP_NIST_P521 = 120;
+  PRIME_GROUP_BRAINPOOL_P256R1 = 200;
+  PRIME_GROUP_BRAINPOOL_P320R1 = 210;
+  PRIME_GROUP_BRAINPOOL_P384R1 = 220;
+  PRIME_GROUP_BRAINPOOL_P512R1 = 230;
+  PRIME_GROUP_RFC5114_DH1024_160 = 300;
+  PRIME_GROUP_RFC5114_DH2048_224 = 310;
+  PRIME_GROUP_RFC5114_DH2048_256 = 320;
+}
+
+// CryptoPrimeGroupIdentifier carries domain identity without selecting an
+// operation, backend, supplied base, mapping or cofactor policy. Omitted and
+// UNSPECIFIED groups are equally invalid; unknown modifiers must be rejected.
+message CryptoPrimeGroupIdentifier {
+  PrimeGroup group = 1;
+}
+
 // Algorithm selector values are a permanent, append-only wire contract from
 // this release onward. Each family-scoped enum uses sparse subfamily bands so
 // future suites can be added beside related algorithms without renumbering an
@@ -409,6 +488,28 @@ enum Argon2idKdfVersion {
   ARGON2ID_KDF_VERSION_V2 = 2;
 }
 
+// CryptoHkdfSuiteIdentifier is metadata for the direct HKDF primitive. The
+// hash field is the existing HashAlgorithm subset SHA2-256, SHA2-384 and
+// SHA3-256. SHA3-256 recognition does not enable its optional implementation
+// or add an executable KdfAlgorithm selector or provider capability.
+message CryptoHkdfSuiteIdentifier {
+  HashAlgorithm hash = 1;
+}
+
+// CryptoPbkdf2PrfIdentifier selects the existing HMAC-SHA256 or HMAC-SHA512
+// subset of MacAlgorithm. Metadata recognition does not derive a key or select
+// password-record parameters.
+message CryptoPbkdf2PrfIdentifier {
+  MacAlgorithm prf = 1;
+}
+
+// CryptoArgon2idProfileIdentifier identifies an immutable resource-cost
+// profile. This is the application KDF profile version, not the Argon2
+// algorithm version. Resource caps are still validated by the primitive.
+message CryptoArgon2idProfileIdentifier {
+  Argon2idKdfVersion kdf_version = 1;
+}
+
 // KeyWrapAlgorithm identifies key-wrapping algorithms. Values 100-199 are
 // AES-based key-wrapping suites.
 enum KeyWrapAlgorithm {
@@ -451,12 +552,38 @@ enum MulticodecKeyAlgorithm {
   MULTICODEC_KEY_ALGORITHM_ML_KEM_1024_PRIV = 25;
 }
 
+// RsaHashAlgorithm identifies a digest used by RSA verification. A separate
+// enum preserves the general HashAlgorithm execution surface, which does not
+// expose SHA-1 hashing. Values 100-199 are legacy SHA-1 and 200-299 are SHA-2.
+// These are metadata values, not the existing C FFI hash identifiers.
+enum RsaHashAlgorithm {
+  RSA_HASH_ALGORITHM_UNSPECIFIED = 0;
+  reserved 1 to 99;
+  RSA_HASH_ALGORITHM_SHA1 = 100;
+  RSA_HASH_ALGORITHM_SHA256 = 200;
+  RSA_HASH_ALGORITHM_SHA384 = 210;
+  RSA_HASH_ALGORITHM_SHA512 = 220;
+}
+
 // RsaPublicKeyDerEncoding identifies the accepted DER wrapper for RSA public
 // keys at verification boundaries.
 enum RsaPublicKeyDerEncoding {
   RSA_PUBLIC_KEY_DER_ENCODING_UNSPECIFIED = 0;
   RSA_PUBLIC_KEY_DER_ENCODING_PKCS1 = 1;
   RSA_PUBLIC_KEY_DER_ENCODING_SPKI = 2;
+}
+
+// CryptoRsaHashIdentifier carries RSA digest metadata independently of a
+// PKCS#1 v1.5 or PSS request. SHA-1 remains limited to historical verification
+// under the existing primitive policy; this message grants no signing support.
+message CryptoRsaHashIdentifier {
+  RsaHashAlgorithm hash = 1;
+}
+
+// CryptoRsaPublicKeyDerEncodingIdentifier carries only the existing RSA public
+// key wrapper identity. DER byte parsing remains the primitive's responsibility.
+message CryptoRsaPublicKeyDerEncodingIdentifier {
+  RsaPublicKeyDerEncoding encoding = 1;
 }
 
 // CryptoAlgorithmIdentifier is a oneof wrapper for protocol messages that need

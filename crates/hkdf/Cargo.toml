@@ -25,12 +25,15 @@ ignored = [
 name = "crypto_hkdf"
 
 [features]
+# Metadata conversion does not select an execution backend.
+proto = ["dep:crypto-proto"]
 default = []
 native = []
 wasm = ["dep:getrandom"]
 sha3 = ["dep:sha3"]
 
 [dependencies]
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.3.17", path = "../proto", optional = true, default-features = false, features = ["generated"] }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.3.17", path = "../crypto/core" }
 getrandom = { workspace = true, features = ["wasm_js"], optional = true }
 hkdf = { workspace = true }
@@ -40,6 +43,7 @@ sha3 = { workspace = true, optional = true }
 zeroize = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
+buffa = { workspace = true }
 wasm-bindgen-test = { workspace = true }
 hex-literal = { workspace = true }
 

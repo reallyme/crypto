@@ -2327,7 +2327,7 @@ assertContains(".github/workflows/protobuf-ci.yml", "BUF_VERSION: 1.75.0");
 assertContains(".github/workflows/protobuf-ci.yml", "setup_only: true");
 assertContains(".github/workflows/protobuf-ci.yml", "scripts/release-readiness/core.mjs");
 assertContains(".github/workflows/protobuf-ci.yml", "scripts/run_pinned_release_readiness.mjs");
-assertNotContains(".github/workflows/protobuf-ci.yml", "buf breaking");
+assertContains(".github/workflows/protobuf-ci.yml", "buf breaking --against '.git#ref=e57caf7a035c1ffe33aad0038d603b793a69b28a,subdir=crates/proto/proto'");
 // The full Rust suite executes immutable-selector and wire-golden tests once.
 // Protobuf CI independently verifies generation against committed bytes.
 assertNotContains(".github/workflows/protobuf-ci.yml", "cargo test -p");
@@ -2946,6 +2946,10 @@ const repositoryPolicy = {
     {
       path: ".github/workflows/protobuf-ci.yml",
       runSteps: [
+        {
+          name: "Check protobuf compatibility",
+          run: "buf breaking --against '.git#ref=e57caf7a035c1ffe33aad0038d603b793a69b28a,subdir=crates/proto/proto'",
+        },
         {
           name: "Check release readiness generated freshness",
           run: `${releaseReadinessCommand} --generated-freshness`,

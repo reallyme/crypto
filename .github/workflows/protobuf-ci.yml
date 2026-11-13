@@ -96,6 +96,11 @@ jobs:
           cargo install protoc-gen-buffa --version "$BUFFA_VERSION" --locked
           cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked
 
+      # The reviewed 0.3.17 schema baseline is pinned by commit so moving a tag
+      # cannot weaken compatibility validation for existing generated clients.
+      - name: Check protobuf compatibility
+        run: buf breaking --against '.git#ref=e57caf7a035c1ffe33aad0038d603b793a69b28a,subdir=crates/proto/proto'
+
       # The all-feature Rust suite owns immutable selectors and wire goldens.
       # This lane owns reproducible generation and committed-byte freshness.
       - name: Check release readiness generated freshness

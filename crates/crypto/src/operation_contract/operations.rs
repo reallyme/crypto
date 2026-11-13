@@ -473,7 +473,7 @@ pub(super) fn process_key_wrap(
     )
     .map_err(map_operation_error)?;
     let result = CryptoKeyWrapResult {
-        algorithm: MessageField::some(key_wrap_identifier(algorithm)),
+        algorithm: MessageField::some(key_wrap_identifier(algorithm)?),
         wrapped_key: wrapped_key.as_bytes().to_vec(),
         __buffa_unknown_fields: Default::default(),
     };
@@ -492,7 +492,7 @@ pub(super) fn process_key_unwrap(
     )
     .map_err(map_operation_error)?;
     let result = CryptoKeyUnwrapResult {
-        algorithm: MessageField::some(key_wrap_identifier(algorithm)),
+        algorithm: MessageField::some(key_wrap_identifier(algorithm)?),
         key: key.as_bytes().to_vec(),
         __buffa_unknown_fields: Default::default(),
     };
