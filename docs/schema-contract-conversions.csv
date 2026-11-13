@@ -1,0 +1,22 @@
+conversion,source,line,lanes
+TryFrom<u32> for Argon2KdfVersion,crates/argon2id/src/profile.rs,79,native | wasm
+From<Argon2KdfVersion> for Argon2Profile,crates/argon2id/src/profile.rs,95,native | wasm
+From<GroupErrorReason> for GroupError,crates/crypto/src/prime_groups/error.rs,61,native | wasm
+TryFrom<u16> for HpkeKemId,crates/hpke/src/identifiers.rs,123,native | wasm
+TryFrom<u16> for HpkeKdfId,crates/hpke/src/identifiers.rs,195,native | wasm
+TryFrom<u16> for HpkeAeadId,crates/hpke/src/identifiers.rs,289,native | wasm
+From<Ed25519Jwk> for OkpJwk,crates/jwk/src/jwk.rs,145,native | wasm
+From<X25519Jwk> for OkpJwk,crates/jwk/src/jwk.rs,158,native | wasm
+From<MlDsa87Jwk> for AkpJwk,crates/jwk/src/jwk.rs,171,native | wasm
+From<MlKem1024Jwk> for AkpJwk,crates/jwk/src/jwk.rs,183,native | wasm
+TryFrom<&[u8]> for P256Sha256Digest,crates/p256/src/sha256_digest.rs,61,native | wasm
+TryFrom<SignatureAlgorithm> for crypto_core::Algorithm,crates/proto/src/convert.rs,49,native | wasm
+TryFrom<KeyAgreementAlgorithm> for crypto_core::Algorithm,crates/proto/src/convert.rs,73,native | wasm
+TryFrom<KemAlgorithm> for crypto_core::Algorithm,crates/proto/src/convert.rs,87,native | wasm
+TryFrom<AeadAlgorithm> for crypto_core::AeadAlgorithm,crates/proto/src/convert.rs,101,native | wasm
+TryFrom<HashAlgorithm> for crypto_core::HashAlgorithm,crates/proto/src/convert.rs,117,native | wasm
+From<AeadAlgorithm> for crate::generated::proto::reallyme::crypto::v1::AeadAlgorithm,crates/proto/src/convert.rs,211,native | wasm
+From<HashAlgorithm> for crate::generated::proto::reallyme::crypto::v1::HashAlgorithm,crates/proto/src/convert.rs,224,native | wasm
+From<CryptoError> for super::error::CryptoWireError,crates/proto/src/wire/mapping.rs,15,native | wasm
+From<RsaRepresentativeErrorReason> for RsaRepresentativeError,crates/rsa/src/representative.rs,46,native | wasm
+From<&X448PrivateKey> for X448PublicKey,crates/x448/src/material.rs,74,native | wasm
