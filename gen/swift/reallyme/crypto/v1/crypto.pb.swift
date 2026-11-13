@@ -7227,6 +7227,84 @@ public nonisolated struct ReallyMeProtoCryptoPrimeGroupDomainRequest: Sendable {
   fileprivate var _group: ReallyMeProtoCryptoPrimeGroupIdentifier? = nil
 }
 
+/// Validate explicit DH parameters against the selected built-in RFC5114 domain.
+/// Every supplied integer is minimal, nonzero, unsigned big-endian. No DER sign
+/// padding is accepted. Absent q is established by exact p/g registry identity;
+/// supplied q must match, and supplied j must equal (p - 1) / the built-in q.
+/// Present-empty q/j are invalid. This never admits caller-defined arithmetic or
+/// performs attacker-selected primality work. Strength policy remains external.
+public nonisolated struct ReallyMeProtoCryptoPrimeGroupDhParametersValidationRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoPrimeGroupDhParametersValidationRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var group: ReallyMeProtoCryptoPrimeGroupIdentifier {
+    get {_group ?? ReallyMeProtoCryptoPrimeGroupIdentifier()}
+    set {_group = newValue}
+  }
+  /// Returns true if `group` has been explicitly set.
+  public var hasGroup: Bool {self._group != nil}
+  /// Clears the value of `group`. Subsequent reads from it will return its default value.
+  public mutating func clearGroup() {self._group = nil}
+
+  public var p: Data = Data()
+
+  public var g: Data = Data()
+
+  public var q: Data {
+    get {_q ?? Data()}
+    set {_q = newValue}
+  }
+  /// Returns true if `q` has been explicitly set.
+  public var hasQ: Bool {self._q != nil}
+  /// Clears the value of `q`. Subsequent reads from it will return its default value.
+  public mutating func clearQ() {self._q = nil}
+
+  public var j: Data {
+    get {_j ?? Data()}
+    set {_j = newValue}
+  }
+  /// Returns true if `j` has been explicitly set.
+  public var hasJ: Bool {self._j != nil}
+  /// Clears the value of `j`. Subsequent reads from it will return its default value.
+  public mutating func clearJ() {self._j = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _group: ReallyMeProtoCryptoPrimeGroupIdentifier? = nil
+  fileprivate var _q: Data? = nil
+  fileprivate var _j: Data? = nil
+}
+
+/// Successful validation identifies the exact selected built-in group. It does
+/// not approve its use in a protocol, trust context or security-strength policy.
+public nonisolated struct ReallyMeProtoCryptoPrimeGroupDhParametersValidationResult: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoPrimeGroupDhParametersValidationResult(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var group: ReallyMeProtoCryptoPrimeGroupIdentifier {
+    get {_group ?? ReallyMeProtoCryptoPrimeGroupIdentifier()}
+    set {_group = newValue}
+  }
+  /// Returns true if `group` has been explicitly set.
+  public var hasGroup: Bool {self._group != nil}
+  /// Clears the value of `group`. Subsequent reads from it will return its default value.
+  public mutating func clearGroup() {self._group = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _group: ReallyMeProtoCryptoPrimeGroupIdentifier? = nil
+}
+
 public nonisolated struct ReallyMeProtoCryptoPrimeGroupCurveCoefficients: Sendable {
   // Security post-processing: protobuf bytes can contain secrets or PII.
   public var debugDescription: String { "ReallyMeProtoCryptoPrimeGroupCurveCoefficients(<redacted>)" }
@@ -17064,6 +17142,94 @@ nonisolated extension ReallyMeProtoCryptoPrimeGroupDomainRequest: SwiftProtobuf.
   }
 
   public static func ==(lhs: ReallyMeProtoCryptoPrimeGroupDomainRequest, rhs: ReallyMeProtoCryptoPrimeGroupDomainRequest) -> Bool {
+    if lhs._group != rhs._group {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoPrimeGroupDhParametersValidationRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoPrimeGroupDhParametersValidationRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}group\0\u{1}p\0\u{1}g\0\u{1}q\0\u{1}j\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._group) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.p) }()
+      case 3: try { try decoder.decodeSingularBytesField(value: &self.g) }()
+      case 4: try { try decoder.decodeSingularBytesField(value: &self._q) }()
+      case 5: try { try decoder.decodeSingularBytesField(value: &self._j) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._group {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    if !self.p.isEmpty {
+      try visitor.visitSingularBytesField(value: self.p, fieldNumber: 2)
+    }
+    if !self.g.isEmpty {
+      try visitor.visitSingularBytesField(value: self.g, fieldNumber: 3)
+    }
+    try { if let v = self._q {
+      try visitor.visitSingularBytesField(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._j {
+      try visitor.visitSingularBytesField(value: v, fieldNumber: 5)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoPrimeGroupDhParametersValidationRequest, rhs: ReallyMeProtoCryptoPrimeGroupDhParametersValidationRequest) -> Bool {
+    if lhs._group != rhs._group {return false}
+    if lhs.p != rhs.p {return false}
+    if lhs.g != rhs.g {return false}
+    if lhs._q != rhs._q {return false}
+    if lhs._j != rhs._j {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoPrimeGroupDhParametersValidationResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoPrimeGroupDhParametersValidationResult"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}group\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._group) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._group {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoPrimeGroupDhParametersValidationResult, rhs: ReallyMeProtoCryptoPrimeGroupDhParametersValidationResult) -> Bool {
     if lhs._group != rhs._group {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

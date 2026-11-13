@@ -51322,6 +51322,486 @@ pub const __CRYPTO_PRIME_GROUP_DOMAIN_REQUEST_JSON_ANY: ::buffa::type_registry::
     from_json: ::buffa::type_registry::any_from_json::<CryptoPrimeGroupDomainRequest>,
     is_wkt: false,
 };
+/// Validate explicit DH parameters against the selected built-in RFC5114 domain.
+/// Every supplied integer is minimal, nonzero, unsigned big-endian. No DER sign
+/// padding is accepted. Absent q is established by exact p/g registry identity;
+/// supplied q must match, and supplied j must equal (p - 1) / the built-in q.
+/// Present-empty q/j are invalid. This never admits caller-defined arithmetic or
+/// performs attacker-selected primality work. Strength policy remains external.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoPrimeGroupDhParametersValidationRequest {
+    /// Field 1: `group`
+    #[serde(
+        rename = "group",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub group: ::buffa::MessageField<
+        CryptoPrimeGroupIdentifier,
+        ::buffa::Inline<CryptoPrimeGroupIdentifier>,
+    >,
+    /// Field 2: `p`
+    #[serde(
+        rename = "p",
+        with = "::buffa::json_helpers::bytes",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_bytes"
+    )]
+    pub p: ::buffa::alloc::vec::Vec<u8>,
+    /// Field 3: `g`
+    #[serde(
+        rename = "g",
+        with = "::buffa::json_helpers::bytes",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_bytes"
+    )]
+    pub g: ::buffa::alloc::vec::Vec<u8>,
+    /// Field 4: `q`
+    #[serde(
+        rename = "q",
+        with = "::buffa::json_helpers::opt_bytes",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub q: ::core::option::Option<::buffa::alloc::vec::Vec<u8>>,
+    /// Field 5: `j`
+    #[serde(
+        rename = "j",
+        with = "::buffa::json_helpers::opt_bytes",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub j: ::core::option::Option<::buffa::alloc::vec::Vec<u8>>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoPrimeGroupDhParametersValidationRequest {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoPrimeGroupDhParametersValidationRequest")
+            .field("group", &self.group)
+            .field("p", &"<redacted>")
+            .field("g", &"<redacted>")
+            .field("q", &"<redacted>")
+            .field("j", &"<redacted>")
+            .finish()
+    }
+}
+impl ::core::ops::Drop for CryptoPrimeGroupDhParametersValidationRequest {
+    fn drop(&mut self) {
+        ::zeroize::Zeroize::zeroize(&mut self.p);
+        ::zeroize::Zeroize::zeroize(&mut self.g);
+        ::zeroize::Zeroize::zeroize(&mut self.q);
+        ::zeroize::Zeroize::zeroize(&mut self.j);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoPrimeGroupDhParametersValidationRequest {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            crate::deserialize_sensitive::deserialize_bytes(deserializer)
+        }
+
+        fn deserialize_optional_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::core::option::Option<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            // Null remains absent, while an empty string remains Some(empty).
+            crate::deserialize_sensitive::deserialize_optional_bytes(deserializer)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "group")]
+            group: ::buffa::MessageField<
+                CryptoPrimeGroupIdentifier,
+                ::buffa::Inline<CryptoPrimeGroupIdentifier>,
+                >,
+            #[serde(rename = "p", deserialize_with = "deserialize_zeroizing_bytes")]
+            p: ::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>,
+            #[serde(rename = "g", deserialize_with = "deserialize_zeroizing_bytes")]
+            g: ::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>,
+            #[serde(rename = "q", deserialize_with = "deserialize_optional_zeroizing_bytes")]
+            q: ::core::option::Option<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>>,
+            #[serde(rename = "j", deserialize_with = "deserialize_optional_zeroizing_bytes")]
+            j: ::core::option::Option<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>>,
+        }
+
+        let mut wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            group: wire.group,
+            p: ::core::mem::take(&mut *wire.p),
+            g: ::core::mem::take(&mut *wire.g),
+            q: wire.q.as_mut().map(|bytes| ::core::mem::take(&mut **bytes)),
+            j: wire.j.as_mut().map(|bytes| ::core::mem::take(&mut **bytes)),
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoPrimeGroupDhParametersValidationRequest {}
+impl CryptoPrimeGroupDhParametersValidationRequest {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupDhParametersValidationRequest";
+}
+impl CryptoPrimeGroupDhParametersValidationRequest {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::q`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_q(mut self, value: impl Into<::buffa::alloc::vec::Vec<u8>>) -> Self {
+        let mut value = ::zeroize::Zeroizing::new(value.into());
+        ::zeroize::Zeroize::zeroize(&mut self.q);
+        self.q = Some(::core::mem::take(&mut *value));
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::j`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_j(mut self, value: impl Into<::buffa::alloc::vec::Vec<u8>>) -> Self {
+        let mut value = ::zeroize::Zeroizing::new(value.into());
+        ::zeroize::Zeroize::zeroize(&mut self.j);
+        self.j = Some(::core::mem::take(&mut *value));
+        self
+    }
+}
+::buffa::impl_default_instance!(CryptoPrimeGroupDhParametersValidationRequest);
+impl ::buffa::MessageName for CryptoPrimeGroupDhParametersValidationRequest {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoPrimeGroupDhParametersValidationRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoPrimeGroupDhParametersValidationRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupDhParametersValidationRequest";
+}
+impl ::buffa::Message for CryptoPrimeGroupDhParametersValidationRequest {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.group.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.group.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if !self.p.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.p) as u64;
+        }
+        if !self.g.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.g) as u64;
+        }
+        if let Some(ref v) = self.q {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.j {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(v) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.group.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.group.write_to(__cache, buf);
+        }
+        if !self.p.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.p, buf);
+        }
+        if !self.g.is_empty() {
+            ::buffa::types::put_shared_bytes_field(3u32, &self.g, buf);
+        }
+        if let Some(ref v) = self.q {
+            ::buffa::types::put_shared_bytes_field(4u32, v, buf);
+        }
+        if let Some(ref v) = self.j {
+            ::buffa::types::put_shared_bytes_field(5u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.group.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                crate::merge_sensitive::merge_bytes(&mut self.p, buf)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                crate::merge_sensitive::merge_bytes(&mut self.g, buf)?;
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                crate::merge_sensitive::merge_bytes(
+                    self.q.get_or_insert_with(::buffa::alloc::vec::Vec::new),
+                    buf,
+                )?;
+            }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                crate::merge_sensitive::merge_bytes(
+                    self.j.get_or_insert_with(::buffa::alloc::vec::Vec::new),
+                    buf,
+                )?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.group = ::buffa::MessageField::none();
+        ::zeroize::Zeroize::zeroize(&mut self.p);
+        ::zeroize::Zeroize::zeroize(&mut self.g);
+        ::zeroize::Zeroize::zeroize(&mut self.q);
+        ::zeroize::Zeroize::zeroize(&mut self.j);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoPrimeGroupDhParametersValidationRequest {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoPrimeGroupDhParametersValidationRequest";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson
+for CryptoPrimeGroupDhParametersValidationRequest {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_PRIME_GROUP_DH_PARAMETERS_VALIDATION_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupDhParametersValidationRequest",
+    to_json: ::buffa::type_registry::any_to_json::<
+        CryptoPrimeGroupDhParametersValidationRequest,
+    >,
+    from_json: ::buffa::type_registry::any_from_json::<
+        CryptoPrimeGroupDhParametersValidationRequest,
+    >,
+    is_wkt: false,
+};
+/// Successful validation identifies the exact selected built-in group. It does
+/// not approve its use in a protocol, trust context or security-strength policy.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoPrimeGroupDhParametersValidationResult {
+    /// Field 1: `group`
+    #[serde(
+        rename = "group",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub group: ::buffa::MessageField<
+        CryptoPrimeGroupIdentifier,
+        ::buffa::Inline<CryptoPrimeGroupIdentifier>,
+    >,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: __ReallyMeZeroizingUnknownFields,
+}
+impl ::core::fmt::Debug for CryptoPrimeGroupDhParametersValidationResult {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoPrimeGroupDhParametersValidationResult")
+            .field("group", &self.group)
+            .finish()
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoPrimeGroupDhParametersValidationResult {}
+impl CryptoPrimeGroupDhParametersValidationResult {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupDhParametersValidationResult";
+}
+::buffa::impl_default_instance!(CryptoPrimeGroupDhParametersValidationResult);
+impl ::buffa::MessageName for CryptoPrimeGroupDhParametersValidationResult {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoPrimeGroupDhParametersValidationResult";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoPrimeGroupDhParametersValidationResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupDhParametersValidationResult";
+}
+impl ::buffa::Message for CryptoPrimeGroupDhParametersValidationResult {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.group.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.group.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.group.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.group.write_to(__cache, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.group.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.group = ::buffa::MessageField::none();
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoPrimeGroupDhParametersValidationResult {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoPrimeGroupDhParametersValidationResult";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson
+for CryptoPrimeGroupDhParametersValidationResult {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_PRIME_GROUP_DH_PARAMETERS_VALIDATION_RESULT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupDhParametersValidationResult",
+    to_json: ::buffa::type_registry::any_to_json::<
+        CryptoPrimeGroupDhParametersValidationResult,
+    >,
+    from_json: ::buffa::type_registry::any_from_json::<
+        CryptoPrimeGroupDhParametersValidationResult,
+    >,
+    is_wkt: false,
+};
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize)]
 #[serde(default, deny_unknown_fields)]

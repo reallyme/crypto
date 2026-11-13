@@ -284,6 +284,12 @@ pub mod __buffa {
         );
         reg.register_json_any(super::__CRYPTO_PRIME_GROUP_FIELD_VALUE_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_PRIME_GROUP_DOMAIN_REQUEST_JSON_ANY);
+        reg.register_json_any(
+            super::__CRYPTO_PRIME_GROUP_DH_PARAMETERS_VALIDATION_REQUEST_JSON_ANY,
+        );
+        reg.register_json_any(
+            super::__CRYPTO_PRIME_GROUP_DH_PARAMETERS_VALIDATION_RESULT_JSON_ANY,
+        );
         reg.register_json_any(super::__CRYPTO_PRIME_GROUP_CURVE_COEFFICIENTS_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_PRIME_GROUP_DOMAIN_RESULT_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_X448PRIVATE_KEY_INPUT_JSON_ANY);
@@ -1125,6 +1131,14 @@ pub use self::__buffa::view::CryptoPrimeGroupFieldValueOwnedView;
 pub use self::__buffa::view::CryptoPrimeGroupDomainRequestView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoPrimeGroupDomainRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoPrimeGroupDhParametersValidationRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoPrimeGroupDhParametersValidationRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoPrimeGroupDhParametersValidationResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoPrimeGroupDhParametersValidationResultOwnedView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoPrimeGroupCurveCoefficientsView;
 #[doc(inline)]
