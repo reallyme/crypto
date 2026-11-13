@@ -38,6 +38,7 @@ getrandom = { workspace = true, features = ["wasm_js"], optional = true }
 zeroize = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
+wasm-bindgen-test = { workspace = true }
 buffa = { workspace = true }
 hex = { workspace = true }
 

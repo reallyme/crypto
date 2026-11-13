@@ -25,7 +25,8 @@ fn request(prf: Pbkdf2Prf) -> CryptoPbkdf2StandardsDeriveRequest {
         __buffa_unknown_fields: Default::default(),
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn standards_adapter_preserves_both_existing_known_answers() {
     fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
     require_cleanup::<StandardsDeriveInputs>();
@@ -49,7 +50,8 @@ fn standards_adapter_preserves_both_existing_known_answers() {
     let inputs = StandardsDeriveInputs::try_from(&wire).expect("SHA512 inputs");
     assert_eq!(inputs.derive().expect("derive").as_bytes(),&hex!("867f70cf1ade02cff3752599a3a53dc4af34c7a669815ae5d513554e1c8cf252c02d470a285a0501bad999bfe943c08f050235d7d68b1da55e63f73b60a57fce"));
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn standards_domain_and_modern_floor_remain_distinct() {
     let prf = Pbkdf2Prf::HmacSha256;
     for iterations in [
@@ -77,7 +79,8 @@ fn standards_domain_and_modern_floor_remain_distinct() {
         Some(CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED)
     );
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn standards_adapter_preserves_binary_inputs_and_live_owner_cleanup() {
     let mut wire = request(Pbkdf2Prf::HmacSha256);
     wire.password = vec![0, 0xff, 0, 0x80];
@@ -89,7 +92,8 @@ fn standards_adapter_preserves_binary_inputs_and_live_owner_cleanup() {
     assert!(inputs.as_request().password.as_bytes().is_empty());
     assert!(inputs.as_request().salt.as_bytes().is_empty());
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn standards_adapter_rejects_invalid_fields_and_unknown_modifiers() -> Result<(), buffa::DecodeError>
 {
     let prf = Pbkdf2Prf::HmacSha256;

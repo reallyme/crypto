@@ -11,7 +11,8 @@ use buffa::{EnumValue, Enumeration};
 use crypto_core::CryptoError;
 use crypto_proto::generated::proto::reallyme::crypto::v1::RngOutputKind as ProtoRngOutputKind;
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn rng_output_kind_has_total_schema_parity() {
     assert_enum_parity::<ProtoRngOutputKind, crypto_core::RngOutputKind>();
 }

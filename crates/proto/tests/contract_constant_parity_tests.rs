@@ -8,7 +8,8 @@
 
 use reallyme_crypto_proto::contract_constants;
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn scalar_values_preserve_existing_primitive_parameters_and_limits() {
     assert_eq!(
         contract_constants::argon2id::ARGON2ID_ALGORITHM_VERSION,

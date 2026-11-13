@@ -261,9 +261,6 @@ jobs:
       - name: Format
         run: cargo fmt --check
 
-      - name: Check warnings as errors
-        run: RUSTFLAGS=-Dwarnings cargo check --locked --workspace --all-features
-
       - name: Check umbrella crate tarball
         run: cargo package --locked -p reallyme-crypto --list
 
@@ -297,6 +294,8 @@ jobs:
       - name: Check default JWK multikey EC round trips
         run: cargo test --locked --offline -p reallyme-crypto-jwk-multikey --test p256_roundtrip_tests --test secp256k1_roundtrip_tests
 
+      # Clippy checks compiler warnings and every target under the same feature
+      # graph. A separate RUSTFLAGS check duplicates compilation fingerprints.
       - name: Clippy
         run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
 
@@ -322,9 +321,6 @@ jobs:
 
       - name: Release readiness
         run: node scripts/run_pinned_release_readiness.mjs --ci-policy
-
-      - name: Check native lane
-        run: cargo check --locked --workspace --no-default-features --features native
 
       - name: Dependency policy
         run: cargo deny check

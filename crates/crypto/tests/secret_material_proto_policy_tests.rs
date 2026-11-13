@@ -27,45 +27,53 @@ use reallyme_crypto::secret_material::{
     OperationSecretMaterialPolicy, SecretMaterialOperation,
 };
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn buffer_owner_has_total_schema_parity() {
     assert_enum_parity::<ProtoBufferOwner, reallyme_crypto::secret_material::BufferOwner>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn secret_sensitivity_has_total_schema_parity() {
     assert_enum_parity::<ProtoSecretSensitivity, reallyme_crypto::secret_material::SecretSensitivity>(
     );
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn output_material_has_total_schema_parity() {
     assert_enum_parity::<ProtoOutputMaterial, reallyme_crypto::secret_material::OutputMaterial>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn retention_policy_has_total_schema_parity() {
     assert_enum_parity::<ProtoRetentionPolicy, reallyme_crypto::secret_material::RetentionPolicy>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn export_policy_has_total_schema_parity() {
     assert_enum_parity::<ProtoExportPolicy, reallyme_crypto::secret_material::ExportPolicy>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn zeroization_policy_has_total_schema_parity() {
     assert_enum_parity::<ProtoZeroizationPolicy, reallyme_crypto::secret_material::ZeroizationPolicy>(
     );
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn destruction_policy_has_total_schema_parity() {
     assert_enum_parity::<ProtoDestructionPolicy, reallyme_crypto::secret_material::DestructionPolicy>(
     );
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn secret_material_operation_has_total_schema_parity() {
     assert_enum_parity::<
         ProtoSecretMaterialOperation,
@@ -73,7 +81,8 @@ fn secret_material_operation_has_total_schema_parity() {
     >();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn native_zero_aead_seal_is_valid_but_schema_zero_is_not() {
     assert_eq!(SecretMaterialOperation::AeadSeal as u32, 0);
     assert_eq!(
@@ -93,7 +102,8 @@ fn native_zero_aead_seal_is_valid_but_schema_zero_is_not() {
     assert_eq!(SecretMaterialOperation::SignatureEncoding as u32, 31);
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn every_operation_record_preserves_every_native_policy_field() {
     for operation in ProtoSecretMaterialOperation::values() {
         let Ok(operation) = SecretMaterialOperation::try_from(buffa::EnumValue::from(*operation))
@@ -106,7 +116,8 @@ fn every_operation_record_preserves_every_native_policy_field() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn every_random_purpose_record_preserves_every_native_policy_field() {
     for kind in ProtoRngOutputKind::values() {
         let Ok(kind) = RngOutputKind::try_from(buffa::EnumValue::from(*kind)) else {

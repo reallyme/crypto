@@ -5,7 +5,7 @@ The baseline inventory is recorded in
 from before migration; its declaration and export ledgers remain available for
 review rather than being rewritten to hide outstanding gaps.
 
-The strict error API is targeted at 0.4. It will replace the legacy nested error
+The source API is versioned 0.4.0. It replaces the legacy nested error
 variants as a deliberate breaking change. Existing 0.3 registry packages and
 release tags are not modified. No new release has been published.
 
@@ -52,8 +52,9 @@ Native workspace Clippy (all targets/features, warnings denied), the selected
 WASM execution profile, TypeScript compilation, Buf lint/breaking against the
 published baseline, generation idempotence and CI policy checks pass. Test
 sources compile in the native all-targets check; test execution is deferred.
-The broader WASM all-targets check is blocked by an existing missing crate-doc
-lint in `aead_root_open_operation_tests.rs` when that test is feature-disabled.
+Sparse feature builds retain a narrowly scoped test-crate documentation
+allowance before the test's feature gate, so disabled AEAD tests do not create
+an unrelated missing-crate-documentation warning.
 
 ## Canonical native error contract
 
@@ -407,7 +408,38 @@ primary-source provenance and license. These sources are compiled, not executed.
 
 ## Remaining work
 
-- Migrate the remaining options, policies, content modes, key-source contracts,
-  operations and limits in separate areas with generated/native parity.
-- Keep absent-versus-empty semantics explicit. The baseline crypto schema has
-  no manual `bool has_x` fields to retire.
+The implemented identity, error, policy, dimensions, native options, primitive,
+HPKE, utility, format and conformance contracts above are the current 0.4.0
+source state. The original inventory remains frozen historical evidence.
+Completeness of the migration still requires a current compiler-visible export
+and semantic reconciliation; a declared enum or DTO is not proof that an
+operation, option, lifecycle or SDK route is reachable.
+
+- Reconcile current public declarations, cross-workspace reexports/aliases,
+  macro-expanded exports and public trait/default members with the frozen
+  inventory and all newly added items. Distinguish direct native adapters,
+  executable root routes, representation helpers and conformance-only gates;
+  preserve explicit dispositions for derived/blanket members and adapter-only
+  utilities. Close concrete missing domains without inventing executable routes.
+- Complete final-checkpoint formatting, native all-target/all-feature Clippy,
+  Buf compatibility/generation/freshness, TypeScript compilation and the native,
+  WASM and seven mobile target compile checks. Earlier passing statements above
+  describe their migration checkpoints; they do not certify subsequent changes.
+  Final aggregate checks remain pending in the compatibility matrix.
+- Execute the new parity, optional-presence, negative-input, canonical-error,
+  ownership, provider-failure and deterministic conformance regressions against
+  the final native/WASM source, with applicable property/fuzz and SDK validation
+  before release readiness is asserted. No runtime execution of these migration
+  regressions is claimed. Historical primitive/device results retain their
+  pre-migration source scope.
+- Retain absent-versus-present-empty bytes/messages and reject zero/unknown
+  selectors and unknown modifiers in each actual adapter. The baseline schema
+  has no manual `bool has_x` fields to retire. Generated transport copies must
+  retain independent cleanup without making native keys or live contexts
+  serializable. Deserializer-internal scratch remains a separate memory limit.
+- Keep the accepted primefield coordinate-serialization temporary and BP512
+  full-order certificate as explicit audit limits. Local ownership repairs,
+  schema completeness and known answers do not close those separate findings.
+- Keep the 44 Rust source package versions at 0.4.0 distinct from unchanged
+  0.3.17 SDK artifact versions and published packages. Coordinated release and
+  remote publication remain separate delivery steps; no 0.4.0 release is claimed.

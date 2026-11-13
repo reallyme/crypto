@@ -12,7 +12,8 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoPoseidon2HashRequest, CryptoPoseidon2HashResult,
 };
 use zeroize::{Zeroize, ZeroizeOnDrop};
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn fixed_poseidon_byte_profile_preserves_every_input_and_digest_byte() {
     for input in [
         Vec::new(),
@@ -38,7 +39,8 @@ fn fixed_poseidon_byte_profile_preserves_every_input_and_digest_byte() {
         );
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn poseidon_rejects_oversized_and_unknown_inputs_and_clears_owners(
 ) -> Result<(), buffa::DecodeError> {
     fn cleanup<T: ZeroizeOnDrop>() {}

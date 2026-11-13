@@ -15,7 +15,8 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 };
 use crypto_rsa::{RsaHash, RsaPublicKeyDerEncoding};
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn rsa_hash_parity_covers_every_generated_identity_and_exact_wire_bytes() {
     for &value in RsaHashAlgorithm::values() {
         let identifier = CryptoRsaHashIdentifier {
@@ -58,7 +59,8 @@ fn rsa_hash_parity_covers_every_generated_identity_and_exact_wire_bytes() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn rsa_hash_rejects_zero_negative_and_unknown_numbers() {
     for number in [i32::MIN, -1, 0, 99_999, i32::MAX] {
         let identifier = CryptoRsaHashIdentifier {
@@ -72,7 +74,8 @@ fn rsa_hash_rejects_zero_negative_and_unknown_numbers() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn rsa_hash_rejects_retained_unknown_modifiers() -> Result<(), buffa::DecodeError> {
     let mut identifier = CryptoRsaHashIdentifier::from(RsaHash::Sha1);
     // Unknown field 100 is public test data, not an accepted policy modifier.
@@ -85,7 +88,8 @@ fn rsa_hash_rejects_retained_unknown_modifiers() -> Result<(), buffa::DecodeErro
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn rsa_der_encoding_parity_covers_every_generated_identity_and_exact_wire_bytes() {
     for &value in ProtoRsaEncoding::values() {
         let identifier = CryptoRsaPublicKeyDerEncodingIdentifier {
@@ -124,7 +128,8 @@ fn rsa_der_encoding_parity_covers_every_generated_identity_and_exact_wire_bytes(
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn rsa_der_encoding_rejects_zero_negative_and_unknown_numbers() {
     for number in [i32::MIN, -1, 0, 99_999, i32::MAX] {
         let identifier = CryptoRsaPublicKeyDerEncodingIdentifier {
@@ -138,7 +143,8 @@ fn rsa_der_encoding_rejects_zero_negative_and_unknown_numbers() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn rsa_der_encoding_rejects_retained_unknown_modifiers() -> Result<(), buffa::DecodeError> {
     let mut identifier =
         CryptoRsaPublicKeyDerEncodingIdentifier::from(RsaPublicKeyDerEncoding::Pkcs1);
@@ -152,14 +158,16 @@ fn rsa_der_encoding_rejects_retained_unknown_modifiers() -> Result<(), buffa::De
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn decoded_metadata_owners_clear_retained_unknown_storage_on_drop() {
     fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
     require_cleanup::<CryptoRsaHashIdentifier>();
     require_cleanup::<CryptoRsaPublicKeyDerEncodingIdentifier>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn schema_metadata_does_not_renumber_existing_rsa_ffi_identifiers() {
     for (hash, expected) in [
         (RsaHash::Sha1, 1),

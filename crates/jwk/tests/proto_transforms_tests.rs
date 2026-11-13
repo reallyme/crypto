@@ -14,7 +14,8 @@ use envelopes_jwk::proto_transforms::PublicKeyToJwkInputs;
 use envelopes_jwk::{Jwk, JwkOptions};
 use zeroize::{ZeroizeOnDrop, Zeroizing};
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn every_supported_key_flags_and_kid_match_existing_native_jwk_and_jcs() {
     for algorithm in KeyAlgorithm::values() {
         let Some(public_key) = public_key(*algorithm) else {
@@ -73,7 +74,8 @@ fn every_supported_key_flags_and_kid_match_existing_native_jwk_and_jcs() {
         }
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn transforms_reject_unknown_modifiers_missing_options_and_invalid_keys(
 ) -> Result<(), buffa::DecodeError> {
     let mut wire = request(
@@ -135,7 +137,8 @@ fn transforms_reject_unknown_modifiers_missing_options_and_invalid_keys(
     );
     Ok(())
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn jcs_noncharacter_rejection_remains_typed_and_owners_are_clearing() {
     fn cleanup<T: ZeroizeOnDrop>() {}
     cleanup::<PublicKeyToJwkInputs>();

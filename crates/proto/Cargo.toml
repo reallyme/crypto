@@ -28,5 +28,8 @@ subtle = { workspace = true, optional = true }
 thiserror = { workspace = true, optional = true }
 zeroize = { workspace = true, optional = true }
 
+[dev-dependencies]
+wasm-bindgen-test = { workspace = true }
+
 [lints]
 workspace = true

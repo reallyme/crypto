@@ -14,7 +14,8 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoPbkdf2PrfIdentifier, MacAlgorithm,
 };
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn pbkdf2_prf_parity_covers_every_generated_identity_and_exact_wire_bytes() {
     for &value in MacAlgorithm::values() {
         let identifier = CryptoPbkdf2PrfIdentifier {
@@ -44,7 +45,8 @@ fn pbkdf2_prf_parity_covers_every_generated_identity_and_exact_wire_bytes() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn pbkdf2_prf_rejects_zero_negative_and_unknown_numbers() {
     for number in [i32::MIN, -1, 0, 99_999, i32::MAX] {
         let identifier = CryptoPbkdf2PrfIdentifier {
@@ -58,7 +60,8 @@ fn pbkdf2_prf_rejects_zero_negative_and_unknown_numbers() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn pbkdf2_prf_rejects_retained_unknown_modifiers() -> Result<(), buffa::DecodeError> {
     let mut identifier = CryptoPbkdf2PrfIdentifier::from(Pbkdf2Prf::HmacSha256);
     // Unknown field 100 is public test data, not an accepted policy modifier.
@@ -71,7 +74,8 @@ fn pbkdf2_prf_rejects_retained_unknown_modifiers() -> Result<(), buffa::DecodeEr
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn decoded_metadata_owners_clear_retained_unknown_storage_on_drop() {
     fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
     require_cleanup::<CryptoPbkdf2PrfIdentifier>();

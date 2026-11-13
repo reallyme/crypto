@@ -26,6 +26,7 @@ crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "
 buffa = { workspace = true, optional = true }
 
 [dev-dependencies]
+wasm-bindgen-test = { workspace = true }
 serde_json = { workspace = true }
 zeroize = { workspace = true }
 

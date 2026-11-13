@@ -8,13 +8,15 @@ use crypto_core::CryptoError;
 use envelopes_jwk::{Jwk, JwkOptions, JwtError, OkpJwk};
 use serde_json::json;
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn public_error_name_is_the_canonical_error_type() {
     let error: CryptoError = JwtError::PRIMITIVE_INVALID_PUBLIC_KEY;
     assert_eq!(error, CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY);
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn unknown_identity_and_inconsistent_metadata_keep_distinct_reasons() {
     let unknown = Jwk::Okp(OkpJwk {
         kty: "OKP".to_owned(),
@@ -42,7 +44,8 @@ fn unknown_identity_and_inconsistent_metadata_keep_distinct_reasons() {
     );
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn malformed_shape_is_distinct_from_configured_member_limit() {
     let malformed = serde_json::from_value::<Jwk>(json!({"kty":true})).expect_err("invalid shape");
     assert!(malformed
@@ -62,7 +65,8 @@ fn malformed_shape_is_distinct_from_configured_member_limit() {
         .starts_with(&CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED.to_string()));
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn caller_key_identifier_noncharacter_is_not_an_internal_output_failure() {
     let options = JwkOptions {
         kid: Some("\u{fdd0}".to_owned()),

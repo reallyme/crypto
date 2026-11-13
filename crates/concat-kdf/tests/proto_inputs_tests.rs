@@ -46,7 +46,8 @@ fn parity<const N: usize>() {
         expected.as_bytes()
     );
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn standalone_adapter_supports_widths_outside_fixed_root_dispatch() {
     fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
     require_cleanup::<ConcatKdfInputs<17>>();
@@ -58,7 +59,8 @@ fn standalone_adapter_supports_widths_outside_fixed_root_dispatch() {
     parity::<33>();
     parity::<65>();
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn rfc7518_vector_and_exact_party_bytes_are_retained() {
     let mut wire = request(16);
     wire.shared_secret = vec![
@@ -88,7 +90,8 @@ fn rfc7518_vector_and_exact_party_bytes_are_retained() {
     changed.party_v_info.clear();
     assert!(ConcatKdfInputs::<17>::try_from(&changed).is_ok());
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn adapter_rejects_width_disagreement_zero_and_invalid_native_fields() {
     assert_eq!(
         ConcatKdfInputs::<17>::try_from(&request(16)).err(),
@@ -117,7 +120,8 @@ fn adapter_rejects_width_disagreement_zero_and_invalid_native_fields() {
         Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
     );
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn adapter_rejects_wrong_unknown_and_modified_algorithm_identity() -> Result<(), buffa::DecodeError>
 {
     let mut wire = request(17);
@@ -162,7 +166,8 @@ fn adapter_rejects_wrong_unknown_and_modified_algorithm_identity() -> Result<(),
     );
     Ok(())
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn cloned_public_algorithm_identifiers_keep_independent_clearing_owners() {
     let mut original = JwaAlgorithmId::from_slice(b"A128GCM").expect("algorithm");
     let retained = original.clone();

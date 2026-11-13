@@ -42,7 +42,8 @@ fn known_versions() -> [(Argon2idKdfVersion, u32); 2] {
     ]
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn platform_query_matches_both_existing_profiles_and_platforms() {
     for (version, number) in known_versions() {
         for native_platform in [
@@ -61,7 +62,8 @@ fn platform_query_matches_both_existing_profiles_and_platforms() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn budget_query_preserves_arbitrary_u32_admission_without_cost_overrides() {
     for (version, number) in known_versions() {
         let fixed = resolve_profile_params_for_platform(number, Argon2PlatformClass::DesktopModern)
@@ -104,7 +106,8 @@ fn budget_query_preserves_arbitrary_u32_admission_without_cost_overrides() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn explicit_zero_budget_is_present_on_wire_and_absence_is_rejected() {
     let caps = Argon2Caps {
         mem_cap_kib: 0,
@@ -147,7 +150,8 @@ fn explicit_zero_budget_is_present_on_wire_and_absence_is_rejected() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn mobile_unlock_query_reuses_existing_selection_and_owner_contracts() {
     fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
     require_cleanup::<CryptoArgon2PlatformResolveRequest>();
@@ -161,7 +165,8 @@ fn mobile_unlock_query_reuses_existing_selection_and_owner_contracts() {
     );
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn queries_reject_missing_unknown_identities_platforms_and_modifiers(
 ) -> Result<(), buffa::DecodeError> {
     let mut request = CryptoArgon2PlatformResolveRequest {

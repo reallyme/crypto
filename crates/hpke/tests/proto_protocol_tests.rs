@@ -14,7 +14,8 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
     HpkeKemId as ProtoKem, HpkeSuiteIdentifier,
 };
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn component_support_has_total_generated_parity() {
     for value in ProtoSupport::values() {
         let converted = HpkeComponentSupport::try_from(EnumValue::from(*value));
@@ -34,7 +35,8 @@ fn component_support_has_total_generated_parity() {
         );
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn every_registered_component_matches_the_schema_and_build_relative_support() {
     assert_registry::<ProtoKem, HpkeKemId>(&HPKE_REGISTERED_KEMS);
     assert_registry::<ProtoKdf, HpkeKdfId>(&HPKE_REGISTERED_KDFS);
@@ -67,7 +69,8 @@ fn every_registered_component_matches_the_schema_and_build_relative_support() {
         );
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn all_compound_and_mls_alias_constants_round_trip_exactly() {
     let suites = [
         crypto_hpke::HPKE_DHKEM_P256_HKDF_SHA256_AES128GCM,
@@ -101,7 +104,8 @@ fn all_compound_and_mls_alias_constants_round_trip_exactly() {
         assert_eq!(wire.aead.to_i32(), i32::from(suite.aead_id()));
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn protocol_results_and_requests_retain_clearing_ownership() {
     fn cleanup<T: zeroize::ZeroizeOnDrop>() {}
     cleanup::<crypto_proto::generated::proto::reallyme::crypto::v1::CryptoHpkePskSenderSetupRequest>(
@@ -188,7 +192,8 @@ mod runtime {
             __buffa_unknown_fields: Default::default(),
         }
     }
-    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+    #[cfg_attr(not(target_arch = "wasm32"), test)]
     fn exact_setup_content_and_sequence_remain_native_owned() {
         fn send<T: Send>() {}
         fn cleanup<T: ZeroizeOnDrop>() {}
@@ -266,7 +271,8 @@ mod runtime {
             );
         }
     }
-    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+    #[cfg_attr(not(target_arch = "wasm32"), test)]
     fn setup_rejects_presence_keys_psk_and_unknown_modifiers() -> Result<(), buffa::DecodeError> {
         let key = crypto_hpke::derive_keypair(suite(), &[0x42; 32]).expect("recipient");
         let mut wire = sender(&key.public_key);
@@ -308,7 +314,8 @@ mod runtime {
         );
         Ok(())
     }
-    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+    #[cfg_attr(not(target_arch = "wasm32"), test)]
     fn existing_one_shot_and_export_dtos_preserve_suite_and_binary_context() {
         let key = crypto_hpke::derive_keypair(suite(), &[0x42; 32]).expect("recipient");
         let algorithm = || {
@@ -367,7 +374,8 @@ mod runtime {
     feature = "kdf-hkdf-sha256",
     feature = "aead-aes128-gcm"
 ))]
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn mismatched_info_psk_identifier_aad_and_tampering_keep_authentication_failure() {
     use buffa::MessageField;
     use crypto_hpke::proto_protocol::{
@@ -469,7 +477,8 @@ mod base {
         CryptoHpkeP256BaseOpenRequest, CryptoHpkeP256BaseOpenResult, CryptoHpkeP256BasePublicKey,
         CryptoHpkeP256BaseSealRequest, CryptoHpkeP256BaseSealedResult,
     };
-    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+    #[cfg_attr(not(target_arch = "wasm32"), test)]
     fn fixed_profile_exposes_only_public_key_and_preserves_binary_info() {
         let recipient = P256RecipientKey::import(&[1; 32]).expect("native recipient owner");
         let public = CryptoHpkeP256BasePublicKey::from(&recipient);
@@ -518,7 +527,8 @@ mod base {
             Some(HpkeError::PRIMITIVE_AUTHENTICATION_FAILED)
         );
     }
-    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+    #[cfg_attr(not(target_arch = "wasm32"), test)]
     fn fixed_profile_rejects_bounds_and_malformed_input_before_copy() {
         let mut seal = CryptoHpkeP256BaseSealRequest {
             recipient_public_key: vec![0; PUBLIC_KEY_LEN],
@@ -553,7 +563,8 @@ mod base {
     feature = "kdf-hkdf-sha256",
     feature = "aead-aes128-gcm"
 ))]
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn remaining_existing_requests_preserve_every_field_and_reject_unknown_modifiers(
 ) -> Result<(), buffa::DecodeError> {
     use buffa::{Message, MessageField};
@@ -670,7 +681,8 @@ fn remaining_existing_requests_preserve_every_field_and_reject_unknown_modifiers
 }
 
 #[cfg(feature = "backend-native")]
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn every_request_adapter_has_clearing_ownership() {
     use crypto_hpke::proto_protocol::{
         HpkeOpenInputs, HpkePskOpenInputs, HpkePskReceiverSetupInputs, HpkePskSealInputs,

@@ -38,8 +38,9 @@ pub use key::EcdsaKey;
 pub use sign::{sign_with_provider, OpaqueEcdsaSigner};
 pub use verify::{validate_public_key, verify};
 
-/// Named curves. Unsupported curves return `UnsupportedCurve`; enum presence
-/// alone does not mean that an implementation is available.
+/// Named curves. Unavailable curves return the schema-defined
+/// `PROVIDER_UNSUPPORTED_ALGORITHM` reason; identity alone does not establish
+/// implementation availability.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum EcdsaCurve {
     /// NIST P-256.

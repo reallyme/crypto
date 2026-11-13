@@ -31,6 +31,7 @@ sha2 = { workspace = true }
 zeroize = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
+wasm-bindgen-test = { workspace = true }
 buffa = { workspace = true }
 
 [lints]

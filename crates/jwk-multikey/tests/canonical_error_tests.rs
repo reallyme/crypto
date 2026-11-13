@@ -8,14 +8,16 @@ use crypto_core::CryptoError;
 use envelopes_jwk::{JwkOptions, JwtError};
 use envelopes_jwk_multikey::{multikey_to_jwk, JwkMultikeyError};
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn envelope_adapter_error_names_share_the_canonical_type() {
     let source: JwtError = CryptoError::BACKEND_INTERNAL;
     let adapter: JwkMultikeyError = source;
     assert_eq!(adapter, CryptoError::BACKEND_INTERNAL);
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn invalid_public_key_is_not_an_internal_encoding_failure() {
     // The codec checks the byte envelope; the JWK layer rejects this small-order
     // Ed25519 identity. Preserve that originating canonical key rejection.
@@ -27,7 +29,8 @@ fn invalid_public_key_is_not_an_internal_encoding_failure() {
     );
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn malformed_multibase_remains_an_input_encoding_rejection() {
     assert_eq!(
         multikey_to_jwk("zInvalidKey", JwkOptions::default()).err(),

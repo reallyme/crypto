@@ -17,7 +17,8 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 };
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn domain_purpose_has_total_generated_parity() {
     for value in ProtoPurpose::values() {
         let native = DomainKeyPurpose::try_from(EnumValue::from(*value));
@@ -34,7 +35,8 @@ fn domain_purpose_has_total_generated_parity() {
         );
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn native_derive_inputs_preserve_binary_info_and_optional_empty_salt() {
     for salt in [None, Some(Vec::new()), Some(vec![0, 0xff])] {
         let wire = CryptoHkdfDeriveInputs {
@@ -54,7 +56,8 @@ fn native_derive_inputs_preserve_binary_info_and_optional_empty_salt() {
         assert_eq!(returned.info, wire.info);
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn sha384_extract_and_expand_preserve_exact_material_and_context() {
     for salt in [None, Some(Vec::new()), Some(vec![0x11; 16])] {
         let request = CryptoHkdfExtractSha384Request {
@@ -74,7 +77,8 @@ fn sha384_extract_and_expand_preserve_exact_material_and_context() {
     assert_eq!(returned.info, wire.info);
     assert_eq!(returned.output_length, 32);
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn expand_rejects_wrong_lengths_and_unknown_modifiers() -> Result<(), buffa::DecodeError> {
     let mut wire = expand_request();
     for invalid in [
@@ -102,7 +106,8 @@ fn expand_rejects_wrong_lengths_and_unknown_modifiers() -> Result<(), buffa::Dec
     );
     Ok(())
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn domain_tag_rejects_normalization_and_preserves_existing_profile_inputs(
 ) -> Result<(), buffa::DecodeError> {
     let mut tag = CryptoHkdfDomainTag {
@@ -144,7 +149,8 @@ fn domain_tag_rejects_normalization_and_preserves_existing_profile_inputs(
     );
     Ok(())
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn request_owners_clear_owned_material() {
     fn require_cleanup<T: ZeroizeOnDrop>() {}
     require_cleanup::<HkdfDeriveInputs>();
@@ -158,7 +164,8 @@ fn request_owners_clear_owned_material() {
     assert!(native.info().as_bytes().is_empty());
 }
 #[cfg(not(feature = "sha3"))]
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn domain_metadata_does_not_enable_sha3_execution() {
     let wire = CryptoHkdfDomainKey32Request {
         input_key_material: vec![0x42; 32],
@@ -191,7 +198,8 @@ fn expand_request() -> CryptoHkdfExpandSha384Request {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn derive_extract_and_domain_inputs_reject_missing_or_unknown_modifiers(
 ) -> Result<(), buffa::DecodeError> {
     let mut derive = CryptoHkdfDeriveInputs {
@@ -255,7 +263,8 @@ fn derive_extract_and_domain_inputs_reject_missing_or_unknown_modifiers(
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn generated_options_owners_clear_retained_storage() {
     fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
     require_cleanup::<crypto_proto::generated::proto::reallyme::crypto::v1::CryptoHkdfDomainTag>();

@@ -9,7 +9,8 @@ use crypto_core::CryptoError;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{CryptoRsaPssParams, RsaHashAlgorithm};
 use crypto_rsa::RsaPssParams;
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn pss_preserves_independent_hashes_and_explicit_zero_salt() {
     for message in RsaHashAlgorithm::values()
         .iter()
@@ -36,7 +37,8 @@ fn pss_preserves_independent_hashes_and_explicit_zero_salt() {
         }
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn pss_rejects_missing_salt_and_unknown_hashes_or_modifiers() -> Result<(), buffa::DecodeError> {
     let mut wire = CryptoRsaPssParams {
         message_hash: RsaHashAlgorithm::RSA_HASH_ALGORITHM_SHA256.into(),
@@ -65,7 +67,8 @@ fn pss_rejects_missing_salt_and_unknown_hashes_or_modifiers() -> Result<(), buff
     Ok(())
 }
 #[cfg(target_pointer_width = "64")]
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn pss_rejects_native_salt_length_outside_u32() {
     let native = RsaPssParams {
         message_hash: crypto_rsa::RsaHash::Sha256,
@@ -78,7 +81,8 @@ fn pss_rejects_native_salt_length_outside_u32() {
     );
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn generated_options_owners_clear_retained_storage() {
     fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
     require_cleanup::<crypto_proto::generated::proto::reallyme::crypto::v1::CryptoRsaPssParams>();

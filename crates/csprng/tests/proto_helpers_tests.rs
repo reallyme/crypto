@@ -38,7 +38,8 @@ fn request(length: u32) -> CryptoRandomBytesRequest {
         __buffa_unknown_fields: Default::default(),
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn injected_generation_preserves_kind_length_and_protected_result() {
     let owner = RandomBytesRequest::try_from(&request(4)).expect("request");
     assert_eq!(owner.purpose(), RngOutputKind::Generic);
@@ -64,7 +65,8 @@ fn injected_generation_preserves_kind_length_and_protected_result() {
         .expect("borrowed fill");
     assert_eq!(output, [0, 1, 2, 3]);
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn wrong_lengths_zero_generation_and_provider_failures_keep_exact_errors() {
     let owner = RandomBytesRequest::try_from(&request(4)).expect("request");
     assert_eq!(
@@ -87,7 +89,8 @@ fn wrong_lengths_zero_generation_and_provider_failures_keep_exact_errors() {
         Some(CryptoError::PRIMITIVE_INVALID_LENGTH)
     );
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn random_requests_reject_unknown_purposes_and_modifiers() -> Result<(), buffa::DecodeError> {
     let mut wire = request(4);
     for purpose in [0, -1, 999_999, i32::MAX] {
@@ -105,7 +108,8 @@ fn random_requests_reject_unknown_purposes_and_modifiers() -> Result<(), buffa::
     );
     Ok(())
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn fixed_named_results_keep_purpose_and_clearing_storage() {
     fn cleanup<T: zeroize::ZeroizeOnDrop>() {}
     cleanup::<RandomBytes<4>>();

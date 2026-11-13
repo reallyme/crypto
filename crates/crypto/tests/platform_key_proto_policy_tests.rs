@@ -11,7 +11,8 @@ use buffa::{EnumValue, Enumeration};
 use crypto_core::CryptoError;
 use crypto_proto::generated::proto::reallyme::crypto::v1::PlatformKeyOperation as ProtoPlatformKeyOperation;
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn platform_key_operation_has_total_schema_parity() {
     assert_enum_parity::<
         ProtoPlatformKeyOperation,

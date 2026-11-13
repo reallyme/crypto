@@ -7,7 +7,8 @@
 #![allow(missing_docs)]
 use crypto_rsa::{RsaHash, RsaPublicKeyDerEncoding};
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn rsa_hash_ffi_ids_and_unknown_rejection_are_unchanged() {
     for (hash, id) in [
         (RsaHash::Sha1, 1),
@@ -22,7 +23,8 @@ fn rsa_hash_ffi_ids_and_unknown_rejection_are_unchanged() {
         assert_eq!(RsaHash::from_ffi_id(id), None);
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn rsa_der_ffi_ids_and_unknown_rejection_are_unchanged() {
     for (encoding, id) in [
         (RsaPublicKeyDerEncoding::Pkcs1, 1),

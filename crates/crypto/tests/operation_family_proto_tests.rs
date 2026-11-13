@@ -8,7 +8,8 @@ use buffa::{EnumValue, Enumeration};
 use crypto_core::CryptoError;
 use crypto_proto::generated::proto::reallyme::crypto::v1::CryptoAlgorithmFamily;
 use reallyme_crypto::operations::OperationFamily;
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn every_schema_operation_family_has_exact_native_parity() {
     for value in CryptoAlgorithmFamily::values() {
         let native = OperationFamily::try_from(EnumValue::from(*value));

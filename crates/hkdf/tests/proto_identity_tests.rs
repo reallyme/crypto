@@ -14,7 +14,8 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoHkdfSuiteIdentifier, HashAlgorithm,
 };
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn hkdf_suite_parity_covers_every_generated_identity_and_exact_wire_bytes() {
     for &value in HashAlgorithm::values() {
         let identifier = CryptoHkdfSuiteIdentifier {
@@ -47,7 +48,8 @@ fn hkdf_suite_parity_covers_every_generated_identity_and_exact_wire_bytes() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn hkdf_suite_rejects_zero_negative_and_unknown_numbers() {
     for number in [i32::MIN, -1, 0, 99_999, i32::MAX] {
         let identifier = CryptoHkdfSuiteIdentifier {
@@ -61,7 +63,8 @@ fn hkdf_suite_rejects_zero_negative_and_unknown_numbers() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn hkdf_suite_rejects_retained_unknown_modifiers() -> Result<(), buffa::DecodeError> {
     let mut identifier = CryptoHkdfSuiteIdentifier::from(HkdfSuite::Sha2_256);
     // Unknown field 100 is public test data, not an accepted policy modifier.
@@ -74,14 +77,16 @@ fn hkdf_suite_rejects_retained_unknown_modifiers() -> Result<(), buffa::DecodeEr
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn decoded_metadata_owners_clear_retained_unknown_storage_on_drop() {
     fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
     require_cleanup::<CryptoHkdfSuiteIdentifier>();
 }
 
 #[cfg(not(feature = "sha3"))]
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn sha3_identity_does_not_require_the_optional_sha3_implementation() {
     let identifier = CryptoHkdfSuiteIdentifier::from(HkdfSuite::Sha3_256);
     assert_eq!(HkdfSuite::try_from(&identifier), Ok(HkdfSuite::Sha3_256));

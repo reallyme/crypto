@@ -1792,6 +1792,7 @@ dependencies = [
  "hex",
  "reallyme-crypto-core",
  "reallyme-crypto-proto",
+ "wasm-bindgen-test",
  "zeroize",
 ]
 
@@ -1813,6 +1814,7 @@ dependencies = [
  "reallyme-crypto-core",
  "reallyme-crypto-proto",
  "sha2",
+ "wasm-bindgen-test",
  "zeroize",
 ]
 
@@ -1824,6 +1826,7 @@ dependencies = [
  "reallyme-crypto-core",
  "reallyme-crypto-proto",
  "subtle",
+ "wasm-bindgen-test",
  "zeroize",
 ]
 
@@ -1834,6 +1837,7 @@ dependencies = [
  "buffa",
  "reallyme-crypto-proto",
  "serde_json",
+ "wasm-bindgen-test",
  "zeroize",
 ]
 
@@ -1847,6 +1851,7 @@ dependencies = [
  "reallyme-crypto-proto",
  "secrecy",
  "subtle",
+ "wasm-bindgen-test",
  "zeroize",
 ]
 
@@ -1962,6 +1967,7 @@ dependencies = [
  "reallyme-crypto-secp256k1",
  "serde",
  "serde_json",
+ "wasm-bindgen-test",
  "zeroize",
 ]
 
@@ -1977,6 +1983,7 @@ dependencies = [
  "reallyme-crypto-jwk",
  "reallyme-crypto-proto",
  "serde_json",
+ "wasm-bindgen-test",
  "zeroize",
 ]
 
@@ -2102,6 +2109,7 @@ dependencies = [
  "reallyme-crypto-core",
  "reallyme-crypto-proto",
  "sha2",
+ "wasm-bindgen-test",
  "zeroize",
 ]
 
@@ -2117,6 +2125,7 @@ dependencies = [
  "reallyme-crypto-core",
  "reallyme-crypto-proto",
  "taceo-poseidon2",
+ "wasm-bindgen-test",
  "zeroize",
 ]
 
@@ -2130,6 +2139,7 @@ dependencies = [
  "serde_json",
  "subtle",
  "thiserror",
+ "wasm-bindgen-test",
  "zeroize",
 ]
 
@@ -2270,6 +2280,7 @@ dependencies = [
  "reallyme-crypto-core",
  "reallyme-crypto-sha3",
  "reallyme-crypto-sha3-256",
+ "wasm-bindgen-test",
  "x25519-dalek",
  "zeroize",
 ]

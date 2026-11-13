@@ -49,7 +49,8 @@ fn binding(
     output
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn every_generated_identity_uses_the_existing_total_core_bridge() {
     for value in KeyAlgorithm::values() {
         let mut request = CryptoGenerateMultikeyKeypairRequest::default();
@@ -82,7 +83,8 @@ fn every_generated_identity_uses_the_existing_total_core_bridge() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn missing_identity_and_unknown_modifiers_fail_closed() {
     let mut request = CryptoGenerateMultikeyKeypairRequest::default();
     assert_eq!(
@@ -131,7 +133,8 @@ fn missing_identity_and_unknown_modifiers_fail_closed() {
     );
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn all_new_byte_and_transitive_outputs_have_clearing_owners() {
     fn requires_owner<T: ZeroizeOnDrop>() {}
     requires_owner::<CryptoGenerateMultikeyKeypairRequest>();
@@ -145,7 +148,8 @@ fn all_new_byte_and_transitive_outputs_have_clearing_owners() {
     requires_owner::<VerificationMethodMultikeyInputs>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn protected_inputs_preserve_exact_bytes_and_explicit_cleanup() {
     let mut request = CryptoPublicKeyToMultikeyRequest::default();
     request.algorithm = MessageField::some(identity(Algorithm::SlhDsaSha2_128s));
@@ -177,7 +181,8 @@ fn protected_inputs_preserve_exact_bytes_and_explicit_cleanup() {
     assert!(inputs.public_key_multibase().is_empty());
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn legacy_slh_binding_policy_and_utf8_errors_are_preserved() {
     // Existing structural binding permits the SLH identity before parsing even
     // though software multikey generation/encoding does not implement it.
@@ -217,7 +222,8 @@ fn legacy_slh_binding_policy_and_utf8_errors_are_preserved() {
 }
 
 #[cfg(not(feature = "ed25519"))]
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn disabled_algorithm_is_rejected_before_untrusted_binding_text() {
     let request = binding(Algorithm::Ed25519, &[0xff], &[0xff]);
     assert_eq!(
@@ -234,7 +240,8 @@ fn disabled_algorithm_is_rejected_before_untrusted_binding_text() {
 }
 
 #[cfg(feature = "ed25519")]
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn public_encoding_and_structural_binding_match_existing_native_operations() {
     let public = hex::decode("d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a")
         .expect("RFC 8032 public key");

@@ -25,52 +25,62 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
     KeyAlgorithm, ProviderDecision as ProtoProviderDecision,
 };
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn provider_operation_has_total_schema_parity() {
     assert_enum_parity::<ProtoProviderOperation, crypto_dispatch::ProviderOperation>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn provider_kind_has_total_schema_parity() {
     assert_enum_parity::<ProtoProviderKind, crypto_dispatch::ProviderKind>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn provider_lane_has_total_schema_parity() {
     assert_enum_parity::<ProtoProviderLane, crypto_dispatch::ProviderLane>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn key_residency_has_total_schema_parity() {
     assert_enum_parity::<ProtoKeyResidency, crypto_dispatch::KeyResidency>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn key_copy_boundary_has_total_schema_parity() {
     assert_enum_parity::<ProtoKeyCopyBoundary, crypto_dispatch::KeyCopyBoundary>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn provider_output_policy_has_total_schema_parity() {
     assert_enum_parity::<ProtoProviderOutputPolicy, crypto_dispatch::ProviderOutputPolicy>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn provider_policy_reason_has_total_schema_parity() {
     assert_enum_parity::<ProtoProviderPolicyReason, crypto_dispatch::ProviderPolicyReason>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn provider_disposition_has_total_schema_parity() {
     assert_enum_parity::<ProtoProviderDisposition, crypto_dispatch::ProviderDisposition>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn fallback_policy_has_total_schema_parity() {
     assert_enum_parity::<ProtoFallbackPolicy, crypto_dispatch::FallbackPolicy>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn decision_record_preserves_every_native_policy_field() {
     for operation in ProtoProviderOperation::values() {
         let Ok(operation) = ProviderOperation::try_from(buffa::EnumValue::from(*operation)) else {
@@ -172,7 +182,8 @@ where
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn query_requests_recompute_the_native_decision_and_reject_modifiers() {
     use buffa::Message;
     use crypto_proto::generated::proto::reallyme::crypto::v1::{
