@@ -221,6 +221,11 @@ dispatch = ["dep:crypto-dispatch"]
 operation-response = [
     "dep:buffa",
     "dep:crypto-proto",
+    # Identity adapters follow only leaves the caller already selected.
+    "crypto-hkdf?/proto",
+    "crypto-pbkdf2?/proto",
+    "crypto-argon2id?/proto",
+    "crypto-rsa?/proto",
 ]
 signer = ["dep:crypto-signer", "dispatch"]
 ed25519 = ["dep:crypto-ed25519", "dispatch", "crypto-dispatch?/ed25519", "crypto-signer?/ed25519"]
@@ -235,7 +240,9 @@ rsa = ["dep:crypto-rsa", "dispatch"]
 secp256k1 = ["dep:crypto-secp256k1", "dispatch", "crypto-dispatch?/secp256k1", "crypto-signer?/secp256k1"]
 x25519 = ["dep:crypto-x25519", "dispatch", "crypto-dispatch?/x25519"]
 x-wing = ["dep:crypto-x-wing", "dispatch", "crypto-dispatch?/x-wing"]
-hpke-api = ["dep:crypto-hpke"]
+# The weak proto feature follows an already-selected HPKE dependency; ordinary
+# operation-response callers do not acquire unrelated cryptographic backends.
+hpke-api = ["dep:crypto-hpke", "crypto-proto?/hpke-identities"]
 hpke = ["hpke-api", "crypto-hpke/native"]
 hpke-openmls = ["hpke-api", "crypto-hpke/openmls"]
 test-vectors = ["hpke", "crypto-hpke/test-vectors"]

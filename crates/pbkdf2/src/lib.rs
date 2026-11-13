@@ -10,6 +10,8 @@
 #![forbid(unsafe_code)]
 
 mod constants;
+#[cfg(feature = "proto")]
+mod convert_proto_identity;
 #[cfg(any(feature = "native", feature = "wasm"))]
 mod derive_key;
 mod types;

@@ -17,11 +17,14 @@ description = "RSA signature verification primitive for ReallyMe Crypto."
 name = "crypto_rsa"
 
 [features]
+# Metadata conversion does not select an execution backend.
+proto = ["dep:crypto-proto"]
 default = ["native"]
 native = []
 wasm = []
 
 [dependencies]
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.3.17", path = "../proto", optional = true, default-features = false, features = ["generated"] }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.3.17", path = "../crypto/core" }
 sha1 = { workspace = true }
 sha2 = { workspace = true }
@@ -34,6 +37,7 @@ subtle = { workspace = true }
 zeroize = { workspace = true }
 
 [dev-dependencies]
+buffa = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 wasm-bindgen-test = { workspace = true }

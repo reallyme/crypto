@@ -44,7 +44,20 @@ for (const match of protoSource.matchAll(messagePattern)) {
   }
 }
 const messageNames = [...messageBodies.keys()];
-const sensitiveMessageNames = new Set(byteBearingMessageNames);
+const scalarMetadataMessageNames = new Set([
+  "CryptoKeyAlgorithmIdentifier",
+  "CryptoEcdsaCurveIdentifier",
+  "CryptoPrimeGroupIdentifier",
+  "CryptoHkdfSuiteIdentifier",
+  "CryptoPbkdf2PrfIdentifier",
+  "CryptoArgon2idProfileIdentifier",
+  "CryptoRsaHashIdentifier",
+  "CryptoRsaPublicKeyDerEncodingIdentifier",
+]);
+const sensitiveMessageNames = new Set([
+  ...byteBearingMessageNames,
+  ...scalarMetadataMessageNames,
+]);
 for (const [messageName, body] of messageBodies) {
   for (const fieldName of sensitiveStringFieldNames) {
     if (new RegExp(`\\bstring\\s+${fieldName}\\s*=`, "u").test(body)) {
@@ -79,7 +92,12 @@ while (addedSensitiveOwner) {
 const redactedMessageNames = messageNames.filter((messageName) =>
   sensitiveMessageNames.has(messageName),
 );
-const unknownFieldDropOwnerNames = new Set(byteBearingMessageNames);
+const unknownFieldDropOwnerNames = new Set([
+  ...byteBearingMessageNames,
+  // Key metadata has no secret fields, but rejected unknown fields can still
+  // retain caller-owned bytes and must be cleared with the decoded owner.
+  ...scalarMetadataMessageNames,
+]);
 const wrappedUnknownFieldOwnerNames = new Set([
   "CryptoOperationRequest",
   "CryptoOperationResponse",
@@ -421,6 +439,51 @@ function hardenSensitiveOwnerDrop(source, messageName) {
   return `${source.slice(0, implIndex)}${drop}${source.slice(implIndex)}`;
 }
 
+function hardenScalarMetadataDeserialize(source, messageName) {
+  const deserializeMarker = `impl<'de> ::serde::Deserialize<'de> for ${messageName} {`;
+  if (source.includes(deserializeMarker)) {
+    const start = source.indexOf(deserializeMarker);
+    const open = source.indexOf("{", start);
+    const end = findMatchingBrace(source, open) + 1;
+    const implementation = source.slice(start, end).replace(
+      "let mut wire = Wire::deserialize(deserializer)?;",
+      "let wire = Wire::deserialize(deserializer)?;",
+    );
+    return source.slice(0, start) + implementation + source.slice(end);
+  }
+  const structMarker = `pub struct ${messageName} {`;
+  const structStart = source.indexOf(structMarker);
+  if (structStart < 0) {
+    fail(`missing scalar metadata owner ${messageName}`);
+  }
+  const structOpen = source.indexOf("{", structStart);
+  const structEnd = findMatchingBrace(source, structOpen);
+  const fields = parseStructFields(source.slice(structOpen + 1, structEnd));
+  const headerStart = Math.max(0, structStart - 512);
+  const header = source.slice(headerStart, structStart);
+  const rawDerive = "#[derive(::serde::Serialize, ::serde::Deserialize)]";
+  const deriveOffset = header.lastIndexOf(rawDerive);
+  if (deriveOffset < 0) {
+    fail(`unexpected scalar metadata serde derive on ${messageName}`);
+  }
+  const deriveIndex = headerStart + deriveOffset;
+  source = source.slice(0, deriveIndex) + "#[derive(::serde::Serialize)]" +
+    source.slice(deriveIndex + rawDerive.length);
+  const implMarker = `impl ${messageName} {`;
+  const implIndex = source.indexOf(implMarker, deriveIndex);
+  if (implIndex < 0) {
+    fail(`missing scalar metadata implementation ${messageName}`);
+  }
+  // Serde's struct-level default otherwise moves skipped unknown storage out
+  // of a Drop owner. Decode through an independent wire shape instead.
+  const implementation = deserializeImpl(messageName, fields).replace(
+    "let mut wire = Wire::deserialize(deserializer)?;",
+    "let wire = Wire::deserialize(deserializer)?;",
+  );
+  return source.slice(0, implIndex) + implementation +
+    source.slice(implIndex);
+}
+
 function hardenUnknownFieldStorage(source, messageName) {
   const structMarker = `pub struct ${messageName} {`;
   const structStart = source.indexOf(structMarker);
@@ -735,6 +798,16 @@ fn __reallyme_reject_secret_json<S: ::serde::Serializer>(
       source = hardenSensitiveOwnerDrop(source, messageName);
     }
   }
+  for (const messageName of scalarMetadataMessageNames) {
+    source = hardenScalarMetadataDeserialize(source, messageName);
+    const cleanupMarker = `impl ::zeroize::ZeroizeOnDrop for ${messageName} {}`;
+    if (!source.includes(cleanupMarker)) {
+      source = source.replace(
+        `impl ${messageName} {`,
+        `${cleanupMarker}\nimpl ${messageName} {`,
+      );
+    }
+  }
   for (const messageName of wrappedUnknownFieldOwnerNames) {
     source = hardenUnknownFieldStorage(source, messageName);
   }
@@ -894,6 +967,13 @@ const swiftPath = join(
   "gen/swift/reallyme/crypto/v1/crypto.pb.swift",
 );
 const normalizedGeneratedPaths = [
+  ...[...scalarMetadataMessageNames].flatMap((name) => [
+    `gen/java/me/really/crypto/v1/${name}.java`,
+    `gen/kotlin/me/really/crypto/v1/${name}Kt.kt`,
+  ]),
+  ...["KeyAlgorithm", "EcdsaCurve", "PrimeGroup", "RsaHashAlgorithm"].map(
+    (name) => `gen/java/me/really/crypto/v1/${name}.java`,
+  ),
   "gen/java/me/really/crypto/v1/CryptoHpkeDeriveKeyPairRequest.java",
   "gen/java/me/really/crypto/v1/CryptoHpkeGenerateKeyPairRequest.java",
   "gen/java/me/really/crypto/v1/CryptoHpkePskOpenRequest.java",

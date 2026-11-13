@@ -49,6 +49,48 @@ package bindings under `packages/ts/src/proto/generated`, and additional
 TypeScript, JavaScript, Swift, Java, and Kotlin outputs under `gen/`.
 Review generated diffs and run the conformance checks before accepting them.
 
+## Algorithm Identity
+
+Operation-independent asymmetric key metadata uses `KeyAlgorithm` inside
+`CryptoKeyAlgorithmIdentifier`. It is separate from executable signature,
+key-agreement and KEM suites: a key identity never supplies a missing hash,
+signature encoding or operation choice. Existing operation oneofs and their
+wire tags are unchanged. The native `Algorithm` compatibility type converts
+through this schema identity; its existing variants and discriminants remain
+unchanged.
+
+The total native conversions in `reallyme_crypto_proto::convert` accept a
+borrowed generated identifier, including the generated unknown-value wrapper.
+They reject missing choices, `UNSPECIFIED`, unknown values, wrong families and
+unknown modifier fields. Published closed-enum convenience conversions delegate
+to the same path. The optional `hpke-identities` feature adds suite-triple
+conversion using the existing HPKE identity types without enabling a backend;
+operation provider policy still determines whether a registered suite executes.
+
+Curve and prime-group identities are standalone metadata as well:
+`CryptoEcdsaCurveIdentifier` uses the seven-value `EcdsaCurve` enum, and
+`CryptoPrimeGroupIdentifier` uses the ten-value `PrimeGroup` enum. Both assign
+100-199 to NIST curves and 200-299 to Brainpool curves; `PrimeGroup` assigns
+300-399 to RFC 5114 finite-field domains. Zero is `UNSPECIFIED`, 1-99 are
+reserved, and assigned values are permanent. Registration of a legacy group
+says nothing about a protocol's required strength.
+
+With `operation-response` and the relevant primitive feature selected, native
+curve/group owners expose one total conversion from borrowed generated
+metadata. They recognize identities without checking provider availability and
+reject omitted, zero, unknown and modified identifiers. `EcdsaHash` uses the
+existing `CryptoAlgorithmIdentifier` hash branch and accepts only SHA-2-256,
+SHA-2-384 and SHA-2-512; no second hash namespace is introduced. Generated
+scalar metadata clears retained unknown byte fields on drop.
+
+These metadata messages do not add executable operation branches, choose a
+signature encoding or hash implicitly, or supply a group base or mapping policy.
+Protocol callers still provide those choices through the existing primitive APIs.
+
+Protobuf CI checks compatibility with the published 0.3.17 schema commit
+`e57caf7a035c1ffe33aad0038d603b793a69b28a` before regeneration. The baseline is
+pinned by commit, and compatibility validation runs once in the protobuf lane.
+
 ## Field Presence And Compatibility
 
 Presence is part of the public contract. Prefer proto3 `optional` for new

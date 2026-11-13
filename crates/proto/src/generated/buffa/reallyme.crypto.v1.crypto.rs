@@ -1005,6 +1005,700 @@ impl ::buffa::Enumeration for CryptoAlgorithmFamily {
         ]
     }
 }
+/// KeyAlgorithm identifies an asymmetric key type independently of the
+/// operation-specific signature or key-agreement suite. These values must not
+/// be substituted for SignatureAlgorithm, KeyAgreementAlgorithm or KemAlgorithm
+/// numbers. Classical key types occupy 100-299, post-quantum signature keys
+/// 1000-1199, post-quantum KEM keys 2000-2099 and hybrid KEM keys 2100-2199.
+#[allow(non_camel_case_types)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+#[repr(i32)]
+pub enum KeyAlgorithm {
+    KEY_ALGORITHM_UNSPECIFIED = 0i32,
+    KEY_ALGORITHM_ED25519 = 100i32,
+    KEY_ALGORITHM_X25519 = 110i32,
+    KEY_ALGORITHM_P256 = 200i32,
+    KEY_ALGORITHM_P384 = 210i32,
+    KEY_ALGORITHM_P521 = 220i32,
+    KEY_ALGORITHM_SECP256K1 = 230i32,
+    KEY_ALGORITHM_ML_DSA_44 = 1000i32,
+    KEY_ALGORITHM_ML_DSA_65 = 1010i32,
+    KEY_ALGORITHM_ML_DSA_87 = 1020i32,
+    KEY_ALGORITHM_SLH_DSA_SHA2_128S = 1100i32,
+    KEY_ALGORITHM_ML_KEM_512 = 2000i32,
+    KEY_ALGORITHM_ML_KEM_768 = 2010i32,
+    KEY_ALGORITHM_ML_KEM_1024 = 2020i32,
+    KEY_ALGORITHM_X_WING_768 = 2100i32,
+}
+impl KeyAlgorithm {
+    ///Idiomatic alias for [`Self::KEY_ALGORITHM_UNSPECIFIED`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Unspecified: Self = Self::KEY_ALGORITHM_UNSPECIFIED;
+    ///Idiomatic alias for [`Self::KEY_ALGORITHM_ED25519`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Ed25519: Self = Self::KEY_ALGORITHM_ED25519;
+    ///Idiomatic alias for [`Self::KEY_ALGORITHM_X25519`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const X25519: Self = Self::KEY_ALGORITHM_X25519;
+    ///Idiomatic alias for [`Self::KEY_ALGORITHM_P256`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const P256: Self = Self::KEY_ALGORITHM_P256;
+    ///Idiomatic alias for [`Self::KEY_ALGORITHM_P384`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const P384: Self = Self::KEY_ALGORITHM_P384;
+    ///Idiomatic alias for [`Self::KEY_ALGORITHM_P521`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const P521: Self = Self::KEY_ALGORITHM_P521;
+    ///Idiomatic alias for [`Self::KEY_ALGORITHM_SECP256K1`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Secp256k1: Self = Self::KEY_ALGORITHM_SECP256K1;
+    ///Idiomatic alias for [`Self::KEY_ALGORITHM_ML_DSA_44`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const MlDsa44: Self = Self::KEY_ALGORITHM_ML_DSA_44;
+    ///Idiomatic alias for [`Self::KEY_ALGORITHM_ML_DSA_65`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const MlDsa65: Self = Self::KEY_ALGORITHM_ML_DSA_65;
+    ///Idiomatic alias for [`Self::KEY_ALGORITHM_ML_DSA_87`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const MlDsa87: Self = Self::KEY_ALGORITHM_ML_DSA_87;
+    ///Idiomatic alias for [`Self::KEY_ALGORITHM_SLH_DSA_SHA2_128S`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const SlhDsaSha2128s: Self = Self::KEY_ALGORITHM_SLH_DSA_SHA2_128S;
+    ///Idiomatic alias for [`Self::KEY_ALGORITHM_ML_KEM_512`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const MlKem512: Self = Self::KEY_ALGORITHM_ML_KEM_512;
+    ///Idiomatic alias for [`Self::KEY_ALGORITHM_ML_KEM_768`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const MlKem768: Self = Self::KEY_ALGORITHM_ML_KEM_768;
+    ///Idiomatic alias for [`Self::KEY_ALGORITHM_ML_KEM_1024`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const MlKem1024: Self = Self::KEY_ALGORITHM_ML_KEM_1024;
+    ///Idiomatic alias for [`Self::KEY_ALGORITHM_X_WING_768`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const XWing768: Self = Self::KEY_ALGORITHM_X_WING_768;
+}
+impl ::core::default::Default for KeyAlgorithm {
+    fn default() -> Self {
+        Self::KEY_ALGORITHM_UNSPECIFIED
+    }
+}
+impl ::serde::Serialize for KeyAlgorithm {
+    fn serialize<S: ::serde::Serializer>(
+        &self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        s.serialize_str(::buffa::Enumeration::proto_name(self))
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for KeyAlgorithm {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        struct _V;
+        impl ::serde::de::Visitor<'_> for _V {
+            type Value = KeyAlgorithm;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str(
+                    concat!("a string, integer, or null for ", stringify!(KeyAlgorithm)),
+                )
+            }
+            fn visit_str<E: ::serde::de::Error>(
+                self,
+                v: &str,
+            ) -> ::core::result::Result<KeyAlgorithm, E> {
+                <KeyAlgorithm as ::buffa::Enumeration>::from_proto_name(v)
+                    .ok_or_else(|| { ::serde::de::Error::unknown_variant(v, &[]) })
+            }
+            fn visit_i64<E: ::serde::de::Error>(
+                self,
+                v: i64,
+            ) -> ::core::result::Result<KeyAlgorithm, E> {
+                let v32 = i32::try_from(v)
+                    .map_err(|_| {
+                        ::serde::de::Error::custom("enum value out of i32 range")
+                    })?;
+                <KeyAlgorithm as ::buffa::Enumeration>::from_i32(v32)
+                    .ok_or_else(|| {
+                        ::serde::de::Error::custom("unknown enum value")
+                    })
+            }
+            fn visit_u64<E: ::serde::de::Error>(
+                self,
+                v: u64,
+            ) -> ::core::result::Result<KeyAlgorithm, E> {
+                let v32 = i32::try_from(v)
+                    .map_err(|_| {
+                        ::serde::de::Error::custom("enum value out of i32 range")
+                    })?;
+                <KeyAlgorithm as ::buffa::Enumeration>::from_i32(v32)
+                    .ok_or_else(|| {
+                        ::serde::de::Error::custom("unknown enum value")
+                    })
+            }
+            fn visit_unit<E: ::serde::de::Error>(
+                self,
+            ) -> ::core::result::Result<KeyAlgorithm, E> {
+                ::core::result::Result::Ok(::core::default::Default::default())
+            }
+        }
+        d.deserialize_any(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for KeyAlgorithm {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+impl ::buffa::Enumeration for KeyAlgorithm {
+    fn from_i32(value: i32) -> ::core::option::Option<Self> {
+        match value {
+            0i32 => ::core::option::Option::Some(Self::KEY_ALGORITHM_UNSPECIFIED),
+            100i32 => ::core::option::Option::Some(Self::KEY_ALGORITHM_ED25519),
+            110i32 => ::core::option::Option::Some(Self::KEY_ALGORITHM_X25519),
+            200i32 => ::core::option::Option::Some(Self::KEY_ALGORITHM_P256),
+            210i32 => ::core::option::Option::Some(Self::KEY_ALGORITHM_P384),
+            220i32 => ::core::option::Option::Some(Self::KEY_ALGORITHM_P521),
+            230i32 => ::core::option::Option::Some(Self::KEY_ALGORITHM_SECP256K1),
+            1000i32 => ::core::option::Option::Some(Self::KEY_ALGORITHM_ML_DSA_44),
+            1010i32 => ::core::option::Option::Some(Self::KEY_ALGORITHM_ML_DSA_65),
+            1020i32 => ::core::option::Option::Some(Self::KEY_ALGORITHM_ML_DSA_87),
+            1100i32 => {
+                ::core::option::Option::Some(Self::KEY_ALGORITHM_SLH_DSA_SHA2_128S)
+            }
+            2000i32 => ::core::option::Option::Some(Self::KEY_ALGORITHM_ML_KEM_512),
+            2010i32 => ::core::option::Option::Some(Self::KEY_ALGORITHM_ML_KEM_768),
+            2020i32 => ::core::option::Option::Some(Self::KEY_ALGORITHM_ML_KEM_1024),
+            2100i32 => ::core::option::Option::Some(Self::KEY_ALGORITHM_X_WING_768),
+            _ => ::core::option::Option::None,
+        }
+    }
+    fn to_i32(&self) -> i32 {
+        *self as i32
+    }
+    fn proto_name(&self) -> &'static str {
+        match self {
+            Self::KEY_ALGORITHM_UNSPECIFIED => "KEY_ALGORITHM_UNSPECIFIED",
+            Self::KEY_ALGORITHM_ED25519 => "KEY_ALGORITHM_ED25519",
+            Self::KEY_ALGORITHM_X25519 => "KEY_ALGORITHM_X25519",
+            Self::KEY_ALGORITHM_P256 => "KEY_ALGORITHM_P256",
+            Self::KEY_ALGORITHM_P384 => "KEY_ALGORITHM_P384",
+            Self::KEY_ALGORITHM_P521 => "KEY_ALGORITHM_P521",
+            Self::KEY_ALGORITHM_SECP256K1 => "KEY_ALGORITHM_SECP256K1",
+            Self::KEY_ALGORITHM_ML_DSA_44 => "KEY_ALGORITHM_ML_DSA_44",
+            Self::KEY_ALGORITHM_ML_DSA_65 => "KEY_ALGORITHM_ML_DSA_65",
+            Self::KEY_ALGORITHM_ML_DSA_87 => "KEY_ALGORITHM_ML_DSA_87",
+            Self::KEY_ALGORITHM_SLH_DSA_SHA2_128S => "KEY_ALGORITHM_SLH_DSA_SHA2_128S",
+            Self::KEY_ALGORITHM_ML_KEM_512 => "KEY_ALGORITHM_ML_KEM_512",
+            Self::KEY_ALGORITHM_ML_KEM_768 => "KEY_ALGORITHM_ML_KEM_768",
+            Self::KEY_ALGORITHM_ML_KEM_1024 => "KEY_ALGORITHM_ML_KEM_1024",
+            Self::KEY_ALGORITHM_X_WING_768 => "KEY_ALGORITHM_X_WING_768",
+        }
+    }
+    fn from_proto_name(name: &str) -> ::core::option::Option<Self> {
+        match name {
+            "KEY_ALGORITHM_UNSPECIFIED" => {
+                ::core::option::Option::Some(Self::KEY_ALGORITHM_UNSPECIFIED)
+            }
+            "KEY_ALGORITHM_ED25519" => {
+                ::core::option::Option::Some(Self::KEY_ALGORITHM_ED25519)
+            }
+            "KEY_ALGORITHM_X25519" => {
+                ::core::option::Option::Some(Self::KEY_ALGORITHM_X25519)
+            }
+            "KEY_ALGORITHM_P256" => {
+                ::core::option::Option::Some(Self::KEY_ALGORITHM_P256)
+            }
+            "KEY_ALGORITHM_P384" => {
+                ::core::option::Option::Some(Self::KEY_ALGORITHM_P384)
+            }
+            "KEY_ALGORITHM_P521" => {
+                ::core::option::Option::Some(Self::KEY_ALGORITHM_P521)
+            }
+            "KEY_ALGORITHM_SECP256K1" => {
+                ::core::option::Option::Some(Self::KEY_ALGORITHM_SECP256K1)
+            }
+            "KEY_ALGORITHM_ML_DSA_44" => {
+                ::core::option::Option::Some(Self::KEY_ALGORITHM_ML_DSA_44)
+            }
+            "KEY_ALGORITHM_ML_DSA_65" => {
+                ::core::option::Option::Some(Self::KEY_ALGORITHM_ML_DSA_65)
+            }
+            "KEY_ALGORITHM_ML_DSA_87" => {
+                ::core::option::Option::Some(Self::KEY_ALGORITHM_ML_DSA_87)
+            }
+            "KEY_ALGORITHM_SLH_DSA_SHA2_128S" => {
+                ::core::option::Option::Some(Self::KEY_ALGORITHM_SLH_DSA_SHA2_128S)
+            }
+            "KEY_ALGORITHM_ML_KEM_512" => {
+                ::core::option::Option::Some(Self::KEY_ALGORITHM_ML_KEM_512)
+            }
+            "KEY_ALGORITHM_ML_KEM_768" => {
+                ::core::option::Option::Some(Self::KEY_ALGORITHM_ML_KEM_768)
+            }
+            "KEY_ALGORITHM_ML_KEM_1024" => {
+                ::core::option::Option::Some(Self::KEY_ALGORITHM_ML_KEM_1024)
+            }
+            "KEY_ALGORITHM_X_WING_768" => {
+                ::core::option::Option::Some(Self::KEY_ALGORITHM_X_WING_768)
+            }
+            _ => ::core::option::Option::None,
+        }
+    }
+    fn values() -> &'static [Self] {
+        &[
+            Self::KEY_ALGORITHM_UNSPECIFIED,
+            Self::KEY_ALGORITHM_ED25519,
+            Self::KEY_ALGORITHM_X25519,
+            Self::KEY_ALGORITHM_P256,
+            Self::KEY_ALGORITHM_P384,
+            Self::KEY_ALGORITHM_P521,
+            Self::KEY_ALGORITHM_SECP256K1,
+            Self::KEY_ALGORITHM_ML_DSA_44,
+            Self::KEY_ALGORITHM_ML_DSA_65,
+            Self::KEY_ALGORITHM_ML_DSA_87,
+            Self::KEY_ALGORITHM_SLH_DSA_SHA2_128S,
+            Self::KEY_ALGORITHM_ML_KEM_512,
+            Self::KEY_ALGORITHM_ML_KEM_768,
+            Self::KEY_ALGORITHM_ML_KEM_1024,
+            Self::KEY_ALGORITHM_X_WING_768,
+        ]
+    }
+}
+/// EcdsaCurve is curve identity metadata, independent of the signature hash,
+/// encoding and provider. Its numbers are permanent and append-only: 100-199
+/// identify NIST prime curves and 200-299 identify Brainpool prime curves.
+/// A registered identity does not assert that an execution backend is enabled.
+#[allow(non_camel_case_types)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+#[repr(i32)]
+pub enum EcdsaCurve {
+    ECDSA_CURVE_UNSPECIFIED = 0i32,
+    ECDSA_CURVE_NIST_P256 = 100i32,
+    ECDSA_CURVE_NIST_P384 = 110i32,
+    ECDSA_CURVE_NIST_P521 = 120i32,
+    ECDSA_CURVE_BRAINPOOL_P256R1 = 200i32,
+    ECDSA_CURVE_BRAINPOOL_P320R1 = 210i32,
+    ECDSA_CURVE_BRAINPOOL_P384R1 = 220i32,
+    ECDSA_CURVE_BRAINPOOL_P512R1 = 230i32,
+}
+impl EcdsaCurve {
+    ///Idiomatic alias for [`Self::ECDSA_CURVE_UNSPECIFIED`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Unspecified: Self = Self::ECDSA_CURVE_UNSPECIFIED;
+    ///Idiomatic alias for [`Self::ECDSA_CURVE_NIST_P256`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const NistP256: Self = Self::ECDSA_CURVE_NIST_P256;
+    ///Idiomatic alias for [`Self::ECDSA_CURVE_NIST_P384`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const NistP384: Self = Self::ECDSA_CURVE_NIST_P384;
+    ///Idiomatic alias for [`Self::ECDSA_CURVE_NIST_P521`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const NistP521: Self = Self::ECDSA_CURVE_NIST_P521;
+    ///Idiomatic alias for [`Self::ECDSA_CURVE_BRAINPOOL_P256R1`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const BrainpoolP256r1: Self = Self::ECDSA_CURVE_BRAINPOOL_P256R1;
+    ///Idiomatic alias for [`Self::ECDSA_CURVE_BRAINPOOL_P320R1`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const BrainpoolP320r1: Self = Self::ECDSA_CURVE_BRAINPOOL_P320R1;
+    ///Idiomatic alias for [`Self::ECDSA_CURVE_BRAINPOOL_P384R1`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const BrainpoolP384r1: Self = Self::ECDSA_CURVE_BRAINPOOL_P384R1;
+    ///Idiomatic alias for [`Self::ECDSA_CURVE_BRAINPOOL_P512R1`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const BrainpoolP512r1: Self = Self::ECDSA_CURVE_BRAINPOOL_P512R1;
+}
+impl ::core::default::Default for EcdsaCurve {
+    fn default() -> Self {
+        Self::ECDSA_CURVE_UNSPECIFIED
+    }
+}
+impl ::serde::Serialize for EcdsaCurve {
+    fn serialize<S: ::serde::Serializer>(
+        &self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        s.serialize_str(::buffa::Enumeration::proto_name(self))
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for EcdsaCurve {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        struct _V;
+        impl ::serde::de::Visitor<'_> for _V {
+            type Value = EcdsaCurve;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str(
+                    concat!("a string, integer, or null for ", stringify!(EcdsaCurve)),
+                )
+            }
+            fn visit_str<E: ::serde::de::Error>(
+                self,
+                v: &str,
+            ) -> ::core::result::Result<EcdsaCurve, E> {
+                <EcdsaCurve as ::buffa::Enumeration>::from_proto_name(v)
+                    .ok_or_else(|| { ::serde::de::Error::unknown_variant(v, &[]) })
+            }
+            fn visit_i64<E: ::serde::de::Error>(
+                self,
+                v: i64,
+            ) -> ::core::result::Result<EcdsaCurve, E> {
+                let v32 = i32::try_from(v)
+                    .map_err(|_| {
+                        ::serde::de::Error::custom("enum value out of i32 range")
+                    })?;
+                <EcdsaCurve as ::buffa::Enumeration>::from_i32(v32)
+                    .ok_or_else(|| {
+                        ::serde::de::Error::custom("unknown enum value")
+                    })
+            }
+            fn visit_u64<E: ::serde::de::Error>(
+                self,
+                v: u64,
+            ) -> ::core::result::Result<EcdsaCurve, E> {
+                let v32 = i32::try_from(v)
+                    .map_err(|_| {
+                        ::serde::de::Error::custom("enum value out of i32 range")
+                    })?;
+                <EcdsaCurve as ::buffa::Enumeration>::from_i32(v32)
+                    .ok_or_else(|| {
+                        ::serde::de::Error::custom("unknown enum value")
+                    })
+            }
+            fn visit_unit<E: ::serde::de::Error>(
+                self,
+            ) -> ::core::result::Result<EcdsaCurve, E> {
+                ::core::result::Result::Ok(::core::default::Default::default())
+            }
+        }
+        d.deserialize_any(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for EcdsaCurve {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+impl ::buffa::Enumeration for EcdsaCurve {
+    fn from_i32(value: i32) -> ::core::option::Option<Self> {
+        match value {
+            0i32 => ::core::option::Option::Some(Self::ECDSA_CURVE_UNSPECIFIED),
+            100i32 => ::core::option::Option::Some(Self::ECDSA_CURVE_NIST_P256),
+            110i32 => ::core::option::Option::Some(Self::ECDSA_CURVE_NIST_P384),
+            120i32 => ::core::option::Option::Some(Self::ECDSA_CURVE_NIST_P521),
+            200i32 => ::core::option::Option::Some(Self::ECDSA_CURVE_BRAINPOOL_P256R1),
+            210i32 => ::core::option::Option::Some(Self::ECDSA_CURVE_BRAINPOOL_P320R1),
+            220i32 => ::core::option::Option::Some(Self::ECDSA_CURVE_BRAINPOOL_P384R1),
+            230i32 => ::core::option::Option::Some(Self::ECDSA_CURVE_BRAINPOOL_P512R1),
+            _ => ::core::option::Option::None,
+        }
+    }
+    fn to_i32(&self) -> i32 {
+        *self as i32
+    }
+    fn proto_name(&self) -> &'static str {
+        match self {
+            Self::ECDSA_CURVE_UNSPECIFIED => "ECDSA_CURVE_UNSPECIFIED",
+            Self::ECDSA_CURVE_NIST_P256 => "ECDSA_CURVE_NIST_P256",
+            Self::ECDSA_CURVE_NIST_P384 => "ECDSA_CURVE_NIST_P384",
+            Self::ECDSA_CURVE_NIST_P521 => "ECDSA_CURVE_NIST_P521",
+            Self::ECDSA_CURVE_BRAINPOOL_P256R1 => "ECDSA_CURVE_BRAINPOOL_P256R1",
+            Self::ECDSA_CURVE_BRAINPOOL_P320R1 => "ECDSA_CURVE_BRAINPOOL_P320R1",
+            Self::ECDSA_CURVE_BRAINPOOL_P384R1 => "ECDSA_CURVE_BRAINPOOL_P384R1",
+            Self::ECDSA_CURVE_BRAINPOOL_P512R1 => "ECDSA_CURVE_BRAINPOOL_P512R1",
+        }
+    }
+    fn from_proto_name(name: &str) -> ::core::option::Option<Self> {
+        match name {
+            "ECDSA_CURVE_UNSPECIFIED" => {
+                ::core::option::Option::Some(Self::ECDSA_CURVE_UNSPECIFIED)
+            }
+            "ECDSA_CURVE_NIST_P256" => {
+                ::core::option::Option::Some(Self::ECDSA_CURVE_NIST_P256)
+            }
+            "ECDSA_CURVE_NIST_P384" => {
+                ::core::option::Option::Some(Self::ECDSA_CURVE_NIST_P384)
+            }
+            "ECDSA_CURVE_NIST_P521" => {
+                ::core::option::Option::Some(Self::ECDSA_CURVE_NIST_P521)
+            }
+            "ECDSA_CURVE_BRAINPOOL_P256R1" => {
+                ::core::option::Option::Some(Self::ECDSA_CURVE_BRAINPOOL_P256R1)
+            }
+            "ECDSA_CURVE_BRAINPOOL_P320R1" => {
+                ::core::option::Option::Some(Self::ECDSA_CURVE_BRAINPOOL_P320R1)
+            }
+            "ECDSA_CURVE_BRAINPOOL_P384R1" => {
+                ::core::option::Option::Some(Self::ECDSA_CURVE_BRAINPOOL_P384R1)
+            }
+            "ECDSA_CURVE_BRAINPOOL_P512R1" => {
+                ::core::option::Option::Some(Self::ECDSA_CURVE_BRAINPOOL_P512R1)
+            }
+            _ => ::core::option::Option::None,
+        }
+    }
+    fn values() -> &'static [Self] {
+        &[
+            Self::ECDSA_CURVE_UNSPECIFIED,
+            Self::ECDSA_CURVE_NIST_P256,
+            Self::ECDSA_CURVE_NIST_P384,
+            Self::ECDSA_CURVE_NIST_P521,
+            Self::ECDSA_CURVE_BRAINPOOL_P256R1,
+            Self::ECDSA_CURVE_BRAINPOOL_P320R1,
+            Self::ECDSA_CURVE_BRAINPOOL_P384R1,
+            Self::ECDSA_CURVE_BRAINPOOL_P512R1,
+        ]
+    }
+}
+/// PrimeGroup identifies an exact reviewed prime-order domain. Numbers are
+/// permanent and append-only: 100-199 are NIST curves, 200-299 are Brainpool
+/// curves, and 300-399 are the finite-field groups from RFC 5114 sections 2.1-2.3.
+/// Legacy group registration does not constitute a protocol-strength policy.
+#[allow(non_camel_case_types)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+#[repr(i32)]
+pub enum PrimeGroup {
+    PRIME_GROUP_UNSPECIFIED = 0i32,
+    PRIME_GROUP_NIST_P256 = 100i32,
+    PRIME_GROUP_NIST_P384 = 110i32,
+    PRIME_GROUP_NIST_P521 = 120i32,
+    PRIME_GROUP_BRAINPOOL_P256R1 = 200i32,
+    PRIME_GROUP_BRAINPOOL_P320R1 = 210i32,
+    PRIME_GROUP_BRAINPOOL_P384R1 = 220i32,
+    PRIME_GROUP_BRAINPOOL_P512R1 = 230i32,
+    PRIME_GROUP_RFC5114_DH1024_160 = 300i32,
+    PRIME_GROUP_RFC5114_DH2048_224 = 310i32,
+    PRIME_GROUP_RFC5114_DH2048_256 = 320i32,
+}
+impl PrimeGroup {
+    ///Idiomatic alias for [`Self::PRIME_GROUP_UNSPECIFIED`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Unspecified: Self = Self::PRIME_GROUP_UNSPECIFIED;
+    ///Idiomatic alias for [`Self::PRIME_GROUP_NIST_P256`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const NistP256: Self = Self::PRIME_GROUP_NIST_P256;
+    ///Idiomatic alias for [`Self::PRIME_GROUP_NIST_P384`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const NistP384: Self = Self::PRIME_GROUP_NIST_P384;
+    ///Idiomatic alias for [`Self::PRIME_GROUP_NIST_P521`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const NistP521: Self = Self::PRIME_GROUP_NIST_P521;
+    ///Idiomatic alias for [`Self::PRIME_GROUP_BRAINPOOL_P256R1`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const BrainpoolP256r1: Self = Self::PRIME_GROUP_BRAINPOOL_P256R1;
+    ///Idiomatic alias for [`Self::PRIME_GROUP_BRAINPOOL_P320R1`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const BrainpoolP320r1: Self = Self::PRIME_GROUP_BRAINPOOL_P320R1;
+    ///Idiomatic alias for [`Self::PRIME_GROUP_BRAINPOOL_P384R1`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const BrainpoolP384r1: Self = Self::PRIME_GROUP_BRAINPOOL_P384R1;
+    ///Idiomatic alias for [`Self::PRIME_GROUP_BRAINPOOL_P512R1`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const BrainpoolP512r1: Self = Self::PRIME_GROUP_BRAINPOOL_P512R1;
+    ///Idiomatic alias for [`Self::PRIME_GROUP_RFC5114_DH1024_160`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Rfc5114Dh1024160: Self = Self::PRIME_GROUP_RFC5114_DH1024_160;
+    ///Idiomatic alias for [`Self::PRIME_GROUP_RFC5114_DH2048_224`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Rfc5114Dh2048224: Self = Self::PRIME_GROUP_RFC5114_DH2048_224;
+    ///Idiomatic alias for [`Self::PRIME_GROUP_RFC5114_DH2048_256`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Rfc5114Dh2048256: Self = Self::PRIME_GROUP_RFC5114_DH2048_256;
+}
+impl ::core::default::Default for PrimeGroup {
+    fn default() -> Self {
+        Self::PRIME_GROUP_UNSPECIFIED
+    }
+}
+impl ::serde::Serialize for PrimeGroup {
+    fn serialize<S: ::serde::Serializer>(
+        &self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        s.serialize_str(::buffa::Enumeration::proto_name(self))
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PrimeGroup {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        struct _V;
+        impl ::serde::de::Visitor<'_> for _V {
+            type Value = PrimeGroup;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str(
+                    concat!("a string, integer, or null for ", stringify!(PrimeGroup)),
+                )
+            }
+            fn visit_str<E: ::serde::de::Error>(
+                self,
+                v: &str,
+            ) -> ::core::result::Result<PrimeGroup, E> {
+                <PrimeGroup as ::buffa::Enumeration>::from_proto_name(v)
+                    .ok_or_else(|| { ::serde::de::Error::unknown_variant(v, &[]) })
+            }
+            fn visit_i64<E: ::serde::de::Error>(
+                self,
+                v: i64,
+            ) -> ::core::result::Result<PrimeGroup, E> {
+                let v32 = i32::try_from(v)
+                    .map_err(|_| {
+                        ::serde::de::Error::custom("enum value out of i32 range")
+                    })?;
+                <PrimeGroup as ::buffa::Enumeration>::from_i32(v32)
+                    .ok_or_else(|| {
+                        ::serde::de::Error::custom("unknown enum value")
+                    })
+            }
+            fn visit_u64<E: ::serde::de::Error>(
+                self,
+                v: u64,
+            ) -> ::core::result::Result<PrimeGroup, E> {
+                let v32 = i32::try_from(v)
+                    .map_err(|_| {
+                        ::serde::de::Error::custom("enum value out of i32 range")
+                    })?;
+                <PrimeGroup as ::buffa::Enumeration>::from_i32(v32)
+                    .ok_or_else(|| {
+                        ::serde::de::Error::custom("unknown enum value")
+                    })
+            }
+            fn visit_unit<E: ::serde::de::Error>(
+                self,
+            ) -> ::core::result::Result<PrimeGroup, E> {
+                ::core::result::Result::Ok(::core::default::Default::default())
+            }
+        }
+        d.deserialize_any(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for PrimeGroup {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+impl ::buffa::Enumeration for PrimeGroup {
+    fn from_i32(value: i32) -> ::core::option::Option<Self> {
+        match value {
+            0i32 => ::core::option::Option::Some(Self::PRIME_GROUP_UNSPECIFIED),
+            100i32 => ::core::option::Option::Some(Self::PRIME_GROUP_NIST_P256),
+            110i32 => ::core::option::Option::Some(Self::PRIME_GROUP_NIST_P384),
+            120i32 => ::core::option::Option::Some(Self::PRIME_GROUP_NIST_P521),
+            200i32 => ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P256R1),
+            210i32 => ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P320R1),
+            220i32 => ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P384R1),
+            230i32 => ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P512R1),
+            300i32 => ::core::option::Option::Some(Self::PRIME_GROUP_RFC5114_DH1024_160),
+            310i32 => ::core::option::Option::Some(Self::PRIME_GROUP_RFC5114_DH2048_224),
+            320i32 => ::core::option::Option::Some(Self::PRIME_GROUP_RFC5114_DH2048_256),
+            _ => ::core::option::Option::None,
+        }
+    }
+    fn to_i32(&self) -> i32 {
+        *self as i32
+    }
+    fn proto_name(&self) -> &'static str {
+        match self {
+            Self::PRIME_GROUP_UNSPECIFIED => "PRIME_GROUP_UNSPECIFIED",
+            Self::PRIME_GROUP_NIST_P256 => "PRIME_GROUP_NIST_P256",
+            Self::PRIME_GROUP_NIST_P384 => "PRIME_GROUP_NIST_P384",
+            Self::PRIME_GROUP_NIST_P521 => "PRIME_GROUP_NIST_P521",
+            Self::PRIME_GROUP_BRAINPOOL_P256R1 => "PRIME_GROUP_BRAINPOOL_P256R1",
+            Self::PRIME_GROUP_BRAINPOOL_P320R1 => "PRIME_GROUP_BRAINPOOL_P320R1",
+            Self::PRIME_GROUP_BRAINPOOL_P384R1 => "PRIME_GROUP_BRAINPOOL_P384R1",
+            Self::PRIME_GROUP_BRAINPOOL_P512R1 => "PRIME_GROUP_BRAINPOOL_P512R1",
+            Self::PRIME_GROUP_RFC5114_DH1024_160 => "PRIME_GROUP_RFC5114_DH1024_160",
+            Self::PRIME_GROUP_RFC5114_DH2048_224 => "PRIME_GROUP_RFC5114_DH2048_224",
+            Self::PRIME_GROUP_RFC5114_DH2048_256 => "PRIME_GROUP_RFC5114_DH2048_256",
+        }
+    }
+    fn from_proto_name(name: &str) -> ::core::option::Option<Self> {
+        match name {
+            "PRIME_GROUP_UNSPECIFIED" => {
+                ::core::option::Option::Some(Self::PRIME_GROUP_UNSPECIFIED)
+            }
+            "PRIME_GROUP_NIST_P256" => {
+                ::core::option::Option::Some(Self::PRIME_GROUP_NIST_P256)
+            }
+            "PRIME_GROUP_NIST_P384" => {
+                ::core::option::Option::Some(Self::PRIME_GROUP_NIST_P384)
+            }
+            "PRIME_GROUP_NIST_P521" => {
+                ::core::option::Option::Some(Self::PRIME_GROUP_NIST_P521)
+            }
+            "PRIME_GROUP_BRAINPOOL_P256R1" => {
+                ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P256R1)
+            }
+            "PRIME_GROUP_BRAINPOOL_P320R1" => {
+                ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P320R1)
+            }
+            "PRIME_GROUP_BRAINPOOL_P384R1" => {
+                ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P384R1)
+            }
+            "PRIME_GROUP_BRAINPOOL_P512R1" => {
+                ::core::option::Option::Some(Self::PRIME_GROUP_BRAINPOOL_P512R1)
+            }
+            "PRIME_GROUP_RFC5114_DH1024_160" => {
+                ::core::option::Option::Some(Self::PRIME_GROUP_RFC5114_DH1024_160)
+            }
+            "PRIME_GROUP_RFC5114_DH2048_224" => {
+                ::core::option::Option::Some(Self::PRIME_GROUP_RFC5114_DH2048_224)
+            }
+            "PRIME_GROUP_RFC5114_DH2048_256" => {
+                ::core::option::Option::Some(Self::PRIME_GROUP_RFC5114_DH2048_256)
+            }
+            _ => ::core::option::Option::None,
+        }
+    }
+    fn values() -> &'static [Self] {
+        &[
+            Self::PRIME_GROUP_UNSPECIFIED,
+            Self::PRIME_GROUP_NIST_P256,
+            Self::PRIME_GROUP_NIST_P384,
+            Self::PRIME_GROUP_NIST_P521,
+            Self::PRIME_GROUP_BRAINPOOL_P256R1,
+            Self::PRIME_GROUP_BRAINPOOL_P320R1,
+            Self::PRIME_GROUP_BRAINPOOL_P384R1,
+            Self::PRIME_GROUP_BRAINPOOL_P512R1,
+            Self::PRIME_GROUP_RFC5114_DH1024_160,
+            Self::PRIME_GROUP_RFC5114_DH2048_224,
+            Self::PRIME_GROUP_RFC5114_DH2048_256,
+        ]
+    }
+}
 /// Algorithm selector values are a permanent, append-only wire contract from
 /// this release onward. Each family-scoped enum uses sparse subfamily bands so
 /// future suites can be added beside related algorithms without renumbering an
@@ -4045,6 +4739,175 @@ impl ::buffa::Enumeration for MulticodecKeyAlgorithm {
             Self::MULTICODEC_KEY_ALGORITHM_ML_KEM_512_PRIV,
             Self::MULTICODEC_KEY_ALGORITHM_ML_KEM_768_PRIV,
             Self::MULTICODEC_KEY_ALGORITHM_ML_KEM_1024_PRIV,
+        ]
+    }
+}
+/// RsaHashAlgorithm identifies a digest used by RSA verification. A separate
+/// enum preserves the general HashAlgorithm execution surface, which does not
+/// expose SHA-1 hashing. Values 100-199 are legacy SHA-1 and 200-299 are SHA-2.
+/// These are metadata values, not the existing C FFI hash identifiers.
+#[allow(non_camel_case_types)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+#[repr(i32)]
+pub enum RsaHashAlgorithm {
+    RSA_HASH_ALGORITHM_UNSPECIFIED = 0i32,
+    RSA_HASH_ALGORITHM_SHA1 = 100i32,
+    RSA_HASH_ALGORITHM_SHA256 = 200i32,
+    RSA_HASH_ALGORITHM_SHA384 = 210i32,
+    RSA_HASH_ALGORITHM_SHA512 = 220i32,
+}
+impl RsaHashAlgorithm {
+    ///Idiomatic alias for [`Self::RSA_HASH_ALGORITHM_UNSPECIFIED`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Unspecified: Self = Self::RSA_HASH_ALGORITHM_UNSPECIFIED;
+    ///Idiomatic alias for [`Self::RSA_HASH_ALGORITHM_SHA1`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Sha1: Self = Self::RSA_HASH_ALGORITHM_SHA1;
+    ///Idiomatic alias for [`Self::RSA_HASH_ALGORITHM_SHA256`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Sha256: Self = Self::RSA_HASH_ALGORITHM_SHA256;
+    ///Idiomatic alias for [`Self::RSA_HASH_ALGORITHM_SHA384`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Sha384: Self = Self::RSA_HASH_ALGORITHM_SHA384;
+    ///Idiomatic alias for [`Self::RSA_HASH_ALGORITHM_SHA512`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Sha512: Self = Self::RSA_HASH_ALGORITHM_SHA512;
+}
+impl ::core::default::Default for RsaHashAlgorithm {
+    fn default() -> Self {
+        Self::RSA_HASH_ALGORITHM_UNSPECIFIED
+    }
+}
+impl ::serde::Serialize for RsaHashAlgorithm {
+    fn serialize<S: ::serde::Serializer>(
+        &self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        s.serialize_str(::buffa::Enumeration::proto_name(self))
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for RsaHashAlgorithm {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        struct _V;
+        impl ::serde::de::Visitor<'_> for _V {
+            type Value = RsaHashAlgorithm;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str(
+                    concat!(
+                        "a string, integer, or null for ", stringify!(RsaHashAlgorithm)
+                    ),
+                )
+            }
+            fn visit_str<E: ::serde::de::Error>(
+                self,
+                v: &str,
+            ) -> ::core::result::Result<RsaHashAlgorithm, E> {
+                <RsaHashAlgorithm as ::buffa::Enumeration>::from_proto_name(v)
+                    .ok_or_else(|| { ::serde::de::Error::unknown_variant(v, &[]) })
+            }
+            fn visit_i64<E: ::serde::de::Error>(
+                self,
+                v: i64,
+            ) -> ::core::result::Result<RsaHashAlgorithm, E> {
+                let v32 = i32::try_from(v)
+                    .map_err(|_| {
+                        ::serde::de::Error::custom("enum value out of i32 range")
+                    })?;
+                <RsaHashAlgorithm as ::buffa::Enumeration>::from_i32(v32)
+                    .ok_or_else(|| {
+                        ::serde::de::Error::custom("unknown enum value")
+                    })
+            }
+            fn visit_u64<E: ::serde::de::Error>(
+                self,
+                v: u64,
+            ) -> ::core::result::Result<RsaHashAlgorithm, E> {
+                let v32 = i32::try_from(v)
+                    .map_err(|_| {
+                        ::serde::de::Error::custom("enum value out of i32 range")
+                    })?;
+                <RsaHashAlgorithm as ::buffa::Enumeration>::from_i32(v32)
+                    .ok_or_else(|| {
+                        ::serde::de::Error::custom("unknown enum value")
+                    })
+            }
+            fn visit_unit<E: ::serde::de::Error>(
+                self,
+            ) -> ::core::result::Result<RsaHashAlgorithm, E> {
+                ::core::result::Result::Ok(::core::default::Default::default())
+            }
+        }
+        d.deserialize_any(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for RsaHashAlgorithm {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+impl ::buffa::Enumeration for RsaHashAlgorithm {
+    fn from_i32(value: i32) -> ::core::option::Option<Self> {
+        match value {
+            0i32 => ::core::option::Option::Some(Self::RSA_HASH_ALGORITHM_UNSPECIFIED),
+            100i32 => ::core::option::Option::Some(Self::RSA_HASH_ALGORITHM_SHA1),
+            200i32 => ::core::option::Option::Some(Self::RSA_HASH_ALGORITHM_SHA256),
+            210i32 => ::core::option::Option::Some(Self::RSA_HASH_ALGORITHM_SHA384),
+            220i32 => ::core::option::Option::Some(Self::RSA_HASH_ALGORITHM_SHA512),
+            _ => ::core::option::Option::None,
+        }
+    }
+    fn to_i32(&self) -> i32 {
+        *self as i32
+    }
+    fn proto_name(&self) -> &'static str {
+        match self {
+            Self::RSA_HASH_ALGORITHM_UNSPECIFIED => "RSA_HASH_ALGORITHM_UNSPECIFIED",
+            Self::RSA_HASH_ALGORITHM_SHA1 => "RSA_HASH_ALGORITHM_SHA1",
+            Self::RSA_HASH_ALGORITHM_SHA256 => "RSA_HASH_ALGORITHM_SHA256",
+            Self::RSA_HASH_ALGORITHM_SHA384 => "RSA_HASH_ALGORITHM_SHA384",
+            Self::RSA_HASH_ALGORITHM_SHA512 => "RSA_HASH_ALGORITHM_SHA512",
+        }
+    }
+    fn from_proto_name(name: &str) -> ::core::option::Option<Self> {
+        match name {
+            "RSA_HASH_ALGORITHM_UNSPECIFIED" => {
+                ::core::option::Option::Some(Self::RSA_HASH_ALGORITHM_UNSPECIFIED)
+            }
+            "RSA_HASH_ALGORITHM_SHA1" => {
+                ::core::option::Option::Some(Self::RSA_HASH_ALGORITHM_SHA1)
+            }
+            "RSA_HASH_ALGORITHM_SHA256" => {
+                ::core::option::Option::Some(Self::RSA_HASH_ALGORITHM_SHA256)
+            }
+            "RSA_HASH_ALGORITHM_SHA384" => {
+                ::core::option::Option::Some(Self::RSA_HASH_ALGORITHM_SHA384)
+            }
+            "RSA_HASH_ALGORITHM_SHA512" => {
+                ::core::option::Option::Some(Self::RSA_HASH_ALGORITHM_SHA512)
+            }
+            _ => ::core::option::Option::None,
+        }
+    }
+    fn values() -> &'static [Self] {
+        &[
+            Self::RSA_HASH_ALGORITHM_UNSPECIFIED,
+            Self::RSA_HASH_ALGORITHM_SHA1,
+            Self::RSA_HASH_ALGORITHM_SHA256,
+            Self::RSA_HASH_ALGORITHM_SHA384,
+            Self::RSA_HASH_ALGORITHM_SHA512,
         ]
     }
 }
@@ -10998,6 +11861,548 @@ pub mod crypto_operation_result {
     #[doc(inline)]
     pub use super::__buffa::view::oneof::crypto_operation_result::Result as ResultView;
 }
+/// CryptoKeyAlgorithmIdentifier carries operation-independent key metadata.
+/// Keeping it separate preserves the published operation-suite oneof and its
+/// generated exhaustive match surfaces. It is not an executable suite selector.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoKeyAlgorithmIdentifier {
+    /// Field 1: `algorithm`
+    #[serde(
+        rename = "algorithm",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub algorithm: ::buffa::EnumValue<KeyAlgorithm>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoKeyAlgorithmIdentifier {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoKeyAlgorithmIdentifier")
+            .field("algorithm", &self.algorithm)
+            .finish()
+    }
+}
+impl ::core::ops::Drop for CryptoKeyAlgorithmIdentifier {
+    fn drop(&mut self) {
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoKeyAlgorithmIdentifier {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::bytes::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        fn deserialize_zeroizing_string<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::string::String>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "algorithm", with = "::buffa::json_helpers::proto_enum")]
+            algorithm: ::buffa::EnumValue<KeyAlgorithm>,
+        }
+
+        let wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            algorithm: wire.algorithm,
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoKeyAlgorithmIdentifier {}
+impl CryptoKeyAlgorithmIdentifier {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoKeyAlgorithmIdentifier";
+}
+::buffa::impl_default_instance!(CryptoKeyAlgorithmIdentifier);
+impl ::buffa::MessageName for CryptoKeyAlgorithmIdentifier {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoKeyAlgorithmIdentifier";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoKeyAlgorithmIdentifier";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoKeyAlgorithmIdentifier";
+}
+impl ::buffa::Message for CryptoKeyAlgorithmIdentifier {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.algorithm.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.algorithm.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.algorithm = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.algorithm = ::buffa::EnumValue::from(0);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoKeyAlgorithmIdentifier {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoKeyAlgorithmIdentifier";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoKeyAlgorithmIdentifier {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_KEY_ALGORITHM_IDENTIFIER_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoKeyAlgorithmIdentifier",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoKeyAlgorithmIdentifier>,
+    from_json: ::buffa::type_registry::any_from_json::<CryptoKeyAlgorithmIdentifier>,
+    is_wkt: false,
+};
+/// CryptoEcdsaCurveIdentifier carries a single explicit curve identity. Omitted
+/// and UNSPECIFIED curves are equally invalid; unknown modifier fields must be
+/// rejected by the native conversion. This is not an executable suite selector.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoEcdsaCurveIdentifier {
+    /// Field 1: `curve`
+    #[serde(
+        rename = "curve",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub curve: ::buffa::EnumValue<EcdsaCurve>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoEcdsaCurveIdentifier {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoEcdsaCurveIdentifier").field("curve", &self.curve).finish()
+    }
+}
+impl ::core::ops::Drop for CryptoEcdsaCurveIdentifier {
+    fn drop(&mut self) {
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoEcdsaCurveIdentifier {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::bytes::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        fn deserialize_zeroizing_string<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::string::String>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "curve", with = "::buffa::json_helpers::proto_enum")]
+            curve: ::buffa::EnumValue<EcdsaCurve>,
+        }
+
+        let wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            curve: wire.curve,
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoEcdsaCurveIdentifier {}
+impl CryptoEcdsaCurveIdentifier {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEcdsaCurveIdentifier";
+}
+::buffa::impl_default_instance!(CryptoEcdsaCurveIdentifier);
+impl ::buffa::MessageName for CryptoEcdsaCurveIdentifier {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEcdsaCurveIdentifier";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEcdsaCurveIdentifier";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEcdsaCurveIdentifier";
+}
+impl ::buffa::Message for CryptoEcdsaCurveIdentifier {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.curve.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.curve.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.curve = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.curve = ::buffa::EnumValue::from(0);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoEcdsaCurveIdentifier {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoEcdsaCurveIdentifier";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoEcdsaCurveIdentifier {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_ECDSA_CURVE_IDENTIFIER_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoEcdsaCurveIdentifier",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoEcdsaCurveIdentifier>,
+    from_json: ::buffa::type_registry::any_from_json::<CryptoEcdsaCurveIdentifier>,
+    is_wkt: false,
+};
+/// CryptoPrimeGroupIdentifier carries domain identity without selecting an
+/// operation, backend, supplied base, mapping or cofactor policy. Omitted and
+/// UNSPECIFIED groups are equally invalid; unknown modifiers must be rejected.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoPrimeGroupIdentifier {
+    /// Field 1: `group`
+    #[serde(
+        rename = "group",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub group: ::buffa::EnumValue<PrimeGroup>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoPrimeGroupIdentifier {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoPrimeGroupIdentifier").field("group", &self.group).finish()
+    }
+}
+impl ::core::ops::Drop for CryptoPrimeGroupIdentifier {
+    fn drop(&mut self) {
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoPrimeGroupIdentifier {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::bytes::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        fn deserialize_zeroizing_string<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::string::String>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "group", with = "::buffa::json_helpers::proto_enum")]
+            group: ::buffa::EnumValue<PrimeGroup>,
+        }
+
+        let wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            group: wire.group,
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoPrimeGroupIdentifier {}
+impl CryptoPrimeGroupIdentifier {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupIdentifier";
+}
+::buffa::impl_default_instance!(CryptoPrimeGroupIdentifier);
+impl ::buffa::MessageName for CryptoPrimeGroupIdentifier {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoPrimeGroupIdentifier";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoPrimeGroupIdentifier";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupIdentifier";
+}
+impl ::buffa::Message for CryptoPrimeGroupIdentifier {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.group.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.group.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.group = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.group = ::buffa::EnumValue::from(0);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoPrimeGroupIdentifier {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoPrimeGroupIdentifier";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoPrimeGroupIdentifier {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_PRIME_GROUP_IDENTIFIER_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoPrimeGroupIdentifier",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoPrimeGroupIdentifier>,
+    from_json: ::buffa::type_registry::any_from_json::<CryptoPrimeGroupIdentifier>,
+    is_wkt: false,
+};
 /// HpkeSuiteIdentifier is the canonical 0.3.0 HPKE algorithm identifier.
 /// Components use their assigned two-byte HPKE registry values; implementations
 /// must reject unsupported combinations instead of selecting a fallback suite.
@@ -11187,6 +12592,909 @@ pub const __HPKE_SUITE_IDENTIFIER_JSON_ANY: ::buffa::type_registry::JsonAnyEntry
     type_url: "type.googleapis.com/reallyme.crypto.v1.HpkeSuiteIdentifier",
     to_json: ::buffa::type_registry::any_to_json::<HpkeSuiteIdentifier>,
     from_json: ::buffa::type_registry::any_from_json::<HpkeSuiteIdentifier>,
+    is_wkt: false,
+};
+/// CryptoHkdfSuiteIdentifier is metadata for the direct HKDF primitive. The
+/// hash field is the existing HashAlgorithm subset SHA2-256, SHA2-384 and
+/// SHA3-256. SHA3-256 recognition does not enable its optional implementation
+/// or add an executable KdfAlgorithm selector or provider capability.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoHkdfSuiteIdentifier {
+    /// Field 1: `hash`
+    #[serde(
+        rename = "hash",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub hash: ::buffa::EnumValue<HashAlgorithm>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoHkdfSuiteIdentifier {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoHkdfSuiteIdentifier").field("hash", &self.hash).finish()
+    }
+}
+impl ::core::ops::Drop for CryptoHkdfSuiteIdentifier {
+    fn drop(&mut self) {
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoHkdfSuiteIdentifier {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::bytes::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        fn deserialize_zeroizing_string<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::string::String>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "hash", with = "::buffa::json_helpers::proto_enum")]
+            hash: ::buffa::EnumValue<HashAlgorithm>,
+        }
+
+        let wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            hash: wire.hash,
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoHkdfSuiteIdentifier {}
+impl CryptoHkdfSuiteIdentifier {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfSuiteIdentifier";
+}
+::buffa::impl_default_instance!(CryptoHkdfSuiteIdentifier);
+impl ::buffa::MessageName for CryptoHkdfSuiteIdentifier {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoHkdfSuiteIdentifier";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoHkdfSuiteIdentifier";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfSuiteIdentifier";
+}
+impl ::buffa::Message for CryptoHkdfSuiteIdentifier {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.hash.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.hash.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.hash = ::buffa::EnumValue::from(::buffa::types::decode_int32(buf)?);
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.hash = ::buffa::EnumValue::from(0);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoHkdfSuiteIdentifier {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoHkdfSuiteIdentifier";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoHkdfSuiteIdentifier {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_HKDF_SUITE_IDENTIFIER_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoHkdfSuiteIdentifier",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoHkdfSuiteIdentifier>,
+    from_json: ::buffa::type_registry::any_from_json::<CryptoHkdfSuiteIdentifier>,
+    is_wkt: false,
+};
+/// CryptoPbkdf2PrfIdentifier selects the existing HMAC-SHA256 or HMAC-SHA512
+/// subset of MacAlgorithm. Metadata recognition does not derive a key or select
+/// password-record parameters.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoPbkdf2PrfIdentifier {
+    /// Field 1: `prf`
+    #[serde(
+        rename = "prf",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub prf: ::buffa::EnumValue<MacAlgorithm>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoPbkdf2PrfIdentifier {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoPbkdf2PrfIdentifier").field("prf", &self.prf).finish()
+    }
+}
+impl ::core::ops::Drop for CryptoPbkdf2PrfIdentifier {
+    fn drop(&mut self) {
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoPbkdf2PrfIdentifier {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::bytes::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        fn deserialize_zeroizing_string<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::string::String>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "prf", with = "::buffa::json_helpers::proto_enum")]
+            prf: ::buffa::EnumValue<MacAlgorithm>,
+        }
+
+        let wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            prf: wire.prf,
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoPbkdf2PrfIdentifier {}
+impl CryptoPbkdf2PrfIdentifier {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPbkdf2PrfIdentifier";
+}
+::buffa::impl_default_instance!(CryptoPbkdf2PrfIdentifier);
+impl ::buffa::MessageName for CryptoPbkdf2PrfIdentifier {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoPbkdf2PrfIdentifier";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoPbkdf2PrfIdentifier";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoPbkdf2PrfIdentifier";
+}
+impl ::buffa::Message for CryptoPbkdf2PrfIdentifier {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.prf.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.prf.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.prf = ::buffa::EnumValue::from(::buffa::types::decode_int32(buf)?);
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.prf = ::buffa::EnumValue::from(0);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoPbkdf2PrfIdentifier {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoPbkdf2PrfIdentifier";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoPbkdf2PrfIdentifier {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_PBKDF2PRF_IDENTIFIER_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoPbkdf2PrfIdentifier",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoPbkdf2PrfIdentifier>,
+    from_json: ::buffa::type_registry::any_from_json::<CryptoPbkdf2PrfIdentifier>,
+    is_wkt: false,
+};
+/// CryptoArgon2idProfileIdentifier identifies an immutable resource-cost
+/// profile. This is the application KDF profile version, not the Argon2
+/// algorithm version. Resource caps are still validated by the primitive.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoArgon2idProfileIdentifier {
+    /// Field 1: `kdf_version`
+    #[serde(
+        rename = "kdfVersion",
+        alias = "kdf_version",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub kdf_version: ::buffa::EnumValue<Argon2idKdfVersion>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoArgon2idProfileIdentifier {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoArgon2idProfileIdentifier")
+            .field("kdf_version", &self.kdf_version)
+            .finish()
+    }
+}
+impl ::core::ops::Drop for CryptoArgon2idProfileIdentifier {
+    fn drop(&mut self) {
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoArgon2idProfileIdentifier {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::bytes::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        fn deserialize_zeroizing_string<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::string::String>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "kdfVersion", alias = "kdf_version", with = "::buffa::json_helpers::proto_enum")]
+            kdf_version: ::buffa::EnumValue<Argon2idKdfVersion>,
+        }
+
+        let wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            kdf_version: wire.kdf_version,
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoArgon2idProfileIdentifier {}
+impl CryptoArgon2idProfileIdentifier {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoArgon2idProfileIdentifier";
+}
+::buffa::impl_default_instance!(CryptoArgon2idProfileIdentifier);
+impl ::buffa::MessageName for CryptoArgon2idProfileIdentifier {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoArgon2idProfileIdentifier";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoArgon2idProfileIdentifier";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoArgon2idProfileIdentifier";
+}
+impl ::buffa::Message for CryptoArgon2idProfileIdentifier {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.kdf_version.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.kdf_version.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.kdf_version = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.kdf_version = ::buffa::EnumValue::from(0);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoArgon2idProfileIdentifier {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoArgon2idProfileIdentifier";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoArgon2idProfileIdentifier {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_ARGON2ID_PROFILE_IDENTIFIER_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoArgon2idProfileIdentifier",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoArgon2idProfileIdentifier>,
+    from_json: ::buffa::type_registry::any_from_json::<CryptoArgon2idProfileIdentifier>,
+    is_wkt: false,
+};
+/// CryptoRsaHashIdentifier carries RSA digest metadata independently of a
+/// PKCS#1 v1.5 or PSS request. SHA-1 remains limited to historical verification
+/// under the existing primitive policy; this message grants no signing support.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoRsaHashIdentifier {
+    /// Field 1: `hash`
+    #[serde(
+        rename = "hash",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub hash: ::buffa::EnumValue<RsaHashAlgorithm>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoRsaHashIdentifier {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoRsaHashIdentifier").field("hash", &self.hash).finish()
+    }
+}
+impl ::core::ops::Drop for CryptoRsaHashIdentifier {
+    fn drop(&mut self) {
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoRsaHashIdentifier {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::bytes::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        fn deserialize_zeroizing_string<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::string::String>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "hash", with = "::buffa::json_helpers::proto_enum")]
+            hash: ::buffa::EnumValue<RsaHashAlgorithm>,
+        }
+
+        let wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            hash: wire.hash,
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoRsaHashIdentifier {}
+impl CryptoRsaHashIdentifier {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoRsaHashIdentifier";
+}
+::buffa::impl_default_instance!(CryptoRsaHashIdentifier);
+impl ::buffa::MessageName for CryptoRsaHashIdentifier {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoRsaHashIdentifier";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoRsaHashIdentifier";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoRsaHashIdentifier";
+}
+impl ::buffa::Message for CryptoRsaHashIdentifier {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.hash.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.hash.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.hash = ::buffa::EnumValue::from(::buffa::types::decode_int32(buf)?);
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.hash = ::buffa::EnumValue::from(0);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoRsaHashIdentifier {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoRsaHashIdentifier";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoRsaHashIdentifier {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_RSA_HASH_IDENTIFIER_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoRsaHashIdentifier",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoRsaHashIdentifier>,
+    from_json: ::buffa::type_registry::any_from_json::<CryptoRsaHashIdentifier>,
+    is_wkt: false,
+};
+/// CryptoRsaPublicKeyDerEncodingIdentifier carries only the existing RSA public
+/// key wrapper identity. DER byte parsing remains the primitive's responsibility.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoRsaPublicKeyDerEncodingIdentifier {
+    /// Field 1: `encoding`
+    #[serde(
+        rename = "encoding",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub encoding: ::buffa::EnumValue<RsaPublicKeyDerEncoding>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoRsaPublicKeyDerEncodingIdentifier {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoRsaPublicKeyDerEncodingIdentifier")
+            .field("encoding", &self.encoding)
+            .finish()
+    }
+}
+impl ::core::ops::Drop for CryptoRsaPublicKeyDerEncodingIdentifier {
+    fn drop(&mut self) {
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoRsaPublicKeyDerEncodingIdentifier {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::bytes::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        fn deserialize_zeroizing_string<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::string::String>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "encoding", with = "::buffa::json_helpers::proto_enum")]
+            encoding: ::buffa::EnumValue<RsaPublicKeyDerEncoding>,
+        }
+
+        let wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            encoding: wire.encoding,
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoRsaPublicKeyDerEncodingIdentifier {}
+impl CryptoRsaPublicKeyDerEncodingIdentifier {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoRsaPublicKeyDerEncodingIdentifier";
+}
+::buffa::impl_default_instance!(CryptoRsaPublicKeyDerEncodingIdentifier);
+impl ::buffa::MessageName for CryptoRsaPublicKeyDerEncodingIdentifier {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoRsaPublicKeyDerEncodingIdentifier";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoRsaPublicKeyDerEncodingIdentifier";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoRsaPublicKeyDerEncodingIdentifier";
+}
+impl ::buffa::Message for CryptoRsaPublicKeyDerEncodingIdentifier {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.encoding.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.encoding.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.encoding = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.encoding = ::buffa::EnumValue::from(0);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoRsaPublicKeyDerEncodingIdentifier {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoRsaPublicKeyDerEncodingIdentifier";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoRsaPublicKeyDerEncodingIdentifier {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_RSA_PUBLIC_KEY_DER_ENCODING_IDENTIFIER_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoRsaPublicKeyDerEncodingIdentifier",
+    to_json: ::buffa::type_registry::any_to_json::<
+        CryptoRsaPublicKeyDerEncodingIdentifier,
+    >,
+    from_json: ::buffa::type_registry::any_from_json::<
+        CryptoRsaPublicKeyDerEncodingIdentifier,
+    >,
     is_wkt: false,
 };
 /// CryptoAlgorithmIdentifier is a oneof wrapper for protocol messages that need

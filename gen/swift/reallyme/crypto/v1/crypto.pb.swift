@@ -271,6 +271,233 @@ public nonisolated enum ReallyMeProtoCryptoAlgorithmFamily: SwiftProtobuf.Enum, 
 
 }
 
+/// KeyAlgorithm identifies an asymmetric key type independently of the
+/// operation-specific signature or key-agreement suite. These values must not
+/// be substituted for SignatureAlgorithm, KeyAgreementAlgorithm or KemAlgorithm
+/// numbers. Classical key types occupy 100-299, post-quantum signature keys
+/// 1000-1199, post-quantum KEM keys 2000-2099 and hybrid KEM keys 2100-2199.
+public nonisolated enum ReallyMeProtoKeyAlgorithm: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case unspecified // = 0
+  case ed25519 // = 100
+  case x25519 // = 110
+  case p256 // = 200
+  case p384 // = 210
+  case p521 // = 220
+  case secp256K1 // = 230
+  case mlDsa44 // = 1000
+  case mlDsa65 // = 1010
+  case mlDsa87 // = 1020
+  case slhDsaSha2128S // = 1100
+  case mlKem512 // = 2000
+  case mlKem768 // = 2010
+  case mlKem1024 // = 2020
+  case xWing768 // = 2100
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 100: self = .ed25519
+    case 110: self = .x25519
+    case 200: self = .p256
+    case 210: self = .p384
+    case 220: self = .p521
+    case 230: self = .secp256K1
+    case 1000: self = .mlDsa44
+    case 1010: self = .mlDsa65
+    case 1020: self = .mlDsa87
+    case 1100: self = .slhDsaSha2128S
+    case 2000: self = .mlKem512
+    case 2010: self = .mlKem768
+    case 2020: self = .mlKem1024
+    case 2100: self = .xWing768
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .ed25519: return 100
+    case .x25519: return 110
+    case .p256: return 200
+    case .p384: return 210
+    case .p521: return 220
+    case .secp256K1: return 230
+    case .mlDsa44: return 1000
+    case .mlDsa65: return 1010
+    case .mlDsa87: return 1020
+    case .slhDsaSha2128S: return 1100
+    case .mlKem512: return 2000
+    case .mlKem768: return 2010
+    case .mlKem1024: return 2020
+    case .xWing768: return 2100
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [ReallyMeProtoKeyAlgorithm] = [
+    .unspecified,
+    .ed25519,
+    .x25519,
+    .p256,
+    .p384,
+    .p521,
+    .secp256K1,
+    .mlDsa44,
+    .mlDsa65,
+    .mlDsa87,
+    .slhDsaSha2128S,
+    .mlKem512,
+    .mlKem768,
+    .mlKem1024,
+    .xWing768,
+  ]
+
+}
+
+/// EcdsaCurve is curve identity metadata, independent of the signature hash,
+/// encoding and provider. Its numbers are permanent and append-only: 100-199
+/// identify NIST prime curves and 200-299 identify Brainpool prime curves.
+/// A registered identity does not assert that an execution backend is enabled.
+public nonisolated enum ReallyMeProtoEcdsaCurve: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case unspecified // = 0
+  case nistP256 // = 100
+  case nistP384 // = 110
+  case nistP521 // = 120
+  case brainpoolP256R1 // = 200
+  case brainpoolP320R1 // = 210
+  case brainpoolP384R1 // = 220
+  case brainpoolP512R1 // = 230
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 100: self = .nistP256
+    case 110: self = .nistP384
+    case 120: self = .nistP521
+    case 200: self = .brainpoolP256R1
+    case 210: self = .brainpoolP320R1
+    case 220: self = .brainpoolP384R1
+    case 230: self = .brainpoolP512R1
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .nistP256: return 100
+    case .nistP384: return 110
+    case .nistP521: return 120
+    case .brainpoolP256R1: return 200
+    case .brainpoolP320R1: return 210
+    case .brainpoolP384R1: return 220
+    case .brainpoolP512R1: return 230
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [ReallyMeProtoEcdsaCurve] = [
+    .unspecified,
+    .nistP256,
+    .nistP384,
+    .nistP521,
+    .brainpoolP256R1,
+    .brainpoolP320R1,
+    .brainpoolP384R1,
+    .brainpoolP512R1,
+  ]
+
+}
+
+/// PrimeGroup identifies an exact reviewed prime-order domain. Numbers are
+/// permanent and append-only: 100-199 are NIST curves, 200-299 are Brainpool
+/// curves, and 300-399 are the finite-field groups from RFC 5114 sections 2.1-2.3.
+/// Legacy group registration does not constitute a protocol-strength policy.
+public nonisolated enum ReallyMeProtoPrimeGroup: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case unspecified // = 0
+  case nistP256 // = 100
+  case nistP384 // = 110
+  case nistP521 // = 120
+  case brainpoolP256R1 // = 200
+  case brainpoolP320R1 // = 210
+  case brainpoolP384R1 // = 220
+  case brainpoolP512R1 // = 230
+  case rfc5114Dh1024160 // = 300
+  case rfc5114Dh2048224 // = 310
+  case rfc5114Dh2048256 // = 320
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 100: self = .nistP256
+    case 110: self = .nistP384
+    case 120: self = .nistP521
+    case 200: self = .brainpoolP256R1
+    case 210: self = .brainpoolP320R1
+    case 220: self = .brainpoolP384R1
+    case 230: self = .brainpoolP512R1
+    case 300: self = .rfc5114Dh1024160
+    case 310: self = .rfc5114Dh2048224
+    case 320: self = .rfc5114Dh2048256
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .nistP256: return 100
+    case .nistP384: return 110
+    case .nistP521: return 120
+    case .brainpoolP256R1: return 200
+    case .brainpoolP320R1: return 210
+    case .brainpoolP384R1: return 220
+    case .brainpoolP512R1: return 230
+    case .rfc5114Dh1024160: return 300
+    case .rfc5114Dh2048224: return 310
+    case .rfc5114Dh2048256: return 320
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [ReallyMeProtoPrimeGroup] = [
+    .unspecified,
+    .nistP256,
+    .nistP384,
+    .nistP521,
+    .brainpoolP256R1,
+    .brainpoolP320R1,
+    .brainpoolP384R1,
+    .brainpoolP512R1,
+    .rfc5114Dh1024160,
+    .rfc5114Dh2048224,
+    .rfc5114Dh2048256,
+  ]
+
+}
+
 /// Algorithm selector values are a permanent, append-only wire contract from
 /// this release onward. Each family-scoped enum uses sparse subfamily bands so
 /// future suites can be added beside related algorithms without renumbering an
@@ -1135,6 +1362,56 @@ public nonisolated enum ReallyMeProtoMulticodecKeyAlgorithm: SwiftProtobuf.Enum,
     .mlKem512Priv,
     .mlKem768Priv,
     .mlKem1024Priv,
+  ]
+
+}
+
+/// RsaHashAlgorithm identifies a digest used by RSA verification. A separate
+/// enum preserves the general HashAlgorithm execution surface, which does not
+/// expose SHA-1 hashing. Values 100-199 are legacy SHA-1 and 200-299 are SHA-2.
+/// These are metadata values, not the existing C FFI hash identifiers.
+public nonisolated enum ReallyMeProtoRsaHashAlgorithm: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case unspecified // = 0
+  case sha1 // = 100
+  case sha256 // = 200
+  case sha384 // = 210
+  case sha512 // = 220
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 100: self = .sha1
+    case 200: self = .sha256
+    case 210: self = .sha384
+    case 220: self = .sha512
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .sha1: return 100
+    case .sha256: return 200
+    case .sha384: return 210
+    case .sha512: return 220
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [ReallyMeProtoRsaHashAlgorithm] = [
+    .unspecified,
+    .sha1,
+    .sha256,
+    .sha384,
+    .sha512,
   ]
 
 }
@@ -2244,6 +2521,57 @@ public nonisolated struct ReallyMeProtoCryptoOperationResult: Sendable {
   public init() {}
 }
 
+/// CryptoKeyAlgorithmIdentifier carries operation-independent key metadata.
+/// Keeping it separate preserves the published operation-suite oneof and its
+/// generated exhaustive match surfaces. It is not an executable suite selector.
+public nonisolated struct ReallyMeProtoCryptoKeyAlgorithmIdentifier: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoKeyAlgorithmIdentifier(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var algorithm: ReallyMeProtoKeyAlgorithm = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// CryptoEcdsaCurveIdentifier carries a single explicit curve identity. Omitted
+/// and UNSPECIFIED curves are equally invalid; unknown modifier fields must be
+/// rejected by the native conversion. This is not an executable suite selector.
+public nonisolated struct ReallyMeProtoCryptoEcdsaCurveIdentifier: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoEcdsaCurveIdentifier(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var curve: ReallyMeProtoEcdsaCurve = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// CryptoPrimeGroupIdentifier carries domain identity without selecting an
+/// operation, backend, supplied base, mapping or cofactor policy. Omitted and
+/// UNSPECIFIED groups are equally invalid; unknown modifiers must be rejected.
+public nonisolated struct ReallyMeProtoCryptoPrimeGroupIdentifier: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoPrimeGroupIdentifier(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var group: ReallyMeProtoPrimeGroup = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
 /// HpkeSuiteIdentifier is the canonical 0.3.0 HPKE algorithm identifier.
 /// Components use their assigned two-byte HPKE registry values; implementations
 /// must reject unsupported combinations instead of selecting a fallback suite.
@@ -2257,6 +2585,91 @@ public nonisolated struct ReallyMeProtoHpkeSuiteIdentifier: Sendable {
   public var kdf: ReallyMeProtoHpkeKdfId = .unspecified
 
   public var aead: ReallyMeProtoHpkeAeadId = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// CryptoHkdfSuiteIdentifier is metadata for the direct HKDF primitive. The
+/// hash field is the existing HashAlgorithm subset SHA2-256, SHA2-384 and
+/// SHA3-256. SHA3-256 recognition does not enable its optional implementation
+/// or add an executable KdfAlgorithm selector or provider capability.
+public nonisolated struct ReallyMeProtoCryptoHkdfSuiteIdentifier: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoHkdfSuiteIdentifier(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var hash: ReallyMeProtoHashAlgorithm = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// CryptoPbkdf2PrfIdentifier selects the existing HMAC-SHA256 or HMAC-SHA512
+/// subset of MacAlgorithm. Metadata recognition does not derive a key or select
+/// password-record parameters.
+public nonisolated struct ReallyMeProtoCryptoPbkdf2PrfIdentifier: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoPbkdf2PrfIdentifier(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var prf: ReallyMeProtoMacAlgorithm = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// CryptoArgon2idProfileIdentifier identifies an immutable resource-cost
+/// profile. This is the application KDF profile version, not the Argon2
+/// algorithm version. Resource caps are still validated by the primitive.
+public nonisolated struct ReallyMeProtoCryptoArgon2idProfileIdentifier: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoArgon2idProfileIdentifier(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var kdfVersion: ReallyMeProtoArgon2idKdfVersion = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// CryptoRsaHashIdentifier carries RSA digest metadata independently of a
+/// PKCS#1 v1.5 or PSS request. SHA-1 remains limited to historical verification
+/// under the existing primitive policy; this message grants no signing support.
+public nonisolated struct ReallyMeProtoCryptoRsaHashIdentifier: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoRsaHashIdentifier(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var hash: ReallyMeProtoRsaHashAlgorithm = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// CryptoRsaPublicKeyDerEncodingIdentifier carries only the existing RSA public
+/// key wrapper identity. DER byte parsing remains the primitive's responsibility.
+public nonisolated struct ReallyMeProtoCryptoRsaPublicKeyDerEncodingIdentifier: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoRsaPublicKeyDerEncodingIdentifier(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var encoding: ReallyMeProtoRsaPublicKeyDerEncoding = .unspecified
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -4436,6 +4849,18 @@ nonisolated extension ReallyMeProtoCryptoAlgorithmFamily: SwiftProtobuf._ProtoNa
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CRYPTO_ALGORITHM_FAMILY_UNSPECIFIED\0\u{1}CRYPTO_ALGORITHM_FAMILY_SIGNATURE\0\u{1}CRYPTO_ALGORITHM_FAMILY_KEY_AGREEMENT\0\u{1}CRYPTO_ALGORITHM_FAMILY_KEM\0\u{1}CRYPTO_ALGORITHM_FAMILY_AEAD\0\u{1}CRYPTO_ALGORITHM_FAMILY_HASH\0\u{1}CRYPTO_ALGORITHM_FAMILY_MAC\0\u{1}CRYPTO_ALGORITHM_FAMILY_KDF\0\u{1}CRYPTO_ALGORITHM_FAMILY_KEY_WRAP\0\u{1}CRYPTO_ALGORITHM_FAMILY_HPKE\0")
 }
 
+nonisolated extension ReallyMeProtoKeyAlgorithm: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0KEY_ALGORITHM_UNSPECIFIED\0\u{2}d\u{1}KEY_ALGORITHM_ED25519\0\u{2}\u{a}KEY_ALGORITHM_X25519\0\u{2}Z\u{1}KEY_ALGORITHM_P256\0\u{2}\u{a}KEY_ALGORITHM_P384\0\u{2}\u{a}KEY_ALGORITHM_P521\0\u{2}\u{a}KEY_ALGORITHM_SECP256K1\0\u{2}B\u{c}KEY_ALGORITHM_ML_DSA_44\0\u{2}\u{a}KEY_ALGORITHM_ML_DSA_65\0\u{2}\u{a}KEY_ALGORITHM_ML_DSA_87\0\u{2}P\u{1}KEY_ALGORITHM_SLH_DSA_SHA2_128S\0\u{2}D\u{e}KEY_ALGORITHM_ML_KEM_512\0\u{2}\u{a}KEY_ALGORITHM_ML_KEM_768\0\u{2}\u{a}KEY_ALGORITHM_ML_KEM_1024\0\u{2}P\u{1}KEY_ALGORITHM_X_WING_768\0")
+}
+
+nonisolated extension ReallyMeProtoEcdsaCurve: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ECDSA_CURVE_UNSPECIFIED\0\u{2}d\u{1}ECDSA_CURVE_NIST_P256\0\u{2}\u{a}ECDSA_CURVE_NIST_P384\0\u{2}\u{a}ECDSA_CURVE_NIST_P521\0\u{2}P\u{1}ECDSA_CURVE_BRAINPOOL_P256R1\0\u{2}\u{a}ECDSA_CURVE_BRAINPOOL_P320R1\0\u{2}\u{a}ECDSA_CURVE_BRAINPOOL_P384R1\0\u{2}\u{a}ECDSA_CURVE_BRAINPOOL_P512R1\0")
+}
+
+nonisolated extension ReallyMeProtoPrimeGroup: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PRIME_GROUP_UNSPECIFIED\0\u{2}d\u{1}PRIME_GROUP_NIST_P256\0\u{2}\u{a}PRIME_GROUP_NIST_P384\0\u{2}\u{a}PRIME_GROUP_NIST_P521\0\u{2}P\u{1}PRIME_GROUP_BRAINPOOL_P256R1\0\u{2}\u{a}PRIME_GROUP_BRAINPOOL_P320R1\0\u{2}\u{a}PRIME_GROUP_BRAINPOOL_P384R1\0\u{2}\u{a}PRIME_GROUP_BRAINPOOL_P512R1\0\u{2}F\u{1}PRIME_GROUP_RFC5114_DH1024_160\0\u{2}\u{a}PRIME_GROUP_RFC5114_DH2048_224\0\u{2}\u{a}PRIME_GROUP_RFC5114_DH2048_256\0")
+}
+
 nonisolated extension ReallyMeProtoSignatureAlgorithm: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SIGNATURE_ALGORITHM_UNSPECIFIED\0\u{2}d\u{1}SIGNATURE_ALGORITHM_ED25519\0\u{2}d\u{1}SIGNATURE_ALGORITHM_ECDSA_P256_SHA256\0\u{2}\u{a}SIGNATURE_ALGORITHM_ECDSA_P384_SHA384\0\u{2}\u{a}SIGNATURE_ALGORITHM_ECDSA_P521_SHA512\0\u{2}\u{a}SIGNATURE_ALGORITHM_ECDSA_SECP256K1_SHA256\0\u{2}\u{a}SIGNATURE_ALGORITHM_BIP340_SCHNORR_SECP256K1_SHA256\0\u{2}<SIGNATURE_ALGORITHM_RSA_PKCS1V15_SHA1\0\u{2}\u{a}SIGNATURE_ALGORITHM_RSA_PKCS1V15_SHA256\0\u{2}\u{a}SIGNATURE_ALGORITHM_RSA_PKCS1V15_SHA384\0\u{2}\u{a}SIGNATURE_ALGORITHM_RSA_PKCS1V15_SHA512\0\u{2}F\u{1}SIGNATURE_ALGORITHM_RSA_PSS_SHA1_MGF1_SHA1\0\u{2}\u{a}SIGNATURE_ALGORITHM_RSA_PSS_SHA256_MGF1_SHA256\0\u{2}\u{a}SIGNATURE_ALGORITHM_RSA_PSS_SHA384_MGF1_SHA384\0\u{2}\u{a}SIGNATURE_ALGORITHM_RSA_PSS_SHA512_MGF1_SHA512\0\u{2}z\u{8}SIGNATURE_ALGORITHM_ML_DSA_44\0\u{2}\u{a}SIGNATURE_ALGORITHM_ML_DSA_65\0\u{2}\u{a}SIGNATURE_ALGORITHM_ML_DSA_87\0\u{2}P\u{1}SIGNATURE_ALGORITHM_SLH_DSA_SHA2_128S\0")
 }
@@ -4486,6 +4911,10 @@ nonisolated extension ReallyMeProtoKeyWrapAlgorithm: SwiftProtobuf._ProtoNamePro
 
 nonisolated extension ReallyMeProtoMulticodecKeyAlgorithm: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0MULTICODEC_KEY_ALGORITHM_UNSPECIFIED\0\u{1}MULTICODEC_KEY_ALGORITHM_ED25519_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_X25519_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_SECP256K1_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_P256_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_P384_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_P521_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_ED448_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_RSA_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_KEM_512_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_KEM_768_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_KEM_1024_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_DSA_44_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_DSA_65_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_DSA_87_PUB\0\u{1}MULTICODEC_KEY_ALGORITHM_ED25519_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_X25519_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_SECP256K1_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_P256_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_P384_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_P521_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_ED448_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_RSA_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_KEM_512_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_KEM_768_PRIV\0\u{1}MULTICODEC_KEY_ALGORITHM_ML_KEM_1024_PRIV\0")
+}
+
+nonisolated extension ReallyMeProtoRsaHashAlgorithm: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0RSA_HASH_ALGORITHM_UNSPECIFIED\0\u{2}d\u{1}RSA_HASH_ALGORITHM_SHA1\0\u{2}d\u{1}RSA_HASH_ALGORITHM_SHA256\0\u{2}\u{a}RSA_HASH_ALGORITHM_SHA384\0\u{2}\u{a}RSA_HASH_ALGORITHM_SHA512\0")
 }
 
 nonisolated extension ReallyMeProtoRsaPublicKeyDerEncoding: SwiftProtobuf._ProtoNameProviding {
@@ -5915,6 +6344,96 @@ nonisolated extension ReallyMeProtoCryptoOperationResult: SwiftProtobuf.Message,
   }
 }
 
+nonisolated extension ReallyMeProtoCryptoKeyAlgorithmIdentifier: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoKeyAlgorithmIdentifier"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}algorithm\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.algorithm) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.algorithm != .unspecified {
+      try visitor.visitSingularEnumField(value: self.algorithm, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoKeyAlgorithmIdentifier, rhs: ReallyMeProtoCryptoKeyAlgorithmIdentifier) -> Bool {
+    if lhs.algorithm != rhs.algorithm {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoEcdsaCurveIdentifier: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoEcdsaCurveIdentifier"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}curve\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.curve) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.curve != .unspecified {
+      try visitor.visitSingularEnumField(value: self.curve, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoEcdsaCurveIdentifier, rhs: ReallyMeProtoCryptoEcdsaCurveIdentifier) -> Bool {
+    if lhs.curve != rhs.curve {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoPrimeGroupIdentifier: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoPrimeGroupIdentifier"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}group\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.group) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.group != .unspecified {
+      try visitor.visitSingularEnumField(value: self.group, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoPrimeGroupIdentifier, rhs: ReallyMeProtoCryptoPrimeGroupIdentifier) -> Bool {
+    if lhs.group != rhs.group {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 nonisolated extension ReallyMeProtoHpkeSuiteIdentifier: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".HpkeSuiteIdentifier"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}kem\0\u{1}kdf\0\u{1}aead\0")
@@ -5950,6 +6469,156 @@ nonisolated extension ReallyMeProtoHpkeSuiteIdentifier: SwiftProtobuf.Message, S
     if lhs.kem != rhs.kem {return false}
     if lhs.kdf != rhs.kdf {return false}
     if lhs.aead != rhs.aead {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoHkdfSuiteIdentifier: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoHkdfSuiteIdentifier"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}hash\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.hash) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.hash != .unspecified {
+      try visitor.visitSingularEnumField(value: self.hash, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoHkdfSuiteIdentifier, rhs: ReallyMeProtoCryptoHkdfSuiteIdentifier) -> Bool {
+    if lhs.hash != rhs.hash {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoPbkdf2PrfIdentifier: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoPbkdf2PrfIdentifier"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}prf\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.prf) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.prf != .unspecified {
+      try visitor.visitSingularEnumField(value: self.prf, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoPbkdf2PrfIdentifier, rhs: ReallyMeProtoCryptoPbkdf2PrfIdentifier) -> Bool {
+    if lhs.prf != rhs.prf {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoArgon2idProfileIdentifier: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoArgon2idProfileIdentifier"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}kdf_version\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.kdfVersion) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.kdfVersion != .unspecified {
+      try visitor.visitSingularEnumField(value: self.kdfVersion, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoArgon2idProfileIdentifier, rhs: ReallyMeProtoCryptoArgon2idProfileIdentifier) -> Bool {
+    if lhs.kdfVersion != rhs.kdfVersion {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoRsaHashIdentifier: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoRsaHashIdentifier"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}hash\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.hash) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.hash != .unspecified {
+      try visitor.visitSingularEnumField(value: self.hash, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoRsaHashIdentifier, rhs: ReallyMeProtoCryptoRsaHashIdentifier) -> Bool {
+    if lhs.hash != rhs.hash {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoRsaPublicKeyDerEncodingIdentifier: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoRsaPublicKeyDerEncodingIdentifier"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}encoding\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.encoding) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.encoding != .unspecified {
+      try visitor.visitSingularEnumField(value: self.encoding, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoRsaPublicKeyDerEncodingIdentifier, rhs: ReallyMeProtoCryptoRsaPublicKeyDerEncodingIdentifier) -> Bool {
+    if lhs.encoding != rhs.encoding {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

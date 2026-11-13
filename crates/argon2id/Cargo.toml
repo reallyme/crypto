@@ -23,17 +23,21 @@ ignored = [
 name = "crypto_argon2id"
 
 [features]
+# Metadata conversion does not select an execution backend.
+proto = ["dep:crypto-proto"]
 default = ["native"]
 native = []
 wasm = ["dep:getrandom"]
 
 [dependencies]
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.3.17", path = "../proto", optional = true, default-features = false, features = ["generated"] }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.3.17", path = "../crypto/core" }
 argon2 = { workspace = true, features = ["alloc", "zeroize"] }
 getrandom = { workspace = true, features = ["wasm_js"], optional = true }
 zeroize = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
+buffa = { workspace = true }
 hex = { workspace = true }
 
 [lints]
