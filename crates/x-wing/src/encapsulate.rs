@@ -48,8 +48,11 @@ fn ml_kem_encapsulate_derand(
         .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     let encapsulation_key = MlKem768EncapsulationKey::new(&public_key)
         .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
-    let randomness =
-        B32::try_from(&randomness[..]).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    // This conversion makes a distinct coins buffer; the caller's clearing
+    // owner cannot wipe it. Guard this local copy before encapsulation.
+    let randomness = Zeroizing::new(
+        B32::try_from(&randomness[..]).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?,
+    );
     let (mut ciphertext, mut shared_secret) =
         encapsulation_key.encapsulate_deterministic(&randomness);
     let ciphertext_bytes = ciphertext.as_slice().to_vec();

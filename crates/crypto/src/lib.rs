@@ -87,6 +87,10 @@ pub use envelopes_jwk_multikey as jwk_multikey;
 #[cfg(feature = "dispatch")]
 pub mod dispatch;
 
+/// Deterministic conformance adapters under the existing test-vectors feature.
+#[cfg(all(feature = "operation-response", feature = "test-vectors"))]
+pub mod conformance_contract;
+
 /// Standalone adapters for existing signature and public-key format helpers.
 #[cfg(feature = "operation-response")]
 pub mod format_contract;

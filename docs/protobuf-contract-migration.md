@@ -374,6 +374,23 @@ from protocol identities and the accepted upstream coordinate issue.
 Parity, invalid-domain and ownership regression sources are added; execution
 remains deferred.
 
+## Conformance and key-material contracts
+
+Explicit-coins ML-KEM/X-Wing and HPKE conformance operations have separate
+requests under their existing feature gates. They preserve caller randomness,
+context bytes and native validation. Ordinary randomized operations remain
+distinct. HPKE exact-suite-width key derivation is separately represented from
+the existing flexible-IKM operation. Private keys and live contexts remain native
+clearing owners; only public descriptors are serialized.
+
+P-256 provider-handle format requests preserve binary tags and distinguish a
+nonmatching prefix from a matching empty tag with an optional byte field. These
+helpers neither authenticate a provider nor export a private scalar.
+X-Wing's named local encapsulation coins now enter a clearing owner immediately;
+this local repair does not change randomness or dependency features.
+Conformance, byte-preservation, presence and ownership regression sources are
+included but unexecuted.
+
 ## Remaining work
 
 - Migrate the remaining options, policies, content modes, key-source contracts,

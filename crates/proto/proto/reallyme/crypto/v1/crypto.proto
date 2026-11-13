@@ -1929,3 +1929,72 @@ message CryptoSubjectKeyIdentifierRequest {
 message CryptoSubjectKeyIdentifierResult {
   bytes identifier = 1;
 }
+
+// Provider-handle formats preserve the existing prefix helper's byte semantics.
+// They neither authenticate a provider nor export a private scalar. Tags are
+// exact bytes: the existing helper does not validate or normalize UTF-8.
+message CryptoP256SecureEnclaveHandleEncodeRequest {
+  bytes tag = 1;
+}
+message CryptoP256SecureEnclaveHandleEncodeResult {
+  bytes handle = 1;
+}
+message CryptoP256SecureEnclaveHandleDecodeRequest {
+  bytes handle = 1;
+}
+// Absence means the prefix did not match. Present-empty is a valid empty tag.
+message CryptoP256SecureEnclaveHandleDecodeResult {
+  optional bytes tag = 1;
+}
+
+// Standalone conformance-only deterministic encapsulation. Registered KEM
+// identity remains separate from feature/provider availability. ML-KEM inputs
+// are FIPS 203 m (32bytes); X-Wing consumes its existing 64-byte seed. Repetition
+// repeats deterministic output; ordinary encapsulation requests remain distinct.
+message CryptoKemConformanceEncapsulateRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes public_key = 2;
+  bytes encapsulation_randomness = 3;
+}
+
+// These requests are gated by the existing native test-vectors API. They do
+// not register executable root operations or serialize/reset any live context.
+message CryptoHpkeBaseSealConformanceRequest {
+  HpkeSuiteIdentifier suite = 1;
+  bytes recipient_public_key = 2;
+  bytes encapsulation_randomness = 3;
+  bytes info = 4;
+  bytes aad = 5;
+  bytes plaintext = 6;
+}
+message CryptoHpkeSenderExportConformanceRequest {
+  HpkeSuiteIdentifier suite = 1;
+  bytes recipient_public_key = 2;
+  bytes encapsulation_randomness = 3;
+  bytes info = 4;
+  bytes exporter_context = 5;
+  uint32 output_length = 6;
+}
+message CryptoHpkePskSenderSetupConformanceRequest {
+  HpkeSuiteIdentifier suite = 1;
+  bytes recipient_public_key = 2;
+  bytes encapsulation_randomness = 3;
+  bytes info = 4;
+  bytes psk = 5;
+  bytes psk_id = 6;
+}
+
+// Ordinary production derivation, independent of conformance/test-vectors.
+// This preserves the exact-suite-private-width API. The existing
+// CryptoHpkeDeriveKeyPairRequest separately accepts arbitrary IKM of at least
+// 32 bytes; neither operation pads, truncates or substitutes the caller bytes.
+message CryptoHpkeExactWidthDeriveKeyPairRequest {
+  HpkeSuiteIdentifier suite = 1;
+  bytes input_key_material = 2;
+}
+// The existing native protected key owner is returned separately. No private
+// material or live context state is serialized in this public descriptor.
+message CryptoHpkePublicKeyDescriptor {
+  HpkeSuiteIdentifier suite = 1;
+  bytes public_key = 2;
+}

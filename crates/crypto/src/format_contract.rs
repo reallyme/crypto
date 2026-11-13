@@ -7,6 +7,9 @@
 //! These functions preserve each leaf's validation strength and error policy.
 //! They do not register executable root operations or select a fallback lane.
 
+mod provider_handle;
+pub use provider_handle::{decode_p256_handle, encode_p256_handle};
+
 mod public_key;
 #[cfg(all(
     any(feature = "native", feature = "wasm"),
