@@ -245,6 +245,31 @@ TypeScript compilation, generation and hardening idempotence pass. Runtime
 execution remains deferred by request. These standalone adapters do not add
 root executable selectors or enable additional cryptographic providers.
 
+## Protected native primitive contracts
+
+Standalone request/result contracts now cover explicit ECDSA message/prehash
+inputs, DER versus fixed-width signatures, software key generation/import,
+opaque signing, public-key association, verification and agreement. All seven
+curves retain independently selected SHA-256/384/512 semantics. A present empty
+message is distinct from an absent input, and prehash lengths are checked
+without hashing the supplied digest again.
+
+Ordinary Ed448 software/opaque capabilities, protected key lifecycle and
+verification now have matching contracts. X448 generation/import/agreement
+retain their protected native owners and RFC 7748 byte widths. Ten prime-group
+identities now reach scalar/element import, generation, multiplication, linear
+combination, field reduction/encoding, domain inspection and agreement. Public
+descriptors describe capabilities; private keys/scalars and live providers stay
+native and are not serialized to satisfy reachability.
+
+The two restated native vocabularies, ECDSA encoding and Ed448 operation, have
+total generated-value conversions with zero/unknown rejection. Native key-source
+facts use the generated enum directly. Conversion helpers borrow contained
+messages rather than assuming the generator's inline/boxed storage strategy.
+Parity, known-answer, malformed-input, provider-failure and ownership regression
+sources compile under strict workspace all-targets/features Clippy. Buf
+compatibility and hardened regeneration pass. Tests remain unexecuted.
+
 ## Remaining work
 
 - Migrate the remaining options, policies, content modes, key-source contracts,

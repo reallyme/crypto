@@ -2277,10 +2277,13 @@ dependencies = [
 name = "reallyme-crypto-x448"
 version = "0.4.0"
 dependencies = [
+ "buffa",
  "getrandom 0.4.3",
  "hex",
  "reallyme-crypto-core",
+ "reallyme-crypto-proto",
  "subtle",
+ "wasm-bindgen-test",
  "x448",
  "zeroize",
 ]

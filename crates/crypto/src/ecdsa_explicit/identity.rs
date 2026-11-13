@@ -62,12 +62,7 @@ impl TryFrom<&CryptoAlgorithmIdentifier> for EcdsaHash {
             return Err(UnsupportedProtoAlgorithm);
         };
         // Reusing the hash schema must not enable other registered digests.
-        match hash.as_known() {
-            Some(HashAlgorithm::HASH_ALGORITHM_SHA2_256) => Ok(Self::Sha256),
-            Some(HashAlgorithm::HASH_ALGORITHM_SHA2_384) => Ok(Self::Sha384),
-            Some(HashAlgorithm::HASH_ALGORITHM_SHA2_512) => Ok(Self::Sha512),
-            _ => Err(UnsupportedProtoAlgorithm),
-        }
+        Self::try_from(*hash)
     }
 }
 
@@ -77,6 +72,47 @@ impl From<EcdsaHash> for HashAlgorithm {
             EcdsaHash::Sha256 => Self::HASH_ALGORITHM_SHA2_256,
             EcdsaHash::Sha384 => Self::HASH_ALGORITHM_SHA2_384,
             EcdsaHash::Sha512 => Self::HASH_ALGORITHM_SHA2_512,
+        }
+    }
+}
+
+// One total enum conversion owns the representation mapping for every native
+// contract; an absent or unknown wire representation cannot select a default.
+impl TryFrom<buffa::EnumValue<crypto_proto::generated::proto::reallyme::crypto::v1::EcdsaEncoding>>
+    for super::EcdsaEncoding
+{
+    type Error = UnsupportedProtoAlgorithm;
+    fn try_from(
+        value: buffa::EnumValue<
+            crypto_proto::generated::proto::reallyme::crypto::v1::EcdsaEncoding,
+        >,
+    ) -> Result<Self, Self::Error> {
+        use crypto_proto::generated::proto::reallyme::crypto::v1::EcdsaEncoding as Encoding;
+        match value.as_known() {
+            Some(Encoding::ECDSA_ENCODING_DER) => Ok(Self::Der),
+            Some(Encoding::ECDSA_ENCODING_FIXED_WIDTH) => Ok(Self::FixedWidth),
+            Some(Encoding::ECDSA_ENCODING_UNSPECIFIED) | None => Err(UnsupportedProtoAlgorithm),
+        }
+    }
+}
+impl From<super::EcdsaEncoding>
+    for crypto_proto::generated::proto::reallyme::crypto::v1::EcdsaEncoding
+{
+    fn from(value: super::EcdsaEncoding) -> Self {
+        match value {
+            super::EcdsaEncoding::Der => Self::ECDSA_ENCODING_DER,
+            super::EcdsaEncoding::FixedWidth => Self::ECDSA_ENCODING_FIXED_WIDTH,
+        }
+    }
+}
+impl TryFrom<buffa::EnumValue<HashAlgorithm>> for EcdsaHash {
+    type Error = UnsupportedProtoAlgorithm;
+    fn try_from(value: buffa::EnumValue<HashAlgorithm>) -> Result<Self, Self::Error> {
+        match value.as_known() {
+            Some(HashAlgorithm::HASH_ALGORITHM_SHA2_256) => Ok(Self::Sha256),
+            Some(HashAlgorithm::HASH_ALGORITHM_SHA2_384) => Ok(Self::Sha384),
+            Some(HashAlgorithm::HASH_ALGORITHM_SHA2_512) => Ok(Self::Sha512),
+            _ => Err(UnsupportedProtoAlgorithm),
         }
     }
 }

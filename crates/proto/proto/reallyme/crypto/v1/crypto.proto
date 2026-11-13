@@ -7,6 +7,7 @@ syntax = "proto3";
 package reallyme.crypto.v1;
 
 import "reallyme/crypto/v1/native_options.proto";
+import "reallyme/crypto/v1/native_primitives.proto";
 import "reallyme/crypto/v1/policy.proto";
 
 option java_multiple_files = true;
@@ -1373,4 +1374,194 @@ message JsonWebKey {
 // JWKS wrapper. It stores parsed public-key records rather than arbitrary JSON.
 message JsonWebKeySet {
   repeated JsonWebKey keys = 1;
+}
+
+// Standalone native primitive contracts below do not extend executable root
+// operation oneofs. A software key/scalar owner is passed as a typed native
+// argument and returned by generation/import; no private-key export, serialized
+// trait object, state registry, or reusable context is introduced here.
+
+// Output-only capability/lifecycle facts about the existing native API.
+// Method support is not an assertion of current key validity or authorization;
+// each native operation still performs its own validation and provider checks.
+// An opaque signer owns its cleanup; no unobserved hardware or erasure claim
+// is inferred from its public key or this descriptor.
+message CryptoNativeKeyCapabilities {
+  NativeKeySource source = 1;
+  bool supports_signing = 2;
+  bool supports_agreement = 3;
+  bool exposes_private_bytes = 4;
+  bool supports_explicit_zeroize = 5;
+  bool zeroizes_private_storage_on_drop = 6;
+  bool provider_managed_cleanup = 7;
+}
+
+// Empty native request shapes reject unknown modifiers. The adapter module
+// selects the existing primitive; there is no generic algorithm fallback.
+message CryptoNativeKeyGenerateRequest {
+  // No caller-selected parameters are supported by this fixed primitive.
+}
+message CryptoNativePublicKeyRequest {
+  // The associated key owner is an explicit borrowed native argument.
+}
+
+// Message input may be present and empty. Prehash input must have the exact
+// selected SHA-256/384/512 width. Neither variant adds labels or re-encodes data.
+message CryptoEcdsaMessageInput {
+  HashAlgorithm hash = 1;
+  bytes message = 2;
+}
+message CryptoEcdsaPrehashInput {
+  HashAlgorithm hash = 1;
+  bytes digest = 2;
+}
+message CryptoEcdsaInput {
+  oneof input {
+    CryptoEcdsaMessageInput message = 1;
+    CryptoEcdsaPrehashInput prehash = 2;
+  }
+}
+message CryptoEcdsaSignOptions {
+  EcdsaEncoding encoding = 1;
+}
+message CryptoEcdsaKeyGenerateRequest {
+  CryptoEcdsaCurveIdentifier curve = 1;
+}
+// Input only: adapters never populate scalar bytes from a native key owner.
+message CryptoEcdsaKeyImportRequest {
+  CryptoEcdsaCurveIdentifier curve = 1;
+  bytes scalar = 2;
+}
+message CryptoEcdsaPublicKey {
+  CryptoEcdsaCurveIdentifier curve = 1;
+  bytes sec1 = 2;
+}
+message CryptoEcdsaKeyDescriptor {
+  CryptoEcdsaPublicKey public_key = 1;
+  CryptoNativeKeyCapabilities capabilities = 2;
+}
+// The associated software owner or opaque signer is an explicit borrowed
+// native argument, never a serialized private-key handle in this request.
+message CryptoEcdsaSignRequest {
+  CryptoEcdsaInput input = 1;
+  CryptoEcdsaSignOptions options = 2;
+}
+message CryptoNativeSignatureResult {
+  bytes signature = 1;
+}
+message CryptoEcdsaVerifyRequest {
+  CryptoEcdsaPublicKey public_key = 1;
+  CryptoEcdsaInput input = 2;
+  bytes signature = 3;
+  CryptoEcdsaSignOptions options = 4;
+}
+// Adapters return VALID only after complete native verification. Invalid
+// signatures and other failures remain canonical errors, never success flags.
+message CryptoNativeVerificationResult {
+  CryptoVerificationStatus status = 1;
+}
+message CryptoEcdsaAgreementRequest {
+  bytes peer_sec1 = 1;
+}
+message CryptoNativeAgreementResult {
+  bytes shared_secret = 1;
+}
+
+// Ordinary Ed448 is fixed to RFC 8032 empty context, without prehash. Unknown
+// modifier fields are rejected, so a context/ph request cannot be ignored.
+message CryptoEd448SupportRequest {
+  Ed448Operation operation = 1;
+}
+message CryptoEd448KeyImportRequest {
+  bytes seed = 1;
+}
+message CryptoEd448PublicKey {
+  bytes public_key = 1;
+}
+message CryptoEd448KeyDescriptor {
+  CryptoEd448PublicKey public_key = 1;
+  CryptoNativeKeyCapabilities capabilities = 2;
+}
+message CryptoEd448OrdinarySignRequest {
+  bytes message = 1;
+}
+message CryptoEd448OrdinaryVerifyRequest {
+  bytes public_key = 1;
+  bytes message = 2;
+  bytes signature = 3;
+}
+
+// Prime-group scalar input is accepted only by import, and is never emitted
+// from a native GroupScalar. Elements can be secret intermediates and keep
+// clearing ownership even when their standard-generator result is public.
+message CryptoPrimeGroupScalarGenerateRequest {
+  CryptoPrimeGroupIdentifier group = 1;
+}
+message CryptoPrimeGroupScalarImportRequest {
+  CryptoPrimeGroupIdentifier group = 1;
+  bytes scalar = 2;
+}
+message CryptoPrimeGroupElement {
+  CryptoPrimeGroupIdentifier group = 1;
+  bytes encoding = 2;
+}
+message CryptoPrimeGroupScalarDescriptor {
+  CryptoPrimeGroupElement public_element = 1;
+  CryptoNativeKeyCapabilities capabilities = 2;
+}
+message CryptoPrimeGroupMultiplyRequest {
+  CryptoPrimeGroupElement base = 1;
+}
+// EC: [n] base + offset. DH: base^n * offset. The native bounded unsigned
+// coefficient is reduced modulo q; zero is allowed, final identity is not.
+message CryptoPrimeGroupLinearCombinationRequest {
+  CryptoPrimeGroupIdentifier group = 1;
+  bytes coefficient = 2;
+  CryptoPrimeGroupElement base = 3;
+  CryptoPrimeGroupElement offset = 4;
+}
+message CryptoPrimeGroupReduceToFieldRequest {
+  CryptoPrimeGroupIdentifier group = 1;
+  bytes input = 2;
+}
+// Exact-width canonical field bytes for encode_field, or protected reduction
+// output. No transcript, hashing, proof system or protocol domain is inferred.
+message CryptoPrimeGroupFieldValue {
+  CryptoPrimeGroupIdentifier group = 1;
+  bytes value = 2;
+}
+message CryptoPrimeGroupDomainRequest {
+  CryptoPrimeGroupIdentifier group = 1;
+}
+message CryptoPrimeGroupCurveCoefficients {
+  bytes a = 1;
+  bytes b = 2;
+}
+// Read-only standard domain output. This is not a caller-defined parameter
+// set; legacy RFC5114 identity does not imply protocol-strength approval.
+message CryptoPrimeGroupDomainResult {
+  CryptoPrimeGroupIdentifier group = 1;
+  uint32 field_length = 2;
+  uint32 scalar_length = 3;
+  uint32 element_length = 4;
+  bytes modulus = 5;
+  bytes subgroup_order = 6;
+  bytes standard_generator = 7;
+  CryptoPrimeGroupCurveCoefficients curve_coefficients = 8;
+}
+
+// X448 follows the existing RFC7748 owner APIs. Import input does not add an
+// export route; the existing native private owner retains its published API.
+message CryptoX448PrivateKeyInput {
+  bytes scalar = 1;
+}
+message CryptoX448PublicKey {
+  bytes u_coordinate = 1;
+}
+message CryptoX448KeyDescriptor {
+  CryptoX448PublicKey public_key = 1;
+  CryptoNativeKeyCapabilities capabilities = 2;
+}
+message CryptoX448AgreementRequest {
+  CryptoX448PublicKey peer_public_key = 1;
 }

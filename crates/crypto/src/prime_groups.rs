@@ -22,6 +22,9 @@ mod parameters;
 mod scalar;
 mod secret;
 
+#[cfg(feature = "operation-response")]
+pub mod contract;
+
 use crypto_core::CryptoError;
 
 pub use domain::PrimeGroup;

@@ -17,11 +17,15 @@ description = "X448 key agreement primitive for ReallyMe Crypto."
 name = "crypto_x448"
 
 [features]
+# Generated identity/contract conversion does not select a crypto backend.
+proto = ["dep:crypto-proto", "dep:buffa"]
 default = []
 native = ["dep:getrandom", "dep:x448"]
 wasm = ["native"]
 
 [dependencies]
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../proto", optional = true, default-features = false, features = ["generated"] }
+buffa = { workspace = true, optional = true }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.4.0", path = "../crypto/core" }
 getrandom = { workspace = true, optional = true, features = ["wasm_js"] }
 subtle = { workspace = true }
@@ -29,6 +33,7 @@ x448 = { workspace = true, features = ["static_secrets"], optional = true }
 zeroize = { workspace = true }
 
 [dev-dependencies]
+wasm-bindgen-test = { workspace = true }
 hex = { workspace = true }
 
 [lints]

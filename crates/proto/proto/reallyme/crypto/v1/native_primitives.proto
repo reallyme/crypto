@@ -1,0 +1,42 @@
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+syntax = "proto3";
+
+package reallyme.crypto.v1;
+
+option java_multiple_files = true;
+option java_package = "me.really.crypto.v1";
+option swift_prefix = "ReallyMeProto";
+
+// Signature representations are explicit and independent of curve/hash.
+// The 100-series is permanently assigned to supported ECDSA encodings.
+enum EcdsaEncoding {
+  ECDSA_ENCODING_UNSPECIFIED = 0;
+  reserved 1 to 99;
+  ECDSA_ENCODING_DER = 100;
+  ECDSA_ENCODING_FIXED_WIDTH = 110;
+}
+
+// Existing ordinary RFC 8032 Ed448 capabilities. These values do not enable
+// Ed448ph or a caller-selected context. Verification uses 100-199, opaque
+// signing 200-299, and protected software key lifecycle 300-399.
+enum Ed448Operation {
+  ED448_OPERATION_UNSPECIFIED = 0;
+  reserved 1 to 99;
+  ED448_OPERATION_VERIFY = 100;
+  ED448_OPERATION_OPAQUE_SIGN = 200;
+  ED448_OPERATION_SOFTWARE_KEY_GENERATION = 300;
+  ED448_OPERATION_SOFTWARE_KEY_IMPORT = 310;
+}
+
+// Describes the native key boundary, without asserting hardware residency or
+// accepting authorization. Existing ownership/export policies remain separate.
+// Software owners use 100-199 and injected opaque signers use 200-299.
+enum NativeKeySource {
+  NATIVE_KEY_SOURCE_UNSPECIFIED = 0;
+  reserved 1 to 99;
+  NATIVE_KEY_SOURCE_SOFTWARE_OWNER = 100;
+  NATIVE_KEY_SOURCE_OPAQUE_SIGNER = 200;
+}

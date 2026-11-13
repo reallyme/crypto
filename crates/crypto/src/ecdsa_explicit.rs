@@ -26,6 +26,9 @@ mod portable_brainpool;
 mod sign;
 mod verify;
 
+#[cfg(feature = "operation-response")]
+pub mod contract;
+
 use crypto_core::CryptoError;
 
 pub use encode::{der_to_fixed, fixed_to_der};

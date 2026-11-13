@@ -1296,3 +1296,57 @@ pub mod platform_key_policy {
         }
     }
 }
+pub mod crypto_ecdsa_input {
+    #[allow(unused_imports)]
+    use super::*;
+    #[derive(Clone, PartialEq, Debug)]
+    pub enum Input {
+        Message(
+            ::buffa::alloc::boxed::Box<super::super::super::CryptoEcdsaMessageInput>,
+        ),
+        Prehash(
+            ::buffa::alloc::boxed::Box<super::super::super::CryptoEcdsaPrehashInput>,
+        ),
+    }
+    impl ::buffa::Oneof for Input {}
+    impl From<super::super::super::CryptoEcdsaMessageInput> for Input {
+        fn from(v: super::super::super::CryptoEcdsaMessageInput) -> Self {
+            Self::Message(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl From<super::super::super::CryptoEcdsaMessageInput>
+    for ::core::option::Option<Input> {
+        fn from(v: super::super::super::CryptoEcdsaMessageInput) -> Self {
+            Self::Some(Input::from(v))
+        }
+    }
+    impl From<super::super::super::CryptoEcdsaPrehashInput> for Input {
+        fn from(v: super::super::super::CryptoEcdsaPrehashInput) -> Self {
+            Self::Prehash(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl From<super::super::super::CryptoEcdsaPrehashInput>
+    for ::core::option::Option<Input> {
+        fn from(v: super::super::super::CryptoEcdsaPrehashInput) -> Self {
+            Self::Some(Input::from(v))
+        }
+    }
+    impl ::serde::Serialize for Input {
+        fn serialize<S: ::serde::Serializer>(
+            &self,
+            s: S,
+        ) -> ::core::result::Result<S::Ok, S::Error> {
+            use ::serde::ser::SerializeMap;
+            let mut map = s.serialize_map(Some(1))?;
+            match self {
+                Self::Message(v) => {
+                    map.serialize_entry("message", &**v)?;
+                }
+                Self::Prehash(v) => {
+                    map.serialize_entry("prehash", &**v)?;
+                }
+            }
+            map.end()
+        }
+    }
+}
