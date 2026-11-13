@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-mod bp320;
-mod bp512;
+use crate::brainpool_parameters::{bp320, bp512};
 
 use ecdsa::signature::hazmat::{PrehashSigner, PrehashVerifier};
 use elliptic_curve::sec1::ToSec1Point;
@@ -50,14 +49,6 @@ pub(super) fn validate_public(curve: EcdsaCurve, bytes: &[u8]) -> Result<(), Ecd
         elliptic_curve::PublicKey::<C>::from_sec1_bytes(bytes)
             .map(|_| ())
             .map_err(|_| EcdsaError::InvalidPublicKey)
-    })
-}
-
-pub(super) fn der_to_fixed(curve: EcdsaCurve, bytes: &[u8]) -> Result<Vec<u8>, EcdsaError> {
-    with_curve!(curve, C, {
-        let signature =
-            ecdsa::Signature::<C>::from_der(bytes).map_err(|_| EcdsaError::InvalidSignature)?;
-        Ok(signature.to_bytes().to_vec())
     })
 }
 

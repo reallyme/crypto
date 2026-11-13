@@ -4,7 +4,7 @@
 
 //! JOSE ECDSA signature transcoding tests for P-256.
 
-use crypto_core::CryptoError;
+use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
 use crypto_p256::{
     p256_ecdsa_der_to_jose_signature, p256_ecdsa_jose_signature_to_der,
     P256_ECDSA_JOSE_SIGNATURE_LEN,
@@ -59,7 +59,8 @@ fn boundary_jose_signatures() -> [[u8; P256_ECDSA_JOSE_SIGNATURE_LEN]; 6] {
     ]
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn converts_p256_der_signature_to_jose_and_back() -> Result<(), CryptoError> {
     let der = hex!(
         "30450220
@@ -80,7 +81,8 @@ fn converts_p256_der_signature_to_jose_and_back() -> Result<(), CryptoError> {
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn boundary_jose_signatures_roundtrip_through_der() -> Result<(), CryptoError> {
     for raw in boundary_jose_signatures() {
         let der = p256_ecdsa_jose_signature_to_der(&raw)?;
@@ -91,7 +93,8 @@ fn boundary_jose_signatures_roundtrip_through_der() -> Result<(), CryptoError> {
 }
 
 #[cfg(feature = "native")]
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn boundary_der_outputs_are_accepted_by_p256_der_oracle() -> Result<(), CryptoError> {
     for raw in boundary_jose_signatures() {
         let der = p256_ecdsa_jose_signature_to_der(&raw)?;
@@ -100,7 +103,8 @@ fn boundary_der_outputs_are_accepted_by_p256_der_oracle() -> Result<(), CryptoEr
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn adds_der_sign_padding_for_high_bit_scalars() -> Result<(), CryptoError> {
     let mut raw = [0u8; P256_ECDSA_JOSE_SIGNATURE_LEN];
     raw[0] = 0x80;
@@ -116,7 +120,8 @@ fn adds_der_sign_padding_for_high_bit_scalars() -> Result<(), CryptoError> {
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn accepts_short_der_integers_and_left_pads_to_jose_width() -> Result<(), CryptoError> {
     let der = hex!("3006020101020102");
     let raw = p256_ecdsa_der_to_jose_signature(&der)?;
@@ -129,7 +134,8 @@ fn accepts_short_der_integers_and_left_pads_to_jose_width() -> Result<(), Crypto
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn rejects_redundant_positive_integer_padding() {
     let der = hex!(
         "3027
@@ -140,7 +146,8 @@ fn rejects_redundant_positive_integer_padding() {
     assert!(p256_ecdsa_der_to_jose_signature(&der).is_err());
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn rejects_noncanonical_der_long_form_lengths() {
     let outer_long_form = hex!("308106020101020102");
     let integer_long_form = hex!("300702810101020102");
@@ -149,14 +156,16 @@ fn rejects_noncanonical_der_long_form_lengths() {
     assert!(p256_ecdsa_der_to_jose_signature(&integer_long_form).is_err());
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn rejects_wrong_jose_length() {
     let raw = [0u8; P256_ECDSA_JOSE_SIGNATURE_LEN - 1];
 
     assert!(p256_ecdsa_jose_signature_to_der(&raw).is_err());
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn rejects_zero_and_out_of_range_p256_scalars() {
     let one = scalar_with_last(0x01);
     let order = hex!("ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551");
@@ -191,7 +200,8 @@ fn rejects_zero_and_out_of_range_p256_scalars() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn rejects_malformed_der_signature() {
     let wrong_tag = [0x31, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01];
     let trailing = [0x30, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01, 0x00];
@@ -208,7 +218,8 @@ fn rejects_malformed_der_signature() {
     assert!(p256_ecdsa_der_to_jose_signature(&oversized_scalar).is_err());
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn rejects_invalid_der_length_forms() {
     let indefinite_length = hex!("3080020101020102");
     let too_many_length_octets = hex!("3083000006020101020102");
@@ -217,8 +228,54 @@ fn rejects_invalid_der_length_forms() {
     assert!(p256_ecdsa_der_to_jose_signature(&too_many_length_octets).is_err());
 }
 
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn codec_der_rejects_malformed_signatures_even_with_ber_enabled() {
+    use der_core::Decode;
+
+    // This entry point exists only when the unified BER feature is enabled.
+    assert!(matches!(u8::from_ber(&[0x02, 0x01, 0x01]), Ok(1)));
+    const MALFORMED: &[&[u8]] = &[
+        &[],
+        &hex!("30050200020101"),
+        &hex!("3006220101020101"),
+        &hex!("3009020101020101020101"),
+        &hex!("3003020101"),
+        &hex!("3088ffffffffffffffff"),
+        &hex!("30800201010201010000"),
+        &hex!("300702020001020101"),
+        &hex!("3006020180020101"),
+        &hex!("300602010102010100"),
+        &[0; 73],
+    ];
+    let expected = CryptoError::Signature {
+        backend: SignatureBackend::Native,
+        operation: SignatureOperation::Verify,
+        kind: SignatureFailureKind::InvalidSignature,
+    };
+    for der in MALFORMED {
+        assert_eq!(p256_ecdsa_der_to_jose_signature(der), Err(expected.clone()));
+        #[cfg(any(feature = "native", feature = "wasm"))]
+        {
+            let public = hex!(
+                "046b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296
+                   4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5"
+            );
+            assert_eq!(
+                crypto_p256::verify_p256_sha256_message_der_interoperable(
+                    der,
+                    b"strict DER boundary",
+                    &public,
+                ),
+                Err(expected.clone())
+            );
+        }
+    }
+}
+
 #[cfg(feature = "native")]
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn native_p256_signature_transcodes_through_jose_and_still_verifies() -> Result<(), CryptoError> {
     let secret = hex!("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
     let message = b"reallyme p256 jose transcoding";

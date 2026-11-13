@@ -10,6 +10,7 @@ mod constants;
 mod hash;
 mod key;
 mod pss;
+mod representative;
 mod types;
 mod verify;
 
@@ -18,3 +19,8 @@ pub use constants::{
 };
 pub use types::{RsaHash, RsaPssParams, RsaPublicKeyDerEncoding};
 pub use verify::{verify_rsa_pkcs1v15, verify_rsa_pss};
+
+pub use representative::{
+    rsa_public_representatives, RsaPublicRepresentatives, RsaRepresentativeError,
+    RsaRepresentativeErrorReason,
+};

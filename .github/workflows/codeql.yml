@@ -51,9 +51,6 @@ jobs:
           - language: java-kotlin
             os: ubuntu-24.04
             build-mode: manual
-          - language: swift
-            os: macos-26
-            build-mode: manual
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -71,10 +68,6 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Select Xcode 26.6
-        if: matrix.language == 'swift'
-        run: sudo xcode-select -s /Applications/Xcode_26.6.app
-
       - name: Initialize CodeQL
         uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
         with:
@@ -90,12 +83,6 @@ jobs:
           packages/kotlin/gradlew -p packages/kotlin --dependency-verification strict --no-daemon --no-build-cache --rerun-tasks compileKotlin compileJava
           packages/kotlin-android/gradlew -p packages/kotlin-android --dependency-verification strict --no-daemon --no-build-cache --rerun-tasks compileReleaseKotlin compileReleaseJavaWithJavac
           crates/conformance/platform/kotlin/gradlew -p crates/conformance/platform/kotlin --dependency-verification strict --no-daemon --no-build-cache --rerun-tasks compileKotlin
-
-      - name: Build Swift for analysis
-        if: matrix.language == 'swift'
-        run: |
-          touch .reallyme-crypto-runtime-ffi
-          REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI=1 swift build --arch arm64
 
       - name: Analyze CodeQL
         uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4

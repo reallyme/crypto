@@ -22,7 +22,9 @@ pub fn verify_p256_sha256_digest_low_s_der(
     let public_key = PublicKey::from_sec1_bytes(public_key_sec1)
         .map_err(|_| signature_error(SignatureFailureKind::InvalidPublicKey))?;
     let verifying_key = VerifyingKey::from(public_key);
-    let signature = Signature::from_der(signature_der)
+    let fixed = crate::p256_ecdsa_der_to_jose_signature(signature_der)
+        .map_err(|_| signature_error(SignatureFailureKind::InvalidSignature))?;
+    let signature = Signature::from_slice(&fixed)
         .map_err(|_| signature_error(SignatureFailureKind::InvalidSignature))?;
 
     if signature.normalize_s() != signature {

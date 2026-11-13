@@ -16,6 +16,8 @@ The reviewed lockfile resolves the relevant implementation packages as follows:
 | Package | Version |
 | --- | --- |
 | `reallyme-crypto`, `reallyme-crypto-hpke`, existing ReallyMe primitive leaves | 0.3.17 (additional interfaces unreleased) |
+| `reallyme-codec` and its selected Rust leaves | 0.3.4 |
+| `der` (strict codec parser) | 0.8.3 |
 | `hpke` | 0.15.1 |
 | `p256`, `p384`, `p521`, `bp256`, `bp384` | 0.14.0 |
 | `primefield` / `primeorder` / `elliptic-curve` | 0.14.0 / 0.14.0 / 0.14.3 |
@@ -62,10 +64,26 @@ These APIs expose primitives. The caller selects the permitted certificate
 profile and interprets validated OIDs; a successful primitive operation does
 not perform those acceptance checks.
 
-The curve-aware conversion functions remain crypto interfaces. Generic strict
-DER parsing belongs to codec. The current implementation retains the existing
-reviewed conversion boundary until a versioned codec release exposes its strict
-DER API. Existing conversion functions remain available during that transition.
+The curve-aware conversion functions remain crypto interfaces. Strict DER
+syntax is decoded by published `reallyme-codec` 0.3.4 with defaults disabled
+and only its `der` feature enabled. Crypto retains scalar widths, nonzero and
+subgroup-order checks, signature verification and high-S policy. Existing
+conversion functions and typed errors remain available. Tests enable the
+parser dependency's BER feature separately to verify that feature unification
+does not relax the DER boundary.
+
+Related group and RSA operations are separate primitive contracts; their
+presence does not select a reader protocol or expand ISO algorithm policy:
+
+| Operation | Rust interface and feature | Evidence |
+| --- | --- | --- |
+| Supplied-base operations in seven EC and three RFC 5114 DH domains | `prime_groups::{PrimeGroup, GroupScalar, GroupElement}`; `prime-groups` | Nine native/WASM tests cover independent parameters, multiplication, agreement, linear combinations, field mapping, exact encodings, invalid domains/subgroups, bounded entropy failure and protected owners |
+| Exact-width RSA public representative and modulus complement | `crypto_rsa::{rsa_public_representatives, RsaPublicKeyDerEncoding, RsaPublicRepresentatives}`; existing RSA leaf, with no backend feature required | Eighty-four independent integer answers, SPKI/PKCS#1 keys, 1024–8192-bit boundaries, typed width/range/key failures and ownership compile-fail tests |
+
+RSA representatives expose `s^e mod n` and its modulus complement in protected
+owners. They do not interpret padding, validate a signature scheme or establish
+trust. The caller must select and validate its protocol's complete signature
+format. Existing RSA verification interfaces retain their contracts.
 
 ## Curve, hash and encoding contracts
 
@@ -167,6 +185,8 @@ document/request binding require the reader's separate validation.
 Commands below target this source tree with defaults disabled:
 
 ```sh
+cargo test -p reallyme-crypto --no-default-features --features prime-groups --test prime_groups
+cargo test -p reallyme-crypto-rsa --no-default-features --tests
 cargo test -p reallyme-crypto-hpke --no-default-features --features base-p256-aes128gcm --lib
 cargo test -p reallyme-crypto --no-default-features --features brainpool,ed448,key-identifier-sha1 --lib --test ecdsa_explicit_tests --test ed448_tests --test key_identifier_tests
 cargo test -p reallyme-crypto --no-default-features --features brainpool-openssl,ed448-openssl,key-identifier-sha1 --test ecdsa_explicit_tests --test ed448_tests --test key_identifier_tests
@@ -215,15 +235,20 @@ explicit native provider selection.
 
 | Environment | Evidence | Limits |
 | --- | --- | --- |
-| Native ARM64 macOS, Rust 1.100.0 | 914 native tests plus the additional RFC 5869 cases, 976 all-feature tests, strict Clippy and independent known answers; optional provider execution with pinned OpenSSL 4.0.3 | Primitive behavior does not establish reader trust or protocol acceptance |
+| Native ARM64 macOS, Rust 1.100.0 | 920 native and 990 all-feature workspace tests passed, with 17 existing skips per profile, including the additional prime-group and RSA representative interfaces; strict Clippy, API compatibility and independent known answers; optional provider execution with pinned OpenSSL 4.0.3 | Primitive behavior does not establish reader trust or protocol acceptance |
 | Rust 1.96.0 | All-feature workspace compilation | Minimum-version compile evidence |
-| WASM, Node test runner | All seven ECDSA/ECDH curves, ordinary Ed448 software/opaque signing and verification, identifiers, SHA-2 NIST answers and HPKE execute; HPKE includes the maximum 16 MiB record | These tests do not establish browser-specific application integration |
+| WASM, Node test runner | 58 current-checkpoint functions execute across reader primitives, prime groups, RSA representatives, P-256 conversions and HPKE; separate SHA-2 NIST execution also passed; HPKE includes the maximum 16 MiB record | These tests do not establish browser-specific application integration |
 | iOS 27.0.1 physical device, ARM64; Rust 1.100.0 | 100 test functions execute: all seven ECDSA/ECDH curves, ordinary Ed448, identifiers, HPKE, SHA-2 NIST answers and existing Ed25519/X25519/X448/HMAC/HKDF/AES-GCM suites | Rust engines execute inside signed isolated test applications; SDK facade routing is separate |
 | iOS 26.5 simulator, ARM64; Rust 1.100.0 | Portable reader, HPKE and SHA-2 suites execute | Simulator evidence supplements physical-device execution |
 | `aarch64-apple-ios`, `aarch64-apple-ios-sim`, `x86_64-apple-ios` | All three portable target configurations compile; optional pinned OpenSSL 4.0.3 provider compilation also checked | x86-64 simulator execution was not performed |
 | Android 17 / API 37 physical device, ARM64; Rust 1.100.0 | Same 100 test functions execute, including all three direct RFC 5869 SHA-256 answers | Rust engine execution; application integration and SDK routing remain separate |
 | Android 16 / API 36 emulator, ARM64; Rust 1.100.0 | Same 100 test functions execute | Emulator evidence supplements physical-device execution |
 | `aarch64-linux-android`, `armv7-linux-androideabi`, `i686-linux-android`, `x86_64-linux-android` | All four portable targets compile with NDK 29.0.14206865 and API 24 link configuration; optional pinned OpenSSL 4.0.3 provider compilation also checked | Runtime execution covers ARM64; other architectures have compilation evidence |
+
+The additional `prime-groups` and RSA representative interfaces have native
+and WASM execution evidence and compilation checks for all seven mobile targets.
+The physical-device evidence above predates these additions and the codec 0.3.4
+integration; no additional device execution is claimed for those changes.
 
 The existing Swift, Kotlin and TypeScript facade suites remain regression
 evidence for their existing provider routes. These additions expose Rust APIs;

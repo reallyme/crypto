@@ -15,6 +15,7 @@ include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 
 [dependencies]
 buffa = { workspace = true, optional = true }
+codec-der = { package = "reallyme-codec", version = "=0.3.4", default-features = false, features = ["der"], optional = true }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.3.17", path = "core" }
 crypto-dispatch = { package = "reallyme-crypto-dispatch", version = "=0.3.17", path = "dispatch", optional = true, default-features = false }
 crypto-proto = { package = "reallyme-crypto-proto", version = "=0.3.17", path = "../proto", optional = true, default-features = false, features = ["generated"] }
@@ -121,11 +122,12 @@ messaging-primitives = [
 ]
 
 # Additive contracts: these do not alter existing algorithms or provider routes.
-ecdsa-explicit = ["dep:ecdsa", "dep:p256", "dep:p384", "dep:p521", "dep:secrecy", "dep:getrandom", "dep:crypto-p256", "sha2"]
+ecdsa-explicit = ["dep:codec-der", "dep:ecdsa", "dep:p256", "dep:p384", "dep:p521", "dep:secrecy", "dep:getrandom", "dep:crypto-p256", "sha2"]
 ed448 = ["dep:ed448-goldilocks", "dep:shake", "dep:crypto-bigint", "dep:secrecy", "dep:getrandom"]
 ed448-openssl = ["ed448", "dep:openssl"]
 key-identifier-sha1 = ["dep:sha1"]
 brainpool-openssl = ["brainpool", "dep:openssl"]
+prime-groups = ["brainpool", "dep:crypto-bigint"]
 brainpool = ["ecdsa-explicit", "dep:elliptic-curve", "dep:primefield", "dep:primeorder", "dep:bp256", "dep:bp384", "dep:sha2-backend"]
 
 native = [
@@ -252,6 +254,8 @@ jwk = ["dep:envelopes-jwk"]
 jwk-multikey = ["dep:envelopes-jwk-multikey", "jwk"]
 
 [dev-dependencies]
+# Feature unification must never relax the signature boundary to BER.
+der-core = { package = "der", version = "=0.8.3", default-features = false, features = ["ber"] }
 hex = { workspace = true }
 wasm-bindgen-test = { workspace = true }
 base64 = { workspace = true }

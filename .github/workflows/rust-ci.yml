@@ -325,7 +325,10 @@ jobs:
           cargo test --locked -p reallyme-crypto-hpke --no-default-features --features openmls
           cargo check --locked -p reallyme-crypto --no-default-features --features native,hpke-openmls
           cargo test --locked -p reallyme-crypto-hpke --no-default-features --features base-p256-aes128gcm --lib
-          cargo test --locked -p reallyme-crypto --no-default-features --features brainpool,ed448,key-identifier-sha1 --lib --test ecdsa_explicit_tests --test ed448_tests --test key_identifier_tests
+          cargo test --locked -p reallyme-crypto-rsa --no-default-features --tests
+          cargo test --locked -p reallyme-crypto-p256 --no-default-features --test jose_signature_tests --test normalize_signature_tests
+          cargo check --locked -p reallyme-crypto --no-default-features --features prime-groups
+          cargo test --locked -p reallyme-crypto --no-default-features --features prime-groups,ed448,key-identifier-sha1 --lib --test ecdsa_explicit_tests --test ed448_tests --test key_identifier_tests --test prime_groups
 
       # SSI and other facade consumers select algorithms without a Rust backend.
       # Every feature must compile independently and as a combined graph.
@@ -381,8 +384,10 @@ jobs:
         env:
           CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER: wasm-bindgen-test-runner
         run: |
-          cargo test --locked --release -p reallyme-crypto --target wasm32-unknown-unknown --no-default-features --features brainpool,ed448,key-identifier-sha1 --lib --test ecdsa_explicit_tests --test ed448_tests --test key_identifier_tests
+          cargo test --locked --release -p reallyme-crypto --target wasm32-unknown-unknown --no-default-features --features prime-groups,ed448,key-identifier-sha1 --lib --test ecdsa_explicit_tests --test ed448_tests --test key_identifier_tests --test prime_groups
           cargo test --locked --release -p reallyme-crypto-hpke --target wasm32-unknown-unknown --no-default-features --features base-p256-aes128gcm --lib
+          cargo test --locked --release -p reallyme-crypto-rsa --target wasm32-unknown-unknown --no-default-features --features wasm --test representatives --test feature_lane_tests
+          cargo test --locked --release -p reallyme-crypto-p256 --target wasm32-unknown-unknown --no-default-features --features wasm --test jose_signature_tests
 
       - name: Check generated provider matrix
         run: node scripts/generate_provider_matrix.mjs --check

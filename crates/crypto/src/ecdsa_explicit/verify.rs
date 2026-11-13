@@ -45,15 +45,24 @@ pub fn verify(
     curve.scalar_len()?;
     super::encode::validate_length(curve, signature, encoding)?;
     with_digest(input, |_, digest| {
+        // Preserve the existing prehash/key error precedence when more than
+        // one input is invalid. All providers then consume the same strict
+        // codec boundary, without changing the caller's message bytes.
+        let fixed;
+        let signature = match encoding {
+            EcdsaEncoding::Der => {
+                validate_public_key(curve, public)?;
+                fixed = super::encode::der_to_fixed(curve, signature)?;
+                fixed.as_slice()
+            }
+            EcdsaEncoding::FixedWidth => signature,
+        };
         macro_rules! verify_curve {
             ($backend:ident) => {{
                 let public = $backend::ecdsa::VerifyingKey::from_sec1_bytes(public)
                     .map_err(|_| EcdsaError::InvalidPublicKey)?;
-                let signature = match encoding {
-                    EcdsaEncoding::Der => $backend::ecdsa::Signature::from_der(signature),
-                    EcdsaEncoding::FixedWidth => $backend::ecdsa::Signature::from_slice(signature),
-                }
-                .map_err(|_| EcdsaError::InvalidSignature)?;
+                let signature = $backend::ecdsa::Signature::from_slice(signature)
+                    .map_err(|_| EcdsaError::InvalidSignature)?;
                 public
                     .verify_prehash(digest, &signature)
                     .map_err(|_| EcdsaError::InvalidSignature)
@@ -64,12 +73,24 @@ pub fn verify(
             EcdsaCurve::P384 => verify_curve!(p384),
             EcdsaCurve::P521 => verify_curve!(p521),
             #[cfg(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))]
-            curve => super::brainpool::verify(curve, public, digest, signature, encoding),
+            curve => super::brainpool::verify(
+                curve,
+                public,
+                digest,
+                signature,
+                EcdsaEncoding::FixedWidth,
+            ),
             #[cfg(all(
                 feature = "brainpool",
                 not(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))
             ))]
-            curve => super::portable_brainpool::verify(curve, public, digest, signature, encoding),
+            curve => super::portable_brainpool::verify(
+                curve,
+                public,
+                digest,
+                signature,
+                EcdsaEncoding::FixedWidth,
+            ),
             #[cfg(not(any(
                 feature = "brainpool",
                 all(feature = "brainpool-openssl", not(target_arch = "wasm32"))

@@ -9,6 +9,7 @@ use spki::{
     der::{asn1::UintRef, Decode, DecodeValue, Header, Reader, Sequence},
     SubjectPublicKeyInfoRef,
 };
+use zeroize::Zeroize;
 
 use crate::constants::{
     RSA_MAX_EXPONENT_BITS, RSA_MAX_MODULUS_BITS, RSA_MIN_EXPONENT_BITS, RSA_MIN_MODULUS_BITS,
@@ -45,6 +46,14 @@ impl RsaPublicKey {
         self.size
     }
 }
+
+impl Drop for RsaPublicKey {
+    fn drop(&mut self) {
+        self.modulus.zeroize();
+        self.exponent.zeroize();
+    }
+}
+impl zeroize::ZeroizeOnDrop for RsaPublicKey {}
 
 struct DerRsaPublicKey<'a> {
     modulus: UintRef<'a>,

@@ -25,13 +25,18 @@ wasm = []
 crypto-core = { package = "reallyme-crypto-core", version = "=0.3.17", path = "../crypto/core" }
 sha1 = { workspace = true }
 sha2 = { workspace = true }
-crypto-bigint = { workspace = true }
+crypto-bigint = { workspace = true, features = ["zeroize"] }
+secrecy = { workspace = true }
+thiserror = { workspace = true }
 const-oid = { workspace = true }
 spki = { workspace = true }
 subtle = { workspace = true }
 zeroize = { workspace = true }
 
 [dev-dependencies]
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+wasm-bindgen-test = { workspace = true }
 base64 = { workspace = true }
 
 [lints]
