@@ -1,0 +1,16 @@
+source,line,kind,name,classification,reason
+tools/optional-provider-build/src/run.rs,20,fn,run,alternate-declaration,Alternate target/feature-gated implementation of an API already listed in the declaration inventory.
+tools/external-vector-audit/refenc-proof/src/support.rs,11,enum,AuditError,private-tool-fixture,Separate non-workspace audit proof fixture; not a crypto library export.
+crates/wasm/src/aead.rs,353,fn,aes_128_gcm_seal,binding-export,wasm_bindgen exports a JavaScript entrypoint even though the Rust crate root does not re-export it.
+crates/wasm/src/aead.rs,364,fn,aes_192_gcm_seal,binding-export,wasm_bindgen exports a JavaScript entrypoint even though the Rust crate root does not re-export it.
+crates/wasm/src/aead.rs,386,fn,aes_128_gcm_open,binding-export,wasm_bindgen exports a JavaScript entrypoint even though the Rust crate root does not re-export it.
+crates/wasm/src/aead.rs,397,fn,aes_192_gcm_open,binding-export,wasm_bindgen exports a JavaScript entrypoint even though the Rust crate root does not re-export it.
+crates/wasm/src/ml_kem.rs,108,fn,ml_kem_512_encapsulate_derand,conformance-binding-export,wasm_bindgen exports a JavaScript entrypoint even though the Rust crate root does not re-export it.
+crates/wasm/src/ml_kem.rs,177,fn,ml_kem_768_encapsulate_derand,conformance-binding-export,wasm_bindgen exports a JavaScript entrypoint even though the Rust crate root does not re-export it.
+crates/wasm/src/ml_kem.rs,246,fn,ml_kem_1024_encapsulate_derand,conformance-binding-export,wasm_bindgen exports a JavaScript entrypoint even though the Rust crate root does not re-export it.
+crates/hpke/src/constants.rs,72,const,HPKE_LABELED_CONTEXT_LIMIT,not-publicly-reachable,"Public declaration inside private constants module, not re-exported by the crate."
+crates/hpke/src/constants.rs,75,const,HPKE_KEY_SCHEDULE_LABEL_OVERHEAD,not-publicly-reachable,"Public declaration inside private constants module, not re-exported by the crate."
+crates/crypto/src/ecdsa_explicit/portable_brainpool/bp512.rs,20,struct,BrainpoolP512r1,not-publicly-reachable,Portable implementation marker behind private modules; not part of the external Rust API.
+crates/crypto/src/ecdsa_explicit/portable_brainpool/bp320.rs,24,struct,BrainpoolP320r1,not-publicly-reachable,Portable implementation marker behind private modules; not part of the external Rust API.
+crates/proto/src/generated.rs,8,const,CRYPTO_PROTO_PACKAGE,schema-derived,Generated protobuf package-name metadata.
+crates/crypto/dispatch/src/multikey.rs,165,fn,public_key_to_multikey,alternate-declaration,Alternate target/feature-gated implementation of an API already listed in the declaration inventory.
