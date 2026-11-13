@@ -131,7 +131,7 @@
     "schema-contract-current-versions.csv": "893ade7987205fc6329acab1d611b9f56ff895bbb308929d48a36ea3547eecb5",
     "schema-contract-current.csv": "6b8b0a1e93230f7ae4ad764a51f2db9f64ca6b2523fb4e00a04ac6145b683676",
     "schema-contract-migration.csv": "a12c6f0d80efac28357b27a3e93b2274e6be114b6ac4bab429b2503a4a55457e",
-    "schema-contract-reconciliation.md": "a49d6f64c73a213926f0f2fc36d710799bcd74d9e9bfba81a6af275348a97dee"
+    "schema-contract-reconciliation.md": "ce816ad418656450378d2438f45b4ef204d1a0f182e4faa15f3dbcc52dc916be"
   },
   "evidence_input_sha256": {
     "declarations.json": "2ea1b00844a074d1b5b9f34cc846b483c2a19592311e8918e38ee44593ad4e6f",
@@ -150,5 +150,13 @@
   "workspace_version_counts": {
     "0.4.0": 44,
     "0.0.0": 2
+  },
+  "subsequent_implementation_review": {
+    "source_commit": "e22f15e82e1e26fa625787234e28581c9eded9f6",
+    "public_api_changed": false,
+    "schema_changed": false,
+    "compiler_graph_recaptured": false,
+    "scope": "Private RSA digest-buffer ownership, disabled-provider test repairs and sparse-feature CI coverage; runtime regressions unexecuted.",
+    "validation_document": "reader-primitive-compatibility.md#subsequent-rsa-and-feature-review"
   }
 }
