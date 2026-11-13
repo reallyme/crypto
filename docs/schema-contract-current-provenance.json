@@ -1,5 +1,5 @@
 {
-  "report_state": "source/shape reconciliation from the bound compiler checkpoint; runtime tests unexecuted",
+  "report_state": "source/shape reconciliation at the bound compiler checkpoint; separate scoped runtime supplements",
   "source_contract_reconciliation_complete": true,
   "runtime_validation_complete": false,
   "native_api_fully_wire_callable": false,
@@ -131,7 +131,7 @@
     "schema-contract-current-versions.csv": "893ade7987205fc6329acab1d611b9f56ff895bbb308929d48a36ea3547eecb5",
     "schema-contract-current.csv": "6b8b0a1e93230f7ae4ad764a51f2db9f64ca6b2523fb4e00a04ac6145b683676",
     "schema-contract-migration.csv": "a12c6f0d80efac28357b27a3e93b2274e6be114b6ac4bab429b2503a4a55457e",
-    "schema-contract-reconciliation.md": "d1a928fca4f5b780b546f47fc2b88cfa63ccc83032272ccc24115dc0011eeaa9"
+    "schema-contract-reconciliation.md": "c56a0a23b464570207d183485fa6ca9edee53cecefacf4149e1fe5dca68baa26"
   },
   "evidence_input_sha256": {
     "declarations.json": "2ea1b00844a074d1b5b9f34cc846b483c2a19592311e8918e38ee44593ad4e6f",
@@ -184,7 +184,22 @@
       "crates/crypto/src/prime_groups.rs": "41021283f6cee30d9c99c8bd91122d1d93c986da6db94d93ed5b10b9c699dee8",
       "crates/crypto/src/prime_groups/parameters.rs": "b50133a9c674e9be3bbb9597665df785fe764823b35f7599814823ded993a7a8"
     },
-    "source_commit": "46d55c362bbff5c7fc40320f12b8224275077461"
+    "source_commit": "46d55c362bbff5c7fc40320f12b8224275077461",
+    "independent_runtime_validation": {
+      "source_commit": "561b7b02561b63452844d95221f448b5bbce647f",
+      "evidence_manifest": "patches/primefield/manifest.json",
+      "evidence_section": "independent_runtime_validation",
+      "canonical_dh_tests_passed_per_lane": 5,
+      "independent_group_tests_passed_per_lane": 10,
+      "domains": 13,
+      "lanes": [
+        "native",
+        "wasm"
+      ],
+      "explicit_repaired_field_override": true,
+      "full_workspace_runtime_validation": false,
+      "registry_delivery_complete": false
+    }
   },
   "dh_parameter_validation_extension": {
     "base_commit": "8b38e45fa2cce391301a68915d740bb4ed43d6a5",
@@ -194,7 +209,7 @@
     "result": "CryptoPrimeGroupDhParametersValidationResult",
     "report": "prime-group-domain-validation.md",
     "compiler_graph_recaptured": false,
-    "runtime_tests_executed": false,
+    "runtime_tests_executed": true,
     "source_sha256": {
       "crates/proto/proto/reallyme/crypto/v1/crypto.proto": "471488d2c908392edce94756806706689f1d3cc12f1dca93dea91c2727911783",
       "crates/crypto/src/prime_groups.rs": "37af8d8a0a95559cf785796acfbf7f48dabc50f614e4e2314dde657c92a5d797",
@@ -202,7 +217,7 @@
       "crates/crypto/src/prime_groups/contract.rs": "d40f63f633a83ca214993fdbdf1f8ee7cacdd1deaae830bc1d1e9dca30bd65e6",
       "crates/crypto/tests/prime_group_dh_parameters_tests.rs": "87b15dfe322d91149c46a53fff0badd2c2cbd03f6da2f8d266d39bc9a30f5ae5"
     },
-    "report_sha256": "23ee309395cf9e74f6b2b5fa5cb1621217925479a370fa1cfe05bd77b70eefb0",
+    "report_sha256": "8fc33147c4071d04093fd8a8ddd6258f83ee330ed1f257c81ef958658728d633",
     "compile_validation": {
       "workspace-clippy": "passed",
       "wasm-all-targets": "passed",
@@ -216,6 +231,23 @@
       "mobile-x86_64-linux-android": "passed"
     },
     "development_toolchain": "1.100.0",
-    "minimum_version": "1.96.0"
-  }
+    "minimum_version": "1.96.0",
+    "local_runtime_tests_executed": false,
+    "independent_runtime_validation": {
+      "source_commit": "561b7b02561b63452844d95221f448b5bbce647f",
+      "evidence_manifest": "patches/primefield/manifest.json",
+      "evidence_section": "independent_runtime_validation",
+      "canonical_dh_tests_passed_per_lane": 5,
+      "independent_group_tests_passed_per_lane": 10,
+      "domains": 13,
+      "lanes": [
+        "native",
+        "wasm"
+      ],
+      "explicit_repaired_field_override": true,
+      "full_workspace_runtime_validation": false,
+      "registry_delivery_complete": false
+    }
+  },
+  "runtime_tests_executed_scope": "Original compiler capture only; subsequent partial runtime execution is recorded in the extension supplements."
 }

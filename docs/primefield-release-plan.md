@@ -147,8 +147,9 @@ all low sixteen-bit values in padded P-256 storage in both byte orders,
 canonical boundaries, invalid lengths and explicit clearing-owner requirements.
 They do not perform unsafe reads after an allocation is released.
 
-Compilation and Clippy results are source evidence only. Runtime tests,
-application/device execution, upstream acceptance and publication remain
+Compilation and Clippy results are source evidence only. The separately
+executed runtime checks below add evidence for the exact candidate. Broader
+application/device validation, upstream acceptance and publication remain
 separate requirements. The accepted production dependency limitation in the
 [reader matrix](reader-primitive-compatibility.md#ownership-and-delivery-limits)
 remains open until a consumer uses the reviewed repair or fixed release; a
@@ -163,4 +164,31 @@ candidate artifact alone does not change the dependency being built.
 | Canonical group/adapter native Clippy | Passed with warnings denied under the same override |
 | Narrow Base/P-256/HKDF-SHA256/AES-128-GCM HPKE native and WASM all-target compilation | Passed under the same override |
 | Formatting and exact-baseline patch application | Passed |
-| Runtime regressions and mobile/device execution for this candidate | Unexecuted; remain separate release gates |
+| Local runtime regressions and mobile/device execution | Unexecuted in the source-only validation pass |
+| Independent field runtime regressions | 31 tests passed with each of `crypto-bigint` 0.7.10 and 0.7.11; one doc test passed |
+| Independent canonical DH and group runtime regressions | Five exact DH tests and ten independent group tests passed on each of native and WASM at source commit `561b7b02561b63452844d95221f448b5bbce647f` |
+
+## Independent runtime evidence
+
+On 2026-11-13, a separate isolated consumer run exercised the repaired source.
+Its original archive checksum, final patch checksum and all four repaired file
+hashes match the patch manifest. The initially tested patch and the final patch
+differ only in blank context-line transport; their reconstructed source files
+are identical. Field tests passed separately with `crypto-bigint` 0.7.10 and
+0.7.11. One field doc test and a minimal warnings-denied WASM compile also
+passed. These results are distinct from the earlier local compile-only pass.
+
+For shared group validation, all 2,421 files of a fresh archive match crypto
+commit `561b7b02561b63452844d95221f448b5bbce647f`. A consumer-root override selects
+the repaired field source with `crypto-bigint` 0.7.11, `hybrid-array` 0.4.15 and
+`zeroize` 1.9.1. The five unchanged canonical DH validation tests and ten
+independent group tests pass on native and WASM, fifteen functions per lane.
+The latter cover all thirteen domains against the unchanged canonical fixture
+file. This does not claim execution of every canonical schema-adapter test.
+
+The [manifest](../patches/primefield/manifest.json) records the scoped counts,
+source and fixture identities, dependency versions and evidence-log hashes.
+These finite results strengthen confidence in the candidate's behavior and
+staging-owner contract. They do not establish whole-engine erasure, device or
+SDK execution, a full workspace runtime pass, upstream acceptance, or delivery
+through a fixed registry release. The canonical dependency remains unchanged.

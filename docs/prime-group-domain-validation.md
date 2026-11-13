@@ -61,10 +61,16 @@ same-width cross-domain confusion, malformed and oversized integers, mismatched
 absent versus present-empty fields, unknown fields and clearing-owner traits.
 Each function registers for both native and WASM execution.
 
-The schema and source regression checks are compiled without executing these
-tests under the requested source-only validation constraint. No new runtime,
-SDK route or device-execution result is claimed. Packages remain unpublished
-0.4.0 source; existing published releases are unchanged. The separate
+The local schema/source validation pass compiled these checks without executing
+tests under the requested source-only constraint. A subsequent independent
+isolated run executed all five exact test functions on native and WASM at
+commit `561b7b02561b63452844d95221f448b5bbce647f`. All passed, together with ten
+independent group tests per lane across thirteen domains. Its source archive
+matches that commit, and its explicit repaired-field override and dependency
+versions are recorded in the [runtime evidence](primefield-release-plan.md#independent-runtime-evidence).
+This is scoped candidate validation; no new SDK route or device execution is
+claimed. Packages remain unpublished 0.4.0 source; existing published releases
+are unchanged. The separate
 [primefield dependency repair](primefield-release-plan.md) remains a distinct
 delivery requirement and is not closed by this public-parameter validator.
 
@@ -77,7 +83,9 @@ delivery requirement and is not closed by this public-parameter validator.
 | All seven installed iOS/simulator/Android library targets | Passed with warnings denied using `native,prime-groups,operation-response` |
 | Buf lint and breaking against the pinned published 0.3.17 baseline | Passed |
 | Generated-contract freshness, hardening idempotence, formatting, TypeScript build and static CI policy | Passed |
-| Runtime, SDK and device regression execution | Unexecuted under the retained no-tests constraint |
+| Local runtime, SDK and device regression execution | Unexecuted under the retained no-tests constraint |
+| Independent DH runtime execution | All five unchanged canonical functions passed on native and WASM at `561b7b0` with the explicit repaired-field override |
+| Independent group runtime execution | Ten functions passed per native/WASM lane across thirteen domains; no full schema-adapter runtime claim |
 
 The mobile targets are `aarch64-apple-ios`, `aarch64-apple-ios-sim`,
 `x86_64-apple-ios`, `aarch64-linux-android`, `armv7-linux-androideabi`,
