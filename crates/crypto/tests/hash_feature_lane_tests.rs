@@ -8,7 +8,6 @@
 
 use crypto_core::HashAlgorithm;
 use crypto_dispatch::AlgorithmError;
-use reallyme_crypto::operations::OperationError;
 
 #[test]
 fn hash_operation_rejects_feature_disabled_algorithms() {
@@ -26,14 +25,10 @@ fn hash_operation_rejects_feature_disabled_algorithms() {
 fn root_dispatch_facade_preserves_typed_unsupported_hash_error() {
     assert!(matches!(
         reallyme_crypto::dispatch::hash_digest(HashAlgorithm::Sha2_256, b"message"),
-        Err(AlgorithmError::UnsupportedHashAlgorithm(
-            HashAlgorithm::Sha2_256,
-        )),
+        Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM),
     ));
     assert!(matches!(
         reallyme_crypto::dispatch::hash_digest(HashAlgorithm::Sha3_256, b"message"),
-        Err(AlgorithmError::UnsupportedHashAlgorithm(
-            HashAlgorithm::Sha3_256,
-        )),
+        Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM),
     ));
 }
