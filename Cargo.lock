@@ -1945,14 +1945,17 @@ dependencies = [
 name = "reallyme-crypto-jwk"
 version = "0.4.0"
 dependencies = [
+ "buffa",
  "reallyme-codec-base64url",
  "reallyme-codec-jcs",
  "reallyme-crypto-core",
  "reallyme-crypto-ed25519",
  "reallyme-crypto-p256",
+ "reallyme-crypto-proto",
  "reallyme-crypto-secp256k1",
  "serde",
  "serde_json",
+ "zeroize",
 ]
 
 [[package]]
@@ -2108,6 +2111,7 @@ dependencies = [
 name = "reallyme-crypto-proto"
 version = "0.4.0"
 dependencies = [
+ "base64 0.23.1",
  "buffa",
  "serde",
  "serde_json",

@@ -17,9 +17,10 @@ include = ["/proto/**/*.proto", "/src/**/*.rs", "/Cargo.toml", "/README.md", "/L
 default = []
 contract-types = []
 error-types = ["dep:thiserror"]
-generated = ["error-types", "contract-types", "dep:buffa", "buffa/json", "dep:serde", "dep:serde_json", "dep:subtle", "dep:zeroize"]
+generated = ["error-types", "contract-types", "dep:buffa", "buffa/json", "dep:base64", "dep:serde", "dep:serde_json", "dep:subtle", "dep:zeroize"]
 
 [dependencies]
+base64 = { workspace = true, optional = true }
 buffa = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }

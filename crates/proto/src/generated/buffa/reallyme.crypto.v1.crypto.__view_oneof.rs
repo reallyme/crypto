@@ -452,6 +452,45 @@ pub mod crypto_operation_result {
         ),
     }
 }
+pub mod public_jwk {
+    #[allow(unused_imports)]
+    use super::*;
+    #[derive(Clone, Debug)]
+    pub enum Key<'a> {
+        Ec(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::PublicEcJwkView<'a>,
+            >,
+        ),
+        Okp(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::PublicOkpJwkView<'a>,
+            >,
+        ),
+        Akp(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::PublicAkpJwkView<'a>,
+            >,
+        ),
+    }
+}
+pub mod public_jwk_document {
+    #[allow(unused_imports)]
+    use super::*;
+    #[derive(Clone, Debug)]
+    pub enum Representation<'a> {
+        Canonical(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JsonWebKeyView<'a>,
+            >,
+        ),
+        Typed(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::PublicJwkView<'a>,
+            >,
+        ),
+    }
+}
 pub mod crypto_algorithm_identifier {
     #[allow(unused_imports)]
     use super::*;

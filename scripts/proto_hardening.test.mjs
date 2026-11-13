@@ -24,7 +24,9 @@ for (const namespace of ["serde", "::serde"]) {
         cpSync(new URL(`../${path}`, import.meta.url), join(root, path), { recursive: true });
       }
       const original = readFileSync(join(root, ownedPath), "utf8");
-      assert.equal(original.split(strictBranch).length - 1, 6);
+      const schema = readFileSync(join(root, "crates/proto/proto/reallyme/crypto/v1/crypto.proto"), "utf8");
+      const oneofCount = [...schema.matchAll(/\boneof\s+\w+\s*\{/gu)].length;
+      assert.equal(original.split(strictBranch).length - 1, oneofCount);
       // Undo just the oneof rejection to model both supported raw-generator
       // spellings. All existing secret-field hardening must survive the pass.
       const rawBranch = strictBranch.replace(
@@ -52,12 +54,113 @@ for (const namespace of ["serde", "::serde"]) {
       writeFileSync(join(root, ownedPath), original.replace(strictBranch, rawBranch));
       const partial = spawnSync(process.execPath, [script], { encoding: "utf8" });
       assert.notEqual(partial.status, 0);
-      assert.match(partial.stderr, /expected 6 oneof unknown-field branches, found 1/u);
+      assert.match(partial.stderr, new RegExp(`expected ${oneofCount} oneof unknown-field branches, found 1`, "u"));
+      if (namespace === "serde") {
+        // A generated owner must not retain a plain optional buffer in its
+        // temporary JSON wire shape when a later field can reject decoding.
+        const optionalWire = /(salt|kid):\s*::core::option::Option<\s*::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>\s*,?\s*>,/u;
+        const corrupt = original.replace(optionalWire,
+          "$1: ::core::option::Option<::buffa::alloc::vec::Vec<u8>>,");
+        assert.notEqual(corrupt, original, "fixture must contain guarded optional bytes");
+        writeFileSync(join(root, ownedPath), corrupt);
+        const incomplete = spawnSync(process.execPath, [script], { encoding: "utf8" });
+        assert.notEqual(incomplete.status, 0);
+        assert.match(incomplete.stderr, /incomplete optional byte ownership hardening/u);
+      }
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
   });
 }
+
+function generatedBody(source, marker) {
+  const start = source.indexOf(marker);
+  assert.ok(start >= 0, `missing generated declaration ${marker}`);
+  const open = source.indexOf("{", start);
+  let depth = 0;
+  for (let index = open; index < source.length; index += 1) {
+    if (source[index] === "{") depth += 1;
+    else if (source[index] === "}") {
+      depth -= 1;
+      if (depth === 0) return source.slice(open + 1, index);
+    }
+  }
+  assert.fail("unterminated generated declaration");
+}
+
+test("optional byte fields retain native types while all generated mutation paths clear ownership", () => {
+  const source = readFileSync(new URL(`../${ownedPath}`, import.meta.url), "utf8");
+  const compact = (value) => value.replace(/\s+/gu, "").replace(/,>/gu, ">").replace(/,\)/gu, ")");
+  for (const [name, field] of [["CryptoHkdfDeriveInputs", "salt"], ["CryptoHkdfExtractSha384Request", "salt"],
+    ["CryptoHkdfDomainKey32Request", "salt"], ["CryptoJwkOptions", "kid"], ["PublicEcJwk", "kid"],
+    ["PublicOkpJwk", "kid"], ["PublicAkpJwk", "kid"]]) {
+    const body = compact(generatedBody(source, `pub struct ${name} {`));
+    assert.ok(body.includes(`pub${field}:::core::option::Option<::buffa::alloc::vec::Vec<u8>>,`));
+    const deserialize = compact(generatedBody(source, `impl<'de> ::serde::Deserialize<'de> for ${name} {`));
+    assert.ok(deserialize.includes(`${field}:::core::option::Option<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>>,`));
+    assert.ok(deserialize.includes(`${field}:wire.${field}.as_mut().map(|bytes|::core::mem::take(&mut**bytes))`));
+    const drop = compact(generatedBody(source, `impl ::core::ops::Drop for ${name} {`));
+    const message = compact(generatedBody(source, `impl ::buffa::Message for ${name} {`));
+    const wipe = `::zeroize::Zeroize::zeroize(&mutself.${field});`;
+    assert.ok(drop.includes(wipe));
+    assert.ok(message.includes(wipe));
+    assert.ok(message.includes(`crate::merge_sensitive::merge_bytes(self.${field}.get_or_insert_with(::buffa::alloc::vec::Vec::new),buf)?;`));
+    assert.ok(source.includes(`impl ::zeroize::ZeroizeOnDrop for ${name} {}`));
+  }
+  const setter = compact(generatedBody(source, "pub fn with_salt("));
+  assert.ok(setter.includes("letmutvalue=::zeroize::Zeroizing::new(value.into());"));
+  assert.ok(setter.indexOf("Zeroize::zeroize") < setter.indexOf("self.salt=Some"));
+});
+
+test("transitive byte wrappers clear retained unknowns without a moving restriction", () => {
+  const source = readFileSync(new URL(`../${ownedPath}`, import.meta.url), "utf8");
+  const schema = readFileSync(new URL("../crates/proto/proto/reallyme/crypto/v1/crypto.proto", import.meta.url), "utf8");
+  const names = new Set([...schema.matchAll(/\bmessage\s+(\w+)\s*\{/gu)].map((match) => match[1]));
+  for (const name of ["PublicJwk", "PublicJwks", "PublicJwkDocument", "CryptoEcdsaInput",
+    "CryptoEcdsaKeyDescriptor", "CryptoEd448KeyDescriptor", "CryptoPrimeGroupScalarDescriptor"]) {
+    if (!names.has(name)) continue;
+    const body = generatedBody(source, `pub struct ${name} {`);
+    assert.match(body, /pub __buffa_unknown_fields: __ReallyMeZeroizingUnknownFields/u);
+    assert.ok(source.includes(`impl ::zeroize::ZeroizeOnDrop for ${name} {}`));
+    assert.ok(!source.includes(`impl ::core::ops::Drop for ${name} {`));
+  }
+  for (const name of ["CryptoRsaPssParams", "CryptoNativeKeyCapabilities", "CryptoEcdsaSignOptions",
+    "CryptoEd448SupportRequest", "CryptoNativeVerificationResult", "CryptoNativeKeyGenerateRequest",
+    "CryptoNativePublicKeyRequest"]) {
+    if (!names.has(name)) continue;
+    assert.ok(source.includes(`impl ::zeroize::ZeroizeOnDrop for ${name} {}`));
+    assert.ok(source.includes(`impl<'de> ::serde::Deserialize<'de> for ${name} {`));
+  }
+});
+
+test("unknown-group partial decoding keeps a clearing owner and upstream accounting", () => {
+  const source = readFileSync(new URL(`../${ownedPath}`, import.meta.url), "utf8");
+  const helper = generatedBody(source, "fn __reallyme_decode_unknown_field(");
+  assert.match(helper, /return ::buffa::encoding::decode_unknown_field\(tag, buf, ctx\);/u);
+  assert.match(helper, /ctx\.register_unknown_field\(\)\?;/u);
+  assert.match(helper, /let ctx = ctx\.descend\(\)\?;/u);
+  assert.match(helper, /let mut nested = __ReallyMeZeroizingUnknownFields::default\(\);/u);
+  assert.match(helper, /nested\.push\(__reallyme_decode_unknown_field\(tag, buf, ctx\)\?\);/u);
+  assert.match(helper, /UnknownFieldData::Group\(::core::mem::take\(&mut nested\.0\)\)/u);
+  assert.doesNotMatch(helper, /UnknownFields::new/u);
+  assert.match(source, /\.push\(__reallyme_decode_unknown_field\(tag, buf, ctx\)\?\)/u);
+});
+
+test("JSON byte decoding guards output and owned text before errors can discard them", () => {
+  const generated = readFileSync(new URL(`../${ownedPath}`, import.meta.url), "utf8");
+  assert.match(generated, /crate::deserialize_sensitive::deserialize_optional_bytes\(deserializer\)/u);
+  assert.match(generated, /crate::deserialize_sensitive::deserialize_bytes\(deserializer\)/u);
+  const source = readFileSync(new URL("../crates/proto/src/deserialize_sensitive.rs", import.meta.url), "utf8");
+  assert.ok(source.indexOf("let mut output = Zeroizing::new(Vec::new())") <
+    source.indexOf("let length = decode_into(value, output.as_mut_slice())"));
+  assert.match(source, /\.checked_add\(usize::from\(has_partial\)\)/u);
+  assert.match(source, /\.checked_mul\(DECODED_QUANTUM_BYTES\)/u);
+  assert.match(source, /let value = Zeroizing::new\(value\);/u);
+  assert.match(source, /let _value = Zeroizing::new\(value\);/u);
+  assert.match(source, /with_decode_allow_trailing_bits\(true\)/u);
+  assert.match(source, /DecodePaddingMode::Indifferent/u);
+  assert.doesNotMatch(source, /NATIVE_TYPE|MAX_[A-Z_]*LENGTH|unwrap\(|expect\(|panic!|format!/u);
+});
 
 test("CI policy and generation modes do not launch repository tests", () => {
   // Trace the actual checker through the test-routing boundary. Child commands

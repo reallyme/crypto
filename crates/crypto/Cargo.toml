@@ -228,6 +228,7 @@ operation-response = [
     "crypto-pbkdf2?/proto",
     "crypto-argon2id?/proto",
     "crypto-rsa?/proto",
+    "envelopes-jwk?/proto",
 ]
 signer = ["dep:crypto-signer", "dispatch"]
 ed25519 = ["dep:crypto-ed25519", "dispatch", "crypto-dispatch?/ed25519", "crypto-signer?/ed25519"]

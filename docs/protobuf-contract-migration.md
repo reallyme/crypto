@@ -201,6 +201,50 @@ lint/breaking against the supported baseline, generated ownership idempotence,
 maintenance freshness and CI policy checks pass for this checkpoint. No tests
 were executed.
 
+## Native options and optional metadata
+
+Standalone contracts now describe native RSA-PSS parameters, fixed Argon2
+requests and platform caps, HKDF extraction/expansion/domain inputs, JWK options
+and typed public JWK/JWKS models. RSA preserves independent message and MGF1
+hashes and distinguishes missing salt length from an explicit zero. Argon2 caps
+and resolved parameters are read-only records; callers cannot use them to
+override compiled profiles. HKDF preserves optional salt and exact context bytes
+and validates the requested output length against the native const generic.
+
+JWK KID, algorithm and usage metadata use actual optional byte fields, preserving
+valid UTF-8 bytes without normalization. The draft metadata presence flags are
+reserved and removed. JWK output-selection flags remain ordinary options, and
+existing native public JWK structures keep their field types. Protected adapter
+owners clear all copied strings and return only borrowed native views. JWK
+field copies reserve fallibly through their final clearing owners.
+
+Generated optional bytes preserve absent versus present-empty values in binary
+and JSON. Setters, replacement, partial merge, clear and malformed JSON paths
+retain clearing ownership. Transitive wrappers clear unknown-field storage
+without adding an outer Drop implementation that prevents native field moves.
+Partially decoded unknown groups and base64 output now enter guards before
+fallible parsing. JSON owned strings are guarded when the deserializer transfers
+ownership; borrowed input and a deserializer's internal escaped-string scratch
+remain owned by that deserializer and are outside the visitor's clearing control.
+This is an ownership guarantee for controlled buffers, not a compiler-wide
+memory-erasure claim.
+
+The existing CI privacy gate derives byte-field requirements from the schema
+instead of maintaining another field inventory. Every byte field requires a
+redacting, clearing generated owner; unknown string fields are sensitive by
+default. Fixed provider-name strings retain their public classification. The
+independent generated-code checks still verify these requirements.
+The pinned shared validator assumes non-optional JSON staging. A local extension
+checks optional staging, merge, setter, redaction and Drop ownership before
+projecting those fields past that legacy shape assertion; their actual privacy
+classification stays sensitive. The reviewed shared core remains unchanged.
+
+Native workspace Clippy with warnings denied compiles the new parity, malformed
+input, optional-presence and cleanup regression sources. Buf lint/breaking,
+TypeScript compilation, generation and hardening idempotence pass. Runtime
+execution remains deferred by request. These standalone adapters do not add
+root executable selectors or enable additional cryptographic providers.
+
 ## Remaining work
 
 - Migrate the remaining options, policies, content modes, key-source contracts,

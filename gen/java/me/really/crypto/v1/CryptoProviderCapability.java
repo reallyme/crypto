@@ -20,6 +20,12 @@ public  final class CryptoProviderCapability extends
         CryptoProviderCapability, CryptoProviderCapability.Builder> implements
     // @@protoc_insertion_point(message_implements:reallyme.crypto.v1.CryptoProviderCapability)
     CryptoProviderCapabilityOrBuilder {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  @java.lang.Override
+  public java.lang.String toString() {
+    return "CryptoProviderCapability{<redacted>}";
+  }
+
   private CryptoProviderCapability() {
     providerNames_ = emptyProtobufList();
   }

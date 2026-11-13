@@ -1061,6 +1061,118 @@ pub mod crypto_operation_result {
         }
     }
 }
+pub mod public_jwk {
+    #[allow(unused_imports)]
+    use super::*;
+    #[derive(Clone, PartialEq, Debug)]
+    pub enum Key {
+        Ec(::buffa::alloc::boxed::Box<super::super::super::PublicEcJwk>),
+        Okp(::buffa::alloc::boxed::Box<super::super::super::PublicOkpJwk>),
+        Akp(::buffa::alloc::boxed::Box<super::super::super::PublicAkpJwk>),
+    }
+    impl ::buffa::Oneof for Key {}
+    impl From<super::super::super::PublicEcJwk> for Key {
+        fn from(v: super::super::super::PublicEcJwk) -> Self {
+            Self::Ec(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl From<super::super::super::PublicEcJwk> for ::core::option::Option<Key> {
+        fn from(v: super::super::super::PublicEcJwk) -> Self {
+            Self::Some(Key::from(v))
+        }
+    }
+    impl From<super::super::super::PublicOkpJwk> for Key {
+        fn from(v: super::super::super::PublicOkpJwk) -> Self {
+            Self::Okp(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl From<super::super::super::PublicOkpJwk> for ::core::option::Option<Key> {
+        fn from(v: super::super::super::PublicOkpJwk) -> Self {
+            Self::Some(Key::from(v))
+        }
+    }
+    impl From<super::super::super::PublicAkpJwk> for Key {
+        fn from(v: super::super::super::PublicAkpJwk) -> Self {
+            Self::Akp(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl From<super::super::super::PublicAkpJwk> for ::core::option::Option<Key> {
+        fn from(v: super::super::super::PublicAkpJwk) -> Self {
+            Self::Some(Key::from(v))
+        }
+    }
+    impl ::serde::Serialize for Key {
+        fn serialize<S: ::serde::Serializer>(
+            &self,
+            s: S,
+        ) -> ::core::result::Result<S::Ok, S::Error> {
+            use ::serde::ser::SerializeMap;
+            let mut map = s.serialize_map(Some(1))?;
+            match self {
+                Self::Ec(v) => {
+                    map.serialize_entry("ec", &**v)?;
+                }
+                Self::Okp(v) => {
+                    map.serialize_entry("okp", &**v)?;
+                }
+                Self::Akp(v) => {
+                    map.serialize_entry("akp", &**v)?;
+                }
+            }
+            map.end()
+        }
+    }
+}
+pub mod public_jwk_document {
+    #[allow(unused_imports)]
+    use super::*;
+    #[derive(Clone, PartialEq, Debug)]
+    pub enum Representation {
+        Canonical(::buffa::alloc::boxed::Box<super::super::super::JsonWebKey>),
+        Typed(::buffa::alloc::boxed::Box<super::super::super::PublicJwk>),
+    }
+    impl ::buffa::Oneof for Representation {}
+    impl From<super::super::super::JsonWebKey> for Representation {
+        fn from(v: super::super::super::JsonWebKey) -> Self {
+            Self::Canonical(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl From<super::super::super::JsonWebKey>
+    for ::core::option::Option<Representation> {
+        fn from(v: super::super::super::JsonWebKey) -> Self {
+            Self::Some(Representation::from(v))
+        }
+    }
+    impl From<super::super::super::PublicJwk> for Representation {
+        fn from(v: super::super::super::PublicJwk) -> Self {
+            Self::Typed(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl From<super::super::super::PublicJwk>
+    for ::core::option::Option<Representation> {
+        fn from(v: super::super::super::PublicJwk) -> Self {
+            Self::Some(Representation::from(v))
+        }
+    }
+    impl ::serde::Serialize for Representation {
+        fn serialize<S: ::serde::Serializer>(
+            &self,
+            s: S,
+        ) -> ::core::result::Result<S::Ok, S::Error> {
+            use ::serde::ser::SerializeMap;
+            let mut map = s.serialize_map(Some(1))?;
+            match self {
+                Self::Canonical(v) => {
+                    map.serialize_entry("canonical", &**v)?;
+                }
+                Self::Typed(v) => {
+                    map.serialize_entry("typed", &**v)?;
+                }
+            }
+            map.end()
+        }
+    }
+}
 pub mod crypto_algorithm_identifier {
     #[allow(unused_imports)]
     use super::*;

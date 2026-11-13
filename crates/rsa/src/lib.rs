@@ -11,6 +11,9 @@ mod constants;
 mod convert_proto_identity;
 mod hash;
 mod key;
+/// Protected protobuf options and request adapters.
+#[cfg(feature = "proto")]
+pub mod proto_options;
 mod pss;
 mod representative;
 mod types;

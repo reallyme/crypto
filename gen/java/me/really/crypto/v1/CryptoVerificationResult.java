@@ -20,6 +20,12 @@ public  final class CryptoVerificationResult extends
         CryptoVerificationResult, CryptoVerificationResult.Builder> implements
     // @@protoc_insertion_point(message_implements:reallyme.crypto.v1.CryptoVerificationResult)
     CryptoVerificationResultOrBuilder {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  @java.lang.Override
+  public java.lang.String toString() {
+    return "CryptoVerificationResult{<redacted>}";
+  }
+
   private CryptoVerificationResult() {
   }
   private int bitField0_;

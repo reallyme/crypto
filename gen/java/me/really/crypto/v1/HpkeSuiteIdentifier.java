@@ -20,6 +20,12 @@ public  final class HpkeSuiteIdentifier extends
         HpkeSuiteIdentifier, HpkeSuiteIdentifier.Builder> implements
     // @@protoc_insertion_point(message_implements:reallyme.crypto.v1.HpkeSuiteIdentifier)
     HpkeSuiteIdentifierOrBuilder {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  @java.lang.Override
+  public java.lang.String toString() {
+    return "HpkeSuiteIdentifier{<redacted>}";
+  }
+
   private HpkeSuiteIdentifier() {
   }
   public static final int KEM_FIELD_NUMBER = 1;
