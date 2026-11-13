@@ -92,7 +92,7 @@ const scalarMetadataMessageNames = new Set([
 ]);
 // Standalone contracts may be introduced independently of executable requests.
 // Register their scalar/empty owners only when present in this schema revision.
-for (const name of ["CryptoHpkeP256BaseRecipientGenerateRequest", "CryptoRsaPssParams", "CryptoNativeKeyCapabilities",
+for (const name of ["CryptoRandomBytesRequest", "CryptoConstantTimeCompareResult", "CryptoConstantTimeRequireEqualResult", "CryptoHpkeP256BaseRecipientGenerateRequest", "CryptoRsaPssParams", "CryptoNativeKeyCapabilities",
   "CryptoEcdsaSignOptions", "CryptoEd448SupportRequest", "CryptoNativeVerificationResult",
   "CryptoNativeKeyGenerateRequest", "CryptoNativePublicKeyRequest", "HpkeSuiteIdentifier",
   "CryptoHpkePskReceiverSetupResult", "CryptoHpkeP256BaseCapabilities", "CryptoHpkeComponentCapability"]) {

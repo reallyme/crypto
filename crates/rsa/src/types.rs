@@ -19,20 +19,20 @@ impl RsaHash {
     /// Numeric suite identifier used by the C FFI.
     pub const fn ffi_id(self) -> u32 {
         match self {
-            Self::Sha1 => 1,
-            Self::Sha256 => 2,
-            Self::Sha384 => 3,
-            Self::Sha512 => 4,
+            Self::Sha1 => crypto_core::contract_constants::rsa_ffi::RSA_HASH_SHA1_FFI_ID,
+            Self::Sha256 => crypto_core::contract_constants::rsa_ffi::RSA_HASH_SHA256_FFI_ID,
+            Self::Sha384 => crypto_core::contract_constants::rsa_ffi::RSA_HASH_SHA384_FFI_ID,
+            Self::Sha512 => crypto_core::contract_constants::rsa_ffi::RSA_HASH_SHA512_FFI_ID,
         }
     }
 
     /// Parses a C FFI suite identifier.
     pub const fn from_ffi_id(value: u32) -> Option<Self> {
         match value {
-            1 => Some(Self::Sha1),
-            2 => Some(Self::Sha256),
-            3 => Some(Self::Sha384),
-            4 => Some(Self::Sha512),
+            crypto_core::contract_constants::rsa_ffi::RSA_HASH_SHA1_FFI_ID => Some(Self::Sha1),
+            crypto_core::contract_constants::rsa_ffi::RSA_HASH_SHA256_FFI_ID => Some(Self::Sha256),
+            crypto_core::contract_constants::rsa_ffi::RSA_HASH_SHA384_FFI_ID => Some(Self::Sha384),
+            crypto_core::contract_constants::rsa_ffi::RSA_HASH_SHA512_FFI_ID => Some(Self::Sha512),
             _ => None,
         }
     }
@@ -51,16 +51,16 @@ impl RsaPublicKeyDerEncoding {
     /// Numeric encoding identifier used by the C FFI.
     pub const fn ffi_id(self) -> u32 {
         match self {
-            Self::Pkcs1 => 1,
-            Self::Spki => 2,
+            Self::Pkcs1 => crypto_core::contract_constants::rsa_ffi::RSA_DER_PKCS1_FFI_ID,
+            Self::Spki => crypto_core::contract_constants::rsa_ffi::RSA_DER_SPKI_FFI_ID,
         }
     }
 
     /// Parses a C FFI encoding identifier.
     pub const fn from_ffi_id(value: u32) -> Option<Self> {
         match value {
-            1 => Some(Self::Pkcs1),
-            2 => Some(Self::Spki),
+            crypto_core::contract_constants::rsa_ffi::RSA_DER_PKCS1_FFI_ID => Some(Self::Pkcs1),
+            crypto_core::contract_constants::rsa_ffi::RSA_DER_SPKI_FFI_ID => Some(Self::Spki),
             _ => None,
         }
     }

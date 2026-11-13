@@ -4,6 +4,20 @@
 
 // Generated from immutable schema metadata. Regenerate with scripts/generate_error_contract.mjs.
 
+/// Immutable `adapter_limits` contract constants.
+pub mod adapter_limits {
+    /// Exact count value declared by the schema.
+    pub const MAX_FFI_INPUT_RANGES_PER_CALL: usize = 32;
+    /// Exact count value declared by the schema.
+    pub const MAX_FFI_OUTPUT_RANGES_PER_CALL: usize = 32;
+    /// Exact bytes value declared by the schema.
+    pub const MAX_JNI_BYTE_INPUT_LENGTH: usize = 1048576;
+    /// Exact bytes value declared by the schema.
+    pub const MAX_WASM_CIPHERTEXT_LENGTH: usize = 1048592;
+    /// Exact bytes value declared by the schema.
+    pub const MAX_WASM_INPUT_LENGTH: usize = 1048576;
+}
+
 /// Immutable `aes256_gcm` contract constants.
 pub mod aes256_gcm {
     /// Exact bytes value declared by the schema.
@@ -178,6 +192,42 @@ pub mod ed448 {
     pub const SEED_LEN: usize = 57;
     /// Exact bytes value declared by the schema.
     pub const SIGNATURE_LEN: usize = 114;
+}
+
+/// Immutable `ffi_status` contract constants.
+pub mod ffi_status {
+    /// Exact identifier value declared by the schema.
+    pub const CRYPTO_AUTHENTICATION_FAILED: i32 = -6;
+    /// Exact identifier value declared by the schema.
+    pub const CRYPTO_BUFFER_TOO_SMALL: i32 = -5;
+    /// Exact identifier value declared by the schema.
+    pub const CRYPTO_INTERNAL_ERROR: i32 = -128;
+    /// Exact identifier value declared by the schema.
+    pub const CRYPTO_INVALID_ARGUMENT: i32 = -1;
+    /// Exact identifier value declared by the schema.
+    pub const CRYPTO_INVALID_CIPHERTEXT: i32 = -4;
+    /// Exact identifier value declared by the schema.
+    pub const CRYPTO_INVALID_KEY: i32 = -2;
+    /// Exact identifier value declared by the schema.
+    pub const CRYPTO_INVALID_SIGNATURE: i32 = -3;
+    /// Exact identifier value declared by the schema.
+    pub const CRYPTO_OK: i32 = 0;
+}
+
+/// Immutable `ffi_suite` contract constants.
+pub mod ffi_suite {
+    /// Exact identifier value declared by the schema.
+    pub const HKDF_SUITE_SHA2_256: u32 = 1;
+    /// Exact identifier value declared by the schema.
+    pub const HKDF_SUITE_SHA3_256: u32 = 2;
+    /// Exact identifier value declared by the schema.
+    pub const HMAC_SUITE_SHA256: u32 = 1;
+    /// Exact identifier value declared by the schema.
+    pub const HMAC_SUITE_SHA512: u32 = 2;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_SUITE_P256_SHA256_AES256GCM: u32 = 1;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_SUITE_X25519_SHA256_CHACHA20_POLY1305: u32 = 2;
 }
 
 /// Immutable `hkdf` contract constants.
@@ -361,6 +411,20 @@ pub mod kmac {
     pub const KMAC256_MIN_KEY_LENGTH: usize = 32;
     /// Exact bytes value declared by the schema.
     pub const KMAC256_MIN_OUTPUT_LENGTH: usize = 1;
+}
+
+/// Immutable `kotlin_native_status` contract constants.
+pub mod kotlin_native_status {
+    /// Exact identifier value declared by the schema.
+    pub const KOTLIN_NATIVE_AUTHENTICATION_FAILED: i32 = 2;
+    /// Exact identifier value declared by the schema.
+    pub const KOTLIN_NATIVE_BACKEND_INTERNAL: i32 = 5;
+    /// Exact identifier value declared by the schema.
+    pub const KOTLIN_NATIVE_INVALID_INPUT: i32 = 1;
+    /// Exact identifier value declared by the schema.
+    pub const KOTLIN_NATIVE_INVALID_SIGNATURE: i32 = 6;
+    /// Exact identifier value declared by the schema.
+    pub const KOTLIN_NATIVE_OK: i32 = 0;
 }
 
 /// Immutable `ml_dsa_44` contract constants.
@@ -577,6 +641,22 @@ pub mod rsa {
     pub const RSA_SIGNATURE_MAX_LEN: usize = 1024;
 }
 
+/// Immutable `rsa_ffi` contract constants.
+pub mod rsa_ffi {
+    /// Exact identifier value declared by the schema.
+    pub const RSA_DER_PKCS1_FFI_ID: u32 = 1;
+    /// Exact identifier value declared by the schema.
+    pub const RSA_DER_SPKI_FFI_ID: u32 = 2;
+    /// Exact identifier value declared by the schema.
+    pub const RSA_HASH_SHA1_FFI_ID: u32 = 1;
+    /// Exact identifier value declared by the schema.
+    pub const RSA_HASH_SHA256_FFI_ID: u32 = 2;
+    /// Exact identifier value declared by the schema.
+    pub const RSA_HASH_SHA384_FFI_ID: u32 = 3;
+    /// Exact identifier value declared by the schema.
+    pub const RSA_HASH_SHA512_FFI_ID: u32 = 4;
+}
+
 /// Immutable `secp256k1` contract constants.
 pub mod secp256k1 {
     /// Exact bytes value declared by the schema.
@@ -641,6 +721,28 @@ pub mod slh_dsa {
     pub const SLH_DSA_SHA2_128S_SECRET_KEY_LEN: usize = 64;
     /// Exact bytes value declared by the schema.
     pub const SLH_DSA_SHA2_128S_SIGNATURE_LEN: usize = 7856;
+}
+
+/// Immutable `wasm_status` contract constants.
+pub mod wasm_status {
+    /// Exact identifier value declared by the schema.
+    pub const WASM_ERROR_AUTHENTICATION_FAILED: u32 = 3;
+    /// Exact identifier value declared by the schema.
+    pub const WASM_ERROR_INVALID_INPUT: u32 = 1;
+    /// Exact identifier value declared by the schema.
+    pub const WASM_ERROR_INVALID_SIGNATURE: u32 = 2;
+    /// Exact identifier value declared by the schema.
+    pub const WASM_ERROR_PROVIDER_FAILURE: u32 = 4;
+    /// Exact identifier value declared by the schema.
+    pub const WASM_ERROR_UNSUPPORTED_ALGORITHM: u32 = 5;
+}
+
+/// Immutable `wasm_suite` contract constants.
+pub mod wasm_suite {
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_SUITE_P256_SHA256_AES256GCM: u32 = 1;
+    /// Exact identifier value declared by the schema.
+    pub const HPKE_SUITE_X25519_SHA256_CHACHA20POLY1305: u32 = 2;
 }
 
 /// Immutable `x25519` contract constants.

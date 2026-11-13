@@ -229,6 +229,9 @@ operation-response = [
     "crypto-argon2id?/proto",
     "crypto-rsa?/proto",
     "envelopes-jwk?/proto",
+    "crypto-csprng?/proto",
+    "crypto-constant-time?/proto",
+    "crypto-poseidon2?/proto",
 ]
 signer = ["dep:crypto-signer", "dispatch"]
 ed25519 = ["dep:crypto-ed25519", "dispatch", "crypto-dispatch?/ed25519", "crypto-signer?/ed25519"]

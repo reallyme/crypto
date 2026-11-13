@@ -21,8 +21,10 @@ use crate::validate_bytes::{
     copy_bounded, copy_exact, MAX_WASM_CIPHERTEXT_LENGTH, MAX_WASM_INPUT_LENGTH,
 };
 
-const HPKE_SUITE_P256_SHA256_AES256GCM: u32 = 1;
-const HPKE_SUITE_X25519_SHA256_CHACHA20POLY1305: u32 = 2;
+const HPKE_SUITE_P256_SHA256_AES256GCM: u32 =
+    crypto_core::contract_constants::wasm_suite::HPKE_SUITE_P256_SHA256_AES256GCM;
+const HPKE_SUITE_X25519_SHA256_CHACHA20POLY1305: u32 =
+    crypto_core::contract_constants::wasm_suite::HPKE_SUITE_X25519_SHA256_CHACHA20POLY1305;
 
 #[derive(Clone, Copy)]
 struct HpkeSuiteConfig {

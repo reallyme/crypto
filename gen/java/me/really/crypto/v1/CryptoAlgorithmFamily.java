@@ -56,6 +56,18 @@ public enum CryptoAlgorithmFamily
    * <code>CRYPTO_ALGORITHM_FAMILY_HPKE = 9;</code>
    */
   CRYPTO_ALGORITHM_FAMILY_HPKE(9),
+  /**
+   * <pre>
+   * Semantic families that do not identify an algorithm or select a provider.
+   * </pre>
+   *
+   * <code>CRYPTO_ALGORITHM_FAMILY_CONSTANT_TIME = 10;</code>
+   */
+  CRYPTO_ALGORITHM_FAMILY_CONSTANT_TIME(10),
+  /**
+   * <code>CRYPTO_ALGORITHM_FAMILY_PLATFORM_KEY = 11;</code>
+   */
+  CRYPTO_ALGORITHM_FAMILY_PLATFORM_KEY(11),
   UNRECOGNIZED(-1),
   ;
 
@@ -99,6 +111,18 @@ public enum CryptoAlgorithmFamily
    * <code>CRYPTO_ALGORITHM_FAMILY_HPKE = 9;</code>
    */
   public static final int CRYPTO_ALGORITHM_FAMILY_HPKE_VALUE = 9;
+  /**
+   * <pre>
+   * Semantic families that do not identify an algorithm or select a provider.
+   * </pre>
+   *
+   * <code>CRYPTO_ALGORITHM_FAMILY_CONSTANT_TIME = 10;</code>
+   */
+  public static final int CRYPTO_ALGORITHM_FAMILY_CONSTANT_TIME_VALUE = 10;
+  /**
+   * <code>CRYPTO_ALGORITHM_FAMILY_PLATFORM_KEY = 11;</code>
+   */
+  public static final int CRYPTO_ALGORITHM_FAMILY_PLATFORM_KEY_VALUE = 11;
 
 
   @java.lang.Override
@@ -131,6 +155,8 @@ public enum CryptoAlgorithmFamily
       case 7: return CRYPTO_ALGORITHM_FAMILY_KDF;
       case 8: return CRYPTO_ALGORITHM_FAMILY_KEY_WRAP;
       case 9: return CRYPTO_ALGORITHM_FAMILY_HPKE;
+      case 10: return CRYPTO_ALGORITHM_FAMILY_CONSTANT_TIME;
+      case 11: return CRYPTO_ALGORITHM_FAMILY_PLATFORM_KEY;
       default: return null;
     }
   }

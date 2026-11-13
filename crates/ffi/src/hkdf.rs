@@ -9,9 +9,11 @@ use reallyme_crypto::hkdf::{DeriveRequest, HkdfInfo, HkdfInputKeyMaterial, HkdfS
 use zeroize::Zeroize;
 
 /// Suite selector value requesting HKDF with HMAC-SHA-256 (`1`).
-pub const HKDF_SUITE_SHA2_256: u32 = 1;
+pub const HKDF_SUITE_SHA2_256: u32 =
+    crypto_core::contract_constants::ffi_suite::HKDF_SUITE_SHA2_256;
 /// Suite selector value requesting HKDF with HMAC-SHA3-256 (`2`).
-pub const HKDF_SUITE_SHA3_256: u32 = 2;
+pub const HKDF_SUITE_SHA3_256: u32 =
+    crypto_core::contract_constants::ffi_suite::HKDF_SUITE_SHA3_256;
 
 fn suite_from_u32(value: u32) -> Result<HkdfSuite, CryptoStatus> {
     match value {

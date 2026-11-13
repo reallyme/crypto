@@ -12,11 +12,13 @@ use crate::map_error::invalid_input;
 /// The structured operation boundary uses the same one-mebibyte ceiling. Raw
 /// primitive exports enforce it before calling `Uint8Array::to_vec`, so an
 /// untrusted JavaScript caller cannot force an unbounded Rust allocation.
-pub(crate) const MAX_WASM_INPUT_LENGTH: usize = 1_048_576;
+pub(crate) const MAX_WASM_INPUT_LENGTH: usize =
+    crypto_core::contract_constants::adapter_limits::MAX_WASM_INPUT_LENGTH;
 /// Largest authenticated ciphertext accepted by direct AEAD/HPKE exports.
 ///
 /// Every currently exposed encrypting construction appends a 16-byte tag.
-pub(crate) const MAX_WASM_CIPHERTEXT_LENGTH: usize = 1_048_592;
+pub(crate) const MAX_WASM_CIPHERTEXT_LENGTH: usize =
+    crypto_core::contract_constants::adapter_limits::MAX_WASM_CIPHERTEXT_LENGTH;
 
 pub(crate) fn copy_exact(input: &Uint8Array, expected_len: usize) -> Result<Vec<u8>, JsValue> {
     let input_len = usize::try_from(input.length()).map_err(|_| invalid_input())?;

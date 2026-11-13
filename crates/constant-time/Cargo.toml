@@ -18,12 +18,18 @@ name = "crypto_constant_time"
 
 [features]
 default = []
+proto = ["dep:crypto-proto", "dep:zeroize"]
 native = []
 wasm = []
 
 [dependencies]
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../proto", optional = true, default-features = false, features = ["generated"] }
+zeroize = { workspace = true, features = ["derive"], optional = true }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.4.0", path = "../crypto/core" }
 subtle = { workspace = true }
+
+[dev-dependencies]
+buffa = { workspace = true }
 
 [lints]
 workspace = true

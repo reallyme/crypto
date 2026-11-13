@@ -1,0 +1,259 @@
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+syntax = "proto2";
+
+package reallyme.crypto.contract.v1;
+
+import "reallyme/crypto/contract/v1/constants.proto";
+
+// Immutable coarse transport status and legacy adapter-selector metadata.
+// Success zero is an existing assigned value, not an unspecified enum. These
+// maintenance-only records do not authorize algorithms or add runtime routes.
+// Coarse selectors are distinct from canonical algorithm and IANA component IDs.
+option (reallyme.crypto.contract.v1.constant_registry) = {
+  modules: {
+    native_module: "ffi_status"
+    constants: {
+      native_name: "CRYPTO_OK"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: 0
+    }
+    constants: {
+      native_name: "CRYPTO_INVALID_ARGUMENT"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: -1
+    }
+    constants: {
+      native_name: "CRYPTO_INVALID_KEY"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: -2
+    }
+    constants: {
+      native_name: "CRYPTO_INVALID_SIGNATURE"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: -3
+    }
+    constants: {
+      native_name: "CRYPTO_INVALID_CIPHERTEXT"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: -4
+    }
+    constants: {
+      native_name: "CRYPTO_BUFFER_TOO_SMALL"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: -5
+    }
+    constants: {
+      native_name: "CRYPTO_AUTHENTICATION_FAILED"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: -6
+    }
+    constants: {
+      native_name: "CRYPTO_INTERNAL_ERROR"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: -128
+    }
+  }
+  modules: {
+    native_module: "wasm_status"
+    constants: {
+      native_name: "WASM_ERROR_INVALID_INPUT"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "WASM_ERROR_INVALID_SIGNATURE"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 2
+    }
+    constants: {
+      native_name: "WASM_ERROR_AUTHENTICATION_FAILED"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 3
+    }
+    constants: {
+      native_name: "WASM_ERROR_PROVIDER_FAILURE"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 4
+    }
+    constants: {
+      native_name: "WASM_ERROR_UNSUPPORTED_ALGORITHM"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 5
+    }
+  }
+  modules: {
+    native_module: "kotlin_native_status"
+    constants: {
+      native_name: "KOTLIN_NATIVE_OK"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: 0
+    }
+    constants: {
+      native_name: "KOTLIN_NATIVE_INVALID_INPUT"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: 1
+    }
+    constants: {
+      native_name: "KOTLIN_NATIVE_AUTHENTICATION_FAILED"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: 2
+    }
+    constants: {
+      native_name: "KOTLIN_NATIVE_BACKEND_INTERNAL"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: 5
+    }
+    constants: {
+      native_name: "KOTLIN_NATIVE_INVALID_SIGNATURE"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: 6
+    }
+  }
+  modules: {
+    native_module: "ffi_suite"
+    constants: {
+      native_name: "HKDF_SUITE_SHA2_256"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "HKDF_SUITE_SHA3_256"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 2
+    }
+    constants: {
+      native_name: "HMAC_SUITE_SHA256"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "HMAC_SUITE_SHA512"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 2
+    }
+    constants: {
+      native_name: "HPKE_SUITE_P256_SHA256_AES256GCM"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "HPKE_SUITE_X25519_SHA256_CHACHA20_POLY1305"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 2
+    }
+  }
+  modules: {
+    native_module: "wasm_suite"
+    constants: {
+      native_name: "HPKE_SUITE_P256_SHA256_AES256GCM"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "HPKE_SUITE_X25519_SHA256_CHACHA20POLY1305"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 2
+    }
+  }
+  modules: {
+    native_module: "rsa_ffi"
+    constants: {
+      native_name: "RSA_HASH_SHA1_FFI_ID"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "RSA_HASH_SHA256_FFI_ID"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 2
+    }
+    constants: {
+      native_name: "RSA_HASH_SHA384_FFI_ID"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 3
+    }
+    constants: {
+      native_name: "RSA_HASH_SHA512_FFI_ID"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 4
+    }
+    constants: {
+      native_name: "RSA_DER_PKCS1_FFI_ID"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 1
+    }
+    constants: {
+      native_name: "RSA_DER_SPKI_FFI_ID"
+      native_type: NATIVE_TYPE_U32
+      unit: UNIT_IDENTIFIER
+      unsigned_value: 2
+    }
+  }
+  modules: {
+    native_module: "adapter_limits"
+    constants: {
+      native_name: "MAX_JNI_BYTE_INPUT_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1048576
+    }
+    constants: {
+      native_name: "MAX_WASM_INPUT_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1048576
+    }
+    constants: {
+      native_name: "MAX_WASM_CIPHERTEXT_LENGTH"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_BYTES
+      unsigned_value: 1048592
+    }
+    constants: {
+      native_name: "MAX_FFI_INPUT_RANGES_PER_CALL"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_COUNT
+      unsigned_value: 32
+    }
+    constants: {
+      native_name: "MAX_FFI_OUTPUT_RANGES_PER_CALL"
+      native_type: NATIVE_TYPE_USIZE
+      unit: UNIT_COUNT
+      unsigned_value: 32
+    }
+  }
+};

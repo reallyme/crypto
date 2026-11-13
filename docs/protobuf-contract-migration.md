@@ -305,6 +305,27 @@ JSON staging scopes. Generated boolean fields retain the pinned ProtoJSON
 null-to-default behavior. Ownership, context-lifecycle, exact-byte and negative
 regression sources are added; execution remains deferred.
 
+## Utility and adapter contracts
+
+Immutable metadata now owns the 32 existing C/JNI/WASM/RSA selector and status
+numbers and five fixed native boundary caps. Native aliases retain their exact
+values, types, coarse error projections and calling conventions. Platform-derived
+slice bounds remain platform-derived. No status is reinterpreted as a native
+schema reason, and valid zero success codes remain valid.
+
+Standalone contracts now reach injected secure-random filling and typed random
+outputs, all three constant-time comparison APIs and the fixed Poseidon2
+profile. Caller-provided result bytes cannot become trusted fresh randomness.
+Constant-time comparison retains its separate boolean and typed-error semantics;
+Poseidon2 keeps its existing fixed parameters and admission bound. The operation
+family bridge now covers constant-time and platform-key families without
+renumbering the existing nine values or changing native ordinals.
+
+All new inputs preserve exact bytes, reject unknown modifiers, and use clearing
+owners. Optional leaf metadata features and weak root forwarding keep backend
+selection unchanged; no new executable operation selectors are added. Parity,
+invalid-input and owner regression sources are included but unexecuted.
+
 ## Remaining work
 
 - Migrate the remaining options, policies, content modes, key-source contracts,

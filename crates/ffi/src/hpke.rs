@@ -21,9 +21,11 @@ use reallyme_crypto::operations::hpke::{open_base, seal_base};
 use zeroize::Zeroize;
 
 /// FFI suite selector for DHKEM(P-256, HKDF-SHA256), HKDF-SHA256, AES-256-GCM.
-pub const HPKE_SUITE_P256_SHA256_AES256GCM: u32 = 1;
+pub const HPKE_SUITE_P256_SHA256_AES256GCM: u32 =
+    crypto_core::contract_constants::ffi_suite::HPKE_SUITE_P256_SHA256_AES256GCM;
 /// FFI suite selector for DHKEM(X25519, HKDF-SHA256), HKDF-SHA256, ChaCha20-Poly1305.
-pub const HPKE_SUITE_X25519_SHA256_CHACHA20_POLY1305: u32 = 2;
+pub const HPKE_SUITE_X25519_SHA256_CHACHA20_POLY1305: u32 =
+    crypto_core::contract_constants::ffi_suite::HPKE_SUITE_X25519_SHA256_CHACHA20_POLY1305;
 
 /// Maximum encapsulated key length for supported HPKE suites.
 pub const HPKE_FFI_ENCAPSULATED_KEY_MAX_LEN: usize = HPKE_ENCAPSULATED_KEY_MAX_LEN;
