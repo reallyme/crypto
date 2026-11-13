@@ -81,12 +81,19 @@ bindings.
 | Buf lint and breaking against the pinned published 0.3.17 baseline | Passed |
 | Generated error/constants/HPKE freshness, hardening idempotence and formatting | Passed |
 | TypeScript build, static CI policy, workflow lint and offline Cargo Deny | Passed; dependency registry versions, sources and checksums are unchanged |
-| Canonical 0.4.0 runtime regression execution | Unexecuted under the requested no-tests constraint |
+| Local canonical 0.4.0 runtime regression execution | Unexecuted under the requested no-tests constraint |
+| Independent group runtime execution | Ten functions passed on each of native and WASM across thirteen domains at `561b7b0`, using the reviewed repaired-field override; the full schema-adapter suite was not run |
 
 The mobile targets are `aarch64-apple-ios`, `aarch64-apple-ios-sim`,
 `x86_64-apple-ios`, `aarch64-linux-android`, `armv7-linux-androideabi`,
 `i686-linux-android` and `x86_64-linux-android`. Compilation is separate from
 known-answer execution and device integration.
+
+The subsequent [independent runtime evidence](primefield-release-plan.md#independent-runtime-evidence)
+binds those ten group functions and five exact DH validation functions to the
+unchanged source archive and canonical fixtures. It records the repaired field
+source separately from the canonical registry dependency; the latter remains
+unmodified. The original compiler inventory checkpoint is retained.
 
 The aligned Rust source packages remain unpublished 0.4.0. Existing published
 0.3.17 packages and SDK artifact versions are unchanged. Runtime release gates

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "reviewed patch and release plan; canonical registry dependency unchanged",
+  "status": "reviewed patch with scoped independent runtime evidence; canonical registry dependency unchanged",
   "source_baseline": {
     "package": "primefield",
     "version": "0.14.0",
@@ -91,7 +91,8 @@
         "check": "canonical-narrow-hpke-wasm",
         "exit_code": 0
       }
-    ]
+    ],
+    "scope": "Local source-only compilation and lint checks at the recorded source commit; independent execution is recorded separately."
   },
   "canonical_registry_versions": {
     "bp256": "0.14.0",
@@ -167,5 +168,79 @@
     "Version floors in every affected independently consumed package and arithmetic feature route.",
     "Clean registry package and runtime/conformance validation without source overrides.",
     "Explicit publication authorization and verification of resulting registry artifacts."
-  ]
+  ],
+  "independent_runtime_validation": {
+    "date": "2026-11-13",
+    "scope": "Independent isolated candidate execution, separate from the local source-only checks.",
+    "crypto_source_commit": "561b7b02561b63452844d95221f448b5bbce647f",
+    "crypto_archive_files_verified": 2421,
+    "crypto_archive_files_changed": 0,
+    "registry_archive_sha256": "c555a6e4eb7d4e158fcb028c835c3b8642206ddc279b5c6b202ef9a8bdb592f4",
+    "final_patch_sha256": "441d0822cb9081a5c471905900cda6e7b3df1ab554f56e7a55007d383760b723",
+    "tested_patch_reconstruction_equivalent_to_final": true,
+    "repaired_files_sha256": {
+      "Cargo.toml": "d16179bd24c866cfe674bb7319c981a4422ebb6f51f50f09267f4f3fa82f7329",
+      "Cargo.toml.orig": "c4e180e4ca4c941543a4eb4e02a96d9597312d37b8cdd3dd1f0c46b97fc4e8ca",
+      "src/macros.rs": "7b1bc82e9f5c1760eba00d07bad6399988acf777453488d2020138d93f2cf632",
+      "src/monty.rs": "191b74e2d2f61c65d718661cfeb46a72142cafb5712727eb67775a47ba176822"
+    },
+    "canonical_dh_test_source_sha256": "87b15dfe322d91149c46a53fff0badd2c2cbd03f6da2f8d266d39bc9a30f5ae5",
+    "independent_group_test_source_sha256": "33e1343e2f752562af5e316d1357d4a9b1bab5e253b6ccb36b55597be3a2038a",
+    "canonical_group_fixture_sha256": "c1129f78a87df5a6d00f206877ec44ae9364f3bc3282cc0983d555fc54f4903a",
+    "group_dependency_versions": {
+      "crypto-bigint": "0.7.11",
+      "hybrid-array": "0.4.15",
+      "primefield": "0.14.0",
+      "primeorder": "0.14.0",
+      "reallyme-crypto": "0.4.0",
+      "reallyme-crypto-proto": "0.4.0",
+      "wasm-bindgen-test": "0.3.80",
+      "zeroize": "1.9.1"
+    },
+    "field_dependency_versions_final_run": {
+      "crypto-bigint": "0.7.11",
+      "hybrid-array": "0.4.12",
+      "primefield": "0.14.0",
+      "zeroize": "1.9.0"
+    },
+    "native": {
+      "runner": "nextest",
+      "threads": 4,
+      "canonical_dh_tests_passed": 5,
+      "independent_group_tests_passed": 10,
+      "domains": 13,
+      "failed": 0,
+      "skipped": 0
+    },
+    "wasm": {
+      "runner": "wasm-bindgen-test-runner",
+      "canonical_dh_tests_passed": 5,
+      "independent_group_tests_passed": 10,
+      "domains": 13,
+      "failed": 0,
+      "ignored": 0
+    },
+    "field_native": {
+      "crypto_bigint_0_7_10_tests_passed": 31,
+      "crypto_bigint_0_7_11_tests_passed": 31,
+      "failed": 0,
+      "skipped": 0,
+      "doc_tests_passed": 1
+    },
+    "field_minimal_wasm_compile": "passed",
+    "logs_sha256": {
+      "native_dh_and_groups": "1a979c1450f90eec9019cc9b977bf820ac0e642a923ed2de04bd93d791731ac5",
+      "wasm_dh_and_groups": "3efe5f1c7e619064393f84f1d51c6f18969bccbdab389858f984bf0fb762cae7",
+      "field_bigint_0_7_10": "fa36b3fb2dfa7422dc6d4f274473edeeeec1573f0321a54783262f2b865eca72",
+      "field_bigint_0_7_11": "c010865845cc5668d4d695abd0db674bc7e79367282a564b31ba2a6fdb490c46",
+      "field_doc_test": "47b922ed8b4ace549388e34ec8f508b8dc86e38dabcb2017eab7d06cf07e20c2",
+      "field_minimal_wasm_compile": "34a73a5cd2c526ecfc0a67ff8842e1da1c76cbcbe46124257d2c04cc93c17bff"
+    },
+    "full_canonical_schema_adapter_suite_executed": false,
+    "full_workspace_runtime_validation": false,
+    "sdk_or_device_execution": false,
+    "whole_engine_erasure_proven": false,
+    "canonical_registry_dependency_changed": false,
+    "registry_delivery_complete": false
+  }
 }
