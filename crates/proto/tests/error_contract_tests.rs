@@ -8,7 +8,8 @@
 
 use reallyme_crypto_proto::error_types::{CryptoError, CryptoErrorReason};
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn native_constants_cover_each_nonzero_schema_reason_exactly_once() {
     use std::collections::{BTreeMap, BTreeSet};
 
@@ -35,7 +36,8 @@ fn native_constants_cover_each_nonzero_schema_reason_exactly_once() {
     assert_eq!(native_codes, schema_codes);
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn native_errors_accept_every_known_nonzero_reason_and_reject_zero() {
     for &reason in CryptoErrorReason::VALUES {
         assert_eq!(CryptoErrorReason::from_code(reason.code()), Some(reason));
@@ -72,7 +74,8 @@ fn native_errors_accept_every_known_nonzero_reason_and_reject_zero() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn native_diagnostics_are_schema_names_and_have_no_backend_source() {
     use std::error::Error;
 
@@ -82,7 +85,8 @@ fn native_diagnostics_are_schema_names_and_have_no_backend_source() {
 }
 
 #[cfg(feature = "generated")]
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn full_bindings_share_type_identity_names_and_numeric_identity() -> Result<(), CryptoError> {
     use buffa::Enumeration;
     use reallyme_crypto_proto::generated::proto::reallyme::crypto::v1::CryptoErrorReason as WireReason;

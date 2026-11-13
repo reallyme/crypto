@@ -16,7 +16,8 @@ use envelopes_jwk::proto_options::{ProtectedJwk, ProtectedJwkOptions, ProtectedJ
 use envelopes_jwk::{AkpJwk, EcJwk, Jwk, Jwks, OkpJwk};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn options_preserve_every_flag_and_exact_optional_utf8_kid() {
     for alg in [false, true] {
         for use_sig in [false, true] {
@@ -46,7 +47,8 @@ fn options_preserve_every_flag_and_exact_optional_utf8_kid() {
         }
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn options_reject_invalid_utf8_and_unknown_modifiers() -> Result<(), buffa::DecodeError> {
     let mut wire = CryptoJwkOptions {
         alg: false,
@@ -68,7 +70,8 @@ fn options_reject_invalid_utf8_and_unknown_modifiers() -> Result<(), buffa::Deco
     Ok(())
 }
 #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn every_supported_generated_key_preserves_public_variant_fields_and_presence() {
     for identity in KeyAlgorithm::values() {
         let Some(native) = native_key(*identity) else {
@@ -112,7 +115,8 @@ fn every_supported_generated_key_preserves_public_variant_fields_and_presence() 
         }
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn typed_keys_preserve_absent_and_empty_kid() {
     let native = native_key(KeyAlgorithm::KEY_ALGORITHM_ED25519).expect("Ed25519 fixture");
     for kid in [None, Some(String::new()), Some("e\u{301}\0é".to_owned())] {
@@ -128,7 +132,8 @@ fn typed_keys_preserve_absent_and_empty_kid() {
         );
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn typed_key_rejects_missing_variant_unknown_modifiers_and_wrong_shape(
 ) -> Result<(), buffa::DecodeError> {
     assert_eq!(
@@ -168,7 +173,8 @@ fn typed_key_rejects_missing_variant_unknown_modifiers_and_wrong_shape(
     );
     Ok(())
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn typed_keys_reject_unknown_identities_and_malformed_public_members() {
     let native = native_key(KeyAlgorithm::KEY_ALGORITHM_ED25519).expect("fixture");
     for invalid in [0, -1, 999_999, i32::MAX] {
@@ -197,7 +203,8 @@ fn typed_keys_reject_unknown_identities_and_malformed_public_members() {
         Some(CryptoError::PRIMITIVE_INVALID_ENCODING)
     );
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn copied_option_key_and_set_owners_clear_every_owned_string() {
     fn require_cleanup<T: ZeroizeOnDrop>() {}
     require_cleanup::<ProtectedJwkOptions>();
@@ -230,7 +237,8 @@ fn copied_option_key_and_set_owners_clear_every_owned_string() {
         assert_cleared(key);
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn jwks_partial_failure_and_unknown_modifiers_fail_closed() -> Result<(), buffa::DecodeError> {
     let native = native_key(KeyAlgorithm::KEY_ALGORITHM_ED25519).expect("fixture");
     let wire = PublicJwk::try_from(&native).expect("wire");
@@ -355,7 +363,8 @@ const SECP_Y: [u8; 32] = [
     0xfd, 0x17, 0xb4, 0x48, 0xa6, 0x85, 0x54, 0x19, 0x9c, 0x47, 0xd0, 0x8f, 0xfb, 0x10, 0xd4, 0xb8,
 ];
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn native_public_metadata_rejections_are_not_silently_rewritten() {
     let mut native = native_key(KeyAlgorithm::KEY_ALGORITHM_ED25519).expect("fixture");
     if let Jwk::Okp(value) = &mut native {
@@ -375,7 +384,8 @@ fn native_public_metadata_rejections_are_not_silently_rewritten() {
     );
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn generated_options_owners_clear_retained_storage() {
     fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
     require_cleanup::<crypto_proto::generated::proto::reallyme::crypto::v1::CryptoJwkOptions>();
@@ -387,7 +397,8 @@ fn generated_options_owners_clear_retained_storage() {
     require_cleanup::<crypto_proto::generated::proto::reallyme::crypto::v1::PublicJwkDocument>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn typed_optional_metadata_retains_actual_bytes_and_rejects_noncanonical_values() {
     let native = native_key(KeyAlgorithm::KEY_ALGORITHM_ED25519).expect("fixture");
     let mut wire = PublicJwk::try_from(&native).expect("wire");
@@ -443,7 +454,8 @@ fn typed_optional_metadata_retains_actual_bytes_and_rejects_noncanonical_values(
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn retired_draft_boolean_tags_are_not_reinterpreted_as_metadata() -> Result<(), buffa::DecodeError>
 {
     let native = native_key(KeyAlgorithm::KEY_ALGORITHM_ED25519).expect("fixture");

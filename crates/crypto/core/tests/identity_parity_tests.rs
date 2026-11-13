@@ -20,7 +20,8 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
     KeyAlgorithm, KeyWrapAlgorithm, MacAlgorithm, SignatureAlgorithm,
 };
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn every_generated_key_identity_has_exact_native_parity() {
     for value in KeyAlgorithm::values() {
         let identifier = key_identifier((*value).into());
@@ -40,27 +41,32 @@ fn every_generated_key_identity_has_exact_native_parity() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn every_generated_aead_identity_has_exact_native_parity() {
     assert_parity::<AeadAlgorithm, CoreAead>(Identity::Aead, |value| Ok(value.into()));
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn every_generated_hash_identity_has_exact_native_parity() {
     assert_parity::<HashAlgorithm, CoreHash>(Identity::Hash, |value| Ok(value.into()));
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn every_generated_mac_identity_has_exact_native_parity() {
     assert_parity::<MacAlgorithm, CoreMac>(Identity::Mac, |value| Ok(value.into()));
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn every_generated_key_wrap_identity_has_exact_native_parity() {
     assert_parity::<KeyWrapAlgorithm, CoreKeyWrap>(Identity::KeyWrap, KeyWrapAlgorithm::try_from);
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn missing_and_wrong_family_identities_are_rejected() {
     let missing = CryptoAlgorithmIdentifier::default();
     assert_eq!(CoreKey::try_from(&missing), Err(UnsupportedProtoAlgorithm));
@@ -81,7 +87,8 @@ fn missing_and_wrong_family_identities_are_rejected() {
     assert_eq!(CoreKeyWrap::try_from(&key), Err(UnsupportedProtoAlgorithm));
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn unknown_fields_do_not_bypass_identity_validation() -> Result<(), buffa::DecodeError> {
     let mut value = key_identifier(KeyAlgorithm::KEY_ALGORITHM_P256.into());
     // Unknown field 100 must not become an ignored policy or suite modifier.
@@ -90,7 +97,8 @@ fn unknown_fields_do_not_bypass_identity_validation() -> Result<(), buffa::Decod
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn fixed_signature_suites_do_not_become_generic_key_identities() {
     for suite in [
         SignatureAlgorithm::SIGNATURE_ALGORITHM_BIP340_SCHNORR_SECP256K1_SHA256,
@@ -104,7 +112,8 @@ fn fixed_signature_suites_do_not_become_generic_key_identities() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn separate_key_metadata_does_not_change_old_suite_tags() {
     let key = key_identifier(KeyAlgorithm::KEY_ALGORITHM_P256.into());
     assert_eq!(key.encode_to_vec(), [0x08, 0xc8, 0x01]);
@@ -114,7 +123,8 @@ fn separate_key_metadata_does_not_change_old_suite_tags() {
     assert_eq!(signature.encode_to_vec(), [0x08, 0xc8, 0x01]);
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn all_identity_rejections_keep_the_canonical_schema_reason() {
     assert_eq!(
         UnsupportedProtoAlgorithm.reason(),
@@ -122,7 +132,8 @@ fn all_identity_rejections_keep_the_canonical_schema_reason() {
     );
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn key_metadata_clears_retained_unknown_storage_on_drop() {
     fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
     require_cleanup::<CryptoKeyAlgorithmIdentifier>();
@@ -168,7 +179,8 @@ fn key_identifier(algorithm: EnumValue<KeyAlgorithm>) -> CryptoKeyAlgorithmIdent
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn legacy_operation_identities_reject_unspecified_and_unknown_values() {
     use crypto_proto::generated::proto::reallyme::crypto::v1::{
         KemAlgorithm, KeyAgreementAlgorithm,

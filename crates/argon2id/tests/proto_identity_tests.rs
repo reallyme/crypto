@@ -14,7 +14,8 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
     Argon2idKdfVersion, CryptoArgon2idProfileIdentifier,
 };
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn argon2_profile_parity_covers_every_generated_identity_and_exact_wire_bytes() {
     for &value in Argon2idKdfVersion::values() {
         let identifier = CryptoArgon2idProfileIdentifier {
@@ -49,7 +50,8 @@ fn argon2_profile_parity_covers_every_generated_identity_and_exact_wire_bytes() 
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn argon2_profile_rejects_zero_negative_and_unknown_numbers() {
     for number in [i32::MIN, -1, 0, 99_999, i32::MAX] {
         let identifier = CryptoArgon2idProfileIdentifier {
@@ -63,7 +65,8 @@ fn argon2_profile_rejects_zero_negative_and_unknown_numbers() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn argon2_profile_rejects_retained_unknown_modifiers() -> Result<(), buffa::DecodeError> {
     let mut identifier = CryptoArgon2idProfileIdentifier::from(Argon2Profile::V1);
     // Unknown field 100 is public test data, not an accepted policy modifier.
@@ -76,7 +79,8 @@ fn argon2_profile_rejects_retained_unknown_modifiers() -> Result<(), buffa::Deco
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn argon2_kdf_version_parity_covers_every_generated_identity_and_exact_wire_bytes() {
     for &value in Argon2idKdfVersion::values() {
         let identifier = CryptoArgon2idProfileIdentifier {
@@ -115,7 +119,8 @@ fn argon2_kdf_version_parity_covers_every_generated_identity_and_exact_wire_byte
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn argon2_kdf_version_rejects_zero_negative_and_unknown_numbers() {
     for number in [i32::MIN, -1, 0, 99_999, i32::MAX] {
         let identifier = CryptoArgon2idProfileIdentifier {
@@ -129,7 +134,8 @@ fn argon2_kdf_version_rejects_zero_negative_and_unknown_numbers() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn argon2_kdf_version_rejects_retained_unknown_modifiers() -> Result<(), buffa::DecodeError> {
     let mut identifier = CryptoArgon2idProfileIdentifier::from(Argon2KdfVersion::V1);
     // Unknown field 100 is public test data, not an accepted policy modifier.
@@ -142,13 +148,15 @@ fn argon2_kdf_version_rejects_retained_unknown_modifiers() -> Result<(), buffa::
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn decoded_metadata_owners_clear_retained_unknown_storage_on_drop() {
     fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
     require_cleanup::<CryptoArgon2idProfileIdentifier>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn existing_numeric_profile_versions_remain_unchanged() {
     assert!(matches!(
         Argon2KdfVersion::try_from(1_u32),

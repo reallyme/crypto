@@ -40,6 +40,7 @@ getrandom02 = { package = "getrandom", version = "0.2.17", features = ["js"], op
 ignored = ["getrandom02"]
 
 [dev-dependencies]
+wasm-bindgen-test = { workspace = true }
 buffa = { workspace = true }
 hex-literal = { workspace = true }
 

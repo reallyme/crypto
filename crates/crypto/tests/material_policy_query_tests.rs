@@ -16,7 +16,8 @@ use reallyme_crypto::secret_material::{
     operation_secret_material_policy, random_fill_secret_material_policy, SecretMaterialOperation,
 };
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn operation_query_preserves_every_generated_policy_and_rejects_zero() {
     fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
     require_cleanup::<CryptoMaterialPolicyQueryRequest>();
@@ -31,7 +32,8 @@ fn operation_query_preserves_every_generated_policy_and_rejects_zero() {
         assert_eq!(operation_policy(&request), expected);
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn random_fill_query_preserves_every_existing_purpose_policy() {
     fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
     require_cleanup::<CryptoRandomFillPolicyQueryRequest>();
@@ -46,7 +48,8 @@ fn random_fill_query_preserves_every_existing_purpose_policy() {
         assert_eq!(random_fill_policy(&request), expected);
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn policy_queries_reject_unknown_selectors_and_unknown_modifiers() -> Result<(), buffa::DecodeError>
 {
     for unknown in [0, -1, 1, i32::MAX] {

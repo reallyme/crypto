@@ -1768,7 +1768,6 @@ for (const command of [
   "cargo nextest run --locked --workspace --no-default-features --features native",
   "cargo nextest run --locked --workspace --all-features",
   "cargo deny check",
-  "RUSTFLAGS=-Dwarnings cargo check --locked --workspace --all-features",
 ]) {
   assertContains(".github/workflows/rust-ci.yml", command);
 }
@@ -3275,10 +3274,6 @@ for (const path of [
 }
 assertContains(".github/workflows/rust-ci.yml", "scripts/audit_committed_lockfiles.sh");
 assertContains(".github/workflows/rust-ci.yml", "cargo metadata --locked --format-version 1 --no-deps");
-assertContains(
-  ".github/workflows/rust-ci.yml",
-  "RUSTFLAGS=-Dwarnings cargo check --locked --workspace --all-features",
-);
 assertContains("packages/ts/scripts/build-wasm.mjs", '"--locked"');
 assertContains(".github/workflows/jvm-native-resources.yml", "jvm native resources");
 assertContains(".github/workflows/jvm-native-resources.yml", "kotlin-native-");

@@ -7,7 +7,8 @@
 use crypto_core::CryptoError;
 use crypto_hpke::{HpkeError, HpkeKemId};
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn hpke_error_is_the_canonical_error_type() {
     fn canonical(error: HpkeError) -> CryptoError {
         error
@@ -22,7 +23,8 @@ fn hpke_error_is_the_canonical_error_type() {
 }
 
 #[cfg(feature = "base-p256-aes128gcm")]
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn injected_entropy_failures_keep_their_canonical_reason() -> Result<(), CryptoError> {
     use crypto_hpke::base_p256::{
         seal_with_rng, P256BaseError, P256BaseRandomError, P256BaseRng, P256RecipientKey,

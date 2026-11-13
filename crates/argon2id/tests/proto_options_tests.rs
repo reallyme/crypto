@@ -15,7 +15,8 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 };
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn platform_enum_has_total_parity_and_cost_records_preserve_every_field() {
     for value in ProtoPlatform::values() {
         let native = Argon2PlatformClass::try_from(EnumValue::from(*value));
@@ -48,7 +49,8 @@ fn platform_enum_has_total_parity_and_cost_records_preserve_every_field() {
         );
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn fixed_request_preserves_exact_inputs_and_clearing_owners() {
     fn require_cleanup<T: ZeroizeOnDrop>() {}
     require_cleanup::<Argon2DeriveInputs>();
@@ -65,7 +67,8 @@ fn fixed_request_preserves_exact_inputs_and_clearing_owners() {
     assert!(native.as_request().secret.as_bytes().is_empty());
     assert!(native.as_request().salt.as_bytes().is_empty());
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn fixed_request_rejects_presence_invalid_inputs_and_unknown_modifiers(
 ) -> Result<(), buffa::DecodeError> {
     let mut wire = request();
@@ -117,7 +120,8 @@ fn request() -> CryptoArgon2FixedDeriveRequest {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn generated_options_owners_clear_retained_storage() {
     fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
     require_cleanup::<

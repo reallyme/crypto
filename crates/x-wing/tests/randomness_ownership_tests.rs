@@ -6,7 +6,8 @@
 
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn existing_narrow_features_provide_clearing_ownership_for_exact_mlkem_coins_type() {
     fn clearing<T: ZeroizeOnDrop>() {
         assert!(core::mem::needs_drop::<T>());

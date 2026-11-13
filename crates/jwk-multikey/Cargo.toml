@@ -37,6 +37,7 @@ codec-multikey = { package = "reallyme-codec-multikey", version = "0.3.4" }
 envelopes-jwk = { package = "reallyme-crypto-jwk", version = "=0.4.0", path = "../jwk", default-features = false }
 
 [dev-dependencies]
+wasm-bindgen-test = { workspace = true }
 serde_json = { workspace = true }
 codec-base64url = { package = "reallyme-codec-base64url", version = "0.3.4" }
 crypto-dispatch = { package = "reallyme-crypto-dispatch", version = "=0.4.0", path = "../crypto/dispatch", default-features = false, features = ["native", "p256"] }

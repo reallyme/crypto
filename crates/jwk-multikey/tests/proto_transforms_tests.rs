@@ -33,7 +33,8 @@ fn native_key() -> envelopes_jwk::Jwk {
         .into(),
     )
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn multikey_roundtrip_matches_native_codec_names_and_exact_selected_metadata() {
     let native = native_key();
     let expected =
@@ -88,7 +89,8 @@ fn multikey_roundtrip_matches_native_codec_names_and_exact_selected_metadata() {
         }
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn transforms_reject_missing_unknown_invalid_utf8_and_noncanonical_multibase(
 ) -> Result<(), buffa::DecodeError> {
     assert_eq!(
@@ -126,7 +128,8 @@ fn transforms_reject_missing_unknown_invalid_utf8_and_noncanonical_multibase(
     );
     Ok(())
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn existing_multikey_support_does_not_expand_to_slh_or_xwing() {
     for (algorithm, length) in [
         (KeyAlgorithm::KEY_ALGORITHM_SLH_DSA_SHA2_128S, 32),
@@ -155,7 +158,8 @@ fn existing_multikey_support_does_not_expand_to_slh_or_xwing() {
         );
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn transform_inputs_and_outputs_have_clearing_ownership() {
     fn cleanup<T: ZeroizeOnDrop>() {}
     cleanup::<JwkToMultikeyInputs>();
@@ -166,7 +170,8 @@ fn transform_inputs_and_outputs_have_clearing_ownership() {
     cleanup::<CryptoMultikeyToJwkResult>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn every_existing_multikey_family_matches_native_forward_and_reverse_choices() {
     let cases = vec![
         (KeyAlgorithm::KEY_ALGORITHM_ED25519, ED.to_vec()),
@@ -240,7 +245,8 @@ fn every_existing_multikey_family_matches_native_forward_and_reverse_choices() {
 }
 
 #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn own_ec_backend_gate_stays_closed_under_dependency_feature_unification() {
     use crypto_proto::generated::proto::reallyme::crypto::v1::{
         __buffa::oneof::public_jwk::Key, PublicEcJwk,

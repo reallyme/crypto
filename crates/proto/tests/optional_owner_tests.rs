@@ -15,7 +15,8 @@ use reallyme_crypto_proto::generated::proto::reallyme::crypto::v1::{
     PublicJwk, PublicJwkDocument, PublicJwks, PublicOkpJwk,
 };
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn generated_options_and_transitive_wrappers_have_clearing_ownership() {
     fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
     require_cleanup::<CryptoRsaPssParams>();
@@ -35,7 +36,8 @@ fn generated_options_and_transitive_wrappers_have_clearing_ownership() {
     require_cleanup::<PublicJwkDocument>();
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn binary_optional_bytes_distinguish_absence_from_present_empty() -> Result<(), DecodeError> {
     let absent = CryptoHkdfExtractSha384Request::decode_from_slice(&[])?;
     let present = CryptoHkdfExtractSha384Request::decode_from_slice(&[0x12, 0])?;
@@ -54,7 +56,8 @@ fn binary_optional_bytes_distinguish_absence_from_present_empty() -> Result<(), 
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn optional_json_preserves_null_empty_and_nonempty_values() -> Result<(), serde_json::Error> {
     for (json, expected) in [
         (r#"{}"#, None),
@@ -76,7 +79,8 @@ fn optional_json_preserves_null_empty_and_nonempty_values() -> Result<(), serde_
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn optional_scalar_zero_has_presence_and_closed_json_fields() -> Result<(), DecodeError> {
     let absent = CryptoRsaPssParams::decode_from_slice(&[])?;
     let present = CryptoRsaPssParams::decode_from_slice(&[0x18, 0])?;
@@ -89,7 +93,8 @@ fn optional_scalar_zero_has_presence_and_closed_json_fields() -> Result<(), Deco
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 #[allow(unsafe_code, clippy::expect_used)]
 fn shorter_optional_replacements_wipe_the_initialized_tail() -> Result<(), DecodeError> {
     let mut request = CryptoHkdfExtractSha384Request::default();
@@ -106,7 +111,8 @@ fn shorter_optional_replacements_wipe_the_initialized_tail() -> Result<(), Decod
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 #[allow(unsafe_code, clippy::expect_used)]
 fn malformed_optional_replacements_clear_the_retained_live_buffer() {
     let mut request = CryptoHkdfExtractSha384Request::default();
@@ -125,7 +131,8 @@ fn malformed_optional_replacements_clear_the_retained_live_buffer() {
     assert!(initialized.iter().all(|byte| *byte == 0));
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn generated_optional_setters_preserve_present_empty() {
     let request = CryptoHkdfExtractSha384Request::default()
         .with_salt(vec![0xa5; 64])
@@ -137,7 +144,8 @@ fn generated_optional_setters_preserve_present_empty() {
     assert_eq!(options.kid.as_deref(), Some([].as_slice()));
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn json_errors_after_owned_optional_values_reject_without_partial_results() {
     for json in [
         r#"{"salt":"cHJpdmF0ZQ==","unknown":true}"#,
@@ -163,7 +171,8 @@ fn json_errors_after_owned_optional_values_reject_without_partial_results() {
     .is_err());
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn malformed_unknown_groups_keep_original_typed_errors() {
     let missing_end = [0xa3, 0x06, 0x0a, 3, b'k', b'e', b'y'];
     let wrong_end = [0xa3, 0x06, 0x0a, 3, b'k', b'e', b'y', 0xac, 0x06];
@@ -184,7 +193,8 @@ fn malformed_unknown_groups_keep_original_typed_errors() {
     ));
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn unknown_group_wire_and_budgets_remain_unchanged() -> Result<(), DecodeError> {
     let encoded = [0xa3, 0x06, 0x0a, 3, b'k', b'e', b'y', 0xa4, 0x06];
     let document: PublicJwkDocument = DecodeOptions::new()
@@ -207,7 +217,8 @@ fn unknown_group_wire_and_budgets_remain_unchanged() -> Result<(), DecodeError> 
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn custom_option_owners_keep_protojson_null_boolean_defaults() -> Result<(), serde_json::Error> {
     let options: CryptoJwkOptions =
         serde_json::from_str(r#"{"alg":null,"useSig":null,"useEnc":null,"kid":""}"#)?;

@@ -34,7 +34,8 @@ use crypto_hpke::{
     MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87,
 };
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn existing_public_scalar_values_remain_exact() {
     assert_eq!(HPKE_KEM_DHKEM_P256_HKDF_SHA256, 16u16);
     assert_eq!(HPKE_KEM_DHKEM_P384_HKDF_SHA384, 17u16);
@@ -84,7 +85,8 @@ fn existing_public_scalar_values_remain_exact() {
     assert_eq!(HPKE_X448_PRIVATE_KEY_LEN, 56usize);
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn existing_named_suites_and_mls_aliases_keep_their_exact_components() {
     for (suite, expected) in [
         (HPKE_DHKEM_P256_HKDF_SHA256_AES128GCM, (16u16, 1u16, 1u16)),
@@ -134,7 +136,8 @@ fn existing_named_suites_and_mls_aliases_keep_their_exact_components() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn registered_identity_order_remains_exact() {
     // Every enum is repr(u16); these public identifiers are not length conversions.
     assert_eq!(
@@ -152,7 +155,8 @@ fn registered_identity_order_remains_exact() {
 }
 
 #[cfg(feature = "base-p256-aes128gcm")]
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn bounded_base_profile_values_remain_exact() {
     use crypto_hpke::base_p256;
     assert_eq!(base_p256::INFO_MAX_LEN, 65_530usize);

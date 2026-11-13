@@ -14,7 +14,8 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
     HpkeAeadId, HpkeKdfId, HpkeKemId, HpkeSuiteIdentifier,
 };
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn every_registered_generated_component_combination_round_trips() {
     for kem in HpkeKemId::values() {
         for kdf in HpkeKdfId::values() {
@@ -41,7 +42,8 @@ fn every_registered_generated_component_combination_round_trips() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn unknown_negative_and_out_of_range_components_are_rejected() {
     for unknown in [i32::MIN, -1, 65_536, i32::MAX] {
         let mut kem = base_profile();
@@ -59,7 +61,8 @@ fn unknown_negative_and_out_of_range_components_are_rejected() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn unknown_suite_fields_do_not_become_ignored_policy() -> Result<(), HpkeError> {
     let mut suite = base_profile();
     suite
@@ -72,7 +75,8 @@ fn unknown_suite_fields_do_not_become_ignored_policy() -> Result<(), HpkeError> 
     Ok(())
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn base_p256_profile_is_the_existing_exact_registry_triple() {
     assert_eq!(
         crypto_hpke::HpkeSuite::try_from(&base_profile()),

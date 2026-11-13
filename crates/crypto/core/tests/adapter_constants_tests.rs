@@ -7,7 +7,8 @@
 #![allow(missing_docs)]
 use crypto_core::contract_constants;
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn assigned_adapter_numbers_remain_unchanged() {
     assert_eq!(contract_constants::ffi_status::CRYPTO_OK, 0);
     assert_eq!(contract_constants::ffi_status::CRYPTO_INVALID_ARGUMENT, -1);
@@ -88,7 +89,8 @@ fn assigned_adapter_numbers_remain_unchanged() {
     assert_eq!(contract_constants::rsa_ffi::RSA_DER_SPKI_FFI_ID, 2);
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn fixed_native_adapter_caps_remain_unchanged() {
     assert_eq!(
         contract_constants::adapter_limits::MAX_JNI_BYTE_INPUT_LENGTH,

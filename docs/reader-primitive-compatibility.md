@@ -1,21 +1,33 @@
 # Reader primitive compatibility
 
-This matrix covers cryptographic primitives for ISO/IEC 18013-5:2021 and the
-pinned edition-2 DIS. Protocol encoding, certificate acceptance, trust paths,
-revocation, replay, request binding and session-counter policy remain in the
-reader. The new interfaces are opt-in Rust APIs; existing default features,
-algorithm identifiers, SDK routes and signature policies retain their behavior.
+This document maps the cryptographic primitives for ISO/IEC 18013-5:2021 and
+the pinned edition-2 DIS to the current **0.4.0 source API and schema**.
+Protocol encoding, certificate acceptance, trust paths, revocation, replay,
+request binding and session-counter policy remain in the reader.
 
-The source package versions remain **0.3.17**. The additional interfaces described
-here are unreleased changes and require a coordinated package release before
-registry consumers can select them. Published 0.3.17 packages do not contain
-these new features.
+The 0.4.0 error migration is a deliberate Rust source API change. Primitive
+bytes, existing algorithm identifiers, signature policies and provider choices
+retain their contracts; callers using former nested error variants must migrate
+to the canonical error reasons described below. Standalone schema adapters are
+opt-in and do not add executable root operation branches or SDK provider routes.
+
+All 44 Rust packages under `crates/` have source version **0.4.0**: 41 are
+registry-publishable, while the FFI, WASM and conformance-vector packages remain
+`publish = false`. The complete package list appears below. No 0.4.0 package
+release is claimed. Existing 0.3.17 registry packages and tags remain unchanged;
+the Swift, Kotlin and TypeScript artifact versions and published baseline remain
+**0.3.17**. SDK version pins do not advertise these new Rust contracts.
+
+Current 0.4.0 parity, negative-input, lifecycle and ownership regression sources
+are **unexecuted**. Earlier native, WASM and mobile runtime evidence is retained
+in the historical validation section with its source scope. It is not evidence
+that the 0.4.0 migration has passed runtime regression testing.
 
 The reviewed lockfile resolves the relevant implementation packages as follows:
 
-| Package | Version |
+| Package | Locked version |
 | --- | --- |
-| `reallyme-crypto`, `reallyme-crypto-hpke`, existing ReallyMe primitive leaves | 0.3.17 (additional interfaces unreleased) |
+| ReallyMe Crypto Rust packages listed below | 0.4.0 source versions; unreleased |
 | `reallyme-codec` and its selected Rust leaves | 0.3.4 |
 | `der` (strict codec parser) | 0.8.3 |
 | `hpke` | 0.15.1 |
@@ -27,6 +39,7 @@ The reviewed lockfile resolves the relevant implementation packages as follows:
 | `sha2` / its `digest` dependency | 0.11.1 / 0.11.3 |
 | `sha1` (identifier feature only) | 0.11.0 |
 | `secrecy` / `zeroize` | 0.10.3 / 1.9.1 |
+| `buffa` / `thiserror` | 0.9.2 / 2.0.21 |
 | `openssl` / `openssl-sys` | 0.10.82 / 0.9.118 |
 | `openssl-src` (private provider build tool only) | 400.0.2+4.0.3 |
 
@@ -44,21 +57,27 @@ The DIS is a pinned draft, without a claim that it is final or the latest draft.
 Its certificate-validation text is in 12.8.3; references elsewhere to 12.8.4
 are retained as a source discrepancy, rather than interpreted as a new clause.
 
-## Clause-to-interface matrix
+## Clause-to-schema, API, feature and test matrix
 
-| Requirement | Rust interface and feature | Evidence |
-| --- | --- | --- |
-| 2021 9.1.2.4, 9.1.5.2 table 22; DIS 12.3.4, 12.4.6, 12.5.4, 12.7.2 table 17: NIST ECDSA/ECDH | `reallyme_crypto::ecdsa_explicit::{EcdsaKey, verify, validate_public_key}`; `ecdsa-explicit` | `ecdsa_explicit_tests`: independent key, raw agreement, signature, prehash and high-S known answers for each curve and hash |
-| Same clauses: Brainpool ECDSA/ECDH | Same interface; portable `brainpool`, optional native `brainpool-openssl` provider | Same tests execute all four curves natively and in WASM when selected; absent-feature tests require `UnsupportedCurve` |
-| Same clauses: X25519/X448 raw agreement | Existing `reallyme-crypto-x25519` / `reallyme-crypto-x448` leaves, `native` / `wasm` | Existing RFC 7748 and invalid/low-order-point tests |
-| Same clauses: ordinary Ed25519 | Existing `reallyme-crypto-ed25519` leaf | Existing seed/signature known answers and strict verification tests |
-| Same clauses: ordinary Ed448 | `reallyme_crypto::ed448::{Ed448Key, verify, sign_with_provider}`; portable `ed448`, optional native `ed448-openssl` verifier | `ed448_tests`: RFC 8032 ordinary key/signature answers, protected generation/import, opaque signing, rejected context/prehash variants, canonical scalar/point and cleanup tests; independent native verifier |
-| DIS 12.6.4 tables 21–23, 12.7.1: optional document-response encryption | `crypto_hpke::base_p256::{P256RecipientKey, seal, open}`; `base-p256-aes128gcm` | RFC 9180 A.3.1 retained unchanged; separate independently calculated empty-AAD answer; bounds, context, mode, suite, key, encoding, tampering and RNG tests |
-| 2021 9.1.1.5; DIS 12.2.5: ordinary session encryption | Existing raw ECDH leaves, `crypto_hkdf::derive`, `crypto_aes256_gcm::{encrypt, decrypt_zeroizing}` | Existing agreement, RFC 5869 and NIST AES-GCM vectors; this cipher remains AES-256-GCM |
-| SHA-256/384/512, certificate thumbprints, HMAC-SHA256 verification | Existing `crypto_sha2_256::digest`, `crypto_sha2::{digest_sha2_384, digest_sha2_512}`, `crypto_hmac::verify` | 1,668 NIST byte-aligned SHA-2 AFT answers, million-byte answers, differential padding and clearing-owner regressions; existing HMAC vectors |
-| DIS 12.8 and Annex B: certificate/CRL ECDSA verification | `ecdsa_explicit::verify` with explicit `EcdsaHash`, `EcdsaInput`, `EcdsaEncoding` | All 21 issuer-curve/hash primitive combinations; exact-byte mutation, encoding-confusion, digest-length and high-S cases |
-| Annex B; RFC 5280 4.2.1.2 method (1): subject key identifier | `key_identifier::subject_key_identifier_sha1`; separate `key-identifier-sha1` feature | Fourteen independent identifiers across seven curves; compressed/uncompressed payloads, retained SEC1 prefixes, BIT STRING framing, unused-bit octet and full-SPKI wrong-span comparisons |
-| Reader signing without private-key export | `ecdsa_explicit::{OpaqueEcdsaSigner, sign_with_provider}` | Non-exporting test provider executes signing and returns stable typed provider failures; returned signatures are checked against the associated public key |
+Schema names below are in `reallyme.crypto.v1`. A schema identity alone does
+not prove implementation support. Standalone requests require the named native
+adapter and its selected features; they do not imply a generic executable wire
+route. The test column identifies source coverage. Current 0.4.0 execution is
+pending for every row; the historical engine results are scoped separately.
+
+| Request / source clauses | Schema contract | Native API / adapter | Narrow features | Test sources and scope |
+| --- | --- | --- | --- | --- |
+| CR-DIS-01: 2021 9.1.2.4, 9.1.5.2 table 22; DIS 12.3.4, 12.4.6, 12.5.4, 12.7.2 table 17; seven NIST/Brainpool ECDSA and ECDH curves | `CryptoEcdsaKeyGenerateRequest`, `CryptoEcdsaKeyImportRequest`, `CryptoEcdsaPublicKey`, `CryptoEcdsaKeyDescriptor`, `CryptoEcdsaInput`, `CryptoEcdsaSignRequest`, `CryptoEcdsaVerifyRequest`, `CryptoEcdsaAgreementRequest`; clearing signature/agreement results | `ecdsa_explicit::{EcdsaKey, verify, validate_public_key, sign_with_provider}` and `ecdsa_explicit::contract`; protected software generation/import and injected opaque signing | `ecdsa-explicit`; add `brainpool` for all four portable Brainpool curves, or optional native `brainpool-openssl`; add `operation-response` for these schema adapters | `ecdsa_explicit_tests` retains independent key/agreement/signature/prehash/high-S answers for every curve and hash; `ecdsa_native_contract_tests` adds borrowed-byte, presence, enum, provider, ownership and adapter parity sources |
+| CR-DIS-01: X25519 raw agreement | Existing `CryptoKeyAgreementDeriveKeyPairRequest` and `CryptoKeyAgreementDeriveSharedSecretRequest/Result` with explicit X25519 identity; generation remains a native leaf/API operation, without a new wire generation selector | Existing X25519 leaf and `operations::key_agreement` / operation-contract adapter | X25519 leaf `native` or `wasm`; root `x25519` plus its existing execution/operation features when using dispatch | Existing RFC 7748 and invalid/low-order-point tests; no new X25519 primitive semantics |
+| CR-DIS-01: X448 raw agreement | `CryptoX448PrivateKeyInput`, `CryptoX448PublicKey`, `CryptoX448KeyDescriptor`, `CryptoX448AgreementRequest`, `CryptoNativeAgreementResult`; empty native generation/public-key requests | `crypto_x448::{X448PrivateKey, X448PublicKey, derive_x448_shared_secret}` and `crypto_x448::contract` | Leaf `native` or `wasm`; add leaf `proto` for the standalone adapter | Existing RFC 7748/point/width tests and `contract_tests`; the local scalar guard repair has unexecuted ownership regressions |
+| CR-DIS-01: ordinary Ed25519 | Existing signature generation/derivation/sign/verify requests and results with explicit Ed25519 identity | Existing Ed25519 leaf and signature operation adapters | Leaf `native` or `wasm`; existing root `ed25519` route and operation features as selected | Existing seed/signature answers, strict verification and root operation-contract sources |
+| CR-DIS-01: ordinary Ed448 | `CryptoEd448SupportRequest`, `CryptoEd448KeyImportRequest`, `CryptoEd448PublicKey`, `CryptoEd448KeyDescriptor`, `CryptoEd448OrdinarySignRequest`, `CryptoEd448OrdinaryVerifyRequest`; empty generation/public-key requests | `ed448::{Ed448Key, require_support, verify, sign_with_provider}` and `ed448::contract` | Portable `ed448`; optional native verifier `ed448-openssl`; add `operation-response` for schema adapters | `ed448_tests` retains all eight ordinary empty-context RFC 8032 cases, protected generation/import, canonical encodings and rejected context/prehash variants; `ed448_native_contract_tests` adds adapter, capability, failure and ownership sources |
+| CR-DIS-02: DIS 12.6.4 tables 21–23 and 12.7.1; optional single-record Base/P-256/HKDF-SHA256/AES-128-GCM | `CryptoHpkeP256BaseRecipientGenerateRequest`, `CryptoHpkeP256BaseRecipientImportRequest`, `CryptoHpkeP256BasePublicKey`, `CryptoHpkeP256BaseCapabilities`, seal/open requests and separate sealed/plaintext results | `crypto_hpke::base_p256::{P256RecipientKey, seal, seal_with_rng, open}`; `proto_protocol::{P256BaseRecipientGenerateInputs, P256BaseRecipientImportInputs, P256BaseSealInputs, P256BaseOpenInputs}` | Leaf `base-p256-aes128gcm`; add leaf `proto` for schema adapters; no umbrella runtime defaults or OpenSSL required | Existing `base_p256::tests` retain unchanged RFC 9180 A.3.1 and independent empty-AAD answers, maximum record, malformed inputs, context/tampering and entropy failure; new `proto_recipient_lifecycle_tests`, `proto_seal_rng_tests` and `proto_protocol_tests` are unexecuted |
+| CR-DIS-03: 2021 9.1.1.5; DIS 12.2.5; mandatory ordinary session encryption | Existing raw agreement requests, `CryptoHkdfDeriveRequest/Result`, standalone `CryptoHkdfDeriveInputs`, `CryptoAeadSealRequest/Result`, `CryptoAeadOpenRequest/Result` | Existing raw ECDH; `crypto_hkdf::derive` and `proto_options::HkdfDeriveInputs`; `crypto_aes256_gcm::{encrypt, decrypt_zeroizing}` | Select agreement, HKDF and AES-256-GCM leaves with defaults disabled; leaf runtime features; HKDF `proto` only when using its standalone adapter | Existing agreement, RFC 5869 and NIST AES-GCM vectors; `proto_options_tests`, AEAD nonce/operation and exact-context regression sources; ordinary session cipher remains AES-256-GCM |
+| CR-DIS-03: SHA-256/384/512, certificate thumbprints and HMAC-SHA256 verification | Existing `CryptoHashRequest/Result`, `CryptoMacVerifyRequest` and canonical error envelopes | `crypto_sha2_256::digest`, `crypto_sha2::{digest_sha2_384, digest_sha2_512}`, `crypto_hmac::verify` | Select SHA-2 and HMAC leaves with their existing `native` / `wasm` features; no SHA-1 signature/MAC feature | Historical 1,668 NIST byte-aligned SHA-2 AFT answers plus long/padding/ownership cases; existing HMAC vectors; current migrated tests are unexecuted |
+| CR-DIS-03 and CR-DIS-04: protected ownership, narrow providers, deterministic errors, evidence and delivery | Schema `CryptoErrorReason` and error envelopes; `CryptoNativeKeyCapabilities`; provider/material policy query outputs; descriptor-owned dimensions and limits | Shared `crypto_core::CryptoError`; total owner-local conversions and explicit provider/entropy traits; no private-state serialization | Optional root `operation-response`, leaf `proto` / core `protobuf` only for selected adapters; minimal schema constants remain backend-free | Identity/reason parity, invalid selectors, retained unknown fields, optional presence, ownership and provider-failure sources; current native/WASM/mobile compilation and runtime status below |
+| CR-DIS-05: DIS 12.8, certificate-validation text 12.8.3 and normative Annex B; certificate/CRL ECDSA | `CryptoEcdsaInput` explicit message/prehash branches, `CryptoEcdsaSignOptions`, `CryptoEcdsaVerifyRequest`; `CryptoEcdsaSignatureTranscodeRequest` and `CryptoEcdsaPublicKeyValidationRequest` | `ecdsa_explicit::verify`, `der_to_fixed`, `fixed_to_der`; `contract::verify` and `format_contract::{transcode_signature, validate_public_key}` | `ecdsa-explicit`, selected Brainpool feature, `operation-response` for adapters | Existing 21 issuer-curve/hash combinations and 42 certificate/CRL answers; exact TBS mutation, digest width, encoding confusion, leading-zero/high-S cases; new P-256/adapter sources unexecuted |
+| CR-DIS-05: Annex B / RFC 5280 4.2.1.2 method (1); legacy subject key identifier only | `CryptoSubjectKeyIdentifierRequest` / `CryptoSubjectKeyIdentifierResult` | `key_identifier::subject_key_identifier_sha1` and `key_identifier::contract::derive` | Separate `key-identifier-sha1`; add `operation-response` for schema adapter | Existing fourteen independent identifiers across seven curves, wrong-span/prefix/framing cases; `key_identifier_contract_tests` adds exact-byte, wire, bounds, modifier and clearing-owner sources |
 
 These APIs expose primitives. The caller selects the permitted certificate
 profile and interprets validated OIDs; a successful primitive operation does
@@ -68,17 +87,51 @@ The curve-aware conversion functions remain crypto interfaces. Strict DER
 syntax is decoded by published `reallyme-codec` 0.3.4 with defaults disabled
 and only its `der` feature enabled. Crypto retains scalar widths, nonzero and
 subgroup-order checks, signature verification and high-S policy. Existing
-conversion functions and typed errors remain available. Tests enable the
+conversion function names remain available; their 0.4 errors use the canonical
+schema reason contract below. Tests enable the
 parser dependency's BER feature separately to verify that feature unification
 does not relax the DER boundary.
+
+## Canonical 0.4 error and ownership boundary
+
+`crypto_core::CryptoError` is the shared validated `thiserror` type. It contains
+one known, nonzero schema `CryptoErrorReason`; the generated constants and
+`reason()` replace former leaf-specific nested variants. Area names such as
+`EcdsaError`, `Ed448Error`, `HpkeError` and `P256BaseError` are aliases of this
+same type. The zero sentinel and unknown numeric reasons cannot construct a
+native failure. No error carries caller bytes, arbitrary strings or dependency
+diagnostic text.
+
+An unsupported or disabled algorithm uses `CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM`
+(200); an unsupported selected backend is a distinct reason (201). Invalid
+signature (120), MAC/equality verification failure (121), authenticated-decryption
+failure (122) and backend failure remain distinct. Exact failure precedence is
+owned by the selected API, including its validation before a provider call.
+Structured protobuf errors preserve the reason. Existing C/WASM numeric statuses
+remain coarse projections with unchanged numeric values.
+
+Sensitive generated transport owners clear controlled byte and unknown-field
+storage on drop. Their required transport `Clone` does not make a native private
+key or live HPKE context cloneable: copied transport buffers have independent
+cleanup obligations. Explicit generated cleanup is `buffa::Message::clear`, not
+an assumed `Zeroize` implementation. Native secret owners retain their own
+`Zeroize`/`ZeroizeOnDrop` or secrecy contracts. A present empty message and an
+absent input are distinct; unknown modifiers cannot silently change a primitive.
+
+These named adapters establish the operations documented here. Reconciliation
+of the complete current compiler-visible public API with the historical schema
+inventory remains pending; this matrix does not claim exhaustive public API
+coverage from enum membership or DTO declarations.
+
+## Related group and RSA contracts
 
 Related group and RSA operations are separate primitive contracts; their
 presence does not select a reader protocol or expand ISO algorithm policy:
 
 | Operation | Rust interface and feature | Evidence |
 | --- | --- | --- |
-| Supplied-base operations in seven EC and three RFC 5114 DH domains | `prime_groups::{PrimeGroup, GroupScalar, GroupElement}`; `prime-groups` | Nine native/WASM tests cover independent parameters, multiplication, agreement, linear combinations, field mapping, exact encodings, invalid domains/subgroups, bounded entropy failure and protected owners |
-| Exact-width RSA public representative and modulus complement | `crypto_rsa::{rsa_public_representatives, RsaPublicKeyDerEncoding, RsaPublicRepresentatives}`; existing RSA leaf, with no backend feature required | Eighty-four independent integer answers, SPKI/PKCS#1 keys, 1024–8192-bit boundaries, typed width/range/key failures and ownership compile-fail tests |
+| Supplied-base operations in seven EC and three RFC 5114 DH domains | `prime_groups::{PrimeGroup, GroupScalar, GroupElement}`; `prime-groups`; standalone scalar/element/domain/multiplication/reduction requests through `prime_groups::contract` with `operation-response` | Historical nine-function native/WASM execution; current `prime_groups` and `prime_group_native_contract_tests` sources cover independent parameters, exact encodings, subgroups, bounded entropy and protected owners; migrated execution pending |
+| Exact-width RSA public representative and modulus complement | `crypto_rsa::{rsa_public_representatives, RsaPublicKeyDerEncoding, RsaPublicRepresentatives}`; existing RSA leaf, with no backend feature required; standalone `CryptoRsaPublicRepresentativesRequest/Result` adapters with leaf `proto` | Historical eighty-four independent integer answers; current SPKI/PKCS#1, 1024–8192-bit, typed width/range/key and ownership sources remain unexecuted after migration |
 
 RSA representatives expose `s^e mod n` and its modulus complement in protected
 owners. They do not interpret padding, validate a signature scheme or establish
@@ -182,15 +235,36 @@ document/request binding require the reader's separate validation.
 
 ## Narrow feature recipes
 
-Commands below target this source tree with defaults disabled:
+Commands below are consumer/validation recipes for the 0.4.0 source tree, with
+defaults disabled. They are not recorded as executed for this migration:
 
 ```sh
-cargo test -p reallyme-crypto --no-default-features --features prime-groups --test prime_groups
-cargo test -p reallyme-crypto-rsa --no-default-features --tests
-cargo test -p reallyme-crypto-hpke --no-default-features --features base-p256-aes128gcm --lib
-cargo test -p reallyme-crypto --no-default-features --features brainpool,ed448,key-identifier-sha1 --lib --test ecdsa_explicit_tests --test ed448_tests --test key_identifier_tests
-cargo test -p reallyme-crypto --no-default-features --features brainpool-openssl,ed448-openssl,key-identifier-sha1 --test ecdsa_explicit_tests --test ed448_tests --test key_identifier_tests
-CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER=wasm-bindgen-test-runner cargo test --release -p reallyme-crypto-hpke --target wasm32-unknown-unknown --no-default-features --features base-p256-aes128gcm --lib
+cargo check --locked -p reallyme-crypto --no-default-features --features brainpool,ed448,key-identifier-sha1
+cargo check --locked -p reallyme-crypto --no-default-features --features brainpool,ed448,key-identifier-sha1,operation-response
+cargo check --locked -p reallyme-crypto --target wasm32-unknown-unknown --no-default-features --features brainpool,ed448,key-identifier-sha1,operation-response
+cargo check --locked -p reallyme-crypto-hpke --no-default-features --features base-p256-aes128gcm
+cargo check --locked -p reallyme-crypto-hpke --no-default-features --features base-p256-aes128gcm,proto
+cargo check --locked -p reallyme-crypto-hpke --target wasm32-unknown-unknown --no-default-features --features base-p256-aes128gcm,proto
+cargo check --locked -p reallyme-crypto-x448 --no-default-features --features native,proto
+cargo check --locked -p reallyme-crypto --no-default-features --features prime-groups,operation-response
+cargo check --locked -p reallyme-crypto-rsa --no-default-features --features proto
+```
+
+Use the root `wasm` or the selected leaf's `wasm` feature where its execution
+lane requires it. Portable explicit ECDSA/Brainpool and Ed448 features compile
+independently of the root `native`/`wasm` umbrellas. `operation-response` forwards
+metadata features only to already selected leaves. HPKE's fixed profile selects
+its concrete backend components without selecting every HPKE suite; leaf `proto`
+adds the standalone schema boundary. Metadata-only `proto`/identity support does
+not make an unselected algorithm executable.
+
+Native vector and adapter test recipes, for execution only when validation is
+scheduled, include:
+
+```sh
+cargo test --locked -p reallyme-crypto --no-default-features --features brainpool,ed448,key-identifier-sha1,operation-response --test ecdsa_explicit_tests --test ed448_tests --test key_identifier_tests --test ecdsa_native_contract_tests --test ed448_native_contract_tests --test key_identifier_contract_tests
+cargo test --locked -p reallyme-crypto-hpke --no-default-features --features base-p256-aes128gcm,proto --lib --test proto_recipient_lifecycle_tests --test proto_seal_rng_tests
+CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER=wasm-bindgen-test-runner cargo test --locked --release -p reallyme-crypto-hpke --target wasm32-unknown-unknown --no-default-features --features base-p256-aes128gcm,proto --lib --test proto_recipient_lifecycle_tests --test proto_seal_rng_tests
 ```
 
 The separate existing leaves provide hashes (`reallyme-crypto-sha2-256`,
@@ -231,38 +305,62 @@ WASM uses the portable implementation when these features are selected because
 the native dependency is target-excluded. No runtime fallback changes an
 explicit native provider selection.
 
-## Validation scope
+## Current 0.4.0 validation status
 
-| Environment | Evidence | Limits |
+No runtime test execution is claimed for the schema/error/API migration. New
+parity, malformed-input, optional-presence, provider-failure and cleanup tests
+are source coverage until executed against the final 0.4.0 tree.
+
+| Gate | Current 0.4.0 status |
+| --- | --- |
+| Native compilation, all-target/all-feature Clippy, formatting | Final aggregate checkpoint verification pending; earlier migration compile/lint checkpoints do not certify the final tree |
+| Buf lint/breaking against the published schema baseline, generation/freshness/idempotence, TypeScript compilation | Final aggregate checkpoint verification pending |
+| WASM target compilation and runner execution | Final compilation pending; new runtime regression execution not performed |
+| iOS device/simulator and Android target compilation | Final compilation pending for the seven targets listed below |
+| Native/WASM known answers, negative cases, ownership and conformance suites; property/fuzz checks | Runtime validation of the migration pending |
+| Swift, Kotlin and TypeScript facade/device tests | No new migration runtime evidence or new provider routes claimed |
+| Versioned package publication | 0.4.0 unpublished; existing 0.3.17 artifacts unchanged |
+
+Compilation and generated-code checks establish their specific source and
+schema properties. They do not replace execution of cryptographic known
+answers, negative cases, cleanup paths or platform integration.
+
+## Historical runtime and compilation evidence
+
+The following results belong to **pre-migration, 0.3.17-versioned source
+checkpoints**. They are retained as primitive-engine regression history, not
+relabelled as 0.4.0 results. The later checkpoint incorporated prime groups,
+RSA representatives and Codec 0.3.4 before the canonical schema/error migration.
+The physical-device checkpoint predates those additions and that codec
+integration. Neither checkpoint validates subsequent ownership or schema changes.
+
+| Environment / pre-migration checkpoint | Recorded result | Scope |
 | --- | --- | --- |
-| Native ARM64 macOS, Rust 1.100.0 | 920 native and 990 all-feature workspace tests passed, with 17 existing skips per profile, including the additional prime-group and RSA representative interfaces; strict Clippy, API compatibility and independent known answers; optional provider execution with pinned OpenSSL 4.0.3 | Primitive behavior does not establish reader trust or protocol acceptance |
-| Rust 1.96.0 | All-feature workspace compilation | Minimum-version compile evidence |
-| WASM, Node test runner | 58 current-checkpoint functions execute across reader primitives, prime groups, RSA representatives, P-256 conversions and HPKE; separate SHA-2 NIST execution also passed; HPKE includes the maximum 16 MiB record | These tests do not establish browser-specific application integration |
-| iOS 27.0.1 physical device, ARM64; Rust 1.100.0 | 100 test functions execute: all seven ECDSA/ECDH curves, ordinary Ed448, identifiers, HPKE, SHA-2 NIST answers and existing Ed25519/X25519/X448/HMAC/HKDF/AES-GCM suites | Rust engines execute inside signed isolated test applications; SDK facade routing is separate |
-| iOS 26.5 simulator, ARM64; Rust 1.100.0 | Portable reader, HPKE and SHA-2 suites execute | Simulator evidence supplements physical-device execution |
-| `aarch64-apple-ios`, `aarch64-apple-ios-sim`, `x86_64-apple-ios` | All three portable target configurations compile; optional pinned OpenSSL 4.0.3 provider compilation also checked | x86-64 simulator execution was not performed |
-| Android 17 / API 37 physical device, ARM64; Rust 1.100.0 | Same 100 test functions execute, including all three direct RFC 5869 SHA-256 answers | Rust engine execution; application integration and SDK routing remain separate |
-| Android 16 / API 36 emulator, ARM64; Rust 1.100.0 | Same 100 test functions execute | Emulator evidence supplements physical-device execution |
-| `aarch64-linux-android`, `armv7-linux-androideabi`, `i686-linux-android`, `x86_64-linux-android` | All four portable targets compile with NDK 29.0.14206865 and API 24 link configuration; optional pinned OpenSSL 4.0.3 provider compilation also checked | Runtime execution covers ARM64; other architectures have compilation evidence |
+| Native ARM64 macOS, Rust 1.100.0; later checkpoint with Codec 0.3.4 | 920 native and 990 all-feature workspace tests passed, with 17 existing skips per profile; strict Clippy, API compatibility and independent answers; optional provider ran with pinned OpenSSL 4.0.3 | Historical primitive/default-profile regression only; 0.4.0 deliberately changes the Rust error API |
+| Rust 1.96.0; later checkpoint | All-feature workspace compilation | Historical minimum-version compilation |
+| WASM / Node runner; later checkpoint | 58 functions across reader primitives, prime groups, RSA representatives, P-256 conversions and HPKE; separate SHA-2 NIST execution passed; HPKE included the 16 MiB maximum record | Historical runner execution; no browser integration claim |
+| iOS 27.0.1 physical ARM64 device, Rust 1.100.0; earlier checkpoint | 100 functions covering seven ECDSA/ECDH curves, ordinary Ed448, identifiers, HPKE, SHA-2 NIST and existing Ed25519/X25519/X448/HMAC/HKDF/AES-GCM suites | Rust engines in signed isolated applications; predates group/RSA/Codec additions and the 0.4.0 migration; SDK routing separate |
+| iOS 26.5 ARM64 simulator; earlier checkpoint | Portable reader, HPKE and SHA-2 execution | Historical simulator evidence only |
+| Android 17 / API 37 physical ARM64 device and Android 16 / API 36 ARM64 emulator, Rust 1.100.0; earlier checkpoint | Same 100 functions, including all three direct RFC 5869 SHA-256 answers | Historical ARM64 Rust engine execution; predates group/RSA/Codec additions and the 0.4.0 migration |
+| `aarch64-apple-ios`, `aarch64-apple-ios-sim`, `x86_64-apple-ios`; later checkpoint | All three portable configurations compiled; optional pinned OpenSSL 4.0.3 compilation checked | Historical compilation; no x86-64 simulator runtime execution |
+| `aarch64-linux-android`, `armv7-linux-androideabi`, `i686-linux-android`, `x86_64-linux-android`; later checkpoint | All four portable configurations compiled with NDK 29.0.14206865 and API 24 link settings; optional pinned OpenSSL 4.0.3 compilation checked | Historical compilation; recorded Android runtime execution covers ARM64 only |
 
-The additional `prime-groups` and RSA representative interfaces have native
-and WASM execution evidence and compilation checks for all seven mobile targets.
-The physical-device evidence above predates these additions and the codec 0.3.4
-integration; no additional device execution is claimed for those changes.
-
-The existing Swift, Kotlin and TypeScript facade suites remain regression
-evidence for their existing provider routes. These additions expose Rust APIs;
-they do not add facade routes or advertise the new primitives through those SDKs.
+Earlier Swift, Kotlin and TypeScript facade suites remain evidence only for
+their tested source and existing provider routes. Regenerating schema bindings
+or compiling Rust targets does not establish new SDK route coverage. No device
+installation, execution or new mobile evidence is part of this migration record.
 
 ## Ownership and delivery limits
 
-New private-key owners and raw shared secrets use secrecy storage, clear on
-drop and offer no implicit private export. Plaintext and entropy buffers are
-zeroizing owners. Borrowed source buffers remain the caller's cleanup
+`EcdsaKey`, `Ed448Key` and `P256RecipientKey` use protected storage, clear on
+drop and offer no implicit private export. Existing X448 and other legacy leaf
+accessors retain their established explicit byte-access contracts; the schema
+adapters do not create new private-key result fields. Plaintext and entropy
+buffers are zeroizing owners. Borrowed source buffers remain the caller's cleanup
 responsibility. Backend and compiler copies have the limitations described in
 `SECURITY_MEMORY_MODEL.md`. HKDF expansion writes directly into its clearing
-output owner, including error exits, while preserving existing error variants
-and exact caller-supplied salt and info bytes.
+output owner, including error exits, while retaining exact caller-supplied salt
+and info bytes and propagating canonical 0.4 errors.
 
 Portable Brainpool has a separate dependency-level serialization cleanup gap.
 In `primefield` 0.14.0, `MontyFieldElement::to_bytes` stages an unguarded padded
@@ -277,10 +375,21 @@ Practical disclosure and incorrect cryptographic results have not been
 demonstrated. This acceptance does not close the intermediate-buffer cleanup
 requirement in CR-DIS-03 for providers using that serialization path.
 
-All seven ECDSA/ECDH curves, ordinary Ed448, key identifiers and bounded HPKE
-have portable native and WASM execution coverage. Existing native providers
-remain optional and separately tested. New Rust capabilities do not add
-Swift/Kotlin/TypeScript facade routes or change existing serialized identifiers.
+The historical checkpoints exercised all seven ECDSA/ECDH curves, ordinary
+Ed448, key identifiers and bounded HPKE in portable native and WASM lanes.
+Optional native providers were tested separately at those checkpoints. Current
+0.4.0 runtime and mobile compilation status remains as stated above. The new
+standalone Rust contracts do not add SDK provider routes or renumber existing
+serialized identifiers.
+
+JSON cleanup has a separate ownership boundary. Generated sensitive transport
+owners and trusted JWK values clear buffers and strings under their control.
+When a deserializer transfers an owned string, the visitor guards it; borrowed
+input and escaped-string scratch retained inside serde or another deserializer
+remain under that implementation's control. Call-site owners cannot erase
+those internal copies. Managed-runtime, allocator, compiler and register copies
+have the distinct limits in [SECURITY_MEMORY_MODEL.md](../SECURITY_MEMORY_MODEL.md).
+This does not close the accepted primefield source-buffer finding above.
 
 The three SHA-2 one-shot leaves now use the existing block compression and
 padding engines with protected state, padding buffers and output owners.
@@ -298,9 +407,80 @@ certificate remains an outstanding review item. The executed ECDSA/ECDH paths
 use the verified square-root property. This evidence does not claim a complete
 formal proof or an independent audit of the arithmetic implementation.
 
-A coordinated versioned package release remains a delivery step. Full reader
-conformance also requires protocol and trust-layer work outside these
-primitives. Proof-system selection remains a separate contract.
+## Remaining requirements and delivery
+
+The CR-DIS-01/02/05 primitive APIs and named schema adapters are represented
+above, but a final 0.4.0 compiler-visible API reconciliation and validation run
+remain delivery requirements. Newly added parity and ownership sources have
+not been executed. Native/WASM runtime regressions, final native/WASM/mobile
+compilation, schema/tooling gates and applicable fuzz/property validation must
+be recorded against the final source before release readiness is asserted.
+
+The accepted primefield serialization temporary leaves the corresponding
+CR-DIS-03 intermediate-cleanup requirement open for affected providers. The
+BP512 full-order certificate and deserializer-internal memory limits remain
+separate audit limits; no local dependency fork or arithmetic replacement is
+claimed. Earlier defect requests retain their separate tracking rather than
+being closed by schema coverage or this compatibility matrix.
+
+Coordinated 0.4.0 package delivery remains pending and publication requires its
+own repository authorization. Full reader conformance still requires protocol
+and trust-layer validation outside these primitives. ZKP transport does not
+select a proof system; proof-system implementation, network/status processing,
+RICAL policy and reader CBOR remain separate contracts.
+
+## Exact source package versions
+
+All entries below are source manifests, not evidence of publication. The three
+non-publishable packages retain version alignment for local builds/artifacts.
+Private maintenance tools and the fuzz workspace are not release packages.
+
+| Rust package | Source version | Registry publication enabled |
+| --- | --- | --- |
+| `crypto-conformance-vectors` | 0.4.0 | No |
+| `crypto-ffi` | 0.4.0 | No |
+| `reallyme-crypto` | 0.4.0 | Yes |
+| `reallyme-crypto-aes-kw` | 0.4.0 | Yes |
+| `reallyme-crypto-aes256-gcm` | 0.4.0 | Yes |
+| `reallyme-crypto-aes256-gcm-siv` | 0.4.0 | Yes |
+| `reallyme-crypto-argon2id` | 0.4.0 | Yes |
+| `reallyme-crypto-chacha20-poly1305` | 0.4.0 | Yes |
+| `reallyme-crypto-concat-kdf` | 0.4.0 | Yes |
+| `reallyme-crypto-constant-time` | 0.4.0 | Yes |
+| `reallyme-crypto-core` | 0.4.0 | Yes |
+| `reallyme-crypto-csprng` | 0.4.0 | Yes |
+| `reallyme-crypto-dispatch` | 0.4.0 | Yes |
+| `reallyme-crypto-ed25519` | 0.4.0 | Yes |
+| `reallyme-crypto-hkdf` | 0.4.0 | Yes |
+| `reallyme-crypto-hmac` | 0.4.0 | Yes |
+| `reallyme-crypto-hpke` | 0.4.0 | Yes |
+| `reallyme-crypto-jwk` | 0.4.0 | Yes |
+| `reallyme-crypto-jwk-multikey` | 0.4.0 | Yes |
+| `reallyme-crypto-kmac` | 0.4.0 | Yes |
+| `reallyme-crypto-ml-dsa-44` | 0.4.0 | Yes |
+| `reallyme-crypto-ml-dsa-65` | 0.4.0 | Yes |
+| `reallyme-crypto-ml-dsa-87` | 0.4.0 | Yes |
+| `reallyme-crypto-ml-kem-1024` | 0.4.0 | Yes |
+| `reallyme-crypto-ml-kem-512` | 0.4.0 | Yes |
+| `reallyme-crypto-ml-kem-768` | 0.4.0 | Yes |
+| `reallyme-crypto-p256` | 0.4.0 | Yes |
+| `reallyme-crypto-p384` | 0.4.0 | Yes |
+| `reallyme-crypto-p521` | 0.4.0 | Yes |
+| `reallyme-crypto-pbkdf2` | 0.4.0 | Yes |
+| `reallyme-crypto-poseidon2` | 0.4.0 | Yes |
+| `reallyme-crypto-proto` | 0.4.0 | Yes |
+| `reallyme-crypto-rsa` | 0.4.0 | Yes |
+| `reallyme-crypto-secp256k1` | 0.4.0 | Yes |
+| `reallyme-crypto-sha2` | 0.4.0 | Yes |
+| `reallyme-crypto-sha2-256` | 0.4.0 | Yes |
+| `reallyme-crypto-sha3` | 0.4.0 | Yes |
+| `reallyme-crypto-sha3-256` | 0.4.0 | Yes |
+| `reallyme-crypto-signer` | 0.4.0 | Yes |
+| `reallyme-crypto-slh-dsa` | 0.4.0 | Yes |
+| `reallyme-crypto-wasm` | 0.4.0 | No |
+| `reallyme-crypto-x-wing` | 0.4.0 | Yes |
+| `reallyme-crypto-x25519` | 0.4.0 | Yes |
+| `reallyme-crypto-x448` | 0.4.0 | Yes |
 
 Primary primitive references: [RFC 9180](https://www.rfc-editor.org/rfc/rfc9180.html),
 [RFC 8032](https://www.rfc-editor.org/rfc/rfc8032.html),

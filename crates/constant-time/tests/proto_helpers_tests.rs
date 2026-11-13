@@ -19,7 +19,8 @@ fn request(left: &[u8], right: &[u8]) -> CryptoConstantTimeCompareRequest {
         __buffa_unknown_fields: Default::default(),
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn comparison_preserves_equal_mismatch_and_empty_semantics() {
     for (left, right, expected) in [
         (b"a\0\xff".as_slice(), b"a\0\xff".as_slice(), true),
@@ -32,7 +33,8 @@ fn comparison_preserves_equal_mismatch_and_empty_semantics() {
         assert_eq!(inputs.compare_result().equal, expected);
     }
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn require_and_fixed_comparisons_keep_exact_error_reasons() {
     let equal = ConstantTimeInputs::try_from(&request(b"abc", b"abc")).expect("inputs");
     assert_eq!(equal.equal_fixed::<3>(), Ok(true));
@@ -53,7 +55,8 @@ fn require_and_fixed_comparisons_keep_exact_error_reasons() {
         Some(CryptoError::PRIMITIVE_INVALID_LENGTH)
     );
 }
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn comparison_unknown_modifiers_fail_closed_and_owners_clear() -> Result<(), buffa::DecodeError> {
     fn cleanup<T: ZeroizeOnDrop>() {}
     cleanup::<ConstantTimeInputs>();

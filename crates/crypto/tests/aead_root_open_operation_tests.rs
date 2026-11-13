@@ -2,6 +2,16 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+// A disabled test crate has no retained documentation. Keep this allowance
+// before cfg so sparse feature builds can still deny unrelated warnings.
+#![cfg_attr(
+    not(all(
+        feature = "aes",
+        feature = "aes-gcm-siv",
+        feature = "chacha20-poly1305"
+    )),
+    allow(missing_docs)
+)]
 #![cfg(all(
     feature = "aes",
     feature = "aes-gcm-siv",
