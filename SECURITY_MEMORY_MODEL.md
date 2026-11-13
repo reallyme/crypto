@@ -283,3 +283,10 @@ owner clears on drop, redacts debugging, and gives every clone independent
 clearing storage. These are source-level ownership guarantees, not claims about
 erasing every compiler or register copy. They do not repair the separately
 accepted upstream prime-field encoding temporary.
+
+### X-Wing encapsulation coins
+
+The local ML-KEM coins conversion in X-Wing immediately installs a clearing
+owner around the distinct fixed-size byte array. The caller's coins owner cannot
+clear this local copy. Its cleanup covers both successful encapsulation and
+early exits without changing deterministic bytes or provider features.

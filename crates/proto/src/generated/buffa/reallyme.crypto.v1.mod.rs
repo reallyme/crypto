@@ -308,6 +308,34 @@ pub mod __buffa {
         reg.register_json_any(super::__CRYPTO_PUBLIC_KEY_FORMAT_RESULT_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_SUBJECT_KEY_IDENTIFIER_REQUEST_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_SUBJECT_KEY_IDENTIFIER_RESULT_JSON_ANY);
+        reg.register_json_any(
+            super::__CRYPTO_P256SECURE_ENCLAVE_HANDLE_ENCODE_REQUEST_JSON_ANY,
+        );
+        reg.register_json_any(
+            super::__CRYPTO_P256SECURE_ENCLAVE_HANDLE_ENCODE_RESULT_JSON_ANY,
+        );
+        reg.register_json_any(
+            super::__CRYPTO_P256SECURE_ENCLAVE_HANDLE_DECODE_REQUEST_JSON_ANY,
+        );
+        reg.register_json_any(
+            super::__CRYPTO_P256SECURE_ENCLAVE_HANDLE_DECODE_RESULT_JSON_ANY,
+        );
+        reg.register_json_any(
+            super::__CRYPTO_KEM_CONFORMANCE_ENCAPSULATE_REQUEST_JSON_ANY,
+        );
+        reg.register_json_any(
+            super::__CRYPTO_HPKE_BASE_SEAL_CONFORMANCE_REQUEST_JSON_ANY,
+        );
+        reg.register_json_any(
+            super::__CRYPTO_HPKE_SENDER_EXPORT_CONFORMANCE_REQUEST_JSON_ANY,
+        );
+        reg.register_json_any(
+            super::__CRYPTO_HPKE_PSK_SENDER_SETUP_CONFORMANCE_REQUEST_JSON_ANY,
+        );
+        reg.register_json_any(
+            super::__CRYPTO_HPKE_EXACT_WIDTH_DERIVE_KEY_PAIR_REQUEST_JSON_ANY,
+        );
+        reg.register_json_any(super::__CRYPTO_HPKE_PUBLIC_KEY_DESCRIPTOR_JSON_ANY);
     }
 }
 #[doc(inline)]
@@ -1146,5 +1174,45 @@ pub use self::__buffa::view::CryptoSubjectKeyIdentifierRequestOwnedView;
 pub use self::__buffa::view::CryptoSubjectKeyIdentifierResultView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoSubjectKeyIdentifierResultOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoP256SecureEnclaveHandleEncodeRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoP256SecureEnclaveHandleEncodeRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoP256SecureEnclaveHandleEncodeResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoP256SecureEnclaveHandleEncodeResultOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoP256SecureEnclaveHandleDecodeRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoP256SecureEnclaveHandleDecodeRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoP256SecureEnclaveHandleDecodeResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoP256SecureEnclaveHandleDecodeResultOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoKemConformanceEncapsulateRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoKemConformanceEncapsulateRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeBaseSealConformanceRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeBaseSealConformanceRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeSenderExportConformanceRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeSenderExportConformanceRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkePskSenderSetupConformanceRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkePskSenderSetupConformanceRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeExactWidthDeriveKeyPairRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkeExactWidthDeriveKeyPairRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkePublicKeyDescriptorView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHpkePublicKeyDescriptorOwnedView;
 #[doc(inline)]
 pub use self::__buffa::register_types;
