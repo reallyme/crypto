@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#![cfg(feature = "proto")]
 #![allow(missing_docs, clippy::expect_used)]
+#![cfg(feature = "proto")]
 use buffa::{EnumValue, Enumeration, Message, MessageField};
 use crypto_core::CryptoError;
 use crypto_hkdf::proto_options::{

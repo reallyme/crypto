@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! Feature-off tests for the MAC operation owner.
+
 #![allow(missing_docs)]
 #![cfg(not(feature = "hmac"))]
-
-//! Feature-off tests for the MAC operation owner.
 
 use reallyme_crypto::operations::OperationError;
 use reallyme_crypto::MacAlgorithm;

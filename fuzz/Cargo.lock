@@ -1779,9 +1779,11 @@ dependencies = [
 name = "reallyme-crypto-secp256k1"
 version = "0.4.0"
 dependencies = [
+ "buffa",
  "ecdsa",
  "k256",
  "reallyme-crypto-core",
+ "reallyme-crypto-proto",
  "sha2",
  "zeroize",
 ]

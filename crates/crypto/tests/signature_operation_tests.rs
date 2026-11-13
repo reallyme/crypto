@@ -6,25 +6,93 @@
 
 #![allow(clippy::expect_used)]
 
+#[cfg(all(
+    feature = "rsa",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
+#[cfg(all(
+    any(
+        feature = "ed25519",
+        feature = "p256",
+        feature = "p384",
+        feature = "p521",
+        feature = "secp256k1"
+    ),
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 use crypto_core::Algorithm;
+#[cfg(all(
+    feature = "rsa",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 use reallyme_crypto::rsa::{RsaHash, RsaPssParams, RsaPublicKeyDerEncoding};
 
+#[cfg(all(
+    any(
+        feature = "ed25519",
+        feature = "p256",
+        feature = "p384",
+        feature = "p521",
+        feature = "secp256k1"
+    ),
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 const MESSAGE: &[u8] = b"signature operation parity";
+#[cfg(all(
+    feature = "rsa",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 const RSA_MESSAGE: &str = "UmVhbGx5TWUgc2lnbmF0dXJlIGNvbmZvcm1hbmNlIHZlY3Rvcg";
+#[cfg(all(
+    feature = "rsa",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 const RSA_PUBLIC_KEY_DER: &str = "MIIBCgKCAQEAtLGfC3GxzVAbnFDLYwUlIB52PJUl3yVGcY2X-3vFcQsbOhdYKVW7Ug1G0-adGVsz7Sl4CAVZCgDy9LVawN6Wl5TUj8_obkDrtKv9srFmUm0OfYP4REpZq0OBKAs6jf5E5aHqe09edvsO3LOJtVqhHgtFM_xvobGr4TtaPGSoFjssvzJ9YVyK08xDOhCaT4K6ukKlaKBTiOjgVxUtmDRnzct--bNxkhJ88ObqNyJTbp78FWKMsKNfJCTVnKnQIdDMCCQgS6AIXm_d2bPK6FrvDphqfem9ysGQaqPeZjCCoEU9lF9ha_v29bQn6CPxzT7cCYW8V-J_mqhOIwqocTI7jQIDAQAB";
+#[cfg(all(
+    feature = "rsa",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 const RSA_PKCS1V15_SHA256_SIGNATURE: &str = "Re77CuddLv7YajqprynKArLWsc_5tMp5UOAgi1M4cHgj9lKJ14VuI78Lx4if-ngxz4hDxwbRMOh0V50DkRYcd_oyfdzecsqo-SisuGGGer5gWJ8h2_8wyrKuSXroNt2CyPUGv5Jn6K5I9krL6Cx0U7_MyE6HZJNSVH1w6VpxNsf8iNvp-p_eFkt8dEVuBFxsNlGQV3ltFNVg99kBDOiammOuXIrkCf_V67xy3Hc2RkptbmNHTnlC8hw8WBoMH5ds5UcYMuHVgRr8CmXr4YNX9Vel46L7UV69FN5xcJNTLEW0_Ylo9N_Csh8urYUbupfvZ49uWMOzyReMg4tzu90lSw";
+#[cfg(all(
+    feature = "rsa",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 const RSA_PSS_SHA256_SIGNATURE: &str = "bYeyCHaW_4vy7QDQlAtm7fY5CV9XH4Kt0eINKPRd9E1YFrvI2KLaVgG7-T0uGPu8P_t3BV0n_FJJBRxMlSySqFqT_VllgzXuBJ3A7fC_pFyMPK6A3XZ0Y_3rWShvjeZnBf_doMSjoGuWFSaB0K4IOAiyjyoJ3RGea6ikt-5nGPvaiFb6K3YXZTJXavH8AKu3J19V2kTrUGHZ6Lf5RuqWHFyzFsEzNPcp13ezECkVMZHQEwLxt9Li_mWqXDhPF4bpPCUpGljfmsgqo0RBYogEau7YxqaS15-HhLhWTaJYGEcvWBL9burCgU4nlqfEt9gU0m2EDhhUGR38CS86RSiwEw";
+#[cfg(all(
+    feature = "rsa",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 const RSA_PSS_SHA256_SALT_LEN: usize = 32;
+#[cfg(all(
+    feature = "secp256k1",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 const BIP340_SECRET_KEY: [u8; 32] = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,
 ];
+#[cfg(all(
+    feature = "secp256k1",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 const BIP340_MESSAGE32: [u8; 32] = [0; 32];
+#[cfg(all(
+    feature = "secp256k1",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 const BIP340_AUX_RAND32: [u8; 32] = [0; 32];
+#[cfg(all(
+    feature = "secp256k1",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 const BIP340_PUBLIC_KEY: [u8; 32] = [
     0xf9, 0x30, 0x8a, 0x01, 0x92, 0x58, 0xc3, 0x10, 0x49, 0x34, 0x4f, 0x85, 0xf8, 0x9d, 0x52, 0x29,
     0xb5, 0x31, 0xc8, 0x45, 0x83, 0x6f, 0x99, 0xb0, 0x86, 0x01, 0xf1, 0x13, 0xbc, 0xe0, 0x36, 0xf9,
 ];
+#[cfg(all(
+    feature = "secp256k1",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 const BIP340_SIGNATURE: [u8; 64] = [
     0xe9, 0x07, 0x83, 0x1f, 0x80, 0x84, 0x8d, 0x10, 0x69, 0xa5, 0x37, 0x1b, 0x40, 0x24, 0x10, 0x36,
     0x4b, 0xdf, 0x1c, 0x5f, 0x83, 0x07, 0xb0, 0x08, 0x4c, 0x55, 0xf1, 0xce, 0x2d, 0xca, 0x82, 0x15,
@@ -32,6 +100,10 @@ const BIP340_SIGNATURE: [u8; 64] = [
     0xeb, 0xee, 0xe8, 0xfd, 0xb2, 0x17, 0x2f, 0x47, 0x7d, 0xf4, 0x90, 0x0d, 0x31, 0x05, 0x36, 0xc0,
 ];
 
+#[cfg(all(
+    feature = "ed25519",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 #[test]
 fn ed25519_operation_matches_primitive_and_rejects_expanded_keys() {
     let seed = [0x42; 32];
@@ -64,13 +136,24 @@ fn ed25519_operation_matches_primitive_and_rejects_expanded_keys() {
     assert_eq!(error, crypto_core::CryptoError::PRIMITIVE_INVALID_KEY);
 }
 
+#[cfg(all(
+    any(feature = "p256", feature = "p384", feature = "p521"),
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 #[test]
 fn nist_ecdsa_operations_match_primitive_verifiers() {
+    #[cfg(feature = "p256")]
     p256_round_trip();
+    #[cfg(feature = "p384")]
     p384_round_trip();
+    #[cfg(feature = "p521")]
     p521_round_trip();
 }
 
+#[cfg(all(
+    feature = "secp256k1",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 #[test]
 fn secp256k1_ecdsa_operation_matches_primitive_and_rejects_tampering() {
     let secret = [0x05; 32];
@@ -97,6 +180,10 @@ fn secp256k1_ecdsa_operation_matches_primitive_and_rejects_tampering() {
     assert_eq!(error, crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE);
 }
 
+#[cfg(all(
+    feature = "secp256k1",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 #[test]
 fn bip340_schnorr_operation_matches_official_vector_and_rejects_invalids() {
     let public_key =
@@ -143,6 +230,10 @@ fn bip340_schnorr_operation_matches_official_vector_and_rejects_invalids() {
     );
 }
 
+#[cfg(all(
+    feature = "rsa",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 #[test]
 fn rsa_operation_verifies_pkcs1v15_and_pss_vectors() {
     let public_key = decode_base64url(RSA_PUBLIC_KEY_DER);
@@ -172,6 +263,10 @@ fn rsa_operation_verifies_pkcs1v15_and_pss_vectors() {
     .expect("operation verifies RSA-PSS");
 }
 
+#[cfg(all(
+    feature = "rsa",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 #[test]
 fn rsa_operation_rejects_invalid_key_and_tampered_signature() {
     let public_key = decode_base64url(RSA_PUBLIC_KEY_DER);
@@ -203,6 +298,10 @@ fn rsa_operation_rejects_invalid_key_and_tampered_signature() {
     assert_eq!(invalid_key, crypto_core::CryptoError::PRIMITIVE_INVALID_KEY);
 }
 
+#[cfg(all(
+    feature = "p256",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 fn p256_round_trip() {
     let secret = [0x01; 32];
     let (public_key, _) =
@@ -213,6 +312,10 @@ fn p256_round_trip() {
         .expect("primitive verifies P-256");
 }
 
+#[cfg(all(
+    feature = "p384",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 fn p384_round_trip() {
     let secret = [0x01; 48];
     let (public_key, _) =
@@ -223,6 +326,10 @@ fn p384_round_trip() {
         .expect("primitive verifies P-384");
 }
 
+#[cfg(all(
+    feature = "p521",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 fn p521_round_trip() {
     let secret = [0x01; 66];
     let (public_key, _) =
@@ -233,6 +340,10 @@ fn p521_round_trip() {
         .expect("primitive verifies P-521");
 }
 
+#[cfg(all(
+    feature = "rsa",
+    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
+))]
 fn decode_base64url(value: &str) -> Vec<u8> {
     URL_SAFE_NO_PAD
         .decode(value)

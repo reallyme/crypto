@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! Key-agreement operation-owner tests.
+
 #![cfg(all(
     feature = "dispatch",
     feature = "x25519",
@@ -10,8 +12,6 @@
     feature = "p521"
 ))]
 #![allow(clippy::panic)]
-
-//! Key-agreement operation-owner tests.
 
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use crypto_core::Algorithm;

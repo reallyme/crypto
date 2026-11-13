@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#![cfg(any(feature = "native", feature = "wasm"))]
 #![allow(missing_docs)]
+#![cfg(any(feature = "native", feature = "wasm"))]
 #![allow(clippy::expect_used)]
 
 use crypto_kmac::{

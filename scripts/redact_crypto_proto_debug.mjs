@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
@@ -77,6 +77,55 @@ for (const match of protoCode.matchAll(messagePattern)) {
   for (const field of fields) byteFieldNames.add(field[1]);
 }
 const messageNames = [...messageBodies.keys()];
+// Supplemental schemas contain descriptive numeric records, never secret byte
+// DTOs or executable requests. Discover their records from the schema itself so
+// unknown-field ownership cannot depend on a second list of message names.
+const supplementalSchemas = readdirSync(dirname(protoPath), { withFileTypes: true })
+  .filter((entry) => entry.isFile() && entry.name.endsWith(".proto") && entry.name !== "crypto.proto")
+  .map((entry) => {
+    const code = schemaCode(readFileSync(join(dirname(protoPath), entry.name), "utf8"));
+    const messages = [...code.matchAll(messagePattern)].map((match) => {
+      const open = code.indexOf("{", match.index);
+      const close = findMatchingBrace(code, open);
+      return { name: match[1], body: code.slice(open + 1, close) };
+    });
+    return { basename: entry.name.slice(0, -".proto".length), code, messages };
+  })
+  .sort((left, right) => left.basename.localeCompare(right.basename));
+const supplementalMessageNames = supplementalSchemas.flatMap((schema) =>
+  schema.messages.map((message) => message.name));
+const allMessageNames = [...messageNames, ...supplementalMessageNames];
+if (new Set(allMessageNames).size !== allMessageNames.length) {
+  fail("ambiguous supplemental metadata message name");
+}
+const numericMetadataTypes = new Set([
+  "bool", "double", "fixed32", "fixed64", "float", "int32", "int64",
+  "sfixed32", "sfixed64", "sint32", "sint64", "uint32", "uint64",
+  ...supplementalMessageNames,
+  ...[protoCode, ...supplementalSchemas.map((schema) => schema.code)]
+    .flatMap((code) => [...code.matchAll(/\benum\s+(\w+)\s*\{/gu)].map((match) => match[1])),
+]);
+for (const schema of supplementalSchemas) {
+  for (const { body } of schema.messages) {
+    // Byte/string DTOs belong to crypto.proto, where all mutation and JSON wire
+    // paths have their own guards. Do not silently apply numeric-only handling
+    // when a future supplemental record acquires a different owner model.
+    const fields = [...body.matchAll(
+      /^\s*(?:(?:optional|required|repeated)\s+)?([A-Za-z_][A-Za-z0-9_.]*)\s+[A-Za-z_][A-Za-z0-9_]*\s*=/gmu,
+    )];
+    if (/\b(?:oneof|map|message)\b/u.test(body) || fields.length === 0 ||
+        fields.some((field) => !numericMetadataTypes.has(field[1].split(".").at(-1)))) {
+      fail("supplemental metadata requires a numeric-only schema owner");
+    }
+  }
+}
+const supplementalMetadataSchemas = supplementalSchemas.filter((schema) => schema.messages.length > 0)
+  .map((schema) => ({ ...schema,
+    rustPath: join(root, `crates/proto/src/generated/buffa/reallyme.crypto.v1.${schema.basename}.rs`),
+    viewPath: join(root, `crates/proto/src/generated/buffa/reallyme.crypto.v1.${schema.basename}.__view.rs`),
+    swiftPath: join(root, `gen/swift/reallyme/crypto/v1/${schema.basename}.pb.swift`),
+  }));
+
 const scalarMetadataMessageNames = new Set([
   "ProviderDecision",
   "ProviderDecisionRequest",
@@ -385,6 +434,8 @@ function serdeAttrForWireField(field) {
     parts.push('with = "::buffa::json_helpers::opt_uint32"');
   } else if (field.type === "u32") {
     parts.push('with = "::buffa::json_helpers::uint32"');
+  } else if (field.type === "u64") {
+    parts.push('with = "::buffa::json_helpers::uint64"');
   } else if (isSensitiveStringField(field)) {
     parts.push('deserialize_with = "deserialize_zeroizing_string"');
   } else if (field.type === "::buffa::alloc::string::String") {
@@ -1102,6 +1153,102 @@ fn __reallyme_decode_unknown_field(
   writeGeneratedIfChanged(rustGeneratedPath, source);
 }
 
+function redactDebugImplementation(source, typeName, displayName = typeName) {
+  const marker = `impl ::core::fmt::Debug for ${typeName} {`;
+  const start = source.indexOf(marker);
+  if (start < 0) fail("missing supplemental metadata Debug implementation");
+  const open = source.indexOf("{", start);
+  const end = findMatchingBrace(source, open) + 1;
+  return source.slice(0, start) + `impl ::core::fmt::Debug for ${typeName} {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("${displayName}(<redacted>)")
+    }
+}` + source.slice(end);
+}
+
+function hardenSupplementalMetadataRust(schema) {
+  let source = readFileSync(schema.rustPath, "utf8");
+  for (const { name } of schema.messages) {
+    source = hardenUnknownFieldStorage(source, name);
+    const marker = `impl ::zeroize::ZeroizeOnDrop for ${name} {}`;
+    const inherent = `impl ${name} {`;
+    if (!source.includes(marker)) {
+      if (!source.includes(inherent)) fail("missing supplemental metadata implementation");
+      source = source.replace(inherent, `${marker}\n${inherent}`);
+    }
+    if (source.includes(`impl ::core::ops::Drop for ${name} {`)) {
+      fail("supplemental metadata must preserve public field moves");
+    }
+    const messageMarker = `impl ::buffa::Message for ${name} {`;
+    const start = source.indexOf(messageMarker);
+    if (start < 0) fail("missing supplemental metadata Message implementation");
+    const open = source.indexOf("{", start);
+    const end = findMatchingBrace(source, open) + 1;
+    let implementation = source.slice(start, end);
+    const rawDecode = ".push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);";
+    const guardedDecode = ".push(__reallyme_decode_unknown_field(tag, buf, ctx)?);";
+    const rawClear = "self.__buffa_unknown_fields.clear();";
+    const guardedClear = "__reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);";
+    const occurrences = (value) => implementation.split(value).length - 1;
+    // Check each generated record independently. A marker or another record's
+    // safe implementation cannot satisfy the missing merge/clear obligation.
+    if (occurrences(rawDecode) + occurrences(guardedDecode) !== 1 ||
+        occurrences(rawClear) + occurrences(guardedClear) !== 1) {
+      fail("incomplete supplemental metadata unknown-field hardening");
+    }
+    implementation = implementation.replace(rawDecode, guardedDecode).replace(rawClear, guardedClear);
+    source = source.slice(0, start) + implementation + source.slice(end);
+    source = redactDebugImplementation(source, name);
+  }
+  // All package files are included into the same module. Reuse the private
+  // guarded group decoder and clearing owner defined in crypto.rs, rather than
+  // duplicating them or widening their visibility across module boundaries.
+  writeGeneratedIfChanged(schema.rustPath, source);
+}
+
+function hardenSupplementalMetadataView(schema) {
+  let source = readFileSync(schema.viewPath, "utf8");
+  for (const { name } of schema.messages) {
+    const viewName = `${name}View`;
+    const rawView = `#[derive(Clone, Debug, Default)]\npub struct ${viewName}<'a> {`;
+    const guardedView = `#[derive(Clone, Default)]\npub struct ${viewName}<'a> {`;
+    if (source.includes(rawView)) source = source.replace(rawView, guardedView);
+    else if (!source.includes(guardedView)) fail("missing supplemental metadata view");
+    const viewDebug = `impl ::core::fmt::Debug for ${viewName}<'_> {`;
+    if (!source.includes(viewDebug)) {
+      const viewMessage = new RegExp(`impl<'a> ::buffa::MessageView<'a>\\s+for ${viewName}<'a> \\{`, "u");
+      if (!viewMessage.test(source)) fail("missing supplemental metadata MessageView");
+      source = source.replace(viewMessage, (marker) => `${viewDebug}
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("${viewName}(<redacted>)")
+    }
+}
+${marker}`);
+    }
+    const ownedName = `${name}OwnedView`;
+    const rawOwned = `#[derive(Clone, Debug)]\npub struct ${ownedName}(`;
+    const guardedOwned = `#[derive(Clone)]\npub struct ${ownedName}(`;
+    if (source.includes(rawOwned)) source = source.replace(rawOwned, guardedOwned);
+    else if (!source.includes(guardedOwned)) fail("missing supplemental metadata owned view");
+    const ownedDebug = `impl ::core::fmt::Debug for ${ownedName} {`;
+    if (!source.includes(ownedDebug)) {
+      const inherent = `impl ${ownedName} {`;
+      if (!source.includes(inherent)) fail("missing supplemental metadata owned view implementation");
+      source = source.replace(inherent, `${ownedDebug}
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("${ownedName}(<redacted>)")
+    }
+}
+${inherent}`);
+    }
+    source = redactDebugImplementation(source, `${viewName}<'_>`, viewName);
+    source = redactDebugImplementation(source, ownedName);
+    // These views expose public numeric metadata. Keep their existing Clone
+    // and protobuf JSON implementations; only debug rendering is redacted.
+  }
+  writeGeneratedIfChanged(schema.viewPath, source);
+}
+
 function hardenViewRust() {
   let source = readFileSync(rustGeneratedViewPath, "utf8");
 
@@ -1215,6 +1362,7 @@ const normalizedGeneratedPaths = [
 const generatedPaths = [
   rustGeneratedPath,
   rustGeneratedViewPath,
+  ...supplementalMetadataSchemas.flatMap((schema) => [schema.rustPath, schema.viewPath]),
   swiftPath,
   ...redactedMessageNames.map((messageName) =>
     join(root, `gen/java/me/really/crypto/v1/${messageName}.java`),
@@ -1227,21 +1375,30 @@ const idempotencyBefore = checkIdempotent
 
 hardenOwnedRust();
 hardenViewRust();
+for (const schema of supplementalMetadataSchemas) {
+  hardenSupplementalMetadataRust(schema);
+  hardenSupplementalMetadataView(schema);
+}
 
-let swiftSource = readFileSync(swiftPath, "utf8");
-for (const messageName of redactedMessageNames) {
-  const swiftName = `ReallyMeProto${messageName}`;
-  const declaration = `public nonisolated struct ${swiftName}: Sendable {`;
-  const replacement = `${declaration}
+for (const schema of [
+  { swiftPath, messages: redactedMessageNames.map((name) => ({ name })) },
+  ...supplementalMetadataSchemas,
+]) {
+  let swiftSource = readFileSync(schema.swiftPath, "utf8");
+  for (const { name: messageName } of schema.messages) {
+    const swiftName = `ReallyMeProto${messageName}`;
+    const declaration = `public nonisolated struct ${swiftName}: Sendable {`;
+    const replacement = `${declaration}
   // Security post-processing: protobuf bytes can contain secrets or PII.
   public var debugDescription: String { "${swiftName}(<redacted>)" }`;
-  if (!swiftSource.includes(`${swiftName}(<redacted>)`)) {
-    swiftSource = swiftSource.replace(declaration, replacement);
+    if (!swiftSource.includes(`${swiftName}(<redacted>)`)) {
+      swiftSource = swiftSource.replace(declaration, replacement);
+    }
   }
+  writeGeneratedIfChanged(schema.swiftPath, swiftSource);
 }
-writeGeneratedIfChanged(swiftPath, swiftSource);
 
-for (const messageName of redactedMessageNames) {
+for (const messageName of [...redactedMessageNames, ...supplementalMessageNames]) {
   const javaPath = join(
     root,
     `gen/java/me/really/crypto/v1/${messageName}.java`,

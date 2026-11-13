@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! Operation-owner tests for hash and constant-time routes.
+
 #![cfg(all(
     feature = "constant-time",
     feature = "dispatch",
@@ -10,8 +12,6 @@
 ))]
 #![allow(clippy::expect_used)]
 #![allow(clippy::panic)]
-
-//! Operation-owner tests for hash and constant-time routes.
 
 use crypto_core::HashAlgorithm;
 

@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#![cfg(feature = "proto")]
 #![allow(missing_docs, clippy::expect_used)]
+#![cfg(feature = "proto")]
 use buffa::Message;
 use crypto_constant_time::proto_helpers::ConstantTimeInputs;
 use crypto_core::CryptoError;

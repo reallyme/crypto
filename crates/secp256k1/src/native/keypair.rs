@@ -8,37 +8,26 @@ use k256::elliptic_curve::Generate;
 use k256::SecretKey;
 use zeroize::{Zeroize, Zeroizing};
 
-/// Generate a secp256k1 keypair.
+/// Generate a secp256k1 keypair with typed entropy failures.
 ///
-/// Returns:
-/// - public key: 33-byte compressed SEC1
-/// - secret key: 32-byte scalar, in a zeroizing wrapper so it is wiped when
-///   the caller drops it
+/// The public key retains its 33-byte compressed SEC1 representation, and the
+/// returned private scalar remains in its existing zeroizing owner. In 0.4 this
+/// compatibility name returns `Result`, so an unavailable entropy provider
+/// cannot reach the historical infallible provider path.
 ///
-/// # Panics
+/// # Errors
 ///
-/// The legacy infallible API inherits the provider panic on entropy failure.
-/// Use [`try_generate_secp256k1_keypair`] for typed failure handling.
-#[deprecated(note = "use try_generate_secp256k1_keypair for typed entropy failures")]
-pub fn generate_secp256k1_keypair() -> (Vec<u8>, Zeroizing<Vec<u8>>) {
-    let sk = SecretKey::generate();
-
-    let signing_key = SigningKey::from(&sk);
-    let verifying_key = signing_key.verifying_key();
-
-    // Wipe the temporary stack copy of the scalar after moving it to the heap.
-    let mut secret_stack = sk.to_bytes();
-    let secret_bytes = Zeroizing::new(secret_stack.to_vec()); // 32 bytes
-    secret_stack.zeroize();
-    let public_bytes = verifying_key.to_sec1_point(true).as_bytes().to_vec(); // 33 bytes (compressed)
-
-    (public_bytes, secret_bytes)
+/// Returns [`CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE`] when OS entropy
+/// cannot be obtained. Other existing native validation failures propagate.
+#[deprecated(note = "use try_generate_secp256k1_keypair")]
+pub fn generate_secp256k1_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
+    try_generate_secp256k1_keypair()
 }
 
 /// Generate a secp256k1 keypair with explicit entropy failure handling.
 ///
-/// Prefer this entry point over the legacy infallible generator when the
-/// application must recover from an unavailable operating-system RNG.
+/// This is the preferred entry point. The compatibility name delegates here
+/// with the same typed error and successful-generation semantics.
 pub fn try_generate_secp256k1_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
     let secret = SecretKey::try_generate()
         .map_err(|_| crypto_core::CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)?;

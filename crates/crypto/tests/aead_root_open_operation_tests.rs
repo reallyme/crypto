@@ -2,16 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-// A disabled test crate has no retained documentation. Keep this allowance
-// before cfg so sparse feature builds can still deny unrelated warnings.
-#![cfg_attr(
-    not(all(
-        feature = "aes",
-        feature = "aes-gcm-siv",
-        feature = "chacha20-poly1305"
-    )),
-    allow(missing_docs)
-)]
+//! Root primitive open parity tests for AEAD routes.
+
 #![cfg(all(
     feature = "aes",
     feature = "aes-gcm-siv",
@@ -19,8 +11,6 @@
 ))]
 #![allow(clippy::expect_used)]
 #![allow(clippy::panic)]
-
-//! Root primitive open parity tests for AEAD routes.
 
 use crypto_core::AeadAlgorithm;
 

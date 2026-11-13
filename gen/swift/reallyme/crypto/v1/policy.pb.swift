@@ -1219,6 +1219,8 @@ public nonisolated enum ReallyMeProtoPlatformKeyOperation: SwiftProtobuf.Enum, S
 /// MaterialPolicy reports the complete ownership contract for one buffer.
 /// Receiving or editing this record does not authorize a change to that contract.
 public nonisolated struct ReallyMeProtoMaterialPolicy: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoMaterialPolicy(<redacted>)" }
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.

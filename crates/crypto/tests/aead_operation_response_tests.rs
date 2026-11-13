@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! Generated operation-response coverage for AEAD semantics.
+
 #![cfg(all(
     feature = "aes",
     feature = "chacha20-poly1305",
@@ -9,8 +11,6 @@
 ))]
 #![allow(clippy::expect_used)]
 #![allow(clippy::panic)]
-
-//! Generated operation-response coverage for AEAD semantics.
 
 use buffa::{EnumValue, Message, MessageField};
 use crypto_proto::generated::proto::reallyme::crypto::v1::{

@@ -290,3 +290,21 @@ The local ML-KEM coins conversion in X-Wing immediately installs a clearing
 owner around the distinct fixed-size byte array. The caller's coins owner cannot
 clear this local copy. Its cleanup covers both successful encapsulation and
 early exits without changing deterministic bytes or provider features.
+
+### Wide SHA-3 finalization
+
+SHA3-224, SHA3-384 and SHA3-512 initialize the final clearing digest owner before
+calling the backend's direct-output finalization interface. No named unguarded
+finalized array or second local byte array remains at these call sites.
+SHA3-256 already uses this direct-output path. SHAKE256 retains caller-owned
+output storage, including caller-sized generated clearing result owners, rather
+than allocating an unbounded result from an untrusted requested length.
+
+### Raw secp256k1 shared-secret ownership
+
+The standalone raw shared-secret type now implements `Drop` and invokes its
+existing zeroization method. A `ZeroizeOnDrop` marker alone previously provided
+no cleanup implementation. Its final clearing owner is initialized before the
+raw x-coordinate is copied, avoiding a separate plain local array. This repair
+preserves the native API's scalar checks, uncompressed SEC1 encoding and exact
+32-byte result. It does not change the accepted upstream encoding limitation.

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! Operation-owner tests for KDF routes.
+
 #![cfg(all(
     feature = "argon2id",
     feature = "concat-kdf",
@@ -11,8 +13,6 @@
     feature = "sha3"
 ))]
 #![allow(clippy::expect_used)]
-
-//! Operation-owner tests for KDF routes.
 
 use reallyme_crypto::core::CryptoError;
 

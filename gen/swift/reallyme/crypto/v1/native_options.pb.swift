@@ -116,6 +116,8 @@ public nonisolated enum ReallyMeProtoHkdfDomainKeyPurpose: SwiftProtobuf.Enum, S
 /// Read-only validation bounds reported by the existing native profile policy.
 /// This record is not a caller-overridable Argon2 cost configuration.
 public nonisolated struct ReallyMeProtoArgon2Caps: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoArgon2Caps(<redacted>)" }
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -133,6 +135,8 @@ public nonisolated struct ReallyMeProtoArgon2Caps: Sendable {
 
 /// Read-only cost tuple resolved from an existing fixed native profile.
 public nonisolated struct ReallyMeProtoArgon2ParamsProfile: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoArgon2ParamsProfile(<redacted>)" }
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.

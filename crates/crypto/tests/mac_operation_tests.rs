@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! Operation-owner tests for MAC routes.
+
 #![cfg(all(feature = "dispatch", feature = "hmac"))]
 #![allow(clippy::expect_used)]
 #![allow(clippy::panic)]
-
-//! Operation-owner tests for MAC routes.
 
 use crypto_core::{CryptoError, MacAlgorithm};
 use reallyme_crypto::dispatch::MacParams;

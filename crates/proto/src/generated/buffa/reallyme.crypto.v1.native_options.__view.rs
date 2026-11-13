@@ -3,7 +3,7 @@
 
 /// Read-only validation bounds reported by the existing native profile policy.
 /// This record is not a caller-overridable Argon2 cost configuration.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct Argon2CapsView<'a> {
     /// Field 1: `mem_cap_kib`
     pub mem_cap_kib: u32,
@@ -12,6 +12,11 @@ pub struct Argon2CapsView<'a> {
     /// Field 3: `lanes_cap`
     pub lanes_cap: u32,
     pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for Argon2CapsView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("Argon2CapsView(<redacted>)")
+    }
 }
 impl<'a> ::buffa::MessageView<'a> for Argon2CapsView<'a> {
     type Owned = super::super::Argon2Caps;
@@ -187,8 +192,13 @@ impl<'a> ::buffa::MessageName for Argon2CapsView<'a> {
  Wraps [`::buffa::OwnedView`]`<`[`Argon2CapsView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
  Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`Argon2CapsView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Argon2CapsOwnedView(::buffa::OwnedView<Argon2CapsView<'static>>);
+impl ::core::fmt::Debug for Argon2CapsOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("Argon2CapsOwnedView(<redacted>)")
+    }
+}
 impl Argon2CapsOwnedView {
     /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
     ///
@@ -309,7 +319,7 @@ impl ::serde::Serialize for Argon2CapsOwnedView {
     }
 }
 /// Read-only cost tuple resolved from an existing fixed native profile.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct Argon2ParamsProfileView<'a> {
     /// Field 1: `mem_kib`
     pub mem_kib: u32,
@@ -318,6 +328,11 @@ pub struct Argon2ParamsProfileView<'a> {
     /// Field 3: `lanes`
     pub lanes: u32,
     pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for Argon2ParamsProfileView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("Argon2ParamsProfileView(<redacted>)")
+    }
 }
 impl<'a> ::buffa::MessageView<'a> for Argon2ParamsProfileView<'a> {
     type Owned = super::super::Argon2ParamsProfile;
@@ -499,10 +514,15 @@ impl<'a> ::buffa::MessageName for Argon2ParamsProfileView<'a> {
  Wraps [`::buffa::OwnedView`]`<`[`Argon2ParamsProfileView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
  Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`Argon2ParamsProfileView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Argon2ParamsProfileOwnedView(
     ::buffa::OwnedView<Argon2ParamsProfileView<'static>>,
 );
+impl ::core::fmt::Debug for Argon2ParamsProfileOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("Argon2ParamsProfileOwnedView(<redacted>)")
+    }
+}
 impl Argon2ParamsProfileOwnedView {
     /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
     ///

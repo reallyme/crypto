@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#![cfg(feature = "protobuf")]
 //! Boundary tests for the public crypto protobuf wire helpers.
+
+#![cfg(feature = "protobuf")]
 #![allow(clippy::unwrap_used)]
 
 use buffa::{EnumValue, Message};

@@ -9,6 +9,10 @@
 mod digest;
 mod shake;
 
+/// Standalone exact-width SHAKE256 expansion contracts.
+#[cfg(feature = "proto")]
+pub mod proto;
+
 pub use digest::{
     digest_sha3_224, digest_sha3_384, digest_sha3_512, Sha3_224Digest, Sha3_384Digest,
     Sha3_512Digest, SHA3_224_DIGEST_LENGTH, SHA3_384_DIGEST_LENGTH, SHA3_512_DIGEST_LENGTH,

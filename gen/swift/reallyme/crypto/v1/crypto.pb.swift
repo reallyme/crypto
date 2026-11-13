@@ -7875,6 +7875,62 @@ public nonisolated struct ReallyMeProtoCryptoHpkePublicKeyDescriptor: Sendable {
   fileprivate var _suite: ReallyMeProtoHpkeSuiteIdentifier? = nil
 }
 
+/// Standalone SHAKE256 expansion. Length is in octets, not bits. Zero output is
+/// valid, and arbitrary native widths are retained rather than restricted to a
+/// fixed-output hash identity. This does not add an executable root operation.
+public nonisolated struct ReallyMeProtoCryptoShake256ExpandRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoShake256ExpandRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var input: Data = Data()
+
+  public var outputLength: UInt64 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// A caller-owned clearing output destination. The caller selects its resource
+/// budget and initializes the admitted length before invoking the borrowed
+/// adapter; a wire output length never triggers an allocation in that adapter.
+public nonisolated struct ReallyMeProtoCryptoShake256ExpandResult: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoShake256ExpandResult(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var output: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Standalone raw secp256k1 ECDH under its existing native wire contract:
+/// private scalar is exactly 32 octets and peer key is exactly 65-octet
+/// uncompressed SEC1. This does not introduce a generic algorithm selector.
+/// The result is CryptoNativeAgreementResult; no KDF is applied here.
+public nonisolated struct ReallyMeProtoCryptoSecp256k1AgreementRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoSecp256k1AgreementRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var privateKey: Data = Data()
+
+  public var peerPublicKeySec1: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate nonisolated let _protobuf_package = "reallyme.crypto.v1"
@@ -18059,6 +18115,106 @@ nonisolated extension ReallyMeProtoCryptoHpkePublicKeyDescriptor: SwiftProtobuf.
   public static func ==(lhs: ReallyMeProtoCryptoHpkePublicKeyDescriptor, rhs: ReallyMeProtoCryptoHpkePublicKeyDescriptor) -> Bool {
     if lhs._suite != rhs._suite {return false}
     if lhs.publicKey != rhs.publicKey {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoShake256ExpandRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoShake256ExpandRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}input\0\u{3}output_length\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBytesField(value: &self.input) }()
+      case 2: try { try decoder.decodeSingularUInt64Field(value: &self.outputLength) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.input.isEmpty {
+      try visitor.visitSingularBytesField(value: self.input, fieldNumber: 1)
+    }
+    if self.outputLength != 0 {
+      try visitor.visitSingularUInt64Field(value: self.outputLength, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoShake256ExpandRequest, rhs: ReallyMeProtoCryptoShake256ExpandRequest) -> Bool {
+    if lhs.input != rhs.input {return false}
+    if lhs.outputLength != rhs.outputLength {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoShake256ExpandResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoShake256ExpandResult"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}output\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBytesField(value: &self.output) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.output.isEmpty {
+      try visitor.visitSingularBytesField(value: self.output, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoShake256ExpandResult, rhs: ReallyMeProtoCryptoShake256ExpandResult) -> Bool {
+    if lhs.output != rhs.output {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoSecp256k1AgreementRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoSecp256k1AgreementRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}private_key\0\u{3}peer_public_key_sec1\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBytesField(value: &self.privateKey) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.peerPublicKeySec1) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.privateKey.isEmpty {
+      try visitor.visitSingularBytesField(value: self.privateKey, fieldNumber: 1)
+    }
+    if !self.peerPublicKeySec1.isEmpty {
+      try visitor.visitSingularBytesField(value: self.peerPublicKeySec1, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoSecp256k1AgreementRequest, rhs: ReallyMeProtoCryptoSecp256k1AgreementRequest) -> Bool {
+    if lhs.privateKey != rhs.privateKey {return false}
+    if lhs.peerPublicKeySec1 != rhs.peerPublicKeySec1 {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

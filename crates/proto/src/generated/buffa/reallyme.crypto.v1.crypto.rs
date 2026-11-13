@@ -57518,3 +57518,557 @@ pub const __CRYPTO_HPKE_PUBLIC_KEY_DESCRIPTOR_JSON_ANY: ::buffa::type_registry::
     from_json: ::buffa::type_registry::any_from_json::<CryptoHpkePublicKeyDescriptor>,
     is_wkt: false,
 };
+/// Standalone SHAKE256 expansion. Length is in octets, not bits. Zero output is
+/// valid, and arbitrary native widths are retained rather than restricted to a
+/// fixed-output hash identity. This does not add an executable root operation.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoShake256ExpandRequest {
+    /// Field 1: `input`
+    #[serde(
+        rename = "input",
+        with = "::buffa::json_helpers::bytes",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_bytes"
+    )]
+    pub input: ::buffa::alloc::vec::Vec<u8>,
+    /// Field 2: `output_length`
+    #[serde(
+        rename = "outputLength",
+        alias = "output_length",
+        with = "::buffa::json_helpers::uint64",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_zero_u64"
+    )]
+    pub output_length: u64,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoShake256ExpandRequest {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoShake256ExpandRequest")
+            .field("input", &"<redacted>")
+            .field("output_length", &self.output_length)
+            .finish()
+    }
+}
+impl ::core::ops::Drop for CryptoShake256ExpandRequest {
+    fn drop(&mut self) {
+        ::zeroize::Zeroize::zeroize(&mut self.input);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoShake256ExpandRequest {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            crate::deserialize_sensitive::deserialize_bytes(deserializer)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "input", deserialize_with = "deserialize_zeroizing_bytes")]
+            input: ::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>,
+            #[serde(rename = "outputLength", alias = "output_length", with = "::buffa::json_helpers::uint64")]
+            output_length: u64,
+        }
+
+        let mut wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            input: ::core::mem::take(&mut *wire.input),
+            output_length: wire.output_length,
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoShake256ExpandRequest {}
+impl CryptoShake256ExpandRequest {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoShake256ExpandRequest";
+}
+::buffa::impl_default_instance!(CryptoShake256ExpandRequest);
+impl ::buffa::MessageName for CryptoShake256ExpandRequest {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoShake256ExpandRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoShake256ExpandRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoShake256ExpandRequest";
+}
+impl ::buffa::Message for CryptoShake256ExpandRequest {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.input.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.input) as u64;
+        }
+        if self.output_length != 0u64 {
+            size += 1u64 + ::buffa::types::uint64_encoded_len(self.output_length) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.input.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.input, buf);
+        }
+        if self.output_length != 0u64 {
+            ::buffa::types::put_uint64_field(2u32, self.output_length, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                crate::merge_sensitive::merge_bytes(&mut self.input, buf)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.output_length = ::buffa::types::decode_uint64(buf)?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::zeroize::Zeroize::zeroize(&mut self.input);
+        self.output_length = 0u64;
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoShake256ExpandRequest {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoShake256ExpandRequest";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoShake256ExpandRequest {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_SHAKE256EXPAND_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoShake256ExpandRequest",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoShake256ExpandRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<CryptoShake256ExpandRequest>,
+    is_wkt: false,
+};
+/// A caller-owned clearing output destination. The caller selects its resource
+/// budget and initializes the admitted length before invoking the borrowed
+/// adapter; a wire output length never triggers an allocation in that adapter.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoShake256ExpandResult {
+    /// Field 1: `output`
+    #[serde(
+        rename = "output",
+        with = "::buffa::json_helpers::bytes",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_bytes"
+    )]
+    pub output: ::buffa::alloc::vec::Vec<u8>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoShake256ExpandResult {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoShake256ExpandResult")
+            .field("output", &"<redacted>")
+            .finish()
+    }
+}
+impl ::core::ops::Drop for CryptoShake256ExpandResult {
+    fn drop(&mut self) {
+        ::zeroize::Zeroize::zeroize(&mut self.output);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoShake256ExpandResult {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            crate::deserialize_sensitive::deserialize_bytes(deserializer)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "output", deserialize_with = "deserialize_zeroizing_bytes")]
+            output: ::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>,
+        }
+
+        let mut wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            output: ::core::mem::take(&mut *wire.output),
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoShake256ExpandResult {}
+impl CryptoShake256ExpandResult {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoShake256ExpandResult";
+}
+::buffa::impl_default_instance!(CryptoShake256ExpandResult);
+impl ::buffa::MessageName for CryptoShake256ExpandResult {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoShake256ExpandResult";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoShake256ExpandResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoShake256ExpandResult";
+}
+impl ::buffa::Message for CryptoShake256ExpandResult {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.output.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.output) as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.output.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.output, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                crate::merge_sensitive::merge_bytes(&mut self.output, buf)?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::zeroize::Zeroize::zeroize(&mut self.output);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoShake256ExpandResult {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoShake256ExpandResult";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoShake256ExpandResult {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_SHAKE256EXPAND_RESULT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoShake256ExpandResult",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoShake256ExpandResult>,
+    from_json: ::buffa::type_registry::any_from_json::<CryptoShake256ExpandResult>,
+    is_wkt: false,
+};
+/// Standalone raw secp256k1 ECDH under its existing native wire contract:
+/// private scalar is exactly 32 octets and peer key is exactly 65-octet
+/// uncompressed SEC1. This does not introduce a generic algorithm selector.
+/// The result is CryptoNativeAgreementResult; no KDF is applied here.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CryptoSecp256k1AgreementRequest {
+    /// Field 1: `private_key`
+    #[serde(
+        rename = "privateKey",
+        alias = "private_key",
+        with = "::buffa::json_helpers::bytes",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_bytes"
+    )]
+    pub private_key: ::buffa::alloc::vec::Vec<u8>,
+    /// Field 2: `peer_public_key_sec1`
+    #[serde(
+        rename = "peerPublicKeySec1",
+        alias = "peer_public_key_sec1",
+        with = "::buffa::json_helpers::bytes",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_bytes"
+    )]
+    pub peer_public_key_sec1: ::buffa::alloc::vec::Vec<u8>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CryptoSecp256k1AgreementRequest {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoSecp256k1AgreementRequest")
+            .field("private_key", &"<redacted>")
+            .field("peer_public_key_sec1", &"<redacted>")
+            .finish()
+    }
+}
+impl ::core::ops::Drop for CryptoSecp256k1AgreementRequest {
+    fn drop(&mut self) {
+        ::zeroize::Zeroize::zeroize(&mut self.private_key);
+        ::zeroize::Zeroize::zeroize(&mut self.peer_public_key_sec1);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoSecp256k1AgreementRequest {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            crate::deserialize_sensitive::deserialize_bytes(deserializer)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "privateKey", alias = "private_key", deserialize_with = "deserialize_zeroizing_bytes")]
+            private_key: ::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>,
+            #[serde(rename = "peerPublicKeySec1", alias = "peer_public_key_sec1", deserialize_with = "deserialize_zeroizing_bytes")]
+            peer_public_key_sec1: ::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>,
+        }
+
+        let mut wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            private_key: ::core::mem::take(&mut *wire.private_key),
+            peer_public_key_sec1: ::core::mem::take(&mut *wire.peer_public_key_sec1),
+            __buffa_unknown_fields: Default::default(),
+        })
+    }
+}
+impl ::zeroize::ZeroizeOnDrop for CryptoSecp256k1AgreementRequest {}
+impl CryptoSecp256k1AgreementRequest {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoSecp256k1AgreementRequest";
+}
+::buffa::impl_default_instance!(CryptoSecp256k1AgreementRequest);
+impl ::buffa::MessageName for CryptoSecp256k1AgreementRequest {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoSecp256k1AgreementRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoSecp256k1AgreementRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoSecp256k1AgreementRequest";
+}
+impl ::buffa::Message for CryptoSecp256k1AgreementRequest {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.private_key.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.private_key) as u64;
+        }
+        if !self.peer_public_key_sec1.is_empty() {
+            size
+                += 1u64
+                    + ::buffa::types::bytes_encoded_len(&self.peer_public_key_sec1)
+                        as u64;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.private_key.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.private_key, buf);
+        }
+        if !self.peer_public_key_sec1.is_empty() {
+            ::buffa::types::put_shared_bytes_field(
+                2u32,
+                &self.peer_public_key_sec1,
+                buf,
+            );
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                crate::merge_sensitive::merge_bytes(&mut self.private_key, buf)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                crate::merge_sensitive::merge_bytes(&mut self.peer_public_key_sec1, buf)?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(__reallyme_decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::zeroize::Zeroize::zeroize(&mut self.private_key);
+        ::zeroize::Zeroize::zeroize(&mut self.peer_public_key_sec1);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl ::buffa::ExtensionSet for CryptoSecp256k1AgreementRequest {
+    const PROTO_FQN: &'static str = "reallyme.crypto.v1.CryptoSecp256k1AgreementRequest";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoSecp256k1AgreementRequest {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_SECP256K1AGREEMENT_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoSecp256k1AgreementRequest",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoSecp256k1AgreementRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<CryptoSecp256k1AgreementRequest>,
+    is_wkt: false,
+};

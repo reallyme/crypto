@@ -17,6 +17,8 @@ description = "secp256k1 ECDH, ECDSA, and BIP-340 Schnorr primitives for ReallyM
 name = "crypto_secp256k1"
 
 [features]
+# Schema adapters do not select a runtime or cryptographic provider.
+proto = ["dep:crypto-proto"]
 default = [ ]
 
 native = [
@@ -33,6 +35,7 @@ wasm = [
 ]
 
 [dependencies]
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../proto", optional = true, default-features = false, features = ["generated"] }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.4.0", path = "../crypto/core" }
 zeroize = { workspace = true }
 
@@ -47,6 +50,7 @@ getrandom = { workspace = true, features = ["wasm_js"], optional = true }
 sha2 = { workspace = true, optional = true }
 
 [dev-dependencies]
+buffa = { workspace = true }
 hex = { workspace = true }
 hex-literal = { workspace = true }
 wasm-bindgen-test = { workspace = true }

@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#![cfg(all(feature = "proto", any(feature = "native", feature = "wasm")))]
 #![allow(missing_docs, clippy::expect_used)]
+#![cfg(all(feature = "proto", any(feature = "native", feature = "wasm")))]
 use buffa::{Message, MessageField};
 use crypto_core::CryptoError;
 use crypto_pbkdf2::{

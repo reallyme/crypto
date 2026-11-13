@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! Operation-owner tests for AES-KW routes.
+
 #![cfg(feature = "aes-kw")]
 #![allow(clippy::expect_used)]
 #![allow(clippy::panic)]
-
-//! Operation-owner tests for AES-KW routes.
 
 use crypto_core::{CryptoError, KeyWrapAlgorithm};
 use reallyme_crypto::operations::OperationError;

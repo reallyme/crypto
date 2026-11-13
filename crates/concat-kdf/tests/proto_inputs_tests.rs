@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#![cfg(feature = "proto")]
 #![allow(missing_docs, clippy::expect_used)]
+#![cfg(feature = "proto")]
 use buffa::{Message, MessageField};
 use crypto_concat_kdf::{proto_inputs::ConcatKdfInputs, JwaAlgorithmId};
 use crypto_core::CryptoError;

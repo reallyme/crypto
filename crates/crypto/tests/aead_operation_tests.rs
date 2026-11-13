@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! Operation-owner tests for AEAD routes.
+
 #![cfg(all(
     feature = "aes",
     feature = "aes-gcm-siv",
@@ -10,8 +12,6 @@
 ))]
 #![allow(clippy::expect_used)]
 #![allow(clippy::panic)]
-
-//! Operation-owner tests for AEAD routes.
 
 use crypto_core::{AeadAlgorithm, CryptoError};
 use reallyme_crypto::dispatch::AeadParams;

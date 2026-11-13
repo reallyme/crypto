@@ -343,6 +343,9 @@ pub mod __buffa {
             super::__CRYPTO_HPKE_EXACT_WIDTH_DERIVE_KEY_PAIR_REQUEST_JSON_ANY,
         );
         reg.register_json_any(super::__CRYPTO_HPKE_PUBLIC_KEY_DESCRIPTOR_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_SHAKE256EXPAND_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_SHAKE256EXPAND_RESULT_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_SECP256K1AGREEMENT_REQUEST_JSON_ANY);
     }
 }
 #[doc(inline)]
@@ -1233,5 +1236,17 @@ pub use self::__buffa::view::CryptoHpkeExactWidthDeriveKeyPairRequestOwnedView;
 pub use self::__buffa::view::CryptoHpkePublicKeyDescriptorView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoHpkePublicKeyDescriptorOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoShake256ExpandRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoShake256ExpandRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoShake256ExpandResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoShake256ExpandResultOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoSecp256k1AgreementRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoSecp256k1AgreementRequestOwnedView;
 #[doc(inline)]
 pub use self::__buffa::register_types;

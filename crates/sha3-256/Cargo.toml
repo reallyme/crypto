@@ -34,6 +34,7 @@ sha3 = { workspace = true }
 zeroize = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
+wasm-bindgen-test = { workspace = true }
 hex = { workspace = true }
 
 [lints]

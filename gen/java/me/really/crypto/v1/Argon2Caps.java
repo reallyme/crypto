@@ -19,6 +19,12 @@ public  final class Argon2Caps extends
         Argon2Caps, Argon2Caps.Builder> implements
     // @@protoc_insertion_point(message_implements:reallyme.crypto.v1.Argon2Caps)
     Argon2CapsOrBuilder {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  @java.lang.Override
+  public java.lang.String toString() {
+    return "Argon2Caps{<redacted>}";
+  }
+
   private Argon2Caps() {
   }
   public static final int MEM_CAP_KIB_FIELD_NUMBER = 1;

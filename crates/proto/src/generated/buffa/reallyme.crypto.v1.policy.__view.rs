@@ -3,7 +3,7 @@
 
 /// MaterialPolicy reports the complete ownership contract for one buffer.
 /// Receiving or editing this record does not authorize a change to that contract.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct MaterialPolicyView<'a> {
     /// Field 1: `owner`
     pub owner: ::buffa::EnumValue<super::super::BufferOwner>,
@@ -18,6 +18,11 @@ pub struct MaterialPolicyView<'a> {
     /// Field 6: `destruction`
     pub destruction: ::buffa::EnumValue<super::super::DestructionPolicy>,
     pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for MaterialPolicyView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("MaterialPolicyView(<redacted>)")
+    }
 }
 impl<'a> ::buffa::MessageView<'a> for MaterialPolicyView<'a> {
     type Owned = super::super::MaterialPolicy;
@@ -280,8 +285,13 @@ impl<'a> ::buffa::MessageName for MaterialPolicyView<'a> {
  Wraps [`::buffa::OwnedView`]`<`[`MaterialPolicyView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
  Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`MaterialPolicyView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct MaterialPolicyOwnedView(::buffa::OwnedView<MaterialPolicyView<'static>>);
+impl ::core::fmt::Debug for MaterialPolicyOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("MaterialPolicyOwnedView(<redacted>)")
+    }
+}
 impl MaterialPolicyOwnedView {
     /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
     ///
@@ -420,7 +430,7 @@ impl ::serde::Serialize for MaterialPolicyOwnedView {
 }
 /// OperationSecretMaterialPolicy reports the complete policy computed by the
 /// semantic operation. Every nested record is required in a produced result.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct OperationSecretMaterialPolicyView<'a> {
     /// Field 1: `input`
     pub input: ::buffa::MessageFieldView<
@@ -441,6 +451,11 @@ pub struct OperationSecretMaterialPolicyView<'a> {
     /// Field 5: `output_material`
     pub output_material: ::buffa::EnumValue<super::super::OutputMaterial>,
     pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+}
+impl ::core::fmt::Debug for OperationSecretMaterialPolicyView<'_> {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("OperationSecretMaterialPolicyView(<redacted>)")
+    }
 }
 impl<'a> ::buffa::MessageView<'a> for OperationSecretMaterialPolicyView<'a> {
     type Owned = super::super::OperationSecretMaterialPolicy;
@@ -790,10 +805,15 @@ impl<'a> ::buffa::MessageName for OperationSecretMaterialPolicyView<'a> {
  Wraps [`::buffa::OwnedView`]`<`[`OperationSecretMaterialPolicyView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
  Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`OperationSecretMaterialPolicyView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct OperationSecretMaterialPolicyOwnedView(
     ::buffa::OwnedView<OperationSecretMaterialPolicyView<'static>>,
 );
+impl ::core::fmt::Debug for OperationSecretMaterialPolicyOwnedView {
+    fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        formatter.write_str("OperationSecretMaterialPolicyOwnedView(<redacted>)")
+    }
+}
 impl OperationSecretMaterialPolicyOwnedView {
     /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
     ///

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! Generated operation-response coverage for every exposed KDF branch.
+
 #![cfg(all(
     feature = "concat-kdf",
     feature = "hkdf",
@@ -12,8 +14,6 @@
 ))]
 #![allow(clippy::expect_used)]
 #![allow(clippy::panic)]
-
-//! Generated operation-response coverage for every exposed KDF branch.
 
 use buffa::{EnumValue, Message, MessageField};
 use crypto_proto::generated::proto::reallyme::crypto::v1::{

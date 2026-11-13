@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! Tests for the generated operation response boundary.
+
 #![cfg(feature = "operation-response")]
 #![allow(clippy::expect_used)]
 #![allow(clippy::panic)]
-
-//! Tests for the generated operation response boundary.
 
 use buffa::{EnumValue, Message, MessageField};
 use crypto_proto::generated::proto::reallyme::crypto::v1::{

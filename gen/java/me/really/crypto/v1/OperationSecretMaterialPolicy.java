@@ -19,6 +19,12 @@ public  final class OperationSecretMaterialPolicy extends
         OperationSecretMaterialPolicy, OperationSecretMaterialPolicy.Builder> implements
     // @@protoc_insertion_point(message_implements:reallyme.crypto.v1.OperationSecretMaterialPolicy)
     OperationSecretMaterialPolicyOrBuilder {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  @java.lang.Override
+  public java.lang.String toString() {
+    return "OperationSecretMaterialPolicy{<redacted>}";
+  }
+
   private OperationSecretMaterialPolicy() {
   }
   private int bitField0_;
