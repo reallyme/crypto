@@ -7,7 +7,7 @@ use crate::{
     Aes128KwKek, Aes192KwKek, Aes256KwKek, AesKwKeyData, AES_KW_INTEGRITY_CHECK_LENGTH,
 };
 use aes_kw::{Error as AesKwError, KeyInit, KwAes128, KwAes192, KwAes256};
-use crypto_core::{CryptoError, KeyWrapAlgorithm, KeyWrapFailureKind, KeyWrapOperation};
+use crypto_core::{CryptoError, KeyWrapAlgorithm, KeyWrapOperation};
 use zeroize::Zeroizing;
 
 /// Unwraps RFC 3394 AES-256-KW wrapped key material.
@@ -61,7 +61,7 @@ fn unwrap_with(
             key_wrap_error(
                 algorithm,
                 KeyWrapOperation::Unwrap,
-                KeyWrapFailureKind::InvalidWrappedLength,
+                crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
             )
         })?;
     let mut key_data = Zeroizing::new(vec![0u8; key_data_len]);
@@ -72,12 +72,12 @@ fn unwrap_with(
         Err(AesKwError::IntegrityCheckFailed) => Err(key_wrap_error(
             algorithm,
             KeyWrapOperation::Unwrap,
-            KeyWrapFailureKind::IntegrityCheckFailed,
+            crypto_core::CryptoError::PRIMITIVE_AUTHENTICATION_FAILED,
         )),
         Err(_) => Err(key_wrap_error(
             algorithm,
             KeyWrapOperation::Unwrap,
-            KeyWrapFailureKind::BackendFailure,
+            crypto_core::CryptoError::BACKEND_INTERNAL,
         )),
     }
 }

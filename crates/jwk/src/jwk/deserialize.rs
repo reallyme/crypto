@@ -137,17 +137,19 @@ impl<'de> Visitor<'de> for JwkVisitor {
         while let Some(name) = map.next_key::<String>()? {
             member_count = member_count
                 .checked_add(1)
-                .ok_or_else(|| M::Error::custom(JwtError::InvalidEnvelope))?;
+                .ok_or_else(|| M::Error::custom(JwtError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED))?;
             if member_count > MAX_JWK_MEMBER_COUNT {
-                return Err(M::Error::custom(JwtError::InvalidEnvelope));
+                return Err(M::Error::custom(
+                    JwtError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
+                ));
             }
             // Reject before reading the value: private-key JSON must not be
             // materialized as an unzeroized serde_json::Value merely to discard it.
             if is_private_member(&name) {
-                return Err(M::Error::custom(JwtError::PrivateKeyMaterial));
+                return Err(M::Error::custom(JwtError::PRIMITIVE_INVALID_PARAMETER));
             }
             if members.contains_key(&name) {
-                return Err(M::Error::custom(JwtError::DuplicateMember));
+                return Err(M::Error::custom(JwtError::PRIMITIVE_MALFORMED_JSON));
             }
             let value = map.next_value::<Value>()?;
             members.insert(name, value);
@@ -161,18 +163,18 @@ fn deserialize_by_key_type(value: Value) -> Result<Jwk, JwtError> {
     let key_type = value
         .get("kty")
         .and_then(Value::as_str)
-        .ok_or(JwtError::InvalidEnvelope)?;
+        .ok_or(JwtError::PRIMITIVE_MALFORMED_JSON)?;
     match key_type {
         "EC" => serde_json::from_value(value)
             .map(Jwk::Ec)
-            .map_err(|_| JwtError::InvalidEnvelope),
+            .map_err(|_| JwtError::PRIMITIVE_MALFORMED_JSON),
         "OKP" => serde_json::from_value(value)
             .map(Jwk::Okp)
-            .map_err(|_| JwtError::InvalidEnvelope),
+            .map_err(|_| JwtError::PRIMITIVE_MALFORMED_JSON),
         "AKP" => serde_json::from_value(value)
             .map(Jwk::Akp)
-            .map_err(|_| JwtError::InvalidEnvelope),
-        _ => Err(JwtError::UnsupportedKeyFormat),
+            .map_err(|_| JwtError::PRIMITIVE_MALFORMED_JSON),
+        _ => Err(JwtError::PROVIDER_UNSUPPORTED_ALGORITHM),
     }
 }
 
@@ -249,13 +251,13 @@ fn validate_wire_members(
     extra: &BTreeMap<String, serde::de::IgnoredAny>,
 ) -> Result<(), JwtError> {
     if private.is_present() {
-        return Err(JwtError::PrivateKeyMaterial);
+        return Err(JwtError::PRIMITIVE_INVALID_PARAMETER);
     }
     if extra.keys().any(|name| !name.starts_with("x-")) {
-        return Err(JwtError::UnknownMember);
+        return Err(JwtError::PRIMITIVE_MALFORMED_JSON);
     }
     if actual_key_type != expected_key_type {
-        return Err(JwtError::UnsupportedKeyFormat);
+        return Err(JwtError::PRIMITIVE_INVALID_PARAMETER);
     }
     Ok(())
 }

@@ -17,7 +17,7 @@ use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use crypto_core::Algorithm;
 use reallyme_crypto::operations::{
     key_agreement::{self, KeyAgreementKeyPair},
-    OperationError, PrimitiveErrorReason, ProviderErrorReason,
+    OperationError,
 };
 use zeroize::Zeroizing;
 
@@ -118,9 +118,7 @@ fn key_agreement_owner_rejects_unsupported_algorithm() {
     };
     assert_eq!(
         error,
-        OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm
-        }
+        crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM
     );
 }
 
@@ -165,9 +163,7 @@ fn x25519_all_zero_peer_output_fails_as_invalid_shared_secret() {
 
     assert_eq!(
         error,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidSharedSecret
-        }
+        crypto_core::CryptoError::PRIMITIVE_INVALID_SHARED_SECRET
     );
 }
 
@@ -244,18 +240,14 @@ fn assert_zeroizing_vec(_: &Zeroizing<Vec<u8>>) {}
 fn assert_invalid_key(result: Result<KeyAgreementKeyPair, OperationError>) {
     assert_eq!(
         result.err(),
-        Some(OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey
-        })
+        Some(crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)
     );
 }
 
 fn assert_invalid_shared_secret_input(result: Result<Zeroizing<Vec<u8>>, OperationError>) {
     assert_eq!(
         result.err(),
-        Some(OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey
-        })
+        Some(crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)
     );
 }
 

@@ -7,6 +7,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 const ownedPath = "crates/proto/src/generated/buffa/reallyme.crypto.v1.crypto.rs";
@@ -57,3 +58,40 @@ for (const namespace of ["serde", "::serde"]) {
     }
   });
 }
+
+test("CI policy and generation modes do not launch repository tests", () => {
+  // Trace the actual checker through the test-routing boundary. Child commands
+  // are intercepted; only the tracked-file inventory may execute. Stop before
+  // any package metadata, SDK, generation or other toolchain commands run.
+  const preload = `
+    import childProcess from "node:child_process";
+    import { syncBuiltinESMExports } from "node:module";
+    const original = childProcess.spawnSync;
+    const calls = [];
+    childProcess.spawnSync = (command, args, options) => {
+      if (command === "git" && args.length === 2 && args[0] === "ls-files" && args[1] === "-z") {
+        return original(command, args, options);
+      }
+      calls.push(args);
+      if (args[0] === "scripts/publish_crates_in_order.mjs") {
+        process.stdout.write(JSON.stringify(calls));
+        process.exit(73);
+      }
+      return { status: 0, stdout: "", stderr: "" };
+    };
+    syncBuiltinESMExports();
+  `;
+  const checker = fileURLToPath(new URL("./check_release_readiness.mjs", import.meta.url));
+  const root = fileURLToPath(new URL("../", import.meta.url));
+  for (const mode of [undefined, "--release-packages", "--ci-policy", "--generated-freshness",
+    "--typescript-source", "--swift-source", "--kotlin-source"]) {
+    const result = spawnSync(process.execPath, ["--import",
+      `data:text/javascript,${encodeURIComponent(preload)}`, checker, ...(mode === undefined ? [] : [mode])],
+    { cwd: root, encoding: "utf8", timeout: 10_000 });
+    assert.equal(result.error, undefined, mode);
+    assert.equal(result.status, 73, result.stderr);
+    const calls = JSON.parse(result.stdout);
+    assert.equal(calls.filter((args) => args[0] === "--test").length,
+      mode === undefined || mode === "--release-packages" ? 1 : 0, mode);
+  }
+});

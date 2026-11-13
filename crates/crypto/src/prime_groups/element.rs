@@ -5,7 +5,7 @@
 use secrecy::{ExposeSecret, SecretSlice};
 use zeroize::ZeroizeOnDrop;
 
-use super::{dh, ec, field, secret, GroupError, GroupErrorReason, PrimeGroup};
+use super::{dh, ec, field, secret, CryptoError, PrimeGroup};
 
 /// Canonical, validated, nonidentity subgroup element with an erasing owner.
 ///
@@ -23,9 +23,9 @@ impl ZeroizeOnDrop for GroupElement {}
 impl PrimeGroup {
     /// Import an exact-width unsigned DH value or uncompressed SEC1 point.
     /// Identity, out-of-field, off-curve and wrong-subgroup values are rejected.
-    pub fn element(self, bytes: &[u8]) -> Result<GroupElement, GroupError> {
+    pub fn element(self, bytes: &[u8]) -> Result<GroupElement, CryptoError> {
         if bytes.len() != self.element_len() {
-            return Err(GroupErrorReason::InvalidLength.into());
+            return Err(CryptoError::PRIMITIVE_INVALID_LENGTH);
         }
         if self.is_elliptic_curve() {
             ec::validate(self, bytes)?;
@@ -39,7 +39,7 @@ impl PrimeGroup {
     }
 
     /// Validated standard generator.
-    pub fn generator(self) -> Result<GroupElement, GroupError> {
+    pub fn generator(self) -> Result<GroupElement, CryptoError> {
         self.element(self.domain().generator)
     }
 
@@ -51,9 +51,9 @@ impl PrimeGroup {
         n: &[u8],
         base: &GroupElement,
         offset: &GroupElement,
-    ) -> Result<GroupElement, GroupError> {
+    ) -> Result<GroupElement, CryptoError> {
         if base.group != self || offset.group != self {
-            return Err(GroupErrorReason::GroupMismatch.into());
+            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
         }
         let params = field::params(self.order())?;
         let reduced = field::reduce(n, &params)?;
@@ -92,16 +92,16 @@ impl GroupElement {
     }
 
     /// Key-agreement encoding: fixed-width x for EC, full fixed-width DH value.
-    pub fn agreement_secret(&self) -> Result<SecretSlice<u8>, GroupError> {
+    pub fn agreement_secret(&self) -> Result<SecretSlice<u8>, CryptoError> {
         let bytes = if self.group.is_elliptic_curve() {
             let end = self
                 .group
                 .field_len()
                 .checked_add(1)
-                .ok_or(GroupErrorReason::Arithmetic)?;
+                .ok_or(CryptoError::BACKEND_INTERNAL)?;
             self.encoding()
                 .get(1..end)
-                .ok_or(GroupErrorReason::Arithmetic)?
+                .ok_or(CryptoError::BACKEND_INTERNAL)?
         } else {
             self.encoding()
         };

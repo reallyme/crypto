@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, KeyAgreementFailureKind};
+use crypto_core::CryptoError;
 use zeroize::Zeroizing;
 
 use crate::{X448PrivateKey, X448PublicKey, X448_PRIVATE_KEY_LEN};
@@ -10,9 +10,7 @@ use crate::{X448PrivateKey, X448PublicKey, X448_PRIVATE_KEY_LEN};
 /// Generates an X448 keypair with operating-system randomness.
 pub fn generate_x448_keypair() -> Result<(X448PrivateKey, X448PublicKey), CryptoError> {
     let mut seed = Zeroizing::new([0_u8; X448_PRIVATE_KEY_LEN]);
-    getrandom::fill(seed.as_mut_slice()).map_err(|_| CryptoError::KeyAgreementFailure {
-        kind: KeyAgreementFailureKind::KeyGenerationFailed,
-    })?;
+    getrandom::fill(seed.as_mut_slice()).map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
     generate_x448_keypair_from_seed(&seed)
 }
 

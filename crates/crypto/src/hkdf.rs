@@ -4,7 +4,7 @@
 
 //! HKDF facade routes backed by the semantic KDF operation owner.
 
-use crypto_core::{CryptoError, HkdfFailureKind, HkdfHash};
+use crypto_core::{CryptoError, HkdfHash};
 
 pub use crypto_hkdf::{
     DeriveRequest, DomainKeyPurpose, DomainTag, HkdfInfo, HkdfInputKeyMaterial, HkdfOutput,
@@ -47,24 +47,8 @@ pub fn derive_domain_key_32(
 }
 
 fn crypto_error_from_operation_error(
-    hash: HkdfHash,
+    _hash: HkdfHash,
     error: crate::operations::OperationError,
 ) -> CryptoError {
-    let kind = match error {
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::InvalidKey,
-        } => HkdfFailureKind::InvalidIkmLength,
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::InvalidLength,
-        } => HkdfFailureKind::InvalidOutputLength,
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::LengthOverflow,
-        } => HkdfFailureKind::LengthOverflow,
-        crate::operations::OperationError::Provider {
-            reason: crate::operations::ProviderErrorReason::UnsupportedAlgorithm,
-        } => return CryptoError::Unsupported,
-        _ => HkdfFailureKind::ExpandFailed,
-    };
-
-    CryptoError::Hkdf { hash, kind }
+    error
 }

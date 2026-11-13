@@ -11,7 +11,8 @@ use k256::elliptic_curve::sec1::ToSec1Point;
 use k256::SecretKey;
 
 fn uncompressed_public_key(secret: &[u8; 32]) -> Result<Vec<u8>, CryptoError> {
-    let secret_key = SecretKey::from_slice(secret).map_err(|_| CryptoError::InvalidKey)?;
+    let secret_key =
+        SecretKey::from_slice(secret).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     Ok(secret_key
         .public_key()
         .as_affine()
@@ -48,7 +49,7 @@ fn secp256k1_ecdh_rejects_invalid_private_keys() -> Result<(), CryptoError> {
     ] {
         assert!(matches!(
             derive_secp256k1_shared_secret(invalid, &public_key),
-            Err(CryptoError::InvalidKey)
+            Err(CryptoError::PRIMITIVE_INVALID_KEY)
         ));
     }
     Ok(())
@@ -62,10 +63,10 @@ fn secp256k1_ecdh_requires_valid_uncompressed_public_keys() {
 
     assert!(matches!(
         derive_secp256k1_shared_secret(&secret_key, &compressed),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
     assert!(matches!(
         derive_secp256k1_shared_secret(&secret_key, &malformed),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
 }

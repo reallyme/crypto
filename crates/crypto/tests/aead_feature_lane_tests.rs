@@ -9,7 +9,7 @@
     not(feature = "chacha20-poly1305")
 ))]
 
-use reallyme_crypto::operations::{OperationError, ProviderErrorReason};
+use reallyme_crypto::operations::OperationError;
 use reallyme_crypto::AeadAlgorithm;
 
 const AEAD_ALGORITHMS: &[AeadAlgorithm] = &[
@@ -32,9 +32,7 @@ fn disabled_aead_providers_fail_closed_for_seal_and_open() {
                 b"aad",
                 b"plaintext",
             ),
-            Err(OperationError::Provider {
-                reason: ProviderErrorReason::UnsupportedAlgorithm,
-            }),
+            Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
         );
         assert_eq!(
             reallyme_crypto::operations::aead::open(
@@ -44,9 +42,7 @@ fn disabled_aead_providers_fail_closed_for_seal_and_open() {
                 b"aad",
                 b"ciphertext",
             ),
-            Err(OperationError::Provider {
-                reason: ProviderErrorReason::UnsupportedAlgorithm,
-            }),
+            Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
         );
     }
 }

@@ -4,7 +4,7 @@
 
 //! Generated/native identity parity without a second list of schema values.
 
-#![cfg(feature = "generated")]
+#![cfg(feature = "protobuf")]
 #![allow(missing_docs)]
 #![allow(clippy::expect_used)]
 
@@ -13,8 +13,8 @@ use crypto_core::{
     AeadAlgorithm as CoreAead, Algorithm as CoreKey, HashAlgorithm as CoreHash,
     KeyWrapAlgorithm as CoreKeyWrap, MacAlgorithm as CoreMac,
 };
-use reallyme_crypto_proto::convert::UnsupportedProtoAlgorithm;
-use reallyme_crypto_proto::generated::proto::reallyme::crypto::v1::{
+use crypto_proto::convert::UnsupportedProtoAlgorithm;
+use crypto_proto::generated::proto::reallyme::crypto::v1::{
     __buffa::oneof::crypto_algorithm_identifier::Algorithm as Identity, AeadAlgorithm,
     CryptoAlgorithmIdentifier, CryptoErrorReason, CryptoKeyAlgorithmIdentifier, HashAlgorithm,
     KeyAlgorithm, KeyWrapAlgorithm, MacAlgorithm, SignatureAlgorithm,
@@ -170,7 +170,7 @@ fn key_identifier(algorithm: EnumValue<KeyAlgorithm>) -> CryptoKeyAlgorithmIdent
 
 #[test]
 fn legacy_operation_identities_reject_unspecified_and_unknown_values() {
-    use reallyme_crypto_proto::generated::proto::reallyme::crypto::v1::{
+    use crypto_proto::generated::proto::reallyme::crypto::v1::{
         KemAlgorithm, KeyAgreementAlgorithm,
     };
     for invalid in [0, -1, 999_999, i32::MAX] {

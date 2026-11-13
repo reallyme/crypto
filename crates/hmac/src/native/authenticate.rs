@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, MacAlgorithm, MacFailureKind};
+use crypto_core::{CryptoError, MacAlgorithm};
 use hmac::{Hmac, KeyInit, Mac};
 use sha2::{Sha256, Sha384, Sha512};
 
-use crate::types::{mac_hash, HmacKey, HmacTag};
+use crate::types::{HmacKey, HmacTag};
 
 type HmacSha256 = Hmac<Sha256>;
 type HmacSha384 = Hmac<Sha384>;
@@ -44,70 +44,49 @@ pub fn verify(
 }
 
 fn authenticate_sha256(key: &HmacKey, message: &[u8]) -> Result<HmacTag, CryptoError> {
-    let mut mac = HmacSha256::new_from_slice(key.as_bytes()).map_err(|_| CryptoError::Mac {
-        hash: mac_hash(MacAlgorithm::HmacSha256),
-        kind: MacFailureKind::InvalidKeyLength,
-    })?;
+    let mut mac = HmacSha256::new_from_slice(key.as_bytes())
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)?;
     mac.update(message);
     let bytes = mac.finalize().into_bytes();
     HmacTag::from_slice(MacAlgorithm::HmacSha256, &bytes)
 }
 
 fn authenticate_sha384(key: &HmacKey, message: &[u8]) -> Result<HmacTag, CryptoError> {
-    let mut mac = HmacSha384::new_from_slice(key.as_bytes()).map_err(|_| CryptoError::Mac {
-        hash: mac_hash(MacAlgorithm::HmacSha384),
-        kind: MacFailureKind::InvalidKeyLength,
-    })?;
+    let mut mac = HmacSha384::new_from_slice(key.as_bytes())
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)?;
     mac.update(message);
     let bytes = mac.finalize().into_bytes();
     HmacTag::from_slice(MacAlgorithm::HmacSha384, &bytes)
 }
 
 fn authenticate_sha512(key: &HmacKey, message: &[u8]) -> Result<HmacTag, CryptoError> {
-    let mut mac = HmacSha512::new_from_slice(key.as_bytes()).map_err(|_| CryptoError::Mac {
-        hash: mac_hash(MacAlgorithm::HmacSha512),
-        kind: MacFailureKind::InvalidKeyLength,
-    })?;
+    let mut mac = HmacSha512::new_from_slice(key.as_bytes())
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)?;
     mac.update(message);
     let bytes = mac.finalize().into_bytes();
     HmacTag::from_slice(MacAlgorithm::HmacSha512, &bytes)
 }
 
 fn verify_sha256(key: &HmacKey, message: &[u8], expected_tag: &[u8]) -> Result<(), CryptoError> {
-    let mut mac = HmacSha256::new_from_slice(key.as_bytes()).map_err(|_| CryptoError::Mac {
-        hash: mac_hash(MacAlgorithm::HmacSha256),
-        kind: MacFailureKind::InvalidKeyLength,
-    })?;
+    let mut mac = HmacSha256::new_from_slice(key.as_bytes())
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)?;
     mac.update(message);
     mac.verify_slice(expected_tag)
-        .map_err(|_| CryptoError::Mac {
-            hash: mac_hash(MacAlgorithm::HmacSha256),
-            kind: MacFailureKind::VerificationFailed,
-        })
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_VERIFICATION_FAILED)
 }
 
 fn verify_sha384(key: &HmacKey, message: &[u8], expected_tag: &[u8]) -> Result<(), CryptoError> {
-    let mut mac = HmacSha384::new_from_slice(key.as_bytes()).map_err(|_| CryptoError::Mac {
-        hash: mac_hash(MacAlgorithm::HmacSha384),
-        kind: MacFailureKind::InvalidKeyLength,
-    })?;
+    let mut mac = HmacSha384::new_from_slice(key.as_bytes())
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)?;
     mac.update(message);
     mac.verify_slice(expected_tag)
-        .map_err(|_| CryptoError::Mac {
-            hash: mac_hash(MacAlgorithm::HmacSha384),
-            kind: MacFailureKind::VerificationFailed,
-        })
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_VERIFICATION_FAILED)
 }
 
 fn verify_sha512(key: &HmacKey, message: &[u8], expected_tag: &[u8]) -> Result<(), CryptoError> {
-    let mut mac = HmacSha512::new_from_slice(key.as_bytes()).map_err(|_| CryptoError::Mac {
-        hash: mac_hash(MacAlgorithm::HmacSha512),
-        kind: MacFailureKind::InvalidKeyLength,
-    })?;
+    let mut mac = HmacSha512::new_from_slice(key.as_bytes())
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)?;
     mac.update(message);
     mac.verify_slice(expected_tag)
-        .map_err(|_| CryptoError::Mac {
-            hash: mac_hash(MacAlgorithm::HmacSha512),
-            kind: MacFailureKind::VerificationFailed,
-        })
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_VERIFICATION_FAILED)
 }

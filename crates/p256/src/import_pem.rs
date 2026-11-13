@@ -17,35 +17,38 @@ const P256_MAX_KEY_PEM_LEN: usize = 8192;
 /// Import a P-256 private scalar from PKCS#8 DER.
 pub fn private_key_from_pkcs8_der(der: &[u8]) -> Result<Zeroizing<[u8; 32]>, CryptoError> {
     validate_der_input(der)?;
-    let secret_key = SecretKey::from_pkcs8_der(der).map_err(|_| CryptoError::InvalidKey)?;
+    let secret_key =
+        SecretKey::from_pkcs8_der(der).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     secret_key_to_scalar(secret_key)
 }
 
 /// Import a P-256 private scalar from SEC1 ECPrivateKey DER.
 pub fn private_key_from_sec1_der(der: &[u8]) -> Result<Zeroizing<[u8; 32]>, CryptoError> {
     validate_der_input(der)?;
-    let secret_key = SecretKey::from_sec1_der(der).map_err(|_| CryptoError::InvalidKey)?;
+    let secret_key =
+        SecretKey::from_sec1_der(der).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     secret_key_to_scalar(secret_key)
 }
 
 /// Import a compressed P-256 SEC1 public key from SPKI DER.
 pub fn public_key_from_spki_der(der: &[u8]) -> Result<[u8; 33], CryptoError> {
     validate_der_input(der)?;
-    let public_key = PublicKey::from_public_key_der(der).map_err(|_| CryptoError::InvalidKey)?;
+    let public_key =
+        PublicKey::from_public_key_der(der).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     public_key_to_compressed(public_key)
 }
 
 /// Import a P-256 private scalar from a PKCS#8 `PRIVATE KEY` PEM document.
 pub fn private_key_from_pkcs8_pem(pem: &str) -> Result<Zeroizing<[u8; 32]>, CryptoError> {
     let document = decode_pem(pem, pem_policy(&[PemLabel::PrivateKey]))
-        .map_err(|_| CryptoError::InvalidKey)?;
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     private_key_from_pkcs8_der(document.der.as_slice())
 }
 
 /// Import a P-256 private scalar from a SEC1 `EC PRIVATE KEY` PEM document.
 pub fn private_key_from_sec1_pem(pem: &str) -> Result<Zeroizing<[u8; 32]>, CryptoError> {
     let document = decode_pem(pem, pem_policy(&[PemLabel::EcPrivateKey]))
-        .map_err(|_| CryptoError::InvalidKey)?;
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     private_key_from_sec1_der(document.der.as_slice())
 }
 
@@ -55,7 +58,7 @@ pub fn private_key_from_pem(pem: &str) -> Result<Zeroizing<[u8; 32]>, CryptoErro
         pem,
         pem_policy(&[PemLabel::PrivateKey, PemLabel::EcPrivateKey]),
     )
-    .map_err(|_| CryptoError::InvalidKey)?;
+    .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
 
     match document.label {
         PemLabel::PrivateKey => private_key_from_pkcs8_der(document.der.as_slice()),
@@ -63,15 +66,15 @@ pub fn private_key_from_pem(pem: &str) -> Result<Zeroizing<[u8; 32]>, CryptoErro
         // Codec deliberately leaves this enum open for new PEM labels. A new
         // label must never be reinterpreted as a private-key container merely
         // because the decoder learns how to parse it.
-        PemLabel::PublicKey => Err(CryptoError::InvalidKey),
-        _ => Err(CryptoError::InvalidKey),
+        PemLabel::PublicKey => Err(CryptoError::PRIMITIVE_INVALID_KEY),
+        _ => Err(CryptoError::PRIMITIVE_INVALID_KEY),
     }
 }
 
 /// Import a compressed P-256 SEC1 public key from a SPKI `PUBLIC KEY` PEM document.
 pub fn public_key_from_spki_pem(pem: &str) -> Result<[u8; 33], CryptoError> {
-    let document =
-        decode_pem(pem, pem_policy(&[PemLabel::PublicKey])).map_err(|_| CryptoError::InvalidKey)?;
+    let document = decode_pem(pem, pem_policy(&[PemLabel::PublicKey]))
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     public_key_from_spki_der(document.der.as_slice())
 }
 
@@ -79,7 +82,8 @@ pub fn public_key_from_spki_pem(pem: &str) -> Result<[u8; 33], CryptoError> {
 pub fn compressed_public_key_from_private_key(
     secret_key: &[u8; 32],
 ) -> Result<[u8; 33], CryptoError> {
-    let secret = SecretKey::from_slice(secret_key).map_err(|_| CryptoError::InvalidKey)?;
+    let secret =
+        SecretKey::from_slice(secret_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     public_key_to_compressed(secret.public_key())
 }
 
@@ -96,7 +100,7 @@ fn validate_der_input(der: &[u8]) -> Result<(), CryptoError> {
     // imports. Otherwise callers can bypass the PEM decoder's size policy and
     // hand an unbounded attacker-controlled document to the ASN.1 parser.
     if der.is_empty() || der.len() > P256_MAX_KEY_DER_LEN {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
     Ok(())
 }
@@ -105,7 +109,7 @@ fn secret_key_to_scalar(secret_key: SecretKey) -> Result<Zeroizing<[u8; 32]>, Cr
     let mut bytes = secret_key.to_bytes();
     if bytes.len() != P256_SECRET_KEY_LEN {
         bytes.zeroize();
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
 
     let mut scalar = Zeroizing::new([0u8; P256_SECRET_KEY_LEN]);
@@ -117,7 +121,7 @@ fn secret_key_to_scalar(secret_key: SecretKey) -> Result<Zeroizing<[u8; 32]>, Cr
 fn public_key_to_compressed(public_key: PublicKey) -> Result<[u8; 33], CryptoError> {
     let encoded = public_key.to_sec1_point(true);
     if encoded.as_bytes().len() != P256_PUBLIC_KEY_COMPRESSED_LEN {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
 
     let mut compressed = [0u8; P256_PUBLIC_KEY_COMPRESSED_LEN];

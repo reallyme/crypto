@@ -4,7 +4,7 @@
 
 //! Argon2id facade routes backed by the semantic KDF operation owner.
 
-use crypto_core::{CryptoError, KdfAlgorithm, KdfFailureKind};
+use crypto_core::CryptoError;
 
 pub use crypto_argon2id::{
     resolve_mobile_profile_for_unlock, resolve_profile_params_for_platform,
@@ -41,27 +41,8 @@ pub fn derive_key_for_version(
 }
 
 fn crypto_error_from_operation_error(
-    profile: Argon2Profile,
+    _profile: Argon2Profile,
     error: crate::operations::OperationError,
 ) -> CryptoError {
-    let kind = match error {
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::InvalidKey,
-        } => KdfFailureKind::InvalidSecretLength,
-        crate::operations::OperationError::Primitive {
-            reason:
-                crate::operations::PrimitiveErrorReason::InvalidLength
-                | crate::operations::PrimitiveErrorReason::LengthOverflow,
-        } => KdfFailureKind::InvalidParams,
-        crate::operations::OperationError::Provider {
-            reason: crate::operations::ProviderErrorReason::UnsupportedAlgorithm,
-        } => return CryptoError::Unsupported,
-        _ => KdfFailureKind::DerivationFailed,
-    };
-
-    CryptoError::Kdf {
-        algorithm: KdfAlgorithm::Argon2id,
-        profile: profile.to_kdf_profile(),
-        kind,
-    }
+    error
 }

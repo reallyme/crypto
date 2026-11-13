@@ -81,7 +81,7 @@ fn invalid_public_key_length_is_rejected() {
         Ok(_) => panic!("invalid public-key length must fail"),
     };
 
-    assert_eq!(err, HpkeError::InvalidPublicKey);
+    assert_eq!(err, HpkeError::PRIMITIVE_INVALID_PUBLIC_KEY);
 }
 
 #[test]
@@ -96,7 +96,7 @@ fn rfc9180_section_7_1_4_rejects_invalid_dhkem_points() {
     })
     .err()
     .expect("off-curve recipient point must fail");
-    assert_eq!(p256_seal_error, HpkeError::InvalidPublicKey);
+    assert_eq!(p256_seal_error, HpkeError::PRIMITIVE_INVALID_PUBLIC_KEY);
 
     let p256_open_error = open_base(&HpkeOpenRequest {
         suite: HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM,
@@ -108,7 +108,7 @@ fn rfc9180_section_7_1_4_rejects_invalid_dhkem_points() {
     })
     .err()
     .expect("off-curve encapsulated point must fail");
-    assert_eq!(p256_open_error, HpkeError::InvalidEncapsulatedKey);
+    assert_eq!(p256_open_error, HpkeError::PRIMITIVE_MALFORMED_CIPHERTEXT);
 
     let low_order_x25519 = [0_u8; 32];
     let x25519_seal_error = seal_base(&HpkeSealRequest {
@@ -122,7 +122,7 @@ fn rfc9180_section_7_1_4_rejects_invalid_dhkem_points() {
     .expect("low-order recipient point must fail");
     // The HPKE engine reports a low-order X25519 key during encapsulation,
     // after byte decoding, so the wrapper preserves its typed seal failure.
-    assert_eq!(x25519_seal_error, HpkeError::SealFailed);
+    assert_eq!(x25519_seal_error, HpkeError::BACKEND_INTERNAL);
 
     let x25519_open_error = open_base(&HpkeOpenRequest {
         suite: HPKE_DHKEM_X25519_HKDF_SHA256_CHACHA20POLY1305,
@@ -134,7 +134,10 @@ fn rfc9180_section_7_1_4_rejects_invalid_dhkem_points() {
     })
     .err()
     .expect("low-order encapsulated point must fail");
-    assert_eq!(x25519_open_error, HpkeError::OpenFailed);
+    assert_eq!(
+        x25519_open_error,
+        HpkeError::PRIMITIVE_AUTHENTICATION_FAILED
+    );
 }
 
 #[test]
@@ -160,7 +163,7 @@ fn invalid_private_key_length_is_rejected() {
         Ok(_) => panic!("invalid private-key length must fail"),
     };
 
-    assert_eq!(err, HpkeError::InvalidPrivateKey);
+    assert_eq!(err, HpkeError::PRIMITIVE_INVALID_PRIVATE_KEY);
 }
 
 #[test]
@@ -188,7 +191,7 @@ fn tampered_ciphertext_is_rejected() {
         Ok(_) => panic!("tampered ciphertext must fail"),
     };
 
-    assert_eq!(err, HpkeError::OpenFailed);
+    assert_eq!(err, HpkeError::PRIMITIVE_AUTHENTICATION_FAILED);
 }
 
 fn assert_hpke_roundtrip(suite: HpkeSuite, public_key: &[u8], private_key: &[u8]) {

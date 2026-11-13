@@ -46,7 +46,7 @@ fn secp256k1_rejects_compressed_and_off_curve_public_keys() {
         })
         .err()
         .expect("invalid secp256k1 public key must fail");
-        assert_eq!(error, HpkeError::InvalidPublicKey);
+        assert_eq!(error, HpkeError::PRIMITIVE_INVALID_PUBLIC_KEY);
     }
 }
 
@@ -63,7 +63,7 @@ fn x448_rejects_low_order_recipient_and_encapsulated_keys() {
     })
     .err()
     .expect("low-order X448 recipient key must fail");
-    assert_eq!(seal_error, HpkeError::InvalidPublicKey);
+    assert_eq!(seal_error, HpkeError::PRIMITIVE_INVALID_PUBLIC_KEY);
 
     let recipient = derive_keypair(suite, &[0x73_u8; 56]).expect("recipient derivation succeeds");
     let open_error = open_base(&HpkeOpenRequest {
@@ -76,7 +76,7 @@ fn x448_rejects_low_order_recipient_and_encapsulated_keys() {
     })
     .err()
     .expect("low-order X448 encapsulated key must fail");
-    assert_eq!(open_error, HpkeError::InvalidEncapsulatedKey);
+    assert_eq!(open_error, HpkeError::PRIMITIVE_MALFORMED_CIPHERTEXT);
 }
 
 #[test]
@@ -111,7 +111,7 @@ fn new_dhkems_reject_wrong_recipient_and_tampering() {
         })
         .err()
         .expect("wrong recipient key must fail");
-        assert_eq!(wrong_key_error, HpkeError::OpenFailed);
+        assert_eq!(wrong_key_error, HpkeError::PRIMITIVE_AUTHENTICATION_FAILED);
 
         let mut tampered = sealed.ciphertext;
         tampered[0] ^= 0x80;
@@ -125,6 +125,6 @@ fn new_dhkems_reject_wrong_recipient_and_tampering() {
         })
         .err()
         .expect("tampered ciphertext must fail");
-        assert_eq!(tamper_error, HpkeError::OpenFailed);
+        assert_eq!(tamper_error, HpkeError::PRIMITIVE_AUTHENTICATION_FAILED);
     }
 }

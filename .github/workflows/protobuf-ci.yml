@@ -23,6 +23,9 @@ on:
       - "scripts/workflow_gate_policy.mjs"
       - "scripts/release-readiness/core.mjs"
       - "scripts/redact_crypto_proto_debug.mjs"
+      - "scripts/generate_error_contract.mjs"
+      - "scripts/generate_error_contract.test.mjs"
+      - "scripts/proto_hardening.test.mjs"
   push:
     branches:
       - main
@@ -41,6 +44,9 @@ on:
       - "scripts/workflow_gate_policy.mjs"
       - "scripts/release-readiness/core.mjs"
       - "scripts/redact_crypto_proto_debug.mjs"
+      - "scripts/generate_error_contract.mjs"
+      - "scripts/generate_error_contract.test.mjs"
+      - "scripts/proto_hardening.test.mjs"
 
 permissions:
   contents: read
@@ -102,6 +108,7 @@ jobs:
         run: buf breaking --against '.git#ref=e57caf7a035c1ffe33aad0038d603b793a69b28a,subdir=crates/proto/proto'
 
       # The all-feature Rust suite owns immutable selectors and wire goldens.
-      # This lane owns reproducible generation and committed-byte freshness.
+      # This lane owns reproducible generation, the shared error contract, and
+      # committed-byte freshness through one maintenance pipeline.
       - name: Check release readiness generated freshness
         run: node scripts/run_pinned_release_readiness.mjs --generated-freshness

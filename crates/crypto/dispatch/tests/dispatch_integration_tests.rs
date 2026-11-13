@@ -45,12 +45,12 @@ fn compressed_sec1_multikeys_reject_off_curve_points() {
         off_curve[0] = 0x02;
         assert!(matches!(
             public_key_to_multikey(algorithm, &off_curve),
-            Err(crypto_dispatch::AlgorithmError::InvalidKey(found)) if found == algorithm
+            Err(crypto_dispatch::AlgorithmError::PRIMITIVE_INVALID_KEY)
         ));
         let encoded = encode_multikey(codec, &off_curve).expect("valid multikey envelope");
         assert!(matches!(
             validate_verification_method_multikey(algorithm, "Multikey", &encoded),
-            Err(crypto_dispatch::AlgorithmError::InvalidKey(found)) if found == algorithm
+            Err(crypto_dispatch::AlgorithmError::PRIMITIVE_INVALID_KEY)
         ));
     }
 }
@@ -123,7 +123,7 @@ fn signing_rejects_non_signing_algorithms() {
         assert!(
             matches!(
                 sign(alg, &sk, msg),
-                Err(AlgorithmError::UnsupportedAlgorithm(found)) if found == alg
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             ),
             "{alg:?} should not sign"
         );
@@ -164,7 +164,7 @@ fn dh_rejects_non_key_agreement_algorithms() {
 
     assert!(matches!(
         derive_shared_secret(Algorithm::Ed25519, &sk, &pk),
-        Err(AlgorithmError::UnsupportedAlgorithm(Algorithm::Ed25519))
+        Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
     ));
 }
 
@@ -195,7 +195,7 @@ fn kem_rejects_non_kem_algorithms() {
     let (pk, _sk) = generate_keypair(Algorithm::Ed25519).unwrap();
     assert!(matches!(
         kem_encapsulate(Algorithm::Ed25519, &pk),
-        Err(AlgorithmError::UnsupportedAlgorithm(Algorithm::Ed25519))
+        Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
     ));
 }
 
@@ -234,7 +234,7 @@ fn multikey_validation_rejects_algorithm_mismatch() {
 
     assert!(matches!(
         validate_verification_method_multikey(Algorithm::X25519, "Multikey", &mk),
-        Err(AlgorithmError::InvalidKey(Algorithm::X25519))
+        Err(AlgorithmError::PRIMITIVE_INVALID_KEY)
     ));
 }
 
@@ -245,7 +245,7 @@ fn multikey_validation_rejects_bad_binding() {
 
     assert!(matches!(
         validate_verification_method_multikey(Algorithm::Ed25519, "SomeOtherBinding", &mk),
-        Err(AlgorithmError::InvalidKey(Algorithm::Ed25519))
+        Err(AlgorithmError::PRIMITIVE_INVALID_KEY)
     ));
 }
 

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, HkdfFailureKind, HkdfHash};
+use crypto_core::{CryptoError, HkdfHash};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Selects the hash function backing an HKDF operation.
@@ -71,10 +71,7 @@ impl DomainTag {
     /// ASCII letters, digits, and `/`, `_`, or `-`; otherwise returns an error.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.is_empty() || input.len() > 48 {
-            return Err(CryptoError::Hkdf {
-                hash: HkdfHash::Sha3_256,
-                kind: HkdfFailureKind::InvalidDomainTagLength,
-            });
+            return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
         }
 
         for byte in input {
@@ -82,10 +79,7 @@ impl DomainTag {
             let is_digit = byte.is_ascii_digit();
             let is_punctuation = matches!(*byte, b'/' | b'_' | b'-');
             if !(is_lower_alpha || is_digit || is_punctuation) {
-                return Err(CryptoError::Hkdf {
-                    hash: HkdfHash::Sha3_256,
-                    kind: HkdfFailureKind::InvalidDomainTagByte,
-                });
+                return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_ENCODING);
             }
         }
 

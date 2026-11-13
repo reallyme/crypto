@@ -184,7 +184,7 @@ pub(crate) fn require_provider(
     if decision.is_selected() {
         Ok(decision)
     } else {
-        Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+        Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }
 

@@ -11,18 +11,19 @@ const PUBLIC_KEY_LENGTH: usize = 32;
 
 /// Reject encodings that cannot identify a usable strict Ed25519 verifier key.
 pub fn validate_public_key_identity(public_key: &[u8]) -> Result<(), CryptoError> {
-    let encoded: &[u8; PUBLIC_KEY_LENGTH] =
-        public_key.try_into().map_err(|_| CryptoError::InvalidKey)?;
+    let encoded: &[u8; PUBLIC_KEY_LENGTH] = public_key
+        .try_into()
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     let point = CompressedEdwardsY(*encoded)
         .decompress()
-        .ok_or(CryptoError::InvalidKey)?;
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?;
     // Decompression alone may admit a second byte string for the same point.
     // Identity envelopes must name one prime-subgroup point exactly once.
     if !is_canonical_point_encoding(&point, encoded)
         || !point.is_torsion_free()
         || point.is_small_order()
     {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
     Ok(())
 }

@@ -58,8 +58,14 @@ fn identity_encoding_rejects_noncanonical_field_elements() {
     let mut above_prime = prime;
     above_prime[0] = 0xee;
     for invalid in [prime, above_prime, high_bit] {
-        assert_eq!(encode_public_key(&invalid), Err(CryptoError::InvalidKey));
-        assert_eq!(decode_public_key(&invalid), Err(CryptoError::InvalidKey));
+        assert_eq!(
+            encode_public_key(&invalid),
+            Err(CryptoError::PRIMITIVE_INVALID_KEY)
+        );
+        assert_eq!(
+            decode_public_key(&invalid),
+            Err(CryptoError::PRIMITIVE_INVALID_KEY)
+        );
     }
 }
 
@@ -94,8 +100,14 @@ fn agreement_accepts_rfc7748_u_coordinate_aliases_without_accepting_them_as_iden
     let expected = derive_x25519_shared_secret(&secret_key, &base_point)?;
     for alias in [high_bit_alias, field_alias] {
         assert_eq!(derive_x25519_shared_secret(&secret_key, &alias)?, expected);
-        assert_eq!(encode_public_key(&alias), Err(CryptoError::InvalidKey));
-        assert_eq!(decode_public_key(&alias), Err(CryptoError::InvalidKey));
+        assert_eq!(
+            encode_public_key(&alias),
+            Err(CryptoError::PRIMITIVE_INVALID_KEY)
+        );
+        assert_eq!(
+            decode_public_key(&alias),
+            Err(CryptoError::PRIMITIVE_INVALID_KEY)
+        );
     }
     Ok(())
 }

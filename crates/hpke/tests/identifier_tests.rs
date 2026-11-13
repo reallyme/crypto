@@ -84,11 +84,17 @@ fn every_exposed_identifier_roundtrips_from_its_wire_value() {
 
 #[test]
 fn unknown_identifiers_fail_with_component_specific_errors() {
-    assert_eq!(HpkeKemId::try_from(0x0000), Err(HpkeError::UnsupportedKem));
-    assert_eq!(HpkeKdfId::try_from(0x0000), Err(HpkeError::UnsupportedKdf));
+    assert_eq!(
+        HpkeKemId::try_from(0x0000),
+        Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    );
+    assert_eq!(
+        HpkeKdfId::try_from(0x0000),
+        Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    );
     assert_eq!(
         HpkeAeadId::try_from(0x0000),
-        Err(HpkeError::UnsupportedAead)
+        Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM)
     );
 }
 
@@ -174,7 +180,10 @@ fn registered_but_unavailable_kems_remain_typed() {
         HpkeKemId::X25519Kyber768Draft00,
     ] {
         let suite = HpkeSuite::new(kem, HpkeKdfId::Shake256, HpkeAeadId::Aes256Gcm);
-        assert_eq!(suite.public_key_len(), Err(HpkeError::UnsupportedKem));
+        assert_eq!(
+            suite.public_key_len(),
+            Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM)
+        );
     }
 }
 
@@ -245,6 +254,9 @@ fn registered_but_unavailable_kdfs_fail_with_typed_error() {
         HpkeKdfId::TurboShake256,
     ] {
         let suite = HpkeSuite::new(HpkeKemId::MlKem1024, kdf, HpkeAeadId::Aes256Gcm);
-        assert_eq!(suite.public_key_len(), Err(HpkeError::UnsupportedKdf));
+        assert_eq!(
+            suite.public_key_len(),
+            Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM)
+        );
     }
 }

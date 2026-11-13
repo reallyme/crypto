@@ -2,22 +2,17 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::KeyWrapAlgorithm;
+use crypto_core::{CryptoError, KeyWrapAlgorithm};
 use crypto_runtime::aes_kw::{
     AesKwKeyData, AesKwWrappedKey, AES_128_KW_KEK_LENGTH, AES_192_KW_KEK_LENGTH,
     AES_256_KW_KEK_LENGTH, AES_KW_INTEGRITY_CHECK_LENGTH, AES_KW_MAX_KEY_DATA_LENGTH,
-};
-use crypto_runtime::operations::{
-    BackendErrorReason, OperationError, PrimitiveErrorReason, ProviderErrorReason,
 };
 use js_sys::Uint8Array;
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
 use zeroize::Zeroizing;
 
-use crate::map_error::{
-    authentication_failed, invalid_input, provider_failure, unsupported_algorithm,
-};
+use crate::map_error::{invalid_input, map_crypto_error};
 use crate::validate_bytes::{copy_bounded, copy_exact};
 
 #[wasm_bindgen(js_name = aes128KwWrapKey)]
@@ -81,11 +76,11 @@ fn wrap(
     kek: &Uint8Array,
     key_data: &Uint8Array,
     kek_length: usize,
-    operation: impl FnOnce(&[u8], &[u8]) -> Result<AesKwWrappedKey, OperationError>,
+    operation: impl FnOnce(&[u8], &[u8]) -> Result<AesKwWrappedKey, CryptoError>,
 ) -> Result<Uint8Array, JsValue> {
     let kek_bytes = Zeroizing::new(copy_exact(kek, kek_length)?);
     let key_data_bytes = Zeroizing::new(copy_bounded(key_data, AES_KW_MAX_KEY_DATA_LENGTH)?);
-    let wrapped_key = operation(&kek_bytes, &key_data_bytes).map_err(map_key_wrap_error)?;
+    let wrapped_key = operation(&kek_bytes, &key_data_bytes).map_err(map_crypto_error)?;
     Ok(Uint8Array::from(wrapped_key.as_bytes()))
 }
 
@@ -93,35 +88,13 @@ fn unwrap(
     kek: &Uint8Array,
     wrapped_key: &Uint8Array,
     kek_length: usize,
-    operation: impl FnOnce(&[u8], &[u8]) -> Result<AesKwKeyData, OperationError>,
+    operation: impl FnOnce(&[u8], &[u8]) -> Result<AesKwKeyData, CryptoError>,
 ) -> Result<Uint8Array, JsValue> {
     let kek_bytes = Zeroizing::new(copy_exact(kek, kek_length)?);
     let maximum_wrapped_length = AES_KW_MAX_KEY_DATA_LENGTH
         .checked_add(AES_KW_INTEGRITY_CHECK_LENGTH)
         .ok_or_else(invalid_input)?;
     let wrapped_key_bytes = Zeroizing::new(copy_bounded(wrapped_key, maximum_wrapped_length)?);
-    let key_data = operation(&kek_bytes, &wrapped_key_bytes).map_err(map_key_wrap_error)?;
+    let key_data = operation(&kek_bytes, &wrapped_key_bytes).map_err(map_crypto_error)?;
     Ok(Uint8Array::from(key_data.as_bytes()))
-}
-
-fn map_key_wrap_error(error: OperationError) -> JsValue {
-    match error {
-        OperationError::Primitive {
-            reason:
-                PrimitiveErrorReason::InvalidKey
-                | PrimitiveErrorReason::InvalidLength
-                | PrimitiveErrorReason::LengthOverflow,
-        } => invalid_input(),
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed,
-        } => authentication_failed(),
-        OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        } => unsupported_algorithm(),
-        OperationError::Primitive { .. }
-        | OperationError::Backend {
-            reason: BackendErrorReason::Internal | BackendErrorReason::InvalidOutput,
-        } => provider_failure(),
-        _ => provider_failure(),
-    }
 }

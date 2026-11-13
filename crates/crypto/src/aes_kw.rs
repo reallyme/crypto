@@ -4,7 +4,7 @@
 
 //! AES-KW facade routes backed by the semantic key-wrap operation owner.
 
-use crypto_core::{CryptoError, KeyWrapAlgorithm, KeyWrapFailureKind, KeyWrapOperation};
+use crypto_core::{CryptoError, KeyWrapAlgorithm, KeyWrapOperation};
 
 pub use crypto_aes_kw::{
     Aes128KwKek, Aes192KwKek, Aes256KwKek, AesKwKeyData, AesKwWrappedKey, AES_128_KW_KEK_LENGTH,
@@ -83,36 +83,9 @@ fn unwrap_with(
 }
 
 fn crypto_error_from_operation_error(
-    algorithm: KeyWrapAlgorithm,
-    operation: KeyWrapOperation,
+    _algorithm: KeyWrapAlgorithm,
+    _operation: KeyWrapOperation,
     error: crate::operations::OperationError,
 ) -> CryptoError {
-    let kind = match error {
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::InvalidKey,
-        } => KeyWrapFailureKind::InvalidKekLength,
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::InvalidLength,
-        } => match operation {
-            KeyWrapOperation::Wrap => KeyWrapFailureKind::InvalidPlaintextLength,
-            KeyWrapOperation::Unwrap => KeyWrapFailureKind::InvalidWrappedLength,
-            _ => KeyWrapFailureKind::BackendFailure,
-        },
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::LengthOverflow,
-        } => KeyWrapFailureKind::LengthOverflow,
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::VerificationFailed,
-        } => KeyWrapFailureKind::IntegrityCheckFailed,
-        crate::operations::OperationError::Provider {
-            reason: crate::operations::ProviderErrorReason::UnsupportedAlgorithm,
-        } => return CryptoError::Unsupported,
-        _ => KeyWrapFailureKind::BackendFailure,
-    };
-
-    CryptoError::KeyWrap {
-        algorithm,
-        operation,
-        kind,
-    }
+    error
 }

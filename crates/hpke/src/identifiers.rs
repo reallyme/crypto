@@ -142,7 +142,7 @@ impl TryFrom<u16> for HpkeKemId {
             HPKE_KEM_ML_KEM_768_P256 => Ok(Self::MlKem768P256),
             HPKE_KEM_ML_KEM_1024_P384 => Ok(Self::MlKem1024P384),
             HPKE_KEM_X_WING => Ok(Self::XWing),
-            _ => Err(HpkeError::UnsupportedKem),
+            _ => Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM),
         }
     }
 }
@@ -204,7 +204,7 @@ impl TryFrom<u16> for HpkeKdfId {
             HPKE_KDF_SHAKE256 => Ok(Self::Shake256),
             HPKE_KDF_TURBO_SHAKE128 => Ok(Self::TurboShake128),
             HPKE_KDF_TURBO_SHAKE256 => Ok(Self::TurboShake256),
-            _ => Err(HpkeError::UnsupportedKdf),
+            _ => Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM),
         }
     }
 }
@@ -295,7 +295,7 @@ impl TryFrom<u16> for HpkeAeadId {
             HPKE_AEAD_AES_256_GCM => Ok(Self::Aes256Gcm),
             HPKE_AEAD_CHACHA20_POLY1305 => Ok(Self::ChaCha20Poly1305),
             HPKE_AEAD_EXPORT_ONLY => Ok(Self::ExportOnly),
-            _ => Err(HpkeError::UnsupportedAead),
+            _ => Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM),
         }
     }
 }

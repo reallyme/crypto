@@ -13,6 +13,4 @@
 
 mod hash;
 
-pub use hash::{
-    hash_bytes, Poseidon2Digest, Poseidon2Error, Poseidon2ErrorReason, MAX_INPUT_BYTES,
-};
+pub use hash::{hash_bytes, Poseidon2Digest, Poseidon2Error, MAX_INPUT_BYTES};

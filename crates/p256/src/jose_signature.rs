@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 
 /// Length in bytes of an ES256 JOSE signature (`r || s`).
 pub const P256_ECDSA_JOSE_SIGNATURE_LEN: usize = 64;
@@ -41,11 +41,7 @@ pub fn p256_ecdsa_jose_signature_to_der(raw: &[u8]) -> Result<Vec<u8>, CryptoErr
 }
 
 pub(crate) fn signature_encoding_error() -> CryptoError {
-    CryptoError::Signature {
-        backend: SignatureBackend::Native,
-        operation: SignatureOperation::Verify,
-        kind: SignatureFailureKind::InvalidSignature,
-    }
+    crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE
 }
 
 fn strip_leading_zero(mut bytes: &[u8]) -> &[u8] {

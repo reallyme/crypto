@@ -4,7 +4,7 @@
 
 // verify.rs
 
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 use ecdsa::signature::hazmat::PrehashVerifier;
 use p256::ecdsa::{Signature, VerifyingKey};
 use p256::PublicKey;
@@ -21,16 +21,14 @@ pub fn verify_p256_sha256_message_der_interoperable(
     message: &[u8],
     public_key_sec1: &[u8],
 ) -> Result<(), CryptoError> {
-    let pk = PublicKey::from_sec1_bytes(public_key_sec1).map_err(|_| CryptoError::InvalidKey)?;
+    let pk = PublicKey::from_sec1_bytes(public_key_sec1)
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
 
     let vk = VerifyingKey::from(pk);
 
     let fixed = crate::p256_ecdsa_der_to_jose_signature(signature_der)?;
-    let sig = Signature::from_slice(&fixed).map_err(|_| CryptoError::Signature {
-        backend: crypto_core::SignatureBackend::Native,
-        operation: crypto_core::SignatureOperation::Verify,
-        kind: crypto_core::SignatureFailureKind::InvalidSignature,
-    })?;
+    let sig = Signature::from_slice(&fixed)
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
 
     // Note: P-256 / ES256 signatures are deliberately NOT constrained to
     // low-S here. Unlike secp256k1, the ES256 ecosystem (JOSE/JWT,
@@ -42,11 +40,7 @@ pub fn verify_p256_sha256_message_der_interoperable(
     if vk.verify_prehash(&Sha256::digest(message), &sig).is_ok() {
         Ok(())
     } else {
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })
+        Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     }
 }
 

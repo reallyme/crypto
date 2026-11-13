@@ -25,7 +25,10 @@ fn receiver_preserves_plaintext_length_validation() -> Result<(), HpkeError> {
         if length == 3 {
             assert_eq!(result?.plaintext.as_slice(), &[0xa5; 3]);
         } else {
-            assert!(matches!(result, Err(HpkeError::OpenFailed)));
+            assert!(matches!(
+                result,
+                Err(HpkeError::PRIMITIVE_AUTHENTICATION_FAILED)
+            ));
         }
     }
     Ok(())

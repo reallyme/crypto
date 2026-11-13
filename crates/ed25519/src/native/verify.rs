@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 use curve25519_dalek::edwards::CompressedEdwardsY;
 use ed25519_dalek::{Signature, VerifyingKey};
 
@@ -14,8 +14,9 @@ const ED25519_POINT_LENGTH: usize = 32;
 /// structurally invalid signatures return typed errors; well-formed signatures
 /// that do not verify fail closed with the same invalid-signature variant.
 pub fn verify_ed25519(public: &[u8], message: &[u8], signature: &[u8]) -> Result<(), CryptoError> {
-    let pubkey: &[u8; ED25519_POINT_LENGTH] =
-        public.try_into().map_err(|_| CryptoError::InvalidKey)?;
+    let pubkey: &[u8; ED25519_POINT_LENGTH] = public
+        .try_into()
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
 
     let public_point = CompressedEdwardsY(*pubkey)
         .decompress()
@@ -25,11 +26,9 @@ pub fn verify_ed25519(public: &[u8], message: &[u8], signature: &[u8]) -> Result
     }
     let vk = VerifyingKey::from_bytes(pubkey).map_err(|_| invalid_signature())?;
 
-    let sig_bytes: &[u8; 64] = signature.try_into().map_err(|_| CryptoError::Signature {
-        backend: crypto_core::SignatureBackend::Native,
-        operation: crypto_core::SignatureOperation::Verify,
-        kind: crypto_core::SignatureFailureKind::InvalidSignature,
-    })?;
+    let sig_bytes: &[u8; 64] = signature
+        .try_into()
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
 
     let sig = Signature::from_bytes(sig_bytes);
     let mut r_bytes = [0_u8; ED25519_POINT_LENGTH];
@@ -57,9 +56,5 @@ pub fn verify_ed25519(public: &[u8], message: &[u8], signature: &[u8]) -> Result
 }
 
 fn invalid_signature() -> CryptoError {
-    CryptoError::Signature {
-        backend: SignatureBackend::Native,
-        operation: SignatureOperation::Verify,
-        kind: SignatureFailureKind::InvalidSignature,
-    }
+    crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE
 }

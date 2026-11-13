@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use js_sys::{Object, Reflect, Uint8Array};
+use js_sys::{Object, Uint8Array};
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
 use zeroize::{Zeroize, Zeroizing};
 
 use crate::map_error::{invalid_input, map_crypto_error, provider_failure};
+use crate::set_bytes::set_bytes;
 use crate::validate_bytes::copy_exact;
 
 const ML_KEM_512_PUBLIC_KEY_LEN: usize = 800;
@@ -20,12 +21,6 @@ const ML_KEM_SECRET_KEY_LEN: usize = 64;
 #[cfg(feature = "test-vectors")]
 const ML_KEM_ENCAPS_RANDOMNESS_LEN: usize = 32;
 const ML_KEM_SHARED_SECRET_LEN: usize = 32;
-
-fn set_bytes(object: &Object, name: &str, bytes: &[u8]) -> Result<(), JsValue> {
-    Reflect::set(object, &JsValue::from_str(name), &Uint8Array::from(bytes))
-        .map_err(|_| provider_failure())?;
-    Ok(())
-}
 
 fn keypair_to_js(
     public_key: Vec<u8>,

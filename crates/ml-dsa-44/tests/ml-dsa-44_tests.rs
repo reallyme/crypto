@@ -11,7 +11,7 @@
 )]
 #![cfg(any(feature = "native", feature = "wasm"))]
 
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 use crypto_ml_dsa_44::{
     generate_ml_dsa_44_keypair, generate_ml_dsa_44_keypair_from_seed, sign_ml_dsa_44,
     verify_ml_dsa_44,
@@ -113,11 +113,7 @@ fn verification_fails_on_modified_message() {
     let tampered = b"original messagf";
     assert!(matches!(
         verify_ml_dsa_44(&pk, tampered, &sig),
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     ));
 }
 
@@ -131,11 +127,7 @@ fn verification_fails_on_modified_signature() {
 
     assert!(matches!(
         verify_ml_dsa_44(&pk, msg, &sig),
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     ));
 }
 
@@ -149,11 +141,7 @@ fn signature_does_not_verify_under_different_key() {
 
     assert!(matches!(
         verify_ml_dsa_44(&pk2, msg, &sig),
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     ));
 }
 
@@ -165,10 +153,10 @@ fn malformed_lengths_are_rejected() {
 
     assert!(matches!(
         sign_ml_dsa_44(&bad_sk, b"msg"),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
     assert!(matches!(
         verify_ml_dsa_44(&bad_pk, b"msg", &bad_sig),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
 }

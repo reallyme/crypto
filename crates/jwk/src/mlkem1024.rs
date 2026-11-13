@@ -29,8 +29,8 @@
 
 use crate::{JwkOptions, JwtError};
 
+use crate::canonicalize_jwk::canonicalize_jwk;
 use codec_base64url::bytes_to_base64url;
-use codec_jcs::canonicalize_trusted_json_value;
 
 use serde::Serialize;
 
@@ -66,7 +66,7 @@ pub fn mlkem1024_public_key_to_jwk(
     options: JwkOptions,
 ) -> Result<MlKem1024Jwk, JwtError> {
     if public_key.len() != 1568 {
-        return Err(JwtError::InvalidMlKem1024Key);
+        return Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY);
     }
 
     let mut jwk = MlKem1024Jwk {
@@ -91,7 +91,5 @@ pub fn mlkem1024_public_key_to_jwk_jcs(
 ) -> Result<String, JwtError> {
     let jwk = mlkem1024_public_key_to_jwk(public_key, options)?;
 
-    let value = serde_json::to_value(&jwk).map_err(|_| JwtError::EncodingError)?;
-
-    canonicalize_trusted_json_value(&value).map_err(|_| JwtError::EncodingError)
+    canonicalize_jwk(&jwk)
 }

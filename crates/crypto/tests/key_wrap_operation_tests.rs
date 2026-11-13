@@ -8,8 +8,8 @@
 
 //! Operation-owner tests for AES-KW routes.
 
-use crypto_core::{CryptoError, KeyWrapAlgorithm, KeyWrapFailureKind, KeyWrapOperation};
-use reallyme_crypto::operations::{OperationError, PrimitiveErrorReason};
+use crypto_core::{CryptoError, KeyWrapAlgorithm};
+use reallyme_crypto::operations::OperationError;
 
 struct KeyWrapCase {
     algorithm: KeyWrapAlgorithm,
@@ -110,25 +110,21 @@ fn key_wrap_operation_reports_stable_failure_reasons_for_malicious_inputs() {
 
         assert_eq!(
             reallyme_crypto::operations::key_wrap::wrap_key(case.algorithm, &[], &key_data),
-            Err(OperationError::Primitive {
-                reason: PrimitiveErrorReason::InvalidKey,
-            })
+            Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
         );
         assert_eq!(
             reallyme_crypto::operations::key_wrap::wrap_key(case.algorithm, &kek, &[0x11; 8]),
-            Err(OperationError::Primitive {
-                reason: PrimitiveErrorReason::InvalidLength,
-            })
+            Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
         );
         assert_operation_error(
             reallyme_crypto::operations::key_wrap::unwrap_key(case.algorithm, &kek, &[0x22; 8])
                 .err(),
-            PrimitiveErrorReason::InvalidLength,
+            CryptoError::PRIMITIVE_INVALID_LENGTH,
         );
         assert_operation_error(
             reallyme_crypto::operations::key_wrap::unwrap_key(case.algorithm, &kek, &tampered)
                 .err(),
-            PrimitiveErrorReason::VerificationFailed,
+            CryptoError::PRIMITIVE_AUTHENTICATION_FAILED,
         );
     }
 }
@@ -146,27 +142,15 @@ fn root_facades_preserve_historical_key_wrap_error_shapes() {
 
     assert!(matches!(
         reallyme_crypto::aes_kw::wrap_key(&typed_kek, &[0x11; 8]),
-        Err(CryptoError::KeyWrap {
-            operation: KeyWrapOperation::Wrap,
-            kind: KeyWrapFailureKind::InvalidPlaintextLength,
-            ..
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
     ));
     assert!(matches!(
         reallyme_crypto::aes_kw::unwrap_key(&typed_kek, &[0x22; 8]),
-        Err(CryptoError::KeyWrap {
-            operation: KeyWrapOperation::Unwrap,
-            kind: KeyWrapFailureKind::InvalidWrappedLength,
-            ..
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
     ));
     assert!(matches!(
         reallyme_crypto::aes_kw::unwrap_key(&typed_kek, &tampered),
-        Err(CryptoError::KeyWrap {
-            operation: KeyWrapOperation::Unwrap,
-            kind: KeyWrapFailureKind::IntegrityCheckFailed,
-            ..
-        })
+        Err(CryptoError::PRIMITIVE_AUTHENTICATION_FAILED)
     ));
 }
 
@@ -228,9 +212,7 @@ fn key_wrap_operation_enforces_minimum_maximum_and_oversized_lengths() {
                 &kek,
                 &oversized_plaintext,
             ),
-            Err(OperationError::Primitive {
-                reason: PrimitiveErrorReason::InvalidLength,
-            })
+            Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
         );
         assert_operation_error(
             reallyme_crypto::operations::key_wrap::unwrap_key(
@@ -239,7 +221,7 @@ fn key_wrap_operation_enforces_minimum_maximum_and_oversized_lengths() {
                 &oversized_wrapped,
             )
             .err(),
-            PrimitiveErrorReason::InvalidLength,
+            CryptoError::PRIMITIVE_INVALID_LENGTH,
         );
     }
 }
@@ -313,12 +295,8 @@ fn root_unwrap(
     }
 }
 
-fn assert_operation_error(error: Option<OperationError>, reason: PrimitiveErrorReason) {
-    assert_eq!(
-        error,
-        Some(OperationError::Primitive { reason }),
-        "unexpected key-wrap operation error"
-    );
+fn assert_operation_error(error: Option<OperationError>, reason: OperationError) {
+    assert_eq!(error, Some(reason), "unexpected key-wrap operation error");
 }
 
 fn bytes(len: usize, seed: u8) -> Vec<u8> {

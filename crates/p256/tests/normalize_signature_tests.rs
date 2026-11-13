@@ -102,13 +102,8 @@ fn normalized_twin_preserves_signature_validity() -> Result<(), CryptoError> {
     let digest = P256Sha256Digest::new(Sha256::digest(message).into());
     let low_der = sign_p256_sha256_digest_low_s_der(&secret, &digest)?;
     let mut high_raw = p256_ecdsa_der_to_jose_signature(&low_der)?;
-    let low_s = <&[u8; 32]>::try_from(&high_raw[32..]).map_err(|_| {
-        crypto_core::CryptoError::Signature {
-            backend: crypto_core::SignatureBackend::Native,
-            operation: crypto_core::SignatureOperation::Verify,
-            kind: crypto_core::SignatureFailureKind::InvalidSignature,
-        }
-    })?;
+    let low_s = <&[u8; 32]>::try_from(&high_raw[32..])
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
     let order = hex!("ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551");
     let mut high_s = [0u8; 32];
     let mut borrow = 0u16;
@@ -117,20 +112,11 @@ fn normalized_twin_preserves_signature_validity() -> Result<(), CryptoError> {
         let right = u16::from(low_s[index]) + borrow;
         if left >= right {
             high_s[index] =
-                u8::try_from(left - right).map_err(|_| crypto_core::CryptoError::Signature {
-                    backend: crypto_core::SignatureBackend::Native,
-                    operation: crypto_core::SignatureOperation::Verify,
-                    kind: crypto_core::SignatureFailureKind::InvalidSignature,
-                })?;
+                u8::try_from(left - right).map_err(|_| CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
             borrow = 0;
         } else {
-            high_s[index] = u8::try_from(256u16 + left - right).map_err(|_| {
-                crypto_core::CryptoError::Signature {
-                    backend: crypto_core::SignatureBackend::Native,
-                    operation: crypto_core::SignatureOperation::Verify,
-                    kind: crypto_core::SignatureFailureKind::InvalidSignature,
-                }
-            })?;
+            high_s[index] = u8::try_from(256u16 + left - right)
+                .map_err(|_| CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
             borrow = 1;
         }
     }

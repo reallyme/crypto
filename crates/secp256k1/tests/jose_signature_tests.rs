@@ -4,7 +4,7 @@
 
 //! JOSE ECDSA signature transcoding tests for secp256k1.
 
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 use crypto_secp256k1::{
     secp256k1_ecdsa_der_to_jose_signature, secp256k1_ecdsa_jose_signature_to_der,
     SECP256K1_ECDSA_JOSE_SIGNATURE_LEN,
@@ -44,11 +44,7 @@ fn scalar_with_last(last: u8) -> [u8; 32] {
 fn assert_invalid_signature<T>(result: Result<T, CryptoError>) {
     assert!(matches!(
         result,
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     ));
 }
 

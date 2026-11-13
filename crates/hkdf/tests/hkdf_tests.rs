@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #![allow(missing_docs)]
-use crypto_core::{CryptoError, HkdfFailureKind, HkdfHash};
+use crypto_core::CryptoError;
 use crypto_hkdf::{
     derive, DeriveRequest, DomainTag, HkdfInfo, HkdfInputKeyMaterial, HkdfSalt, HkdfSuite,
 };
@@ -257,7 +257,10 @@ fn sha3_suite_is_explicitly_unsupported_without_sha3_feature() {
         info: &info,
     });
 
-    assert!(matches!(result, Err(CryptoError::Unsupported)));
+    assert!(matches!(
+        result,
+        Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    ));
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -273,13 +276,7 @@ fn reject_zero_output_length() {
         info: &info,
     });
 
-    assert!(matches!(
-        result,
-        Err(CryptoError::Hkdf {
-            hash: HkdfHash::Sha2_256,
-            kind: HkdfFailureKind::InvalidOutputLength,
-        })
-    ));
+    assert!(matches!(result, Err(CryptoError::PRIMITIVE_INVALID_LENGTH)));
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -295,13 +292,7 @@ fn reject_empty_ikm() {
         info: &info,
     });
 
-    assert!(matches!(
-        result,
-        Err(CryptoError::Hkdf {
-            hash: HkdfHash::Sha2_256,
-            kind: HkdfFailureKind::InvalidIkmLength,
-        })
-    ));
+    assert!(matches!(result, Err(CryptoError::PRIMITIVE_INVALID_KEY)));
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -317,13 +308,7 @@ fn reject_output_length_above_hkdf_limit() {
         info: &info,
     });
 
-    assert!(matches!(
-        result,
-        Err(CryptoError::Hkdf {
-            hash: HkdfHash::Sha2_256,
-            kind: HkdfFailureKind::ExpandFailed,
-        })
-    ));
+    assert!(matches!(result, Err(CryptoError::BACKEND_INTERNAL)));
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -332,19 +317,13 @@ fn domain_tag_validation_rejects_invalid_tags() {
     let too_long = DomainTag::from_slice(&[b'a'; 49]);
     assert!(matches!(
         too_long,
-        Err(CryptoError::Hkdf {
-            hash: HkdfHash::Sha3_256,
-            kind: HkdfFailureKind::InvalidDomainTagLength,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
     ));
 
     let invalid_char = DomainTag::from_slice(b"crypto/Key");
     assert!(matches!(
         invalid_char,
-        Err(CryptoError::Hkdf {
-            hash: HkdfHash::Sha3_256,
-            kind: HkdfFailureKind::InvalidDomainTagByte,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_ENCODING)
     ));
 }
 

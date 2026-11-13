@@ -22,12 +22,16 @@ pub fn derive_x25519_shared_secret(
     public_key: &[u8],
 ) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
     if secret_key.len() != 32 || public_key.len() != 32 {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
 
-    let mut sk_bytes: [u8; 32] = secret_key.try_into().map_err(|_| CryptoError::InvalidKey)?;
+    let mut sk_bytes: [u8; 32] = secret_key
+        .try_into()
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
 
-    let pk_bytes: [u8; 32] = public_key.try_into().map_err(|_| CryptoError::InvalidKey)?;
+    let pk_bytes: [u8; 32] = public_key
+        .try_into()
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
 
     let sk = StaticSecret::from(sk_bytes);
     // Wipe the stack copy of the secret scalar; `StaticSecret` owns its own
@@ -37,9 +41,7 @@ pub fn derive_x25519_shared_secret(
 
     let shared = sk.diffie_hellman(&pk);
     if !shared.was_contributory() {
-        return Err(CryptoError::KeyAgreementFailure {
-            kind: crypto_core::KeyAgreementFailureKind::DeriveSharedSecretFailed,
-        });
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SHARED_SECRET);
     }
     Ok(Zeroizing::new(shared.as_bytes().to_vec()))
 }

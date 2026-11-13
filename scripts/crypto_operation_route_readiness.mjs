@@ -1363,7 +1363,7 @@ export const assertBip340SemanticOwnership = ({
     "wasm_lane_uses_package_owned_rust_bip340",
     "verify_bip340_schnorr(&signature, &MESSAGE32, &public_key).unwrap()",
     "verify_bip340_schnorr(&signature, &[0x24; 32], &public_key)",
-    "SignatureFailureKind::InvalidSignature",
+    "CryptoError::PRIMITIVE_INVALID_SIGNATURE",
   ]) {
     if (!wasmBoundaryTests.includes(required)) {
       fail("BIP-340 must regression-test package-owned WASM BIP-340 behavior");

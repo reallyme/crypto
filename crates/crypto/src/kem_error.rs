@@ -9,73 +9,24 @@
     feature = "x-wing"
 ))]
 
-use crypto_core::{CryptoError, KemFailureKind, KeyAgreementFailureKind};
+use crypto_core::CryptoError;
 
-use crate::operations::{OperationError, PrimitiveErrorReason, ProviderErrorReason};
+use crate::operations::OperationError;
 
 pub(crate) fn crypto_error_from_kem_key_generation_operation_error(
     error: OperationError,
 ) -> CryptoError {
-    match error {
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey,
-        } => CryptoError::InvalidKey,
-        OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        } => CryptoError::Unsupported,
-        OperationError::Backend { .. }
-        | OperationError::Provider { .. }
-        | OperationError::Primitive { .. } => kem_failed(KemFailureKind::KeyGenerationFailed),
-    }
+    error
 }
 
 pub(crate) fn crypto_error_from_kem_encapsulation_operation_error(
     error: OperationError,
 ) -> CryptoError {
-    match error {
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey,
-        } => CryptoError::InvalidKey,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidSharedSecret,
-        } => key_agreement_failed(),
-        OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        } => CryptoError::Unsupported,
-        OperationError::Backend { .. }
-        | OperationError::Provider { .. }
-        | OperationError::Primitive { .. } => kem_failed(KemFailureKind::EncapsulateFailed),
-    }
+    error
 }
 
 pub(crate) fn crypto_error_from_kem_decapsulation_operation_error(
     error: OperationError,
 ) -> CryptoError {
-    match error {
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey,
-        } => CryptoError::InvalidKey,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidLength,
-        }
-        | OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed,
-        } => kem_failed(KemFailureKind::DecapsulateFailed),
-        OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        } => CryptoError::Unsupported,
-        OperationError::Backend { .. }
-        | OperationError::Provider { .. }
-        | OperationError::Primitive { .. } => kem_failed(KemFailureKind::DecapsulateFailed),
-    }
-}
-
-fn kem_failed(kind: KemFailureKind) -> CryptoError {
-    CryptoError::KemFailure { kind }
-}
-
-fn key_agreement_failed() -> CryptoError {
-    CryptoError::KeyAgreementFailure {
-        kind: KeyAgreementFailureKind::DeriveSharedSecretFailed,
-    }
+    error
 }

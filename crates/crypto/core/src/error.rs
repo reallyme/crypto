@@ -21,4 +21,4 @@ pub use self::signature::{
     KemFailureKind, KeyAgreementFailureKind, SignatureBackend, SignatureFailureKind,
     SignatureOperation,
 };
-pub use self::taxonomy::CryptoError;
+pub use self::taxonomy::{CryptoError, CryptoErrorBranch, CryptoErrorReason};

@@ -14,11 +14,11 @@ use k256::PublicKey;
 /// [`decompress_secp256k1_public_key`] or a signing/verification operation.
 pub fn assert_secp256k1_public_key(pubkey: &[u8]) -> Result<&[u8], CryptoError> {
     if pubkey.len() != 33 {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
     match pubkey[0] {
         0x02 | 0x03 => Ok(pubkey),
-        _ => Err(CryptoError::InvalidKey),
+        _ => Err(CryptoError::PRIMITIVE_INVALID_KEY),
     }
 }
 
@@ -43,7 +43,8 @@ pub fn decode_secp256k1_public_key(pubkey: &[u8]) -> Result<Vec<u8>, CryptoError
 pub fn decompress_secp256k1_public_key(
     pubkey_compressed: &[u8],
 ) -> Result<(Vec<u8>, Vec<u8>), CryptoError> {
-    let pk = PublicKey::from_sec1_bytes(pubkey_compressed).map_err(|_| CryptoError::InvalidKey)?;
+    let pk = PublicKey::from_sec1_bytes(pubkey_compressed)
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     let uncompressed = pk.to_sec1_point(false);
     let bytes = uncompressed.as_bytes();
 

@@ -140,13 +140,13 @@ impl HpkeSenderContext {
         let expected_length = plaintext
             .len()
             .checked_add(self.authentication_tag_len)
-            .ok_or(HpkeError::LengthOverflow)?;
+            .ok_or(HpkeError::PRIMITIVE_INVALID_LENGTH)?;
         let ciphertext = self
             .backend
             .seal(aad, plaintext)
             .map_err(map_context_seal_error)?;
         if ciphertext.len() != expected_length {
-            return Err(HpkeError::SealFailed);
+            return Err(HpkeError::BACKEND_INTERNAL);
         }
         Ok(ciphertext)
     }
@@ -161,7 +161,8 @@ pub fn setup_sender_psk(
 ) -> Result<HpkePskSenderSetupOutput, HpkeError> {
     let randomness_length = request.suite.encapsulation_randomness_len()?;
     let mut randomness = Zeroizing::new(vec![0_u8; randomness_length]);
-    getrandom::fill(randomness.as_mut_slice()).map_err(|_| HpkeError::RandomnessUnavailable)?;
+    getrandom::fill(randomness.as_mut_slice())
+        .map_err(|_| HpkeError::PROVIDER_RANDOMNESS_UNAVAILABLE)?;
     setup_sender_psk_with_randomness(request, randomness.as_slice())
 }
 
@@ -193,7 +194,7 @@ pub(crate) fn setup_sender_psk_with_randomness(
     )?;
     validate_key_schedule_inputs(request.suite.kdf, request.info, request.psk_id.as_slice())?;
     if randomness.len() != kem_parameters(request.suite.kem)?.encapsulation_randomness_len {
-        return Err(HpkeError::InvalidRandomness);
+        return Err(HpkeError::PRIMITIVE_INVALID_PARAMETER);
     }
 
     dispatch_kem!(request.suite.kem, setup_for_kem, request, randomness)
@@ -244,9 +245,9 @@ where
 {
     let recipient_public_key =
         <Kem::PublicKey as Deserializable>::from_bytes(request.recipient_public_key)
-            .map_err(|_| HpkeError::InvalidPublicKey)?;
+            .map_err(|_| HpkeError::PRIMITIVE_INVALID_PUBLIC_KEY)?;
     let psk_bundle = PskBundle::new(request.psk.as_slice(), request.psk_id.as_slice())
-        .map_err(|_| HpkeError::InvalidPsk)?;
+        .map_err(|_| HpkeError::PRIMITIVE_INVALID_PARAMETER)?;
     let operation_mode = OpModeS::Psk(psk_bundle);
     let mut rng = FixedRandomness::new(randomness);
     let (encapsulated_key, context) = hpke::setup_sender_with_rng::<Aead, Kdf, Kem>(
@@ -258,11 +259,11 @@ where
     .map_err(map_setup_error)?;
 
     if !rng.was_consumed_exactly() {
-        return Err(HpkeError::InvalidRandomness);
+        return Err(HpkeError::PRIMITIVE_INVALID_PARAMETER);
     }
     let encapsulated_key = encapsulated_key.to_bytes().as_slice().to_vec();
     if encapsulated_key.len() != kem_parameters(request.suite.kem)?.encapsulated_key_len {
-        return Err(HpkeError::SealFailed);
+        return Err(HpkeError::BACKEND_INTERNAL);
     }
 
     Ok(HpkePskSenderSetupOutput {
@@ -282,15 +283,15 @@ where
 fn map_setup_error(error: hpke::HpkeError) -> HpkeError {
     match error {
         hpke::HpkeError::ValidationError | hpke::HpkeError::IncorrectInputLength(_, _) => {
-            HpkeError::InvalidPublicKey
+            HpkeError::PRIMITIVE_INVALID_PUBLIC_KEY
         }
-        hpke::HpkeError::InvalidPskBundle => HpkeError::InvalidPsk,
+        hpke::HpkeError::InvalidPskBundle => HpkeError::PRIMITIVE_INVALID_PARAMETER,
         hpke::HpkeError::EncapError
         | hpke::HpkeError::DecapError
         | hpke::HpkeError::KdfOutputTooLong
         | hpke::HpkeError::MessageLimitReached
         | hpke::HpkeError::OpenError
-        | hpke::HpkeError::SealError => HpkeError::SealFailed,
+        | hpke::HpkeError::SealError => HpkeError::BACKEND_INTERNAL,
     }
 }
 
@@ -304,6 +305,6 @@ fn map_context_seal_error(error: hpke::HpkeError) -> HpkeError {
         | hpke::HpkeError::KdfOutputTooLong
         | hpke::HpkeError::MessageLimitReached
         | hpke::HpkeError::OpenError
-        | hpke::HpkeError::SealError => HpkeError::SealFailed,
+        | hpke::HpkeError::SealError => HpkeError::BACKEND_INTERNAL,
     }
 }

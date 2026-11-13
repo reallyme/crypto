@@ -16,16 +16,17 @@ const FIELD_PRIME_LE: [u8; X25519_PUBLIC_KEY_LEN] = [
 
 /// Validate that a value is a 32-byte X25519 public key.
 pub fn assert_public_key(pubkey: &[u8]) -> Result<&[u8], CryptoError> {
-    let encoded: &[u8; X25519_PUBLIC_KEY_LEN] =
-        pubkey.try_into().map_err(|_| CryptoError::InvalidKey)?;
+    let encoded: &[u8; X25519_PUBLIC_KEY_LEN] = pubkey
+        .try_into()
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     for index in (0..X25519_PUBLIC_KEY_LEN).rev() {
         match encoded[index].cmp(&FIELD_PRIME_LE[index]) {
             core::cmp::Ordering::Less => return Ok(pubkey),
-            core::cmp::Ordering::Greater => return Err(CryptoError::InvalidKey),
+            core::cmp::Ordering::Greater => return Err(CryptoError::PRIMITIVE_INVALID_KEY),
             core::cmp::Ordering::Equal => {}
         }
     }
-    Err(CryptoError::InvalidKey)
+    Err(CryptoError::PRIMITIVE_INVALID_KEY)
 }
 
 /// Identity encoder.

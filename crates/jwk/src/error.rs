@@ -2,80 +2,22 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! Typed errors for JWK encoding.
+//! Canonical, data-free errors for public JWK operations.
 
-use thiserror::Error;
+/// Canonical crypto error returned by JWK validation and encoding.
+pub use crypto_core::CryptoError as JwtError;
 
-/// Errors returned while encoding public keys as JWKs.
-#[derive(Debug, Error, PartialEq, Eq, Clone, Copy)]
-#[non_exhaustive]
-pub enum JwtError {
-    /// The JWK envelope is malformed or exceeds its structural limits.
-    #[error("invalid JWK envelope")]
-    InvalidEnvelope,
-    /// A JSON member occurs more than once and is therefore ambiguous.
-    #[error("duplicate JWK member")]
-    DuplicateMember,
-    /// A private-key member was supplied to the public-only envelope parser.
-    #[error("private JWK material is not accepted")]
-    PrivateKeyMaterial,
-    /// A non-extension member is not part of the selected JWK shape.
-    #[error("unknown JWK member")]
-    UnknownMember,
-    /// The ML-DSA-44 public key length is invalid.
-    #[error("invalid ML-DSA-44 public key")]
-    InvalidMlDsa44Key,
-    /// The ML-DSA-65 public key length is invalid.
-    #[error("invalid ML-DSA-65 public key")]
-    InvalidMlDsa65Key,
-    /// The P-256 public key is malformed or has an invalid length.
-    #[error("invalid P-256 public key")]
-    InvalidP256Key,
-
-    /// The secp256k1 public key is malformed or has an invalid length.
-    #[error("invalid secp256k1 public key")]
-    InvalidSecp256k1Key,
-
-    /// The Ed25519 public key length is invalid.
-    #[error("invalid Ed25519 public key")]
-    InvalidEd25519Key,
-
-    /// The X25519 public key length is invalid.
-    #[error("invalid X25519 public key")]
-    InvalidX25519Key,
-
-    /// The ML-DSA-87 public key length is invalid.
-    #[error("invalid ML-DSA-87 public key")]
-    InvalidMlDsa87Key,
-
-    /// The ML-KEM-512 public key length is invalid.
-    #[error("invalid ML-KEM-512 public key")]
-    InvalidMlKem512Key,
-    /// The ML-KEM-768 public key length is invalid.
-    #[error("invalid ML-KEM-768 public key")]
-    InvalidMlKem768Key,
-
-    /// The ML-KEM-1024 public key length is invalid.
-    #[error("invalid ML-KEM-1024 public key")]
-    InvalidMlKem1024Key,
-
-    /// The SLH-DSA-SHA2-128s public key length is invalid.
-    #[error("invalid SLH-DSA-SHA2-128s public key")]
-    InvalidSlhDsaSha2128sKey,
-
-    /// The X-Wing-768 public key length is invalid.
-    #[error("invalid X-Wing-768 public key")]
-    InvalidXWing768Key,
-
-    /// The requested key format is not supported.
-    #[error("unsupported key format")]
-    UnsupportedKeyFormat,
-
-    /// JSON or canonicalization failed.
-    #[error("encoding error")]
-    EncodingError,
-
-    /// The selected key format needs a cryptographic backend in this build.
-    #[error("key backend unavailable")]
-    BackendUnavailable,
+pub(crate) fn public_key_error(error: JwtError) -> JwtError {
+    // The primitive's generic key rejection gains a precise public-key role at
+    // this boundary. Preserve every other canonical reason, including backend
+    // and provider failures, rather than obscuring it as malformed key input.
+    if error == JwtError::PRIMITIVE_INVALID_KEY {
+        JwtError::PRIMITIVE_INVALID_PUBLIC_KEY
+    } else {
+        error
+    }
 }
+
+#[cfg(test)]
+#[path = "error_tests.rs"]
+mod tests;

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, KdfAlgorithm, KdfFailureKind, KdfProfile};
+use crypto_core::{CryptoError, KdfProfile};
 
 use crate::constants::{
     ARGON2ID_V1_LANES, ARGON2ID_V1_MEMORY_COST_KIB, ARGON2ID_V1_TIME_COST, ARGON2ID_V2_LANES,
@@ -83,11 +83,7 @@ impl TryFrom<u32> for Argon2KdfVersion {
         match value {
             1 => Ok(Self::V1),
             2 => Ok(Self::V2),
-            _ => Err(CryptoError::Kdf {
-                algorithm: KdfAlgorithm::Argon2id,
-                profile: KdfProfile::Argon2idV1,
-                kind: KdfFailureKind::InvalidParams,
-            }),
+            _ => Err(crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER),
         }
     }
 }
@@ -136,17 +132,13 @@ fn validate_caps(
     caps: Argon2Caps,
 ) -> Result<Argon2ParamsProfile, CryptoError> {
     let params = profile.params();
-    let profile_tag = profile.to_kdf_profile();
+    let _profile_tag = profile.to_kdf_profile();
 
     if params.mem_kib > caps.mem_cap_kib
         || params.time_cost > caps.time_cost_cap
         || params.lanes > caps.lanes_cap
     {
-        return Err(CryptoError::Kdf {
-            algorithm: KdfAlgorithm::Argon2id,
-            profile: profile_tag,
-            kind: KdfFailureKind::InvalidParams,
-        });
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER);
     }
 
     Ok(params)

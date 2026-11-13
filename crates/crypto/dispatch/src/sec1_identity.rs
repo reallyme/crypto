@@ -17,12 +17,12 @@ pub(crate) fn validate_compressed_public_key(
             {
                 crypto_p256::decompress_public_key(public_key)
                     .map(|_| ())
-                    .map_err(|_| AlgorithmError::InvalidKey(algorithm))
+                    .map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY)
             }
             #[cfg(not(all(feature = "p256", any(feature = "native", feature = "wasm"))))]
             {
                 let _ = public_key;
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P384 => {
@@ -30,12 +30,12 @@ pub(crate) fn validate_compressed_public_key(
             {
                 crypto_p384::decompress_public_key(public_key)
                     .map(|_| ())
-                    .map_err(|_| AlgorithmError::InvalidKey(algorithm))
+                    .map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY)
             }
             #[cfg(not(all(feature = "p384", any(feature = "native", feature = "wasm"))))]
             {
                 let _ = public_key;
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P521 => {
@@ -43,12 +43,12 @@ pub(crate) fn validate_compressed_public_key(
             {
                 crypto_p521::decompress_public_key(public_key)
                     .map(|_| ())
-                    .map_err(|_| AlgorithmError::InvalidKey(algorithm))
+                    .map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY)
             }
             #[cfg(not(all(feature = "p521", any(feature = "native", feature = "wasm"))))]
             {
                 let _ = public_key;
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::Secp256k1 => {
@@ -56,12 +56,12 @@ pub(crate) fn validate_compressed_public_key(
             {
                 crypto_secp256k1::decompress_public_key(public_key)
                     .map(|_| ())
-                    .map_err(|_| AlgorithmError::InvalidKey(algorithm))
+                    .map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY)
             }
             #[cfg(not(all(feature = "secp256k1", any(feature = "native", feature = "wasm"))))]
             {
                 let _ = public_key;
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         _ => Ok(()),

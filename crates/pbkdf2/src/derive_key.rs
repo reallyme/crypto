@@ -14,7 +14,6 @@ use crate::types::{
     kdf_error, validate_output_len, Pbkdf2Iterations, Pbkdf2Output, Pbkdf2Password, Pbkdf2Prf,
     Pbkdf2Salt,
 };
-use crypto_core::KdfFailureKind;
 
 /// PBKDF2 derivation request.
 pub struct Pbkdf2Request<'a> {
@@ -41,7 +40,12 @@ pub fn derive_key(request: &Pbkdf2Request<'_>) -> Result<Pbkdf2Output, CryptoErr
         .output_len
         .checked_add(digest_length - 1)
         .and_then(|length| length.checked_div(digest_length))
-        .ok_or_else(|| kdf_error(request.prf, KdfFailureKind::ResourceLimitExceeded))?;
+        .ok_or_else(|| {
+            kdf_error(
+                request.prf,
+                crypto_core::CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
+            )
+        })?;
     validate_work_factor(request.prf, request.iterations.as_u32(), blocks)?;
     // Install drop-time cleanup before the backend writes derived key material.
     // This also covers unwinding or future early-return paths in this function.
@@ -65,13 +69,23 @@ pub fn derive_key(request: &Pbkdf2Request<'_>) -> Result<Pbkdf2Output, CryptoErr
 
 fn validate_work_factor(prf: Pbkdf2Prf, iterations: u32, blocks: usize) -> Result<(), CryptoError> {
     let total_evaluations = u64::from(iterations)
-        .checked_mul(
-            u64::try_from(blocks)
-                .map_err(|_| kdf_error(prf, KdfFailureKind::ResourceLimitExceeded))?,
-        )
-        .ok_or_else(|| kdf_error(prf, KdfFailureKind::ResourceLimitExceeded))?;
+        .checked_mul(u64::try_from(blocks).map_err(|_| {
+            kdf_error(
+                prf,
+                crypto_core::CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
+            )
+        })?)
+        .ok_or_else(|| {
+            kdf_error(
+                prf,
+                crypto_core::CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
+            )
+        })?;
     if total_evaluations > PBKDF2_MAX_HMAC_EVALUATIONS {
-        return Err(kdf_error(prf, KdfFailureKind::ResourceLimitExceeded));
+        return Err(kdf_error(
+            prf,
+            crypto_core::CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
+        ));
     }
     Ok(())
 }

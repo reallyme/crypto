@@ -9,8 +9,9 @@ const ED25519_SECRET_KEY_LEN: usize = 32;
 
 /// Sign a message using a 32-byte seed.
 pub fn sign_ed25519(privkey: &[u8], message: &[u8]) -> Result<Vec<u8>, CryptoError> {
-    let seed: &[u8; ED25519_SECRET_KEY_LEN] =
-        privkey.try_into().map_err(|_| CryptoError::InvalidKey)?;
+    let seed: &[u8; ED25519_SECRET_KEY_LEN] = privkey
+        .try_into()
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     let signing_key = SigningKey::from(seed);
 
     let sig: Signature = signing_key.sign(message);

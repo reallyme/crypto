@@ -17,10 +17,10 @@ pub fn compress_p521(public_key_uncompressed: &[u8]) -> Result<Vec<u8>, CryptoEr
     if public_key_uncompressed.len() != P521_PUBLIC_KEY_UNCOMPRESSED_LEN
         || public_key_uncompressed.first() != Some(&SEC1_UNCOMPRESSED_PREFIX)
     {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
-    let public_key =
-        PublicKey::from_sec1_bytes(public_key_uncompressed).map_err(|_| CryptoError::InvalidKey)?;
+    let public_key = PublicKey::from_sec1_bytes(public_key_uncompressed)
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     Ok(public_key.to_sec1_point(true).as_bytes().to_vec())
 }
 
@@ -32,9 +32,9 @@ pub fn decompress_p521(public_key_compressed: &[u8]) -> Result<Vec<u8>, CryptoEr
             Some(SEC1_COMPRESSED_EVEN_PREFIX | SEC1_COMPRESSED_ODD_PREFIX)
         )
     {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
-    let public_key =
-        PublicKey::from_sec1_bytes(public_key_compressed).map_err(|_| CryptoError::InvalidKey)?;
+    let public_key = PublicKey::from_sec1_bytes(public_key_compressed)
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     Ok(public_key.to_sec1_point(false).as_bytes().to_vec())
 }

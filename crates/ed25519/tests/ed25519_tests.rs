@@ -59,16 +59,16 @@ fn identity_validation_rejects_torsion_and_noncanonical_encodings() {
     for invalid in [identity, aliased_identity, [0_u8; 32], [0xff_u8; 32]] {
         assert_eq!(
             validate_public_key_identity(&invalid),
-            Err(CryptoError::InvalidKey)
+            Err(CryptoError::PRIMITIVE_INVALID_KEY)
         );
         assert_eq!(
             crypto_ed25519::decode_public_key(&invalid),
-            Err(CryptoError::InvalidKey)
+            Err(CryptoError::PRIMITIVE_INVALID_KEY)
         );
     }
     assert_eq!(
         validate_public_key_identity(&public_key[..31]),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     );
 }
 
@@ -153,8 +153,6 @@ fn strict_verify_rejects_small_and_mixed_order_points() {
 
 #[test]
 fn valid_length_cctv_keys_and_signatures_report_signature_failure() {
-    use crypto_core::{SignatureBackend, SignatureFailureKind, SignatureOperation};
-
     const CASES: [(&str, &str, &str); 2] = [
         ("edffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "fa9dde274f4820efb19a890f8ba2d8791710a4303ceef4aedf9dddc4e81a1f1105ba9a796274d80437afa36f1236563f2f3b0aa84cecddc3d20914615ba4fe02", "ed25519vectors 10"),
         ("26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc85", "edffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000000000000000000000000000", "ed25519vectors 2"),
@@ -164,11 +162,7 @@ fn valid_length_cctv_keys_and_signatures_report_signature_failure() {
         let signature = hex::decode(signature).expect("fixed signature hex");
         assert_eq!(
             verify_ed25519(&public_key, message.as_bytes(), &signature),
-            Err(CryptoError::Signature {
-                backend: SignatureBackend::Native,
-                operation: SignatureOperation::Verify,
-                kind: SignatureFailureKind::InvalidSignature,
-            })
+            Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
         );
     }
 }
@@ -229,7 +223,7 @@ fn expanded_private_key_is_rejected() -> Result<(), CryptoError> {
     expanded.extend_from_slice(&pubkey);
 
     let err = sign_ed25519(&expanded, b"expanded key must be rejected");
-    assert!(matches!(err, Err(CryptoError::InvalidKey)));
+    assert!(matches!(err, Err(CryptoError::PRIMITIVE_INVALID_KEY)));
     Ok(())
 }
 

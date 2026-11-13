@@ -14,7 +14,7 @@ use crypto_concat_kdf::{
     derive_jwa_concat_kdf_sha256, JwaAlgorithmId, JwaConcatKdfRequest, JwaPartyInfo,
     JwaSharedSecret,
 };
-use crypto_core::{CryptoError, KdfAlgorithm, KdfFailureKind, KdfProfile};
+use crypto_core::CryptoError;
 
 #[test]
 fn rfc7518_appendix_c_a128gcm_vector_matches() {
@@ -74,7 +74,7 @@ fn zero_length_output_is_rejected() {
         Ok(_) => panic!("zero output length must fail"),
     };
 
-    assert_kdf_error(err, KdfFailureKind::InvalidOutputLength);
+    assert_kdf_error(err, CryptoError::PRIMITIVE_INVALID_LENGTH);
 }
 
 #[test]
@@ -83,13 +83,13 @@ fn empty_shared_secret_is_rejected() {
         Err(err) => err,
         Ok(_) => panic!("empty shared secret must fail"),
     };
-    assert_kdf_error(err, KdfFailureKind::InvalidSecretLength);
+    assert_kdf_error(err, CryptoError::PRIMITIVE_INVALID_PASSWORD);
 }
 
 #[test]
 fn empty_algorithm_id_is_rejected() {
     let err = JwaAlgorithmId::from_slice(&[]).expect_err("empty algorithm ID must fail");
-    assert_kdf_error(err, KdfFailureKind::InvalidParams);
+    assert_kdf_error(err, CryptoError::PRIMITIVE_INVALID_PARAMETER);
 }
 
 #[test]
@@ -119,17 +119,6 @@ fn party_info_changes_output() {
     assert_ne!(with_parties.as_bytes(), without_parties.as_bytes());
 }
 
-fn assert_kdf_error(error: CryptoError, expected_kind: KdfFailureKind) {
-    match error {
-        CryptoError::Kdf {
-            algorithm,
-            profile,
-            kind,
-        } => {
-            assert_eq!(algorithm, KdfAlgorithm::ConcatKdf);
-            assert_eq!(profile, KdfProfile::JwaEcdhEsSha256);
-            assert_eq!(kind, expected_kind);
-        }
-        _ => panic!("unexpected error variant"),
-    }
+fn assert_kdf_error(error: CryptoError, expected: CryptoError) {
+    assert_eq!(error, expected);
 }

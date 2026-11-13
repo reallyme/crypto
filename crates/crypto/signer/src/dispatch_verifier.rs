@@ -3,9 +3,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crypto_core::Algorithm;
-use crypto_dispatch::AlgorithmError;
 
-use crate::{Verifier, VerifierError, VerifierFailureKind};
+use crate::{Verifier, VerifierError};
 
 /// Public-key verifier implemented through `crypto_dispatch::verify`.
 ///
@@ -35,16 +34,6 @@ impl Verifier for DispatchVerifier {
     }
 
     fn verify(&self, message: &[u8], signature: &[u8]) -> Result<(), VerifierError> {
-        crypto_dispatch::verify(self.alg, &self.public_key, message, signature).map_err(|source| {
-            let kind = match &source {
-                AlgorithmError::SignatureInvalid(_) => VerifierFailureKind::SignatureInvalid,
-                _ => VerifierFailureKind::DispatchRejected,
-            };
-            VerifierError::VerifyFailed {
-                algorithm: self.alg,
-                kind,
-                source,
-            }
-        })
+        crypto_dispatch::verify(self.alg, &self.public_key, message, signature)
     }
 }

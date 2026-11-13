@@ -14,9 +14,9 @@
 
 use crate::{EcJwk, JwkOptions, JwtError};
 
+use crate::canonicalize_jwk::canonicalize_jwk;
 #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use codec_base64url::bytes_to_base64url;
-use codec_jcs::canonicalize_trusted_json_value;
 #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use crypto_p256::compress_public_key;
 #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
@@ -30,7 +30,7 @@ pub fn p256_public_key_to_jwk(
     #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
     return {
         let _ = (public_key_sec1, options);
-        Err(JwtError::BackendUnavailable)
+        Err(JwtError::PROVIDER_UNSUPPORTED_BACKEND)
     };
 
     #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
@@ -41,7 +41,8 @@ pub fn p256_public_key_to_jwk(
             33 => {
                 #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
                 {
-                    decompress_public_key(public_key_sec1).map_err(|_| JwtError::InvalidP256Key)?
+                    decompress_public_key(public_key_sec1)
+                        .map_err(crate::error::public_key_error)?
                 }
             }
 
@@ -49,17 +50,17 @@ pub fn p256_public_key_to_jwk(
             65 => {
                 #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
                 {
-                    compress_public_key(public_key_sec1).map_err(|_| JwtError::InvalidP256Key)?;
+                    compress_public_key(public_key_sec1).map_err(crate::error::public_key_error)?;
                     public_key_sec1.to_vec()
                 }
             }
 
-            _ => return Err(JwtError::InvalidP256Key),
+            _ => return Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY),
         };
 
         // SEC1 uncompressed format: 0x04 || X || Y
         if uncompressed.len() != 65 || uncompressed[0] != 0x04 {
-            return Err(JwtError::InvalidP256Key);
+            return Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY);
         }
 
         let x = &uncompressed[1..33];
@@ -93,7 +94,5 @@ pub fn p256_public_key_to_jwk_jcs(
 ) -> Result<String, JwtError> {
     let jwk = p256_public_key_to_jwk(public_key_sec1, options)?;
 
-    let value = serde_json::to_value(&jwk).map_err(|_| JwtError::EncodingError)?;
-
-    canonicalize_trusted_json_value(&value).map_err(|_| JwtError::EncodingError)
+    canonicalize_jwk(&jwk)
 }

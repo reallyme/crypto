@@ -5,7 +5,7 @@
 #![allow(missing_docs)]
 #![allow(clippy::unwrap_used)]
 
-use crypto_core::{CryptoError, KdfFailureKind};
+use crypto_core::CryptoError;
 use crypto_pbkdf2::{
     derive_key, Pbkdf2Iterations, Pbkdf2Password, Pbkdf2Prf, Pbkdf2Request, Pbkdf2Salt,
     PBKDF2_MAX_ITERATIONS, PBKDF2_MAX_OUTPUT_LENGTH, PBKDF2_MODERN_MIN_ITERATIONS,
@@ -64,31 +64,19 @@ fn invalid_inputs_are_rejected() {
     let prf = Pbkdf2Prf::HmacSha256;
     assert!(matches!(
         Pbkdf2Password::from_slice(b"", prf),
-        Err(CryptoError::Kdf {
-            kind: KdfFailureKind::InvalidSecretLength,
-            ..
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_PASSWORD)
     ));
     assert!(matches!(
         Pbkdf2Salt::from_slice(b"", prf),
-        Err(CryptoError::Kdf {
-            kind: KdfFailureKind::InvalidSaltLength,
-            ..
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_SALT)
     ));
     assert!(matches!(
         Pbkdf2Iterations::from_u32_conformance_only(0, prf),
-        Err(CryptoError::Kdf {
-            kind: KdfFailureKind::InvalidIterationCount,
-            ..
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
     ));
     assert!(matches!(
         Pbkdf2Iterations::from_u32_conformance_only(PBKDF2_MAX_ITERATIONS + 1, prf),
-        Err(CryptoError::Kdf {
-            kind: KdfFailureKind::InvalidIterationCount,
-            ..
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
     ));
 
     let password = Pbkdf2Password::from_slice(b"password", prf).unwrap();
@@ -102,10 +90,7 @@ fn invalid_inputs_are_rejected() {
             iterations,
             output_len: 0,
         }),
-        Err(CryptoError::Kdf {
-            kind: KdfFailureKind::InvalidOutputLength,
-            ..
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
     ));
     assert!(matches!(
         derive_key(&Pbkdf2Request {
@@ -115,10 +100,7 @@ fn invalid_inputs_are_rejected() {
             iterations,
             output_len: PBKDF2_MAX_OUTPUT_LENGTH + 1,
         }),
-        Err(CryptoError::Kdf {
-            kind: KdfFailureKind::InvalidOutputLength,
-            ..
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
     ));
 }
 
@@ -127,10 +109,7 @@ fn modern_iteration_constructor_enforces_public_policy_bounds() {
     let prf = Pbkdf2Prf::HmacSha256;
     assert!(matches!(
         Pbkdf2Iterations::from_u32_modern(PBKDF2_MODERN_MIN_ITERATIONS - 1, prf),
-        Err(CryptoError::Kdf {
-            kind: KdfFailureKind::InvalidIterationCount,
-            ..
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
     ));
     assert_eq!(
         Pbkdf2Iterations::from_u32_modern(PBKDF2_MODERN_MIN_ITERATIONS, prf)
@@ -146,10 +125,7 @@ fn modern_iteration_constructor_enforces_public_policy_bounds() {
     );
     assert!(matches!(
         Pbkdf2Iterations::from_u32_modern(PBKDF2_MAX_ITERATIONS + 1, prf),
-        Err(CryptoError::Kdf {
-            kind: KdfFailureKind::InvalidIterationCount,
-            ..
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
     ));
 }
 
@@ -169,10 +145,7 @@ fn combined_iteration_and_output_work_is_bounded_before_derivation() {
     });
     assert!(matches!(
         result,
-        Err(CryptoError::Kdf {
-            kind: KdfFailureKind::ResourceLimitExceeded,
-            ..
-        })
+        Err(CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED)
     ));
 }
 

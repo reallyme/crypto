@@ -24,7 +24,7 @@ fn public_exponent_bounds_remain_enforced() {
     for exponent in [&[0][..], &[1], &[2], &[0xff; 9]] {
         assert!(matches!(
             build_public_key(&modulus, exponent),
-            Err(CryptoError::InvalidKey)
+            Err(CryptoError::PRIMITIVE_INVALID_KEY)
         ));
     }
 }
@@ -43,7 +43,7 @@ fn exponent_precision_preserves_public_modular_exponentiation() -> Result<(), Cr
                 exponent,
                 compact.modulus.bits_precision(),
             )
-            .map_err(|_| CryptoError::InvalidKey)?,
+            .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?,
             modulus: compact.modulus.clone(),
             modulus_bits: compact.modulus_bits,
             size: compact.size,

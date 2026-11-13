@@ -7,7 +7,6 @@
 #![allow(clippy::expect_used, clippy::panic)]
 
 use crypto_core::Algorithm;
-use reallyme_crypto::operations::{OperationError, PrimitiveErrorReason};
 use zeroize::Zeroizing;
 
 const MESSAGE: &[u8] = b"post-quantum signature operation";
@@ -79,12 +78,7 @@ fn slh_dsa_operation_matches_primitive_and_rejects_tampering() {
         &tampered,
     )
     .expect_err("tampered SLH-DSA signature fails");
-    assert_eq!(
-        error,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed
-        }
-    );
+    assert_eq!(error, crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE);
 }
 
 #[test]
@@ -99,12 +93,7 @@ fn slh_dsa_derivation_rejects_partial_seed_material() {
         }
         Err(error) => error,
     };
-    assert_eq!(
-        error,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey
-        }
-    );
+    assert_eq!(error, crypto_core::CryptoError::PRIMITIVE_INVALID_KEY);
 }
 
 fn ml_dsa_round_trip<G, S, V>(
@@ -145,12 +134,7 @@ fn ml_dsa_round_trip<G, S, V>(
         &tampered,
     )
     .expect_err("tampered ML-DSA signature fails");
-    assert_eq!(
-        error,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed
-        }
-    );
+    assert_eq!(error, crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE);
 }
 
 fn slh_seed_material() -> Zeroizing<Vec<u8>> {

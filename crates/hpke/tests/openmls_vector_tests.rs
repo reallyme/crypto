@@ -166,7 +166,7 @@ fn deterministic_split_setup_rejects_wrong_randomness_lengths() {
             psk_id: HpkePskIdRef::new(PSK_ID).expect("PSK identifier is valid"),
         })
         .err();
-        assert_eq!(error, Some(HpkeError::InvalidRandomness));
+        assert_eq!(error, Some(HpkeError::PRIMITIVE_INVALID_PARAMETER));
     }
 }
 

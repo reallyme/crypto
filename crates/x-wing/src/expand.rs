@@ -20,7 +20,7 @@ pub(crate) struct ExpandedXWingKey {
 
 pub(crate) fn expand_decapsulation_key(secret_key: &[u8]) -> Result<ExpandedXWingKey, CryptoError> {
     if secret_key.len() != X_WING_SECRET_KEY_LEN {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
 
     let mut expanded = Zeroizing::new([0u8; X_WING_EXPANDED_SECRET_LEN]);
@@ -46,8 +46,9 @@ pub(crate) fn expand_decapsulation_key(secret_key: &[u8]) -> Result<ExpandedXWin
 pub(crate) fn ml_kem_768_public_key(
     seed_bytes: &[u8; ML_KEM_SECRET_SEED_LEN],
 ) -> Result<Vec<u8>, CryptoError> {
-    let seed =
-        Zeroizing::new(Seed::try_from(&seed_bytes[..]).map_err(|_| CryptoError::InvalidKey)?);
+    let seed = Zeroizing::new(
+        Seed::try_from(&seed_bytes[..]).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?,
+    );
     let decapsulation_key = MlKem768DecapsulationKey::from_seed(*seed);
     Ok(decapsulation_key.encapsulation_key().to_bytes().to_vec())
 }

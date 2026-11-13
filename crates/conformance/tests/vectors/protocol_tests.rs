@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crypto_hpke::{
-    open_base, HpkeError, HpkeOpenRequest, HpkeSuite, HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM,
+    open_base, HpkeOpenRequest, HpkeSuite, HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM,
     HPKE_DHKEM_X25519_HKDF_SHA256_CHACHA20POLY1305,
 };
 use serde_json::Value;
@@ -91,7 +91,7 @@ fn verify_hpke_case(
                 ciphertext: &ciphertext,
             })
             .err(),
-            Some(HpkeError::InvalidEncapsulatedKey)
+            Some(crypto_core::CryptoError::PRIMITIVE_MALFORMED_CIPHERTEXT)
         );
     }
     if suite == HPKE_DHKEM_X25519_HKDF_SHA256_CHACHA20POLY1305 {
@@ -107,7 +107,7 @@ fn verify_hpke_case(
                 ciphertext: &ciphertext,
             })
             .err(),
-            Some(HpkeError::OpenFailed)
+            Some(crypto_core::CryptoError::PRIMITIVE_AUTHENTICATION_FAILED)
         );
     }
 

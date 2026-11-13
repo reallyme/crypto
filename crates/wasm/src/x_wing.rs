@@ -8,12 +8,13 @@ use crypto_x_wing::{
     generate_x_wing_768_keypair, generate_x_wing_768_keypair_derand, X_WING_768_CIPHERTEXT_LEN,
     X_WING_768_PUBLIC_KEY_LEN, X_WING_SECRET_KEY_LEN,
 };
-use js_sys::{Object, Reflect, Uint8Array};
+use js_sys::{Object, Uint8Array};
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
 use zeroize::{Zeroize, Zeroizing};
 
-use crate::map_error::{invalid_input, map_crypto_error};
+use crate::map_error::map_crypto_error;
+use crate::set_bytes::set_bytes;
 use crate::validate_bytes::copy_exact;
 
 type KeypairFn = fn() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), crypto_core::CryptoError>;
@@ -23,12 +24,6 @@ type EncapsulateFn = fn(&[u8]) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), crypto_c
 type EncapsulateDerandFn =
     fn(&[u8], &[u8]) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), crypto_core::CryptoError>;
 type DecapsulateFn = fn(&[u8], &[u8]) -> Result<Zeroizing<Vec<u8>>, crypto_core::CryptoError>;
-
-fn set_bytes(object: &Object, name: &str, bytes: &[u8]) -> Result<(), JsValue> {
-    Reflect::set(object, &JsValue::from_str(name), &Uint8Array::from(bytes))
-        .map_err(|_| invalid_input())?;
-    Ok(())
-}
 
 fn keypair_to_js(
     public_key: Vec<u8>,

@@ -2,20 +2,17 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::error_status::{unwrap_status as map_unwrap_error, wrap_status as map_wrap_error};
 use crate::guard::ffi_guard;
 use crate::pointer::{read_slice, validate_output_len_pair, write_fixed, write_len};
 use crate::status::{
-    CryptoStatus, CRYPTO_AUTHENTICATION_FAILED, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INTERNAL_ERROR,
-    CRYPTO_INVALID_ARGUMENT, CRYPTO_INVALID_CIPHERTEXT, CRYPTO_INVALID_KEY, CRYPTO_OK,
+    CryptoStatus, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INVALID_CIPHERTEXT, CRYPTO_INVALID_KEY, CRYPTO_OK,
 };
-use crypto_core::KeyWrapAlgorithm;
+use crypto_core::{CryptoError, KeyWrapAlgorithm};
 use reallyme_crypto::aes_kw::{
     AesKwKeyData, AesKwWrappedKey, AES_128_KW_KEK_LENGTH, AES_192_KW_KEK_LENGTH,
     AES_256_KW_KEK_LENGTH, AES_KW_BLOCK_LENGTH, AES_KW_INTEGRITY_CHECK_LENGTH,
     AES_KW_MAX_KEY_DATA_LENGTH, AES_KW_MIN_KEY_DATA_LENGTH, AES_KW_MIN_WRAPPED_KEY_LENGTH,
-};
-use reallyme_crypto::operations::{
-    BackendErrorReason, OperationError, PrimitiveErrorReason, ProviderErrorReason,
 };
 
 /// Length in bytes of an AES-128-KW key-encryption key.
@@ -35,50 +32,8 @@ pub const AES_KW_MIN_WRAPPED_KEY_LEN: usize = AES_KW_MIN_WRAPPED_KEY_LENGTH;
 /// Maximum plaintext key-data length accepted by this ABI.
 pub const AES_KW_MAX_KEY_DATA_LEN: usize = AES_KW_MAX_KEY_DATA_LENGTH;
 
-fn map_wrap_error(error: OperationError) -> CryptoStatus {
-    match error {
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey,
-        } => CRYPTO_INVALID_KEY,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidLength | PrimitiveErrorReason::LengthOverflow,
-        } => CRYPTO_INVALID_ARGUMENT,
-        OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        }
-        | OperationError::Backend {
-            reason: BackendErrorReason::Internal | BackendErrorReason::InvalidOutput,
-        } => CRYPTO_INTERNAL_ERROR,
-        _ => CRYPTO_INTERNAL_ERROR,
-    }
-}
-
-fn map_unwrap_error(error: OperationError) -> CryptoStatus {
-    match error {
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey,
-        } => CRYPTO_INVALID_KEY,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed,
-        } => CRYPTO_AUTHENTICATION_FAILED,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidLength,
-        } => CRYPTO_INVALID_CIPHERTEXT,
-        OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        }
-        | OperationError::Primitive {
-            reason: PrimitiveErrorReason::LengthOverflow,
-        }
-        | OperationError::Backend {
-            reason: BackendErrorReason::Internal | BackendErrorReason::InvalidOutput,
-        } => CRYPTO_INTERNAL_ERROR,
-        _ => CRYPTO_INTERNAL_ERROR,
-    }
-}
-
-type WrapOperation = fn(&[u8], &[u8]) -> Result<AesKwWrappedKey, OperationError>;
-type UnwrapOperation = fn(&[u8], &[u8]) -> Result<AesKwKeyData, OperationError>;
+type WrapOperation = fn(&[u8], &[u8]) -> Result<AesKwWrappedKey, CryptoError>;
+type UnwrapOperation = fn(&[u8], &[u8]) -> Result<AesKwKeyData, CryptoError>;
 
 struct AesKwRawBuffers {
     kek: *const u8,
@@ -90,27 +45,27 @@ struct AesKwRawBuffers {
     written_len_out: *mut usize,
 }
 
-fn wrap_128(kek: &[u8], key_data: &[u8]) -> Result<AesKwWrappedKey, OperationError> {
+fn wrap_128(kek: &[u8], key_data: &[u8]) -> Result<AesKwWrappedKey, CryptoError> {
     reallyme_crypto::operations::key_wrap::wrap_key(KeyWrapAlgorithm::Aes128Kw, kek, key_data)
 }
 
-fn wrap_192(kek: &[u8], key_data: &[u8]) -> Result<AesKwWrappedKey, OperationError> {
+fn wrap_192(kek: &[u8], key_data: &[u8]) -> Result<AesKwWrappedKey, CryptoError> {
     reallyme_crypto::operations::key_wrap::wrap_key(KeyWrapAlgorithm::Aes192Kw, kek, key_data)
 }
 
-fn wrap_256(kek: &[u8], key_data: &[u8]) -> Result<AesKwWrappedKey, OperationError> {
+fn wrap_256(kek: &[u8], key_data: &[u8]) -> Result<AesKwWrappedKey, CryptoError> {
     reallyme_crypto::operations::key_wrap::wrap_key(KeyWrapAlgorithm::Aes256Kw, kek, key_data)
 }
 
-fn unwrap_128(kek: &[u8], wrapped: &[u8]) -> Result<AesKwKeyData, OperationError> {
+fn unwrap_128(kek: &[u8], wrapped: &[u8]) -> Result<AesKwKeyData, CryptoError> {
     reallyme_crypto::operations::key_wrap::unwrap_key(KeyWrapAlgorithm::Aes128Kw, kek, wrapped)
 }
 
-fn unwrap_192(kek: &[u8], wrapped: &[u8]) -> Result<AesKwKeyData, OperationError> {
+fn unwrap_192(kek: &[u8], wrapped: &[u8]) -> Result<AesKwKeyData, CryptoError> {
     reallyme_crypto::operations::key_wrap::unwrap_key(KeyWrapAlgorithm::Aes192Kw, kek, wrapped)
 }
 
-fn unwrap_256(kek: &[u8], wrapped: &[u8]) -> Result<AesKwKeyData, OperationError> {
+fn unwrap_256(kek: &[u8], wrapped: &[u8]) -> Result<AesKwKeyData, CryptoError> {
     reallyme_crypto::operations::key_wrap::unwrap_key(KeyWrapAlgorithm::Aes256Kw, kek, wrapped)
 }
 

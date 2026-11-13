@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, RngFailureKind, RngOutputKind};
+use crypto_core::{CryptoError, RngOutputKind};
 use getrandom::{rand_core::TryRng, SysRng};
 
 /// A source of cryptographically secure random bytes.
@@ -17,10 +17,9 @@ pub trait SecureRandom {
 pub struct OsSecureRandom;
 
 impl SecureRandom for OsSecureRandom {
-    fn fill_secure(&mut self, output: &mut [u8], kind: RngOutputKind) -> Result<(), CryptoError> {
-        SysRng.try_fill_bytes(output).map_err(|_| CryptoError::Rng {
-            output: kind,
-            kind: RngFailureKind::EntropyUnavailable,
-        })
+    fn fill_secure(&mut self, output: &mut [u8], _kind: RngOutputKind) -> Result<(), CryptoError> {
+        SysRng
+            .try_fill_bytes(output)
+            .map_err(|_| crypto_core::CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)
     }
 }

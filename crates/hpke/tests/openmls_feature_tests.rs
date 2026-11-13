@@ -97,7 +97,7 @@ fn openmls_feature_rejects_registered_but_disabled_components() {
     );
     assert_eq!(
         disabled_kem_suite.public_key_len(),
-        Err(HpkeError::UnsupportedKem)
+        Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM)
     );
 
     let disabled_kdf_suite = HpkeSuite::new(
@@ -107,7 +107,7 @@ fn openmls_feature_rejects_registered_but_disabled_components() {
     );
     assert_eq!(
         disabled_kdf_suite.public_key_len(),
-        Err(HpkeError::UnsupportedKdf)
+        Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM)
     );
 
     let disabled_aead_suite = HpkeSuite::new(
@@ -117,6 +117,6 @@ fn openmls_feature_rejects_registered_but_disabled_components() {
     );
     assert_eq!(
         disabled_aead_suite.public_key_len(),
-        Err(HpkeError::UnsupportedAead)
+        Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM)
     );
 }

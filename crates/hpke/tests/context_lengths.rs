@@ -84,7 +84,7 @@ fn hkdf_base_and_export_accept_large_contexts_and_authenticate_the_tail() {
                     ciphertext: &sealed.ciphertext,
                 })
                 .err(),
-                Some(HpkeError::OpenFailed)
+                Some(HpkeError::PRIMITIVE_AUTHENTICATION_FAILED)
             );
         }
     }
@@ -137,7 +137,7 @@ fn hkdf_psk_mode_accepts_large_info_identifiers_and_keys() {
                 psk_id: &psk_id,
             })
             .err(),
-            Some(HpkeError::OpenFailed)
+            Some(HpkeError::PRIMITIVE_AUTHENTICATION_FAILED)
         );
     }
 }
@@ -192,7 +192,7 @@ fn shake_retains_context_bounds_for_base_export_and_psk_modes() {
             plaintext: PLAINTEXT,
         })
         .err(),
-        Some(HpkeError::InvalidInfoLength)
+        Some(HpkeError::PRIMITIVE_INVALID_LENGTH)
     );
     assert_eq!(
         open_base(&HpkeOpenRequest {
@@ -204,7 +204,7 @@ fn shake_retains_context_bounds_for_base_export_and_psk_modes() {
             ciphertext: &sealed.ciphertext,
         })
         .err(),
-        Some(HpkeError::InvalidInfoLength)
+        Some(HpkeError::PRIMITIVE_INVALID_LENGTH)
     );
     assert_eq!(
         sender_export(&HpkeSenderExportRequest {
@@ -215,7 +215,7 @@ fn shake_retains_context_bounds_for_base_export_and_psk_modes() {
             output_length: 32,
         })
         .err(),
-        Some(HpkeError::InvalidInfoLength)
+        Some(HpkeError::PRIMITIVE_INVALID_LENGTH)
     );
     assert_eq!(
         receiver_export(&HpkeReceiverExportRequest {
@@ -227,7 +227,7 @@ fn shake_retains_context_bounds_for_base_export_and_psk_modes() {
             output_length: 32,
         })
         .err(),
-        Some(HpkeError::InvalidInfoLength)
+        Some(HpkeError::PRIMITIVE_INVALID_LENGTH)
     );
     // The PSK identifier shares the one-stage context budget with info.
     let psk = Zeroizing::new([0x5a; 32]);
@@ -269,7 +269,7 @@ fn shake_retains_context_bounds_for_base_export_and_psk_modes() {
                 psk_id: oversized_id,
             })
             .err(),
-            Some(HpkeError::InvalidInfoLength)
+            Some(HpkeError::PRIMITIVE_INVALID_LENGTH)
         );
         assert_eq!(
             open_psk(&HpkePskOpenRequest {
@@ -283,7 +283,7 @@ fn shake_retains_context_bounds_for_base_export_and_psk_modes() {
                 psk_id: oversized_id,
             })
             .err(),
-            Some(HpkeError::InvalidInfoLength)
+            Some(HpkeError::PRIMITIVE_INVALID_LENGTH)
         );
     }
 }
@@ -326,7 +326,7 @@ fn shake_rejects_oversized_psks_before_the_backend_can_panic() {
             psk_id: b"x",
         })
         .err(),
-        Some(HpkeError::InvalidPsk)
+        Some(HpkeError::PRIMITIVE_INVALID_PARAMETER)
     );
     assert_eq!(
         open_psk(&HpkePskOpenRequest {
@@ -340,6 +340,6 @@ fn shake_rejects_oversized_psks_before_the_backend_can_panic() {
             psk_id: b"x",
         })
         .err(),
-        Some(HpkeError::InvalidPsk)
+        Some(HpkeError::PRIMITIVE_INVALID_PARAMETER)
     );
 }

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::{CryptoError, SignatureFailureKind};
 use ecdsa::signature::hazmat::PrehashSigner;
 use p256::ecdsa::{Signature, SigningKey};
 use zeroize::Zeroizing;
@@ -20,10 +20,10 @@ pub fn sign_p256_sha256_digest_low_s_der(
 ) -> Result<Vec<u8>, CryptoError> {
     let secret_key = copy_secret_key(secret_key)?;
     let signing_key = SigningKey::from_slice(secret_key.as_slice())
-        .map_err(|_| signature_error(SignatureFailureKind::InvalidPrivateKey))?;
+        .map_err(|_| signature_error(crypto_core::CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY))?;
     let signature: Signature = signing_key
         .sign_prehash(digest.as_bytes())
-        .map_err(|_| signature_error(SignatureFailureKind::BackendFailure))?;
+        .map_err(|_| signature_error(crypto_core::CryptoError::BACKEND_INTERNAL))?;
 
     // Canonical low-S output prevents the keystore boundary from returning
     // the second, malleated ECDSA representation of the same signature.
@@ -38,31 +38,16 @@ pub fn sign_p256_sha256_digest_low_s_der(
 )]
 pub fn sign_p256_digest_der(secret_key: &[u8], digest: &[u8]) -> Result<Vec<u8>, CryptoError> {
     let digest = P256Sha256Digest::try_from_slice(digest)
-        .map_err(|_| signature_error(SignatureFailureKind::InvalidMessage))?;
+        .map_err(|_| signature_error(crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER))?;
     sign_p256_sha256_digest_low_s_der(secret_key, &digest)
 }
 
 fn copy_secret_key(secret_key: &[u8]) -> Result<Zeroizing<[u8; P256_SECRET_KEY_LEN]>, CryptoError> {
     let scalar = <[u8; P256_SECRET_KEY_LEN]>::try_from(secret_key)
-        .map_err(|_| signature_error(SignatureFailureKind::InvalidPrivateKey))?;
+        .map_err(|_| signature_error(crypto_core::CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY))?;
     Ok(Zeroizing::new(scalar))
 }
 
 fn signature_error(kind: SignatureFailureKind) -> CryptoError {
-    CryptoError::Signature {
-        backend: signature_backend(),
-        operation: SignatureOperation::Sign,
-        kind,
-    }
-}
-
-fn signature_backend() -> SignatureBackend {
-    #[cfg(target_arch = "wasm32")]
-    {
-        SignatureBackend::Wasm
-    }
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        SignatureBackend::Native
-    }
+    kind
 }

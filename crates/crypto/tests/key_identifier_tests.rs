@@ -5,9 +5,8 @@
 #![allow(missing_docs, clippy::unwrap_used)]
 #![cfg(feature = "key-identifier-sha1")]
 
-use reallyme_crypto::key_identifier::{
-    subject_key_identifier_sha1, KeyIdentifierError, SUBJECT_PUBLIC_KEY_MAX_LEN,
-};
+use crypto_core::CryptoError;
+use reallyme_crypto::key_identifier::{subject_key_identifier_sha1, SUBJECT_PUBLIC_KEY_MAX_LEN};
 use serde_json::Value;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
@@ -77,12 +76,12 @@ fn identifier_bounds_and_cleanup_are_explicit() {
     clearing::<reallyme_crypto::key_identifier::SubjectKeyIdentifier>();
     assert!(matches!(
         subject_key_identifier_sha1(&[]),
-        Err(KeyIdentifierError::EmptyInput)
+        Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
     ));
     assert!(subject_key_identifier_sha1(&vec![1; SUBJECT_PUBLIC_KEY_MAX_LEN]).is_ok());
     assert!(matches!(
         subject_key_identifier_sha1(&vec![1; SUBJECT_PUBLIC_KEY_MAX_LEN + 1]),
-        Err(KeyIdentifierError::InputTooLong)
+        Err(CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED)
     ));
     let mut identifier = subject_key_identifier_sha1(b"subject public key value").unwrap();
     identifier.zeroize();

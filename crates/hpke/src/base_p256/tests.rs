@@ -37,7 +37,7 @@ struct Fails;
 impl P256BaseRng for Fails {
     fn fill(&mut self, output: &mut [u8]) -> Result<(), P256BaseRandomError> {
         output.fill(0xa5);
-        Err(P256BaseRandomError::Unavailable)
+        Err(P256BaseRandomError::PROVIDER_RANDOMNESS_UNAVAILABLE)
     }
 }
 
@@ -96,8 +96,12 @@ fn authentication_rejects_changed_context_key_enc_ciphertext_and_tag() {
     let enc = bytes(&v["enc"]);
     let ct = bytes(&v["empty_aad_ciphertext"]);
     let info = bytes(&v["info"]);
-    let failed =
-        |result: Result<_, _>| assert!(matches!(result, Err(P256BaseError::AuthenticationFailed)));
+    let failed = |result: Result<_, _>| {
+        assert!(matches!(
+            result,
+            Err(P256BaseError::PRIMITIVE_AUTHENTICATION_FAILED)
+        ))
+    };
     let mut changed = info.clone();
     changed.push(0);
     failed(open(&recipient, &enc, &changed, &ct));
@@ -120,7 +124,7 @@ fn authentication_rejects_changed_context_key_enc_ciphertext_and_tag() {
     destroyed.zeroize();
     assert!(matches!(
         open(&destroyed, &enc, &info, &ct),
-        Err(P256BaseError::InvalidPrivateKey)
+        Err(P256BaseError::PRIMITIVE_INVALID_PRIVATE_KEY)
     ));
 }
 
@@ -138,7 +142,7 @@ fn malformed_points_keys_lengths_and_bounds_fail_closed() {
     ] {
         assert!(matches!(
             P256RecipientKey::import(&key),
-            Err(P256BaseError::InvalidPrivateKey)
+            Err(P256BaseError::PRIMITIVE_INVALID_PRIVATE_KEY)
         ));
     }
     for point in [
@@ -151,31 +155,31 @@ fn malformed_points_keys_lengths_and_bounds_fail_closed() {
     ] {
         assert!(matches!(
             open(&recipient, &point, &[], &[0; 16]),
-            Err(P256BaseError::InvalidEncapsulatedKey)
+            Err(P256BaseError::PRIMITIVE_MALFORMED_CIPHERTEXT)
         ));
         assert!(matches!(
             seal_with_rng(&point, &[], &[], &mut Fails),
-            Err(P256BaseError::InvalidPublicKey)
+            Err(P256BaseError::PRIMITIVE_INVALID_PUBLIC_KEY)
         ));
     }
     assert!(matches!(
         open(&recipient, recipient.public_key(), &[], &[0; 15]),
-        Err(P256BaseError::TruncatedCiphertext)
+        Err(P256BaseError::PRIMITIVE_MALFORMED_CIPHERTEXT)
     ));
     let excessive_info = vec![0; INFO_MAX_LEN + 1];
     assert!(matches!(
         seal_with_rng(recipient.public_key(), &excessive_info, &[], &mut Fails),
-        Err(P256BaseError::InputTooLong)
+        Err(P256BaseError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED)
     ));
     let excessive_message = vec![0; PLAINTEXT_MAX_LEN + 1];
     assert!(matches!(
         seal_with_rng(recipient.public_key(), &[], &excessive_message, &mut Fails),
-        Err(P256BaseError::InputTooLong)
+        Err(P256BaseError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED)
     ));
     let excessive_ct = vec![0; PLAINTEXT_MAX_LEN + 17];
     assert!(matches!(
         open(&recipient, recipient.public_key(), &[], &excessive_ct),
-        Err(P256BaseError::InputTooLong)
+        Err(P256BaseError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED)
     ));
 }
 
@@ -189,12 +193,12 @@ fn rng_failure_and_clearing_ownership_are_explicit() {
     clearing::<super::P256BasePlaintext>();
     assert!(matches!(
         P256RecipientKey::generate_with_rng(&mut Fails),
-        Err(P256BaseError::RandomnessUnavailable)
+        Err(P256BaseError::PROVIDER_RANDOMNESS_UNAVAILABLE)
     ));
     let recipient = P256RecipientKey::import(&bytes(&vector()["skRm"])).unwrap();
     assert!(matches!(
         seal_with_rng(recipient.public_key(), &[], &[], &mut Fails),
-        Err(P256BaseError::RandomnessUnavailable)
+        Err(P256BaseError::PROVIDER_RANDOMNESS_UNAVAILABLE)
     ));
     let mut plaintext = super::P256BasePlaintext::new(zeroize::Zeroizing::new(vec![42; 3]));
     assert_eq!(plaintext.len(), 3);
@@ -239,7 +243,7 @@ fn profile_rejects_psk_mode_and_a_different_kdf() {
             &info,
             &psk_record.ciphertext
         ),
-        Err(P256BaseError::AuthenticationFailed)
+        Err(P256BaseError::PRIMITIVE_AUTHENTICATION_FAILED)
     ));
     let public = <Kem as KemTrait>::PublicKey::from_bytes(recipient.public_key()).unwrap();
     let entropy = bytes(&v["ikmE"]);
@@ -254,7 +258,7 @@ fn profile_rejects_psk_mode_and_a_different_kdf() {
     let ciphertext = context.seal(&plaintext, &[]).unwrap();
     assert!(matches!(
         open(&recipient, enc.to_bytes().as_slice(), &info, &ciphertext),
-        Err(P256BaseError::AuthenticationFailed)
+        Err(P256BaseError::PRIMITIVE_AUTHENTICATION_FAILED)
     ));
 }
 
@@ -293,6 +297,6 @@ fn largest_record_authenticates_and_tampering_never_returns_plaintext() {
     *sealed.ciphertext.last_mut().unwrap() ^= 1;
     assert!(matches!(
         open(&recipient, &sealed.enc, info, &sealed.ciphertext),
-        Err(P256BaseError::AuthenticationFailed)
+        Err(P256BaseError::PRIMITIVE_AUTHENTICATION_FAILED)
     ));
 }

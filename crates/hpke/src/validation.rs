@@ -25,15 +25,15 @@ pub(crate) struct KemParameters {
 
 pub(crate) fn require_executable_suite(suite: HpkeSuite) -> Result<(), HpkeError> {
     if suite.kem.support() != HpkeComponentSupport::Executable {
-        return Err(HpkeError::UnsupportedKem);
+        return Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM);
     }
 
     if suite.kdf.support() != HpkeComponentSupport::Executable {
-        return Err(HpkeError::UnsupportedKdf);
+        return Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM);
     }
 
     if suite.aead.support() != HpkeComponentSupport::Executable {
-        return Err(HpkeError::UnsupportedAead);
+        return Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM);
     }
 
     Ok(())
@@ -43,7 +43,7 @@ pub(crate) fn require_executable_suite(suite: HpkeSuite) -> Result<(), HpkeError
 pub(crate) fn require_sealing_suite(suite: HpkeSuite) -> Result<(), HpkeError> {
     require_executable_suite(suite)?;
     if suite.aead == HpkeAeadId::ExportOnly {
-        return Err(HpkeError::UnsupportedSuite);
+        return Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM);
     }
     Ok(())
 }
@@ -56,7 +56,7 @@ pub(crate) fn require_export_suite(suite: HpkeSuite) -> Result<(), HpkeError> {
     // provider combination before setup so untrusted input cannot reach its
     // documented panic path.
     if suite.kdf == HpkeKdfId::Shake256 && suite.aead == HpkeAeadId::ExportOnly {
-        return Err(HpkeError::UnsupportedSuite);
+        return Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM);
     }
     Ok(())
 }
@@ -139,7 +139,7 @@ pub(crate) fn kem_parameters(kem: HpkeKemId) -> Result<KemParameters, HpkeError>
         | HpkeKemId::DhKemCp384HkdfSha384
         | HpkeKemId::DhKemCp521HkdfSha512
         | HpkeKemId::DhKemX25519ElligatorHkdfSha256
-        | HpkeKemId::X25519Kyber768Draft00 => Err(HpkeError::UnsupportedKem),
+        | HpkeKemId::X25519Kyber768Draft00 => Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM),
     }
 }
 
@@ -147,7 +147,7 @@ pub(crate) fn kem_parameters(kem: HpkeKemId) -> Result<KemParameters, HpkeError>
 pub(crate) fn validate_public_key(suite: HpkeSuite, public_key: &[u8]) -> Result<(), HpkeError> {
     require_executable_suite(suite)?;
     if public_key.len() != kem_parameters(suite.kem)?.public_key_len {
-        return Err(HpkeError::InvalidPublicKey);
+        return Err(HpkeError::PRIMITIVE_INVALID_PUBLIC_KEY);
     }
     Ok(())
 }
@@ -156,7 +156,7 @@ pub(crate) fn validate_public_key(suite: HpkeSuite, public_key: &[u8]) -> Result
 pub(crate) fn validate_private_key(suite: HpkeSuite, private_key: &[u8]) -> Result<(), HpkeError> {
     require_executable_suite(suite)?;
     if private_key.len() != kem_parameters(suite.kem)?.private_key_len {
-        return Err(HpkeError::InvalidPrivateKey);
+        return Err(HpkeError::PRIMITIVE_INVALID_PRIVATE_KEY);
     }
     Ok(())
 }
@@ -168,7 +168,7 @@ pub(crate) fn validate_encapsulated_key(
 ) -> Result<(), HpkeError> {
     require_executable_suite(suite)?;
     if encapsulated_key.len() != kem_parameters(suite.kem)?.encapsulated_key_len {
-        return Err(HpkeError::InvalidEncapsulatedKey);
+        return Err(HpkeError::PRIMITIVE_MALFORMED_CIPHERTEXT);
     }
     Ok(())
 }
@@ -177,7 +177,7 @@ pub(crate) fn validate_encapsulated_key(
 pub(crate) fn validate_ciphertext(suite: HpkeSuite, ciphertext: &[u8]) -> Result<(), HpkeError> {
     require_sealing_suite(suite)?;
     if ciphertext.len() < suite.tag_len() {
-        return Err(HpkeError::InvalidCiphertext);
+        return Err(HpkeError::PRIMITIVE_MALFORMED_CIPHERTEXT);
     }
     Ok(())
 }
@@ -197,7 +197,7 @@ pub(crate) fn validate_key_schedule_inputs(
         }
         HpkeKdfId::Shake256 => {}
         HpkeKdfId::Shake128 | HpkeKdfId::TurboShake128 | HpkeKdfId::TurboShake256 => {
-            return Err(HpkeError::UnsupportedKdf);
+            return Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM);
         }
     }
     // Preserve the backend's documented one-stage key-schedule input bound
@@ -206,9 +206,9 @@ pub(crate) fn validate_key_schedule_inputs(
         .len()
         .checked_add(psk_id.len())
         .and_then(|length| length.checked_add(HPKE_KEY_SCHEDULE_LABEL_OVERHEAD))
-        .ok_or(HpkeError::LengthOverflow)?;
+        .ok_or(HpkeError::PRIMITIVE_INVALID_LENGTH)?;
     if encoded_len >= HPKE_LABELED_CONTEXT_LIMIT {
-        return Err(HpkeError::InvalidInfoLength);
+        return Err(HpkeError::PRIMITIVE_INVALID_LENGTH);
     }
     Ok(())
 }
@@ -216,15 +216,15 @@ pub(crate) fn validate_key_schedule_inputs(
 #[cfg(feature = "backend-native")]
 pub(crate) fn validate_psk(kdf: HpkeKdfId, psk: &[u8], psk_id: &[u8]) -> Result<(), HpkeError> {
     if psk.len() < HPKE_MIN_PSK_LEN {
-        return Err(HpkeError::InvalidPsk);
+        return Err(HpkeError::PRIMITIVE_INVALID_PARAMETER);
     }
     if psk_id.is_empty() {
-        return Err(HpkeError::InvalidPskIdentifier);
+        return Err(HpkeError::PRIMITIVE_INVALID_PARAMETER);
     }
     // The one-stage schedule also length-prefixes the PSK itself. Check it
     // separately: it is not included in the info/identifier context budget.
     if kdf == HpkeKdfId::Shake256 && u16::try_from(psk.len()).is_err() {
-        return Err(HpkeError::InvalidPsk);
+        return Err(HpkeError::PRIMITIVE_INVALID_PARAMETER);
     }
     validate_key_schedule_inputs(kdf, &[], psk_id)
 }
@@ -236,18 +236,24 @@ pub(crate) fn validate_export_length(
 ) -> Result<(), HpkeError> {
     require_executable_suite(suite)?;
     let maximum = match suite.kdf {
-        HpkeKdfId::HkdfSha256 => 32_usize.checked_mul(255).ok_or(HpkeError::LengthOverflow)?,
-        HpkeKdfId::HkdfSha384 => 48_usize.checked_mul(255).ok_or(HpkeError::LengthOverflow)?,
-        HpkeKdfId::HkdfSha512 => 64_usize.checked_mul(255).ok_or(HpkeError::LengthOverflow)?,
+        HpkeKdfId::HkdfSha256 => 32_usize
+            .checked_mul(255)
+            .ok_or(HpkeError::PRIMITIVE_INVALID_LENGTH)?,
+        HpkeKdfId::HkdfSha384 => 48_usize
+            .checked_mul(255)
+            .ok_or(HpkeError::PRIMITIVE_INVALID_LENGTH)?,
+        HpkeKdfId::HkdfSha512 => 64_usize
+            .checked_mul(255)
+            .ok_or(HpkeError::PRIMITIVE_INVALID_LENGTH)?,
         HpkeKdfId::Shake256 => HPKE_LABELED_CONTEXT_LIMIT
             .checked_sub(1)
-            .ok_or(HpkeError::LengthOverflow)?,
+            .ok_or(HpkeError::PRIMITIVE_INVALID_LENGTH)?,
         HpkeKdfId::Shake128 | HpkeKdfId::TurboShake128 | HpkeKdfId::TurboShake256 => {
-            return Err(HpkeError::UnsupportedKdf);
+            return Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM);
         }
     };
     if output_length == 0 || output_length > maximum {
-        return Err(HpkeError::InvalidExporterLength);
+        return Err(HpkeError::PRIMITIVE_INVALID_LENGTH);
     }
     Ok(())
 }

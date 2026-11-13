@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, HkdfFailureKind, HkdfHash};
+use crypto_core::CryptoError;
 use hkdf::Hkdf;
 use sha2::Sha384;
 use zeroize::Zeroizing;
@@ -20,10 +20,7 @@ pub fn extract_sha384(
     ikm: &HkdfInputKeyMaterial,
 ) -> Result<HkdfSha384Prk, CryptoError> {
     if ikm.as_bytes().is_empty() {
-        return Err(CryptoError::Hkdf {
-            hash: HkdfHash::Sha2_384,
-            kind: HkdfFailureKind::InvalidIkmLength,
-        });
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_KEY);
     }
 
     let (prk, _) = Hkdf::<Sha384>::extract(salt.map(HkdfSalt::as_bytes), ikm.as_bytes());
@@ -41,22 +38,14 @@ pub fn expand_sha384<const N: usize>(
     info: &HkdfInfo,
 ) -> Result<HkdfOutput<N>, CryptoError> {
     if N == 0 || N > HKDF_SHA384_MAX_OUTPUT_LENGTH {
-        return Err(CryptoError::Hkdf {
-            hash: HkdfHash::Sha2_384,
-            kind: HkdfFailureKind::InvalidOutputLength,
-        });
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
 
-    let hkdf = Hkdf::<Sha384>::from_prk(prk.as_bytes()).map_err(|_| CryptoError::Hkdf {
-        hash: HkdfHash::Sha2_384,
-        kind: HkdfFailureKind::InvalidIkmLength,
-    })?;
+    let hkdf = Hkdf::<Sha384>::from_prk(prk.as_bytes())
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)?;
     // Expansion writes through the clearing owner on both success and error.
     let mut output = HkdfOutput::from_array([0u8; N]);
     hkdf.expand(info.as_bytes(), output.as_mut_bytes())
-        .map_err(|_| CryptoError::Hkdf {
-            hash: HkdfHash::Sha2_384,
-            kind: HkdfFailureKind::ExpandFailed,
-        })?;
+        .map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
     Ok(output)
 }

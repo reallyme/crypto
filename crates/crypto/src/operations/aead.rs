@@ -7,19 +7,6 @@
 mod aes_gcm;
 mod aes_gcm_siv;
 mod chacha20_poly1305;
-#[cfg(any(
-    all(
-        feature = "aes",
-        any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
-    ),
-    all(feature = "aes-gcm-siv", any(feature = "native", feature = "wasm")),
-    all(
-        feature = "chacha20-poly1305",
-        any(feature = "native", feature = "wasm")
-    )
-))]
-mod error;
-
 use crypto_core::AeadAlgorithm;
 use zeroize::Zeroizing;
 

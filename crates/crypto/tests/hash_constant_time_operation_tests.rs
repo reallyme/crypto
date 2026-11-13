@@ -14,7 +14,6 @@
 //! Operation-owner tests for hash and constant-time routes.
 
 use crypto_core::HashAlgorithm;
-use reallyme_crypto::operations::{OperationError, PrimitiveErrorReason};
 
 #[test]
 fn hash_operation_matches_canonical_cross_lane_vectors() {
@@ -190,14 +189,10 @@ fn constant_time_require_equal_preserves_stable_failure_reasons() {
 
     assert_eq!(
         reallyme_crypto::operations::constant_time::require_equal(left, different),
-        Err(OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed,
-        })
+        Err(crypto_core::CryptoError::PRIMITIVE_VERIFICATION_FAILED)
     );
     assert_eq!(
         reallyme_crypto::operations::constant_time::require_equal(left, shorter),
-        Err(OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidLength,
-        })
+        Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)
     );
 }

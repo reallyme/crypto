@@ -3,19 +3,20 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crypto_hpke::{
-    open_base, seal_base, HpkeError, HpkeOpenRequest, HpkeSealRequest, HpkeSuite,
+    open_base, seal_base, HpkeOpenRequest, HpkeSealRequest, HpkeSuite,
     HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM, HPKE_DHKEM_X25519_HKDF_SHA256_CHACHA20POLY1305,
     HPKE_P256_PRIVATE_KEY_LEN, HPKE_P256_PUBLIC_KEY_LEN, HPKE_X25519_PRIVATE_KEY_LEN,
     HPKE_X25519_PUBLIC_KEY_LEN,
 };
 #[cfg(feature = "test-vectors")]
 use crypto_hpke::{seal_base_derand, HpkeDerandSealRequest};
-use js_sys::{Object, Reflect, Uint8Array};
+use js_sys::{Object, Uint8Array};
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
 use zeroize::{Zeroize, Zeroizing};
 
-use crate::map_error::{authentication_failed, invalid_input, provider_failure};
+use crate::map_error::{invalid_input, map_crypto_error};
+use crate::set_bytes::set_bytes;
 use crate::validate_bytes::{
     copy_bounded, copy_exact, MAX_WASM_CIPHERTEXT_LENGTH, MAX_WASM_INPUT_LENGTH,
 };
@@ -44,26 +45,6 @@ fn hpke_suite(suite: u32) -> Result<HpkeSuiteConfig, JsValue> {
         }),
         _ => Err(invalid_input()),
     }
-}
-
-fn map_hpke_error(error: HpkeError) -> JsValue {
-    match error {
-        HpkeError::InvalidCiphertext
-        | HpkeError::InvalidEncapsulatedKey
-        | HpkeError::InvalidPrivateKey
-        | HpkeError::InvalidPublicKey
-        | HpkeError::InvalidRandomness
-        | HpkeError::UnsupportedSuite => invalid_input(),
-        HpkeError::OpenFailed => authentication_failed(),
-        HpkeError::LengthOverflow | HpkeError::SealFailed => provider_failure(),
-        _ => provider_failure(),
-    }
-}
-
-fn set_bytes(object: &Object, name: &str, bytes: &[u8]) -> Result<(), JsValue> {
-    Reflect::set(object, &JsValue::from_str(name), &Uint8Array::from(bytes))
-        .map_err(|_| invalid_input())?;
-    Ok(())
 }
 
 fn seal_output_to_js(
@@ -98,7 +79,7 @@ pub fn hpke_seal_base(
         aad: &aad,
         plaintext: &plaintext,
     })
-    .map_err(map_hpke_error)?;
+    .map_err(map_crypto_error)?;
     seal_output_to_js(output.encapsulated_key, Zeroizing::new(output.ciphertext))
 }
 
@@ -130,7 +111,7 @@ pub fn hpke_seal_base_derand(
         aad: &aad,
         plaintext: &plaintext,
     })
-    .map_err(map_hpke_error)?;
+    .map_err(map_crypto_error)?;
     seal_output_to_js(output.encapsulated_key, Zeroizing::new(output.ciphertext))
 }
 
@@ -159,7 +140,7 @@ pub fn hpke_open_base(
         aad: &aad,
         ciphertext: &ciphertext,
     })
-    .map_err(map_hpke_error)?
+    .map_err(map_crypto_error)?
     .plaintext;
     let output = Uint8Array::from(plaintext.as_slice());
     plaintext.zeroize();

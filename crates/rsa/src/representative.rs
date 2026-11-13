@@ -8,47 +8,12 @@ use crypto_bigint::{
     modular::{BoxedMontyForm, BoxedMontyParams},
     BoxedUint, CtAssign, MontyForm, MontyMultiplier,
 };
+use crypto_core::CryptoError;
 use secrecy::{ExposeSecret, ExposeSecretMut, SecretSlice};
-use thiserror::Error;
 use zeroize::Zeroizing;
 
-/// Stable public-operation failure reasons; no key or message bytes are retained.
-#[derive(Clone, Copy, Debug, Error, Eq, PartialEq)]
-pub enum RsaRepresentativeErrorReason {
-    /// Invalid or unsupported encoded RSA key.
-    #[error("invalid RSA public key")]
-    PublicKey,
-    /// The signature is not the exact public modulus width.
-    #[error("invalid RSA signature width")]
-    Length,
-    /// Signature representative is outside 0..n.
-    #[error("RSA signature representative is out of range")]
-    Range,
-    /// A bounded result could not be allocated.
-    #[error("RSA result allocation failed")]
-    Allocation,
-    /// Public length or representation arithmetic failed.
-    #[error("RSA representation arithmetic failed")]
-    Arithmetic,
-}
-/// Typed public-operation error, independent of provider diagnostic text.
-#[derive(Clone, Copy, Debug, Error, Eq, PartialEq)]
-#[error("RSA public operation failed: {reason}")]
-pub struct RsaRepresentativeError {
-    reason: RsaRepresentativeErrorReason,
-}
-impl RsaRepresentativeError {
-    /// Stable reason suitable for protocol/FFI mapping.
-    pub fn reason(self) -> RsaRepresentativeErrorReason {
-        self.reason
-    }
-}
-impl From<RsaRepresentativeErrorReason> for RsaRepresentativeError {
-    fn from(reason: RsaRepresentativeErrorReason) -> Self {
-        Self { reason }
-    }
-}
-use RsaRepresentativeErrorReason as Reason;
+/// Canonical schema-defined error returned by the public RSA operation.
+pub use crypto_core::CryptoError as RsaRepresentativeError;
 
 /// Exact-width public representatives s^e mod n and n-(s^e mod n).
 ///
@@ -91,19 +56,19 @@ pub fn rsa_public_representatives(
     public_key_der: &[u8],
     encoding: RsaPublicKeyDerEncoding,
     signature: &[u8],
-) -> Result<RsaPublicRepresentatives, RsaRepresentativeError> {
-    let key = parse_public_key(public_key_der, encoding).map_err(|_| Reason::PublicKey)?;
+) -> Result<RsaPublicRepresentatives, CryptoError> {
+    let key = parse_public_key(public_key_der, encoding).map_err(public_key_error)?;
     if signature.len() != key.size() {
-        return Err(Reason::Length.into());
+        return Err(CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
     let value = Zeroizing::new(
         BoxedUint::from_be_slice(signature, key.modulus().bits_precision())
-            .map_err(|_| Reason::Length)?,
+            .map_err(|_| CryptoError::PRIMITIVE_INVALID_LENGTH)?,
     );
     if *value >= *key.modulus() {
-        return Err(Reason::Range.into());
+        return Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE);
     }
-    let params = BoxedMontyParams::new_vartime(key.modulus_odd().map_err(|_| Reason::PublicKey)?);
+    let params = BoxedMontyParams::new_vartime(key.modulus_odd().map_err(public_key_error)?);
     let base = Zeroizing::new(BoxedMontyForm::new((*value).clone(), &params));
     let mut result = Zeroizing::new(BoxedMontyForm::one(&params));
     let mut multiplier = <BoxedMontyForm as MontyForm>::Multiplier::from(&params);
@@ -124,28 +89,45 @@ pub fn rsa_public_representatives(
         complement: encode(&complement, key.size())?,
     })
 }
-fn encode(value: &BoxedUint, width: usize) -> Result<SecretSlice<u8>, RsaRepresentativeError> {
+fn encode(value: &BoxedUint, width: usize) -> Result<SecretSlice<u8>, CryptoError> {
     let bytes = Zeroizing::new(value.to_be_bytes());
-    let begin = bytes.len().checked_sub(width).ok_or(Reason::Arithmetic)?;
+    let begin = bytes
+        .len()
+        .checked_sub(width)
+        .ok_or(CryptoError::BACKEND_INTERNAL)?;
     if bytes
         .get(..begin)
-        .ok_or(Reason::Arithmetic)?
+        .ok_or(CryptoError::BACKEND_INTERNAL)?
         .iter()
         .any(|byte| *byte != 0)
     {
-        return Err(Reason::Arithmetic.into());
+        return Err(CryptoError::BACKEND_INTERNAL);
     }
     let mut storage = Zeroizing::new(Vec::new());
     storage
         .try_reserve_exact(width)
-        .map_err(|_| Reason::Allocation)?;
+        .map_err(|_| CryptoError::BACKEND_INTERNAL)?;
     storage.resize(width, 0);
     if storage.capacity() != width {
-        return Err(Reason::Allocation.into());
+        return Err(CryptoError::BACKEND_INTERNAL);
     }
     let mut output = SecretSlice::from(core::mem::take(&mut *storage).into_boxed_slice());
     output
         .expose_secret_mut()
-        .copy_from_slice(bytes.get(begin..).ok_or(Reason::Arithmetic)?);
+        .copy_from_slice(bytes.get(begin..).ok_or(CryptoError::BACKEND_INTERNAL)?);
     Ok(output)
 }
+
+// Add public-key context only to the shared parser's generic key rejection.
+// Provider, resource and internal failures must retain their canonical reason.
+fn public_key_error(error: CryptoError) -> CryptoError {
+    if error == CryptoError::PRIMITIVE_INVALID_KEY {
+        CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY
+    } else {
+        error
+    }
+}
+
+#[cfg(test)]
+#[path = "representative_error_tests.rs"]
+mod error_tests;

@@ -27,8 +27,8 @@
 
 use crate::{JwkOptions, JwtError};
 
+use crate::canonicalize_jwk::canonicalize_jwk;
 use codec_base64url::bytes_to_base64url;
-use codec_jcs::canonicalize_trusted_json_value;
 
 use serde::Serialize;
 
@@ -64,7 +64,7 @@ pub fn mldsa87_public_key_to_jwk(
     options: JwkOptions,
 ) -> Result<MlDsa87Jwk, JwtError> {
     if public_key.len() != 2592 {
-        return Err(JwtError::InvalidMlDsa87Key);
+        return Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY);
     }
 
     let mut jwk = MlDsa87Jwk {
@@ -89,7 +89,5 @@ pub fn mldsa87_public_key_to_jwk_jcs(
 ) -> Result<String, JwtError> {
     let jwk = mldsa87_public_key_to_jwk(public_key, options)?;
 
-    let value = serde_json::to_value(&jwk).map_err(|_| JwtError::EncodingError)?;
-
-    canonicalize_trusted_json_value(&value).map_err(|_| JwtError::EncodingError)
+    canonicalize_jwk(&jwk)
 }

@@ -4,7 +4,7 @@
 
 use aes_gcm_siv::aead::{Aead, KeyInit, Payload};
 use aes_gcm_siv::{Aes256GcmSiv, Nonce};
-use crypto_core::{AeadBackend, AeadFailureKind, CryptoError};
+use crypto_core::CryptoError;
 use zeroize::Zeroizing;
 
 use crate::types::{CiphertextWithTag, EncryptRequest};
@@ -14,11 +14,8 @@ use crate::types::{CiphertextWithTag, EncryptRequest};
 pub fn encrypt(request: &EncryptRequest<'_>) -> Result<CiphertextWithTag, CryptoError> {
     let key_material = Zeroizing::new(*request.key.as_bytes());
 
-    let cipher =
-        Aes256GcmSiv::new_from_slice(&*key_material).map_err(|_| CryptoError::AeadEncrypt {
-            backend: AeadBackend::Native,
-            kind: AeadFailureKind::InvalidKeyMaterial,
-        })?;
+    let cipher = Aes256GcmSiv::new_from_slice(&*key_material)
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)?;
 
     let nonce = Nonce::from(*request.nonce.as_bytes());
 
@@ -29,10 +26,7 @@ pub fn encrypt(request: &EncryptRequest<'_>) -> Result<CiphertextWithTag, Crypto
 
     let encrypted = cipher
         .encrypt(&nonce, payload)
-        .map_err(|_| CryptoError::AeadEncrypt {
-            backend: AeadBackend::Native,
-            kind: AeadFailureKind::BackendFailure,
-        })?;
+        .map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
 
     CiphertextWithTag::from_vec(encrypted)
 }

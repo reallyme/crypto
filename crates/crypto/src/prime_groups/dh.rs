@@ -6,14 +6,14 @@ use crypto_bigint::{modular::BoxedMontyForm, BoxedUint, CtEq};
 use secrecy::SecretSlice;
 use zeroize::Zeroizing;
 
-use super::{field, GroupError, GroupErrorReason, PrimeGroup};
+use super::{field, CryptoError, PrimeGroup};
 
-pub(super) fn validate(group: PrimeGroup, bytes: &[u8]) -> Result<(), GroupError> {
+pub(super) fn validate(group: PrimeGroup, bytes: &[u8]) -> Result<(), CryptoError> {
     let params = field::params(group.modulus())?;
     let value = field::integer(bytes, params.bits_precision())?;
     let one = BoxedUint::one_with_precision(params.bits_precision());
     if *value <= one || *value >= **params.modulus() {
-        return Err(GroupErrorReason::InvalidElement.into());
+        return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
     }
     let element = Zeroizing::new(BoxedMontyForm::new((*value).clone(), &params));
     let order = field::integer(group.order(), field::precision(group.scalar_len())?)?;
@@ -21,7 +21,7 @@ pub(super) fn validate(group: PrimeGroup, bytes: &[u8]) -> Result<(), GroupError
     // RFC 2631 section 2.1.5: range validation alone does not establish that
     // an attacker-supplied value is in the subgroup of prime order q.
     if !bool::from(check.ct_eq(&BoxedMontyForm::one(&params))) {
-        return Err(GroupErrorReason::InvalidElement.into());
+        return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
     }
     Ok(())
 }
@@ -30,7 +30,7 @@ pub(super) fn multiply(
     group: PrimeGroup,
     base: &[u8],
     scalar: &[u8],
-) -> Result<SecretSlice<u8>, GroupError> {
+) -> Result<SecretSlice<u8>, CryptoError> {
     operation(group, base, scalar, None)
 }
 
@@ -39,7 +39,7 @@ pub(super) fn combine(
     base: &[u8],
     scalar: &[u8],
     offset: &[u8],
-) -> Result<SecretSlice<u8>, GroupError> {
+) -> Result<SecretSlice<u8>, CryptoError> {
     operation(group, base, scalar, Some(offset))
 }
 
@@ -48,7 +48,7 @@ fn operation(
     base: &[u8],
     scalar: &[u8],
     offset: Option<&[u8]>,
-) -> Result<SecretSlice<u8>, GroupError> {
+) -> Result<SecretSlice<u8>, CryptoError> {
     let params = field::params(group.modulus())?;
     let base = field::form(base, &params)?;
     let exponent = field::integer(scalar, field::precision(group.scalar_len())?)?;
@@ -64,7 +64,7 @@ fn operation(
         result
     };
     if bool::from(result.ct_eq(&BoxedMontyForm::one(&params))) || bool::from(result.is_zero()) {
-        return Err(GroupErrorReason::Identity.into());
+        return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
     }
     field::encode_form(&result, group.field_len())
 }

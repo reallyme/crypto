@@ -7,7 +7,7 @@ use crate::{
     Aes128KwKek, Aes192KwKek, Aes256KwKek, AesKwWrappedKey, AES_KW_INTEGRITY_CHECK_LENGTH,
 };
 use aes_kw::{KeyInit, KwAes128, KwAes192, KwAes256};
-use crypto_core::{CryptoError, KeyWrapAlgorithm, KeyWrapFailureKind, KeyWrapOperation};
+use crypto_core::{CryptoError, KeyWrapAlgorithm, KeyWrapOperation};
 use zeroize::Zeroizing;
 
 /// Wraps plaintext key material with AES-256-KW (RFC 3394).
@@ -52,7 +52,7 @@ fn wrap_with<E>(
             key_wrap_error(
                 algorithm,
                 KeyWrapOperation::Wrap,
-                KeyWrapFailureKind::LengthOverflow,
+                crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
             )
         })?;
     let mut wrapped = Zeroizing::new(vec![0u8; wrapped_len]);
@@ -60,7 +60,7 @@ fn wrap_with<E>(
         return Err(key_wrap_error(
             algorithm,
             KeyWrapOperation::Wrap,
-            KeyWrapFailureKind::BackendFailure,
+            crypto_core::CryptoError::BACKEND_INTERNAL,
         ));
     }
 

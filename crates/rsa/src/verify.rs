@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 use subtle::ConstantTimeEq;
 use zeroize::Zeroizing;
 
@@ -134,11 +134,7 @@ fn digest_info_prefix(hash: RsaHash) -> &'static [u8] {
 }
 
 fn signature_error() -> CryptoError {
-    CryptoError::Signature {
-        backend: SignatureBackend::Native,
-        operation: SignatureOperation::Verify,
-        kind: SignatureFailureKind::InvalidSignature,
-    }
+    crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE
 }
 
 #[cfg(test)]

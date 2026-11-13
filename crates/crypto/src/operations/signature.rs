@@ -5,12 +5,9 @@
 //! Semantic owner for raw-key signature operations.
 
 use crypto_core::Algorithm;
-use crypto_dispatch::AlgorithmError;
 use zeroize::Zeroizing;
 
-use crate::operations::{
-    BackendErrorReason, OperationError, PrimitiveErrorReason, ProviderErrorReason,
-};
+use crate::operations::OperationError;
 use crate::secret_material::{bind_operation_policy, SecretMaterialOperation};
 
 #[cfg(all(feature = "slh-dsa", any(feature = "native", feature = "wasm")))]
@@ -33,9 +30,7 @@ pub fn generate_key_pair(algorithm: Algorithm) -> Result<SignatureKeyPair, Opera
     if algorithm == Algorithm::SlhDsaSha2_128s {
         return generate_slh_dsa_sha2_128s_key_pair();
     }
-    crypto_dispatch::generate_keypair(algorithm)
-        .map(signature_key_pair)
-        .map_err(map_dispatch_error)
+    crypto_dispatch::generate_keypair(algorithm).map(signature_key_pair)
 }
 
 /// Reconstructs a raw keypair from seed or scalar material.
@@ -48,9 +43,7 @@ pub fn derive_key_pair(
     if algorithm == Algorithm::SlhDsaSha2_128s {
         return derive_slh_dsa_sha2_128s_key_pair(secret_key);
     }
-    crypto_dispatch::derive_keypair(algorithm, secret_key)
-        .map(signature_key_pair)
-        .map_err(map_dispatch_error)
+    crypto_dispatch::derive_keypair(algorithm, secret_key).map(signature_key_pair)
 }
 
 /// Signs `message` with raw secret material.
@@ -64,7 +57,7 @@ pub fn sign(
     if algorithm == Algorithm::SlhDsaSha2_128s {
         return sign_slh_dsa_sha2_128s(secret_key, message);
     }
-    crypto_dispatch::sign(algorithm, secret_key, message).map_err(map_dispatch_error)
+    crypto_dispatch::sign(algorithm, secret_key, message)
 }
 
 /// Verifies `signature` against `message` and `public_key`.
@@ -79,14 +72,14 @@ pub fn verify(
     if algorithm == Algorithm::SlhDsaSha2_128s {
         return verify_slh_dsa_sha2_128s(public_key, message, signature);
     }
-    crypto_dispatch::verify(algorithm, public_key, message, signature).map_err(map_dispatch_error)
+    crypto_dispatch::verify(algorithm, public_key, message, signature)
 }
 
 /// Normalizes a canonical DER-encoded P-256 signature to low-S form.
 #[cfg(feature = "p256")]
 pub fn normalize_p256_ecdsa_der_low_s(signature: &[u8]) -> Result<Vec<u8>, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::SignatureEncoding);
-    crypto_p256::normalize_p256_ecdsa_der_low_s(signature).map_err(map_crypto_error)
+    crypto_p256::normalize_p256_ecdsa_der_low_s(signature)
 }
 
 /// Normalizes an exact 64-byte P-256 JOSE `r || s` signature to low-S form.
@@ -95,7 +88,7 @@ pub fn normalize_p256_ecdsa_jose_low_s(
     signature: &[u8],
 ) -> Result<[u8; crypto_p256::P256_ECDSA_JOSE_SIGNATURE_LEN], OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::SignatureEncoding);
-    crypto_p256::normalize_p256_ecdsa_jose_signature_low_s(signature).map_err(map_crypto_error)
+    crypto_p256::normalize_p256_ecdsa_jose_signature_low_s(signature)
 }
 
 /// Generates a BIP-340 keypair with an x-only public key.
@@ -113,9 +106,7 @@ pub fn generate_bip340_key_pair() -> Result<SignatureKeyPair, OperationError> {
 
     #[cfg(not(all(feature = "secp256k1", any(feature = "native", feature = "wasm"))))]
     {
-        Err(OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        })
+        Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }
 
@@ -134,15 +125,13 @@ pub fn derive_bip340_public_key(secret_key: &[u8]) -> Result<Vec<u8>, OperationE
     let _policy = bind_operation_policy(SecretMaterialOperation::SignatureKeyDerivation);
     #[cfg(all(feature = "secp256k1", any(feature = "native", feature = "wasm")))]
     {
-        crypto_secp256k1::derive_bip340_schnorr_public_key(secret_key).map_err(map_crypto_error)
+        crypto_secp256k1::derive_bip340_schnorr_public_key(secret_key)
     }
 
     #[cfg(not(all(feature = "secp256k1", any(feature = "native", feature = "wasm"))))]
     {
         let _ = secret_key;
-        Err(OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        })
+        Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }
 
@@ -156,15 +145,12 @@ pub fn sign_bip340(
     #[cfg(all(feature = "secp256k1", any(feature = "native", feature = "wasm")))]
     {
         crypto_secp256k1::sign_bip340_schnorr(secret_key, message32, aux_rand32)
-            .map_err(map_crypto_error)
     }
 
     #[cfg(not(all(feature = "secp256k1", any(feature = "native", feature = "wasm"))))]
     {
         let _ = (secret_key, message32, aux_rand32);
-        Err(OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        })
+        Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }
 
@@ -178,15 +164,12 @@ pub fn verify_bip340(
     #[cfg(all(feature = "secp256k1", any(feature = "native", feature = "wasm")))]
     {
         crypto_secp256k1::verify_bip340_schnorr(signature, message32, public_key_xonly)
-            .map_err(map_crypto_error)
     }
 
     #[cfg(not(all(feature = "secp256k1", any(feature = "native", feature = "wasm"))))]
     {
         let _ = (signature, message32, public_key_xonly);
-        Err(OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        })
+        Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }
 
@@ -201,7 +184,6 @@ pub fn verify_rsa_pkcs1v15(
 ) -> Result<(), OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::SignatureVerify);
     crypto_rsa::verify_rsa_pkcs1v15(public_key_der, encoding, hash, message, signature)
-        .map_err(map_crypto_error)
 }
 
 /// Verifies an RSASSA-PSS signature with explicit message and MGF1 hashes.
@@ -215,7 +197,6 @@ pub fn verify_rsa_pss(
 ) -> Result<(), OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::SignatureVerify);
     crypto_rsa::verify_rsa_pss(public_key_der, encoding, params, message, signature)
-        .map_err(map_crypto_error)
 }
 
 fn is_supported_signature_algorithm(algorithm: Algorithm) -> bool {
@@ -237,25 +218,19 @@ fn ensure_supported_signature_algorithm(algorithm: Algorithm) -> Result<(), Oper
     if is_supported_signature_algorithm(algorithm) {
         Ok(())
     } else {
-        Err(OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        })
+        Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }
 
 fn generate_slh_dsa_sha2_128s_key_pair() -> Result<SignatureKeyPair, OperationError> {
     #[cfg(all(feature = "slh-dsa", any(feature = "native", feature = "wasm")))]
     {
-        crypto_slh_dsa::generate_slh_dsa_sha2_128s_keypair()
-            .map(signature_key_pair)
-            .map_err(map_crypto_error)
+        crypto_slh_dsa::generate_slh_dsa_sha2_128s_keypair().map(signature_key_pair)
     }
 
     #[cfg(not(all(feature = "slh-dsa", any(feature = "native", feature = "wasm"))))]
     {
-        Err(OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        })
+        Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }
 
@@ -265,38 +240,31 @@ fn derive_slh_dsa_sha2_128s_key_pair(
     #[cfg(all(feature = "slh-dsa", any(feature = "native", feature = "wasm")))]
     {
         if secret_key.len() != SLH_DSA_DERIVE_INPUT_LEN {
-            return Err(OperationError::Primitive {
-                reason: PrimitiveErrorReason::InvalidKey,
-            });
+            return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_KEY);
         }
         let (sk_seed, rest) = secret_key.split_at(SLH_DSA_SEED_COMPONENT_LEN);
         let (sk_prf, pk_seed) = rest.split_at(SLH_DSA_SEED_COMPONENT_LEN);
         crypto_slh_dsa::derive_slh_dsa_sha2_128s_keypair(sk_seed, sk_prf, pk_seed)
             .map(signature_key_pair)
-            .map_err(map_crypto_error)
     }
 
     #[cfg(not(all(feature = "slh-dsa", any(feature = "native", feature = "wasm"))))]
     {
         let _ = secret_key;
-        Err(OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        })
+        Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }
 
 fn sign_slh_dsa_sha2_128s(secret_key: &[u8], message: &[u8]) -> Result<Vec<u8>, OperationError> {
     #[cfg(all(feature = "slh-dsa", any(feature = "native", feature = "wasm")))]
     {
-        crypto_slh_dsa::sign_slh_dsa_sha2_128s(secret_key, message).map_err(map_crypto_error)
+        crypto_slh_dsa::sign_slh_dsa_sha2_128s(secret_key, message)
     }
 
     #[cfg(not(all(feature = "slh-dsa", any(feature = "native", feature = "wasm"))))]
     {
         let _ = (secret_key, message);
-        Err(OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        })
+        Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }
 
@@ -308,15 +276,12 @@ fn verify_slh_dsa_sha2_128s(
     #[cfg(all(feature = "slh-dsa", any(feature = "native", feature = "wasm")))]
     {
         crypto_slh_dsa::verify_slh_dsa_sha2_128s(public_key, message, signature)
-            .map_err(map_crypto_error)
     }
 
     #[cfg(not(all(feature = "slh-dsa", any(feature = "native", feature = "wasm"))))]
     {
         let _ = (public_key, message, signature);
-        Err(OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        })
+        Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }
 
@@ -324,68 +289,5 @@ fn signature_key_pair((public_key, secret_key): (Vec<u8>, Zeroizing<Vec<u8>>)) -
     SignatureKeyPair {
         public_key,
         secret_key,
-    }
-}
-
-fn map_dispatch_error(error: AlgorithmError) -> OperationError {
-    match error {
-        AlgorithmError::UnsupportedAlgorithm(_)
-        | AlgorithmError::UnsupportedAeadAlgorithm(_)
-        | AlgorithmError::UnsupportedHashAlgorithm(_)
-        | AlgorithmError::UnsupportedMacAlgorithm(_) => OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        },
-        AlgorithmError::InvalidKey(_) => OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey,
-        },
-        AlgorithmError::SignatureInvalid(_) => OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed,
-        },
-        AlgorithmError::Crypto(error) => map_crypto_error(error),
-        _ => OperationError::Backend {
-            reason: BackendErrorReason::Internal,
-        },
-    }
-}
-
-fn map_crypto_error(error: crypto_core::CryptoError) -> OperationError {
-    match error {
-        crypto_core::CryptoError::InvalidKey => OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey,
-        },
-        crypto_core::CryptoError::Signature { kind, .. } => match kind {
-            crypto_core::SignatureFailureKind::InvalidPrivateKey
-            | crypto_core::SignatureFailureKind::InvalidPublicKey => OperationError::Primitive {
-                reason: PrimitiveErrorReason::InvalidKey,
-            },
-            crypto_core::SignatureFailureKind::InvalidSignature => OperationError::Primitive {
-                reason: PrimitiveErrorReason::VerificationFailed,
-            },
-            crypto_core::SignatureFailureKind::InvalidMessage => OperationError::Primitive {
-                reason: PrimitiveErrorReason::InvalidLength,
-            },
-            crypto_core::SignatureFailureKind::KeyGenerationFailed => OperationError::Backend {
-                reason: BackendErrorReason::Internal,
-            },
-            crypto_core::SignatureFailureKind::SecureEnclaveUnavailable => {
-                OperationError::Provider {
-                    reason: ProviderErrorReason::HardwareUnavailable,
-                }
-            }
-            crypto_core::SignatureFailureKind::SecureEnclaveRejectedKey => {
-                OperationError::Provider {
-                    reason: ProviderErrorReason::HardwareRejectedKey,
-                }
-            }
-            _ => OperationError::Backend {
-                reason: BackendErrorReason::Internal,
-            },
-        },
-        crypto_core::CryptoError::Unsupported => OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        },
-        _ => OperationError::Backend {
-            reason: BackendErrorReason::Internal,
-        },
     }
 }

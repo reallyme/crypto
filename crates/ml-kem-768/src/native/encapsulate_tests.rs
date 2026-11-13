@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use super::encapsulate_with_rng;
-use crypto_core::{CryptoError, RngFailureKind, RngOutputKind};
+use crypto_core::CryptoError;
 use getrandom::rand_core::{TryCryptoRng, TryRng};
 
 struct UnavailableEntropy;
@@ -55,12 +55,14 @@ fn fallible_encapsulation_matches_the_original_provider_algorithm() -> Result<()
 
     let (public, _) = super::super::keypair::generate_ml_kem_768_keypair_from_seed(&[7; 64])?;
     let encoded = ml_kem::Key::<EncapsulationKey>::try_from(public.as_slice())
-        .map_err(|_| CryptoError::InvalidKey)?;
-    let key = EncapsulationKey::new(&encoded).map_err(|_| CryptoError::InvalidKey)?;
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    let key = EncapsulationKey::new(&encoded).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     // The previous convenience API delegates to this provider path.
     // Equal entropy must produce byte-identical ciphertext and shared keys.
     let (expected_ciphertext, expected_secret) = key.encapsulate_with_rng(&mut FixedEntropy);
     let (ciphertext, secret) = encapsulate_with_rng(&public, &mut FixedEntropy)?;
+    fn require_cleanup<T: zeroize::ZeroizeOnDrop>(_: &T) {}
+    require_cleanup(&secret);
     assert_eq!(ciphertext, expected_ciphertext.as_slice());
     assert_eq!(secret.as_slice(), expected_secret.as_slice());
     Ok(())
@@ -71,10 +73,7 @@ fn encapsulation_propagates_entropy_failure() -> Result<(), CryptoError> {
     let (public, _) = super::super::keypair::generate_ml_kem_768_keypair_from_seed(&[7; 64])?;
     assert!(matches!(
         encapsulate_with_rng(&public, &mut UnavailableEntropy),
-        Err(CryptoError::Rng {
-            output: RngOutputKind::Generic,
-            kind: RngFailureKind::EntropyUnavailable,
-        })
+        Err(CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)
     ));
     Ok(())
 }
@@ -83,6 +82,6 @@ fn encapsulation_propagates_entropy_failure() -> Result<(), CryptoError> {
 fn malformed_key_is_rejected_before_entropy_is_requested() {
     assert!(matches!(
         encapsulate_with_rng(&[], &mut UnavailableEntropy),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
 }

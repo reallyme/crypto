@@ -15,7 +15,8 @@ use zeroize::{Zeroize, Zeroizing};
 pub fn generate_p256_keypair_from_secret_key(
     secret_key: &[u8; 32],
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
-    let secret = SecretKey::from_slice(secret_key).map_err(|_| CryptoError::InvalidKey)?;
+    let secret =
+        SecretKey::from_slice(secret_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     let signing_key = SigningKey::from(&secret);
     let verifying_key = signing_key.verifying_key();
 

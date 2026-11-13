@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use argon2::{Algorithm, Argon2, Block, Params, Version};
-use crypto_core::{CryptoError, KdfAlgorithm, KdfFailureKind};
+use crypto_core::CryptoError;
 use zeroize::{Zeroize, Zeroizing};
 
 use crate::constants::ARGON2ID_DERIVED_KEY_LENGTH;
@@ -25,17 +25,11 @@ pub struct DeriveKeyRequest<'a> {
 /// intermediate output buffer is zeroized before returning.
 pub fn derive_key(request: &DeriveKeyRequest<'_>) -> Result<Argon2idDerivedKey, CryptoError> {
     let profile = request.profile;
-    let kdf_profile = profile.to_kdf_profile();
+    let _kdf_profile = profile.to_kdf_profile();
     let (m_cost, t_cost, p_cost) = profile.params_tuple();
 
-    let params =
-        Params::new(m_cost, t_cost, p_cost, Some(ARGON2ID_DERIVED_KEY_LENGTH)).map_err(|_| {
-            CryptoError::Kdf {
-                algorithm: KdfAlgorithm::Argon2id,
-                profile: kdf_profile,
-                kind: KdfFailureKind::InvalidParams,
-            }
-        })?;
+    let params = Params::new(m_cost, t_cost, p_cost, Some(ARGON2ID_DERIVED_KEY_LENGTH))
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER)?;
 
     let block_count = params.block_count();
     let argon2 = Argon2::new(Algorithm::Argon2id, Version::V0x13, params);
@@ -47,11 +41,7 @@ pub fn derive_key(request: &DeriveKeyRequest<'_>) -> Result<Argon2idDerivedKey, 
     let mut blocks = Vec::new();
     blocks
         .try_reserve_exact(block_count)
-        .map_err(|_| CryptoError::Kdf {
-            algorithm: KdfAlgorithm::Argon2id,
-            profile: kdf_profile,
-            kind: KdfFailureKind::DerivationFailed,
-        })?;
+        .map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
     blocks.resize(block_count, Block::default());
     let mut blocks = Zeroizing::new(blocks);
 
@@ -63,11 +53,7 @@ pub fn derive_key(request: &DeriveKeyRequest<'_>) -> Result<Argon2idDerivedKey, 
             &mut output,
             blocks.as_mut_slice(),
         )
-        .map_err(|_| CryptoError::Kdf {
-            algorithm: KdfAlgorithm::Argon2id,
-            profile: kdf_profile,
-            kind: KdfFailureKind::DerivationFailed,
-        })?;
+        .map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
 
     let mut bytes = [0u8; ARGON2ID_DERIVED_KEY_LENGTH];
     bytes.copy_from_slice(&output);

@@ -4,7 +4,7 @@
 
 //! KMAC256 implementation and typed secret-material owners.
 
-use crypto_core::{CryptoError, KdfAlgorithm, KdfFailureKind, KdfProfile};
+use crypto_core::{CryptoError, KdfFailureKind};
 #[cfg(any(feature = "native", feature = "wasm"))]
 use sha3_kmac::Kmac256;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
@@ -49,7 +49,9 @@ impl Kmac256Key {
     /// length range.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if !(KMAC256_MIN_KEY_LENGTH..=KMAC256_MAX_KEY_LENGTH).contains(&input.len()) {
-            return Err(kmac_error(KdfFailureKind::InvalidSecretLength));
+            return Err(kmac_error(
+                crypto_core::CryptoError::PRIMITIVE_INVALID_PASSWORD,
+            ));
         }
 
         Ok(Self {
@@ -105,16 +107,20 @@ pub fn derive_kmac256(
     output_length: usize,
 ) -> Result<Kmac256Output, CryptoError> {
     if output_length == 0 || output_length > KMAC256_MAX_OUTPUT_LENGTH {
-        return Err(kmac_error(KdfFailureKind::InvalidOutputLength));
+        return Err(kmac_error(
+            crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
+        ));
     }
     if context.len() > KMAC256_MAX_CONTEXT_LENGTH
         || customization.len() > KMAC256_MAX_CUSTOMIZATION_LENGTH
     {
-        return Err(kmac_error(KdfFailureKind::InvalidParams));
+        return Err(kmac_error(
+            crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER,
+        ));
     }
 
     let mut kmac = Kmac256::new(key.as_bytes(), customization)
-        .map_err(|_| kmac_error(KdfFailureKind::InvalidSecretLength))?;
+        .map_err(|_| kmac_error(crypto_core::CryptoError::PRIMITIVE_INVALID_PASSWORD))?;
     kmac.update(context);
     let mut output = Zeroizing::new(vec![0u8; output_length]);
     kmac.finalize_into(&mut output);
@@ -122,9 +128,5 @@ pub fn derive_kmac256(
 }
 
 fn kmac_error(kind: KdfFailureKind) -> CryptoError {
-    CryptoError::Kdf {
-        algorithm: KdfAlgorithm::Kmac256,
-        profile: KdfProfile::Sp800185Kmac256,
-        kind,
-    }
+    kind
 }

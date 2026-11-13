@@ -9,6 +9,8 @@
 //! use ReallyMe's draft-aligned `AKP` wire-format choice pinned by conformance
 //! vectors so they do not overload RFC 8037 `OKP` curves.
 
+mod canonicalize_jwk;
+
 /// JWK data structures and serialization options.
 pub mod jwk;
 

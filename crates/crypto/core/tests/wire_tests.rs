@@ -2,20 +2,17 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#![cfg(feature = "generated")]
+#![cfg(feature = "protobuf")]
 //! Boundary tests for the public crypto protobuf wire helpers.
 #![allow(clippy::unwrap_used)]
 
 use buffa::{EnumValue, Message};
-use crypto_core::{
-    AeadBackend, AeadFailureKind, CryptoError, SignatureBackend, SignatureFailureKind,
-    SignatureOperation,
-};
-use reallyme_crypto_proto::generated::proto::reallyme::crypto::v1::{
+use crypto_core::CryptoError;
+use crypto_proto::generated::proto::reallyme::crypto::v1::{
     __buffa::oneof::crypto_error::Error as CryptoErrorBranch, CryptoError as ProtoCryptoError,
     CryptoErrorReason, CryptoHashRequest, CryptoPrimitiveError, CryptoProviderError,
 };
-use reallyme_crypto_proto::wire::{
+use crypto_proto::wire::{
     decode_protobuf, CryptoWireError, CryptoWireErrorBranch, CryptoWireErrorValidationError,
     CRYPTO_ERROR_ENVELOPE_PROTOBUF_DECODE_LIMIT,
 };
@@ -40,7 +37,7 @@ fn public_wire_error_constructor_rejects_invalid_branch_reason_pairs() {
     .unwrap_err();
     assert_eq!(
         unspecified,
-        CryptoWireErrorValidationError::UnspecifiedReason
+        CryptoWireErrorValidationError::PRIMITIVE_MALFORMED_PROTOBUF
     );
 
     let mismatch = CryptoWireError::try_new(
@@ -50,7 +47,7 @@ fn public_wire_error_constructor_rejects_invalid_branch_reason_pairs() {
     .unwrap_err();
     assert_eq!(
         mismatch,
-        CryptoWireErrorValidationError::BranchReasonMismatch
+        CryptoWireErrorValidationError::PRIMITIVE_MALFORMED_PROTOBUF
     );
 }
 
@@ -181,29 +178,19 @@ fn wire_error_rejects_missing_unspecified_or_mismatched_error_envelopes() {
 
 #[test]
 fn invalid_inputs_do_not_map_to_authentication_failure() {
-    let invalid_key = CryptoWireError::from(CryptoError::InvalidAeadKeyLength {
-        expected: 32,
-        actual: 31,
-    });
+    let invalid_key = CryptoWireError::from(CryptoError::PRIMITIVE_INVALID_KEY);
     assert_eq!(
         invalid_key.reason(),
         CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY
     );
 
-    let invalid_nonce = CryptoWireError::from(CryptoError::InvalidAeadNonceLength {
-        expected: 12,
-        actual: 11,
-    });
+    let invalid_nonce = CryptoWireError::from(CryptoError::PRIMITIVE_INVALID_NONCE);
     assert_eq!(
         invalid_nonce.reason(),
         CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_NONCE
     );
 
-    let invalid_public_key = CryptoWireError::from(CryptoError::Signature {
-        backend: SignatureBackend::Native,
-        operation: SignatureOperation::Verify,
-        kind: SignatureFailureKind::InvalidPublicKey,
-    });
+    let invalid_public_key = CryptoWireError::from(CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY);
     assert_eq!(
         invalid_public_key.reason(),
         CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PUBLIC_KEY
@@ -212,12 +199,79 @@ fn invalid_inputs_do_not_map_to_authentication_failure() {
 
 #[test]
 fn authentication_failures_remain_authentication_failures() {
-    let auth = CryptoWireError::from(CryptoError::AeadDecrypt {
-        backend: AeadBackend::Native,
-        kind: AeadFailureKind::AuthenticationFailed,
-    });
+    let auth = CryptoWireError::from(CryptoError::PRIMITIVE_AUTHENTICATION_FAILED);
     assert_eq!(
         auth.reason(),
         CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED
     );
+}
+
+#[test]
+fn every_nonzero_canonical_reason_round_trips_through_the_wire_owner() {
+    for &reason in crypto_core::CryptoErrorReason::VALUES {
+        let native = CryptoError::try_new(reason);
+        if reason.code() == 0 {
+            assert_eq!(native, Err(CryptoError::PRIMITIVE_INVALID_PARAMETER));
+            continue;
+        }
+        let native = native.unwrap();
+        assert_eq!(native.reason(), reason);
+        assert_eq!(CryptoError::try_from(native.code()), Ok(native));
+        let wire = CryptoWireError::from(native);
+        assert_eq!(wire.known_reason(), Some(reason));
+        assert_eq!(wire.reason_code(), native.code());
+        assert_eq!(
+            CryptoWireError::decode(&wire.encode_to_vec()).unwrap(),
+            wire
+        );
+    }
+}
+
+#[test]
+fn provider_reasons_204_through_210_are_known_and_accepted() {
+    for code in 204_i32..=210 {
+        let native = CryptoError::try_from(code).unwrap();
+        assert_eq!(
+            native.reason().branch(),
+            Some(crypto_core::CryptoErrorBranch::Provider)
+        );
+        let wire = CryptoWireError::from(native);
+        assert_eq!(wire.branch(), CryptoWireErrorBranch::Provider);
+        assert_eq!(wire.reason_code(), code);
+        assert_eq!(wire.known_reason(), Some(native.reason()));
+        assert_eq!(
+            CryptoWireError::try_new(CryptoWireErrorBranch::Provider, native.reason()),
+            Ok(wire)
+        );
+        assert_eq!(
+            CryptoWireError::decode(&wire.encode_to_vec()).unwrap(),
+            wire
+        );
+        assert_eq!(
+            CryptoWireError::try_new(CryptoWireErrorBranch::Primitive, native.reason()),
+            Err(CryptoError::PRIMITIVE_MALFORMED_PROTOBUF)
+        );
+    }
+}
+
+#[test]
+fn canonical_native_errors_reject_unknown_zero_and_negative_codes() {
+    for code in [i32::MIN, -1, 0, 199, 299, 777, i32::MAX] {
+        assert_eq!(
+            CryptoError::try_from(code),
+            Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
+        );
+    }
+    for code in [i32::MIN, -1, 0, 99, 300, i32::MAX] {
+        assert_eq!(
+            CryptoWireError::try_from_reason_code(CryptoWireErrorBranch::Provider, code),
+            Err(CryptoError::PRIMITIVE_MALFORMED_PROTOBUF)
+        );
+    }
+    // Unknown codes remain forwardable only inside their declared wire band.
+    let future =
+        CryptoWireError::try_from_reason_code(CryptoWireErrorBranch::Provider, 299).unwrap();
+    assert_eq!(future.branch(), CryptoWireErrorBranch::Provider);
+    assert_eq!(future.known_reason(), None);
+    assert_eq!(future.reason_code(), 299);
 }

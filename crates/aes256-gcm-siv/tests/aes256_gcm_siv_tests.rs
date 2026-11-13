@@ -114,13 +114,7 @@ fn invalid_key_length_is_rejected() {
     for actual in [0usize, 1, 31, 33, 64] {
         let input = vec![0u8; actual];
         let result = Aes256GcmSivKey::from_slice(&input);
-        assert!(matches!(
-            result,
-            Err(CryptoError::InvalidAeadKeyLength {
-                expected: 32,
-                actual,
-            }) if actual == input.len()
-        ));
+        assert!(matches!(result, Err(CryptoError::PRIMITIVE_INVALID_KEY)));
     }
 }
 
@@ -129,13 +123,7 @@ fn invalid_nonce_length_is_rejected() {
     for actual in [0usize, 1, 11, 13, 24] {
         let input = vec![0u8; actual];
         let result = Aes256GcmSivNonce::from_slice(&input);
-        assert!(matches!(
-            result,
-            Err(CryptoError::InvalidAeadNonceLength {
-                expected: 12,
-                actual,
-            }) if actual == input.len()
-        ));
+        assert!(matches!(result, Err(CryptoError::PRIMITIVE_INVALID_NONCE)));
     }
 }
 
@@ -143,13 +131,7 @@ fn invalid_nonce_length_is_rejected() {
 fn too_short_ciphertext_is_rejected() {
     for expected_actual in 0usize..AES_256_GCM_SIV_TAG_LENGTH {
         let result = CiphertextWithTag::from_vec(vec![0u8; expected_actual]);
-        assert!(matches!(
-            result,
-            Err(CryptoError::InvalidCiphertextLength {
-                minimum,
-                actual,
-            }) if minimum == AES_256_GCM_SIV_TAG_LENGTH && actual == expected_actual
-        ));
+        assert!(matches!(result, Err(CryptoError::PRIMITIVE_INVALID_LENGTH)));
     }
 }
 
@@ -190,7 +172,10 @@ fn decryption_fails_with_wrong_key() {
         aad: b"aad",
         ciphertext: &encrypted,
     });
-    assert!(matches!(result, Err(CryptoError::AeadDecrypt { .. })));
+    assert!(matches!(
+        result,
+        Err(CryptoError::PRIMITIVE_AUTHENTICATION_FAILED)
+    ));
 }
 
 #[test]
@@ -232,7 +217,10 @@ fn decryption_fails_with_tampered_ciphertext() {
         aad: b"aad",
         ciphertext: &tampered,
     });
-    assert!(matches!(result, Err(CryptoError::AeadDecrypt { .. })));
+    assert!(matches!(
+        result,
+        Err(CryptoError::PRIMITIVE_AUTHENTICATION_FAILED)
+    ));
 }
 
 #[test]
@@ -265,5 +253,8 @@ fn decryption_fails_when_aad_does_not_match() {
         aad: b"aad-two",
         ciphertext: &encrypted,
     });
-    assert!(matches!(result, Err(CryptoError::AeadDecrypt { .. })));
+    assert!(matches!(
+        result,
+        Err(CryptoError::PRIMITIVE_AUTHENTICATION_FAILED)
+    ));
 }

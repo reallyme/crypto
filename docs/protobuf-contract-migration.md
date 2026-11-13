@@ -55,11 +55,80 @@ sources compile in the native all-targets check; test execution is deferred.
 The broader WASM all-targets check is blocked by an existing missing crate-doc
 lint in `aead_root_open_operation_tests.rs` when that test is feature-disabled.
 
+## Canonical native error contract
+
+The 0.4 native `CryptoError` is a validated `thiserror` struct, not a second
+error enum. Its private classification field is the schema-generated
+`CryptoErrorReason`; each error instance contains exactly one known, nonzero
+reason. Each generated error constant fixes exactly one schema value. This
+preserves the one-reason-per-classification rule without restating every reason
+as another public set of variants. The Buffa bindings re-export that same enum;
+its idiomatic aliases do not create additional values or types.
+
+`CryptoError::VALUES` enumerates every native failure constant once, excluding
+the zero sentinel. Parity test sources compare its complete reason/code set
+against `CryptoErrorReason::VALUES` with zero removed and require unique native
+constants; generator coverage also checks every constant declaration. Execution
+of these tests remains deferred.
+
+The zero sentinel remains available for protobuf defaults. It cannot construct
+a native failure, and unknown numeric reasons are rejected with the fixed
+invalid-parameter error. The native error has no `Default`, input-bearing
+context fields, unchecked serde constructor, or provider diagnostic text.
+Wire envelopes continue to represent primitive, provider, and backend ownership
+through the schema oneof; branch metadata is generated from its descriptors.
+
+The native error implementation now replaces the former core failure kinds,
+operation reasons, dispatch/signer wrappers and primitive-specific error enums.
+Existing area names are aliases of the same validated type. Native-to-wire
+conversion preserves the original reason and uses generated branch ownership;
+all provider reasons 204–210 are accepted. Signature rejection, authentication
+failure and MAC/equality verification retain separate canonical reasons.
+Caller-controlled invalid nonce, tag, password and salt errors are no longer
+coalesced into an unrelated key or length error.
+
+Algorithm conversions now live with their native owners: core conversions use
+`crypto-core/protobuf` and HPKE conversions use `crypto-hpke/proto`. The protobuf
+package has no dependency on those implementations. Default core builds depend
+only on the minimal schema error types and `thiserror`, without Buffa or JSON.
+All Rust release packages and local pins target unpublished version 0.4.0.
+Existing registry packages, SDK artifact pins and release tags remain intact.
+
+C ABI integers and WASM's five numeric status values remain unchanged. Their
+coarse projections are explicit and exhaustive over the canonical reason enum;
+structured protobuf routes preserve exact reasons. Rejected JavaScript output
+property writes now return a backend failure and clear the unpublished byte copy.
+
+The native workspace compiles and passes strict Clippy for all targets/features;
+all test sources compile. Eleven narrow native operation profiles, the selected
+WASM profile and full WASM SDK (including test-source compilation), Buf
+lint/breaking against the published baseline, regeneration,
+idempotence, TypeScript compilation and the CI policy checks pass. No Rust,
+Node, browser, SDK or device tests were executed during this migration. Runtime
+regressions, including browser property-write failures, require execution before
+release approval.
+
+## Error generation and freshness
+
+Error code generation is maintenance work, not a Cargo build step. The existing
+protobuf freshness pipeline runs `buf generate`, then the secret-owner hardener,
+then `node scripts/generate_error_contract.mjs`. The generator reads a bounded
+Buf FileDescriptorSet and derives the reason values, names, aliases, constants,
+and known branch ownership. It replaces the duplicate Buffa reason declaration
+while retaining the generated wire traits on the shared type. The existing
+freshness snapshot compares the resulting committed files, so CI needs one
+generation pass rather than an additional generator job or repeated check.
+
+For a standalone read-only maintenance check, run
+`node scripts/generate_error_contract.mjs --check` after regeneration. Unchanged
+outputs preserve their file timestamps. Changes to the schema, generator, or its
+test sources select the existing protobuf workflow. Ordinary `--ci-policy`
+validation checks the shared-owner source invariants without invoking Buf,
+generating code, or launching repository tests; the existing tooling jobs own
+those tests. Full local and release modes retain their complete test routing.
+
 ## Remaining work
 
-- Replace legacy error taxonomies with the strict 0.4 schema-reason API and
-  exhaustive per-variant coverage; fix missing provider reasons and lossy
-  projections as part of that migration.
 - Migrate the remaining options, policies, content modes, key-source contracts,
   operations and limits in separate areas with generated/native parity.
 - Keep absent-versus-empty semantics explicit. The baseline crypto schema has

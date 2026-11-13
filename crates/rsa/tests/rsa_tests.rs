@@ -5,7 +5,7 @@
 //! RSA verification tests.
 
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 use crypto_rsa::{
     verify_rsa_pkcs1v15, verify_rsa_pss, RsaHash, RsaPssParams, RsaPublicKeyDerEncoding,
 };
@@ -24,11 +24,7 @@ const PSS_SHA512: &str = "rzU-aGeM1kEp6mvkQgaJ9myGNXyGtP6r18iBfZNEXf0viVvOjL_ebV
 fn assert_invalid_signature(result: Result<(), CryptoError>) {
     assert!(matches!(
         result,
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: SignatureOperation::Verify,
-            kind: SignatureFailureKind::InvalidSignature,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     ));
 }
 
@@ -112,7 +108,9 @@ fn pkcs1v15_rejects_tampered_message_and_signature() -> Result<(), CryptoError> 
         &signature,
     ));
 
-    let first = signature.first_mut().ok_or(CryptoError::InvalidKey)?;
+    let first = signature
+        .first_mut()
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?;
     *first ^= 0x01;
     assert_invalid_signature(verify_rsa_pkcs1v15(
         &public_der,
@@ -144,7 +142,9 @@ fn pss_rejects_wrong_salt_length_and_tampering() -> Result<(), CryptoError> {
         &signature,
     ));
 
-    let last = signature.last_mut().ok_or(CryptoError::InvalidKey)?;
+    let last = signature
+        .last_mut()
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?;
     *last ^= 0x01;
     let correct_params = RsaPssParams {
         salt_len: 32,
@@ -169,13 +169,15 @@ fn invalid_key_and_signature_lengths_are_rejected() -> Result<(), CryptoError> {
 
     assert!(matches!(
         verify_rsa_pkcs1v15(
-            public_der.get(..8).ok_or(CryptoError::InvalidKey)?,
+            public_der
+                .get(..8)
+                .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?,
             RsaPublicKeyDerEncoding::Pkcs1,
             RsaHash::Sha256,
             &message,
             &signature,
         ),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
 
     assert_invalid_signature(verify_rsa_pkcs1v15(
@@ -185,7 +187,7 @@ fn invalid_key_and_signature_lengths_are_rejected() -> Result<(), CryptoError> {
         &message,
         signature
             .get(..signature.len().saturating_sub(1))
-            .ok_or(CryptoError::InvalidKey)?,
+            .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?,
     ));
 
     Ok(())
@@ -204,10 +206,10 @@ fn signature_equal_to_modulus_is_rejected_before_rsa_verification() -> Result<()
     );
     let modulus_end = MODULUS_OFFSET
         .checked_add(MODULUS_LENGTH)
-        .ok_or(CryptoError::InvalidKey)?;
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?;
     let signature = public_der
         .get(MODULUS_OFFSET..modulus_end)
-        .ok_or(CryptoError::InvalidKey)?;
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?;
     let message = decode(MESSAGE)?;
     assert_invalid_signature(verify_rsa_pkcs1v15(
         &public_der,
@@ -251,7 +253,7 @@ fn pss_cases() -> Result<[(RsaHash, usize, Vec<u8>); 4], CryptoError> {
 fn decode(value: &str) -> Result<Vec<u8>, CryptoError> {
     URL_SAFE_NO_PAD
         .decode(value)
-        .map_err(|_| CryptoError::InvalidKey)
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)
 }
 
 fn build_spki_der(pkcs1_der: &[u8]) -> Result<Vec<u8>, CryptoError> {
@@ -262,16 +264,16 @@ fn build_spki_der(pkcs1_der: &[u8]) -> Result<Vec<u8>, CryptoError> {
     let bit_string_content_len = pkcs1_der
         .len()
         .checked_add(1)
-        .ok_or(CryptoError::InvalidKey)?;
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?;
     let bit_string_len_len = der_length_len(bit_string_content_len)?;
     let bit_string_total_len = 1usize
         .checked_add(bit_string_len_len)
         .and_then(|value| value.checked_add(bit_string_content_len))
-        .ok_or(CryptoError::InvalidKey)?;
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?;
     let sequence_content_len = RSA_ENCRYPTION_ALGORITHM_IDENTIFIER
         .len()
         .checked_add(bit_string_total_len)
-        .ok_or(CryptoError::InvalidKey)?;
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?;
 
     let mut der = Vec::new();
     der.push(0x30);
@@ -286,7 +288,7 @@ fn build_spki_der(pkcs1_der: &[u8]) -> Result<Vec<u8>, CryptoError> {
 
 fn append_der_length(out: &mut Vec<u8>, len: usize) -> Result<(), CryptoError> {
     if len < 0x80 {
-        out.push(u8::try_from(len).map_err(|_| CryptoError::InvalidKey)?);
+        out.push(u8::try_from(len).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?);
         return Ok(());
     }
 
@@ -296,10 +298,10 @@ fn append_der_length(out: &mut Vec<u8>, len: usize) -> Result<(), CryptoError> {
         let value = (len >> shift) & 0xff;
         if value != 0 || started {
             started = true;
-            bytes.push(u8::try_from(value).map_err(|_| CryptoError::InvalidKey)?);
+            bytes.push(u8::try_from(value).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?);
         }
     }
-    let len_of_len = u8::try_from(bytes.len()).map_err(|_| CryptoError::InvalidKey)?;
+    let len_of_len = u8::try_from(bytes.len()).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     out.push(0x80 | len_of_len);
     out.extend_from_slice(&bytes);
     Ok(())
@@ -316,8 +318,12 @@ fn der_length_len(len: usize) -> Result<usize, CryptoError> {
         let value = (len >> shift) & 0xff;
         if value != 0 || started {
             started = true;
-            count = count.checked_add(1).ok_or(CryptoError::InvalidKey)?;
+            count = count
+                .checked_add(1)
+                .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?;
         }
     }
-    count.checked_add(1).ok_or(CryptoError::InvalidKey)
+    count
+        .checked_add(1)
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)
 }

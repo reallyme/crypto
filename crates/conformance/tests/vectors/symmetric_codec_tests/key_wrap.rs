@@ -54,10 +54,7 @@ fn verify_aes_kw_vector(
         let kek = Aes256KwKek::from_slice(&kek_bytes).map_err(|_| VectorTestError::AesKw)?;
         assert!(matches!(
             unwrap_key_aes256(&kek, &wrapped_key[..15]),
-            Err(crypto_core::CryptoError::KeyWrap {
-                kind: crypto_core::KeyWrapFailureKind::InvalidWrappedLength,
-                ..
-            })
+            Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)
         ));
     }
 

@@ -5,12 +5,9 @@
 //! Semantic owner for raw key-agreement operations.
 
 use crypto_core::Algorithm;
-use crypto_dispatch::AlgorithmError;
 use zeroize::Zeroizing;
 
-use crate::operations::{
-    BackendErrorReason, OperationError, PrimitiveErrorReason, ProviderErrorReason,
-};
+use crate::operations::OperationError;
 use crate::secret_material::{bind_operation_policy, SecretMaterialOperation};
 
 /// Raw public/secret keypair returned by a key-agreement key-management operation.
@@ -25,9 +22,7 @@ pub struct KeyAgreementKeyPair {
 pub fn generate_key_pair(algorithm: Algorithm) -> Result<KeyAgreementKeyPair, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::KeyAgreementKeyGeneration);
     ensure_key_agreement_algorithm(algorithm)?;
-    crypto_dispatch::generate_keypair(algorithm)
-        .map(key_agreement_key_pair)
-        .map_err(map_dispatch_error)
+    crypto_dispatch::generate_keypair(algorithm).map(key_agreement_key_pair)
 }
 
 /// Reconstructs a raw key-agreement keypair from seed or scalar material.
@@ -37,9 +32,7 @@ pub fn derive_key_pair(
 ) -> Result<KeyAgreementKeyPair, OperationError> {
     let _policy = bind_operation_policy(SecretMaterialOperation::KeyAgreementKeyDerivation);
     ensure_key_agreement_algorithm(algorithm)?;
-    crypto_dispatch::derive_keypair(algorithm, secret_key)
-        .map(key_agreement_key_pair)
-        .map_err(map_dispatch_error)
+    crypto_dispatch::derive_keypair(algorithm, secret_key).map(key_agreement_key_pair)
 }
 
 /// Derives the raw Diffie-Hellman shared secret.
@@ -55,7 +48,6 @@ pub fn derive_shared_secret(
     let _policy = bind_operation_policy(SecretMaterialOperation::KeyAgreementSharedSecret);
     ensure_key_agreement_algorithm(algorithm)?;
     crypto_dispatch::derive_shared_secret(algorithm, secret_key, public_key)
-        .map_err(map_dispatch_error)
 }
 
 /// Supports X25519 and NIST-curve raw key agreement.
@@ -70,9 +62,7 @@ fn ensure_key_agreement_algorithm(algorithm: Algorithm) -> Result<(), OperationE
     if is_key_agreement_algorithm(algorithm) {
         Ok(())
     } else {
-        Err(OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        })
+        Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }
 
@@ -82,53 +72,5 @@ fn key_agreement_key_pair(
     KeyAgreementKeyPair {
         public_key,
         secret_key,
-    }
-}
-
-fn map_dispatch_error(error: AlgorithmError) -> OperationError {
-    match error {
-        AlgorithmError::UnsupportedAlgorithm(_)
-        | AlgorithmError::UnsupportedAeadAlgorithm(_)
-        | AlgorithmError::UnsupportedHashAlgorithm(_)
-        | AlgorithmError::UnsupportedMacAlgorithm(_) => OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        },
-        AlgorithmError::InvalidKey(_) => OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey,
-        },
-        AlgorithmError::SignatureInvalid(_) => OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed,
-        },
-        AlgorithmError::Crypto(error) => map_crypto_error(error),
-        _ => OperationError::Backend {
-            reason: BackendErrorReason::Internal,
-        },
-    }
-}
-
-fn map_crypto_error(error: crypto_core::CryptoError) -> OperationError {
-    match error {
-        crypto_core::CryptoError::InvalidKey => OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey,
-        },
-        crypto_core::CryptoError::KeyAgreementFailure { kind } => match kind {
-            crypto_core::KeyAgreementFailureKind::DeriveSharedSecretFailed => {
-                OperationError::Primitive {
-                    reason: PrimitiveErrorReason::InvalidSharedSecret,
-                }
-            }
-            crypto_core::KeyAgreementFailureKind::KeyGenerationFailed => OperationError::Backend {
-                reason: BackendErrorReason::Internal,
-            },
-            _ => OperationError::Backend {
-                reason: BackendErrorReason::Internal,
-            },
-        },
-        crypto_core::CryptoError::Unsupported => OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        },
-        _ => OperationError::Backend {
-            reason: BackendErrorReason::Internal,
-        },
     }
 }

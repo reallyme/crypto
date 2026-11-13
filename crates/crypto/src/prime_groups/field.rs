@@ -9,29 +9,29 @@ use crypto_bigint::{
 use secrecy::SecretSlice;
 use zeroize::Zeroizing;
 
-use super::{secret, GroupError, GroupErrorReason};
+use super::{secret, CryptoError};
 
 // A local bound on secret reduction inputs, not a group-standard constraint.
 pub(super) const MAX_REDUCTION_BYTES: usize = 512;
 
-pub(super) fn precision(length: usize) -> Result<u32, GroupError> {
+pub(super) fn precision(length: usize) -> Result<u32, CryptoError> {
     u32::try_from(length)
         .ok()
         .and_then(|value| value.checked_mul(u8::BITS))
-        .ok_or(GroupErrorReason::Arithmetic.into())
+        .ok_or(CryptoError::BACKEND_INTERNAL)
 }
 
-pub(super) fn integer(bytes: &[u8], bits: u32) -> Result<Zeroizing<BoxedUint>, GroupError> {
+pub(super) fn integer(bytes: &[u8], bits: u32) -> Result<Zeroizing<BoxedUint>, CryptoError> {
     BoxedUint::from_be_slice(bytes, bits)
         .map(Zeroizing::new)
-        .map_err(|_| GroupErrorReason::Arithmetic.into())
+        .map_err(|_| CryptoError::BACKEND_INTERNAL)
 }
 
-pub(super) fn params(modulus: &[u8]) -> Result<BoxedMontyParams, GroupError> {
+pub(super) fn params(modulus: &[u8]) -> Result<BoxedMontyParams, CryptoError> {
     let value = BoxedUint::from_be_slice(modulus, precision(modulus.len())?)
-        .map_err(|_| GroupErrorReason::Arithmetic)?;
+        .map_err(|_| CryptoError::BACKEND_INTERNAL)?;
     let odd =
-        Option::<Odd<BoxedUint>>::from(Odd::new(value)).ok_or(GroupErrorReason::Arithmetic)?;
+        Option::<Odd<BoxedUint>>::from(Odd::new(value)).ok_or(CryptoError::BACKEND_INTERNAL)?;
     // The modulus is one of the built-in public constants. Its preprocessing
     // may vary with that public value, never with a private scalar or nonce.
     Ok(BoxedMontyParams::new_vartime(odd))
@@ -40,9 +40,9 @@ pub(super) fn params(modulus: &[u8]) -> Result<BoxedMontyParams, GroupError> {
 pub(super) fn reduce(
     bytes: &[u8],
     params: &BoxedMontyParams,
-) -> Result<Zeroizing<BoxedUint>, GroupError> {
+) -> Result<Zeroizing<BoxedUint>, CryptoError> {
     if bytes.is_empty() || bytes.len() > MAX_REDUCTION_BYTES {
-        return Err(GroupErrorReason::InvalidLength.into());
+        return Err(CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
     let input_bits = precision(bytes.len())?.max(params.bits_precision());
     let input = integer(bytes, input_bits)?;
@@ -56,7 +56,7 @@ pub(super) fn reduce(
 pub(super) fn form(
     bytes: &[u8],
     params: &BoxedMontyParams,
-) -> Result<Zeroizing<BoxedMontyForm>, GroupError> {
+) -> Result<Zeroizing<BoxedMontyForm>, CryptoError> {
     let reduced = reduce(bytes, params)?;
     Ok(Zeroizing::new(BoxedMontyForm::new(
         (*reduced).clone(),
@@ -64,24 +64,24 @@ pub(super) fn form(
     )))
 }
 
-pub(super) fn encode(value: &BoxedUint, length: usize) -> Result<SecretSlice<u8>, GroupError> {
+pub(super) fn encode(value: &BoxedUint, length: usize) -> Result<SecretSlice<u8>, CryptoError> {
     let bytes = Zeroizing::new(value.to_be_bytes());
     let start = bytes
         .len()
         .checked_sub(length)
-        .ok_or(GroupErrorReason::Arithmetic)?;
-    let prefix = bytes.get(..start).ok_or(GroupErrorReason::Arithmetic)?;
+        .ok_or(CryptoError::BACKEND_INTERNAL)?;
+    let prefix = bytes.get(..start).ok_or(CryptoError::BACKEND_INTERNAL)?;
     // A fixed public-width encoding must never silently truncate a value.
     if prefix.iter().fold(0u8, |acc, byte| acc | byte) != 0 {
-        return Err(GroupErrorReason::Arithmetic.into());
+        return Err(CryptoError::BACKEND_INTERNAL);
     }
-    secret::copy(bytes.get(start..).ok_or(GroupErrorReason::Arithmetic)?)
+    secret::copy(bytes.get(start..).ok_or(CryptoError::BACKEND_INTERNAL)?)
 }
 
 pub(super) fn encode_form(
     value: &BoxedMontyForm,
     length: usize,
-) -> Result<SecretSlice<u8>, GroupError> {
+) -> Result<SecretSlice<u8>, CryptoError> {
     let integer = Zeroizing::new(value.retrieve());
     encode(&integer, length)
 }

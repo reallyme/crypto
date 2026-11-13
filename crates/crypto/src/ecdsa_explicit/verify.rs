@@ -4,20 +4,20 @@
 
 use ecdsa::signature::hazmat::PrehashVerifier;
 
-use super::{digest::with_digest, EcdsaCurve, EcdsaEncoding, EcdsaError, EcdsaInput};
+use super::{digest::with_digest, CryptoError, EcdsaCurve, EcdsaEncoding, EcdsaInput};
 
 /// Validate an encoded SEC1 public point for the specified curve.
-pub fn validate_public_key(curve: EcdsaCurve, public: &[u8]) -> Result<(), EcdsaError> {
+pub fn validate_public_key(curve: EcdsaCurve, public: &[u8]) -> Result<(), CryptoError> {
     match curve {
         EcdsaCurve::P256 => p256::PublicKey::from_sec1_bytes(public)
             .map(|_| ())
-            .map_err(|_| EcdsaError::InvalidPublicKey),
+            .map_err(|_| CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY),
         EcdsaCurve::P384 => p384::PublicKey::from_sec1_bytes(public)
             .map(|_| ())
-            .map_err(|_| EcdsaError::InvalidPublicKey),
+            .map_err(|_| CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY),
         EcdsaCurve::P521 => p521::PublicKey::from_sec1_bytes(public)
             .map(|_| ())
-            .map_err(|_| EcdsaError::InvalidPublicKey),
+            .map_err(|_| CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY),
         #[cfg(all(feature = "brainpool-openssl", not(target_arch = "wasm32")))]
         curve => super::brainpool::validate_public(curve, public),
         #[cfg(all(
@@ -29,7 +29,7 @@ pub fn validate_public_key(curve: EcdsaCurve, public: &[u8]) -> Result<(), Ecdsa
             feature = "brainpool",
             all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
         )))]
-        _ => Err(EcdsaError::UnsupportedCurve),
+        _ => Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
     }
 }
 
@@ -41,7 +41,7 @@ pub fn verify(
     input: EcdsaInput<'_>,
     signature: &[u8],
     encoding: EcdsaEncoding,
-) -> Result<(), EcdsaError> {
+) -> Result<(), CryptoError> {
     curve.scalar_len()?;
     super::encode::validate_length(curve, signature, encoding)?;
     with_digest(input, |_, digest| {
@@ -60,12 +60,12 @@ pub fn verify(
         macro_rules! verify_curve {
             ($backend:ident) => {{
                 let public = $backend::ecdsa::VerifyingKey::from_sec1_bytes(public)
-                    .map_err(|_| EcdsaError::InvalidPublicKey)?;
+                    .map_err(|_| CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY)?;
                 let signature = $backend::ecdsa::Signature::from_slice(signature)
-                    .map_err(|_| EcdsaError::InvalidSignature)?;
+                    .map_err(|_| CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
                 public
                     .verify_prehash(digest, &signature)
-                    .map_err(|_| EcdsaError::InvalidSignature)
+                    .map_err(|_| CryptoError::PRIMITIVE_INVALID_SIGNATURE)
             }};
         }
         match curve {
@@ -95,7 +95,7 @@ pub fn verify(
                 feature = "brainpool",
                 all(feature = "brainpool-openssl", not(target_arch = "wasm32"))
             )))]
-            _ => Err(EcdsaError::UnsupportedCurve),
+            _ => Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
         }
     })
 }

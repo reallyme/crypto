@@ -29,7 +29,6 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 };
 use crypto_proto::operation_response_wire::decode_operation_response;
 use reallyme_crypto::operations::signature::SignatureKeyPair;
-use reallyme_crypto::operations::{OperationError, PrimitiveErrorReason, ProviderErrorReason};
 use serde::Deserialize;
 use zeroize::Zeroizing;
 
@@ -107,9 +106,7 @@ fn semantic_owner_and_root_facades_match_every_committed_pq_signature_vector() {
                 &tampered,
             )
             .expect_err("tampered signature fails closed"),
-            OperationError::Primitive {
-                reason: PrimitiveErrorReason::VerificationFailed,
-            }
+            CryptoError::PRIMITIVE_INVALID_SIGNATURE
         );
     }
 }
@@ -241,9 +238,7 @@ fn pq_signature_failures_are_typed_and_invalid_signatures_are_not_errors() {
 
     assert_eq!(
         reallyme_crypto::operations::signature::generate_key_pair(Algorithm::MlKem512).err(),
-        Some(OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        })
+        Some(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     );
     assert_top_level_error(
         CryptoOperation::SignatureGenerateKeyPair(Box::new(
@@ -270,20 +265,20 @@ fn facade_derive_key_pair(
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
     match algorithm {
         Algorithm::MlDsa44 => reallyme_crypto::ml_dsa_44::generate_ml_dsa_44_keypair_from_seed(
-            <&[u8; 32]>::try_from(seed).map_err(|_| CryptoError::InvalidKey)?,
+            <&[u8; 32]>::try_from(seed).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?,
         ),
         Algorithm::MlDsa65 => reallyme_crypto::ml_dsa_65::generate_ml_dsa_65_keypair_from_seed(
-            <&[u8; 32]>::try_from(seed).map_err(|_| CryptoError::InvalidKey)?,
+            <&[u8; 32]>::try_from(seed).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?,
         ),
         Algorithm::MlDsa87 => reallyme_crypto::ml_dsa_87::generate_ml_dsa_87_keypair_from_seed(
-            <&[u8; 32]>::try_from(seed).map_err(|_| CryptoError::InvalidKey)?,
+            <&[u8; 32]>::try_from(seed).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?,
         ),
         Algorithm::SlhDsaSha2_128s => reallyme_crypto::slh_dsa::derive_slh_dsa_sha2_128s_keypair(
-            seed.get(..16).ok_or(CryptoError::InvalidKey)?,
-            seed.get(16..32).ok_or(CryptoError::InvalidKey)?,
-            seed.get(32..48).ok_or(CryptoError::InvalidKey)?,
+            seed.get(..16).ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?,
+            seed.get(16..32).ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?,
+            seed.get(32..48).ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?,
         ),
-        _ => Err(CryptoError::Unsupported),
+        _ => Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
     }
 }
 
@@ -299,7 +294,7 @@ fn facade_sign(
         Algorithm::SlhDsaSha2_128s => {
             reallyme_crypto::slh_dsa::sign_slh_dsa_sha2_128s(secret_key, message)
         }
-        _ => Err(CryptoError::Unsupported),
+        _ => Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
     }
 }
 

@@ -5,8 +5,8 @@
 use crate::guard::ffi_guard;
 use crate::pointer::{read_slice, validate_output_len_pair, write_fixed, write_len};
 use crate::status::{
-    CryptoStatus, CRYPTO_AUTHENTICATION_FAILED, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INTERNAL_ERROR,
-    CRYPTO_INVALID_ARGUMENT, CRYPTO_INVALID_CIPHERTEXT, CRYPTO_INVALID_KEY, CRYPTO_OK,
+    CryptoStatus, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INVALID_ARGUMENT, CRYPTO_INVALID_CIPHERTEXT,
+    CRYPTO_OK,
 };
 use crypto_core::AeadAlgorithm;
 use reallyme_crypto::chacha20_poly1305::{
@@ -235,7 +235,7 @@ fn encrypt_chacha20_poly1305(
     };
     let ciphertext = match ciphertext {
         Ok(value) => value,
-        Err(_) => return CRYPTO_INTERNAL_ERROR,
+        Err(error) => return crate::error_status::aead_seal_status(error),
     };
     // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
     // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
@@ -326,7 +326,7 @@ fn decrypt_chacha20_poly1305(
     };
     let plaintext = match plaintext {
         Ok(value) => value,
-        Err(_) => return CRYPTO_AUTHENTICATION_FAILED,
+        Err(error) => return crate::error_status::aead_open_status(error),
     };
     // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
     // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
@@ -343,7 +343,8 @@ fn read_key(ptr: *const u8, len: usize) -> Result<ChaCha20Poly1305Key, CryptoSta
     // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
     // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
     match unsafe { read_slice(ptr, len) } {
-        Ok(value) => ChaCha20Poly1305Key::from_slice(value).map_err(|_| CRYPTO_INVALID_KEY),
+        Ok(value) => ChaCha20Poly1305Key::from_slice(value)
+            .map_err(crate::error_status::key_management_status),
         Err(status) => Err(status),
     }
 }
@@ -352,7 +353,9 @@ fn read_chacha_nonce(ptr: *const u8, len: usize) -> Result<ChaCha20Poly1305Nonce
     // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
     // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
     match unsafe { read_slice(ptr, len) } {
-        Ok(value) => ChaCha20Poly1305Nonce::from_slice(value).map_err(|_| CRYPTO_INVALID_ARGUMENT),
+        Ok(value) => {
+            ChaCha20Poly1305Nonce::from_slice(value).map_err(crate::error_status::aead_seal_status)
+        }
         Err(status) => Err(status),
     }
 }
@@ -361,7 +364,9 @@ fn read_xchacha_nonce(ptr: *const u8, len: usize) -> Result<XChaCha20Poly1305Non
     // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
     // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
     match unsafe { read_slice(ptr, len) } {
-        Ok(value) => XChaCha20Poly1305Nonce::from_slice(value).map_err(|_| CRYPTO_INVALID_ARGUMENT),
+        Ok(value) => {
+            XChaCha20Poly1305Nonce::from_slice(value).map_err(crate::error_status::aead_seal_status)
+        }
         Err(status) => Err(status),
     }
 }

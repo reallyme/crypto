@@ -33,27 +33,29 @@ fn encoded_message(prefix: &[u8], digest: &[u8]) -> Result<[u8; 128], CryptoErro
     let digest_info_length = prefix
         .len()
         .checked_add(digest.len())
-        .ok_or(CryptoError::InvalidKey)?;
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?;
     let digest_info_start = encoded
         .len()
         .checked_sub(digest_info_length)
-        .ok_or(CryptoError::InvalidKey)?;
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?;
     let separator = digest_info_start
         .checked_sub(1)
-        .ok_or(CryptoError::InvalidKey)?;
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?;
     let digest_start = digest_info_start
         .checked_add(prefix.len())
-        .ok_or(CryptoError::InvalidKey)?;
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?;
     encoded[0] = 0;
     encoded[1] = 1;
-    *encoded.get_mut(separator).ok_or(CryptoError::InvalidKey)? = 0;
+    *encoded
+        .get_mut(separator)
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)? = 0;
     encoded
         .get_mut(digest_info_start..digest_start)
-        .ok_or(CryptoError::InvalidKey)?
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?
         .copy_from_slice(prefix);
     encoded
         .get_mut(digest_start..)
-        .ok_or(CryptoError::InvalidKey)?
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?
         .copy_from_slice(digest);
     Ok(encoded)
 }

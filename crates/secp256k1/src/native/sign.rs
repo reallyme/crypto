@@ -18,10 +18,10 @@ use sha2::{Digest, Sha256};
 /// The returned signature is compact 64-byte `r || s` and normalized to low-S.
 pub fn sign_secp256k1(secret_key: &[u8], message: &[u8]) -> Result<Vec<u8>, CryptoError> {
     if secret_key.len() != 32 {
-        return Err(CryptoError::InvalidKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
 
-    let sk = SigningKey::from_slice(secret_key).map_err(|_| CryptoError::InvalidKey)?;
+    let sk = SigningKey::from_slice(secret_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
 
     // Prehash
     let digest = Sha256::digest(message);
@@ -29,7 +29,7 @@ pub fn sign_secp256k1(secret_key: &[u8], message: &[u8]) -> Result<Vec<u8>, Cryp
     // Sign the digest bytes directly; do not route through high-level `Signer`.
     let sig: Signature = sk
         .sign_prehash(digest.as_ref())
-        .map_err(|_| CryptoError::InvalidKey)?;
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
 
     // Enforce low-S normalization
     let sig = sig.normalize_s();

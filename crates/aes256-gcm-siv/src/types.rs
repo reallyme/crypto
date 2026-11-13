@@ -22,10 +22,7 @@ impl Aes256GcmSivKey {
     /// exactly [`AES_256_GCM_SIV_KEY_LENGTH`] bytes.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.len() != AES_256_GCM_SIV_KEY_LENGTH {
-            return Err(CryptoError::InvalidAeadKeyLength {
-                expected: AES_256_GCM_SIV_KEY_LENGTH,
-                actual: input.len(),
-            });
+            return Err(CryptoError::PRIMITIVE_INVALID_KEY);
         }
 
         let mut bytes = [0u8; AES_256_GCM_SIV_KEY_LENGTH];
@@ -55,10 +52,7 @@ impl Aes256GcmSivNonce {
     /// is exactly [`AES_256_GCM_SIV_NONCE_LENGTH`] bytes.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.len() != AES_256_GCM_SIV_NONCE_LENGTH {
-            return Err(CryptoError::InvalidAeadNonceLength {
-                expected: AES_256_GCM_SIV_NONCE_LENGTH,
-                actual: input.len(),
-            });
+            return Err(CryptoError::PRIMITIVE_INVALID_NONCE);
         }
 
         let mut bytes = [0u8; AES_256_GCM_SIV_NONCE_LENGTH];
@@ -83,10 +77,7 @@ impl CiphertextWithTag {
     /// at least [`AES_256_GCM_SIV_TAG_LENGTH`] bytes (enough to hold the tag).
     pub fn from_vec(input: Vec<u8>) -> Result<Self, CryptoError> {
         if input.len() < AES_256_GCM_SIV_TAG_LENGTH {
-            return Err(CryptoError::InvalidCiphertextLength {
-                minimum: AES_256_GCM_SIV_TAG_LENGTH,
-                actual: input.len(),
-            });
+            return Err(CryptoError::PRIMITIVE_INVALID_LENGTH);
         }
 
         Ok(Self { bytes: input })

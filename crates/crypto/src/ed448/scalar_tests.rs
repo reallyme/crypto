@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use super::{decode_signature, reduce, Ed448Error};
+use super::{decode_signature, reduce, CryptoError};
 use serde_json::Value;
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -30,6 +30,6 @@ fn protected_reduction_matches_independent_integer_oracle() {
     }
     assert!(matches!(
         reduce(&[0; 115]),
-        Err(Ed448Error::InvalidPrivateKey)
+        Err(CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY)
     ));
 }

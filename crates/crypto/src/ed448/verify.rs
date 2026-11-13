@@ -8,21 +8,22 @@ use zeroize::Zeroizing;
 
 #[cfg(not(all(feature = "ed448-openssl", not(target_arch = "wasm32"))))]
 use super::transcript;
-use super::{require_support, scalar, Ed448Error, Ed448Operation, PUBLIC_KEY_LEN, SIGNATURE_LEN};
+use super::{require_support, scalar, CryptoError, Ed448Operation, PUBLIC_KEY_LEN, SIGNATURE_LEN};
 
 /// Verify exact message bytes with ordinary Ed448 and empty context. Canonical
 /// encodings and nontrivial public keys are required; the provider decodes the
 /// curve point during verification. The portable verifier follows RFC 8032's
 /// cofactored equation and rejects small-order public keys.
 #[allow(clippy::op_ref)] // Challenge and signature scalars stay borrowed from clearing owners.
-pub fn verify(public: &[u8], message: &[u8], signature: &[u8]) -> Result<(), Ed448Error> {
+pub fn verify(public: &[u8], message: &[u8], signature: &[u8]) -> Result<(), CryptoError> {
     require_support(Ed448Operation::Verify)?;
-    let public_point = decode_point(public).map_err(|_| Ed448Error::InvalidPublicKey)?;
+    let public_point =
+        decode_point(public).map_err(|_| CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY)?;
     if public_point.double().double() == EdwardsPoint::IDENTITY {
-        return Err(Ed448Error::InvalidPublicKey);
+        return Err(CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY);
     }
     if signature.len() != SIGNATURE_LEN {
-        return Err(Ed448Error::InvalidSignature);
+        return Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE);
     }
     let r = decode_point(&signature[..PUBLIC_KEY_LEN])?;
     let s = scalar::decode_signature(&signature[PUBLIC_KEY_LEN..])?;
@@ -34,16 +35,16 @@ pub fn verify(public: &[u8], message: &[u8], signature: &[u8]) -> Result<(), Ed4
         };
         let _ = (public_point, r, s);
         let public = PKey::public_key_from_raw_bytes(public, Id::ED448)
-            .map_err(|_| Ed448Error::UnsupportedAlgorithm)?;
-        let mut verifier =
-            Verifier::new_without_digest(&public).map_err(|_| Ed448Error::UnsupportedAlgorithm)?;
+            .map_err(|_| CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)?;
+        let mut verifier = Verifier::new_without_digest(&public)
+            .map_err(|_| CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)?;
         if verifier
             .verify_oneshot(signature, message)
-            .map_err(|_| Ed448Error::InvalidSignature)?
+            .map_err(|_| CryptoError::PRIMITIVE_INVALID_SIGNATURE)?
         {
             Ok(())
         } else {
-            Err(Ed448Error::InvalidSignature)
+            Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
         }
     }
     #[cfg(not(all(feature = "ed448-openssl", not(target_arch = "wasm32"))))]
@@ -61,12 +62,12 @@ pub fn verify(public: &[u8], message: &[u8], signature: &[u8]) -> Result<(), Ed4
         if *left == *right {
             Ok(())
         } else {
-            Err(Ed448Error::InvalidSignature)
+            Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
         }
     }
 }
 
-fn decode_point(bytes: &[u8]) -> Result<EdwardsPoint, Ed448Error> {
+fn decode_point(bytes: &[u8]) -> Result<EdwardsPoint, CryptoError> {
     use core::cmp::Ordering;
     const COORDINATE_LEN: usize = 56;
     const HALF_COORDINATE_LEN: usize = 28;
@@ -80,7 +81,7 @@ fn decode_point(bytes: &[u8]) -> Result<EdwardsPoint, Ed448Error> {
         bytes
     };
     if bytes.len() != PUBLIC_KEY_LEN || bytes[COORDINATE_LEN] & !SIGN_BIT != 0 {
-        return Err(Ed448Error::InvalidSignature);
+        return Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE);
     }
     if bytes[..COORDINATE_LEN]
         .iter()
@@ -88,19 +89,20 @@ fn decode_point(bytes: &[u8]) -> Result<EdwardsPoint, Ed448Error> {
         .cmp(MODULUS.iter().rev())
         != Ordering::Less
     {
-        return Err(Ed448Error::InvalidSignature);
+        return Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE);
     }
-    let encoded: [u8; PUBLIC_KEY_LEN] =
-        bytes.try_into().map_err(|_| Ed448Error::InvalidSignature)?;
+    let encoded: [u8; PUBLIC_KEY_LEN] = bytes
+        .try_into()
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
     // The unchecked decoder only recovers a point. Validate the curve equation
     // and exact canonical encoding here, retaining RFC cofactored verification
     // rather than imposing a different torsion-free acceptance policy.
     let point = Option::<ed448_goldilocks::AffinePoint>::from(
         CompressedEdwardsY(encoded).decompress_unchecked(),
     )
-    .ok_or(Ed448Error::InvalidSignature)?;
+    .ok_or(CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
     if !bool::from(point.is_on_curve()) || point.compress().to_bytes() != encoded {
-        return Err(Ed448Error::InvalidSignature);
+        return Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE);
     }
     Ok(point.to_edwards())
 }

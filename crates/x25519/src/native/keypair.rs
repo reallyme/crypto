@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, RngFailureKind, RngOutputKind};
+use crypto_core::CryptoError;
 use x25519_dalek::{PublicKey, StaticSecret};
 use zeroize::Zeroizing;
 
@@ -36,10 +36,8 @@ pub fn generate_x25519_keypair() -> (Vec<u8>, Zeroizing<Vec<u8>>) {
 /// The seed remains zeroizing even if the OS reports a partial-fill failure.
 pub fn try_generate_x25519_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
     let mut seed = Zeroizing::new([0_u8; 32]);
-    getrandom::fill(seed.as_mut_slice()).map_err(|_| CryptoError::Rng {
-        output: RngOutputKind::Generic,
-        kind: RngFailureKind::EntropyUnavailable,
-    })?;
+    getrandom::fill(seed.as_mut_slice())
+        .map_err(|_| crypto_core::CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)?;
     Ok(generate_x25519_keypair_from_seed(&seed))
 }
 

@@ -48,7 +48,7 @@ fn assert_invalid_encapsulation_key(
 ) -> Result<(), AuditError> {
     match encapsulate(parameter_set, public_key) {
         Ok(()) => Err(AuditError::Mismatch),
-        Err(CryptoError::InvalidKey) => Ok(()),
+        Err(CryptoError::PRIMITIVE_INVALID_KEY) => Ok(()),
         Err(_) => Err(AuditError::Mismatch),
     }
 }

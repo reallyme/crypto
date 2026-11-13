@@ -27,6 +27,7 @@ pub(super) fn unsupported_algorithm() -> CryptoWireError {
         feature = "kmac",
         feature = "hkdf",
         feature = "pbkdf2",
+        feature = "argon2id",
         feature = "concat-kdf",
         feature = "hpke-api",
         feature = "ed25519",

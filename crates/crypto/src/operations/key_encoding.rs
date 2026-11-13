@@ -4,7 +4,7 @@
 
 //! Semantic owner for public-key byte encoding helpers.
 
-use super::{OperationError, PrimitiveErrorReason};
+use super::OperationError;
 use crate::secret_material::{bind_operation_policy, SecretMaterialOperation};
 
 /// Validates a fixed-width public key and returns its canonical byte form.
@@ -135,23 +135,13 @@ pub fn decode_x25519_public_key(public_key: &[u8]) -> Result<Vec<u8>, OperationE
     all(feature = "x25519", any(feature = "native", feature = "wasm"))
 ))]
 fn map_public_key_error(error: crypto_core::CryptoError) -> OperationError {
-    match error {
-        crypto_core::CryptoError::InvalidKey => invalid_public_key(),
-        crypto_core::CryptoError::Signature {
-            kind: crypto_core::SignatureFailureKind::InvalidPublicKey,
-            ..
-        } => invalid_public_key(),
-        crypto_core::CryptoError::Unsupported => OperationError::Provider {
-            reason: super::ProviderErrorReason::UnsupportedAlgorithm,
-        },
-        _ => OperationError::Backend {
-            reason: super::BackendErrorReason::Internal,
-        },
+    if error == crypto_core::CryptoError::PRIMITIVE_INVALID_KEY {
+        crypto_core::CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY
+    } else {
+        error
     }
 }
 
 fn invalid_public_key() -> OperationError {
-    OperationError::Primitive {
-        reason: PrimitiveErrorReason::InvalidPublicKey,
-    }
+    crypto_core::CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY
 }

@@ -4,7 +4,7 @@
 
 use chacha20poly1305::aead::{Aead, KeyInit, Payload};
 use chacha20poly1305::{ChaCha20Poly1305, Nonce, XChaCha20Poly1305, XNonce};
-use crypto_core::{AeadBackend, AeadFailureKind, CryptoError};
+use crypto_core::CryptoError;
 use zeroize::Zeroizing;
 
 use crate::{
@@ -13,18 +13,14 @@ use crate::{
 
 fn chacha20_cipher(key: &ChaCha20Poly1305Key) -> Result<ChaCha20Poly1305, CryptoError> {
     let key_material = Zeroizing::new(*key.as_bytes());
-    ChaCha20Poly1305::new_from_slice(&*key_material).map_err(|_| CryptoError::AeadEncrypt {
-        backend: AeadBackend::Native,
-        kind: AeadFailureKind::InvalidKeyMaterial,
-    })
+    ChaCha20Poly1305::new_from_slice(&*key_material)
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)
 }
 
 fn xchacha20_cipher(key: &ChaCha20Poly1305Key) -> Result<XChaCha20Poly1305, CryptoError> {
     let key_material = Zeroizing::new(*key.as_bytes());
-    XChaCha20Poly1305::new_from_slice(&*key_material).map_err(|_| CryptoError::AeadEncrypt {
-        backend: AeadBackend::Native,
-        kind: AeadFailureKind::InvalidKeyMaterial,
-    })
+    XChaCha20Poly1305::new_from_slice(&*key_material)
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)
 }
 
 /// Encrypts a plaintext with ChaCha20-Poly1305, returning `ciphertext || tag`.
@@ -38,10 +34,7 @@ pub fn encrypt(request: &EncryptRequest<'_>) -> Result<CiphertextWithTag, Crypto
 
     let encrypted = cipher
         .encrypt(&nonce, payload)
-        .map_err(|_| CryptoError::AeadEncrypt {
-            backend: AeadBackend::Native,
-            kind: AeadFailureKind::BackendFailure,
-        })?;
+        .map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
 
     CiphertextWithTag::from_vec(encrypted)
 }
@@ -59,10 +52,7 @@ pub fn encrypt_xchacha20_poly1305(
 
     let encrypted = cipher
         .encrypt(&nonce, payload)
-        .map_err(|_| CryptoError::AeadEncrypt {
-            backend: AeadBackend::Native,
-            kind: AeadFailureKind::BackendFailure,
-        })?;
+        .map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
 
     CiphertextWithTag::from_vec(encrypted)
 }

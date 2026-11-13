@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{ConstantTimeFailureKind, CryptoError};
+use crypto_core::CryptoError;
 use subtle::ConstantTimeEq;
 
 /// Compares two byte slices for equality in constant time (no early exit on the
@@ -29,20 +29,12 @@ pub fn ct_eq_fixed<const N: usize>(left: &[u8; N], right: &[u8; N]) -> bool {
 /// if equal-length contents differ. The content comparison is non-short-circuiting.
 pub fn require_ct_eq(left: &[u8], right: &[u8]) -> Result<(), CryptoError> {
     if left.len() != right.len() {
-        return Err(CryptoError::ConstantTimeComparison {
-            kind: ConstantTimeFailureKind::LengthMismatch,
-            left_len: left.len(),
-            right_len: right.len(),
-        });
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
 
     if ct_eq(left, right) {
         return Ok(());
     }
 
-    Err(CryptoError::ConstantTimeComparison {
-        kind: ConstantTimeFailureKind::NotEqual,
-        left_len: left.len(),
-        right_len: right.len(),
-    })
+    Err(crypto_core::CryptoError::PRIMITIVE_VERIFICATION_FAILED)
 }

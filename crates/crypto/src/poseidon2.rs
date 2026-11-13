@@ -4,6 +4,4 @@
 
 //! Fixed-parameter BN254 Poseidon2 byte hashing.
 
-pub use crypto_poseidon2::{
-    hash_bytes, Poseidon2Digest, Poseidon2Error, Poseidon2ErrorReason, MAX_INPUT_BYTES,
-};
+pub use crypto_poseidon2::{hash_bytes, Poseidon2Digest, Poseidon2Error, MAX_INPUT_BYTES};

@@ -38,10 +38,7 @@ impl Aes128GcmKey {
     /// exactly [`AES_128_GCM_KEY_LENGTH`] bytes.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.len() != AES_128_GCM_KEY_LENGTH {
-            return Err(CryptoError::InvalidAeadKeyLength {
-                expected: AES_128_GCM_KEY_LENGTH,
-                actual: input.len(),
-            });
+            return Err(CryptoError::PRIMITIVE_INVALID_KEY);
         }
 
         let mut bytes = [0u8; AES_128_GCM_KEY_LENGTH];
@@ -69,10 +66,7 @@ impl Aes192GcmKey {
     /// exactly [`AES_192_GCM_KEY_LENGTH`] bytes.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.len() != AES_192_GCM_KEY_LENGTH {
-            return Err(CryptoError::InvalidAeadKeyLength {
-                expected: AES_192_GCM_KEY_LENGTH,
-                actual: input.len(),
-            });
+            return Err(CryptoError::PRIMITIVE_INVALID_KEY);
         }
 
         let mut bytes = [0u8; AES_192_GCM_KEY_LENGTH];
@@ -100,10 +94,7 @@ impl Aes256GcmKey {
     /// exactly [`AES_256_GCM_KEY_LENGTH`] bytes.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.len() != AES_256_GCM_KEY_LENGTH {
-            return Err(CryptoError::InvalidAeadKeyLength {
-                expected: AES_256_GCM_KEY_LENGTH,
-                actual: input.len(),
-            });
+            return Err(CryptoError::PRIMITIVE_INVALID_KEY);
         }
 
         let mut bytes = [0u8; AES_256_GCM_KEY_LENGTH];
@@ -134,10 +125,7 @@ impl Aes128GcmNonce {
     /// is exactly [`AES_128_GCM_NONCE_LENGTH`] bytes.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.len() != AES_128_GCM_NONCE_LENGTH {
-            return Err(CryptoError::InvalidAeadNonceLength {
-                expected: AES_128_GCM_NONCE_LENGTH,
-                actual: input.len(),
-            });
+            return Err(CryptoError::PRIMITIVE_INVALID_NONCE);
         }
 
         let mut bytes = [0u8; AES_128_GCM_NONCE_LENGTH];
@@ -168,10 +156,7 @@ impl Aes192GcmNonce {
     /// is exactly [`AES_192_GCM_NONCE_LENGTH`] bytes.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.len() != AES_192_GCM_NONCE_LENGTH {
-            return Err(CryptoError::InvalidAeadNonceLength {
-                expected: AES_192_GCM_NONCE_LENGTH,
-                actual: input.len(),
-            });
+            return Err(CryptoError::PRIMITIVE_INVALID_NONCE);
         }
 
         let mut bytes = [0u8; AES_192_GCM_NONCE_LENGTH];
@@ -209,10 +194,7 @@ impl Aes256GcmNonce {
     /// not uniqueness (see the type-level nonce-reuse contract).
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if input.len() != AES_256_GCM_NONCE_LENGTH {
-            return Err(CryptoError::InvalidAeadNonceLength {
-                expected: AES_256_GCM_NONCE_LENGTH,
-                actual: input.len(),
-            });
+            return Err(CryptoError::PRIMITIVE_INVALID_NONCE);
         }
 
         let mut bytes = [0u8; AES_256_GCM_NONCE_LENGTH];
@@ -237,10 +219,7 @@ impl CiphertextWithTag {
     /// at least [`AES_256_GCM_TAG_LENGTH`] bytes (enough to hold the tag).
     pub fn from_vec(input: Vec<u8>) -> Result<Self, CryptoError> {
         if input.len() < AES_256_GCM_TAG_LENGTH {
-            return Err(CryptoError::InvalidCiphertextLength {
-                minimum: AES_256_GCM_TAG_LENGTH,
-                actual: input.len(),
-            });
+            return Err(CryptoError::PRIMITIVE_INVALID_LENGTH);
         }
 
         Ok(Self { bytes: input })

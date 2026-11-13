@@ -17,7 +17,7 @@ fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError
             }
             #[cfg(not(feature = "ed25519"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::X25519 => {
@@ -27,7 +27,7 @@ fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError
             }
             #[cfg(not(feature = "x25519"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P256 => {
@@ -37,7 +37,7 @@ fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError
             }
             #[cfg(not(feature = "p256"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P384 => {
@@ -47,7 +47,7 @@ fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError
             }
             #[cfg(not(feature = "p384"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::P521 => {
@@ -57,7 +57,7 @@ fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError
             }
             #[cfg(not(feature = "p521"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::Secp256k1 => {
@@ -67,7 +67,7 @@ fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError
             }
             #[cfg(not(feature = "secp256k1"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlDsa44 => {
@@ -77,7 +77,7 @@ fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError
             }
             #[cfg(not(feature = "ml-dsa-44"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlDsa65 => {
@@ -87,7 +87,7 @@ fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError
             }
             #[cfg(not(feature = "ml-dsa-65"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlDsa87 => {
@@ -97,7 +97,7 @@ fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError
             }
             #[cfg(not(feature = "ml-dsa-87"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::SlhDsaSha2_128s => Ok(SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN),
@@ -108,7 +108,7 @@ fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError
             }
             #[cfg(not(feature = "ml-kem-512"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlKem768 => {
@@ -118,7 +118,7 @@ fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError
             }
             #[cfg(not(feature = "ml-kem-768"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::MlKem1024 => {
@@ -128,7 +128,7 @@ fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError
             }
             #[cfg(not(feature = "ml-kem-1024"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
         Algorithm::XWing768 => {
@@ -138,7 +138,7 @@ fn expected_public_key_len(algorithm: Algorithm) -> Result<usize, AlgorithmError
             }
             #[cfg(not(feature = "x-wing"))]
             {
-                Err(AlgorithmError::UnsupportedAlgorithm(algorithm))
+                Err(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
             }
         }
     }
@@ -161,7 +161,7 @@ pub fn validate_verification_method_multikey(
     let expected_len = expected_public_key_len(algorithm)?;
 
     let parsed =
-        parse_multikey(public_key_multibase).map_err(|_| AlgorithmError::InvalidKey(algorithm))?;
+        parse_multikey(public_key_multibase).map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY)?;
 
     // Validate that the declared binding label is compatible with the key algorithm.
     validate_key_binding(
@@ -171,22 +171,22 @@ pub fn validate_verification_method_multikey(
         },
         &parsed,
     )
-    .map_err(|_| AlgorithmError::InvalidKey(algorithm))?;
+    .map_err(|_| AlgorithmError::PRIMITIVE_INVALID_KEY)?;
 
     if parsed.public_key().len() != expected_len {
-        return Err(AlgorithmError::InvalidKey(algorithm));
+        return Err(AlgorithmError::PRIMITIVE_INVALID_KEY);
     }
     crate::sec1_identity::validate_compressed_public_key(algorithm, parsed.public_key())?;
     #[cfg(feature = "ed25519")]
     if algorithm == Algorithm::Ed25519
         && crypto_ed25519::validate_public_key_identity(parsed.public_key()).is_err()
     {
-        return Err(AlgorithmError::InvalidKey(algorithm));
+        return Err(AlgorithmError::PRIMITIVE_INVALID_KEY);
     }
     #[cfg(feature = "x25519")]
     if algorithm == Algorithm::X25519 && !crate::x25519_identity::is_canonical(parsed.public_key())
     {
-        return Err(AlgorithmError::InvalidKey(algorithm));
+        return Err(AlgorithmError::PRIMITIVE_INVALID_KEY);
     }
 
     Ok(())

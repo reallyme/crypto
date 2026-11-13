@@ -13,7 +13,7 @@ use elliptic_curve::{
 use secrecy::{ExposeSecretMut, SecretSlice};
 use zeroize::Zeroizing;
 
-use super::{secret, GroupError, GroupErrorReason, PrimeGroup};
+use super::{secret, CryptoError, PrimeGroup};
 
 macro_rules! with_curve {
     ($group:expr, $curve:ident, $body:block) => {
@@ -46,7 +46,7 @@ macro_rules! with_curve {
                 type $curve = bp512::BrainpoolP512r1;
                 $body
             }
-            _ => Err(GroupErrorReason::GroupMismatch.into()),
+            _ => Err(CryptoError::PRIMITIVE_INVALID_PARAMETER),
         }
     };
 }
@@ -54,11 +54,11 @@ macro_rules! with_curve {
 macro_rules! point {
     ($curve:ident, $bytes:expr) => {{
         if $bytes.first() != Some(&0x04) {
-            return Err(GroupErrorReason::InvalidElement.into());
+            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
         }
         let encoded = Zeroizing::new(
             elliptic_curve::sec1::Sec1Point::<$curve>::from_bytes($bytes)
-                .map_err(|_| GroupErrorReason::InvalidElement)?,
+                .map_err(|_| CryptoError::PRIMITIVE_INVALID_PARAMETER)?,
         );
         let affine = Zeroizing::new(
             Option::<elliptic_curve::AffinePoint<$curve>>::from(elliptic_curve::AffinePoint::<
@@ -66,19 +66,19 @@ macro_rules! point {
             >::from_sec1_point(
                 &encoded
             ))
-            .ok_or(GroupErrorReason::InvalidElement)?,
+            .ok_or(CryptoError::PRIMITIVE_INVALID_PARAMETER)?,
         );
         // All EC domains exposed here have cofactor one. On-curve, nonidentity
         // validation consequently also establishes prime-subgroup membership.
         let projective = Zeroizing::new(elliptic_curve::ProjectivePoint::<$curve>::from(*affine));
         if bool::from(projective.is_identity()) {
-            return Err(GroupErrorReason::Identity.into());
+            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
         }
         projective
     }};
 }
 
-pub(super) fn validate(group: PrimeGroup, bytes: &[u8]) -> Result<(), GroupError> {
+pub(super) fn validate(group: PrimeGroup, bytes: &[u8]) -> Result<(), CryptoError> {
     with_curve!(group, C, {
         let _point = point!(C, bytes);
         Ok(())
@@ -89,7 +89,7 @@ pub(super) fn multiply(
     group: PrimeGroup,
     base: &[u8],
     scalar: &[u8],
-) -> Result<SecretSlice<u8>, GroupError> {
+) -> Result<SecretSlice<u8>, CryptoError> {
     operation(group, base, scalar, None)
 }
 
@@ -98,7 +98,7 @@ pub(super) fn combine(
     base: &[u8],
     scalar: &[u8],
     offset: &[u8],
-) -> Result<SecretSlice<u8>, GroupError> {
+) -> Result<SecretSlice<u8>, CryptoError> {
     operation(group, base, scalar, Some(offset))
 }
 
@@ -107,10 +107,10 @@ fn operation(
     base: &[u8],
     scalar: &[u8],
     offset: Option<&[u8]>,
-) -> Result<SecretSlice<u8>, GroupError> {
+) -> Result<SecretSlice<u8>, CryptoError> {
     with_curve!(group, C, {
         if scalar.len() != group.scalar_len() {
-            return Err(GroupErrorReason::InvalidLength.into());
+            return Err(CryptoError::PRIMITIVE_INVALID_LENGTH);
         }
         let base = point!(C, base);
         // Fixed-width binary multiplication composes the existing complete
@@ -130,7 +130,7 @@ fn operation(
             *result += *offset;
         }
         if bool::from(result.is_identity()) {
-            return Err(GroupErrorReason::Identity.into());
+            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
         }
         // Direct coordinate output avoids a serializer constructing and then
         // selecting a second complete, unguarded SEC1 point buffer.
@@ -141,16 +141,16 @@ fn operation(
         let end = group
             .field_len()
             .checked_add(1)
-            .ok_or(GroupErrorReason::Arithmetic)?;
+            .ok_or(CryptoError::BACKEND_INTERNAL)?;
         let encoded = output.expose_secret_mut();
-        *encoded.first_mut().ok_or(GroupErrorReason::Arithmetic)? = 0x04;
+        *encoded.first_mut().ok_or(CryptoError::BACKEND_INTERNAL)? = 0x04;
         encoded
             .get_mut(1..end)
-            .ok_or(GroupErrorReason::Arithmetic)?
+            .ok_or(CryptoError::BACKEND_INTERNAL)?
             .copy_from_slice(&x);
         encoded
             .get_mut(end..)
-            .ok_or(GroupErrorReason::Arithmetic)?
+            .ok_or(CryptoError::BACKEND_INTERNAL)?
             .copy_from_slice(&y);
         Ok(output)
     })

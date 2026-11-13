@@ -165,6 +165,6 @@ fn assert_open_failed(
     });
     assert!(matches!(
         result,
-        Err(HpkeError::InvalidEncapsulatedKey | HpkeError::OpenFailed)
+        Err(HpkeError::PRIMITIVE_MALFORMED_CIPHERTEXT | HpkeError::PRIMITIVE_AUTHENTICATION_FAILED)
     ));
 }

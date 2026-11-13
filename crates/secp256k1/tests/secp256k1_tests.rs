@@ -11,7 +11,7 @@
 )]
 #![cfg(all(feature = "native", not(all(feature = "wasm", target_arch = "wasm32"))))]
 
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 use crypto_secp256k1::{
     decompress_secp256k1_public_key, derive_bip340_schnorr_public_key,
     generate_secp256k1_keypair_from_secret_key, sign_bip340_schnorr, sign_secp256k1,
@@ -22,19 +22,8 @@ use zeroize::Zeroizing;
 
 type TestKeypair = (Vec<u8>, Zeroizing<Vec<u8>>);
 
-fn assert_signature_error<T>(
-    result: Result<T, CryptoError>,
-    operation: SignatureOperation,
-    kind: SignatureFailureKind,
-) {
-    assert!(matches!(
-        result,
-        Err(CryptoError::Signature {
-            backend: SignatureBackend::Native,
-            operation: actual_operation,
-            kind: actual_kind,
-        }) if actual_operation == operation && actual_kind == kind
-    ));
+fn assert_signature_error<T>(result: Result<T, CryptoError>, expected: CryptoError) {
+    assert_eq!(result.err(), Some(expected));
 }
 
 trait IntoTestKeypairResult {
@@ -75,7 +64,7 @@ fn secret_key_constructor_is_deterministic_and_rejects_zero() -> Result<(), Cryp
     assert_eq!(secret_a.as_slice(), secret.as_slice());
     assert!(matches!(
         generate_secp256k1_keypair_from_secret_key(&[0u8; 32]),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
 
     let signature = sign_secp256k1(&secret_a, b"seeded secp256k1")?;
@@ -100,8 +89,7 @@ fn verification_fails_on_modified_message() -> Result<(), CryptoError> {
 
     assert_signature_error(
         verify_secp256k1(&sig, b"hell0", &pk),
-        SignatureOperation::Verify,
-        SignatureFailureKind::InvalidSignature,
+        CryptoError::PRIMITIVE_INVALID_SIGNATURE,
     );
     Ok(())
 }
@@ -115,8 +103,7 @@ fn verification_fails_on_modified_signature() -> Result<(), CryptoError> {
     sig[0] ^= 0x01;
     assert_signature_error(
         verify_secp256k1(&sig, msg, &pk),
-        SignatureOperation::Verify,
-        SignatureFailureKind::InvalidSignature,
+        CryptoError::PRIMITIVE_INVALID_SIGNATURE,
     );
     Ok(())
 }
@@ -131,8 +118,7 @@ fn signature_does_not_verify_under_different_key() -> Result<(), CryptoError> {
 
     assert_signature_error(
         verify_secp256k1(&sig, msg, &pk2),
-        SignatureOperation::Verify,
-        SignatureFailureKind::InvalidSignature,
+        CryptoError::PRIMITIVE_INVALID_SIGNATURE,
     );
     Ok(())
 }
@@ -175,18 +161,15 @@ fn high_s_twin_is_rejected_with_typed_signature_error() -> Result<(), CryptoErro
 
     let scalar_bytes: [u8; 32] = signature[32..]
         .try_into()
-        .map_err(|_| CryptoError::InvalidKey)?;
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     let scalar = Option::<k256::Scalar>::from(k256::Scalar::from_repr(scalar_bytes.into()))
-        .ok_or(CryptoError::InvalidKey)?;
+        .ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?;
     let mut malleated = signature.clone();
     malleated[32..].copy_from_slice(&(-scalar).to_bytes());
 
     assert!(matches!(
         verify_secp256k1(&malleated, message, &public_key),
-        Err(CryptoError::Signature {
-            kind: SignatureFailureKind::InvalidSignature,
-            ..
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     ));
     Ok(())
 }
@@ -199,8 +182,7 @@ fn invalid_signature_length_is_rejected() -> Result<(), CryptoError> {
     let bad_sig = vec![0u8; 10];
     assert_signature_error(
         verify_secp256k1(&bad_sig, msg, &pk),
-        SignatureOperation::Verify,
-        SignatureFailureKind::InvalidSignature,
+        CryptoError::PRIMITIVE_INVALID_SIGNATURE,
     );
     Ok(())
 }
@@ -214,7 +196,7 @@ fn invalid_public_key_is_rejected() {
     let bad_pk = vec![0x02; 10];
     assert!(matches!(
         verify_secp256k1(&sig, msg, &bad_pk),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
 
     // wrong prefix
@@ -222,7 +204,7 @@ fn invalid_public_key_is_rejected() {
     bad_prefix[0] = 0x04;
     assert!(matches!(
         verify_secp256k1(&sig, msg, &bad_prefix),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
 }
 
@@ -231,7 +213,7 @@ fn invalid_secret_key_length_is_rejected() {
     let bad_sk = vec![0x11; 31];
     assert!(matches!(
         sign_secp256k1(&bad_sk, b"msg"),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
 }
 
@@ -295,16 +277,14 @@ fn bip340_schnorr_rejects_tampering() -> Result<(), CryptoError> {
     tampered_message[0] ^= 0x01;
     assert_signature_error(
         verify_bip340_schnorr(&signature, &tampered_message, &public),
-        SignatureOperation::Verify,
-        SignatureFailureKind::InvalidSignature,
+        CryptoError::PRIMITIVE_INVALID_SIGNATURE,
     );
 
     let mut tampered_signature = signature;
     tampered_signature[0] ^= 0x01;
     assert_signature_error(
         verify_bip340_schnorr(&tampered_signature, &message, &public),
-        SignatureOperation::Verify,
-        SignatureFailureKind::InvalidSignature,
+        CryptoError::PRIMITIVE_INVALID_SIGNATURE,
     );
 
     Ok(())
@@ -320,31 +300,27 @@ fn bip340_schnorr_rejects_malformed_lengths() -> Result<(), CryptoError> {
 
     assert!(matches!(
         derive_bip340_schnorr_public_key(&secret[1..]),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
     assert_signature_error(
         sign_bip340_schnorr(&secret, &message[1..], &aux_rand),
-        SignatureOperation::Sign,
-        SignatureFailureKind::InvalidMessage,
+        CryptoError::PRIMITIVE_INVALID_PARAMETER,
     );
     assert_signature_error(
         sign_bip340_schnorr(&secret, &message, &aux_rand[1..]),
-        SignatureOperation::Sign,
-        SignatureFailureKind::InvalidMessage,
+        CryptoError::PRIMITIVE_INVALID_PARAMETER,
     );
     assert_signature_error(
         verify_bip340_schnorr(&signature[1..], &message, &public),
-        SignatureOperation::Verify,
-        SignatureFailureKind::InvalidSignature,
+        CryptoError::PRIMITIVE_INVALID_SIGNATURE,
     );
     assert_signature_error(
         verify_bip340_schnorr(&signature, &message[1..], &public),
-        SignatureOperation::Verify,
-        SignatureFailureKind::InvalidMessage,
+        CryptoError::PRIMITIVE_INVALID_PARAMETER,
     );
     assert!(matches!(
         verify_bip340_schnorr(&signature, &message, &public[1..]),
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     ));
 
     Ok(())

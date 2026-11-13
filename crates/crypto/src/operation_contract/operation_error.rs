@@ -23,7 +23,6 @@
     )
 ))]
 use buffa::{EnumValue, MessageField};
-use crypto_proto::generated::proto::reallyme::crypto::v1::CryptoErrorReason;
 #[cfg(any(
     feature = "hmac",
     all(
@@ -45,13 +44,9 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::CryptoErrorReason;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoAlgorithmIdentifier, CryptoVerificationResult, CryptoVerificationStatus,
 };
-use crypto_proto::wire::{CryptoWireError, CryptoWireErrorBranch};
+use crypto_proto::wire::CryptoWireError;
 
-use crate::operations::{
-    BackendErrorReason, OperationError, PrimitiveErrorReason, ProviderErrorReason,
-};
-
-use super::wire_error::{invalid_parameter, unsupported_algorithm, wire_error};
+use crate::operations::OperationError;
 
 #[cfg(any(
     feature = "hmac",
@@ -94,80 +89,7 @@ pub(super) fn verification_result(
 }
 
 pub(super) fn map_operation_error(error: OperationError) -> CryptoWireError {
-    match error {
-        OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        } => unsupported_algorithm(),
-        OperationError::Provider { .. } => wire_error(
-            CryptoWireErrorBranch::Provider,
-            CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_UNAVAILABLE,
-        ),
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidKey,
-        } => wire_error(
-            CryptoWireErrorBranch::Primitive,
-            CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY,
-        ),
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidPublicKey,
-        } => wire_error(
-            CryptoWireErrorBranch::Primitive,
-            CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PUBLIC_KEY,
-        ),
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidPrivateKey,
-        } => wire_error(
-            CryptoWireErrorBranch::Primitive,
-            CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PRIVATE_KEY,
-        ),
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::MalformedCiphertext,
-        } => wire_error(
-            CryptoWireErrorBranch::Primitive,
-            CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_CIPHERTEXT,
-        ),
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidParameter,
-        } => invalid_parameter(),
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidLength,
-        }
-        | OperationError::Primitive {
-            reason: PrimitiveErrorReason::LengthOverflow,
-        } => wire_error(
-            CryptoWireErrorBranch::Primitive,
-            CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH,
-        ),
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed,
-        } => wire_error(
-            CryptoWireErrorBranch::Primitive,
-            CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED,
-        ),
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidSharedSecret,
-        } => wire_error(
-            CryptoWireErrorBranch::Primitive,
-            CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SHARED_SECRET,
-        ),
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::ResourceLimitExceeded,
-        } => wire_error(
-            CryptoWireErrorBranch::Primitive,
-            CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
-        ),
-        OperationError::Primitive { .. } => invalid_parameter(),
-        OperationError::Backend {
-            reason: BackendErrorReason::InvalidOutput,
-        } => wire_error(
-            CryptoWireErrorBranch::Backend,
-            CryptoErrorReason::CRYPTO_ERROR_REASON_BACKEND_INVALID_STATE,
-        ),
-        OperationError::Backend { .. } => wire_error(
-            CryptoWireErrorBranch::Backend,
-            CryptoErrorReason::CRYPTO_ERROR_REASON_BACKEND_INTERNAL,
-        ),
-    }
+    error.into()
 }
 
 #[cfg(any(
@@ -190,9 +112,9 @@ pub(super) fn map_operation_error(error: OperationError) -> CryptoWireError {
 ))]
 pub(super) fn is_operation_verification_mismatch(error: &OperationError) -> bool {
     matches!(
-        error,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed,
-        }
+        *error,
+        crypto_core::CryptoError::PRIMITIVE_VERIFICATION_FAILED
+            | crypto_core::CryptoError::PRIMITIVE_AUTHENTICATION_FAILED
+            | crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE
     )
 }

@@ -40,10 +40,8 @@ pub fn generate_secp256k1_keypair() -> (Vec<u8>, Zeroizing<Vec<u8>>) {
 /// Prefer this entry point over the legacy infallible generator when the
 /// application must recover from an unavailable operating-system RNG.
 pub fn try_generate_secp256k1_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
-    let secret = SecretKey::try_generate().map_err(|_| CryptoError::Rng {
-        output: crypto_core::RngOutputKind::Generic,
-        kind: crypto_core::RngFailureKind::EntropyUnavailable,
-    })?;
+    let secret = SecretKey::try_generate()
+        .map_err(|_| crypto_core::CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)?;
     let secret_bytes = Zeroizing::new(secret.to_bytes());
     generate_secp256k1_keypair_from_secret_key(secret_bytes.as_ref())
 }
@@ -55,7 +53,8 @@ pub fn try_generate_secp256k1_keypair() -> Result<(Vec<u8>, Zeroizing<Vec<u8>>),
 pub fn generate_secp256k1_keypair_from_secret_key(
     secret_key: &[u8; 32],
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
-    let secret = SecretKey::from_slice(secret_key).map_err(|_| CryptoError::InvalidKey)?;
+    let secret =
+        SecretKey::from_slice(secret_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
     let signing_key = SigningKey::from(&secret);
     let verifying_key = signing_key.verifying_key();
 

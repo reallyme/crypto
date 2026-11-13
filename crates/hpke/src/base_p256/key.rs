@@ -22,10 +22,10 @@ impl P256RecipientKey {
     /// The caller retains responsibility for clearing its borrowed source.
     pub fn import(private: &[u8]) -> Result<Self, P256BaseError> {
         if private.len() != PRIVATE_KEY_LEN {
-            return Err(P256BaseError::InvalidPrivateKey);
+            return Err(P256BaseError::PRIMITIVE_INVALID_PRIVATE_KEY);
         }
         let parsed = <Kem as KemTrait>::PrivateKey::from_bytes(private)
-            .map_err(|_| P256BaseError::InvalidPrivateKey)?;
+            .map_err(|_| P256BaseError::PRIMITIVE_INVALID_PRIVATE_KEY)?;
         let public = Kem::sk_to_pk(&parsed).to_bytes();
         let mut owner = Self::empty()?;
         owner.public.copy_from_slice(public.as_slice());
@@ -42,8 +42,7 @@ impl P256RecipientKey {
     /// Generate a key using an injected cryptographic entropy source.
     pub fn generate_with_rng(rng: &mut impl P256BaseRng) -> Result<Self, P256BaseError> {
         let mut ikm = Zeroizing::new([0; PRIVATE_KEY_LEN]);
-        rng.fill(ikm.as_mut_slice())
-            .map_err(|_| P256BaseError::RandomnessUnavailable)?;
+        rng.fill(ikm.as_mut_slice())?;
         let (private, public) = Kem::derive_keypair(ikm.as_slice());
         let mut owner = Self::empty()?;
         owner.public.copy_from_slice(public.to_bytes().as_slice());
@@ -65,7 +64,7 @@ impl P256RecipientKey {
     fn empty() -> Result<Self, P256BaseError> {
         let mut storage = storage::buffer(PRIVATE_KEY_LEN)?;
         if storage.capacity() != PRIVATE_KEY_LEN {
-            return Err(P256BaseError::AllocationFailed);
+            return Err(P256BaseError::BACKEND_INTERNAL);
         }
         // Box conversion happens while storage contains only zeros. This
         // exact capacity also prevents an infallible shrink allocation in

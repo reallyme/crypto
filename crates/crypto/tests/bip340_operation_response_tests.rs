@@ -128,7 +128,7 @@ fn operation_response_reports_bip340_mismatch_and_malformed_inputs_without_error
             aux_rand32: AUX_RAND32.to_vec(),
             __buffa_unknown_fields: Default::default(),
         })),
-        CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH,
+        CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PARAMETER,
     );
     assert_error_reason(
         CryptoOperation::SignatureDeriveKeyPair(Box::new(CryptoSignatureDeriveKeyPairRequest {

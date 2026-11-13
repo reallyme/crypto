@@ -141,8 +141,8 @@ for (const path of ["packages/kotlin/build.gradle.kts", "packages/kotlin-android
   assertContains(path, 'name.set("Apache License, Version 2.0")');
 }
 
-const rustRootVersion = "0.3.17";
-const cryptoProtoPackageVersion = "0.3.17";
+const rustRootVersion = "0.4.0";
+const cryptoProtoPackageVersion = "0.4.0";
 const typescriptPackageVersion = "0.3.17";
 const kotlinPackageVersion = "0.3.17";
 const kotlinAndroidPackageVersion = "0.3.17";
@@ -914,7 +914,7 @@ assertContains(
 assertNotContains("packages/ts/scripts/build-wasm.mjs", '"wasm-package"');
 assertContains(
   "crates/wasm/Cargo.toml",
-  'crypto-runtime = { package = "reallyme-crypto", version = "=0.3.17", path = "../crypto", default-features = false, features = ["operation-response", "native"',
+  `crypto-runtime = { package = "reallyme-crypto", version = "=${rustRootVersion}", path = "../crypto", default-features = false, features = ["operation-response", "native"`,
 );
 assertNotContains(
   "crates/wasm/Cargo.toml",
@@ -1853,7 +1853,7 @@ assertContains(
 assertContains("fuzz/fuzz_targets/jwk_multikey.rs", "serde_json::from_str::<Jwk>");
 assertContains("fuzz/fuzz_targets/jwk_multikey.rs", "multikey_to_jwk(input, JwkOptions::default())");
 assertNotContains("crates/jwk/src/jwk.rs", "serde(untagged)");
-assertContains("crates/jwk/src/jwk/deserialize.rs", "JwtError::DuplicateMember");
+assertContains("crates/jwk/src/jwk/deserialize.rs", "JwtError::PRIMITIVE_MALFORMED_JSON");
 assertContains("crates/jwk/src/jwk/deserialize.rs", "MAX_JWK_MEMBER_COUNT");
 assertContains("crates/jwk-multikey/src/to_multikey.rs", ".public_key_bytes()");
 assertContains("crates/jwk/tests/public_jwk_envelope_tests.rs", "mismatched_same_parity_y_coordinates");
@@ -2047,7 +2047,7 @@ assertContains("crates/proto/src/wire/error.rs", "reason_code");
 assertContains("crates/proto/src/operation_response_wire.rs", "Zeroizing<Vec<u8>>");
 assertContains("crates/proto/src/operation_response_wire.rs", "validate_operation_response");
 assertContains("crates/proto/src/operation_response_wire.rs", "CryptoOperationResponse");
-assertContains("crates/proto/src/wire/error.rs", "#[non_exhaustive]");
+assertContains("crates/proto/src/wire/error.rs", "pub use crate::error_types::CryptoErrorBranch as CryptoWireErrorBranch;");
 assertContains("crates/proto/src/wire/error.rs", "pub fn try_new");
 assertContains("crates/proto/src/wire/codec.rs", "decode_protobuf_with_limit");
 assertContains("crates/proto/src/wire/codec.rs", "pub(crate) fn decode_json");
@@ -2070,22 +2070,25 @@ assertContains(
   "CRYPTO_ERROR_REASON_PRIMITIVE_RESOURCE_LIMIT_EXCEEDED",
 );
 assertContains("crates/proto/src/wire/limits.rs", "MAX_CRYPTO_PROTO_MESSAGE_BYTES");
-assertContains("crates/crypto/core/src/error/taxonomy.rs", "pub enum CryptoError");
-assertContains("crates/crypto/core/src/error/taxonomy.rs", "#[non_exhaustive]");
+assertContains("crates/crypto/core/src/error/taxonomy.rs", "crypto_proto::error_types");
+assertNotContains("crates/crypto/core/src/error/taxonomy.rs", "pub enum CryptoError");
 assertContains(
   "crates/crypto/src/lib.rs",
   "AeadAlgorithm, Algorithm, CryptoError, HashAlgorithm, KeyWrapAlgorithm, MacAlgorithm",
 );
-assertContains("crates/crypto/dispatch/src/error.rs", "pub enum AlgorithmError");
-assertContains("crates/crypto/dispatch/src/error.rs", "#[non_exhaustive]");
-assertContains("crates/crypto/signer/src/error.rs", "pub enum SignerError");
-assertContains("crates/crypto/signer/src/error.rs", "#[non_exhaustive]");
-assertContains("crates/jwk/src/error.rs", "pub enum JwtError");
-assertContains("crates/jwk/src/error.rs", "#[non_exhaustive]");
-assertContains("crates/jwk-multikey/src/error.rs", "pub enum JwkMultikeyError");
-assertContains("crates/jwk-multikey/src/error.rs", "#[non_exhaustive]");
-assertContains("crates/hpke/src/error.rs", "pub enum HpkeError");
-assertContains("crates/hpke/src/error.rs", "#[non_exhaustive]");
+// Native areas expose the same validated schema error; independent error
+// enums would recreate the vocabulary and lossy-conversion drift.
+for (const [path, alias] of [
+  ["crates/crypto/dispatch/src/error.rs", "AlgorithmError"],
+  ["crates/crypto/signer/src/error.rs", "SignerError"],
+  ["crates/crypto/signer/src/error.rs", "VerifierError"],
+  ["crates/jwk/src/error.rs", "JwtError"],
+  ["crates/jwk-multikey/src/error.rs", "JwkMultikeyError"],
+  ["crates/hpke/src/error.rs", "HpkeError"],
+]) {
+  assertContains(path, `pub use crypto_core::CryptoError as ${alias};`);
+  assertNotContains(path, `pub enum ${alias}`);
+}
 assertContains("crates/crypto/src/operations/hpke.rs", "pub fn keygen(");
 assertContains("crates/crypto/src/operations/hpke.rs", "pub fn derive_keypair(");
 assertContains("crates/crypto/src/operations/hpke.rs", "pub fn derive_keypair_from_ikm(");
@@ -2496,6 +2499,7 @@ const protobufReleasePolicy = {
       { message: "JsonWebKey", field: "canonical_jcs", kind: "bytes", sensitivity: "sensitive" },
     ],
     requiredGeneratedNeedles: [
+      "pub use crate::error_types::CryptoErrorReason;",
       '.field("secret_key", &"<redacted>")',
       '.field("opaque_handle", &"<redacted>")',
       "impl ::core::ops::Drop for CryptoAeadSealRequest",
@@ -2509,6 +2513,7 @@ const protobufReleasePolicy = {
       "deserialize_zeroizing_bytes",
     ],
     forbiddenGeneratedNeedles: [
+      "pub enum CryptoErrorReason {",
       "::buffa::alloc::format!(",
       '.field("secret_key", &self.secret_key)',
       '.field("payload", &self.payload)',
@@ -2520,6 +2525,20 @@ const protobufReleasePolicy = {
       'formatter.write_str("CryptoOperationResultOwnedView(<redacted>)")',
     ],
     additionalGeneratedPolicies: [
+      {
+        path: "crates/proto/src/generated/error_contract.rs",
+        required: [
+          "pub enum CryptoErrorReason {",
+          "pub struct CryptoError {\n    reason: CryptoErrorReason,",
+          '#[error("{reason}")]',
+          "pub const fn try_new(reason: CryptoErrorReason) -> Result<Self, Self>",
+        ],
+        forbidden: [
+          "pub enum CryptoError {",
+          "impl Default for CryptoError {",
+          "pub reason:",
+        ],
+      },
       {
         path: "gen/swift/reallyme/crypto/v1/crypto.pb.swift",
         required: [
@@ -2552,6 +2571,7 @@ const protobufReleasePolicy = {
       ["buf", ["lint"]],
       ["buf", ["generate"]],
       ["node", ["scripts/redact_crypto_proto_debug.mjs"]],
+      ["node", ["scripts/generate_error_contract.mjs"]],
       ["node", ["scripts/redact_crypto_proto_debug.mjs", "--check-idempotent"]],
       ["cargo", ["fmt", "--package", "reallyme-crypto-proto"]],
       ["cargo", ["run", "-p", "crypto-conformance-vectors", "--bin", "gen_vectors"]],
@@ -3220,7 +3240,7 @@ assertContains(
   "deserialize_zeroizing_bytes",
 );
 assertContains(
-  "crates/proto/tests/wire_tests.rs",
+  "crates/crypto/core/tests/wire_tests.rs",
   "public_wire_error_constructor_rejects_invalid_branch_reason_pairs",
 );
 assertContains(

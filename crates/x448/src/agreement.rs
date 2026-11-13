@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, KeyAgreementFailureKind};
+use crypto_core::CryptoError;
 use subtle::ConstantTimeEq;
 
 use crate::{X448PrivateKey, X448PublicKey, X448SharedSecret, X448_SHARED_SECRET_LEN};
@@ -22,9 +22,7 @@ pub fn derive_x448_shared_secret(
             .as_bytes()
             .ct_eq(&[0_u8; X448_SHARED_SECRET_LEN]),
     ) {
-        return Err(CryptoError::KeyAgreementFailure {
-            kind: KeyAgreementFailureKind::DeriveSharedSecretFailed,
-        });
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SHARED_SECRET);
     }
     Ok(X448SharedSecret::from_array(*shared_secret.as_bytes()))
 }

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, RngFailureKind, RngOutputKind};
+use crypto_core::{CryptoError, RngOutputKind};
 use zeroize::Zeroize;
 
 use crate::constants::{
@@ -71,10 +71,7 @@ pub fn generate_bytes<const N: usize>(
     kind: RngOutputKind,
 ) -> Result<RandomBytes<N>, CryptoError> {
     if N == 0 {
-        return Err(CryptoError::Rng {
-            output: kind,
-            kind: RngFailureKind::InvalidOutputLength,
-        });
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
 
     let mut output = [0u8; N];

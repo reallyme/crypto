@@ -90,7 +90,7 @@ pub unsafe extern "C" fn rm_crypto_x25519_generate_keypair_from_seed(
             seed,
         ) {
             Ok(value) => value,
-            Err(_) => return CRYPTO_INVALID_KEY,
+            Err(error) => return crate::error_status::key_management_status(error),
         };
         // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
         // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
@@ -187,7 +187,7 @@ pub unsafe extern "C" fn rm_crypto_x25519_encode_public_key(
             // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
             // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(value) => unsafe { write_fixed(out, out_len, &value) },
-            Err(_) => CRYPTO_INVALID_KEY,
+            Err(error) => crate::error_status::key_management_status(error),
         }
     })
 }
@@ -220,7 +220,7 @@ pub unsafe extern "C" fn rm_crypto_x25519_decode_public_key(
             // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
             // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(value) => unsafe { write_fixed(out, out_len, &value) },
-            Err(_) => CRYPTO_INVALID_KEY,
+            Err(error) => crate::error_status::key_management_status(error),
         }
     })
 }

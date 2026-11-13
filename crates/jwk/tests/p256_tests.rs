@@ -44,6 +44,6 @@ fn p256_rejects_uncompressed_off_curve_point() {
     invalid[0] = 0x04;
     assert!(matches!(
         p256_public_key_to_jwk(&invalid, JwkOptions::default()),
-        Err(JwtError::InvalidP256Key)
+        Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY)
     ));
 }

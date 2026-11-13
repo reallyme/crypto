@@ -6,7 +6,7 @@ use crypto_core::Algorithm;
 use secrecy::{ExposeSecret, SecretBox};
 use zeroize::Zeroizing;
 
-use crate::{Signer, SignerError, SignerFailureKind};
+use crate::{Signer, SignerError};
 
 /// Local private-key signer implemented through `crypto_dispatch::sign`.
 ///
@@ -42,10 +42,5 @@ impl Signer for DispatchSigner {
             self.private_key.expose_secret().as_slice(),
             message,
         )
-        .map_err(|source| SignerError::SignFailed {
-            algorithm: self.alg,
-            kind: SignerFailureKind::DispatchRejected,
-            source,
-        })
     }
 }

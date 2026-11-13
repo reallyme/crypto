@@ -22,8 +22,12 @@ impl KeypairResultExt for AlgorithmKeypair {
     }
 }
 
-impl<E> KeypairResultExt for Result<AlgorithmKeypair, E> {
-    fn into_algorithm_keypair(self, alg: Algorithm) -> Result<AlgorithmKeypair, AlgorithmError> {
-        self.map_err(|_| AlgorithmError::InvalidKey(alg))
+impl KeypairResultExt for Result<AlgorithmKeypair, crypto_core::CryptoError> {
+    fn into_algorithm_keypair(self, _alg: Algorithm) -> Result<AlgorithmKeypair, AlgorithmError> {
+        self
     }
 }
+
+#[cfg(test)]
+#[path = "keypair_result_tests.rs"]
+mod tests;

@@ -4,7 +4,7 @@
 
 //! Cross-implementation byte-sponge vectors and admission boundaries.
 
-use crypto_poseidon2::{hash_bytes, Poseidon2ErrorReason, MAX_INPUT_BYTES};
+use crypto_poseidon2::{hash_bytes, Poseidon2Error, MAX_INPUT_BYTES};
 use hex_literal::hex;
 
 // These outputs come from the ReallyMe ZK checkout's pinned Noir
@@ -56,7 +56,7 @@ fn rejects_oversized_preimage_with_typed_reason() {
     let input = vec![0_u8; MAX_INPUT_BYTES + 1];
     assert!(matches!(
         hash_bytes(&input),
-        Err(error) if error.reason() == Poseidon2ErrorReason::InputTooLong
+        Err(error) if error == Poseidon2Error::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED
     ));
 }
 

@@ -14,12 +14,12 @@ pub const ML_DSA_87_SECRET_SEED_LEN: usize = 32;
 pub const ML_DSA_87_SIGNATURE_LEN: usize = 4627;
 
 /// Validate that `pk` has the ML-DSA-87 public-key length, returning it
-/// unchanged or [`CryptoError::InvalidKey`] otherwise.
+/// unchanged or [`CryptoError::PRIMITIVE_INVALID_KEY`] otherwise.
 pub fn assert_public_key(pk: &[u8]) -> Result<&[u8], CryptoError> {
     if pk.len() == ML_DSA_87_PUBLIC_KEY_LEN {
         Ok(pk)
     } else {
-        Err(CryptoError::InvalidKey)
+        Err(CryptoError::PRIMITIVE_INVALID_KEY)
     }
 }
 

@@ -2,24 +2,22 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::error_status::{hpke_status, hpke_status as seal_status};
 use crate::guard::ffi_guard;
 use crate::pointer::{
     read_slice, validate_disjoint_len_outputs, validate_disjoint_output_len_cross_pair,
     validate_disjoint_output_pair, validate_output_len_pair, write_fixed, write_len,
 };
 use crate::status::{
-    CryptoStatus, CRYPTO_AUTHENTICATION_FAILED, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INTERNAL_ERROR,
-    CRYPTO_INVALID_ARGUMENT, CRYPTO_INVALID_CIPHERTEXT, CRYPTO_INVALID_KEY, CRYPTO_OK,
+    CryptoStatus, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INVALID_ARGUMENT, CRYPTO_INVALID_CIPHERTEXT,
+    CRYPTO_OK,
 };
 use reallyme_crypto::hpke::{
-    HpkeError, HpkeOpenRequest, HpkeSealRequest, HpkeSuite, HPKE_AEAD_TAG_LEN,
-    HPKE_ENCAPSULATED_KEY_MAX_LEN, HPKE_P256_PRIVATE_KEY_LEN, HPKE_P256_PUBLIC_KEY_LEN,
-    HPKE_X25519_PRIVATE_KEY_LEN, HPKE_X25519_PUBLIC_KEY_LEN,
+    HpkeOpenRequest, HpkeSealRequest, HpkeSuite, HPKE_AEAD_TAG_LEN, HPKE_ENCAPSULATED_KEY_MAX_LEN,
+    HPKE_P256_PRIVATE_KEY_LEN, HPKE_P256_PUBLIC_KEY_LEN, HPKE_X25519_PRIVATE_KEY_LEN,
+    HPKE_X25519_PUBLIC_KEY_LEN,
 };
-use reallyme_crypto::operations::{
-    hpke::{open_base, seal_base},
-    OperationError, PrimitiveErrorReason, ProviderErrorReason,
-};
+use reallyme_crypto::operations::hpke::{open_base, seal_base};
 use zeroize::Zeroize;
 
 /// FFI suite selector for DHKEM(P-256, HKDF-SHA256), HKDF-SHA256, AES-256-GCM.
@@ -306,54 +304,5 @@ fn hpke_suite(suite: u32) -> Result<HpkeSuite, CryptoStatus> {
             Ok(reallyme_crypto::hpke::HPKE_DHKEM_X25519_HKDF_SHA256_CHACHA20POLY1305)
         }
         _ => Err(CRYPTO_INVALID_ARGUMENT),
-    }
-}
-
-fn seal_status(error: HpkeError) -> CryptoStatus {
-    match error {
-        HpkeError::InvalidPublicKey => CRYPTO_INVALID_KEY,
-        HpkeError::InvalidCiphertext | HpkeError::InvalidEncapsulatedKey => {
-            CRYPTO_INVALID_CIPHERTEXT
-        }
-        HpkeError::UnsupportedSuite => CRYPTO_INVALID_ARGUMENT,
-        HpkeError::LengthOverflow => CRYPTO_INTERNAL_ERROR,
-        HpkeError::InvalidRandomness => CRYPTO_INVALID_ARGUMENT,
-        HpkeError::InvalidPrivateKey | HpkeError::SealFailed | HpkeError::OpenFailed => {
-            CRYPTO_INTERNAL_ERROR
-        }
-        _ => CRYPTO_INTERNAL_ERROR,
-    }
-}
-
-fn hpke_status(error: OperationError) -> CryptoStatus {
-    match error {
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidPublicKey,
-        } => CRYPTO_INVALID_KEY,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidPrivateKey,
-        } => CRYPTO_INVALID_KEY,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::MalformedCiphertext,
-        } => CRYPTO_INVALID_CIPHERTEXT,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::InvalidLength,
-        } => CRYPTO_INVALID_ARGUMENT,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::LengthOverflow,
-        } => CRYPTO_INTERNAL_ERROR,
-        OperationError::Primitive {
-            reason: PrimitiveErrorReason::VerificationFailed,
-        } => CRYPTO_AUTHENTICATION_FAILED,
-        OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        } => CRYPTO_INVALID_ARGUMENT,
-        OperationError::Provider {
-            reason: ProviderErrorReason::RandomnessUnavailable,
-        } => CRYPTO_INTERNAL_ERROR,
-        OperationError::Primitive { .. }
-        | OperationError::Provider { .. }
-        | OperationError::Backend { .. }
-        | _ => CRYPTO_INTERNAL_ERROR,
     }
 }

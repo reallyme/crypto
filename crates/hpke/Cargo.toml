@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-hpke"
-version = "0.3.17"
+version = "0.4.0"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -18,6 +18,8 @@ name = "crypto_hpke"
 
 [features]
 default = []
+# Schema registration and conversion do not select a cryptographic backend.
+proto = ["dep:crypto-proto"]
 base-p256-aes128gcm = ["kem-dh-p256", "kdf-hkdf-sha256", "aead-aes128-gcm", "dep:secrecy"]
 backend-native = [
     "dep:getrandom",
@@ -135,10 +137,12 @@ wasm = ["native"]
 test-vectors = ["native"]
 
 [dependencies]
+crypto-core = { package = "reallyme-crypto-core", version = "=0.4.0", path = "../crypto/core", default-features = false }
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../proto", default-features = false, features = ["generated"], optional = true }
 aes-gcm = { workspace = true, optional = true }
 chacha20poly1305 = { workspace = true, optional = true, features = ["zeroize"] }
-crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "=0.3.17", path = "../secp256k1", default-features = false, features = ["native"], optional = true }
-crypto-x448 = { package = "reallyme-crypto-x448", version = "=0.3.17", path = "../x448", default-features = false, features = ["native"], optional = true }
+crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "=0.4.0", path = "../secp256k1", default-features = false, features = ["native"], optional = true }
+crypto-x448 = { package = "reallyme-crypto-x448", version = "=0.4.0", path = "../x448", default-features = false, features = ["native"], optional = true }
 getrandom = { workspace = true, optional = true, features = ["wasm_js"] }
 # Keep the HKDF/HMAC working state covered by the digest zeroization feature.
 hmac = { workspace = true, optional = true }
@@ -152,10 +156,10 @@ shake = { workspace = true, optional = true }
 sha2 = { workspace = true, optional = true }
 sha3 = { workspace = true, optional = true }
 subtle = { workspace = true, optional = true }
-thiserror = { workspace = true }
 zeroize = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
+buffa = { workspace = true }
 hex = { workspace = true }
 wasm-bindgen-test = { workspace = true }
 serde_json = { workspace = true }

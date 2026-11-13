@@ -266,7 +266,7 @@ pub unsafe extern "C" fn rm_crypto_p384_compress_public_key(
             // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
             // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(value) => unsafe { write_fixed(out, out_len, &value) },
-            Err(_) => CRYPTO_INVALID_KEY,
+            Err(error) => crate::error_status::key_management_status(error),
         }
     })
 }
@@ -291,7 +291,7 @@ pub unsafe extern "C" fn rm_crypto_p384_decompress_public_key(
             // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
             // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
             Ok(value) => unsafe { write_fixed(out, out_len, &value) },
-            Err(_) => CRYPTO_INVALID_KEY,
+            Err(error) => crate::error_status::key_management_status(error),
         }
     })
 }

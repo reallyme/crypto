@@ -4,7 +4,7 @@
 
 //! JWA Concat KDF facade routes backed by the semantic KDF operation owner.
 
-use crypto_core::{CryptoError, KdfAlgorithm, KdfFailureKind, KdfProfile};
+use crypto_core::CryptoError;
 
 pub use crypto_concat_kdf::{
     JwaAlgorithmId, JwaConcatKdfOutput, JwaConcatKdfRequest, JwaPartyInfo, JwaSharedSecret,
@@ -21,24 +21,5 @@ pub fn derive_jwa_concat_kdf_sha256<const N: usize>(
 }
 
 fn crypto_error_from_operation_error(error: crate::operations::OperationError) -> CryptoError {
-    let kind = match error {
-        crate::operations::OperationError::Primitive {
-            reason: crate::operations::PrimitiveErrorReason::InvalidKey,
-        } => KdfFailureKind::InvalidSecretLength,
-        crate::operations::OperationError::Primitive {
-            reason:
-                crate::operations::PrimitiveErrorReason::InvalidLength
-                | crate::operations::PrimitiveErrorReason::LengthOverflow,
-        } => KdfFailureKind::InvalidOutputLength,
-        crate::operations::OperationError::Provider {
-            reason: crate::operations::ProviderErrorReason::UnsupportedAlgorithm,
-        } => return CryptoError::Unsupported,
-        _ => KdfFailureKind::DerivationFailed,
-    };
-
-    CryptoError::Kdf {
-        algorithm: KdfAlgorithm::ConcatKdf,
-        profile: KdfProfile::JwaEcdhEsSha256,
-        kind,
-    }
+    error
 }

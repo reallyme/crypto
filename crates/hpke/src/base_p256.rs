@@ -14,8 +14,6 @@ mod key;
 mod plaintext;
 mod storage;
 
-use thiserror::Error;
-
 pub use crypt::{open, seal, seal_with_rng, P256BaseSealed};
 pub use key::P256RecipientKey;
 pub use plaintext::P256BasePlaintext;
@@ -31,59 +29,24 @@ pub const PRIVATE_KEY_LEN: usize = 32;
 /// AES-GCM authentication tag length.
 pub const TAG_LEN: usize = 16;
 
-/// Stable failures for the bounded Base-mode interface.
-#[derive(Clone, Copy, Debug, Error, Eq, PartialEq)]
-#[non_exhaustive]
-pub enum P256BaseError {
-    /// The recipient scalar is not a valid 32-byte P-256 private key.
-    #[error("invalid recipient private key")]
-    InvalidPrivateKey,
-    /// The recipient key is not a valid uncompressed P-256 point.
-    #[error("invalid recipient public key")]
-    InvalidPublicKey,
-    /// `enc` is not a valid 65-byte uncompressed P-256 point.
-    #[error("invalid encapsulated key")]
-    InvalidEncapsulatedKey,
-    /// A caller input exceeds this interface's documented bound.
-    #[error("input exceeds bound")]
-    InputTooLong,
-    /// The ciphertext cannot contain a complete authentication tag.
-    #[error("truncated ciphertext")]
-    TruncatedCiphertext,
-    /// Buffer allocation failed before sensitive input was copied.
-    #[error("allocation failed")]
-    AllocationFailed,
-    /// The entropy provider failed; partially filled entropy is cleared.
-    #[error("randomness unavailable")]
-    RandomnessUnavailable,
-    /// Authentication failed or the context does not match.
-    #[error("authentication failed")]
-    AuthenticationFailed,
-    /// The reviewed backend could not complete the operation.
-    #[error("provider failed")]
-    ProviderFailed,
-}
+/// Canonical schema-owned failure for the bounded Base-mode interface.
+pub use crypto_core::CryptoError as P256BaseError;
 
 /// Injectable cryptographic entropy source. Implementations must supply fresh,
 /// unpredictable bytes on every successful call.
 pub trait P256BaseRng {
-    /// Fill all requested bytes, or return a fixed randomness failure.
+    /// Fill all requested bytes, or return the canonical provider failure.
     fn fill(&mut self, output: &mut [u8]) -> Result<(), P256BaseRandomError>;
 }
 
-/// Entropy failure without provider text or diagnostic data.
-#[derive(Clone, Copy, Debug, Error, Eq, PartialEq)]
-pub enum P256BaseRandomError {
-    /// Entropy could not be supplied.
-    #[error("randomness unavailable")]
-    Unavailable,
-}
+/// Canonical schema-owned failure returned by injected entropy providers.
+pub use crypto_core::CryptoError as P256BaseRandomError;
 
 struct SystemRandom;
 
 impl P256BaseRng for SystemRandom {
     fn fill(&mut self, output: &mut [u8]) -> Result<(), P256BaseRandomError> {
-        getrandom::fill(output).map_err(|_| P256BaseRandomError::Unavailable)
+        getrandom::fill(output).map_err(|_| P256BaseRandomError::PROVIDER_RANDOMNESS_UNAVAILABLE)
     }
 }
 

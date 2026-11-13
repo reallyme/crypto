@@ -9,9 +9,10 @@
 // a damaged test vector rather than an accepted production error path.
 #![allow(clippy::expect_used)]
 
+use crypto_core::CryptoError;
 use reallyme_crypto::{
-    key_random::{KeyRandomError, KeyRng},
-    prime_groups::{GroupError, GroupErrorReason, GroupScalar, PrimeGroup},
+    key_random::KeyRng,
+    prime_groups::{GroupScalar, PrimeGroup},
 };
 use secrecy::ExposeSecret;
 use serde::Deserialize;
@@ -104,8 +105,8 @@ fn small(group: PrimeGroup, value: u8) -> GroupScalar {
     group.scalar(&bytes).expect("small scalar")
 }
 
-fn reason<T>(result: Result<T, GroupError>, expected: GroupErrorReason) {
-    assert_eq!(result.err().map(GroupError::reason), Some(expected));
+fn assert_error<T>(result: Result<T, CryptoError>, expected: CryptoError) {
+    assert_eq!(result.err(), Some(expected));
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -236,29 +237,31 @@ fn field_reduction_and_encoding_match_independent_answers() {
                 .element(public.encoding())
                 .expect("encoded public subgroup element");
         }
-        reason(group.reduce_to_field(&[]), GroupErrorReason::InvalidLength);
-        reason(
+        assert_error(
+            group.reduce_to_field(&[]),
+            CryptoError::PRIMITIVE_INVALID_LENGTH,
+        );
+        assert_error(
             group.reduce_to_field(&[0; 513]),
-            GroupErrorReason::InvalidLength,
+            CryptoError::PRIMITIVE_INVALID_LENGTH,
         );
-        reason(group.encode_field(&[]), GroupErrorReason::InvalidLength);
-        reason(
+        assert_error(
+            group.encode_field(&[]),
+            CryptoError::PRIMITIVE_INVALID_LENGTH,
+        );
+        assert_error(
             group.encode_field(&vec![0; group.field_len()]),
-            GroupErrorReason::InvalidFieldElement,
+            CryptoError::PRIMITIVE_INVALID_PARAMETER,
         );
-        reason(
+        assert_error(
             group.encode_field(group.modulus()),
-            GroupErrorReason::InvalidFieldElement,
+            CryptoError::PRIMITIVE_INVALID_PARAMETER,
         );
         let mut one = vec![0; group.field_len()];
         *one.last_mut().expect("nonempty field") = 1;
-        reason(
+        assert_error(
             group.encode_field(&one),
-            if group.is_elliptic_curve() {
-                GroupErrorReason::InvalidFieldElement
-            } else {
-                GroupErrorReason::Identity
-            },
+            CryptoError::PRIMITIVE_INVALID_PARAMETER,
         );
     }
 }
@@ -287,15 +290,18 @@ fn agreement_encoding_preserves_leading_zero_bytes() {
 fn scalar_bounds_identity_and_domain_binding_are_enforced() {
     for row in vectors() {
         let group = group(&row.group);
-        reason(group.scalar(&[]), GroupErrorReason::InvalidLength);
-        reason(
+        assert_error(group.scalar(&[]), CryptoError::PRIMITIVE_INVALID_LENGTH);
+        assert_error(
             group.scalar(&vec![0; group.scalar_len()]),
-            GroupErrorReason::InvalidScalar,
+            CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY,
         );
-        reason(group.scalar(group.order()), GroupErrorReason::InvalidScalar);
-        reason(
+        assert_error(
+            group.scalar(group.order()),
+            CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY,
+        );
+        assert_error(
             group.scalar(&vec![255; group.scalar_len()]),
-            GroupErrorReason::InvalidScalar,
+            CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY,
         );
         let generator = group.generator().expect("generator");
         let mut q_minus_one = group.order().to_vec();
@@ -306,26 +312,26 @@ fn scalar_bounds_identity_and_domain_binding_are_enforced() {
             .public_element()
             .expect("negative generator");
         assert_eq!(negative.encoding(), decode(&row.answers.negative_generator));
-        reason(
+        assert_error(
             group.linear_combination(&q_minus_one, &generator, &generator),
-            GroupErrorReason::Identity,
+            CryptoError::PRIMITIVE_INVALID_PARAMETER,
         );
         let other = if group == PrimeGroup::NistP256 {
             PrimeGroup::BrainpoolP256r1
         } else {
             PrimeGroup::NistP256
         };
-        reason(
+        assert_error(
             small(group, 2).multiply(&other.generator().expect("other generator")),
-            GroupErrorReason::GroupMismatch,
+            CryptoError::PRIMITIVE_INVALID_PARAMETER,
         );
-        reason(
+        assert_error(
             group.linear_combination(
                 &[1],
                 &generator,
                 &other.generator().expect("other generator"),
             ),
-            GroupErrorReason::GroupMismatch,
+            CryptoError::PRIMITIVE_INVALID_PARAMETER,
         );
     }
 }
@@ -335,30 +341,45 @@ fn scalar_bounds_identity_and_domain_binding_are_enforced() {
 fn noncanonical_offcurve_and_wrong_subgroup_elements_are_rejected() {
     for row in vectors() {
         let group = group(&row.group);
-        reason(group.element(&[]), GroupErrorReason::InvalidLength);
-        reason(
+        assert_error(group.element(&[]), CryptoError::PRIMITIVE_INVALID_LENGTH);
+        assert_error(
             group.element(&vec![0; group.element_len()]),
-            GroupErrorReason::InvalidElement,
+            CryptoError::PRIMITIVE_INVALID_PARAMETER,
         );
         if group.is_elliptic_curve() {
             let mut bytes = vec![0; group.element_len()];
             bytes[0] = 4;
-            reason(group.element(&bytes), GroupErrorReason::InvalidElement);
+            assert_error(
+                group.element(&bytes),
+                CryptoError::PRIMITIVE_INVALID_PARAMETER,
+            );
             bytes[1..=group.field_len()].copy_from_slice(group.modulus());
-            reason(group.element(&bytes), GroupErrorReason::InvalidElement);
+            assert_error(
+                group.element(&bytes),
+                CryptoError::PRIMITIVE_INVALID_PARAMETER,
+            );
             let mut generator = decode(&row.domain.generator);
             generator[0] = 6;
-            reason(group.element(&generator), GroupErrorReason::InvalidElement);
+            assert_error(
+                group.element(&generator),
+                CryptoError::PRIMITIVE_INVALID_PARAMETER,
+            );
         } else {
-            reason(
+            assert_error(
                 group.element(group.modulus()),
-                GroupErrorReason::InvalidElement,
+                CryptoError::PRIMITIVE_INVALID_PARAMETER,
             );
             let mut value = vec![0; group.field_len()];
             *value.last_mut().expect("nonempty field") = 1;
-            reason(group.element(&value), GroupErrorReason::InvalidElement);
+            assert_error(
+                group.element(&value),
+                CryptoError::PRIMITIVE_INVALID_PARAMETER,
+            );
             *value.last_mut().expect("nonempty field") = 2;
-            reason(group.element(&value), GroupErrorReason::InvalidElement);
+            assert_error(
+                group.element(&value),
+                CryptoError::PRIMITIVE_INVALID_PARAMETER,
+            );
         }
     }
 }
@@ -369,11 +390,11 @@ struct FixedRng {
     fail: bool,
 }
 impl KeyRng for FixedRng {
-    fn fill(&mut self, destination: &mut [u8]) -> Result<(), KeyRandomError> {
+    fn fill(&mut self, destination: &mut [u8]) -> Result<(), CryptoError> {
         self.calls += 1;
         destination.fill(0);
         if self.fail {
-            return Err(KeyRandomError::Unavailable);
+            return Err(CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE);
         }
         *destination.last_mut().expect("fixed scalar width") = self.value;
         Ok(())
@@ -390,9 +411,9 @@ fn entropy_failures_and_rejection_are_bounded_for_every_domain() {
             value: 0,
             fail: false,
         };
-        reason(
+        assert_error(
             group.random_scalar(&mut rng),
-            GroupErrorReason::RandomExhausted,
+            CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE,
         );
         assert_eq!(rng.calls, 128);
         rng = FixedRng {
@@ -400,9 +421,9 @@ fn entropy_failures_and_rejection_are_bounded_for_every_domain() {
             value: 0,
             fail: true,
         };
-        reason(
+        assert_error(
             group.random_scalar(&mut rng),
-            GroupErrorReason::RandomUnavailable,
+            CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE,
         );
         assert_eq!(rng.calls, 1);
         rng = FixedRng {
@@ -429,4 +450,20 @@ fn secret_owners_have_destruction_contracts() {
     fn protected<T: ZeroizeOnDrop>() {}
     protected::<GroupScalar>();
     protected::<reallyme_crypto::prime_groups::GroupElement>();
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn canonical_entropy_errors_are_not_collapsed() {
+    struct Failure;
+    impl KeyRng for Failure {
+        fn fill(&mut self, destination: &mut [u8]) -> Result<(), CryptoError> {
+            destination.fill(0xa5);
+            Err(CryptoError::BACKEND_INVALID_STATE)
+        }
+    }
+    assert_eq!(
+        PrimeGroup::NistP256.random_scalar(&mut Failure).err(),
+        Some(CryptoError::BACKEND_INVALID_STATE)
+    );
 }

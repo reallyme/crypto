@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crypto_bigint::BoxedUint;
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 use sha1::Sha1;
 use sha2::{Digest, Sha256, Sha384, Sha512};
 use subtle::{Choice, ConstantTimeEq};
@@ -229,9 +229,5 @@ fn all_zero(bytes: &[u8]) -> Choice {
 }
 
 fn signature_error() -> CryptoError {
-    CryptoError::Signature {
-        backend: SignatureBackend::Native,
-        operation: SignatureOperation::Verify,
-        kind: SignatureFailureKind::InvalidSignature,
-    }
+    crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE
 }

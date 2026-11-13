@@ -54,10 +54,7 @@ fn multikey_encoding_rejects_invalid_key_length() {
     let fake_key = vec![0u8; 10];
 
     let err = public_key_to_multikey(Algorithm::MlKem1024, &fake_key);
-    assert!(matches!(
-        err,
-        Err(AlgorithmError::InvalidKey(Algorithm::MlKem1024))
-    ));
+    assert!(matches!(err, Err(AlgorithmError::PRIMITIVE_INVALID_KEY)));
 }
 
 #[test]

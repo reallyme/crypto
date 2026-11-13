@@ -4,7 +4,7 @@
 
 //! JOSE ECDSA signature transcoding tests for P-256.
 
-use crypto_core::{CryptoError, SignatureBackend, SignatureFailureKind, SignatureOperation};
+use crypto_core::CryptoError;
 use crypto_p256::{
     p256_ecdsa_der_to_jose_signature, p256_ecdsa_jose_signature_to_der,
     P256_ECDSA_JOSE_SIGNATURE_LEN,
@@ -248,13 +248,9 @@ fn codec_der_rejects_malformed_signatures_even_with_ber_enabled() {
         &hex!("300602010102010100"),
         &[0; 73],
     ];
-    let expected = CryptoError::Signature {
-        backend: SignatureBackend::Native,
-        operation: SignatureOperation::Verify,
-        kind: SignatureFailureKind::InvalidSignature,
-    };
+    let expected = CryptoError::PRIMITIVE_INVALID_SIGNATURE;
     for der in MALFORMED {
-        assert_eq!(p256_ecdsa_der_to_jose_signature(der), Err(expected.clone()));
+        assert_eq!(p256_ecdsa_der_to_jose_signature(der), Err(expected));
         #[cfg(any(feature = "native", feature = "wasm"))]
         {
             let public = hex!(
@@ -267,7 +263,7 @@ fn codec_der_rejects_malformed_signatures_even_with_ber_enabled() {
                     b"strict DER boundary",
                     &public,
                 ),
-                Err(expected.clone())
+                Err(expected)
             );
         }
     }

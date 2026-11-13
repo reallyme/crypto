@@ -5,7 +5,7 @@
 use aes_gcm::aead::consts::U12;
 use aes_gcm::aead::{Aead, KeyInit, Payload};
 use aes_gcm::{Aes128Gcm, Aes256Gcm, AesGcm, Nonce};
-use crypto_core::{AeadBackend, AeadFailureKind, CryptoError};
+use crypto_core::CryptoError;
 use zeroize::Zeroizing;
 
 use crate::{Aes128GcmDecryptRequest, Aes192GcmDecryptRequest, DecryptRequest};
@@ -16,11 +16,8 @@ type Aes192Gcm = AesGcm<aes::Aes192, U12>;
 pub fn decrypt_aes128_gcm(request: &Aes128GcmDecryptRequest<'_>) -> Result<Vec<u8>, CryptoError> {
     let key_material = Zeroizing::new(*request.key.as_bytes());
 
-    let cipher =
-        Aes128Gcm::new_from_slice(&*key_material).map_err(|_| CryptoError::AeadDecrypt {
-            backend: AeadBackend::Native,
-            kind: AeadFailureKind::InvalidKeyMaterial,
-        })?;
+    let cipher = Aes128Gcm::new_from_slice(&*key_material)
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)?;
 
     let nonce: Nonce<U12> = (*request.nonce.as_bytes()).into();
 
@@ -31,21 +28,15 @@ pub fn decrypt_aes128_gcm(request: &Aes128GcmDecryptRequest<'_>) -> Result<Vec<u
 
     cipher
         .decrypt(&nonce, payload)
-        .map_err(|_| CryptoError::AeadDecrypt {
-            backend: AeadBackend::Native,
-            kind: AeadFailureKind::AuthenticationFailed,
-        })
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_AUTHENTICATION_FAILED)
 }
 
 /// Decrypts and authenticates an AES-192-GCM ciphertext via the native backend.
 pub fn decrypt_aes192_gcm(request: &Aes192GcmDecryptRequest<'_>) -> Result<Vec<u8>, CryptoError> {
     let key_material = Zeroizing::new(*request.key.as_bytes());
 
-    let cipher =
-        Aes192Gcm::new_from_slice(&*key_material).map_err(|_| CryptoError::AeadDecrypt {
-            backend: AeadBackend::Native,
-            kind: AeadFailureKind::InvalidKeyMaterial,
-        })?;
+    let cipher = Aes192Gcm::new_from_slice(&*key_material)
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)?;
 
     let nonce: Nonce<U12> = (*request.nonce.as_bytes()).into();
 
@@ -56,10 +47,7 @@ pub fn decrypt_aes192_gcm(request: &Aes192GcmDecryptRequest<'_>) -> Result<Vec<u
 
     cipher
         .decrypt(&nonce, payload)
-        .map_err(|_| CryptoError::AeadDecrypt {
-            backend: AeadBackend::Native,
-            kind: AeadFailureKind::AuthenticationFailed,
-        })
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_AUTHENTICATION_FAILED)
 }
 
 /// Decrypts and authenticates an AES-256-GCM ciphertext via the native backend,
@@ -68,11 +56,8 @@ pub fn decrypt_aes192_gcm(request: &Aes192GcmDecryptRequest<'_>) -> Result<Vec<u
 pub fn decrypt(request: &DecryptRequest<'_>) -> Result<Vec<u8>, CryptoError> {
     let key_material = Zeroizing::new(*request.key.as_bytes());
 
-    let cipher =
-        Aes256Gcm::new_from_slice(&*key_material).map_err(|_| CryptoError::AeadDecrypt {
-            backend: AeadBackend::Native,
-            kind: AeadFailureKind::InvalidKeyMaterial,
-        })?;
+    let cipher = Aes256Gcm::new_from_slice(&*key_material)
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_KEY)?;
 
     let nonce: Nonce<U12> = (*request.nonce.as_bytes()).into();
 
@@ -83,10 +68,7 @@ pub fn decrypt(request: &DecryptRequest<'_>) -> Result<Vec<u8>, CryptoError> {
 
     cipher
         .decrypt(&nonce, payload)
-        .map_err(|_| CryptoError::AeadDecrypt {
-            backend: AeadBackend::Native,
-            kind: AeadFailureKind::AuthenticationFailed,
-        })
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_AUTHENTICATION_FAILED)
 }
 
 /// Decrypts AES-256-GCM and owns plaintext in a buffer wiped on drop.

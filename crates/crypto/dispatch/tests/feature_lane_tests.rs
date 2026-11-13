@@ -32,7 +32,7 @@ fn disabled_signature_algorithm_fails_closed() {
         .expect_err("disabled Ed25519 dispatch must fail closed");
 
     match err {
-        crypto_dispatch::AlgorithmError::UnsupportedAlgorithm(crypto_core::Algorithm::Ed25519) => {}
+        crypto_dispatch::AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM => {}
         _ => panic!("disabled Ed25519 returned an unexpected error variant"),
     }
 }

@@ -23,19 +23,12 @@ fn split_ciphertext(
     ciphertext: &[u8],
 ) -> Result<(&[u8], &[u8; X25519_KEY_LEN]), CryptoError> {
     if ciphertext.len() != suite.ciphertext_len() {
-        return Err(CryptoError::InvalidCiphertextLength {
-            minimum: suite.ciphertext_len(),
-            actual: ciphertext.len(),
-        });
+        return Err(CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
     let ml_kem_ciphertext_len = suite.ml_kem_ciphertext_len();
     let (ml_kem_ciphertext, x25519_ciphertext) = ciphertext.split_at(ml_kem_ciphertext_len);
-    let x25519_ciphertext = <&[u8; X25519_KEY_LEN]>::try_from(x25519_ciphertext).map_err(|_| {
-        CryptoError::InvalidCiphertextLength {
-            minimum: X25519_KEY_LEN,
-            actual: x25519_ciphertext.len(),
-        }
-    })?;
+    let x25519_ciphertext = <&[u8; X25519_KEY_LEN]>::try_from(x25519_ciphertext)
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_LENGTH)?;
     Ok((ml_kem_ciphertext, x25519_ciphertext))
 }
 
@@ -43,15 +36,12 @@ fn ml_kem_768_decapsulate(
     seed_bytes: &[u8; ML_KEM_SECRET_SEED_LEN],
     ciphertext: &[u8],
 ) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
-    let seed =
-        Zeroizing::new(Seed::try_from(&seed_bytes[..]).map_err(|_| CryptoError::InvalidKey)?);
+    let seed = Zeroizing::new(
+        Seed::try_from(&seed_bytes[..]).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?,
+    );
     let decapsulation_key = MlKem768DecapsulationKey::from_seed(*seed);
-    let ciphertext = MlKem768Ciphertext::try_from(ciphertext).map_err(|_| {
-        CryptoError::InvalidCiphertextLength {
-            minimum: XWingSuite::MlKem768.ml_kem_ciphertext_len(),
-            actual: ciphertext.len(),
-        }
-    })?;
+    let ciphertext = MlKem768Ciphertext::try_from(ciphertext)
+        .map_err(|_| CryptoError::PRIMITIVE_INVALID_LENGTH)?;
     let mut shared_secret = decapsulation_key.decapsulate(&ciphertext);
     let shared_secret_bytes = Zeroizing::new(shared_secret.as_slice().to_vec());
     shared_secret.zeroize();
@@ -78,7 +68,7 @@ fn decapsulate(
         &x25519_shared_secret,
         x25519_ciphertext,
         &expanded.x25519_public_key,
-        crypto_core::KemFailureKind::DecapsulateFailed,
+        crypto_core::CryptoError::PRIMITIVE_AUTHENTICATION_FAILED,
     )
 }
 

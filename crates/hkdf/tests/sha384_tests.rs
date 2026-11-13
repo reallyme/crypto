@@ -5,7 +5,7 @@
 #![allow(clippy::unwrap_used)]
 #![allow(missing_docs)]
 
-use crypto_core::{CryptoError, HkdfFailureKind, HkdfHash};
+use crypto_core::CryptoError;
 use crypto_hkdf::{
     derive, expand_sha384, extract_sha384, DeriveRequest, HkdfInfo, HkdfInputKeyMaterial, HkdfSalt,
     HkdfSuite, HKDF_SHA384_MAX_OUTPUT_LENGTH, HKDF_SHA384_PRK_LENGTH,
@@ -69,33 +69,15 @@ fn sha384_rejects_empty_ikm_and_invalid_output_lengths() {
     let empty_ikm = HkdfInputKeyMaterial::from_slice(&[]);
     let info = HkdfInfo::from_slice(b"context");
     let extract_error = extract_sha384(None, &empty_ikm).err().unwrap();
-    assert_eq!(
-        extract_error,
-        CryptoError::Hkdf {
-            hash: HkdfHash::Sha2_384,
-            kind: HkdfFailureKind::InvalidIkmLength,
-        }
-    );
+    assert_eq!(extract_error, CryptoError::PRIMITIVE_INVALID_KEY);
 
     let ikm = HkdfInputKeyMaterial::from_slice(b"input keying material");
     let prk = extract_sha384(None, &ikm).unwrap();
     let zero_error = expand_sha384::<0>(&prk, &info).err().unwrap();
-    assert_eq!(
-        zero_error,
-        CryptoError::Hkdf {
-            hash: HkdfHash::Sha2_384,
-            kind: HkdfFailureKind::InvalidOutputLength,
-        }
-    );
+    assert_eq!(zero_error, CryptoError::PRIMITIVE_INVALID_LENGTH);
 
     let oversized_error = expand_sha384::<{ HKDF_SHA384_MAX_OUTPUT_LENGTH + 1 }>(&prk, &info)
         .err()
         .unwrap();
-    assert_eq!(
-        oversized_error,
-        CryptoError::Hkdf {
-            hash: HkdfHash::Sha2_384,
-            kind: HkdfFailureKind::InvalidOutputLength,
-        }
-    );
+    assert_eq!(oversized_error, CryptoError::PRIMITIVE_INVALID_LENGTH);
 }

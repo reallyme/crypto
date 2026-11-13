@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, HkdfFailureKind, HkdfHash};
+use crypto_core::CryptoError;
 use hkdf::Hkdf;
 #[cfg(feature = "sha3")]
 use hkdf::SimpleHkdf;
@@ -31,17 +31,11 @@ pub struct DeriveRequest<'a> {
 ///
 pub fn derive<const N: usize>(request: &DeriveRequest<'_>) -> Result<HkdfOutput<N>, CryptoError> {
     if request.ikm.as_bytes().is_empty() {
-        return Err(CryptoError::Hkdf {
-            hash: request.suite.hash(),
-            kind: HkdfFailureKind::InvalidIkmLength,
-        });
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_KEY);
     }
 
     if N == 0 {
-        return Err(CryptoError::Hkdf {
-            hash: request.suite.hash(),
-            kind: HkdfFailureKind::InvalidOutputLength,
-        });
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
 
     // Install the clearing owner before expansion can write key material. A
@@ -53,19 +47,13 @@ pub fn derive<const N: usize>(request: &DeriveRequest<'_>) -> Result<HkdfOutput<
             let hkdf =
                 Hkdf::<Sha256>::new(request.salt.map(HkdfSalt::as_bytes), request.ikm.as_bytes());
             hkdf.expand(request.info.as_bytes(), output.as_mut_bytes())
-                .map_err(|_| CryptoError::Hkdf {
-                    hash: HkdfHash::Sha2_256,
-                    kind: HkdfFailureKind::ExpandFailed,
-                })?;
+                .map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
         }
         HkdfSuite::Sha2_384 => {
             let hkdf =
                 Hkdf::<Sha384>::new(request.salt.map(HkdfSalt::as_bytes), request.ikm.as_bytes());
             hkdf.expand(request.info.as_bytes(), output.as_mut_bytes())
-                .map_err(|_| CryptoError::Hkdf {
-                    hash: HkdfHash::Sha2_384,
-                    kind: HkdfFailureKind::ExpandFailed,
-                })?;
+                .map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
         }
         HkdfSuite::Sha3_256 => {
             #[cfg(feature = "sha3")]
@@ -79,15 +67,12 @@ pub fn derive<const N: usize>(request: &DeriveRequest<'_>) -> Result<HkdfOutput<
                     request.ikm.as_bytes(),
                 );
                 hkdf.expand(request.info.as_bytes(), output.as_mut_bytes())
-                    .map_err(|_| CryptoError::Hkdf {
-                        hash: HkdfHash::Sha3_256,
-                        kind: HkdfFailureKind::ExpandFailed,
-                    })?;
+                    .map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
             }
 
             #[cfg(not(feature = "sha3"))]
             {
-                return Err(CryptoError::Unsupported);
+                return Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM);
             }
         }
     }
@@ -99,7 +84,7 @@ pub fn derive<const N: usize>(request: &DeriveRequest<'_>) -> Result<HkdfOutput<
 ///
 /// Builds the `info` as `reallyme/crypto/hkdf/v1/<purpose>/<domain_tag>` and
 /// expands it; errors on length overflow or an underlying HKDF failure.
-/// Returns [`CryptoError::Unsupported`] unless the crate's `sha3` feature is
+/// Returns [`CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM`] unless the crate's `sha3` feature is
 /// enabled.
 pub fn derive_domain_key_32(
     ikm: &HkdfInputKeyMaterial,
@@ -115,10 +100,7 @@ pub fn derive_domain_key_32(
         .checked_add(purpose.as_bytes().len())
         .and_then(|value| value.checked_add(SEPARATOR.len()))
         .and_then(|value| value.checked_add(domain_tag.as_bytes().len()))
-        .ok_or(CryptoError::Hkdf {
-            hash: HkdfHash::Sha3_256,
-            kind: HkdfFailureKind::LengthOverflow,
-        })?;
+        .ok_or(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)?;
 
     let mut info = Vec::<u8>::with_capacity(capacity);
     info.extend_from_slice(PREFIX);

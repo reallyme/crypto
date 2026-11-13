@@ -4,9 +4,9 @@
 
 //! ReallyMe's intentionally ratified AKP JWK encodings for PQ public keys.
 
+use crate::canonicalize_jwk::canonicalize_jwk;
 use crate::{AkpJwk, JwkOptions, JwtError};
 use codec_base64url::bytes_to_base64url;
-use codec_jcs::canonicalize_trusted_json_value;
 
 fn pq_public_key_to_jwk(
     public_key: &[u8],
@@ -31,8 +31,7 @@ fn pq_public_key_to_jwk(
 }
 
 fn pq_public_key_to_jwk_jcs(jwk: &AkpJwk) -> Result<String, JwtError> {
-    let value = serde_json::to_value(jwk).map_err(|_| JwtError::EncodingError)?;
-    canonicalize_trusted_json_value(&value).map_err(|_| JwtError::EncodingError)
+    canonicalize_jwk(jwk)
 }
 
 macro_rules! define_pq_jwk {
@@ -56,7 +55,7 @@ define_pq_jwk!(
     1312,
     "ML-DSA-44",
     "sig",
-    JwtError::InvalidMlDsa44Key
+    JwtError::PRIMITIVE_INVALID_PUBLIC_KEY
 );
 define_pq_jwk!(
     mldsa65_public_key_to_jwk,
@@ -64,7 +63,7 @@ define_pq_jwk!(
     1952,
     "ML-DSA-65",
     "sig",
-    JwtError::InvalidMlDsa65Key
+    JwtError::PRIMITIVE_INVALID_PUBLIC_KEY
 );
 define_pq_jwk!(
     mlkem512_public_key_to_jwk,
@@ -72,7 +71,7 @@ define_pq_jwk!(
     800,
     "ML-KEM-512",
     "enc",
-    JwtError::InvalidMlKem512Key
+    JwtError::PRIMITIVE_INVALID_PUBLIC_KEY
 );
 define_pq_jwk!(
     mlkem768_public_key_to_jwk,
@@ -80,7 +79,7 @@ define_pq_jwk!(
     1184,
     "ML-KEM-768",
     "enc",
-    JwtError::InvalidMlKem768Key
+    JwtError::PRIMITIVE_INVALID_PUBLIC_KEY
 );
 define_pq_jwk!(
     slh_dsa_sha2_128s_public_key_to_jwk,
@@ -88,7 +87,7 @@ define_pq_jwk!(
     32,
     "SLH-DSA-SHA2-128s",
     "sig",
-    JwtError::InvalidSlhDsaSha2128sKey
+    JwtError::PRIMITIVE_INVALID_PUBLIC_KEY
 );
 define_pq_jwk!(
     x_wing_768_public_key_to_jwk,
@@ -96,5 +95,5 @@ define_pq_jwk!(
     1216,
     "X-Wing-768",
     "enc",
-    JwtError::InvalidXWing768Key
+    JwtError::PRIMITIVE_INVALID_PUBLIC_KEY
 );

@@ -8,21 +8,17 @@
 
 use crypto_core::HashAlgorithm;
 use crypto_dispatch::AlgorithmError;
-use reallyme_crypto::operations::{OperationError, ProviderErrorReason};
+use reallyme_crypto::operations::OperationError;
 
 #[test]
 fn hash_operation_rejects_feature_disabled_algorithms() {
     assert_eq!(
         reallyme_crypto::operations::hash::digest(HashAlgorithm::Sha2_256, b"message"),
-        Err(OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        }),
+        Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
     );
     assert_eq!(
         reallyme_crypto::operations::hash::digest(HashAlgorithm::Sha3_256, b"message"),
-        Err(OperationError::Provider {
-            reason: ProviderErrorReason::UnsupportedAlgorithm,
-        }),
+        Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
     );
 }
 

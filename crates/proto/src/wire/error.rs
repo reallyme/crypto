@@ -15,17 +15,8 @@ use super::limits::{
     PROVIDER_REASON_CODE_RANGE,
 };
 
-/// Branch of the protobuf [`CryptoError`](ProtoCryptoError) oneof.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[non_exhaustive]
-pub enum CryptoWireErrorBranch {
-    /// Primitive validation or cryptographic operation failure.
-    Primitive,
-    /// Provider policy, support, or availability failure.
-    Provider,
-    /// Backend dispatch or internal failure.
-    Backend,
-}
+/// Schema-defined owning branch of a protobuf crypto failure.
+pub use crate::error_types::CryptoErrorBranch as CryptoWireErrorBranch;
 
 /// Lossless, non-secret representation of a protobuf crypto failure.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -38,20 +29,8 @@ pub struct CryptoWireError {
     reason_code: i32,
 }
 
-/// Error returned when a public wire error is not branch-valid.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
-#[non_exhaustive]
-pub enum CryptoWireErrorValidationError {
-    /// The reason was `CRYPTO_ERROR_REASON_UNSPECIFIED`.
-    #[error("crypto wire error reason is unspecified")]
-    UnspecifiedReason,
-    /// The reason is not valid for the selected error branch.
-    #[error("crypto wire error reason does not match its branch")]
-    BranchReasonMismatch,
-    /// The numeric reason is outside the reserved range for its branch.
-    #[error("crypto wire error reason code is outside its branch range")]
-    ReasonCodeOutOfRange,
-}
+/// Schema-defined failure returned for an invalid error envelope.
+pub use crate::error_types::CryptoError as CryptoWireErrorValidationError;
 
 impl CryptoWireError {
     /// Constructs a public wire error after validating branch/reason pairing.
@@ -60,10 +39,10 @@ impl CryptoWireError {
         reason: CryptoErrorReason,
     ) -> Result<Self, CryptoWireErrorValidationError> {
         if reason == CryptoErrorReason::CRYPTO_ERROR_REASON_UNSPECIFIED {
-            return Err(CryptoWireErrorValidationError::UnspecifiedReason);
+            return Err(CryptoWireErrorValidationError::PRIMITIVE_MALFORMED_PROTOBUF);
         }
         if !reason_matches_branch(branch, reason) {
-            return Err(CryptoWireErrorValidationError::BranchReasonMismatch);
+            return Err(CryptoWireErrorValidationError::PRIMITIVE_MALFORMED_PROTOBUF);
         }
         Ok(Self::known_good(branch, reason))
     }
@@ -78,16 +57,16 @@ impl CryptoWireError {
         reason_code: i32,
     ) -> Result<Self, CryptoWireErrorValidationError> {
         if reason_code == CryptoErrorReason::CRYPTO_ERROR_REASON_UNSPECIFIED as i32 {
-            return Err(CryptoWireErrorValidationError::UnspecifiedReason);
+            return Err(CryptoWireErrorValidationError::PRIMITIVE_MALFORMED_PROTOBUF);
         }
         if !reason_code_matches_branch(branch, reason_code) {
-            return Err(CryptoWireErrorValidationError::ReasonCodeOutOfRange);
+            return Err(CryptoWireErrorValidationError::PRIMITIVE_MALFORMED_PROTOBUF);
         }
 
         let reason = EnumValue::<CryptoErrorReason>::from(reason_code).as_known();
         if let Some(known) = reason {
             if !reason_matches_branch(branch, known) {
-                return Err(CryptoWireErrorValidationError::BranchReasonMismatch);
+                return Err(CryptoWireErrorValidationError::PRIMITIVE_MALFORMED_PROTOBUF);
             }
         }
         Ok(Self {
@@ -127,7 +106,10 @@ impl CryptoWireError {
         )
     }
 
-    const fn known_good(branch: CryptoWireErrorBranch, reason: CryptoErrorReason) -> Self {
+    pub(super) const fn known_good(
+        branch: CryptoWireErrorBranch,
+        reason: CryptoErrorReason,
+    ) -> Self {
         Self {
             branch,
             reason: Some(reason),
@@ -261,40 +243,15 @@ fn malformed_error_envelope() -> CryptoWireError {
 }
 
 fn reason_matches_branch(branch: CryptoWireErrorBranch, reason: CryptoErrorReason) -> bool {
-    match branch {
-        CryptoWireErrorBranch::Primitive => matches!(
-            reason,
-            CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PARAMETER
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PUBLIC_KEY
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PRIVATE_KEY
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_NONCE
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SALT
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PASSWORD
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_ENCODING
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SIGNATURE
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_VERIFICATION_FAILED
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_CIPHERTEXT
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_TAG
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SHARED_SECRET
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_PROTOBUF
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_MALFORMED_JSON
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_RESOURCE_LIMIT_EXCEEDED
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_MISSING_OPERATION
-        ),
-        CryptoWireErrorBranch::Provider => matches!(
-            reason,
-            CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_ALGORITHM
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_BACKEND
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_UNAVAILABLE
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE
-        ),
-        CryptoWireErrorBranch::Backend => matches!(
-            reason,
-            CryptoErrorReason::CRYPTO_ERROR_REASON_BACKEND_INVALID_STATE
-                | CryptoErrorReason::CRYPTO_ERROR_REASON_BACKEND_INTERNAL
-        ),
-    }
+    use crate::error_types::CryptoErrorBranch as SchemaBranch;
+    matches!(
+        (branch, reason.branch()),
+        (
+            CryptoWireErrorBranch::Primitive,
+            Some(SchemaBranch::Primitive)
+        ) | (
+            CryptoWireErrorBranch::Provider,
+            Some(SchemaBranch::Provider)
+        ) | (CryptoWireErrorBranch::Backend, Some(SchemaBranch::Backend))
+    )
 }

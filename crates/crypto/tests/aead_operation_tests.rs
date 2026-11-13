@@ -13,9 +13,8 @@
 
 //! Operation-owner tests for AEAD routes.
 
-use crypto_core::{AeadAlgorithm, AeadFailureKind, CryptoError};
+use crypto_core::{AeadAlgorithm, CryptoError};
 use reallyme_crypto::dispatch::AeadParams;
-use reallyme_crypto::operations::{OperationError, PrimitiveErrorReason};
 
 const STANDARD_NONCE_LEN: usize = 12;
 const XCHACHA_NONCE_LEN: usize = 24;
@@ -133,9 +132,7 @@ fn aead_operation_reports_stable_failure_reasons_for_malicious_inputs() {
 
         assert_eq!(
             reallyme_crypto::operations::aead::seal(case.algorithm, &[], &nonce, aad, plaintext),
-            Err(OperationError::Primitive {
-                reason: PrimitiveErrorReason::InvalidKey,
-            })
+            Err(CryptoError::PRIMITIVE_INVALID_KEY)
         );
         assert_eq!(
             reallyme_crypto::operations::aead::seal(
@@ -145,9 +142,7 @@ fn aead_operation_reports_stable_failure_reasons_for_malicious_inputs() {
                 aad,
                 plaintext,
             ),
-            Err(OperationError::Primitive {
-                reason: PrimitiveErrorReason::InvalidLength,
-            })
+            Err(CryptoError::PRIMITIVE_INVALID_NONCE)
         );
         assert_eq!(
             reallyme_crypto::operations::aead::open(
@@ -157,9 +152,7 @@ fn aead_operation_reports_stable_failure_reasons_for_malicious_inputs() {
                 aad,
                 &ciphertext[..AEAD_TAG_LEN - 1],
             ),
-            Err(OperationError::Primitive {
-                reason: PrimitiveErrorReason::InvalidLength,
-            })
+            Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
         );
         assert_eq!(
             reallyme_crypto::operations::aead::open(
@@ -169,9 +162,7 @@ fn aead_operation_reports_stable_failure_reasons_for_malicious_inputs() {
                 b"wrong aad",
                 &ciphertext,
             ),
-            Err(OperationError::Primitive {
-                reason: PrimitiveErrorReason::VerificationFailed,
-            })
+            Err(CryptoError::PRIMITIVE_AUTHENTICATION_FAILED)
         );
         assert_eq!(
             reallyme_crypto::operations::aead::open(
@@ -181,9 +172,7 @@ fn aead_operation_reports_stable_failure_reasons_for_malicious_inputs() {
                 aad,
                 &ciphertext,
             ),
-            Err(OperationError::Primitive {
-                reason: PrimitiveErrorReason::VerificationFailed,
-            })
+            Err(CryptoError::PRIMITIVE_AUTHENTICATION_FAILED)
         );
         assert_eq!(
             reallyme_crypto::operations::aead::open(
@@ -193,9 +182,7 @@ fn aead_operation_reports_stable_failure_reasons_for_malicious_inputs() {
                 aad,
                 &ciphertext,
             ),
-            Err(OperationError::Primitive {
-                reason: PrimitiveErrorReason::VerificationFailed,
-            })
+            Err(CryptoError::PRIMITIVE_AUTHENTICATION_FAILED)
         );
         assert_eq!(
             reallyme_crypto::operations::aead::open(
@@ -205,9 +192,7 @@ fn aead_operation_reports_stable_failure_reasons_for_malicious_inputs() {
                 aad,
                 &tampered_ciphertext,
             ),
-            Err(OperationError::Primitive {
-                reason: PrimitiveErrorReason::VerificationFailed,
-            })
+            Err(CryptoError::PRIMITIVE_AUTHENTICATION_FAILED)
         );
     }
 }
@@ -239,12 +224,7 @@ fn root_dispatch_facade_preserves_historical_aead_error_shapes() {
             &short_nonce_params,
             plaintext,
         ),
-        Err(reallyme_crypto::dispatch::AlgorithmError::Crypto(
-            CryptoError::InvalidAeadNonceLength {
-                expected: STANDARD_NONCE_LEN,
-                actual: 11,
-            }
-        ))
+        Err(CryptoError::PRIMITIVE_INVALID_NONCE)
     ));
 
     assert!(matches!(
@@ -253,12 +233,7 @@ fn root_dispatch_facade_preserves_historical_aead_error_shapes() {
             &params,
             &ciphertext[..AEAD_TAG_LEN - 1],
         ),
-        Err(reallyme_crypto::dispatch::AlgorithmError::Crypto(
-            CryptoError::InvalidCiphertextLength {
-                minimum: AEAD_TAG_LEN,
-                actual: 15,
-            }
-        ))
+        Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
     ));
 
     let mut tampered_ciphertext = ciphertext.clone();
@@ -272,12 +247,7 @@ fn root_dispatch_facade_preserves_historical_aead_error_shapes() {
             &params,
             &tampered_ciphertext,
         ),
-        Err(reallyme_crypto::dispatch::AlgorithmError::Crypto(
-            CryptoError::AeadDecrypt {
-                kind: AeadFailureKind::AuthenticationFailed,
-                ..
-            }
-        ))
+        Err(CryptoError::PRIMITIVE_AUTHENTICATION_FAILED)
     ));
 }
 
