@@ -31,7 +31,7 @@ lanes may execute each algorithm and what output they must produce.
 
 ## Generation
 
-From the repository root, using Buf `1.72.0`, `protoc-gen-buffa` `0.9.2`, and
+From the repository root, using Buf `1.75.0`, `protoc-gen-buffa` `0.9.2`, and
 `protoc-gen-buffa-packaging` `0.9.2`, matching protobuf CI:
 
 ```sh
@@ -48,6 +48,46 @@ without it. Rust outputs live under `crates/proto/src/generated`, TypeScript
 package bindings under `packages/ts/src/proto/generated`, and additional
 TypeScript, JavaScript, Swift, Java, and Kotlin outputs under `gen/`.
 Review generated diffs and run the conformance checks before accepting them.
+
+## Field Presence And Compatibility
+
+Presence is part of the public contract. Prefer proto3 `optional` for new
+scalar and byte fields unless omitted and default values are deliberately
+equivalent. Fields that distinguish an omitted value from an explicitly
+supplied default must use `optional`, or a `oneof` when the alternatives are
+mutually exclusive.
+Do not add a separate `has_*` boolean: it permits contradictory states and
+requires every binary and JSON caller to maintain the same convention.
+Generated presence accessors on messages, optional fields, and oneofs remain
+the supported way to query presence.
+
+The current crypto schema contains no hand-written presence flags. Existing
+byte-string fields intentionally retain their published implicit defaults:
+
+| Field role | Omitted or empty value |
+|---|---|
+| `message` byte strings, plaintext, hash input, AAD, HPKE info/exporter context, KMAC context/customization, Concat KDF party info | The empty byte string; no protocol-specific defaults or normalization are inserted. |
+| Keys, nonces, signatures, ciphertext, required KDF parameters | The selected operation applies its existing length and encoding validation; omission cannot bypass validation. |
+| HKDF salt | The RFC 5869 absent-salt convention; an empty salt is equivalent under HMAC. |
+| Algorithm and operation choices | Message and `oneof` presence are preserved. `UNSPECIFIED = 0` never selects a usable algorithm. Missing or unsupported choices produce typed errors. |
+
+The executable ProtoJSON route still rejects secret-bearing operations before
+decoding their values. Field presence does not relax that policy.
+
+Do not relabel published fields as `optional` solely to modernize the schema.
+Although the field number and wire type can remain the same, generated public
+types and default-value round trips change, as described in the
+[Protocol Buffers field-presence guidance](https://protobuf.dev/programming-guides/field_presence/).
+Removing a legacy presence flag would also affect strict JSON decoding and
+empty values from older senders.
+Such migrations need an explicit compatibility plan, including supported
+reader/writer versions and reserved numbers and names for retired fields.
+Because executable requests reject unknown fields, adding a new field also
+requires coordinating adapter versions before callers send it.
+
+Schema guards and `field_presence_tests` cover the no-flag rule, default-value
+wire compatibility, explicit message/oneof presence, and strict JSON rejection
+of unrecognized presence flags.
 
 ## Boundary Rule
 
