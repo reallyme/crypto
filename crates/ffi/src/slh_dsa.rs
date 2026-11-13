@@ -13,13 +13,17 @@ use reallyme_crypto::operations::key_encoding;
 use zeroize::Zeroizing;
 
 /// Length in bytes of an SLH-DSA-SHA2-128s public key (32).
-pub const SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN: usize = 32;
+pub const SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::slh_dsa::SLH_DSA_SHA2_128S_PUBLIC_KEY_LEN;
 /// Length in bytes of an SLH-DSA-SHA2-128s serialized secret key (64).
-pub const SLH_DSA_SHA2_128S_SECRET_KEY_LEN: usize = 64;
+pub const SLH_DSA_SHA2_128S_SECRET_KEY_LEN: usize =
+    crypto_core::contract_constants::slh_dsa::SLH_DSA_SHA2_128S_SECRET_KEY_LEN;
 /// Length in bytes of an SLH-DSA-SHA2-128s detached signature (7856).
-pub const SLH_DSA_SHA2_128S_SIGNATURE_LEN: usize = 7_856;
+pub const SLH_DSA_SHA2_128S_SIGNATURE_LEN: usize =
+    crypto_core::contract_constants::slh_dsa::SLH_DSA_SHA2_128S_SIGNATURE_LEN;
 /// Length in bytes of each FIPS 205 keygen seed component for SHA2-128s (16).
-pub const SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN: usize = 16;
+pub const SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN: usize =
+    crypto_core::contract_constants::slh_dsa::SLH_DSA_SHA2_128S_KEYGEN_SEED_LEN;
 const SLH_DSA_KEYGEN_SEED_PART_COUNT: usize = 3;
 
 /// Generates an SLH-DSA-SHA2-128s keypair.

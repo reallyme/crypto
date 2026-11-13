@@ -12,15 +12,20 @@ use crypto_core::Algorithm;
 use reallyme_crypto::operations::key_encoding;
 
 /// Length in bytes of an ML-KEM-512 public key (800).
-pub const ML_KEM_512_PUBLIC_KEY_LEN: usize = 800;
+pub const ML_KEM_512_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::ml_kem_512::ML_KEM_512_PUBLIC_KEY_LEN;
 /// Length in bytes of an ML-KEM-512 secret key as handled here (64).
-pub const ML_KEM_512_SECRET_KEY_LEN: usize = 64;
+pub const ML_KEM_512_SECRET_KEY_LEN: usize =
+    crypto_core::contract_constants::ml_kem_512::ML_KEM_512_SECRET_KEY_LEN;
 /// Length in bytes of an ML-KEM-512 ciphertext (768).
-pub const ML_KEM_512_CIPHERTEXT_LEN: usize = 768;
+pub const ML_KEM_512_CIPHERTEXT_LEN: usize =
+    crypto_core::contract_constants::ml_kem_512::ML_KEM_512_CIPHERTEXT_LEN;
 /// Length in bytes of an ML-KEM-512 shared secret (32).
-pub const ML_KEM_512_SHARED_SECRET_LEN: usize = 32;
+pub const ML_KEM_512_SHARED_SECRET_LEN: usize =
+    crypto_core::contract_constants::ml_kem_512::ML_KEM_512_SHARED_SECRET_LEN;
 /// Length in bytes of ML-KEM deterministic encapsulation randomness.
-pub const ML_KEM_512_ENCAPS_RANDOMNESS_LEN: usize = 32;
+pub const ML_KEM_512_ENCAPS_RANDOMNESS_LEN: usize =
+    crypto_core::contract_constants::ml_kem_512::ML_KEM_512_ENCAPS_RANDOMNESS_LEN;
 
 /// Generates an ML-KEM-512 keypair, writing the 800-byte public key to
 /// `public_out` and the 64-byte secret key to `secret_out`.

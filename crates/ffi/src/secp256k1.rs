@@ -10,13 +10,17 @@ use crypto_core::Algorithm;
 use reallyme_crypto::operations::key_encoding;
 
 /// Length in bytes of a secp256k1 secret key (32).
-pub const SECP256K1_SECRET_KEY_LEN: usize = 32;
+pub const SECP256K1_SECRET_KEY_LEN: usize =
+    crypto_core::contract_constants::secp256k1::SECP256K1_SECRET_KEY_LEN;
 /// Length in bytes of a SEC1 compressed secp256k1 public key (33).
-pub const SECP256K1_PUBLIC_KEY_COMPRESSED_LEN: usize = 33;
+pub const SECP256K1_PUBLIC_KEY_COMPRESSED_LEN: usize =
+    crypto_core::contract_constants::secp256k1::SECP256K1_PUBLIC_KEY_COMPRESSED_LEN;
 /// Length in bytes of a SEC1 uncompressed secp256k1 public key (65).
-pub const SECP256K1_PUBLIC_KEY_UNCOMPRESSED_LEN: usize = 65;
+pub const SECP256K1_PUBLIC_KEY_UNCOMPRESSED_LEN: usize =
+    crypto_core::contract_constants::secp256k1::SECP256K1_UNCOMPRESSED_PUBLIC_KEY_LEN;
 /// Length in bytes of a secp256k1 compact (r‖s) ECDSA signature (64).
-pub const SECP256K1_SIGNATURE_LEN: usize = 64;
+pub const SECP256K1_SIGNATURE_LEN: usize =
+    crypto_core::contract_constants::secp256k1::SECP256K1_ECDSA_JOSE_SIGNATURE_LEN;
 
 /// Generates a secp256k1 keypair, writing the SEC1 public key to `public_out`
 /// and the 32-byte secret key to `secret_out`.

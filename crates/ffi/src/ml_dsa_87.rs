@@ -10,11 +10,14 @@ use crypto_core::Algorithm;
 use reallyme_crypto::operations::key_encoding;
 
 /// Length in bytes of an ML-DSA-87 public key (2592).
-pub const ML_DSA_87_PUBLIC_KEY_LEN: usize = 2592;
+pub const ML_DSA_87_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::ml_dsa_87::ML_DSA_87_PUBLIC_KEY_LEN;
 /// Length in bytes of an ML-DSA-87 secret-key seed (32).
-pub const ML_DSA_87_SECRET_SEED_LEN: usize = 32;
+pub const ML_DSA_87_SECRET_SEED_LEN: usize =
+    crypto_core::contract_constants::ml_dsa_87::ML_DSA_87_SECRET_SEED_LEN;
 /// Length in bytes of an ML-DSA-87 signature (4627).
-pub const ML_DSA_87_SIGNATURE_LEN: usize = 4627;
+pub const ML_DSA_87_SIGNATURE_LEN: usize =
+    crypto_core::contract_constants::ml_dsa_87::ML_DSA_87_SIGNATURE_LEN;
 
 /// Generates an ML-DSA-87 keypair, writing the 2592-byte public key to
 /// `public_out` and the 32-byte secret seed to `secret_seed_out`.

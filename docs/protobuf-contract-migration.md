@@ -406,6 +406,16 @@ generated/native parity and all twelve unequal message/MGF1 hash pairs with both
 zero-byte and 32-byte salts. The 24 static known answers retain the exact pinned
 primary-source provenance and license. These sources are compiled, not executed.
 
+## FFI dimensions
+
+The remaining 47 repeated FFI key, signature, ciphertext, shared-secret and
+randomness widths now refer directly to their semantic schema constants. Ten
+missing dimensions were added within the existing algorithm metadata modules;
+equal numeric sizes are not treated as interchangeable meanings. Names, types,
+values, feature gates and ABI widths remain unchanged. An explicit regression
+source covers every alias and the historical ABI values without a second
+production table.
+
 ## Remaining work
 
 The implemented identity, error, policy, dimensions, native options, primitive,
