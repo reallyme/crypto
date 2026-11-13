@@ -8,7 +8,7 @@ package me.really.crypto.v1;
 /**
  * <pre>
  * The native extract-and-expand request preserves absent versus empty salt.
- * Output length remains the caller's native const-generic parameter.
+ * CryptoHkdfNativeDeriveRequest binds the output length to a native const generic.
  * </pre>
  *
  * Protobuf type {@code reallyme.crypto.v1.CryptoHkdfDeriveInputs}
@@ -253,7 +253,7 @@ public  final class CryptoHkdfDeriveInputs extends
   /**
    * <pre>
    * The native extract-and-expand request preserves absent versus empty salt.
-   * Output length remains the caller's native const-generic parameter.
+   * CryptoHkdfNativeDeriveRequest binds the output length to a native const generic.
    * </pre>
    *
    * Protobuf type {@code reallyme.crypto.v1.CryptoHkdfDeriveInputs}

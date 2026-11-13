@@ -17,6 +17,9 @@ mod convert_proto_identity;
 mod derive;
 mod material;
 mod policy;
+/// Protected const-generic HKDF protobuf derivation adapters.
+#[cfg(feature = "proto")]
+pub mod proto_native;
 /// Protected protobuf options and request adapters.
 #[cfg(feature = "proto")]
 pub mod proto_options;

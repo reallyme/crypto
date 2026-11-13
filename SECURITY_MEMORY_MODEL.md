@@ -313,3 +313,11 @@ no cleanup implementation. Its final clearing owner is initialized before the
 raw x-coordinate is copied, avoiding a separate plain local array. This repair
 preserves the native API's scalar checks, uncompressed SEC1 encoding and exact
 32-byte result. It does not change the accepted upstream encoding limitation.
+
+### Finalized HMAC tag storage
+
+The three native HMAC authentication helpers immediately place finalized tag
+arrays in a clearing owner before constructing the returned tag. This guards
+the call-site output on normal return and early exits independently of optional
+upstream array cleanup features. The existing hashing implementation, state
+clearing features, verification path, tag bytes and public API are preserved.

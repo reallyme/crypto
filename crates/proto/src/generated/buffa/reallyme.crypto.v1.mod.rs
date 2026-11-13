@@ -74,6 +74,8 @@ pub mod __buffa {
         reg.register_json_any(super::__CRYPTO_PBKDF2STANDARDS_DERIVE_REQUEST_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_HKDF_DOMAIN_TAG_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_HKDF_DERIVE_INPUTS_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HKDF_NATIVE_DERIVE_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_HKDF_NATIVE_DERIVE_RESULT_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_HKDF_EXTRACT_SHA384REQUEST_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_HKDF_EXTRACT_SHA384RESULT_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_HKDF_EXPAND_SHA384REQUEST_JSON_ANY);
@@ -483,6 +485,14 @@ pub use self::__buffa::view::CryptoHkdfDomainTagOwnedView;
 pub use self::__buffa::view::CryptoHkdfDeriveInputsView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoHkdfDeriveInputsOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHkdfNativeDeriveRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHkdfNativeDeriveRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHkdfNativeDeriveResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoHkdfNativeDeriveResultOwnedView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoHkdfExtractSha384RequestView;
 #[doc(inline)]
