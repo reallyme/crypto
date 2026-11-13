@@ -1475,8 +1475,11 @@ dependencies = [
 name = "reallyme-crypto-constant-time"
 version = "0.4.0"
 dependencies = [
+ "buffa",
  "reallyme-crypto-core",
+ "reallyme-crypto-proto",
  "subtle",
+ "zeroize",
 ]
 
 [[package]]
@@ -1491,8 +1494,10 @@ dependencies = [
 name = "reallyme-crypto-csprng"
 version = "0.4.0"
 dependencies = [
+ "buffa",
  "getrandom 0.4.3",
  "reallyme-crypto-core",
+ "reallyme-crypto-proto",
  "secrecy",
  "subtle",
  "zeroize",
@@ -1726,7 +1731,9 @@ version = "0.4.0"
 dependencies = [
  "ark-bn254",
  "ark-ff",
+ "buffa",
  "reallyme-crypto-core",
+ "reallyme-crypto-proto",
  "taceo-poseidon2",
  "zeroize",
 ]

@@ -198,6 +198,15 @@ pub mod __buffa {
         reg.register_json_any(
             super::__CRYPTO_HPKE_P256BASE_RECIPIENT_GENERATE_REQUEST_JSON_ANY,
         );
+        reg.register_json_any(super::__CRYPTO_RANDOM_BYTES_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_RANDOM_BYTES_RESULT_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_CONSTANT_TIME_COMPARE_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_CONSTANT_TIME_COMPARE_RESULT_JSON_ANY);
+        reg.register_json_any(
+            super::__CRYPTO_CONSTANT_TIME_REQUIRE_EQUAL_RESULT_JSON_ANY,
+        );
+        reg.register_json_any(super::__CRYPTO_POSEIDON2HASH_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_POSEIDON2HASH_RESULT_JSON_ANY);
         reg.register_json_any(super::__JSON_WEB_KEY_JSON_ANY);
         reg.register_json_any(super::__JSON_WEB_KEY_SET_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_NATIVE_KEY_CAPABILITIES_JSON_ANY);
@@ -760,6 +769,34 @@ pub use self::__buffa::view::CryptoHpkeP256BaseRecipientImportRequestOwnedView;
 pub use self::__buffa::view::CryptoHpkeP256BaseRecipientGenerateRequestView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoHpkeP256BaseRecipientGenerateRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRandomBytesRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRandomBytesRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRandomBytesResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRandomBytesResultOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoConstantTimeCompareRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoConstantTimeCompareRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoConstantTimeCompareResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoConstantTimeCompareResultOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoConstantTimeRequireEqualResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoConstantTimeRequireEqualResultOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoPoseidon2HashRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoPoseidon2HashRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoPoseidon2HashResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoPoseidon2HashResultOwnedView;
 #[doc(inline)]
 pub use self::__buffa::view::JsonWebKeyView;
 #[doc(inline)]

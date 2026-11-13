@@ -6,8 +6,10 @@ use super::validate_disjoint_ranges;
 use crate::status::{CryptoStatus, CRYPTO_INVALID_ARGUMENT};
 use core::cell::RefCell;
 
-const MAX_FFI_INPUT_RANGES_PER_CALL: usize = 32;
-const MAX_FFI_OUTPUT_RANGES_PER_CALL: usize = 32;
+const MAX_FFI_INPUT_RANGES_PER_CALL: usize =
+    crypto_core::contract_constants::adapter_limits::MAX_FFI_INPUT_RANGES_PER_CALL;
+const MAX_FFI_OUTPUT_RANGES_PER_CALL: usize =
+    crypto_core::contract_constants::adapter_limits::MAX_FFI_OUTPUT_RANGES_PER_CALL;
 
 #[derive(Clone, Copy)]
 struct ByteRange {

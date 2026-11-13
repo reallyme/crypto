@@ -11,6 +11,10 @@
 
 #![forbid(unsafe_code)]
 
+/// Protected protobuf inputs and existing native helper contracts.
+#[cfg(feature = "proto")]
+pub mod proto_helpers;
+
 mod hash;
 
 pub use hash::{hash_bytes, Poseidon2Digest, Poseidon2Error, MAX_INPUT_BYTES};

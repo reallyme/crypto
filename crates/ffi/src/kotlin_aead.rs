@@ -57,7 +57,8 @@ type DecryptFunction = unsafe extern "C" fn(
     *mut usize,
 ) -> i32;
 
-const MAX_JNI_BYTE_INPUT_LENGTH: usize = 1_048_576;
+const MAX_JNI_BYTE_INPUT_LENGTH: usize =
+    crypto_core::contract_constants::adapter_limits::MAX_JNI_BYTE_INPUT_LENGTH;
 
 /// Seals with AES-256-GCM-SIV for the Kotlin `ReallyMeRustAead` provider.
 #[no_mangle]

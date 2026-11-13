@@ -6,6 +6,10 @@
 
 #![forbid(unsafe_code)]
 
+/// Protected protobuf inputs and existing native helper contracts.
+#[cfg(feature = "proto")]
+pub mod proto_helpers;
+
 mod constants;
 mod generate;
 mod rng;

@@ -12,21 +12,28 @@
 pub type CryptoStatus = i32;
 
 /// Operation succeeded (`0`).
-pub const CRYPTO_OK: CryptoStatus = 0;
+pub const CRYPTO_OK: CryptoStatus = crypto_core::contract_constants::ffi_status::CRYPTO_OK;
 /// A pointer/length argument was invalid, null where required, or malformed (`-1`).
-pub const CRYPTO_INVALID_ARGUMENT: CryptoStatus = -1;
+pub const CRYPTO_INVALID_ARGUMENT: CryptoStatus =
+    crypto_core::contract_constants::ffi_status::CRYPTO_INVALID_ARGUMENT;
 /// A supplied key had the wrong length or otherwise failed validation (`-2`).
-pub const CRYPTO_INVALID_KEY: CryptoStatus = -2;
+pub const CRYPTO_INVALID_KEY: CryptoStatus =
+    crypto_core::contract_constants::ffi_status::CRYPTO_INVALID_KEY;
 /// The signature was structurally invalid or did not verify (`-3`).
-pub const CRYPTO_INVALID_SIGNATURE: CryptoStatus = -3;
+pub const CRYPTO_INVALID_SIGNATURE: CryptoStatus =
+    crypto_core::contract_constants::ffi_status::CRYPTO_INVALID_SIGNATURE;
 /// The ciphertext was malformed or had an invalid length (`-4`).
-pub const CRYPTO_INVALID_CIPHERTEXT: CryptoStatus = -4;
+pub const CRYPTO_INVALID_CIPHERTEXT: CryptoStatus =
+    crypto_core::contract_constants::ffi_status::CRYPTO_INVALID_CIPHERTEXT;
 /// The caller-provided output buffer was too small for the result (`-5`).
-pub const CRYPTO_BUFFER_TOO_SMALL: CryptoStatus = -5;
+pub const CRYPTO_BUFFER_TOO_SMALL: CryptoStatus =
+    crypto_core::contract_constants::ffi_status::CRYPTO_BUFFER_TOO_SMALL;
 /// AEAD tag verification (decryption authentication) failed (`-6`).
-pub const CRYPTO_AUTHENTICATION_FAILED: CryptoStatus = -6;
+pub const CRYPTO_AUTHENTICATION_FAILED: CryptoStatus =
+    crypto_core::contract_constants::ffi_status::CRYPTO_AUTHENTICATION_FAILED;
 /// An unexpected internal failure, including a caught panic (`-128`).
-pub const CRYPTO_INTERNAL_ERROR: CryptoStatus = -128;
+pub const CRYPTO_INTERNAL_ERROR: CryptoStatus =
+    crypto_core::contract_constants::ffi_status::CRYPTO_INTERNAL_ERROR;
 
 use zeroize::Zeroizing;
 

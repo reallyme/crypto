@@ -17,11 +17,21 @@ enum WasmErrorCode {
 impl WasmErrorCode {
     const fn value(self) -> u32 {
         match self {
-            Self::InvalidInput => 1,
-            Self::InvalidSignature => 2,
-            Self::AuthenticationFailed => 3,
-            Self::ProviderFailure => 4,
-            Self::UnsupportedAlgorithm => 5,
+            Self::InvalidInput => {
+                crypto_core::contract_constants::wasm_status::WASM_ERROR_INVALID_INPUT
+            }
+            Self::InvalidSignature => {
+                crypto_core::contract_constants::wasm_status::WASM_ERROR_INVALID_SIGNATURE
+            }
+            Self::AuthenticationFailed => {
+                crypto_core::contract_constants::wasm_status::WASM_ERROR_AUTHENTICATION_FAILED
+            }
+            Self::ProviderFailure => {
+                crypto_core::contract_constants::wasm_status::WASM_ERROR_PROVIDER_FAILURE
+            }
+            Self::UnsupportedAlgorithm => {
+                crypto_core::contract_constants::wasm_status::WASM_ERROR_UNSUPPORTED_ALGORITHM
+            }
         }
     }
 

@@ -21,15 +21,20 @@ use zeroize::{Zeroize, Zeroizing};
 const STATUS_LEN: usize = 4;
 
 /// Kotlin native status for successful operation results.
-pub const KOTLIN_NATIVE_OK: i32 = 0;
+pub const KOTLIN_NATIVE_OK: i32 =
+    crypto_core::contract_constants::kotlin_native_status::KOTLIN_NATIVE_OK;
 /// Kotlin native status for malformed, unsupported, or invalid caller input.
-pub const KOTLIN_NATIVE_INVALID_INPUT: i32 = 1;
+pub const KOTLIN_NATIVE_INVALID_INPUT: i32 =
+    crypto_core::contract_constants::kotlin_native_status::KOTLIN_NATIVE_INVALID_INPUT;
 /// Kotlin native status for authenticated decryption failures.
-pub const KOTLIN_NATIVE_AUTHENTICATION_FAILED: i32 = 2;
+pub const KOTLIN_NATIVE_AUTHENTICATION_FAILED: i32 =
+    crypto_core::contract_constants::kotlin_native_status::KOTLIN_NATIVE_AUTHENTICATION_FAILED;
 /// Kotlin native status for backend failures that must not expose internals.
-pub const KOTLIN_NATIVE_BACKEND_INTERNAL: i32 = 5;
+pub const KOTLIN_NATIVE_BACKEND_INTERNAL: i32 =
+    crypto_core::contract_constants::kotlin_native_status::KOTLIN_NATIVE_BACKEND_INTERNAL;
 /// Kotlin native status for signature verification failures.
-pub const KOTLIN_NATIVE_INVALID_SIGNATURE: i32 = 6;
+pub const KOTLIN_NATIVE_INVALID_SIGNATURE: i32 =
+    crypto_core::contract_constants::kotlin_native_status::KOTLIN_NATIVE_INVALID_SIGNATURE;
 
 /// Maps C ABI status values to the deterministic Kotlin native status domain.
 pub fn status_from_crypto_status(status: CryptoStatus) -> i32 {

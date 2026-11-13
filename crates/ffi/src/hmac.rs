@@ -9,9 +9,9 @@ use crate::status::{CryptoStatus, CRYPTO_INVALID_ARGUMENT};
 use crypto_core::MacAlgorithm;
 
 /// Suite selector value requesting HMAC-SHA-256 (`1`).
-pub const HMAC_SUITE_SHA256: u32 = 1;
+pub const HMAC_SUITE_SHA256: u32 = crypto_core::contract_constants::ffi_suite::HMAC_SUITE_SHA256;
 /// Suite selector value requesting HMAC-SHA-512 (`2`).
-pub const HMAC_SUITE_SHA512: u32 = 2;
+pub const HMAC_SUITE_SHA512: u32 = crypto_core::contract_constants::ffi_suite::HMAC_SUITE_SHA512;
 /// Length in bytes of an HMAC-SHA-256 tag (32).
 pub const HMAC_SHA256_TAG_LEN: usize = reallyme_crypto::hmac::HMAC_SHA256_TAG_LENGTH;
 /// Length in bytes of an HMAC-SHA-512 tag (64).

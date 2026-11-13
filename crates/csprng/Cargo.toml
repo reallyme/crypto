@@ -24,15 +24,20 @@ name = "crypto_csprng"
 
 [features]
 default = []
+proto = ["dep:crypto-proto", "crypto-core/protobuf"]
 native = []
 wasm = ["getrandom/wasm_js"]
 
 [dependencies]
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../proto", optional = true, default-features = false, features = ["generated"] }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.4.0", path = "../crypto/core" }
 getrandom = { workspace = true, features = ["sys_rng"] }
 secrecy = { workspace = true }
 subtle = { workspace = true }
 zeroize = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+buffa = { workspace = true }
 
 [lints]
 workspace = true

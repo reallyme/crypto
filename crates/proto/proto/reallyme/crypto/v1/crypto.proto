@@ -227,6 +227,9 @@ enum CryptoAlgorithmFamily {
   CRYPTO_ALGORITHM_FAMILY_KDF = 7;
   CRYPTO_ALGORITHM_FAMILY_KEY_WRAP = 8;
   CRYPTO_ALGORITHM_FAMILY_HPKE = 9;
+  // Semantic families that do not identify an algorithm or select a provider.
+  CRYPTO_ALGORITHM_FAMILY_CONSTANT_TIME = 10;
+  CRYPTO_ALGORITHM_FAMILY_PLATFORM_KEY = 11;
 }
 
 // KeyAlgorithm identifies an asymmetric key type independently of the
@@ -1474,6 +1477,41 @@ message CryptoHpkeP256BaseRecipientImportRequest {
 // recipient generation. An injected RNG is an explicit borrowed native
 // capability and cannot be supplied or reconstructed from serialized input.
 message CryptoHpkeP256BaseRecipientGenerateRequest {
+}
+
+// Standalone native helper contracts. No operation oneof route is added.
+// The entropy provider is a separately borrowed native capability, not data.
+message CryptoRandomBytesRequest {
+  RngOutputKind purpose = 1;
+  uint32 output_length = 2;
+}
+
+// Output only: caller-supplied bytes are not imported as fresh random material.
+message CryptoRandomBytesResult {
+  RngOutputKind purpose = 1;
+  bytes value = 2;
+}
+
+message CryptoConstantTimeCompareRequest {
+  bytes left = 1;
+  bytes right = 2;
+}
+
+// Read-only comparison outcome; never accepted as a verification override.
+message CryptoConstantTimeCompareResult {
+  bool equal = 1;
+}
+
+message CryptoConstantTimeRequireEqualResult {
+}
+
+// Existing fixed BN254 width4/rate3 Poseidon2 byte-encoding profile only.
+message CryptoPoseidon2HashRequest {
+  bytes input = 1;
+}
+
+message CryptoPoseidon2HashResult {
+  bytes digest = 1;
 }
 
 // JsonWebKey carries a public JWK document at API/storage boundaries. The JSON

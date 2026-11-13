@@ -11,6 +11,8 @@
 pub mod aead;
 #[cfg(feature = "constant-time")]
 pub mod constant_time;
+#[cfg(feature = "operation-response")]
+mod convert_proto_family;
 mod error;
 mod family;
 pub mod hash;
