@@ -233,6 +233,13 @@ pub mod __buffa {
         reg.register_json_any(
             super::__CRYPTO_VERIFICATION_METHOD_MULTIKEY_RESULT_JSON_ANY,
         );
+        reg.register_json_any(
+            super::__CRYPTO_RSA_PUBLIC_REPRESENTATIVES_REQUEST_JSON_ANY,
+        );
+        reg.register_json_any(
+            super::__CRYPTO_RSA_PUBLIC_REPRESENTATIVES_RESULT_JSON_ANY,
+        );
+        reg.register_json_any(super::__CRYPTO_RSA_PSS_VERIFY_REQUEST_JSON_ANY);
         reg.register_json_any(super::__JSON_WEB_KEY_JSON_ANY);
         reg.register_json_any(super::__JSON_WEB_KEY_SET_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_NATIVE_KEY_CAPABILITIES_JSON_ANY);
@@ -954,6 +961,18 @@ pub use self::__buffa::view::CryptoVerificationMethodMultikeyRequestOwnedView;
 pub use self::__buffa::view::CryptoVerificationMethodMultikeyResultView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoVerificationMethodMultikeyResultOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRsaPublicRepresentativesRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRsaPublicRepresentativesRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRsaPublicRepresentativesResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRsaPublicRepresentativesResultOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRsaPssVerifyRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRsaPssVerifyRequestOwnedView;
 #[doc(inline)]
 pub use self::__buffa::view::JsonWebKeyView;
 #[doc(inline)]

@@ -1635,6 +1635,33 @@ message CryptoVerificationMethodMultikeyRequest {
 message CryptoVerificationMethodMultikeyResult {
 }
 
+// CryptoRsaPublicRepresentativesRequest invokes the existing bounded public RSA
+// operation; its signature bytes retain the exact modulus width.
+message CryptoRsaPublicRepresentativesRequest {
+  bytes public_key_der = 1;
+  RsaPublicKeyDerEncoding public_key_encoding = 2;
+  bytes signature = 3;
+}
+
+// CryptoRsaPublicRepresentativesResult carries s^e mod n and n-(s^e mod n),
+// each at the exact modulus width. Neither result establishes validity or trust.
+message CryptoRsaPublicRepresentativesResult {
+  bytes ordinary = 1;
+  bytes complement = 2;
+}
+
+// CryptoRsaPssVerifyRequest preserves independent message and MGF1 hashes and
+// explicit salt length. The existing native verifier owns all RSA/PSS policy.
+// SHA-1 is retained solely for the existing historical verification profile.
+// This standalone contract does not modify a fixed root suite or execution oneof.
+message CryptoRsaPssVerifyRequest {
+  bytes public_key_der = 1;
+  RsaPublicKeyDerEncoding public_key_encoding = 2;
+  CryptoRsaPssParams params = 3;
+  bytes message = 4;
+  bytes signature = 5;
+}
+
 // JsonWebKey carries a public JWK document at API/storage boundaries. The JSON
 // member is the canonical JCS form used by the package vectors; private key
 // material is intentionally out of scope for this message.

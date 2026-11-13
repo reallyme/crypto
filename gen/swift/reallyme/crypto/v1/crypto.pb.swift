@@ -6291,6 +6291,79 @@ public nonisolated struct ReallyMeProtoCryptoVerificationMethodMultikeyResult: S
   public init() {}
 }
 
+/// CryptoRsaPublicRepresentativesRequest invokes the existing bounded public RSA
+/// operation; its signature bytes retain the exact modulus width.
+public nonisolated struct ReallyMeProtoCryptoRsaPublicRepresentativesRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoRsaPublicRepresentativesRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var publicKeyDer: Data = Data()
+
+  public var publicKeyEncoding: ReallyMeProtoRsaPublicKeyDerEncoding = .unspecified
+
+  public var signature: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// CryptoRsaPublicRepresentativesResult carries s^e mod n and n-(s^e mod n),
+/// each at the exact modulus width. Neither result establishes validity or trust.
+public nonisolated struct ReallyMeProtoCryptoRsaPublicRepresentativesResult: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoRsaPublicRepresentativesResult(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var ordinary: Data = Data()
+
+  public var complement: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// CryptoRsaPssVerifyRequest preserves independent message and MGF1 hashes and
+/// explicit salt length. The existing native verifier owns all RSA/PSS policy.
+/// SHA-1 is retained solely for the existing historical verification profile.
+/// This standalone contract does not modify a fixed root suite or execution oneof.
+public nonisolated struct ReallyMeProtoCryptoRsaPssVerifyRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoRsaPssVerifyRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var publicKeyDer: Data = Data()
+
+  public var publicKeyEncoding: ReallyMeProtoRsaPublicKeyDerEncoding = .unspecified
+
+  public var params: ReallyMeProtoCryptoRsaPssParams {
+    get {_params ?? ReallyMeProtoCryptoRsaPssParams()}
+    set {_params = newValue}
+  }
+  /// Returns true if `params` has been explicitly set.
+  public var hasParams: Bool {self._params != nil}
+  /// Clears the value of `params`. Subsequent reads from it will return its default value.
+  public mutating func clearParams() {self._params = nil}
+
+  public var message: Data = Data()
+
+  public var signature: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _params: ReallyMeProtoCryptoRsaPssParams? = nil
+}
+
 /// JsonWebKey carries a public JWK document at API/storage boundaries. The JSON
 /// member is the canonical JCS form used by the package vectors; private key
 /// material is intentionally out of scope for this message.
@@ -15392,6 +15465,135 @@ nonisolated extension ReallyMeProtoCryptoVerificationMethodMultikeyResult: Swift
   }
 
   public static func ==(lhs: ReallyMeProtoCryptoVerificationMethodMultikeyResult, rhs: ReallyMeProtoCryptoVerificationMethodMultikeyResult) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoRsaPublicRepresentativesRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoRsaPublicRepresentativesRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}public_key_der\0\u{3}public_key_encoding\0\u{1}signature\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBytesField(value: &self.publicKeyDer) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.publicKeyEncoding) }()
+      case 3: try { try decoder.decodeSingularBytesField(value: &self.signature) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.publicKeyDer.isEmpty {
+      try visitor.visitSingularBytesField(value: self.publicKeyDer, fieldNumber: 1)
+    }
+    if self.publicKeyEncoding != .unspecified {
+      try visitor.visitSingularEnumField(value: self.publicKeyEncoding, fieldNumber: 2)
+    }
+    if !self.signature.isEmpty {
+      try visitor.visitSingularBytesField(value: self.signature, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoRsaPublicRepresentativesRequest, rhs: ReallyMeProtoCryptoRsaPublicRepresentativesRequest) -> Bool {
+    if lhs.publicKeyDer != rhs.publicKeyDer {return false}
+    if lhs.publicKeyEncoding != rhs.publicKeyEncoding {return false}
+    if lhs.signature != rhs.signature {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoRsaPublicRepresentativesResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoRsaPublicRepresentativesResult"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}ordinary\0\u{1}complement\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBytesField(value: &self.ordinary) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.complement) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.ordinary.isEmpty {
+      try visitor.visitSingularBytesField(value: self.ordinary, fieldNumber: 1)
+    }
+    if !self.complement.isEmpty {
+      try visitor.visitSingularBytesField(value: self.complement, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoRsaPublicRepresentativesResult, rhs: ReallyMeProtoCryptoRsaPublicRepresentativesResult) -> Bool {
+    if lhs.ordinary != rhs.ordinary {return false}
+    if lhs.complement != rhs.complement {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoRsaPssVerifyRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoRsaPssVerifyRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}public_key_der\0\u{3}public_key_encoding\0\u{1}params\0\u{1}message\0\u{1}signature\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBytesField(value: &self.publicKeyDer) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.publicKeyEncoding) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._params) }()
+      case 4: try { try decoder.decodeSingularBytesField(value: &self.message) }()
+      case 5: try { try decoder.decodeSingularBytesField(value: &self.signature) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.publicKeyDer.isEmpty {
+      try visitor.visitSingularBytesField(value: self.publicKeyDer, fieldNumber: 1)
+    }
+    if self.publicKeyEncoding != .unspecified {
+      try visitor.visitSingularEnumField(value: self.publicKeyEncoding, fieldNumber: 2)
+    }
+    try { if let v = self._params {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    if !self.message.isEmpty {
+      try visitor.visitSingularBytesField(value: self.message, fieldNumber: 4)
+    }
+    if !self.signature.isEmpty {
+      try visitor.visitSingularBytesField(value: self.signature, fieldNumber: 5)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoRsaPssVerifyRequest, rhs: ReallyMeProtoCryptoRsaPssVerifyRequest) -> Bool {
+    if lhs.publicKeyDer != rhs.publicKeyDer {return false}
+    if lhs.publicKeyEncoding != rhs.publicKeyEncoding {return false}
+    if lhs._params != rhs._params {return false}
+    if lhs.message != rhs.message {return false}
+    if lhs.signature != rhs.signature {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
