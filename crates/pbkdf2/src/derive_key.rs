@@ -11,8 +11,7 @@ use crate::constants::{
     PBKDF2_MAX_HMAC_EVALUATIONS, PBKDF2_SHA256_OUTPUT_LENGTH, PBKDF2_SHA512_OUTPUT_LENGTH,
 };
 use crate::types::{
-    kdf_error, validate_output_len, Pbkdf2Iterations, Pbkdf2Output, Pbkdf2Password, Pbkdf2Prf,
-    Pbkdf2Salt,
+    validate_output_len, Pbkdf2Iterations, Pbkdf2Output, Pbkdf2Password, Pbkdf2Prf, Pbkdf2Salt,
 };
 
 /// PBKDF2 derivation request.
@@ -31,7 +30,7 @@ pub struct Pbkdf2Request<'a> {
 
 /// Derives PBKDF2 output keying material.
 pub fn derive_key(request: &Pbkdf2Request<'_>) -> Result<Pbkdf2Output, CryptoError> {
-    validate_output_len(request.output_len, request.prf)?;
+    validate_output_len(request.output_len)?;
     let digest_length = match request.prf {
         Pbkdf2Prf::HmacSha256 => PBKDF2_SHA256_OUTPUT_LENGTH,
         Pbkdf2Prf::HmacSha512 => PBKDF2_SHA512_OUTPUT_LENGTH,
@@ -40,13 +39,8 @@ pub fn derive_key(request: &Pbkdf2Request<'_>) -> Result<Pbkdf2Output, CryptoErr
         .output_len
         .checked_add(digest_length - 1)
         .and_then(|length| length.checked_div(digest_length))
-        .ok_or_else(|| {
-            kdf_error(
-                request.prf,
-                crypto_core::CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
-            )
-        })?;
-    validate_work_factor(request.prf, request.iterations.as_u32(), blocks)?;
+        .ok_or(crypto_core::CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED)?;
+    validate_work_factor(request.iterations.as_u32(), blocks)?;
     // Install drop-time cleanup before the backend writes derived key material.
     // This also covers unwinding or future early-return paths in this function.
     let mut output = Zeroizing::new(vec![0u8; request.output_len]);
@@ -67,25 +61,15 @@ pub fn derive_key(request: &Pbkdf2Request<'_>) -> Result<Pbkdf2Output, CryptoErr
     Ok(Pbkdf2Output::from_zeroizing(output))
 }
 
-fn validate_work_factor(prf: Pbkdf2Prf, iterations: u32, blocks: usize) -> Result<(), CryptoError> {
+fn validate_work_factor(iterations: u32, blocks: usize) -> Result<(), CryptoError> {
     let total_evaluations = u64::from(iterations)
-        .checked_mul(u64::try_from(blocks).map_err(|_| {
-            kdf_error(
-                prf,
-                crypto_core::CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
-            )
-        })?)
-        .ok_or_else(|| {
-            kdf_error(
-                prf,
-                crypto_core::CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
-            )
-        })?;
+        .checked_mul(
+            u64::try_from(blocks)
+                .map_err(|_| crypto_core::CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED)?,
+        )
+        .ok_or(crypto_core::CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED)?;
     if total_evaluations > PBKDF2_MAX_HMAC_EVALUATIONS {
-        return Err(kdf_error(
-            prf,
-            crypto_core::CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
-        ));
+        return Err(crypto_core::CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED);
     }
     Ok(())
 }

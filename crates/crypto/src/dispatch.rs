@@ -49,16 +49,6 @@ pub fn aead_encrypt(
     plaintext: &[u8],
 ) -> Result<Vec<u8>, AlgorithmError> {
     crate::operations::aead::seal(algorithm, params.key, params.nonce, params.aad, plaintext)
-        .map_err(|error| {
-            aead_algorithm_error_from_operation_error(
-                algorithm,
-                crate::aead_error::AeadOperation::Seal,
-                error,
-                params.key.len(),
-                params.nonce.len(),
-                plaintext.len(),
-            )
-        })
 }
 
 /// Decrypts with an AEAD through the operation-layer semantic owner.
@@ -74,27 +64,6 @@ pub fn aead_decrypt(
         params.aad,
         ciphertext_with_tag,
     )
-    .map_err(|error| {
-        aead_algorithm_error_from_operation_error(
-            algorithm,
-            crate::aead_error::AeadOperation::Open,
-            error,
-            params.key.len(),
-            params.nonce.len(),
-            ciphertext_with_tag.len(),
-        )
-    })
-}
-
-fn aead_algorithm_error_from_operation_error(
-    _algorithm: AeadAlgorithm,
-    _operation: crate::aead_error::AeadOperation,
-    error: crate::operations::OperationError,
-    _key_len: usize,
-    _nonce_len: usize,
-    _input_len: usize,
-) -> AlgorithmError {
-    error
 }
 
 /// Computes a MAC tag through the operation-layer semantic owner.
@@ -104,7 +73,6 @@ pub fn mac_authenticate(
     message: &[u8],
 ) -> Result<Vec<u8>, AlgorithmError> {
     crate::operations::mac::authenticate(algorithm, params.key, message)
-        .map_err(|error| mac_algorithm_error_from_operation_error(algorithm, error))
 }
 
 /// Verifies a MAC tag through the operation-layer semantic owner.
@@ -115,12 +83,4 @@ pub fn mac_verify(
     tag: &[u8],
 ) -> Result<(), AlgorithmError> {
     crate::operations::mac::verify(algorithm, params.key, message, tag)
-        .map_err(|error| mac_algorithm_error_from_operation_error(algorithm, error))
-}
-
-fn mac_algorithm_error_from_operation_error(
-    _algorithm: MacAlgorithm,
-    error: crate::operations::OperationError,
-) -> AlgorithmError {
-    error
 }

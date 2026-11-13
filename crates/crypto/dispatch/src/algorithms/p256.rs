@@ -68,8 +68,7 @@ impl SignatureAlgorithm for P256Algo {
             // The generic route preserves its established interoperable
             // verification policy while the explicit facade carries the
             // policy in its name.
-            return crypto_p256::verify_p256_der_prehash(sig, msg, public)
-                .map_err(|error| crate::algorithms::map_verify_error(Self::ALG, error));
+            return crypto_p256::verify_p256_der_prehash(sig, msg, public);
         }
 
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]

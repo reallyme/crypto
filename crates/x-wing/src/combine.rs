@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, KemFailureKind};
+use crypto_core::CryptoError;
 use zeroize::Zeroizing;
 
 use crate::suite::{ML_KEM_SHARED_SECRET_LEN, X25519_KEY_LEN, X_WING_LABEL};
 
-fn combiner_capacity(failure_kind: KemFailureKind) -> Result<usize, CryptoError> {
+fn combiner_capacity(failure_kind: CryptoError) -> Result<usize, CryptoError> {
     ML_KEM_SHARED_SECRET_LEN
         .checked_add(X25519_KEY_LEN)
         .and_then(|value| value.checked_add(X25519_KEY_LEN))
@@ -21,7 +21,7 @@ pub(crate) fn combine_shared_secret(
     x25519_shared_secret: &[u8; X25519_KEY_LEN],
     x25519_ciphertext: &[u8; X25519_KEY_LEN],
     x25519_public_key: &[u8; X25519_KEY_LEN],
-    failure_kind: KemFailureKind,
+    failure_kind: CryptoError,
 ) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
     if ml_kem_shared_secret.len() != ML_KEM_SHARED_SECRET_LEN {
         return Err(failure_kind);

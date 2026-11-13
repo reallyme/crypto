@@ -4,7 +4,7 @@
 
 //! KMAC256 implementation and typed secret-material owners.
 
-use crypto_core::{CryptoError, KdfFailureKind};
+use crypto_core::CryptoError;
 #[cfg(any(feature = "native", feature = "wasm"))]
 use sha3_kmac::Kmac256;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
@@ -49,9 +49,7 @@ impl Kmac256Key {
     /// length range.
     pub fn from_slice(input: &[u8]) -> Result<Self, CryptoError> {
         if !(KMAC256_MIN_KEY_LENGTH..=KMAC256_MAX_KEY_LENGTH).contains(&input.len()) {
-            return Err(kmac_error(
-                crypto_core::CryptoError::PRIMITIVE_INVALID_PASSWORD,
-            ));
+            return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_PASSWORD);
         }
 
         Ok(Self {
@@ -107,26 +105,18 @@ pub fn derive_kmac256(
     output_length: usize,
 ) -> Result<Kmac256Output, CryptoError> {
     if output_length == 0 || output_length > KMAC256_MAX_OUTPUT_LENGTH {
-        return Err(kmac_error(
-            crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH,
-        ));
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH);
     }
     if context.len() > KMAC256_MAX_CONTEXT_LENGTH
         || customization.len() > KMAC256_MAX_CUSTOMIZATION_LENGTH
     {
-        return Err(kmac_error(
-            crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER,
-        ));
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER);
     }
 
     let mut kmac = Kmac256::new(key.as_bytes(), customization)
-        .map_err(|_| kmac_error(crypto_core::CryptoError::PRIMITIVE_INVALID_PASSWORD))?;
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_PASSWORD)?;
     kmac.update(context);
     let mut output = Zeroizing::new(vec![0u8; output_length]);
     kmac.finalize_into(&mut output);
     Ok(Kmac256Output { bytes: output })
-}
-
-fn kmac_error(kind: KdfFailureKind) -> CryptoError {
-    kind
 }

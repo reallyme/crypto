@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::{CryptoError, HkdfHash};
+use crypto_core::CryptoError;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Selects the hash function backing an HKDF operation.
@@ -14,17 +14,6 @@ pub enum HkdfSuite {
     Sha2_384,
     /// HKDF using SHA3-256.
     Sha3_256,
-}
-
-impl HkdfSuite {
-    /// Return the [`HkdfHash`] backing this suite.
-    pub const fn hash(self) -> HkdfHash {
-        match self {
-            Self::Sha2_256 => HkdfHash::Sha2_256,
-            Self::Sha2_384 => HkdfHash::Sha2_384,
-            Self::Sha3_256 => HkdfHash::Sha3_256,
-        }
-    }
 }
 
 /// Named purpose that binds a derived domain key to a specific use.

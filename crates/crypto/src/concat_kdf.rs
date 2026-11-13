@@ -17,9 +17,4 @@ pub fn derive_jwa_concat_kdf_sha256<const N: usize>(
     request: &JwaConcatKdfRequest<'_>,
 ) -> Result<JwaConcatKdfOutput<N>, CryptoError> {
     crate::operations::kdf::derive_jwa_concat_kdf_sha256::<N>(request)
-        .map_err(crypto_error_from_operation_error)
-}
-
-fn crypto_error_from_operation_error(error: crate::operations::OperationError) -> CryptoError {
-    error
 }

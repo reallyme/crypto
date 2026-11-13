@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::P256Sha256Digest;
-use crypto_core::{CryptoError, SignatureFailureKind};
+use crypto_core::CryptoError;
 use ecdsa::signature::hazmat::PrehashVerifier;
 use p256::ecdsa::{Signature, VerifyingKey};
 use p256::PublicKey;
@@ -20,22 +20,20 @@ pub fn verify_p256_sha256_digest_low_s_der(
     public_key_sec1: &[u8],
 ) -> Result<(), CryptoError> {
     let public_key = PublicKey::from_sec1_bytes(public_key_sec1)
-        .map_err(|_| signature_error(crypto_core::CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY))?;
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY)?;
     let verifying_key = VerifyingKey::from(public_key);
     let fixed = crate::p256_ecdsa_der_to_jose_signature(signature_der)
-        .map_err(|_| signature_error(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE))?;
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
     let signature = Signature::from_slice(&fixed)
-        .map_err(|_| signature_error(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE))?;
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
 
     if signature.normalize_s() != signature {
-        return Err(signature_error(
-            crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE,
-        ));
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE);
     }
 
     verifying_key
         .verify_prehash(digest.as_bytes(), &signature)
-        .map_err(|_| signature_error(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE))
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)
 }
 
 /// Compatibility boundary for verifying against an untyped digest byte slice.
@@ -49,10 +47,6 @@ pub fn verify_p256_digest_der(
     public_key_sec1: &[u8],
 ) -> Result<(), CryptoError> {
     let digest = P256Sha256Digest::try_from_slice(digest)
-        .map_err(|_| signature_error(crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER))?;
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_PARAMETER)?;
     verify_p256_sha256_digest_low_s_der(signature_der, &digest, public_key_sec1)
-}
-
-fn signature_error(kind: SignatureFailureKind) -> CryptoError {
-    kind
 }

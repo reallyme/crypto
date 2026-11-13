@@ -6,20 +6,6 @@
 #[cfg(feature = "ed25519")]
 pub mod ed25519;
 mod keypair_result;
-#[cfg(all(
-    any(
-        feature = "ed25519",
-        feature = "p256",
-        feature = "p384",
-        feature = "p521",
-        feature = "secp256k1",
-        feature = "ml-dsa-44",
-        feature = "ml-dsa-65",
-        feature = "ml-dsa-87"
-    ),
-    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
-))]
-mod map_signature_error;
 /// ML-DSA-44 signature adapter.
 #[cfg(feature = "ml-dsa-44")]
 pub mod ml_dsa_44;
@@ -59,17 +45,3 @@ pub mod x_wing;
 
 #[allow(unused_imports)]
 pub(crate) use keypair_result::KeypairResultExt;
-#[cfg(all(
-    any(
-        feature = "ed25519",
-        feature = "p256",
-        feature = "p384",
-        feature = "p521",
-        feature = "secp256k1",
-        feature = "ml-dsa-44",
-        feature = "ml-dsa-65",
-        feature = "ml-dsa-87"
-    ),
-    any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))
-))]
-pub(crate) use map_signature_error::map_verify_error;

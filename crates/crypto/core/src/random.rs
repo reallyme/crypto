@@ -42,9 +42,3 @@ impl core::fmt::Display for RngOutputKind {
         write!(f, "{detail}")
     }
 }
-
-/// Specific reason secure random generation failed.
-pub type RngFailureKind = super::CryptoError;
-
-/// Specific reason a constant-time comparison did not match.
-pub type ConstantTimeFailureKind = super::CryptoError;

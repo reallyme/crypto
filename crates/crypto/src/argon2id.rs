@@ -19,7 +19,6 @@ pub use crypto_argon2id::{
 /// Derives a 32-byte Argon2id key through the operation layer.
 pub fn derive_key(request: &DeriveKeyRequest<'_>) -> Result<Argon2idDerivedKey, CryptoError> {
     crate::operations::kdf::derive_argon2id(request)
-        .map_err(|error| crypto_error_from_operation_error(request.profile, error))
 }
 
 /// Derives a 32-byte Argon2id key for a public KDF profile version.
@@ -38,11 +37,4 @@ pub fn derive_key_for_version(
         secret: &secret,
         salt: &salt,
     })
-}
-
-fn crypto_error_from_operation_error(
-    _profile: Argon2Profile,
-    error: crate::operations::OperationError,
-) -> CryptoError {
-    error
 }

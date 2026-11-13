@@ -4,7 +4,7 @@
 
 //! AES-KW facade routes backed by the semantic key-wrap operation owner.
 
-use crypto_core::{CryptoError, KeyWrapAlgorithm, KeyWrapOperation};
+use crypto_core::{CryptoError, KeyWrapAlgorithm};
 
 pub use crypto_aes_kw::{
     Aes128KwKek, Aes192KwKek, Aes256KwKek, AesKwKeyData, AesKwWrappedKey, AES_128_KW_KEK_LENGTH,
@@ -67,9 +67,7 @@ fn wrap_with(
     kek: &[u8],
     key_data: &[u8],
 ) -> Result<AesKwWrappedKey, CryptoError> {
-    crate::operations::key_wrap::wrap_key(algorithm, kek, key_data).map_err(|error| {
-        crypto_error_from_operation_error(algorithm, KeyWrapOperation::Wrap, error)
-    })
+    crate::operations::key_wrap::wrap_key(algorithm, kek, key_data)
 }
 
 fn unwrap_with(
@@ -77,15 +75,5 @@ fn unwrap_with(
     kek: &[u8],
     wrapped_key: &[u8],
 ) -> Result<AesKwKeyData, CryptoError> {
-    crate::operations::key_wrap::unwrap_key(algorithm, kek, wrapped_key).map_err(|error| {
-        crypto_error_from_operation_error(algorithm, KeyWrapOperation::Unwrap, error)
-    })
-}
-
-fn crypto_error_from_operation_error(
-    _algorithm: KeyWrapAlgorithm,
-    _operation: KeyWrapOperation,
-    error: crate::operations::OperationError,
-) -> CryptoError {
-    error
+    crate::operations::key_wrap::unwrap_key(algorithm, kek, wrapped_key)
 }

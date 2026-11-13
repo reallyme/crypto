@@ -87,9 +87,7 @@ pub mod random;
 ))]
 pub mod signature;
 
-pub use self::error::{
-    BackendErrorReason, OperationError, PrimitiveErrorReason, ProviderErrorReason,
-};
+pub use self::error::OperationError;
 pub use self::family::OperationFamily;
 
 /// Standard typed result returned by semantic operation implementations.

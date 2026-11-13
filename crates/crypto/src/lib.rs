@@ -65,23 +65,6 @@ pub use crypto_core::{
     AeadAlgorithm, Algorithm, CryptoError, HashAlgorithm, KeyWrapAlgorithm, MacAlgorithm,
 };
 
-mod aead_error;
-#[cfg(any(
-    feature = "ml-kem-512",
-    feature = "ml-kem-768",
-    feature = "ml-kem-1024",
-    feature = "x-wing"
-))]
-mod kem_error;
-#[cfg(any(
-    feature = "x25519",
-    feature = "p256",
-    feature = "p384",
-    feature = "p521"
-))]
-mod key_agreement_error;
-mod signature_error;
-
 /// Operation-layer domain conventions shared by Rust and adapter boundaries.
 pub mod operations;
 
