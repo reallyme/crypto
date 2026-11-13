@@ -460,25 +460,43 @@ pub mod ml_dsa_87 {
 /// Immutable `ml_kem_1024` contract constants.
 pub mod ml_kem_1024 {
     /// Exact bytes value declared by the schema.
+    pub const ML_KEM_1024_CIPHERTEXT_LEN: usize = 1568;
+    /// Exact bytes value declared by the schema.
+    pub const ML_KEM_1024_ENCAPS_RANDOMNESS_LEN: usize = 32;
+    /// Exact bytes value declared by the schema.
     pub const ML_KEM_1024_PUBLIC_KEY_LEN: usize = 1568;
     /// Exact bytes value declared by the schema.
     pub const ML_KEM_1024_SECRET_KEY_LEN: usize = 64;
+    /// Exact bytes value declared by the schema.
+    pub const ML_KEM_1024_SHARED_SECRET_LEN: usize = 32;
 }
 
 /// Immutable `ml_kem_512` contract constants.
 pub mod ml_kem_512 {
     /// Exact bytes value declared by the schema.
+    pub const ML_KEM_512_CIPHERTEXT_LEN: usize = 768;
+    /// Exact bytes value declared by the schema.
+    pub const ML_KEM_512_ENCAPS_RANDOMNESS_LEN: usize = 32;
+    /// Exact bytes value declared by the schema.
     pub const ML_KEM_512_PUBLIC_KEY_LEN: usize = 800;
     /// Exact bytes value declared by the schema.
     pub const ML_KEM_512_SECRET_KEY_LEN: usize = 64;
+    /// Exact bytes value declared by the schema.
+    pub const ML_KEM_512_SHARED_SECRET_LEN: usize = 32;
 }
 
 /// Immutable `ml_kem_768` contract constants.
 pub mod ml_kem_768 {
     /// Exact bytes value declared by the schema.
+    pub const ML_KEM_768_CIPHERTEXT_LEN: usize = 1088;
+    /// Exact bytes value declared by the schema.
+    pub const ML_KEM_768_ENCAPS_RANDOMNESS_LEN: usize = 32;
+    /// Exact bytes value declared by the schema.
     pub const ML_KEM_768_PUBLIC_KEY_LEN: usize = 1184;
     /// Exact bytes value declared by the schema.
     pub const ML_KEM_768_SECRET_KEY_LEN: usize = 64;
+    /// Exact bytes value declared by the schema.
+    pub const ML_KEM_768_SHARED_SECRET_LEN: usize = 32;
 }
 
 /// Immutable `operation_hpke` contract constants.
@@ -671,6 +689,8 @@ pub mod secp256k1 {
     pub const DER_MAX_LEN_OCTETS: usize = 2;
     /// Exact bytes value declared by the schema.
     pub const SECP256K1_ECDSA_JOSE_SIGNATURE_LEN: usize = 64;
+    /// Exact bytes value declared by the schema.
+    pub const SECP256K1_PUBLIC_KEY_COMPRESSED_LEN: usize = 33;
     /// Exact bytes value declared by the schema.
     pub const SECP256K1_SECRET_KEY_LEN: usize = 32;
     /// Exact bytes value declared by the schema.

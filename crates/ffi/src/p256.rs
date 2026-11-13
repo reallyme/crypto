@@ -13,13 +13,16 @@ use reallyme_crypto::operations::key_encoding;
 use reallyme_crypto::p256 as crypto_p256;
 
 /// Length in bytes of a P-256 secret key (32).
-pub const P256_SECRET_KEY_LEN: usize = 32;
+pub const P256_SECRET_KEY_LEN: usize = crypto_core::contract_constants::p256::P256_SECRET_KEY_LEN;
 /// Length in bytes of a SEC1 compressed P-256 public key (33).
-pub const P256_PUBLIC_KEY_COMPRESSED_LEN: usize = 33;
+pub const P256_PUBLIC_KEY_COMPRESSED_LEN: usize =
+    crypto_core::contract_constants::p256::P256_PUBLIC_KEY_COMPRESSED_LEN;
 /// Length in bytes of a SEC1 uncompressed P-256 public key (65).
-pub const P256_PUBLIC_KEY_UNCOMPRESSED_LEN: usize = 65;
+pub const P256_PUBLIC_KEY_UNCOMPRESSED_LEN: usize =
+    crypto_core::contract_constants::p256::P256_PUBLIC_KEY_UNCOMPRESSED_LEN;
 /// Length in bytes of a raw P-256 ECDH shared secret (32).
-pub const P256_SHARED_SECRET_LEN: usize = 32;
+pub const P256_SHARED_SECRET_LEN: usize =
+    crypto_core::contract_constants::p256::P256_SHARED_SECRET_LEN;
 /// Maximum length in bytes of a DER-encoded P-256 ECDSA signature.
 pub const P256_SIGNATURE_DER_MAX_LEN: usize = crypto_p256::P256_SIGNATURE_DER_MAX_LEN;
 /// Exact length in bytes of a P-256 JOSE signature (`r || s`).

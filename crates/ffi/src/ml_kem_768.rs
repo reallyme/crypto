@@ -12,15 +12,20 @@ use crypto_core::Algorithm;
 use reallyme_crypto::operations::key_encoding;
 
 /// Length in bytes of an ML-KEM-768 public key (1184).
-pub const ML_KEM_768_PUBLIC_KEY_LEN: usize = 1184;
+pub const ML_KEM_768_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::ml_kem_768::ML_KEM_768_PUBLIC_KEY_LEN;
 /// Length in bytes of an ML-KEM-768 secret key as handled here (64).
-pub const ML_KEM_768_SECRET_KEY_LEN: usize = 64;
+pub const ML_KEM_768_SECRET_KEY_LEN: usize =
+    crypto_core::contract_constants::ml_kem_768::ML_KEM_768_SECRET_KEY_LEN;
 /// Length in bytes of an ML-KEM-768 ciphertext (1088).
-pub const ML_KEM_768_CIPHERTEXT_LEN: usize = 1088;
+pub const ML_KEM_768_CIPHERTEXT_LEN: usize =
+    crypto_core::contract_constants::ml_kem_768::ML_KEM_768_CIPHERTEXT_LEN;
 /// Length in bytes of an ML-KEM-768 shared secret (32).
-pub const ML_KEM_768_SHARED_SECRET_LEN: usize = 32;
+pub const ML_KEM_768_SHARED_SECRET_LEN: usize =
+    crypto_core::contract_constants::ml_kem_768::ML_KEM_768_SHARED_SECRET_LEN;
 /// Length in bytes of ML-KEM deterministic encapsulation randomness.
-pub const ML_KEM_768_ENCAPS_RANDOMNESS_LEN: usize = 32;
+pub const ML_KEM_768_ENCAPS_RANDOMNESS_LEN: usize =
+    crypto_core::contract_constants::ml_kem_768::ML_KEM_768_ENCAPS_RANDOMNESS_LEN;
 
 /// Generates an ML-KEM-768 keypair, writing the 1184-byte public key to
 /// `public_out` and the 64-byte secret key to `secret_out`.

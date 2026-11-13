@@ -10,11 +10,14 @@ use crypto_core::Algorithm;
 use reallyme_crypto::operations::key_encoding;
 
 /// Length in bytes of an ML-DSA-65 public key (1952).
-pub const ML_DSA_65_PUBLIC_KEY_LEN: usize = 1952;
+pub const ML_DSA_65_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::ml_dsa_65::ML_DSA_65_PUBLIC_KEY_LEN;
 /// Length in bytes of an ML-DSA-65 secret-key seed (32).
-pub const ML_DSA_65_SECRET_SEED_LEN: usize = 32;
+pub const ML_DSA_65_SECRET_SEED_LEN: usize =
+    crypto_core::contract_constants::ml_dsa_65::ML_DSA_65_SECRET_SEED_LEN;
 /// Length in bytes of an ML-DSA-65 signature (3309).
-pub const ML_DSA_65_SIGNATURE_LEN: usize = 3309;
+pub const ML_DSA_65_SIGNATURE_LEN: usize =
+    crypto_core::contract_constants::ml_dsa_65::ML_DSA_65_SIGNATURE_LEN;
 
 /// Generates an ML-DSA-65 keypair, writing the 1952-byte public key to
 /// `public_out` and the 32-byte secret seed to `secret_seed_out`.

@@ -12,15 +12,20 @@ use crate::status::{
 use reallyme_crypto::operations::key_encoding;
 
 /// Length in bytes of a secp256k1 secret key (32).
-pub const SECP256K1_SECRET_KEY_LEN: usize = 32;
+pub const SECP256K1_SECRET_KEY_LEN: usize =
+    crypto_core::contract_constants::secp256k1::SECP256K1_SECRET_KEY_LEN;
 /// Length in bytes of a BIP-340 x-only secp256k1 public key (32).
-pub const BIP340_SCHNORR_PUBLIC_KEY_LEN: usize = 32;
+pub const BIP340_SCHNORR_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::secp256k1::BIP340_SCHNORR_PUBLIC_KEY_LEN;
 /// Length in bytes of a BIP-340 message digest (32).
-pub const BIP340_SCHNORR_MESSAGE_LEN: usize = 32;
+pub const BIP340_SCHNORR_MESSAGE_LEN: usize =
+    crypto_core::contract_constants::secp256k1::BIP340_SCHNORR_MESSAGE_LEN;
 /// Length in bytes of BIP-340 auxiliary signing randomness (32).
-pub const BIP340_SCHNORR_AUX_RAND_LEN: usize = 32;
+pub const BIP340_SCHNORR_AUX_RAND_LEN: usize =
+    crypto_core::contract_constants::secp256k1::BIP340_SCHNORR_AUX_RAND_LEN;
 /// Length in bytes of a BIP-340 Schnorr signature (64).
-pub const BIP340_SCHNORR_SIGNATURE_LEN: usize = 64;
+pub const BIP340_SCHNORR_SIGNATURE_LEN: usize =
+    crypto_core::contract_constants::secp256k1::BIP340_SCHNORR_SIGNATURE_LEN;
 
 /// Derives the BIP-340 x-only public key for a secp256k1 secret scalar.
 ///

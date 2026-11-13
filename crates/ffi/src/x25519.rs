@@ -9,11 +9,14 @@ use crypto_core::Algorithm;
 use reallyme_crypto::operations::key_encoding;
 
 /// Length in bytes of an X25519 public key (32).
-pub const X25519_PUBLIC_KEY_LEN: usize = 32;
+pub const X25519_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::x25519::X25519_PUBLIC_KEY_LEN;
 /// Length in bytes of an X25519 secret key (32).
-pub const X25519_SECRET_KEY_LEN: usize = 32;
+pub const X25519_SECRET_KEY_LEN: usize =
+    crypto_core::contract_constants::x25519::X25519_PRIVATE_KEY_LEN;
 /// Length in bytes of an X25519 shared secret (32).
-pub const X25519_SHARED_SECRET_LEN: usize = 32;
+pub const X25519_SHARED_SECRET_LEN: usize =
+    crypto_core::contract_constants::x25519::X25519_SHARED_SECRET_LEN;
 
 /// Generates an X25519 keypair, writing the 32-byte public key to `public_out`
 /// and the 32-byte secret key to `secret_out`.

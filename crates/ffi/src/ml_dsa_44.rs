@@ -10,11 +10,14 @@ use crypto_core::Algorithm;
 use reallyme_crypto::operations::key_encoding;
 
 /// Length in bytes of an ML-DSA-44 public key (1312).
-pub const ML_DSA_44_PUBLIC_KEY_LEN: usize = 1312;
+pub const ML_DSA_44_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::ml_dsa_44::ML_DSA_44_PUBLIC_KEY_LEN;
 /// Length in bytes of an ML-DSA-44 secret-key seed (32).
-pub const ML_DSA_44_SECRET_SEED_LEN: usize = 32;
+pub const ML_DSA_44_SECRET_SEED_LEN: usize =
+    crypto_core::contract_constants::ml_dsa_44::ML_DSA_44_SECRET_SEED_LEN;
 /// Length in bytes of an ML-DSA-44 signature (2420).
-pub const ML_DSA_44_SIGNATURE_LEN: usize = 2420;
+pub const ML_DSA_44_SIGNATURE_LEN: usize =
+    crypto_core::contract_constants::ml_dsa_44::ML_DSA_44_SIGNATURE_LEN;
 
 /// Generates an ML-DSA-44 keypair, writing the 1312-byte public key to
 /// `public_out` and the 32-byte secret seed to `secret_seed_out`.

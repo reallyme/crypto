@@ -10,11 +10,14 @@ use crypto_core::Algorithm;
 use reallyme_crypto::operations::key_encoding;
 
 /// Length in bytes of an Ed25519 public key (32).
-pub const ED25519_PUBLIC_KEY_LEN: usize = 32;
+pub const ED25519_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::ed25519::PUBLIC_KEY_LENGTH;
 /// Length in bytes of an Ed25519 secret-key seed (32).
-pub const ED25519_SECRET_KEY_LEN: usize = 32;
+pub const ED25519_SECRET_KEY_LEN: usize =
+    crypto_core::contract_constants::ed25519::ED25519_SECRET_KEY_LEN;
 /// Length in bytes of an Ed25519 signature (64).
-pub const ED25519_SIGNATURE_LEN: usize = 64;
+pub const ED25519_SIGNATURE_LEN: usize =
+    crypto_core::contract_constants::ed25519::ED25519_SIGNATURE_LENGTH;
 
 /// Generates an Ed25519 keypair, writing the 32-byte public key to
 /// `public_out` and the 32-byte secret key to `secret_out`.
