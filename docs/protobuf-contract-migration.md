@@ -391,6 +391,20 @@ this local repair does not change randomness or dependency features.
 Conformance, byte-preservation, presence and ownership regression sources are
 included but unexecuted.
 
+## RSA public operations and independent PSS parameters
+
+Standalone RSA requests now reach protected public-representative recovery and
+PSS verification with independent message/MGF1 hashes and explicit salt presence.
+Existing fixed root suites and their policies are unchanged. DER wrappers are
+explicit; representatives do not establish signature validity or trust.
+Key and signature admission bounds precede copied ownership, while the existing
+native parser preserves malformed-key error precedence.
+
+The added regression sources cover bounded admission, canonical reasons,
+generated/native parity and all twelve unequal message/MGF1 hash pairs with both
+zero-byte and 32-byte salts. The 24 static known answers retain the exact pinned
+primary-source provenance and license. These sources are compiled, not executed.
+
 ## Remaining work
 
 - Migrate the remaining options, policies, content modes, key-source contracts,

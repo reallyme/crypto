@@ -11,6 +11,9 @@ mod constants;
 mod convert_proto_identity;
 mod hash;
 mod key;
+/// Protected standalone public-representative and independent-PSS operations.
+#[cfg(feature = "proto")]
+pub mod proto_operations;
 /// Protected protobuf options and request adapters.
 #[cfg(feature = "proto")]
 pub mod proto_options;
