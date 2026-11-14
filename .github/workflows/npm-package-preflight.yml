@@ -87,12 +87,6 @@ jobs:
           cache: npm
           cache-dependency-path: packages/ts/package-lock.json
 
-      - name: Install Java for release readiness
-        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
-        with:
-          distribution: temurin
-          java-version: '21'
-
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:

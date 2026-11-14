@@ -235,7 +235,7 @@ runNodeCheck("scripts/check_negative_vectors.mjs");
 // must not require changing this pinned policy entry point just to register it.
 // CI owns these tests in its cross-platform tooling jobs. Full local/release
 // validation remains self-contained; protobuf and SDK jobs do not repeat them.
-if (!ciPolicyMode && !generatedFreshnessMode && sdkSourceMode === undefined) {
+if (checkerMode === undefined) {
   runNodeCheck("--test", ["--test-concurrency=4", "scripts/**/*.test.mjs", "packages/ts/scripts/*.test.mjs"]);
 }
 runNodeCheck("scripts/publish_crates_in_order.mjs", ["order"]);
@@ -1784,10 +1784,9 @@ for (const workflow of [
   ".github/workflows/kotlin-android-package-preflight.yml",
   ".github/workflows/swift-package-preflight.yml",
 ]) {
-  assertContains(workflow, "wasm-pack@0.15.1");
-  assertContains(workflow, "wasm-bindgen-cli@0.2.130");
-  assertContains(workflow, "npm ci --prefix packages/ts");
-  assertContains(workflow, "wasm32-unknown-unknown");
+  assertNotContains(workflow, "tool: wasm-pack@");
+  assertNotContains(workflow, "tool: wasm-bindgen-cli@");
+  assertNotContains(workflow, "npm ci --prefix packages/ts");
 }
 assertContains("scripts/maven-central-bundle.local.sh", "verify_release_preflight");
 assertContains("scripts/maven-central-bundle.local.sh", "NATIVE_RESOURCE_RUN_ID");
@@ -2408,7 +2407,7 @@ const repositoryPolicy = {
   },
   // SDK jobs own source policy and runtime checks in CI. Full local and release
   // validation still execute all three policies through this same definition.
-  typescriptSource: (generatedFreshnessMode || ciPolicyMode) ? undefined : {
+  typescriptSource: (checkerMode !== undefined && sdkSourceMode === undefined) ? undefined : {
     roots: ["."],
     generatedPrefixes: [
       "gen/es",
@@ -2442,7 +2441,7 @@ const repositoryPolicy = {
       },
     ],
   },
-  swiftSource: (generatedFreshnessMode || ciPolicyMode) ? undefined : {
+  swiftSource: (checkerMode !== undefined && sdkSourceMode === undefined) ? undefined : {
     roots: ["."],
     generatedPrefixes: ["gen/swift"],
     configuration: {
@@ -2481,7 +2480,7 @@ const repositoryPolicy = {
       },
     ],
   },
-  kotlinSource: (generatedFreshnessMode || ciPolicyMode) ? undefined : {
+  kotlinSource: (checkerMode !== undefined && sdkSourceMode === undefined) ? undefined : {
     roots: ["."],
     generatedPrefixes: ["gen/kotlin"],
     configuration: {
