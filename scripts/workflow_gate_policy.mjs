@@ -33,6 +33,8 @@ export const REQUIRED_WORKFLOW_GATES = [
   ]],
   [".github/workflows/swift-package-preflight.yml", [
     "node scripts/run_pinned_release_readiness.mjs --release-packages",
+    "node scripts/run_pinned_release_readiness.mjs --swift-source",
+    "run: swift test",
   ]],
   [".github/workflows/crates-package-preflight.yml", [
     "cargo publish --workspace --dry-run --locked",

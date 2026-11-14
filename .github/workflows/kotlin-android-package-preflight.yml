@@ -150,20 +150,6 @@ jobs:
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: 1.100.0
-          targets: wasm32-unknown-unknown
-
-      - name: Install wasm-pack
-        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # wasm-pack
-        with:
-          tool: wasm-pack@0.15.1
-
-      - name: Install wasm-bindgen-cli
-        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # wasm-bindgen-cli
-        with:
-          tool: wasm-bindgen-cli@0.2.130
-
-      - name: Install TypeScript package dependencies
-        run: npm ci --prefix packages/ts
 
       - name: Install Java
         uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0

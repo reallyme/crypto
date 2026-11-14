@@ -62,6 +62,6 @@ test("CI policy and generation modes do not launch repository tests", () => {
     assert.equal(result.status, 73, result.stderr);
     const calls = JSON.parse(result.stdout);
     assert.equal(calls.filter((args) => args[0] === "--test").length,
-      mode === undefined || mode === "--release-packages" ? 1 : 0, mode);
+      mode === undefined ? 1 : 0, mode);
   }
 });

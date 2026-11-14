@@ -35,9 +35,10 @@ The default command continues to execute the complete suite:
 node scripts/run_pinned_release_readiness.mjs
 ```
 
-It runs repository tooling and all SDK source/verification policies. Release
-preflights continue to select `--release-packages` with their additional package
-and artifact obligations.
+It runs repository tooling and all SDK source tests. `--release-packages`
+checks the shared release policy and versions. Each preflight then tests its
+own artifact. The release attestation requires a successful Code Checks run
+on the same commit, which covers the full set of SDK source tests.
 
 An unreleased macOS source checkout uses the same explicit runtime-FFI setup as
 the Swift CI job, rather than downloading a binary from a different release:
