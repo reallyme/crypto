@@ -33,16 +33,15 @@ fn request(
     let mut request = CryptoKemConformanceEncapsulateRequest {
         algorithm: MessageField::some(CryptoAlgorithmIdentifier {
             algorithm: Some(Identity::Kem(algorithm.into())),
-            __buffa_unknown_fields: Default::default(),
         }),
-        public_key: Vec::new(),
-        encapsulation_randomness: Vec::new(),
-        __buffa_unknown_fields: Default::default(),
+        public_key: Vec::new().into(),
+        encapsulation_randomness: Vec::new().into(),
     };
-    request.public_key.extend_from_slice(public);
-    request
+    assert!(request.public_key.extend_from_slice(public).is_ok());
+    assert!(request
         .encapsulation_randomness
-        .extend_from_slice(randomness);
+        .extend_from_slice(randomness)
+        .is_ok());
     request
 }
 
@@ -69,30 +68,28 @@ fn every_kem_identity_missing_unknown_selector_and_owner_cleanup_are_explicit() 
         let mut probe = request(KemAlgorithm::KEM_ALGORITHM_ML_KEM_512, &[], &[]);
         probe.algorithm = MessageField::some(CryptoAlgorithmIdentifier {
             algorithm: Some(Identity::Kem(value.into())),
-            __buffa_unknown_fields: Default::default(),
         });
         assert!(
             matches!(conformance_contract::encapsulate(&probe),Err(e)if e==CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
         );
     }
     let mut wrong_family = request(KemAlgorithm::KEM_ALGORITHM_ML_KEM_512, &[], &[]);
-    wrong_family.algorithm=MessageField::some(CryptoAlgorithmIdentifier{algorithm:Some(Identity::Hash(crypto_proto::generated::proto::reallyme::crypto::v1::HashAlgorithm::HASH_ALGORITHM_SHA2_256.into())),__buffa_unknown_fields:Default::default()});
+    wrong_family.algorithm=MessageField::some(CryptoAlgorithmIdentifier{algorithm:Some(Identity::Hash(crypto_proto::generated::proto::reallyme::crypto::v1::HashAlgorithm::HASH_ALGORITHM_SHA2_256.into()))});
     assert!(
         matches!(conformance_contract::encapsulate(&wrong_family),Err(error)if error==CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     );
     let mut probe = request(KemAlgorithm::KEM_ALGORITHM_ML_KEM_512, &[], &[1; 32]);
     let mut bytes = probe.encode_to_vec();
     bytes.extend_from_slice(&[0xf8, 7, 1]);
-    let modified = CryptoKemConformanceEncapsulateRequest::decode_from_slice(&bytes).unwrap();
-    assert!(
-        matches!(conformance_contract::encapsulate(&modified),Err(e)if e==CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    use crypto_proto::wire::{decode_protobuf, CryptoWireError};
+    assert_eq!(
+        decode_protobuf::<CryptoKemConformanceEncapsulateRequest>(&bytes),
+        Err(CryptoWireError::malformed_protobuf())
     );
-    let mut nested_bytes = probe.algorithm.as_option().unwrap().encode_to_vec();
-    nested_bytes.extend_from_slice(&[0xf8, 7, 1]);
-    let nested = CryptoAlgorithmIdentifier::decode_from_slice(&nested_bytes).unwrap();
-    probe.algorithm = MessageField::some(nested);
-    assert!(
-        matches!(conformance_contract::encapsulate(&probe),Err(e)if e==CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    let nested = [0x0a, 3, 0xf8, 7, 1];
+    assert_eq!(
+        decode_protobuf::<CryptoKemConformanceEncapsulateRequest>(&nested),
+        Err(CryptoWireError::malformed_protobuf())
     );
     buffa::Message::clear(&mut probe);
     assert!(
@@ -172,7 +169,7 @@ fn all_selected_kems_preserve_exact_coins_ciphertext_secret_and_native_errors(
                 &key.secret_key
             )?
             .as_slice(),
-            actual.shared_secret
+            actual.shared_secret.as_slice()
         );
         let mut changed = request(wire, &key.public_key, &coins);
         changed.encapsulation_randomness[0] ^= 1;

@@ -9,14 +9,6 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 };
 use zeroize::Zeroizing;
 
-pub(super) fn require_known(known: bool) -> Result<(), AlgorithmError> {
-    if known {
-        Ok(())
-    } else {
-        Err(AlgorithmError::PRIMITIVE_INVALID_PARAMETER)
-    }
-}
-
 // Borrowing the optional value avoids coupling to generated boxed/inline storage.
 pub(super) fn read_algorithm(
     value: Option<&CryptoKeyAlgorithmIdentifier>,
@@ -28,7 +20,6 @@ pub(super) fn read_algorithm(
 pub(super) fn write_algorithm(value: Algorithm) -> CryptoKeyAlgorithmIdentifier {
     CryptoKeyAlgorithmIdentifier {
         algorithm: KeyAlgorithm::from(value).into(),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -40,7 +31,11 @@ pub(super) fn check_length(bytes: &[u8]) -> Result<(), AlgorithmError> {
 
 pub(super) fn copy_bytes(bytes: &[u8]) -> Result<Zeroizing<Vec<u8>>, AlgorithmError> {
     let mut output = Zeroizing::new(Vec::new());
-    copy_into(&mut output, bytes)?;
+    check_length(bytes)?;
+    output
+        .try_reserve_exact(bytes.len())
+        .map_err(|_| AlgorithmError::BACKEND_INTERNAL)?;
+    output.extend_from_slice(bytes);
     Ok(output)
 }
 
@@ -57,14 +52,15 @@ pub(super) fn copy_text(bytes: &[u8]) -> Result<Zeroizing<String>, AlgorithmErro
 }
 
 // The destination is already a clearing native owner or hardened output DTO.
-pub(super) fn copy_into(output: &mut Vec<u8>, bytes: &[u8]) -> Result<(), AlgorithmError> {
+pub(super) fn copy_into(
+    output: &mut crypto_proto::SecretBytes,
+    bytes: &[u8],
+) -> Result<(), AlgorithmError> {
     check_length(bytes)?;
     if !output.is_empty() {
         return Err(AlgorithmError::BACKEND_INVALID_STATE);
     }
     output
-        .try_reserve_exact(bytes.len())
-        .map_err(|_| AlgorithmError::BACKEND_INTERNAL)?;
-    output.extend_from_slice(bytes);
-    Ok(())
+        .extend_from_slice(bytes)
+        .map_err(|_| AlgorithmError::BACKEND_INTERNAL)
 }

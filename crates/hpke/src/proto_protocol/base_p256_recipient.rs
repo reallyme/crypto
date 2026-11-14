@@ -4,7 +4,7 @@
 
 //! Fixed-profile recipient lifecycle returns the existing non-exportable owner.
 
-use super::requests::{copy_into, require_known};
+use super::requests::copy_into;
 use crate::base_p256::{P256BaseRng, P256RecipientKey, PRIVATE_KEY_LEN};
 use crate::HpkeError;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
@@ -44,7 +44,6 @@ impl TryFrom<&CryptoHpkeP256BaseRecipientImportRequest> for P256BaseRecipientImp
     type Error = HpkeError;
 
     fn try_from(value: &CryptoHpkeP256BaseRecipientImportRequest) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         if value.private_key.len() != PRIVATE_KEY_LEN {
             return Err(HpkeError::PRIMITIVE_INVALID_PRIVATE_KEY);
         }
@@ -81,8 +80,7 @@ impl P256BaseRecipientGenerateInputs {
 impl TryFrom<&CryptoHpkeP256BaseRecipientGenerateRequest> for P256BaseRecipientGenerateInputs {
     type Error = HpkeError;
 
-    fn try_from(value: &CryptoHpkeP256BaseRecipientGenerateRequest) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
+    fn try_from(_: &CryptoHpkeP256BaseRecipientGenerateRequest) -> Result<Self, Self::Error> {
         Ok(Self)
     }
 }

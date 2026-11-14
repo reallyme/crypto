@@ -42,12 +42,10 @@ fn native_derive_inputs_preserve_binary_info_and_optional_empty_salt() {
         let wire = CryptoHkdfDeriveInputs {
             suite: MessageField::some(CryptoHkdfSuiteIdentifier {
                 hash: HashAlgorithm::HASH_ALGORITHM_SHA2_384.into(),
-                __buffa_unknown_fields: Default::default(),
             }),
-            input_key_material: vec![0x42; 32],
-            salt,
-            info: vec![0, 0xff, 0xc3, 0xa9],
-            __buffa_unknown_fields: Default::default(),
+            input_key_material: vec![0x42; 32].into(),
+            salt: salt.map(Into::into),
+            info: vec![0, 0xff, 0xc3, 0xa9].into(),
         };
         let native = HkdfDeriveInputs::try_from(&wire).expect("native inputs");
         let returned = CryptoHkdfDeriveInputs::try_from(&native.as_request()).expect("wire inputs");
@@ -61,9 +59,8 @@ fn native_derive_inputs_preserve_binary_info_and_optional_empty_salt() {
 fn sha384_extract_and_expand_preserve_exact_material_and_context() {
     for salt in [None, Some(Vec::new()), Some(vec![0x11; 16])] {
         let request = CryptoHkdfExtractSha384Request {
-            input_key_material: vec![0x42; 32],
-            salt,
-            __buffa_unknown_fields: Default::default(),
+            input_key_material: vec![0x42; 32].into(),
+            salt: salt.map(Into::into),
         };
         let native = HkdfExtractSha384Inputs::try_from(&request).expect("extract inputs");
         let returned = CryptoHkdfExtractSha384Request::try_from(&native).expect("extract wire");
@@ -93,17 +90,13 @@ fn expand_rejects_wrong_lengths_and_unknown_modifiers() -> Result<(), buffa::Dec
         );
     }
     wire = expand_request();
-    wire.pseudorandom_key.pop();
+    wire.pseudorandom_key.resize(47, 0).expect("short fixture");
     assert_eq!(
         HkdfExpandSha384Inputs::<32>::try_from(&wire).err(),
         Some(CryptoError::PRIMITIVE_INVALID_KEY)
     );
     wire = expand_request();
-    wire.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(
-        HkdfExpandSha384Inputs::<32>::try_from(&wire).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    assert_unknown_wire(&wire, &[0xa0, 0x06, 0x01]);
     Ok(())
 }
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -111,27 +104,25 @@ fn expand_rejects_wrong_lengths_and_unknown_modifiers() -> Result<(), buffa::Dec
 fn domain_tag_rejects_normalization_and_preserves_existing_profile_inputs(
 ) -> Result<(), buffa::DecodeError> {
     let mut tag = CryptoHkdfDomainTag {
-        value: b"tenant/ab_09-x".to_vec(),
-        __buffa_unknown_fields: Default::default(),
+        value: b"tenant/ab_09-x".to_vec().into(),
     };
     let native_tag = DomainTag::try_from(&tag).expect("valid exact tag");
-    assert_eq!(native_tag.as_bytes(), tag.value);
+    assert_eq!(native_tag.as_bytes(), tag.value.as_slice());
     assert_eq!(CryptoHkdfDomainTag::from(&native_tag).value, tag.value);
     for (bytes, expected) in [
         (b"Tenant".to_vec(), CryptoError::PRIMITIVE_INVALID_ENCODING),
         (Vec::new(), CryptoError::PRIMITIVE_INVALID_LENGTH),
         (vec![b'a'; 49], CryptoError::PRIMITIVE_INVALID_LENGTH),
     ] {
-        tag.value = bytes;
+        tag.value = bytes.into();
         assert_eq!(DomainTag::try_from(&tag).err(), Some(expected));
     }
-    tag.value = b"tenant/ab_09-x".to_vec();
+    tag.value = b"tenant/ab_09-x".to_vec().into();
     let wire = CryptoHkdfDomainKey32Request {
-        input_key_material: vec![0x42; 32],
-        salt: Some(Vec::new()),
+        input_key_material: vec![0x42; 32].into(),
+        salt: Some(Vec::new().into()),
         purpose: ProtoPurpose::HKDF_DOMAIN_KEY_PURPOSE_AUTH_PROOF_KEY.into(),
         domain_tag: MessageField::some(tag),
-        __buffa_unknown_fields: Default::default(),
     };
     let native = HkdfDomainKey32Inputs::try_from(&wire).expect("existing fixed profile inputs");
     let returned = CryptoHkdfDomainKey32Request::try_from(&native).expect("fixed profile wire");
@@ -141,12 +132,8 @@ fn domain_tag_rejects_normalization_and_preserves_existing_profile_inputs(
         returned.domain_tag.as_option().expect("tag").value,
         wire.domain_tag.as_option().expect("tag").value
     );
-    let mut bad = CryptoHkdfDomainTag::from(&native_tag);
-    bad.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(
-        DomainTag::try_from(&bad).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    let bad = CryptoHkdfDomainTag::from(&native_tag);
+    assert_unknown_wire(&bad, &[0xa0, 0x06, 0x01]);
     Ok(())
 }
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -173,9 +160,7 @@ fn domain_metadata_does_not_enable_sha3_execution() {
         purpose: ProtoPurpose::HKDF_DOMAIN_KEY_PURPOSE_AEAD_CONTENT_KEY.into(),
         domain_tag: MessageField::some(CryptoHkdfDomainTag {
             value: b"tenant".to_vec(),
-            __buffa_unknown_fields: Default::default(),
         }),
-        __buffa_unknown_fields: Default::default(),
     };
     let native = HkdfDomainKey32Inputs::try_from(&wire).expect("metadata exists independently");
     assert_eq!(
@@ -191,10 +176,9 @@ fn domain_metadata_does_not_enable_sha3_execution() {
 }
 fn expand_request() -> CryptoHkdfExpandSha384Request {
     CryptoHkdfExpandSha384Request {
-        pseudorandom_key: vec![0x42; 48],
-        info: vec![0, 0xff, 1],
+        pseudorandom_key: vec![0x42; 48].into(),
+        info: vec![0, 0xff, 1].into(),
         output_length: 32,
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -204,54 +188,52 @@ fn derive_extract_and_domain_inputs_reject_missing_or_unknown_modifiers(
 ) -> Result<(), buffa::DecodeError> {
     let mut derive = CryptoHkdfDeriveInputs {
         suite: MessageField::none(),
-        input_key_material: vec![0x42; 32],
+        input_key_material: vec![0x42; 32].into(),
         salt: None,
-        info: Vec::new(),
-        __buffa_unknown_fields: Default::default(),
+        info: Vec::new().into(),
     };
     assert_eq!(
         HkdfDeriveInputs::try_from(&derive).err(),
         Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
     );
-    let mut suite = CryptoHkdfSuiteIdentifier {
+    let suite = CryptoHkdfSuiteIdentifier {
         hash: HashAlgorithm::HASH_ALGORITHM_SHA2_384.into(),
-        __buffa_unknown_fields: Default::default(),
     };
-    suite.merge_from_slice(&[0xa0, 0x06, 0x01])?;
+    let mut modified_child = suite.encode_to_vec();
+    modified_child.extend_from_slice(&[0xa0, 0x06, 0x01]);
     derive.suite = MessageField::some(suite);
-    assert_eq!(
-        HkdfDeriveInputs::try_from(&derive).err(),
-        Some(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    let mut modified = derive.encode_to_vec();
+    // The duplicate child retains protobuf merge semantics but the unknown
+    // modifier must fail admission before any operation uses the message.
+    buffa::encoding::encode_varint((1u64 << 3) | 2, &mut modified);
+    buffa::encoding::encode_varint(
+        u64::try_from(modified_child.len()).unwrap_or(u64::MAX),
+        &mut modified,
     );
-    let mut extract = CryptoHkdfExtractSha384Request {
-        input_key_material: vec![0x42; 32],
+    modified.extend_from_slice(&modified_child);
+    assert!(crypto_proto::wire::decode_protobuf::<CryptoHkdfDeriveInputs>(&modified).is_err());
+    let extract = CryptoHkdfExtractSha384Request {
+        input_key_material: vec![0x42; 32].into(),
         salt: None,
-        __buffa_unknown_fields: Default::default(),
     };
-    extract.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(
-        HkdfExtractSha384Inputs::try_from(&extract).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    assert_unknown_wire(&extract, &[0xa0, 0x06, 0x01]);
     let empty = CryptoHkdfExtractSha384Request::default();
     assert_eq!(
         HkdfExtractSha384Inputs::try_from(&empty).err(),
         Some(CryptoError::PRIMITIVE_INVALID_KEY)
     );
     let mut domain = CryptoHkdfDomainKey32Request {
-        input_key_material: vec![0x42; 32],
+        input_key_material: vec![0x42; 32].into(),
         salt: None,
         purpose: ProtoPurpose::HKDF_DOMAIN_KEY_PURPOSE_AEAD_CONTENT_KEY.into(),
         domain_tag: MessageField::none(),
-        __buffa_unknown_fields: Default::default(),
     };
     assert_eq!(
         HkdfDomainKey32Inputs::try_from(&domain).err(),
         Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
     );
     domain.domain_tag = MessageField::some(CryptoHkdfDomainTag {
-        value: b"tenant".to_vec(),
-        __buffa_unknown_fields: Default::default(),
+        value: b"tenant".to_vec().into(),
     });
     for purpose in [0, -1, i32::MAX] {
         domain.purpose = purpose.into();
@@ -282,4 +264,11 @@ fn generated_options_owners_clear_retained_storage() {
     require_cleanup::<
         crypto_proto::generated::proto::reallyme::crypto::v1::CryptoHkdfDomainKey32Request,
     >();
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

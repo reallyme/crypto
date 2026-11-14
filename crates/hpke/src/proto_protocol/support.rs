@@ -43,7 +43,6 @@ pub fn kem_capability(value: HpkeKemId) -> Result<CryptoHpkeComponentCapability,
     Ok(CryptoHpkeComponentCapability {
         component: Some(Component::Kem(wire)),
         support: ProtoSupport::from(value.support()).into(),
-        __buffa_unknown_fields: Default::default(),
     })
 }
 /// Reports the registered KDF identity without enabling its backend feature.
@@ -55,7 +54,6 @@ pub fn kdf_capability(value: HpkeKdfId) -> Result<CryptoHpkeComponentCapability,
     Ok(CryptoHpkeComponentCapability {
         component: Some(Component::Kdf(wire)),
         support: ProtoSupport::from(value.support()).into(),
-        __buffa_unknown_fields: Default::default(),
     })
 }
 /// Reports the registered AEAD identity without selecting a complete suite.
@@ -67,6 +65,5 @@ pub fn aead_capability(value: HpkeAeadId) -> Result<CryptoHpkeComponentCapabilit
     Ok(CryptoHpkeComponentCapability {
         component: Some(Component::Aead(wire)),
         support: ProtoSupport::from(value.support()).into(),
-        __buffa_unknown_fields: Default::default(),
     })
 }

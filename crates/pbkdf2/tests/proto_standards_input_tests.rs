@@ -18,11 +18,10 @@ use zeroize::Zeroize;
 fn request(prf: Pbkdf2Prf) -> CryptoPbkdf2StandardsDeriveRequest {
     CryptoPbkdf2StandardsDeriveRequest {
         prf: MessageField::some(CryptoPbkdf2PrfIdentifier::from(prf)),
-        password: b"password".to_vec(),
-        salt: b"salt".to_vec(),
+        password: b"password".to_vec().into(),
+        salt: b"salt".to_vec().into(),
         iterations: 1,
         output_length: 32,
-        __buffa_unknown_fields: Default::default(),
     }
 }
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -83,11 +82,14 @@ fn standards_domain_and_modern_floor_remain_distinct() {
 #[cfg_attr(not(target_arch = "wasm32"), test)]
 fn standards_adapter_preserves_binary_inputs_and_live_owner_cleanup() {
     let mut wire = request(Pbkdf2Prf::HmacSha256);
-    wire.password = vec![0, 0xff, 0, 0x80];
-    wire.salt = vec![0, 1, 0xff, 0];
+    wire.password = vec![0, 0xff, 0, 0x80].into();
+    wire.salt = vec![0, 1, 0xff, 0].into();
     let mut inputs = StandardsDeriveInputs::try_from(&wire).expect("binary inputs");
-    assert_eq!(inputs.as_request().password.as_bytes(), wire.password);
-    assert_eq!(inputs.as_request().salt.as_bytes(), wire.salt);
+    assert_eq!(
+        inputs.as_request().password.as_bytes(),
+        wire.password.as_slice()
+    );
+    assert_eq!(inputs.as_request().salt.as_bytes(), wire.salt.as_slice());
     inputs.zeroize();
     assert!(inputs.as_request().password.as_bytes().is_empty());
     assert!(inputs.as_request().salt.as_bytes().is_empty());
@@ -122,26 +124,31 @@ fn standards_adapter_rejects_invalid_fields_and_unknown_modifiers() -> Result<()
     let mut wire = request(prf);
     wire.prf = MessageField::some(CryptoPbkdf2PrfIdentifier {
         prf: MacAlgorithm::MAC_ALGORITHM_UNSPECIFIED.into(),
-        __buffa_unknown_fields: Default::default(),
     });
     assert_eq!(
         StandardsDeriveInputs::try_from(&wire).err(),
         Some(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     );
     let mut wire = request(prf);
-    let mut id = CryptoPbkdf2PrfIdentifier::from(prf);
-    id.merge_from_slice(&[0xa0, 0x06, 1])?;
+    let id = CryptoPbkdf2PrfIdentifier::from(prf);
+    let mut modified_child = id.encode_to_vec();
+    modified_child.extend_from_slice(&[0xa0, 0x06, 1]);
     wire.prf = MessageField::some(id);
-    assert_eq!(
-        StandardsDeriveInputs::try_from(&wire).err(),
-        Some(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    let mut modified = wire.encode_to_vec();
+    // The duplicate child retains protobuf merge semantics but the unknown
+    // modifier must fail admission before any operation uses the message.
+    buffa::encoding::encode_varint((1u64 << 3) | 2, &mut modified);
+    buffa::encoding::encode_varint(
+        u64::try_from(modified_child.len()).unwrap_or(u64::MAX),
+        &mut modified,
     );
-    let mut wire = request(prf);
-    wire.merge_from_slice(&[0xa0, 0x06, 1])?;
-    assert_eq!(
-        StandardsDeriveInputs::try_from(&wire).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
+    modified.extend_from_slice(&modified_child);
+    assert!(
+        crypto_proto::wire::decode_protobuf::<CryptoPbkdf2StandardsDeriveRequest>(&modified)
+            .is_err()
     );
+    let wire = request(prf);
+    assert_unknown_wire(&wire, &[0xa0, 0x06, 1]);
     let mut wire = request(prf);
     wire.password.clear();
     assert_eq!(
@@ -155,4 +162,11 @@ fn standards_adapter_rejects_invalid_fields_and_unknown_modifiers() -> Result<()
         Some(CryptoError::PRIMITIVE_INVALID_SALT)
     );
     Ok(())
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

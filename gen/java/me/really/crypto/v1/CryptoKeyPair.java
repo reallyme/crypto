@@ -28,10 +28,49 @@ public  final class CryptoKeyPair extends
   }
 
   private CryptoKeyPair() {
-    publicKey_ = com.google.protobuf.ByteString.EMPTY;
     secretKey_ = com.google.protobuf.ByteString.EMPTY;
+    publicKey_ = com.google.protobuf.ByteString.EMPTY;
   }
   private int bitField0_;
+  public static final int SECRET_KEY_FIELD_NUMBER = 3;
+  private com.google.protobuf.ByteString secretKey_;
+  /**
+   * <pre>
+   * Compare secret material before public metadata, preserving constant-time comparison.
+   * </pre>
+   *
+   * <code>bytes secret_key = 3 [json_name = "secretKey"];</code>
+   * @return The secretKey.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString getSecretKey() {
+    return secretKey_;
+  }
+  /**
+   * <pre>
+   * Compare secret material before public metadata, preserving constant-time comparison.
+   * </pre>
+   *
+   * <code>bytes secret_key = 3 [json_name = "secretKey"];</code>
+   * @param value The secretKey to set.
+   */
+  private void setSecretKey(com.google.protobuf.ByteString value) {
+    java.util.Objects.requireNonNull(value);
+
+    secretKey_ = value;
+  }
+  /**
+   * <pre>
+   * Compare secret material before public metadata, preserving constant-time comparison.
+   * </pre>
+   *
+   * <code>bytes secret_key = 3 [json_name = "secretKey"];</code>
+   */
+  private void clearSecretKey() {
+
+    secretKey_ = getDefaultInstance().getSecretKey();
+  }
+
   public static final int ALGORITHM_FIELD_NUMBER = 1;
   private me.really.crypto.v1.CryptoAlgorithmIdentifier algorithm_;
   /**
@@ -104,45 +143,6 @@ public  final class CryptoKeyPair extends
   private void clearPublicKey() {
 
     publicKey_ = getDefaultInstance().getPublicKey();
-  }
-
-  public static final int SECRET_KEY_FIELD_NUMBER = 3;
-  private com.google.protobuf.ByteString secretKey_;
-  /**
-   * <pre>
-   * Secret-bearing exportable private key material.
-   * </pre>
-   *
-   * <code>bytes secret_key = 3 [json_name = "secretKey"];</code>
-   * @return The secretKey.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString getSecretKey() {
-    return secretKey_;
-  }
-  /**
-   * <pre>
-   * Secret-bearing exportable private key material.
-   * </pre>
-   *
-   * <code>bytes secret_key = 3 [json_name = "secretKey"];</code>
-   * @param value The secretKey to set.
-   */
-  private void setSecretKey(com.google.protobuf.ByteString value) {
-    java.util.Objects.requireNonNull(value);
-
-    secretKey_ = value;
-  }
-  /**
-   * <pre>
-   * Secret-bearing exportable private key material.
-   * </pre>
-   *
-   * <code>bytes secret_key = 3 [json_name = "secretKey"];</code>
-   */
-  private void clearSecretKey() {
-
-    secretKey_ = getDefaultInstance().getSecretKey();
   }
 
   public static me.really.crypto.v1.CryptoKeyPair parseFrom(
@@ -250,6 +250,46 @@ public  final class CryptoKeyPair extends
 
 
     /**
+     * <pre>
+     * Compare secret material before public metadata, preserving constant-time comparison.
+     * </pre>
+     *
+     * <code>bytes secret_key = 3 [json_name = "secretKey"];</code>
+     * @return The secretKey.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getSecretKey() {
+      return instance.getSecretKey();
+    }
+    /**
+     * <pre>
+     * Compare secret material before public metadata, preserving constant-time comparison.
+     * </pre>
+     *
+     * <code>bytes secret_key = 3 [json_name = "secretKey"];</code>
+     * @param value The secretKey to set.
+     * @return This builder for chaining.
+     */
+    public Builder setSecretKey(com.google.protobuf.ByteString value) {
+      copyOnWrite();
+      instance.setSecretKey(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Compare secret material before public metadata, preserving constant-time comparison.
+     * </pre>
+     *
+     * <code>bytes secret_key = 3 [json_name = "secretKey"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearSecretKey() {
+      copyOnWrite();
+      instance.clearSecretKey();
+      return this;
+    }
+
+    /**
      * <code>.reallyme.crypto.v1.CryptoAlgorithmIdentifier algorithm = 1 [json_name = "algorithm"];</code>
      */
     @java.lang.Override
@@ -321,46 +361,6 @@ public  final class CryptoKeyPair extends
     public Builder clearPublicKey() {
       copyOnWrite();
       instance.clearPublicKey();
-      return this;
-    }
-
-    /**
-     * <pre>
-     * Secret-bearing exportable private key material.
-     * </pre>
-     *
-     * <code>bytes secret_key = 3 [json_name = "secretKey"];</code>
-     * @return The secretKey.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString getSecretKey() {
-      return instance.getSecretKey();
-    }
-    /**
-     * <pre>
-     * Secret-bearing exportable private key material.
-     * </pre>
-     *
-     * <code>bytes secret_key = 3 [json_name = "secretKey"];</code>
-     * @param value The secretKey to set.
-     * @return This builder for chaining.
-     */
-    public Builder setSecretKey(com.google.protobuf.ByteString value) {
-      copyOnWrite();
-      instance.setSecretKey(value);
-      return this;
-    }
-    /**
-     * <pre>
-     * Secret-bearing exportable private key material.
-     * </pre>
-     *
-     * <code>bytes secret_key = 3 [json_name = "secretKey"];</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearSecretKey() {
-      copyOnWrite();
-      instance.clearSecretKey();
       return this;
     }
 

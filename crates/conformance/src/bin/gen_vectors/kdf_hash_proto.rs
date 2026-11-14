@@ -268,12 +268,9 @@ fn write_operation_response_vector(dir: &Path) -> Result<(), VectorGenError> {
                 algorithm: Some(ProtoAlgorithmBranch::Hash(EnumValue::from(
                     HashAlgorithm::HASH_ALGORITHM_SHA2_256,
                 ))),
-                __buffa_unknown_fields: Default::default(),
             }),
-            input: b"abc".to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            input: b"abc".to_vec().into(),
         }))),
-        __buffa_unknown_fields: Default::default(),
     };
     let request_protobuf = request.encode_to_vec();
     let request_json =

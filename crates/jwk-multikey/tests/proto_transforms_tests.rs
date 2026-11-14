@@ -4,7 +4,7 @@
 
 #![allow(missing_docs, clippy::expect_used)]
 #![cfg(feature = "proto")]
-use buffa::{Message, MessageField};
+use buffa::MessageField;
 use crypto_core::CryptoError;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoJwkOptions, CryptoJwkToMultikeyRequest, CryptoJwkToMultikeyResult,
@@ -41,7 +41,6 @@ fn multikey_roundtrip_matches_native_codec_names_and_exact_selected_metadata() {
         Zeroizing::new(envelopes_jwk_multikey::jwk_to_multikey(&native).expect("native codec"));
     let wire = CryptoJwkToMultikeyRequest {
         jwk: MessageField::some(PublicJwk::try_from(&native).expect("public model")),
-        __buffa_unknown_fields: Default::default(),
     };
     let result = JwkToMultikeyInputs::try_from(&wire)
         .expect("typed key")
@@ -72,7 +71,6 @@ fn multikey_roundtrip_matches_native_codec_names_and_exact_selected_metadata() {
                         options: MessageField::some(
                             CryptoJwkOptions::try_from(&options()).expect("options"),
                         ),
-                        __buffa_unknown_fields: Default::default(),
                     };
                     let actual = MultikeyToJwkInputs::try_from(&request)
                         .expect("typed request")
@@ -99,15 +97,14 @@ fn transforms_reject_missing_unknown_invalid_utf8_and_noncanonical_multibase(
     );
     let options = || MessageField::some(CryptoJwkOptions::default());
     let mut request = CryptoMultikeyToJwkRequest {
-        multikey: vec![0xff],
+        multikey: vec![0xff].into(),
         options: options(),
-        __buffa_unknown_fields: Default::default(),
     };
     assert_eq!(
         MultikeyToJwkInputs::try_from(&request).err(),
         Some(CryptoError::PRIMITIVE_INVALID_ENCODING)
     );
-    request.multikey = b"not-a-canonical-multikey".to_vec();
+    request.multikey = b"not-a-canonical-multikey".to_vec().into();
     assert_eq!(
         MultikeyToJwkInputs::try_from(&request)
             .expect("UTF8 request")
@@ -121,11 +118,7 @@ fn transforms_reject_missing_unknown_invalid_utf8_and_noncanonical_multibase(
         Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
     );
     request.options = options();
-    request.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(
-        MultikeyToJwkInputs::try_from(&request).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    assert_unknown_wire(&request, &[0xa0, 0x06, 0x01]);
     Ok(())
 }
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -137,9 +130,8 @@ fn existing_multikey_support_does_not_expand_to_slh_or_xwing() {
     ] {
         let raw = CryptoPublicKeyToJwkRequest {
             algorithm: algorithm.into(),
-            public_key: vec![0; length],
+            public_key: vec![0; length].into(),
             options: MessageField::some(CryptoJwkOptions::default()),
-            __buffa_unknown_fields: Default::default(),
         };
         let jwk = envelopes_jwk::proto_transforms::PublicKeyToJwkInputs::try_from(&raw)
             .expect("existing raw identity")
@@ -147,7 +139,6 @@ fn existing_multikey_support_does_not_expand_to_slh_or_xwing() {
             .expect("existing JWK support");
         let request = CryptoJwkToMultikeyRequest {
             jwk: jwk.jwk.clone(),
-            __buffa_unknown_fields: Default::default(),
         };
         assert_eq!(
             JwkToMultikeyInputs::try_from(&request)
@@ -203,9 +194,8 @@ fn every_existing_multikey_family_matches_native_forward_and_reverse_choices() {
         };
         let raw = CryptoPublicKeyToJwkRequest {
             algorithm: algorithm.into(),
-            public_key: public,
+            public_key: public.into(),
             options: MessageField::some(CryptoJwkOptions::try_from(&options()).expect("options")),
-            __buffa_unknown_fields: Default::default(),
         };
         let native = envelopes_jwk::proto_transforms::PublicKeyToJwkInputs::try_from(&raw)
             .expect("raw inputs")
@@ -216,7 +206,6 @@ fn every_existing_multikey_family_matches_native_forward_and_reverse_choices() {
         );
         let request = CryptoJwkToMultikeyRequest {
             jwk: MessageField::some(PublicJwk::try_from(native.as_jwk()).expect("typed model")),
-            __buffa_unknown_fields: Default::default(),
         };
         let actual = JwkToMultikeyInputs::try_from(&request)
             .expect("inputs")
@@ -231,7 +220,6 @@ fn every_existing_multikey_family_matches_native_forward_and_reverse_choices() {
         let inverse = CryptoMultikeyToJwkRequest {
             multikey: actual.multikey.clone(),
             options: MessageField::some(CryptoJwkOptions::try_from(&options()).expect("options")),
-            __buffa_unknown_fields: Default::default(),
         };
         let actual = MultikeyToJwkInputs::try_from(&inverse)
             .expect("inverse inputs")
@@ -258,14 +246,11 @@ fn own_ec_backend_gate_stays_closed_under_dependency_feature_unification() {
         kid: None,
         alg: None,
         usage: None,
-        __buffa_unknown_fields: Default::default(),
     };
     let request = CryptoJwkToMultikeyRequest {
         jwk: MessageField::some(PublicJwk {
             key: Some(Key::Ec(Box::new(ec))),
-            __buffa_unknown_fields: Default::default(),
         }),
-        __buffa_unknown_fields: Default::default(),
     };
     assert_eq!(
         JwkToMultikeyInputs::try_from(&request).err(),
@@ -284,3 +269,10 @@ const SECP_X: [u8; 32] = [
     0x79, 0xbe, 0x66, 0x7e, 0xf9, 0xdc, 0xbb, 0xac, 0x55, 0xa0, 0x62, 0x95, 0xce, 0x87, 0x0b, 0x07,
     0x02, 0x9b, 0xfc, 0xdb, 0x2d, 0xce, 0x28, 0xd9, 0x59, 0xf2, 0x81, 0x5b, 0x16, 0xf8, 0x17, 0x98,
 ];
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
+}

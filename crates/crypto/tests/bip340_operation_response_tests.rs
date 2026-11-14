@@ -42,7 +42,6 @@ fn operation_response_exposes_bip340_keygen_derive_sign_and_verify_results() {
     let generated = result_branch(CryptoOperation::SignatureGenerateKeyPair(Box::new(
         CryptoSignatureGenerateKeyPairRequest {
             algorithm: MessageField::some(bip340_identifier()),
-            __buffa_unknown_fields: Default::default(),
         },
     )))
     .expect("key generation returns a result branch");
@@ -55,8 +54,7 @@ fn operation_response_exposes_bip340_keygen_derive_sign_and_verify_results() {
     let derived = result_branch(CryptoOperation::SignatureDeriveKeyPair(Box::new(
         CryptoSignatureDeriveKeyPairRequest {
             algorithm: MessageField::some(bip340_identifier()),
-            secret_key: SECRET_KEY.to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            secret_key: SECRET_KEY.to_vec().into(),
         },
     )))
     .expect("key derivation returns a result branch");
@@ -68,10 +66,9 @@ fn operation_response_exposes_bip340_keygen_derive_sign_and_verify_results() {
 
     let signed = result_branch(CryptoOperation::Bip340SchnorrSign(Box::new(
         CryptoBip340SchnorrSignRequest {
-            message32: MESSAGE32.to_vec(),
-            secret_key: SECRET_KEY.to_vec(),
-            aux_rand32: AUX_RAND32.to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            message32: MESSAGE32.to_vec().into(),
+            secret_key: SECRET_KEY.to_vec().into(),
+            aux_rand32: AUX_RAND32.to_vec().into(),
         },
     )))
     .expect("signing returns a result branch");
@@ -84,10 +81,9 @@ fn operation_response_exposes_bip340_keygen_derive_sign_and_verify_results() {
     let verified = result_branch(CryptoOperation::SignatureVerify(Box::new(
         CryptoSignatureVerifyRequest {
             algorithm: MessageField::some(bip340_identifier()),
-            signature: SIGNATURE.to_vec(),
-            message: MESSAGE32.to_vec(),
-            public_key: PUBLIC_KEY.to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            signature: SIGNATURE.to_vec().into(),
+            message: MESSAGE32.to_vec().into(),
+            public_key: PUBLIC_KEY.to_vec().into(),
         },
     )))
     .expect("verification returns a result branch");
@@ -106,10 +102,9 @@ fn operation_response_reports_bip340_mismatch_and_malformed_inputs_without_error
     let mismatch = result_branch(CryptoOperation::SignatureVerify(Box::new(
         CryptoSignatureVerifyRequest {
             algorithm: MessageField::some(bip340_identifier()),
-            signature: tampered.to_vec(),
-            message: MESSAGE32.to_vec(),
-            public_key: PUBLIC_KEY.to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            signature: tampered.to_vec().into(),
+            message: MESSAGE32.to_vec().into(),
+            public_key: PUBLIC_KEY.to_vec().into(),
         },
     )))
     .expect("verification mismatch returns a result branch");
@@ -123,27 +118,24 @@ fn operation_response_reports_bip340_mismatch_and_malformed_inputs_without_error
 
     assert_error_reason(
         CryptoOperation::Bip340SchnorrSign(Box::new(CryptoBip340SchnorrSignRequest {
-            message32: MESSAGE32[1..].to_vec(),
-            secret_key: SECRET_KEY.to_vec(),
-            aux_rand32: AUX_RAND32.to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            message32: MESSAGE32[1..].to_vec().into(),
+            secret_key: SECRET_KEY.to_vec().into(),
+            aux_rand32: AUX_RAND32.to_vec().into(),
         })),
         CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PARAMETER,
     );
     assert_error_reason(
         CryptoOperation::SignatureDeriveKeyPair(Box::new(CryptoSignatureDeriveKeyPairRequest {
             algorithm: MessageField::some(bip340_identifier()),
-            secret_key: vec![0; 32],
-            __buffa_unknown_fields: Default::default(),
+            secret_key: vec![0; 32].into(),
         })),
         CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY,
     );
     assert_error_reason(
         CryptoOperation::SignatureSign(Box::new(CryptoSignatureSignRequest {
             algorithm: MessageField::some(bip340_identifier()),
-            message: MESSAGE32.to_vec(),
-            secret_key: SECRET_KEY.to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            message: MESSAGE32.to_vec().into(),
+            secret_key: SECRET_KEY.to_vec().into(),
         })),
         CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_ALGORITHM,
     );
@@ -151,8 +143,8 @@ fn operation_response_reports_bip340_mismatch_and_malformed_inputs_without_error
 
 fn result_branch(operation: CryptoOperation) -> Option<CryptoOperationResultBranch> {
     let response = process_response(operation);
-    match response.outcome {
-        Some(CryptoOperationOutcome::Result(result)) => result.result,
+    match response.outcome.as_ref() {
+        Some(CryptoOperationOutcome::Result(result)) => result.result.clone(),
         _ => None,
     }
 }
@@ -163,8 +155,8 @@ fn assert_error_reason(operation: CryptoOperation, expected: CryptoErrorReason) 
 
 fn error_reason(operation: CryptoOperation) -> Option<CryptoErrorReason> {
     let response = process_response(operation);
-    match response.outcome {
-        Some(CryptoOperationOutcome::Error(error)) => match error.error {
+    match response.outcome.as_ref() {
+        Some(CryptoOperationOutcome::Error(error)) => match error.error.as_ref() {
             Some(CryptoErrorBranch::Primitive(error)) => error.reason.as_known(),
             Some(CryptoErrorBranch::Provider(error)) => error.reason.as_known(),
             Some(CryptoErrorBranch::Backend(error)) => error.reason.as_known(),
@@ -177,7 +169,6 @@ fn error_reason(operation: CryptoOperation) -> Option<CryptoErrorReason> {
 fn process_response(operation: CryptoOperation) -> CryptoOperationResponse {
     let request = CryptoOperationRequest {
         operation: Some(operation),
-        __buffa_unknown_fields: Default::default(),
     };
     let output = reallyme_crypto::operation_contract::process_operation_response(
         request.encode_to_vec().as_slice(),
@@ -190,6 +181,5 @@ fn bip340_identifier() -> CryptoAlgorithmIdentifier {
         algorithm: Some(ProtoAlgorithmBranch::Signature(EnumValue::from(
             SignatureAlgorithm::SIGNATURE_ALGORITHM_BIP340_SCHNORR_SECP256K1_SHA256,
         ))),
-        __buffa_unknown_fields: Default::default(),
     }
 }

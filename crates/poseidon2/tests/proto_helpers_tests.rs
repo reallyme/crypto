@@ -4,7 +4,6 @@
 
 #![allow(missing_docs, clippy::expect_used)]
 #![cfg(feature = "proto")]
-use buffa::Message;
 use crypto_core::CryptoError;
 use crypto_poseidon2::proto_helpers::Poseidon2Inputs;
 use crypto_poseidon2::{hash_bytes, MAX_INPUT_BYTES};
@@ -23,11 +22,10 @@ fn fixed_poseidon_byte_profile_preserves_every_input_and_digest_byte() {
         vec![0xa5; MAX_INPUT_BYTES],
     ] {
         let wire = CryptoPoseidon2HashRequest {
-            input,
-            __buffa_unknown_fields: Default::default(),
+            input: input.into(),
         };
         let owner = Poseidon2Inputs::try_from(&wire).expect("bounded input");
-        assert_eq!(owner.as_bytes(), wire.input);
+        assert_eq!(owner.as_bytes(), wire.input.as_slice());
         let digest = owner.hash().expect("native fixed profile");
         let direct = hash_bytes(&wire.input).expect("existing native profile");
         assert_eq!(digest.as_bytes(), direct.as_bytes());
@@ -48,21 +46,23 @@ fn poseidon_rejects_oversized_and_unknown_inputs_and_clears_owners(
     cleanup::<CryptoPoseidon2HashRequest>();
     cleanup::<CryptoPoseidon2HashResult>();
     let mut wire = CryptoPoseidon2HashRequest {
-        input: vec![0; MAX_INPUT_BYTES.checked_add(1).expect("small bound")],
-        __buffa_unknown_fields: Default::default(),
+        input: vec![0; MAX_INPUT_BYTES.checked_add(1).expect("small bound")].into(),
     };
     assert_eq!(
         Poseidon2Inputs::try_from(&wire).err(),
         Some(CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED)
     );
-    wire.input = vec![0, 0xff];
+    wire.input = vec![0, 0xff].into();
     let mut owner = Poseidon2Inputs::try_from(&wire).expect("bounded input");
     owner.zeroize();
     assert!(owner.as_bytes().is_empty());
-    wire.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(
-        Poseidon2Inputs::try_from(&wire).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    assert_unknown_wire(&wire, &[0xa0, 0x06, 0x01]);
     Ok(())
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

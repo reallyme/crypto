@@ -41,7 +41,6 @@ impl From<Argon2Caps> for ProtoArgon2Caps {
             mem_cap_kib: value.mem_cap_kib,
             time_cost_cap: value.time_cost_cap,
             lanes_cap: value.lanes_cap,
-            __buffa_unknown_fields: Default::default(),
         }
     }
 }
@@ -51,7 +50,6 @@ impl From<Argon2ParamsProfile> for ProtoArgon2ParamsProfile {
             mem_kib: value.mem_kib,
             time_cost: value.time_cost,
             lanes: value.lanes,
-            __buffa_unknown_fields: Default::default(),
         }
     }
 }
@@ -84,9 +82,6 @@ impl ZeroizeOnDrop for Argon2DeriveInputs {}
 impl TryFrom<&CryptoArgon2FixedDeriveRequest> for Argon2DeriveInputs {
     type Error = CryptoError;
     fn try_from(value: &CryptoArgon2FixedDeriveRequest) -> Result<Self, Self::Error> {
-        if !value.__buffa_unknown_fields.is_empty() {
-            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
-        }
         let profile = Argon2Profile::try_from(
             value
                 .profile
@@ -108,8 +103,8 @@ impl From<&DeriveKeyRequest<'_>> for CryptoArgon2FixedDeriveRequest {
     fn from(value: &DeriveKeyRequest<'_>) -> Self {
         let mut output = Self::default();
         output.profile = MessageField::some(CryptoArgon2idProfileIdentifier::from(value.profile));
-        output.secret = value.secret.as_bytes().to_vec();
-        output.salt = value.salt.as_bytes().to_vec();
+        output.secret = value.secret.as_bytes().to_vec().into();
+        output.salt = value.salt.as_bytes().to_vec().into();
         output
     }
 }

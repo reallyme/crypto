@@ -35,7 +35,7 @@ const RSA_SHA384_DIGEST_LEN: usize = 48;
 const RSA_SHA512_DIGEST_LEN: usize = 64;
 
 pub(super) fn process_signature_generate_key_pair(
-    request: CryptoSignatureGenerateKeyPairRequest,
+    request: &CryptoSignatureGenerateKeyPairRequest,
 ) -> Result<CryptoKeyPair, CryptoWireError> {
     let proto_algorithm = signature_algorithm_value(&request.algorithm)?;
     let key_pair = if is_bip340(proto_algorithm) {
@@ -53,7 +53,7 @@ pub(super) fn process_signature_generate_key_pair(
 }
 
 pub(super) fn process_signature_derive_key_pair(
-    request: CryptoSignatureDeriveKeyPairRequest,
+    request: &CryptoSignatureDeriveKeyPairRequest,
 ) -> Result<CryptoKeyPair, CryptoWireError> {
     let proto_algorithm = signature_algorithm_value(&request.algorithm)?;
     let key_pair = if is_bip340(proto_algorithm) {
@@ -71,7 +71,7 @@ pub(super) fn process_signature_derive_key_pair(
 }
 
 pub(super) fn process_signature_sign(
-    request: CryptoSignatureSignRequest,
+    request: &CryptoSignatureSignRequest,
 ) -> Result<CryptoSignatureSignResult, CryptoWireError> {
     let algorithm = signature_algorithm(&request.algorithm)?;
     let proto_algorithm = signature_algorithm_value(&request.algorithm)?;
@@ -80,14 +80,13 @@ pub(super) fn process_signature_sign(
             .map_err(map_operation_error)?;
     let result = CryptoSignatureSignResult {
         algorithm: MessageField::some(signature_identifier(proto_algorithm)),
-        signature,
-        __buffa_unknown_fields: Default::default(),
+        signature: signature.into(),
     };
     Ok(result)
 }
 
 pub(super) fn process_signature_verify(
-    request: CryptoSignatureVerifyRequest,
+    request: &CryptoSignatureVerifyRequest,
 ) -> Result<CryptoVerificationResult, CryptoWireError> {
     let proto_algorithm = signature_algorithm_value(&request.algorithm)?;
     let proto_identifier = signature_identifier(proto_algorithm);
@@ -124,7 +123,7 @@ fn is_bip340(algorithm: SignatureAlgorithm) -> bool {
 
 #[cfg(feature = "secp256k1")]
 pub(super) fn process_bip340_schnorr_sign(
-    request: CryptoBip340SchnorrSignRequest,
+    request: &CryptoBip340SchnorrSignRequest,
 ) -> Result<CryptoSignatureSignResult, CryptoWireError> {
     let signature = crate::operations::signature::sign_bip340(
         &request.secret_key,
@@ -136,15 +135,14 @@ pub(super) fn process_bip340_schnorr_sign(
         algorithm: MessageField::some(signature_identifier(
             SignatureAlgorithm::SIGNATURE_ALGORITHM_BIP340_SCHNORR_SECP256K1_SHA256,
         )),
-        signature,
-        __buffa_unknown_fields: Default::default(),
+        signature: signature.into(),
     };
     Ok(result)
 }
 
 #[cfg(all(feature = "dispatch", feature = "rsa"))]
 pub(super) fn process_rsa_verify(
-    request: CryptoRsaVerifyRequest,
+    request: &CryptoRsaVerifyRequest,
 ) -> Result<CryptoVerificationResult, CryptoWireError> {
     let algorithm = signature_algorithm_value(&request.algorithm)?;
     let proto_identifier = signature_identifier(algorithm);
@@ -252,8 +250,7 @@ fn key_pair_result(
 ) -> CryptoKeyPair {
     CryptoKeyPair {
         algorithm: MessageField::some(signature_identifier(algorithm)),
-        public_key,
-        secret_key,
-        __buffa_unknown_fields: Default::default(),
+        public_key: public_key.into(),
+        secret_key: secret_key.into(),
     }
 }

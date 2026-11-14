@@ -209,10 +209,7 @@ pub(super) fn hkdf_suite(
                 }
                 _ => return Err(unsupported_algorithm()),
             };
-            let identity = CryptoHkdfSuiteIdentifier {
-                hash: hash.into(),
-                __buffa_unknown_fields: Default::default(),
-            };
+            let identity = CryptoHkdfSuiteIdentifier { hash: hash.into() };
             crypto_hkdf::HkdfSuite::try_from(&identity)
                 .map(|suite| (suite, algorithm))
                 .map_err(|_| unsupported_algorithm())
@@ -254,10 +251,7 @@ pub(super) fn pbkdf2_prf(
                 }
                 _ => return Err(unsupported_algorithm()),
             };
-            let identity = CryptoPbkdf2PrfIdentifier {
-                prf: prf.into(),
-                __buffa_unknown_fields: Default::default(),
-            };
+            let identity = CryptoPbkdf2PrfIdentifier { prf: prf.into() };
             crypto_pbkdf2::Pbkdf2Prf::try_from(&identity).map_err(|_| unsupported_algorithm())
         }
         _ => Err(invalid_parameter()),
@@ -285,7 +279,6 @@ pub(super) fn key_wrap_algorithm(
 pub(super) fn aead_identifier(algorithm: ProtoAead) -> CryptoAlgorithmIdentifier {
     CryptoAlgorithmIdentifier {
         algorithm: Some(ProtoAlgorithmBranch::Aead(EnumValue::from(algorithm))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -296,7 +289,6 @@ pub(super) fn aead_identifier(algorithm: ProtoAead) -> CryptoAlgorithmIdentifier
 pub(super) fn hash_identifier(algorithm: ProtoHash) -> CryptoAlgorithmIdentifier {
     CryptoAlgorithmIdentifier {
         algorithm: Some(ProtoAlgorithmBranch::Hash(EnumValue::from(algorithm))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -304,7 +296,6 @@ pub(super) fn hash_identifier(algorithm: ProtoHash) -> CryptoAlgorithmIdentifier
 pub(super) fn mac_identifier(algorithm: ProtoMac) -> CryptoAlgorithmIdentifier {
     CryptoAlgorithmIdentifier {
         algorithm: Some(ProtoAlgorithmBranch::Mac(EnumValue::from(algorithm))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -321,7 +312,6 @@ pub(super) fn mac_identifier(algorithm: ProtoMac) -> CryptoAlgorithmIdentifier {
 pub(super) fn kdf_identifier(algorithm: ProtoKdf) -> CryptoAlgorithmIdentifier {
     CryptoAlgorithmIdentifier {
         algorithm: Some(ProtoAlgorithmBranch::Kdf(EnumValue::from(algorithm))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -333,7 +323,6 @@ pub(super) fn key_wrap_identifier(
         algorithm: Some(ProtoAlgorithmBranch::KeyWrap(EnumValue::from(
             ProtoKeyWrap::try_from(algorithm).map_err(|_| unsupported_algorithm())?,
         ))),
-        __buffa_unknown_fields: Default::default(),
     })
 }
 

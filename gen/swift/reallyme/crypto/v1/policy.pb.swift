@@ -1245,6 +1245,8 @@ public nonisolated struct ReallyMeProtoMaterialPolicy: Sendable {
 /// OperationSecretMaterialPolicy reports the complete policy computed by the
 /// semantic operation. Every nested record is required in a produced result.
 public nonisolated struct ReallyMeProtoOperationSecretMaterialPolicy: @unchecked Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoOperationSecretMaterialPolicy(<redacted>)" }
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.

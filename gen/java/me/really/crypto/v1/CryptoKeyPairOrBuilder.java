@@ -11,6 +11,16 @@ public interface CryptoKeyPairOrBuilder extends
     com.google.protobuf.MessageLiteOrBuilder {
 
   /**
+   * <pre>
+   * Compare secret material before public metadata, preserving constant-time comparison.
+   * </pre>
+   *
+   * <code>bytes secret_key = 3 [json_name = "secretKey"];</code>
+   * @return The secretKey.
+   */
+  com.google.protobuf.ByteString getSecretKey();
+
+  /**
    * <code>.reallyme.crypto.v1.CryptoAlgorithmIdentifier algorithm = 1 [json_name = "algorithm"];</code>
    * @return Whether the algorithm field is set.
    */
@@ -26,14 +36,4 @@ public interface CryptoKeyPairOrBuilder extends
    * @return The publicKey.
    */
   com.google.protobuf.ByteString getPublicKey();
-
-  /**
-   * <pre>
-   * Secret-bearing exportable private key material.
-   * </pre>
-   *
-   * <code>bytes secret_key = 3 [json_name = "secretKey"];</code>
-   * @return The secretKey.
-   */
-  com.google.protobuf.ByteString getSecretKey();
 }

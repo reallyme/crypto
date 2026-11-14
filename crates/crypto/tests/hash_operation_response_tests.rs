@@ -31,10 +31,10 @@ fn operation_response_hash_branch_uses_operation_owner_for_sha3() {
     );
     let response = decode_operation_response(output.as_slice()).expect("response decodes");
 
-    let Some(CryptoOperationOutcome::Result(result)) = response.outcome else {
+    let Some(CryptoOperationOutcome::Result(result)) = response.outcome.as_ref() else {
         panic!("operation response did not contain a generated result");
     };
-    let Some(CryptoOperationResultBranch::Hash(hash)) = result.result else {
+    let Some(CryptoOperationResultBranch::Hash(hash)) = result.result.as_ref() else {
         panic!("operation result did not contain the hash branch");
     };
 
@@ -65,20 +65,17 @@ fn hash_operation_request_for(algorithm: HashAlgorithm) -> CryptoOperationReques
         operation: Some(CryptoOperation::Hash(Box::new(CryptoHashRequest {
             algorithm: MessageField::some(CryptoAlgorithmIdentifier {
                 algorithm: Some(ProtoAlgorithmBranch::Hash(EnumValue::from(algorithm))),
-                __buffa_unknown_fields: Default::default(),
             }),
-            input: b"abc".to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            input: b"abc".to_vec().into(),
         }))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
 fn assert_provider_error(response: CryptoOperationResponse, reason: CryptoErrorReason) {
-    let Some(CryptoOperationOutcome::Error(error)) = response.outcome else {
+    let Some(CryptoOperationOutcome::Error(error)) = response.outcome.as_ref() else {
         panic!("operation response did not contain an error");
     };
-    let Some(CryptoErrorBranch::Provider(error)) = error.error else {
+    let Some(CryptoErrorBranch::Provider(error)) = error.error.as_ref() else {
         panic!("operation error did not contain the provider branch");
     };
     assert_eq!(error.reason.as_known(), Some(reason));

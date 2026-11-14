@@ -18,14 +18,12 @@ fn request(length: u32) -> CryptoJwaConcatKdfSha256DeriveRequest {
             algorithm: Some(Algorithm::Kdf(
                 KdfAlgorithm::KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256.into(),
             )),
-            __buffa_unknown_fields: Default::default(),
         }),
-        shared_secret: vec![0x42; 32],
-        algorithm_id: vec![0, 0xff, b'A'],
-        party_u_info: vec![0, 0xff],
-        party_v_info: vec![0xff, 0],
+        shared_secret: vec![0x42; 32].into(),
+        algorithm_id: vec![0, 0xff, b'A'].into(),
+        party_u_info: vec![0, 0xff].into(),
+        party_v_info: vec![0xff, 0].into(),
         output_length: length,
-        __buffa_unknown_fields: Default::default(),
     }
 }
 fn parity<const N: usize>() {
@@ -66,10 +64,11 @@ fn rfc7518_vector_and_exact_party_bytes_are_retained() {
     wire.shared_secret = vec![
         158, 86, 217, 29, 129, 113, 53, 211, 114, 131, 66, 131, 191, 132, 38, 156, 251, 49, 110,
         163, 218, 128, 106, 72, 246, 218, 167, 121, 140, 254, 144, 196,
-    ];
-    wire.algorithm_id = b"A128GCM".to_vec();
-    wire.party_u_info = b"Alice".to_vec();
-    wire.party_v_info = b"Bob".to_vec();
+    ]
+    .into();
+    wire.algorithm_id = b"A128GCM".to_vec().into();
+    wire.party_u_info = b"Alice".to_vec().into();
+    wire.party_v_info = b"Bob".to_vec().into();
     let inputs = ConcatKdfInputs::<16>::try_from(&wire).expect("RFC input");
     assert_eq!(
         inputs.derive().expect("derive").as_bytes(),
@@ -80,7 +79,7 @@ fn rfc7518_vector_and_exact_party_bytes_are_retained() {
         .derive()
         .expect("derive");
     let mut changed = request(17);
-    changed.party_u_info.push(0);
+    assert!(changed.party_u_info.push(0).is_ok());
     let second = ConcatKdfInputs::<17>::try_from(&changed)
         .expect("changed binary")
         .derive()
@@ -114,7 +113,7 @@ fn adapter_rejects_width_disagreement_zero_and_invalid_native_fields() {
         Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
     );
     let mut wire = request(17);
-    wire.party_u_info = vec![0; crypto_concat_kdf::JWA_CONCAT_KDF_MAX_INFO_LENGTH + 1];
+    wire.party_u_info = vec![0; crypto_concat_kdf::JWA_CONCAT_KDF_MAX_INFO_LENGTH + 1].into();
     assert_eq!(
         ConcatKdfInputs::<17>::try_from(&wire).err(),
         Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
@@ -138,7 +137,6 @@ fn adapter_rejects_wrong_unknown_and_modified_algorithm_identity() -> Result<(),
         let mut wire = request(17);
         wire.algorithm = MessageField::some(CryptoAlgorithmIdentifier {
             algorithm: Some(Algorithm::Kdf(identity)),
-            __buffa_unknown_fields: Default::default(),
         });
         assert_eq!(
             ConcatKdfInputs::<17>::try_from(&wire).err(),
@@ -146,24 +144,29 @@ fn adapter_rejects_wrong_unknown_and_modified_algorithm_identity() -> Result<(),
         );
     }
     let mut wire = request(17);
-    let mut id = CryptoAlgorithmIdentifier {
+    let id = CryptoAlgorithmIdentifier {
         algorithm: Some(Algorithm::Kdf(
             KdfAlgorithm::KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256.into(),
         )),
-        __buffa_unknown_fields: Default::default(),
     };
-    id.merge_from_slice(&[0xa0, 0x06, 1])?;
+    let mut modified_child = id.encode_to_vec();
+    modified_child.extend_from_slice(&[0xa0, 0x06, 1]);
     wire.algorithm = MessageField::some(id);
-    assert_eq!(
-        ConcatKdfInputs::<17>::try_from(&wire).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
+    let mut modified = wire.encode_to_vec();
+    // The duplicate child retains protobuf merge semantics but the unknown
+    // modifier must fail admission before any operation uses the message.
+    buffa::encoding::encode_varint((1u64 << 3) | 2, &mut modified);
+    buffa::encoding::encode_varint(
+        u64::try_from(modified_child.len()).unwrap_or(u64::MAX),
+        &mut modified,
     );
-    let mut wire = request(17);
-    wire.merge_from_slice(&[0xa0, 0x06, 1])?;
-    assert_eq!(
-        ConcatKdfInputs::<17>::try_from(&wire).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
+    modified.extend_from_slice(&modified_child);
+    assert!(
+        crypto_proto::wire::decode_protobuf::<CryptoJwaConcatKdfSha256DeriveRequest>(&modified)
+            .is_err()
     );
+    let wire = request(17);
+    assert_unknown_wire(&wire, &[0xa0, 0x06, 1]);
     Ok(())
 }
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -175,4 +178,11 @@ fn cloned_public_algorithm_identifiers_keep_independent_clearing_owners() {
     assert_ne!(original, retained);
     // Existing public metadata formatting remains available after adding cleanup.
     assert!(format!("{retained:?}").contains("JwaAlgorithmId"));
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

@@ -65,7 +65,6 @@ const SECRET_JSON_SELECTORS: &[&str] = &[
 fn valid_generated_request_round_trips_through_both_decoders() {
     let request = CryptoOperationRequest {
         operation: Some(CryptoOperation::Hash(Box::default())),
-        __buffa_unknown_fields: Default::default(),
     };
 
     let binary = request.encode_to_vec();

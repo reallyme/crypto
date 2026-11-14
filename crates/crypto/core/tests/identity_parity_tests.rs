@@ -90,10 +90,9 @@ fn missing_and_wrong_family_identities_are_rejected() {
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
 fn unknown_fields_do_not_bypass_identity_validation() -> Result<(), buffa::DecodeError> {
-    let mut value = key_identifier(KeyAlgorithm::KEY_ALGORITHM_P256.into());
+    let value = key_identifier(KeyAlgorithm::KEY_ALGORITHM_P256.into());
     // Unknown field 100 must not become an ignored policy or suite modifier.
-    value.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(CoreKey::try_from(&value), Err(UnsupportedProtoAlgorithm));
+    assert_unknown_wire(&value, &[0xa0, 0x06, 0x01]);
     Ok(())
 }
 
@@ -168,15 +167,11 @@ fn assert_parity<P, N>(
 fn identifier(algorithm: Identity) -> CryptoAlgorithmIdentifier {
     CryptoAlgorithmIdentifier {
         algorithm: Some(algorithm),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
 fn key_identifier(algorithm: EnumValue<KeyAlgorithm>) -> CryptoKeyAlgorithmIdentifier {
-    CryptoKeyAlgorithmIdentifier {
-        algorithm,
-        __buffa_unknown_fields: Default::default(),
-    }
+    CryptoKeyAlgorithmIdentifier { algorithm }
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -197,4 +192,11 @@ fn legacy_operation_identities_reject_unspecified_and_unknown_values() {
             );
         }
     }
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

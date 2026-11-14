@@ -15,7 +15,7 @@ use crate::generated::proto::reallyme::crypto::v1::{
     __buffa::oneof::crypto_operation_result::Result as CryptoOperationResultBranch,
     CryptoErrorReason, CryptoOperationResponse, CryptoVerificationResult, CryptoVerificationStatus,
 };
-use crate::wire::{encode_protobuf, CryptoWireError, MAX_CRYPTO_PROTO_MESSAGE_BYTES};
+use crate::wire::{encode_protobuf_with_limit, CryptoWireError, MAX_CRYPTO_PROTO_MESSAGE_BYTES};
 use zeroize::Zeroizing;
 
 const CRYPTO_OPERATION_RESPONSE_RECURSION_LIMIT: u32 = 64;
@@ -41,11 +41,7 @@ pub fn encode_operation_response(
     response: &CryptoOperationResponse,
 ) -> Result<Zeroizing<Vec<u8>>, CryptoWireError> {
     validate_operation_response(response)?;
-    let encoded = encode_protobuf(response);
-    if encoded.len() > MAX_CRYPTO_OPERATION_RESPONSE_BYTES {
-        return Err(resource_limit_error());
-    }
-    Ok(encoded)
+    encode_protobuf_with_limit(response, MAX_CRYPTO_OPERATION_RESPONSE_BYTES)
 }
 
 /// Encodes a response and deterministically falls back to a small structured
@@ -68,6 +64,7 @@ pub fn decode_operation_response(bytes: &[u8]) -> Result<CryptoOperationResponse
     let response = DecodeOptions::new()
         .with_recursion_limit(CRYPTO_OPERATION_RESPONSE_RECURSION_LIMIT)
         .with_unknown_field_limit(CRYPTO_OPERATION_RESPONSE_UNKNOWN_FIELD_LIMIT)
+        .reject_unknown_fields()
         .with_max_message_size(MAX_CRYPTO_OPERATION_RESPONSE_BYTES)
         .decode_from_slice(bytes)
         .map_err(|_| CryptoWireError::malformed_protobuf())?;
@@ -120,13 +117,15 @@ fn validate_verification_result(
 }
 
 fn encode_operation_response_unchecked(response: &CryptoOperationResponse) -> Zeroizing<Vec<u8>> {
-    encode_protobuf(response)
+    // Only the fixed, non-secret error envelope reaches this fallback. It is
+    // independent of the original response's requested allocation size.
+    use buffa::Message as _;
+    Zeroizing::new(response.encode_to_vec())
 }
 
 fn error_response(error: CryptoWireError) -> CryptoOperationResponse {
     CryptoOperationResponse {
         outcome: Some(CryptoOperationOutcome::Error(Box::new(error.to_proto()))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 

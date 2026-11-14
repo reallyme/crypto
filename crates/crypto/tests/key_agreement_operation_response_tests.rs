@@ -60,8 +60,7 @@ fn operation_response_exposes_every_key_agreement_result_branch() {
         let derived = result_branch(CryptoOperation::KeyAgreementDeriveKeyPair(Box::new(
             CryptoKeyAgreementDeriveKeyPairRequest {
                 algorithm: MessageField::some(key_agreement_identifier(case.proto_algorithm)),
-                secret_key: case.secret_key.clone(),
-                __buffa_unknown_fields: Default::default(),
+                secret_key: case.secret_key.clone().into(),
             },
         )))
         .expect("derive-keypair returns a generated result branch");
@@ -77,9 +76,8 @@ fn operation_response_exposes_every_key_agreement_result_branch() {
         let shared = result_branch(CryptoOperation::KeyAgreementDeriveSharedSecret(Box::new(
             CryptoKeyAgreementDeriveSharedSecretRequest {
                 algorithm: MessageField::some(key_agreement_identifier(case.proto_algorithm)),
-                public_key: second.public_key,
-                secret_key: case.secret_key,
-                __buffa_unknown_fields: Default::default(),
+                public_key: second.public_key.into(),
+                secret_key: case.secret_key.into(),
             },
         )))
         .expect("shared-secret derivation returns a generated result branch");
@@ -105,8 +103,7 @@ fn operation_response_returns_typed_errors_for_every_key_agreement_invalid_key_p
             CryptoOperation::KeyAgreementDeriveKeyPair(Box::new(
                 CryptoKeyAgreementDeriveKeyPairRequest {
                     algorithm: MessageField::some(key_agreement_identifier(case.proto_algorithm)),
-                    secret_key: vec![1, 2],
-                    __buffa_unknown_fields: Default::default(),
+                    secret_key: vec![1, 2].into(),
                 },
             )),
             CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY,
@@ -115,9 +112,8 @@ fn operation_response_returns_typed_errors_for_every_key_agreement_invalid_key_p
             CryptoOperation::KeyAgreementDeriveSharedSecret(Box::new(
                 CryptoKeyAgreementDeriveSharedSecretRequest {
                     algorithm: MessageField::some(key_agreement_identifier(case.proto_algorithm)),
-                    public_key: vec![3, 4],
-                    secret_key: case.secret_key.clone(),
-                    __buffa_unknown_fields: Default::default(),
+                    public_key: vec![3, 4].into(),
+                    secret_key: case.secret_key.clone().into(),
                 },
             )),
             CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY,
@@ -126,9 +122,8 @@ fn operation_response_returns_typed_errors_for_every_key_agreement_invalid_key_p
             CryptoOperation::KeyAgreementDeriveSharedSecret(Box::new(
                 CryptoKeyAgreementDeriveSharedSecretRequest {
                     algorithm: MessageField::some(key_agreement_identifier(case.proto_algorithm)),
-                    public_key: peer.public_key,
-                    secret_key: vec![1, 2],
-                    __buffa_unknown_fields: Default::default(),
+                    public_key: peer.public_key.into(),
+                    secret_key: vec![1, 2].into(),
                 },
             )),
             CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY,
@@ -144,8 +139,7 @@ fn operation_response_fails_closed_for_unknown_key_agreement_routes() {
                 algorithm: MessageField::some(key_agreement_identifier(
                     KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_UNSPECIFIED,
                 )),
-                secret_key: vec![9; 32],
-                __buffa_unknown_fields: Default::default(),
+                secret_key: vec![9; 32].into(),
             },
         )),
         CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_ALGORITHM,
@@ -196,8 +190,8 @@ fn p521_secret_key(last_byte: u8) -> Vec<u8> {
 }
 
 fn result_branch(operation: CryptoOperation) -> Option<CryptoOperationResultBranch> {
-    match process_response(operation).outcome {
-        Some(CryptoOperationOutcome::Result(result)) => result.result,
+    match process_response(operation).outcome.as_ref() {
+        Some(CryptoOperationOutcome::Result(result)) => result.result.clone(),
         _ => None,
     }
 }
@@ -216,8 +210,8 @@ fn result_algorithm(
 
 fn assert_error_reason(operation: CryptoOperation, expected: CryptoErrorReason) {
     let response = process_response(operation);
-    let reason = match response.outcome {
-        Some(CryptoOperationOutcome::Error(error)) => match error.error {
+    let reason = match response.outcome.as_ref() {
+        Some(CryptoOperationOutcome::Error(error)) => match error.error.as_ref() {
             Some(CryptoErrorBranch::Primitive(error)) => error.reason.as_known(),
             Some(CryptoErrorBranch::Provider(error)) => error.reason.as_known(),
             Some(CryptoErrorBranch::Backend(error)) => error.reason.as_known(),
@@ -231,7 +225,6 @@ fn assert_error_reason(operation: CryptoOperation, expected: CryptoErrorReason) 
 fn process_response(operation: CryptoOperation) -> CryptoOperationResponse {
     let request = CryptoOperationRequest {
         operation: Some(operation),
-        __buffa_unknown_fields: Default::default(),
     };
     let output = reallyme_crypto::operation_contract::process_operation_response(
         request.encode_to_vec().as_slice(),
@@ -244,6 +237,5 @@ fn key_agreement_identifier(algorithm: KeyAgreementAlgorithm) -> CryptoAlgorithm
         algorithm: Some(ProtoAlgorithmBranch::KeyAgreement(EnumValue::from(
             algorithm,
         ))),
-        __buffa_unknown_fields: Default::default(),
     }
 }

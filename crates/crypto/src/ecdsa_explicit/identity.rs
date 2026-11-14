@@ -16,9 +16,6 @@ impl TryFrom<&CryptoEcdsaCurveIdentifier> for EcdsaCurve {
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(identifier: &CryptoEcdsaCurveIdentifier) -> Result<Self, Self::Error> {
-        if !identifier.__buffa_unknown_fields.is_empty() {
-            return Err(UnsupportedProtoAlgorithm);
-        }
         let value = identifier
             .curve
             .as_known()
@@ -55,9 +52,6 @@ impl TryFrom<&CryptoAlgorithmIdentifier> for EcdsaHash {
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(identifier: &CryptoAlgorithmIdentifier) -> Result<Self, Self::Error> {
-        if !identifier.__buffa_unknown_fields.is_empty() {
-            return Err(UnsupportedProtoAlgorithm);
-        }
         let Some(Identity::Hash(hash)) = identifier.algorithm.as_ref() else {
             return Err(UnsupportedProtoAlgorithm);
         };

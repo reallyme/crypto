@@ -18,7 +18,6 @@ use super::{
 pub fn operation_policy(
     request: &CryptoMaterialPolicyQueryRequest,
 ) -> Result<OperationSecretMaterialPolicy, CryptoError> {
-    require_known(request.__buffa_unknown_fields.is_empty())?;
     Ok(
         operation_secret_material_policy(SecretMaterialOperation::try_from(request.operation)?)
             .into(),
@@ -29,14 +28,5 @@ pub fn operation_policy(
 pub fn random_fill_policy(
     request: &CryptoRandomFillPolicyQueryRequest,
 ) -> Result<OperationSecretMaterialPolicy, CryptoError> {
-    require_known(request.__buffa_unknown_fields.is_empty())?;
     Ok(random_fill_secret_material_policy(RngOutputKind::try_from(request.purpose)?).into())
-}
-
-fn require_known(known: bool) -> Result<(), CryptoError> {
-    if known {
-        Ok(())
-    } else {
-        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    }
 }

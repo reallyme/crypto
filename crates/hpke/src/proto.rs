@@ -12,8 +12,7 @@ impl TryFrom<&HpkeSuiteIdentifier> for HpkeSuite {
     type Error = HpkeError;
 
     fn try_from(value: &HpkeSuiteIdentifier) -> Result<Self, Self::Error> {
-        if !value.__buffa_unknown_fields.is_empty()
-            || value.kem.as_known().is_none()
+        if value.kem.as_known().is_none()
             || value.kdf.as_known().is_none()
             || value.aead.as_known().is_none()
         {
@@ -36,7 +35,6 @@ impl TryFrom<HpkeSuite> for HpkeSuiteIdentifier {
             kem: i32::from(value.kem_id()).into(),
             kdf: i32::from(value.kdf_id()).into(),
             aead: i32::from(value.aead_id()).into(),
-            __buffa_unknown_fields: Default::default(),
         };
         if wire.kem.as_known().is_none()
             || wire.kdf.as_known().is_none()

@@ -15,9 +15,7 @@
 
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use buffa::{EnumValue, Message, MessageField};
-use crypto_core::Algorithm;
-#[cfg(feature = "test-vectors")]
-use crypto_core::CryptoError;
+use crypto_core::{Algorithm, CryptoError};
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     __buffa::oneof::crypto_algorithm_identifier::Algorithm as ProtoAlgorithmBranch,
     __buffa::oneof::crypto_error::Error as CryptoErrorBranch,
@@ -143,7 +141,6 @@ fn generated_response_exposes_all_four_kem_result_branches_for_every_algorithm()
         let generated = result_branch(CryptoOperation::KemGenerateKeyPair(Box::new(
             CryptoKemGenerateKeyPairRequest {
                 algorithm: MessageField::some(kem_identifier(case.proto_algorithm)),
-                __buffa_unknown_fields: Default::default(),
             },
         )))
         .expect("KEM key generation returns a generated result branch");
@@ -158,8 +155,7 @@ fn generated_response_exposes_all_four_kem_result_branches_for_every_algorithm()
         let derived = result_branch(CryptoOperation::KemDeriveKeyPair(Box::new(
             CryptoKemDeriveKeyPairRequest {
                 algorithm: MessageField::some(kem_identifier(case.proto_algorithm)),
-                secret_key: case.seed.clone(),
-                __buffa_unknown_fields: Default::default(),
+                secret_key: case.seed.clone().into(),
             },
         )))
         .expect("KEM key derivation returns a generated result branch");
@@ -174,12 +170,11 @@ fn generated_response_exposes_all_four_kem_result_branches_for_every_algorithm()
         let encapsulated = result_branch(CryptoOperation::KemEncapsulate(Box::new(
             CryptoKemEncapsulateRequest {
                 algorithm: MessageField::some(kem_identifier(case.proto_algorithm)),
-                public_key: case.public_key.clone(),
-                __buffa_unknown_fields: Default::default(),
+                public_key: case.public_key.clone().into(),
             },
         )))
         .expect("KEM encapsulation returns a generated result branch");
-        let encapsulation = match encapsulated {
+        let encapsulation = match &encapsulated {
             CryptoOperationResultBranch::KemEncapsulate(encapsulation) => Some(encapsulation),
             _ => None,
         }
@@ -195,8 +190,7 @@ fn generated_response_exposes_all_four_kem_result_branches_for_every_algorithm()
             CryptoKemDecapsulateRequest {
                 algorithm: MessageField::some(kem_identifier(case.proto_algorithm)),
                 ciphertext: encapsulation.ciphertext.clone(),
-                secret_key: case.seed.clone(),
-                __buffa_unknown_fields: Default::default(),
+                secret_key: case.seed.clone().into(),
             },
         )))
         .expect("KEM decapsulation returns a generated result branch");
@@ -215,25 +209,22 @@ fn generated_response_returns_stable_typed_kem_failures() {
         assert_error_reason(
             CryptoOperation::KemDeriveKeyPair(Box::new(CryptoKemDeriveKeyPairRequest {
                 algorithm: MessageField::some(kem_identifier(case.proto_algorithm)),
-                secret_key: vec![1, 2],
-                __buffa_unknown_fields: Default::default(),
+                secret_key: vec![1, 2].into(),
             })),
             CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY,
         );
         assert_error_reason(
             CryptoOperation::KemEncapsulate(Box::new(CryptoKemEncapsulateRequest {
                 algorithm: MessageField::some(kem_identifier(case.proto_algorithm)),
-                public_key: vec![3, 4],
-                __buffa_unknown_fields: Default::default(),
+                public_key: vec![3, 4].into(),
             })),
             CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY,
         );
         assert_error_reason(
             CryptoOperation::KemDecapsulate(Box::new(CryptoKemDecapsulateRequest {
                 algorithm: MessageField::some(kem_identifier(case.proto_algorithm)),
-                ciphertext: vec![5, 6],
-                secret_key: case.seed,
-                __buffa_unknown_fields: Default::default(),
+                ciphertext: vec![5, 6].into(),
+                secret_key: case.seed.into(),
             })),
             CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH,
         );
@@ -242,7 +233,6 @@ fn generated_response_returns_stable_typed_kem_failures() {
     assert_error_reason(
         CryptoOperation::KemGenerateKeyPair(Box::new(CryptoKemGenerateKeyPairRequest {
             algorithm: MessageField::some(kem_identifier(KemAlgorithm::KEM_ALGORITHM_UNSPECIFIED)),
-            __buffa_unknown_fields: Default::default(),
         })),
         CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_ALGORITHM,
     );
@@ -398,8 +388,8 @@ fn decode(value: &str) -> Vec<u8> {
 fn assert_zeroizing(_: &Zeroizing<Vec<u8>>) {}
 
 fn result_branch(operation: CryptoOperation) -> Option<CryptoOperationResultBranch> {
-    match process_response(operation).outcome {
-        Some(CryptoOperationOutcome::Result(result)) => result.result,
+    match process_response(operation).outcome.as_ref() {
+        Some(CryptoOperationOutcome::Result(result)) => result.result.clone(),
         _ => None,
     }
 }
@@ -417,8 +407,8 @@ fn result_algorithm(
 }
 
 fn assert_error_reason(operation: CryptoOperation, expected: CryptoErrorReason) {
-    let reason = match process_response(operation).outcome {
-        Some(CryptoOperationOutcome::Error(error)) => match error.error {
+    let reason = match process_response(operation).outcome.as_ref() {
+        Some(CryptoOperationOutcome::Error(error)) => match error.error.as_ref() {
             Some(CryptoErrorBranch::Primitive(error)) => error.reason.as_known(),
             Some(CryptoErrorBranch::Provider(error)) => error.reason.as_known(),
             Some(CryptoErrorBranch::Backend(error)) => error.reason.as_known(),
@@ -432,7 +422,6 @@ fn assert_error_reason(operation: CryptoOperation, expected: CryptoErrorReason) 
 fn process_response(operation: CryptoOperation) -> CryptoOperationResponse {
     let request = CryptoOperationRequest {
         operation: Some(operation),
-        __buffa_unknown_fields: Default::default(),
     };
     let output = reallyme_crypto::operation_contract::process_operation_response(
         request.encode_to_vec().as_slice(),
@@ -443,6 +432,5 @@ fn process_response(operation: CryptoOperation) -> CryptoOperationResponse {
 fn kem_identifier(algorithm: KemAlgorithm) -> CryptoAlgorithmIdentifier {
     CryptoAlgorithmIdentifier {
         algorithm: Some(ProtoAlgorithmBranch::Kem(EnumValue::from(algorithm))),
-        __buffa_unknown_fields: Default::default(),
     }
 }

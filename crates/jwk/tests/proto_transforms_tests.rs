@@ -118,23 +118,26 @@ fn transforms_reject_unknown_modifiers_missing_options_and_invalid_keys(
         &ED_PUBLIC,
         JwkOptions::default(),
     );
-    wire.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(
-        PublicKeyToJwkInputs::try_from(&wire).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
-    let mut options = CryptoJwkOptions::default();
-    options.merge_from_slice(&[0xa0, 0x06, 0x01])?;
+    assert_unknown_wire(&wire, &[0xa0, 0x06, 0x01]);
+    let options = CryptoJwkOptions::default();
+    let mut modified_child = options.encode_to_vec();
+    modified_child.extend_from_slice(&[0xa0, 0x06, 0x01]);
     wire = request(
         KeyAlgorithm::KEY_ALGORITHM_ED25519,
         &ED_PUBLIC,
         JwkOptions::default(),
     );
     wire.options = MessageField::some(options);
-    assert_eq!(
-        PublicKeyToJwkInputs::try_from(&wire).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
+    let mut modified = wire.encode_to_vec();
+    // The duplicate child retains protobuf merge semantics but the unknown
+    // modifier must fail admission before any operation uses the message.
+    buffa::encoding::encode_varint((3u64 << 3) | 2, &mut modified);
+    buffa::encoding::encode_varint(
+        u64::try_from(modified_child.len()).unwrap_or(u64::MAX),
+        &mut modified,
     );
+    modified.extend_from_slice(&modified_child);
+    assert!(crypto_proto::wire::decode_protobuf::<CryptoPublicKeyToJwkRequest>(&modified).is_err());
     Ok(())
 }
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -168,9 +171,8 @@ fn request(
 ) -> CryptoPublicKeyToJwkRequest {
     CryptoPublicKeyToJwkRequest {
         algorithm: algorithm.into(),
-        public_key: public.to_vec(),
+        public_key: public.to_vec().into(),
         options: MessageField::some(CryptoJwkOptions::try_from(&options).expect("UTF8 options")),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 fn public_key(algorithm: KeyAlgorithm) -> Option<Vec<u8>> {
@@ -302,3 +304,10 @@ const SECP_X: [u8; 32] = [
     0x79, 0xbe, 0x66, 0x7e, 0xf9, 0xdc, 0xbb, 0xac, 0x55, 0xa0, 0x62, 0x95, 0xce, 0x87, 0x0b, 0x07,
     0x02, 0x9b, 0xfc, 0xdb, 0x2d, 0xce, 0x28, 0xd9, 0x59, 0xf2, 0x81, 0x5b, 0x16, 0xf8, 0x17, 0x98,
 ];
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
+}

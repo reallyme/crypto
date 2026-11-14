@@ -171,13 +171,11 @@ mod schema {
         CryptoPrimeGroupDhParametersValidationRequest {
             group: MessageField::some(CryptoPrimeGroupIdentifier {
                 group: ProtoGroup::from(group).into(),
-                __buffa_unknown_fields: Default::default(),
             }),
-            p: group.modulus().to_vec(),
-            g: group.standard_generator_encoding().to_vec(),
-            q,
-            j,
-            __buffa_unknown_fields: Default::default(),
+            p: group.modulus().to_vec().into(),
+            g: group.standard_generator_encoding().to_vec().into(),
+            q: q.map(Into::into),
+            j: j.map(Into::into),
         }
     }
 
@@ -243,22 +241,18 @@ mod schema {
                 Some(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
             );
         }
-        let mut value = request(group, None, None);
-        value.merge_from_slice(&[0xf8, 0x07, 1]).unwrap();
-        assert_eq!(
-            contract::validate_dh_parameters(&value).err(),
-            Some(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+        let value = request(group, None, None);
+        let mut wire = value.encode_to_vec();
+        wire.extend_from_slice(&[0xf8, 0x07, 1]);
+        assert!(
+            matches!(crypto_proto::wire::decode_protobuf::<CryptoPrimeGroupDhParametersValidationRequest>(&wire),
+            Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf())
         );
-        let mut value = request(group, None, None);
-        value
-            .group
-            .as_option_mut()
-            .unwrap()
-            .merge_from_slice(&[0x10, 1])
-            .unwrap();
-        assert_eq!(
-            contract::validate_dh_parameters(&value).err(),
-            Some(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+        // A known group with an unknown nested modifier still fails admission.
+        let nested = [0x0a, 5, 8, 0xac, 2, 0x10, 1];
+        assert!(
+            matches!(crypto_proto::wire::decode_protobuf::<CryptoPrimeGroupDhParametersValidationRequest>(&nested),
+            Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf())
         );
     }
 

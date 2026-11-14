@@ -45,13 +45,18 @@ fn injected_seal_matches_native_enc_and_ciphertext_for_exact_binary_context(
     let vector = fixture();
     let recipient = P256RecipientKey::import(&bytes(&vector["skRm"]))?;
     let mut request = CryptoHpkeP256BaseSealRequest::default();
-    request
+    assert!(request
         .recipient_public_key
-        .extend_from_slice(recipient.public_key());
-    request
+        .extend_from_slice(recipient.public_key())
+        .is_ok());
+    assert!(request
         .info
-        .extend_from_slice(&[0, 0xff, 0xc3, 0xa9, 0x00, 0x80]);
-    request.plaintext.extend_from_slice(&[0xff, 0, 1, 0x80, 0]);
+        .extend_from_slice(&[0, 0xff, 0xc3, 0xa9, 0x00, 0x80])
+        .is_ok());
+    assert!(request
+        .plaintext
+        .extend_from_slice(&[0xff, 0, 1, 0x80, 0])
+        .is_ok());
     let native = base_p256::seal_with_rng(
         &request.recipient_public_key,
         &request.info,
@@ -64,7 +69,7 @@ fn injected_seal_matches_native_enc_and_ciphertext_for_exact_binary_context(
     assert_eq!(sealed.ciphertext, native.ciphertext);
     assert_eq!(
         base_p256::open(&recipient, &sealed.enc, &request.info, &sealed.ciphertext)?.as_slice(),
-        request.plaintext,
+        request.plaintext.as_slice(),
     );
     Ok(())
 }
@@ -74,11 +79,12 @@ fn injected_seal_matches_native_enc_and_ciphertext_for_exact_binary_context(
 fn injected_seal_propagates_the_native_entropy_failure() -> Result<(), HpkeError> {
     let vector = fixture();
     let mut request = CryptoHpkeP256BaseSealRequest::default();
-    request
+    assert!(request
         .recipient_public_key
-        .extend_from_slice(&bytes(&vector["pkRm"]));
-    request.info.extend_from_slice(&[0, 0xff]);
-    request.plaintext.extend_from_slice(&[0xa5, 0]);
+        .extend_from_slice(&bytes(&vector["pkRm"]))
+        .is_ok());
+    assert!(request.info.extend_from_slice(&[0, 0xff]).is_ok());
+    assert!(request.plaintext.extend_from_slice(&[0xa5, 0]).is_ok());
     let inputs = P256BaseSealInputs::try_from(&request)?;
     assert_eq!(
         inputs.seal_with_rng(&mut Fails).err(),

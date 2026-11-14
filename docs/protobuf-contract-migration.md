@@ -185,11 +185,12 @@ SDK output normalization covers the generated packages uniformly.
 ## Error generation and freshness
 
 Error code generation is maintenance work, not a Cargo build step. The existing
-protobuf freshness pipeline runs `buf generate`, then the secret-owner hardener,
-then `node scripts/generate_error_contract.mjs`. The generator reads a bounded
+protobuf freshness pipeline runs `node scripts/generate_protobuf.mjs`, which
+selects native guarded generation and invokes `generate_error_contract.mjs`.
+The error generator reads a bounded
 Buf FileDescriptorSet and derives the reason values, names, aliases, constants,
-and known branch ownership. It replaces the duplicate Buffa reason declaration
-while retaining the generated wire traits on the shared type. The existing
+and known branch ownership. Buffa uses the shared reason type through its
+configured external type mapping. The existing
 freshness snapshot compares the resulting committed files, so CI needs one
 generation pass rather than an additional generator job or repeated check.
 

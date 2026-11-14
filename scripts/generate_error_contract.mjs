@@ -26,8 +26,6 @@ const COMMAND_TIMEOUT_MS = 30_000;
 const OUTPUT = "crates/proto/src/generated/error_contract.rs";
 const CONSTANTS_OUTPUT = "crates/proto/src/generated/contract_constants.rs";
 const HPKE_OUTPUT = "crates/hpke/src/generated/hpke_contract_constants.rs";
-const BUFFA_OUTPUT = "crates/proto/src/generated/buffa/reallyme.crypto.v1.crypto.rs";
-const REEXPORT = "pub use crate::error_types::CryptoErrorReason;";
 
 /** Fixed diagnostics never contain descriptor values or subprocess output. */
 export class ErrorContractGenerationError extends Error {
@@ -225,86 +223,6 @@ export function renderErrorContract(contract) {
   return lines.join("\n");
 }
 
-// Only simple generated enum/alias/default blocks are removed. Unexpected
-// generator output fails closed instead of stripping unrelated Rust items.
-const blockEnd = (source, start) => {
-  let depth = 0;
-  let comment = false;
-  for (let index = source.indexOf("{", start); index >= 0 && index < source.length; index += 1) {
-    const character = source[index];
-    if (comment) {
-      if (character === "\n") comment = false;
-      continue;
-    }
-    if (character === "/" && source[index + 1] === "/") { comment = true; continue; }
-    // These declaration blocks contain only enum values, aliases and Default.
-    // Reject unfamiliar syntax instead of interpreting strings or block comments.
-    if (character === '"' || (character === "/" && source[index + 1] === "*")) fail("binding-shape");
-    if (character === "{") depth += 1;
-    if (character === "}" && --depth === 0) return index + 1;
-  }
-  fail("binding-shape");
-};
-const uniqueIndex = (source, marker) => {
-  const index = source.indexOf(marker);
-  if (index < 0 || source.indexOf(marker, index + marker.length) >= 0) fail("binding-shape");
-  return index;
-};
-
-/** Retain generated wire traits on the same crate-owned enum. */
-export function shareReasonEnum(source, contract) {
-  if (typeof source !== "string" || Buffer.byteLength(source) > MAX_GENERATED_BYTES) fail("binding-size");
-  for (const implementation of ["impl ::serde::Serialize for CryptoErrorReason",
-    "impl<'de> ::serde::Deserialize<'de> for CryptoErrorReason", "impl ::buffa::Enumeration for CryptoErrorReason"]) {
-    uniqueIndex(source, implementation);
-  }
-  const implementation = uniqueIndex(source, "impl ::buffa::Enumeration for CryptoErrorReason");
-  const fromStart = source.indexOf("fn from_i32(value: i32)", implementation);
-  if (fromStart < 0) fail("binding-shape");
-  const fromEnd = blockEnd(source, fromStart);
-  const conversions = [...source.slice(fromStart, fromEnd).matchAll(/([0-9]+)i32\s*=>\s*(?:\{\s*)?::core::option::Option::Some\(\s*Self::(CRYPTO_ERROR_REASON_[A-Z0-9_]+)\s*,?\s*\)/gu)]
-    .sort((left, right) => Number(left[1]) - Number(right[1]));
-  if (conversions.length !== contract.reasons.length || conversions.some((match, index) =>
-    Number(match[1]) !== contract.reasons[index].number || match[2] !== contract.reasons[index].name)) {
-    fail("binding-descriptor-mismatch");
-  }
-  if (source.includes(REEXPORT)) {
-    uniqueIndex(source, REEXPORT);
-    if (source.includes("pub enum CryptoErrorReason") || source.includes("impl CryptoErrorReason") ||
-        source.includes("impl ::core::default::Default for CryptoErrorReason")) fail("binding-shape");
-    return source;
-  }
-  const enumIndex = uniqueIndex(source, "pub enum CryptoErrorReason {");
-  const attributeStart = source.lastIndexOf("#[allow(non_camel_case_types)]", enumIndex);
-  const attributes = source.slice(attributeStart, enumIndex);
-  if (!/^#\[allow\(non_camel_case_types\)\]\s*#\[derive\([^\n]+\)\]\s*#\[repr\(i32\)\]\s*$/u.test(attributes)) {
-    fail("binding-shape");
-  }
-  const enumEnd = blockEnd(source, enumIndex);
-  const actual = [...source.slice(enumIndex, enumEnd).matchAll(/^\s*(CRYPTO_ERROR_REASON_[A-Z0-9_]+)\s*=\s*([0-9]+)(?:i32)?,/gmu)]
-    .sort((left, right) => Number(left[2]) - Number(right[2]));
-  if (actual.length !== contract.reasons.length || actual.some((match, index) =>
-    match[1] !== contract.reasons[index].name || Number(match[2]) !== contract.reasons[index].number)) {
-    fail("binding-descriptor-mismatch");
-  }
-  const aliasIndex = uniqueIndex(source, "impl CryptoErrorReason {");
-  const aliasEnd = blockEnd(source, aliasIndex);
-  const defaultIndex = uniqueIndex(source, "impl ::core::default::Default for CryptoErrorReason {");
-  const defaultEnd = blockEnd(source, defaultIndex);
-  if (aliasIndex < enumEnd || defaultIndex < aliasEnd ||
-      source.slice(enumEnd, aliasIndex).trim() !== "" ||
-      source.slice(aliasEnd, defaultIndex).trim() !== "") fail("binding-shape");
-  const aliases = source.slice(aliasIndex, aliasEnd);
-  const observedAliases = [...aliases.matchAll(/pub const ([A-Za-z][A-Za-z0-9]*): Self = Self::(CRYPTO_ERROR_REASON_[A-Z0-9_]+);/gu)];
-  const expectedAliases = new Map(contract.reasons.map((reason) => [reason.alias, reason.name]));
-  if (observedAliases.length !== contract.reasons.length || new Set(observedAliases.map((match) => match[1])).size !== observedAliases.length ||
-      observedAliases.some((match) => expectedAliases.get(match[1]) !== match[2]) ||
-    /\bfn\b/u.test(aliases)) fail("binding-shape");
-  if (!/^impl ::core::default::Default for CryptoErrorReason \{\s*fn default\(\) -> Self \{\s*Self::CRYPTO_ERROR_REASON_UNSPECIFIED\s*\}\s*\}$/u
-    .test(source.slice(defaultIndex, defaultEnd))) fail("binding-shape");
-  return source.slice(0, attributeStart) + REEXPORT + source.slice(defaultEnd);
-}
-
 function readBounded(path, maximum, allowMissing = false) {
   let descriptor;
   try {
@@ -351,7 +269,7 @@ function main() {
   const args = process.argv.slice(2);
   if (args.length > 1 || (args.length === 1 && args[0] !== "--check")) fail("arguments");
   const root = fileURLToPath(new URL("../", import.meta.url));
-  const descriptor = command("buf", ["build", "--as-file-descriptor-set", "-o", "-#format=json"], { cwd: root });
+  const descriptor = command("buf", ["build", "--exclude-source-info", "--as-file-descriptor-set", "-o", "-#format=json"], { cwd: root });
   const document = parseContractDescriptor(descriptor);
   const contract = parseErrorDescriptorDocument(document);
   const constantsContract = parseContractConstantsDescriptor(document);
@@ -369,21 +287,18 @@ function main() {
     secp256k1: readBounded(resolve(root, "crates/hpke/src/secp256k1.rs"), MAX_GENERATED_BYTES),
     x448: readBounded(resolve(root, "crates/hpke/src/x448.rs"), MAX_GENERATED_BYTES),
   });
-  const original = readBounded(resolve(root, BUFFA_OUTPUT), MAX_GENERATED_BYTES);
   const rust = command("rustfmt", ["--edition", "2021", "--emit", "stdout"], { cwd: root, input: renderErrorContract(contract) });
   const constantsRust = command("rustfmt", ["--edition", "2021", "--emit", "stdout"],
     { cwd: root, input: renderContractConstants(constantsContract) });
   const hpkeRust = command("rustfmt", ["--edition", "2021", "--emit", "stdout"],
     { cwd: root, input: renderHpkeConstants(hpkeContract) });
-  const shared = shareReasonEnum(original, contract);
   if (args[0] === "--check") {
-    if (readBounded(resolve(root, OUTPUT), MAX_GENERATED_BYTES) !== rust || shared !== original ||
+    if (readBounded(resolve(root, OUTPUT), MAX_GENERATED_BYTES) !== rust ||
         readBounded(resolve(root, CONSTANTS_OUTPUT), MAX_GENERATED_BYTES) !== constantsRust ||
         readBounded(resolve(root, HPKE_OUTPUT), MAX_GENERATED_BYTES) !== hpkeRust) fail("stale-output");
     return;
   }
   // Validate every output before making any maintenance edit.
-  if (shared !== original) writeErrorContractOutput(resolve(root, BUFFA_OUTPUT), shared);
   writeErrorContractOutput(resolve(root, OUTPUT), rust);
   writeErrorContractOutput(resolve(root, CONSTANTS_OUTPUT), constantsRust);
   writeErrorContractOutput(resolve(root, HPKE_OUTPUT), hpkeRust);

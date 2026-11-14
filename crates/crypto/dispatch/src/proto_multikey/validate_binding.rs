@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use super::copy_inputs::{copy_text, read_algorithm, require_known};
+use super::copy_inputs::{copy_text, read_algorithm};
 use crate::AlgorithmError;
 use crypto_core::Algorithm;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
@@ -49,7 +49,6 @@ impl TryFrom<&CryptoVerificationMethodMultikeyRequest> for VerificationMethodMul
     type Error = AlgorithmError;
 
     fn try_from(value: &CryptoVerificationMethodMultikeyRequest) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         let algorithm = read_algorithm(value.algorithm.as_option())?;
         // The native helper rejects disabled algorithms before parsing. Reuse
         // that same policy before even decoding untrusted UTF-8 metadata.

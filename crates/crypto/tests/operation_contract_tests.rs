@@ -51,8 +51,8 @@ fn operation_contract_json_returns_typed_provider_error_for_secret_operation() {
         &response.outcome,
         Some(CryptoOperationOutcome::Error(_))
     ));
-    let error = match response.outcome {
-        Some(CryptoOperationOutcome::Error(error)) => CryptoWireError::from_proto(&error),
+    let error = match response.outcome.as_ref() {
+        Some(CryptoOperationOutcome::Error(error)) => CryptoWireError::from_proto(error),
         _ => return,
     };
 
@@ -70,11 +70,8 @@ fn hash_operation_request() -> CryptoOperationRequest {
                 algorithm: Some(ProtoAlgorithmBranch::Hash(EnumValue::from(
                     HashAlgorithm::HASH_ALGORITHM_SHA2_256,
                 ))),
-                __buffa_unknown_fields: Default::default(),
             }),
-            input: b"abc".to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            input: b"abc".to_vec().into(),
         }))),
-        __buffa_unknown_fields: Default::default(),
     }
 }

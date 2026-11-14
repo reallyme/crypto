@@ -155,7 +155,7 @@ fn check_answer<const N: usize>(source: &CryptoHkdfNativeDeriveRequest, expected
             .derive_result()
             .expect("known answer result")
             .derived_key,
-        expected[..N]
+        &expected[..N]
     );
 }
 
@@ -229,7 +229,6 @@ fn output_binding_and_native_validation_order_are_preserved() {
     let absent = CryptoHkdfNativeDeriveRequest {
         inputs: MessageField::none(),
         output_length: 17,
-        __buffa_unknown_fields: Default::default(),
     };
     assert_eq!(
         HkdfNativeDeriveInputs::<17>::try_from(&absent).err(),
@@ -254,12 +253,7 @@ fn owners_have_drop_cleanup_and_live_zeroization() {
     let mut output = inputs.derive().expect("native output");
     inputs.zeroize();
     assert!(inputs.as_request().ikm.as_bytes().is_empty());
-    assert!(inputs
-        .as_request()
-        .salt
-        .expect("present salt")
-        .as_bytes()
-        .is_empty());
+    assert!(inputs.as_request().salt.is_none());
     assert!(inputs.as_request().info.as_bytes().is_empty());
     output.zeroize();
     assert!(output.as_bytes().iter().all(|byte| *byte == 0));
@@ -277,12 +271,10 @@ fn request<const N: usize>(
     CryptoHkdfNativeDeriveRequest {
         inputs: MessageField::some(CryptoHkdfDeriveInputs {
             suite: MessageField::some(CryptoHkdfSuiteIdentifier::from(suite)),
-            input_key_material: ikm.to_vec(),
-            salt: salt.map(<[u8]>::to_vec),
-            info: info.to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            input_key_material: ikm.to_vec().into(),
+            salt: salt.map(|value| value.to_vec().into()),
+            info: info.to_vec().into(),
         }),
         output_length: u32::try_from(N).expect("fixture width"),
-        __buffa_unknown_fields: Default::default(),
     }
 }

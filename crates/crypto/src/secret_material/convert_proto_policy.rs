@@ -389,7 +389,6 @@ impl From<MaterialPolicy> for ProtoMaterialPolicy {
             zeroization: ProtoZeroizationPolicy::from(zeroization).into(),
             export: ProtoExportPolicy::from(export).into(),
             destruction: ProtoDestructionPolicy::from(destruction).into(),
-            __buffa_unknown_fields: Default::default(),
         }
     }
 }
@@ -410,7 +409,6 @@ impl From<OperationSecretMaterialPolicy> for ProtoOperationSecretMaterialPolicy 
             request_wire: MessageField::some(request_wire.into()),
             response_wire: MessageField::some(response_wire.into()),
             output_material: ProtoOutputMaterial::from(output_material).into(),
-            __buffa_unknown_fields: Default::default(),
         }
     }
 }

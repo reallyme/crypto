@@ -18,9 +18,6 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 pub fn derive_shared_secret(
     request: &CryptoSecp256k1AgreementRequest,
 ) -> Result<CryptoNativeAgreementResult, CryptoError> {
-    if !request.__buffa_unknown_fields.is_empty() {
-        return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
-    }
     let secret =
         crate::derive_secp256k1_shared_secret(&request.private_key, &request.peer_public_key_sec1)?;
     let mut result = CryptoNativeAgreementResult::default();
@@ -28,7 +25,7 @@ pub fn derive_shared_secret(
         .shared_secret
         .try_reserve_exact(secret.as_bytes().len())
         .map_err(|_| CryptoError::BACKEND_INTERNAL)?;
-    result.shared_secret.resize(secret.as_bytes().len(), 0);
+    result.shared_secret.resize(secret.as_bytes().len(), 0)?;
     result.shared_secret.copy_from_slice(secret.as_bytes());
     Ok(result)
 }

@@ -48,22 +48,6 @@ fn repeated_secret_fields_keep_protobuf_last_value_wins_semantics() -> Result<()
     Ok(())
 }
 
-#[test]
-#[allow(unsafe_code)]
-fn repeated_secret_fields_wipe_the_previous_initialized_tail() -> Result<(), buffa::DecodeError> {
-    let mut request = CryptoAeadSealRequest::default();
-    request.key = vec![0xa5; 64];
-    let allocation = request.key.as_ptr();
-    request.merge_from_slice(&[0x12, 1, 9])?;
-    assert_eq!(request.key, [9]);
-    assert_eq!(request.key.as_ptr(), allocation);
-    // SAFETY: The same live allocation still holds the 64 previously initialized
-    // bytes. No mutation occurs while the full initialized storage is observed.
-    let storage = unsafe { core::slice::from_raw_parts(request.key.as_ptr(), 64) };
-    assert!(storage[1..].iter().all(|byte| *byte == 0));
-    Ok(())
-}
-
 fn assert_golden_wire<M>(message: &M, expected: &[u8]) -> Result<(), buffa::DecodeError>
 where
     M: Message + Default + PartialEq + core::fmt::Debug,
@@ -81,7 +65,6 @@ where
 fn algorithm_identifier(algorithm: Algorithm) -> CryptoAlgorithmIdentifier {
     CryptoAlgorithmIdentifier {
         algorithm: Some(algorithm),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -119,11 +102,10 @@ fn proto_package_names_are_stable() {
 fn generated_owned_views_redact_retained_protobuf_buffers() -> Result<(), buffa::DecodeError> {
     let request = CryptoKmac256DeriveRequest {
         algorithm: Default::default(),
-        key: vec![251; 32],
-        context: vec![252, 253],
-        customization: vec![254],
+        key: vec![251; 32].into(),
+        context: vec![252, 253].into(),
+        customization: vec![254].into(),
         output_length: 32,
-        __buffa_unknown_fields: Default::default(),
     };
     let view = CryptoKmac256DeriveRequestOwnedView::from_owned(&request)?;
     let debug = format!("{view:?}");
@@ -139,11 +121,10 @@ fn generated_owned_views_redact_retained_protobuf_buffers() -> Result<(), buffa:
 fn generated_sensitive_views_refuse_serde_serialization() -> Result<(), buffa::DecodeError> {
     let request = CryptoKmac256DeriveRequest {
         algorithm: Default::default(),
-        key: vec![251; 32],
-        context: vec![252, 253],
-        customization: vec![254],
+        key: vec![251; 32].into(),
+        context: vec![252, 253].into(),
+        customization: vec![254].into(),
         output_length: 32,
-        __buffa_unknown_fields: Default::default(),
     };
     let owned_view = CryptoKmac256DeriveRequestOwnedView::from_owned(&request)?;
 
@@ -161,19 +142,16 @@ fn generated_operation_response_owners_redact_nested_secret_material(
                 result: Some(CryptoOperationResultBranch::SignatureGenerateKeyPair(
                     Box::new(CryptoKeyPair {
                         algorithm: Default::default(),
-                        public_key: vec![250],
-                        secret_key: vec![251, 252, 253],
-                        __buffa_unknown_fields: Default::default(),
+                        public_key: vec![250].into(),
+                        secret_key: vec![251, 252, 253].into(),
                     }),
                 )),
-                __buffa_unknown_fields: Default::default(),
             },
         ))),
-        __buffa_unknown_fields: Default::default(),
     };
 
     let response_debug = format!("{response:?}");
-    assert!(response_debug.contains("<redacted>"));
+    assert!(response_debug.contains("[REDACTED]"));
     assert!(!response_debug.contains("250"));
     assert!(!response_debug.contains("251"));
     assert!(!response_debug.contains("252"));
@@ -252,7 +230,6 @@ fn operation_response_codec_rejects_absent_semantic_oneofs() {
         outcome: Some(CryptoOperationOutcome::Result(
             Box::<CryptoOperationResult>::default(),
         )),
-        __buffa_unknown_fields: Default::default(),
     };
     assert!(
         reallyme_crypto_proto::operation_response_wire::decode_operation_response(
@@ -267,7 +244,6 @@ fn operation_response_codec_rejects_absent_semantic_oneofs() {
 
     let malformed_error = CryptoOperationResponse {
         outcome: Some(CryptoOperationOutcome::Error(Box::default())),
-        __buffa_unknown_fields: Default::default(),
     };
     assert!(
         reallyme_crypto_proto::operation_response_wire::decode_operation_response(
@@ -300,7 +276,6 @@ fn operation_response_codec_rejects_inconsistent_verification_status() {
             algorithm: MessageField::some(algorithm.clone()),
             status: EnumValue::from(status),
             error: MessageField::none(),
-            __buffa_unknown_fields: Default::default(),
         };
         let response = CryptoOperationResponse {
             outcome: Some(CryptoOperationOutcome::Result(Box::new(
@@ -308,10 +283,8 @@ fn operation_response_codec_rejects_inconsistent_verification_status() {
                     result: Some(CryptoOperationResultBranch::SignatureVerify(Box::new(
                         verification,
                     ))),
-                    __buffa_unknown_fields: Default::default(),
                 },
             ))),
-            __buffa_unknown_fields: Default::default(),
         };
         assert_eq!(
             encode_operation_response(&response).err(),
@@ -332,10 +305,8 @@ fn crypto_error_oneof_wire_contract_is_stable() -> Result<(), buffa::DecodeError
                 reason: EnumValue::from(
                     CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_SIGNATURE,
                 ),
-                __buffa_unknown_fields: Default::default(),
             },
         ))),
-        __buffa_unknown_fields: Default::default(),
     };
     assert_golden_wire(&primitive, &[0x0a, 0x02, 0x08, 0x78])?;
 
@@ -344,18 +315,14 @@ fn crypto_error_oneof_wire_contract_is_stable() -> Result<(), buffa::DecodeError
             reason: EnumValue::from(
                 CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_ALGORITHM,
             ),
-            __buffa_unknown_fields: Default::default(),
         }))),
-        __buffa_unknown_fields: Default::default(),
     };
     assert_golden_wire(&provider, &[0x12, 0x03, 0x08, 0xc8, 0x01])?;
 
     let backend = CryptoError {
         error: Some(CryptoErrorBranch::Backend(Box::new(CryptoBackendError {
             reason: EnumValue::from(CryptoErrorReason::CRYPTO_ERROR_REASON_BACKEND_INTERNAL),
-            __buffa_unknown_fields: Default::default(),
         }))),
-        __buffa_unknown_fields: Default::default(),
     };
     assert_golden_wire(&backend, &[0x1a, 0x03, 0x08, 0xad, 0x02])?;
 
@@ -387,7 +354,6 @@ fn algorithm_identifier_oneof_wire_contract_is_stable() -> Result<(), buffa::Dec
             kem: EnumValue::from(HpkeKemId::HPKE_KEM_ID_DHKEM_X25519_HKDF_SHA256),
             kdf: EnumValue::from(HpkeKdfId::HPKE_KDF_ID_HKDF_SHA256),
             aead: EnumValue::from(HpkeAeadId::HPKE_AEAD_ID_CHACHA20_POLY1305),
-            __buffa_unknown_fields: Default::default(),
         }))),
         &[0x5a, 0x06, 0x08, 0x20, 0x10, 0x01, 0x18, 0x03],
     )?;
@@ -480,9 +446,8 @@ fn multi_field_crypto_output_wire_contract_is_stable() -> Result<(), buffa::Deco
             KemAlgorithm::KEM_ALGORITHM_ML_KEM_768,
         )))
         .into(),
-        public_key: vec![0x01, 0x02],
-        secret_key: vec![0x03, 0x04],
-        __buffa_unknown_fields: Default::default(),
+        public_key: vec![0x01, 0x02].into(),
+        secret_key: vec![0x03, 0x04].into(),
     };
 
     // Exportable key bytes remain available on the binary wire, but the
@@ -508,11 +473,10 @@ fn multi_field_crypto_input_wire_contract_is_stable() -> Result<(), buffa::Decod
             AeadAlgorithm::AEAD_ALGORITHM_AES_256_GCM,
         )))
         .into(),
-        key: vec![0x01],
-        nonce: vec![0x02],
-        aad: vec![0x03],
-        plaintext: vec![0x04],
-        __buffa_unknown_fields: Default::default(),
+        key: vec![0x01].into(),
+        nonce: vec![0x02].into(),
+        aad: vec![0x03].into(),
+        plaintext: vec![0x04].into(),
     };
 
     assert_golden_wire(
@@ -532,8 +496,7 @@ fn generated_hash_request_supports_strict_proto_json_transport(
             HashAlgorithm::HASH_ALGORITHM_SHA2_256,
         )))
         .into(),
-        input: b"abc".to_vec(),
-        __buffa_unknown_fields: Default::default(),
+        input: b"abc".to_vec().into(),
     };
 
     let encoded_json =
@@ -557,6 +520,38 @@ fn generated_hash_request_supports_strict_proto_json_transport(
 }
 
 #[test]
+fn private_keypair_json_import_does_not_grant_export() -> Result<(), GeneratedJsonTestError> {
+    let imported =
+        serde_json::from_str::<CryptoKeyPair>(r#"{"publicKey":"AQI=","secretKey":"AwQ="}"#)
+            .map_err(|_| GeneratedJsonTestError::Parse)?;
+    assert_eq!(imported.public_key.as_slice(), &[1, 2]);
+    assert_eq!(imported.secret_key.as_slice(), &[3, 4]);
+    assert!(serde_json::to_string(&imported).is_err());
+
+    let public = serde_json::from_str::<CryptoKeyPair>(r#"{"publicKey":"AQI=","secretKey":""}"#)
+        .map_err(|_| GeneratedJsonTestError::Parse)?;
+    let exported = serde_json::to_value(&public).map_err(|_| GeneratedJsonTestError::Serialize)?;
+    assert_eq!(exported, json!({ "publicKey": "AQI=" }));
+    Ok(())
+}
+
+#[test]
+fn concrete_enum_json_rejection_uses_a_fixed_reason() {
+    for invalid in [r#""untrusted-enum-selector""#, "4294967295", "-123"] {
+        let result = serde_json::from_str::<HashAlgorithm>(invalid);
+        assert!(matches!(result, Err(error) if {
+            let message = error.to_string();
+            message.contains("CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PARAMETER")
+                && !message.contains(invalid.trim_matches('"'))
+        }));
+    }
+    assert!(matches!(
+        serde_json::from_str::<HashAlgorithm>(r#""HASH_ALGORITHM_SHA2_256""#),
+        Ok(HashAlgorithm::HASH_ALGORITHM_SHA2_256)
+    ));
+}
+
+#[test]
 fn generated_secret_bearing_request_json_shape_remains_schema_stable(
 ) -> Result<(), GeneratedJsonTestError> {
     let request = CryptoAeadSealRequest {
@@ -564,11 +559,10 @@ fn generated_secret_bearing_request_json_shape_remains_schema_stable(
             AeadAlgorithm::AEAD_ALGORITHM_AES_256_GCM,
         )))
         .into(),
-        key: vec![0x11; 32],
-        nonce: vec![0x22; 12],
-        aad: b"boundary aad".to_vec(),
-        plaintext: b"transport plaintext".to_vec(),
-        __buffa_unknown_fields: Default::default(),
+        key: vec![0x11; 32].into(),
+        nonce: vec![0x22; 12].into(),
+        aad: b"boundary aad".to_vec().into(),
+        plaintext: b"transport plaintext".to_vec().into(),
     };
 
     let encoded_json =

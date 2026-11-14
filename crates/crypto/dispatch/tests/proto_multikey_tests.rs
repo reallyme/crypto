@@ -27,7 +27,6 @@ use zeroize::{Zeroize, ZeroizeOnDrop};
 fn identity(algorithm: Algorithm) -> CryptoKeyAlgorithmIdentifier {
     CryptoKeyAlgorithmIdentifier {
         algorithm: KeyAlgorithm::from(algorithm).into(),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -44,8 +43,8 @@ fn binding(
 ) -> CryptoVerificationMethodMultikeyRequest {
     let mut output = CryptoVerificationMethodMultikeyRequest::default();
     output.algorithm = MessageField::some(identity(algorithm));
-    output.binding_type.extend_from_slice(kind);
-    output.public_key_multibase.extend_from_slice(key);
+    assert!(output.binding_type.extend_from_slice(kind).is_ok());
+    assert!(output.public_key_multibase.extend_from_slice(key).is_ok());
     output
 }
 
@@ -91,23 +90,25 @@ fn missing_identity_and_unknown_modifiers_fail_closed() {
         GenerateMultikeyKeypairInputs::try_from(&request).err(),
         Some(AlgorithmError::PRIMITIVE_INVALID_PARAMETER)
     );
-    let mut identifier = identity(Algorithm::Ed25519);
-    identifier
-        .merge_from_slice(&[0xa0, 0x06, 0x01])
-        .expect("unknown nested field");
+    let identifier = identity(Algorithm::Ed25519);
+    let mut modified_child = identifier.encode_to_vec();
+    modified_child.extend_from_slice(&[0xa0, 0x06, 0x01]);
     request.algorithm = MessageField::some(identifier);
-    assert_eq!(
-        GenerateMultikeyKeypairInputs::try_from(&request).err(),
-        Some(AlgorithmError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    let mut modified = request.encode_to_vec();
+    // The duplicate child retains protobuf merge semantics but the unknown
+    // modifier must fail admission before any operation uses the message.
+    buffa::encoding::encode_varint((1u64 << 3) | 2, &mut modified);
+    buffa::encoding::encode_varint(
+        u64::try_from(modified_child.len()).unwrap_or(u64::MAX),
+        &mut modified,
+    );
+    modified.extend_from_slice(&modified_child);
+    assert!(
+        crypto_proto::wire::decode_protobuf::<CryptoGenerateMultikeyKeypairRequest>(&modified)
+            .is_err()
     );
     request = generation(Algorithm::Ed25519);
-    request
-        .merge_from_slice(&[0xa0, 0x06, 0x01])
-        .expect("unknown top-level field");
-    assert_eq!(
-        GenerateMultikeyKeypairInputs::try_from(&request).err(),
-        Some(AlgorithmError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    assert_unknown_wire(&request, &[0xa0, 0x06, 0x01]);
 
     let mut public = CryptoPublicKeyToMultikeyRequest::default();
     assert_eq!(
@@ -115,22 +116,10 @@ fn missing_identity_and_unknown_modifiers_fail_closed() {
         Some(AlgorithmError::PRIMITIVE_INVALID_PARAMETER)
     );
     public.algorithm = MessageField::some(identity(Algorithm::Ed25519));
-    public
-        .merge_from_slice(&[0xa0, 0x06, 0x01])
-        .expect("unknown public-key modifier");
-    assert_eq!(
-        PublicKeyToMultikeyInputs::try_from(&public).err(),
-        Some(AlgorithmError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    assert_unknown_wire(&public, &[0xa0, 0x06, 0x01]);
 
-    let mut request = binding(Algorithm::SlhDsaSha2_128s, b"Multikey", b"invalid");
-    request
-        .merge_from_slice(&[0xa0, 0x06, 0x01])
-        .expect("unknown binding modifier");
-    assert_eq!(
-        VerificationMethodMultikeyInputs::try_from(&request).err(),
-        Some(AlgorithmError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    let request = binding(Algorithm::SlhDsaSha2_128s, b"Multikey", b"invalid");
+    assert_unknown_wire(&request, &[0xa0, 0x06, 0x01]);
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -153,9 +142,12 @@ fn all_new_byte_and_transitive_outputs_have_clearing_owners() {
 fn protected_inputs_preserve_exact_bytes_and_explicit_cleanup() {
     let mut request = CryptoPublicKeyToMultikeyRequest::default();
     request.algorithm = MessageField::some(identity(Algorithm::SlhDsaSha2_128s));
-    request.public_key.extend_from_slice(&[0, 0xff, 0x80, 0]);
+    assert!(request
+        .public_key
+        .extend_from_slice(&[0, 0xff, 0x80, 0])
+        .is_ok());
     let mut inputs = PublicKeyToMultikeyInputs::try_from(&request).expect("protected copy");
-    assert_eq!(inputs.public_key(), request.public_key);
+    assert_eq!(inputs.public_key(), request.public_key.as_slice());
     inputs.zeroize();
     assert!(inputs.public_key().is_empty());
     // The existing caller-owned request is a separate clearing owner.
@@ -167,10 +159,13 @@ fn protected_inputs_preserve_exact_bytes_and_explicit_cleanup() {
         "z\0é\u{fdd0}".as_bytes(),
     );
     let mut inputs = VerificationMethodMultikeyInputs::try_from(&request).expect("exact UTF-8");
-    assert_eq!(inputs.binding_type().as_bytes(), request.binding_type);
+    assert_eq!(
+        inputs.binding_type().as_bytes(),
+        request.binding_type.as_slice()
+    );
     assert_eq!(
         inputs.public_key_multibase().as_bytes(),
-        request.public_key_multibase
+        request.public_key_multibase.as_slice()
     );
     assert_eq!(
         inputs.validate().err(),
@@ -249,7 +244,7 @@ fn public_encoding_and_structural_binding_match_existing_native_operations() {
         .expect("native public encoder");
     let mut request = CryptoPublicKeyToMultikeyRequest::default();
     request.algorithm = MessageField::some(identity(Algorithm::Ed25519));
-    request.public_key.extend_from_slice(&public);
+    assert!(request.public_key.extend_from_slice(&public).is_ok());
     let result = PublicKeyToMultikeyInputs::try_from(&request)
         .expect("protected public input")
         .encode()
@@ -336,4 +331,11 @@ fn generated_software_keypair_output_preserves_owners_and_native_binding() {
     );
     // Wiping one owner must not erase another still-live protected result.
     assert!(!result.secret_key.is_empty());
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

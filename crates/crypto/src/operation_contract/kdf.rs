@@ -88,7 +88,7 @@ use super::wire_error::invalid_parameter;
 
 #[cfg(all(feature = "kmac", any(feature = "native", feature = "wasm")))]
 pub(super) fn process_kmac256_derive(
-    request: CryptoKmac256DeriveRequest,
+    request: &CryptoKmac256DeriveRequest,
 ) -> Result<CryptoKmac256DeriveResult, CryptoWireError> {
     require_kmac256(&request.algorithm)?;
     let output_length = usize::try_from(request.output_length).map_err(|_| invalid_parameter())?;
@@ -102,14 +102,13 @@ pub(super) fn process_kmac256_derive(
     .map_err(map_operation_error)?;
     Ok(CryptoKmac256DeriveResult {
         algorithm: MessageField::some(kdf_identifier(ProtoKdf::KDF_ALGORITHM_KMAC_256)),
-        derived_key: derived.as_bytes().to_vec(),
-        __buffa_unknown_fields: Default::default(),
+        derived_key: derived.as_bytes().to_vec().into(),
     })
 }
 
 #[cfg(all(feature = "hkdf", any(feature = "native", feature = "wasm")))]
 pub(super) fn process_hkdf_derive(
-    request: CryptoHkdfDeriveRequest,
+    request: &CryptoHkdfDeriveRequest,
 ) -> Result<CryptoHkdfDeriveResult, CryptoWireError> {
     let (suite, proto_suite) = hkdf_suite(&request.algorithm)?;
     let ikm = crate::hkdf::HkdfInputKeyMaterial::from_slice(&request.input_key_material);
@@ -128,14 +127,13 @@ pub(super) fn process_hkdf_derive(
     let output = derive_hkdf_to_vec(&derive_request, request.output_length)?;
     Ok(CryptoHkdfDeriveResult {
         algorithm: MessageField::some(kdf_identifier(proto_suite)),
-        output_key_material: output,
-        __buffa_unknown_fields: Default::default(),
+        output_key_material: output.into(),
     })
 }
 
 #[cfg(all(feature = "argon2id", any(feature = "native", feature = "wasm")))]
 pub(super) fn process_argon2id_derive(
-    request: CryptoArgon2idDeriveRequest,
+    request: &CryptoArgon2idDeriveRequest,
 ) -> Result<CryptoKdfDeriveKeyResult, CryptoWireError> {
     require_argon2id(&request.algorithm)?;
     let kdf_version = match request.kdf_version.as_known() {
@@ -153,14 +151,13 @@ pub(super) fn process_argon2id_derive(
     .map_err(map_operation_error)?;
     Ok(CryptoKdfDeriveKeyResult {
         algorithm: MessageField::some(kdf_identifier(ProtoKdf::KDF_ALGORITHM_ARGON2ID)),
-        derived_key: derived.as_bytes().to_vec(),
-        __buffa_unknown_fields: Default::default(),
+        derived_key: derived.as_bytes().to_vec().into(),
     })
 }
 
 #[cfg(all(feature = "pbkdf2", any(feature = "native", feature = "wasm")))]
 pub(super) fn process_kdf_derive_key(
-    request: CryptoKdfDeriveKeyRequest,
+    request: &CryptoKdfDeriveKeyRequest,
 ) -> Result<CryptoKdfDeriveKeyResult, CryptoWireError> {
     let prf = pbkdf2_prf(&request.algorithm)?;
     let output_length = usize::try_from(request.output_length).map_err(|_| invalid_parameter())?;
@@ -177,14 +174,13 @@ pub(super) fn process_kdf_derive_key(
             crypto_pbkdf2::Pbkdf2Prf::HmacSha256 => ProtoKdf::KDF_ALGORITHM_PBKDF2_HMAC_SHA256,
             crypto_pbkdf2::Pbkdf2Prf::HmacSha512 => ProtoKdf::KDF_ALGORITHM_PBKDF2_HMAC_SHA512,
         })),
-        derived_key: derived.as_bytes().to_vec(),
-        __buffa_unknown_fields: Default::default(),
+        derived_key: derived.as_bytes().to_vec().into(),
     })
 }
 
 #[cfg(all(feature = "concat-kdf", any(feature = "native", feature = "wasm")))]
 pub(super) fn process_jwa_concat_kdf_sha256_derive(
-    request: CryptoJwaConcatKdfSha256DeriveRequest,
+    request: &CryptoJwaConcatKdfSha256DeriveRequest,
 ) -> Result<CryptoJwaConcatKdfSha256DeriveResult, CryptoWireError> {
     require_jwa_concat_kdf_sha256(&request.algorithm)?;
     let shared_secret = crate::concat_kdf::JwaSharedSecret::from_slice(&request.shared_secret)
@@ -206,8 +202,7 @@ pub(super) fn process_jwa_concat_kdf_sha256_derive(
         algorithm: MessageField::some(kdf_identifier(
             ProtoKdf::KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256,
         )),
-        derived_key: derived,
-        __buffa_unknown_fields: Default::default(),
+        derived_key: derived.into(),
     })
 }
 

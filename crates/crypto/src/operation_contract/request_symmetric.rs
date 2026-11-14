@@ -37,7 +37,7 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 ))]
 use super::request::process_request;
 
-pub(super) fn process_hash_request(request: CryptoHashRequest) -> CryptoOperationResponse {
+pub(super) fn process_hash_request(request: &CryptoHashRequest) -> CryptoOperationResponse {
     #[cfg(all(
         any(feature = "sha2", feature = "sha3"),
         any(feature = "native", feature = "wasm")
@@ -59,7 +59,9 @@ pub(super) fn process_hash_request(request: CryptoHashRequest) -> CryptoOperatio
     }
 }
 
-pub(super) fn process_aead_seal_request(request: CryptoAeadSealRequest) -> CryptoOperationResponse {
+pub(super) fn process_aead_seal_request(
+    request: &CryptoAeadSealRequest,
+) -> CryptoOperationResponse {
     #[cfg(all(
         any(
             feature = "aes",
@@ -89,7 +91,9 @@ pub(super) fn process_aead_seal_request(request: CryptoAeadSealRequest) -> Crypt
     }
 }
 
-pub(super) fn process_aead_open_request(request: CryptoAeadOpenRequest) -> CryptoOperationResponse {
+pub(super) fn process_aead_open_request(
+    request: &CryptoAeadOpenRequest,
+) -> CryptoOperationResponse {
     #[cfg(all(
         any(
             feature = "aes",
@@ -120,7 +124,7 @@ pub(super) fn process_aead_open_request(request: CryptoAeadOpenRequest) -> Crypt
 }
 
 pub(super) fn process_mac_authenticate_request(
-    request: CryptoMacAuthenticateRequest,
+    request: &CryptoMacAuthenticateRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(feature = "hmac", any(feature = "native", feature = "wasm")))]
     {
@@ -138,7 +142,7 @@ pub(super) fn process_mac_authenticate_request(
 }
 
 pub(super) fn process_mac_verify_request(
-    request: CryptoMacVerifyRequest,
+    request: &CryptoMacVerifyRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(feature = "hmac", any(feature = "native", feature = "wasm")))]
     {
@@ -155,7 +159,7 @@ pub(super) fn process_mac_verify_request(
     }
 }
 
-pub(super) fn process_key_wrap_request(request: CryptoKeyWrapRequest) -> CryptoOperationResponse {
+pub(super) fn process_key_wrap_request(request: &CryptoKeyWrapRequest) -> CryptoOperationResponse {
     #[cfg(all(feature = "aes-kw", any(feature = "native", feature = "wasm")))]
     {
         process_request(
@@ -172,7 +176,7 @@ pub(super) fn process_key_wrap_request(request: CryptoKeyWrapRequest) -> CryptoO
 }
 
 pub(super) fn process_key_unwrap_request(
-    request: CryptoKeyUnwrapRequest,
+    request: &CryptoKeyUnwrapRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(feature = "aes-kw", any(feature = "native", feature = "wasm")))]
     {

@@ -164,9 +164,11 @@ use super::response::response_from_result;
 use super::wire_error::wire_error;
 
 pub(crate) fn process_operation_request(
-    mut request: CryptoOperationRequest,
+    request: CryptoOperationRequest,
 ) -> CryptoOperationResponse {
-    let Some(operation) = request.operation.take() else {
+    // Keep the clearing oneof alive throughout dispatch. Handlers only borrow
+    // their inputs, so no protected owner needs to be moved out of it.
+    let Some(operation) = request.operation.as_ref() else {
         return error_response(wire_error(
             CryptoWireErrorBranch::Primitive,
             CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_MISSING_OPERATION,
@@ -174,23 +176,21 @@ pub(crate) fn process_operation_request(
     };
 
     match operation {
-        CryptoOperation::Hash(request) => process_hash_request(*request),
-        CryptoOperation::AeadSeal(request) => process_aead_seal_request(*request),
-        CryptoOperation::AeadOpen(request) => process_aead_open_request(*request),
-        CryptoOperation::MacAuthenticate(request) => process_mac_authenticate_request(*request),
-        CryptoOperation::MacVerify(request) => process_mac_verify_request(*request),
+        CryptoOperation::Hash(request) => process_hash_request(request),
+        CryptoOperation::AeadSeal(request) => process_aead_seal_request(request),
+        CryptoOperation::AeadOpen(request) => process_aead_open_request(request),
+        CryptoOperation::MacAuthenticate(request) => process_mac_authenticate_request(request),
+        CryptoOperation::MacVerify(request) => process_mac_verify_request(request),
         CryptoOperation::SignatureGenerateKeyPair(request) => {
-            process_signature_generate_key_pair_request(*request)
+            process_signature_generate_key_pair_request(request)
         }
         CryptoOperation::SignatureDeriveKeyPair(request) => {
-            process_signature_derive_key_pair_request(*request)
+            process_signature_derive_key_pair_request(request)
         }
-        CryptoOperation::SignatureSign(request) => process_signature_sign_request(*request),
-        CryptoOperation::SignatureVerify(request) => process_signature_verify_request(*request),
-        CryptoOperation::Bip340SchnorrSign(request) => {
-            process_bip340_schnorr_sign_request(*request)
-        }
-        CryptoOperation::RsaVerify(request) => process_rsa_verify_request(*request),
+        CryptoOperation::SignatureSign(request) => process_signature_sign_request(request),
+        CryptoOperation::SignatureVerify(request) => process_signature_verify_request(request),
+        CryptoOperation::Bip340SchnorrSign(request) => process_bip340_schnorr_sign_request(request),
+        CryptoOperation::RsaVerify(request) => process_rsa_verify_request(request),
         CryptoOperation::KeyAgreementDeriveSharedSecret(request) => {
             #[cfg(all(
                 any(feature = "native", feature = "wasm"),
@@ -204,7 +204,7 @@ pub(crate) fn process_operation_request(
             ))]
             {
                 process_request(
-                    *request,
+                    request.as_ref(),
                     process_key_agreement_derive_shared_secret,
                     CryptoOperationResultBranch::KeyAgreementDeriveSharedSecret,
                 )
@@ -237,7 +237,7 @@ pub(crate) fn process_operation_request(
             ))]
             {
                 process_request(
-                    *request,
+                    request.as_ref(),
                     process_key_agreement_derive_key_pair,
                     CryptoOperationResultBranch::KeyAgreementDeriveKeyPair,
                 )
@@ -270,7 +270,7 @@ pub(crate) fn process_operation_request(
             ))]
             {
                 process_request(
-                    *request,
+                    request.as_ref(),
                     process_kem_generate_key_pair,
                     CryptoOperationResultBranch::KemGenerateKeyPair,
                 )
@@ -303,7 +303,7 @@ pub(crate) fn process_operation_request(
             ))]
             {
                 process_request(
-                    *request,
+                    request.as_ref(),
                     process_kem_derive_key_pair,
                     CryptoOperationResultBranch::KemDeriveKeyPair,
                 )
@@ -336,7 +336,7 @@ pub(crate) fn process_operation_request(
             ))]
             {
                 process_request(
-                    *request,
+                    request.as_ref(),
                     process_kem_encapsulate,
                     CryptoOperationResultBranch::KemEncapsulate,
                 )
@@ -369,7 +369,7 @@ pub(crate) fn process_operation_request(
             ))]
             {
                 process_request(
-                    *request,
+                    request.as_ref(),
                     process_kem_decapsulate,
                     CryptoOperationResultBranch::KemDecapsulate,
                 )
@@ -389,29 +389,29 @@ pub(crate) fn process_operation_request(
                 unsupported_response()
             }
         }
-        CryptoOperation::Kmac256Derive(request) => process_kmac256_derive_request(*request),
-        CryptoOperation::HkdfDerive(request) => process_hkdf_derive_request(*request),
-        CryptoOperation::Argon2idDerive(request) => process_argon2id_derive_request(*request),
-        CryptoOperation::KdfDeriveKey(request) => process_kdf_derive_key_request(*request),
+        CryptoOperation::Kmac256Derive(request) => process_kmac256_derive_request(request),
+        CryptoOperation::HkdfDerive(request) => process_hkdf_derive_request(request),
+        CryptoOperation::Argon2idDerive(request) => process_argon2id_derive_request(request),
+        CryptoOperation::KdfDeriveKey(request) => process_kdf_derive_key_request(request),
         CryptoOperation::JwaConcatKdfSha256Derive(request) => {
-            process_jwa_concat_kdf_sha256_derive_request(*request)
+            process_jwa_concat_kdf_sha256_derive_request(request)
         }
-        CryptoOperation::KeyWrap(request) => process_key_wrap_request(*request),
-        CryptoOperation::KeyUnwrap(request) => process_key_unwrap_request(*request),
-        CryptoOperation::HpkeSeal(request) => process_hpke_seal_request(*request),
-        CryptoOperation::HpkeOpen(request) => process_hpke_open_request(*request),
+        CryptoOperation::KeyWrap(request) => process_key_wrap_request(request),
+        CryptoOperation::KeyUnwrap(request) => process_key_unwrap_request(request),
+        CryptoOperation::HpkeSeal(request) => process_hpke_seal_request(request),
+        CryptoOperation::HpkeOpen(request) => process_hpke_open_request(request),
         CryptoOperation::HpkeGenerateKeyPair(request) => {
-            process_hpke_generate_key_pair_request(*request)
+            process_hpke_generate_key_pair_request(request)
         }
         CryptoOperation::HpkeDeriveKeyPair(request) => {
-            process_hpke_derive_key_pair_request(*request)
+            process_hpke_derive_key_pair_request(request)
         }
-        CryptoOperation::HpkeSenderExport(request) => process_hpke_sender_export_request(*request),
+        CryptoOperation::HpkeSenderExport(request) => process_hpke_sender_export_request(request),
         CryptoOperation::HpkeReceiverExport(request) => {
-            process_hpke_receiver_export_request(*request)
+            process_hpke_receiver_export_request(request)
         }
-        CryptoOperation::HpkePskSeal(request) => process_hpke_psk_seal_request(*request),
-        CryptoOperation::HpkePskOpen(request) => process_hpke_psk_open_request(*request),
+        CryptoOperation::HpkePskSeal(request) => process_hpke_psk_seal_request(request),
+        CryptoOperation::HpkePskOpen(request) => process_hpke_psk_open_request(request),
     }
 }
 
@@ -449,8 +449,8 @@ pub(crate) fn process_operation_request(
     )
 ))]
 pub(super) fn process_request<M, R>(
-    request: M,
-    process: fn(M) -> Result<R, CryptoWireError>,
+    request: &M,
+    process: fn(&M) -> Result<R, CryptoWireError>,
     wrap: fn(Box<R>) -> CryptoOperationResultBranch,
 ) -> CryptoOperationResponse {
     response_from_result(process(request), wrap)

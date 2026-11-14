@@ -1192,10 +1192,10 @@ message CryptoHpkePskOpenRequest {
 // already returns exportable secret-key material; non-exportable platform keys
 // must use a separate handle-specific protocol.
 message CryptoKeyPair {
+  // Compare secret material before public metadata, preserving constant-time comparison.
+  bytes secret_key = 3;
   CryptoAlgorithmIdentifier algorithm = 1;
   bytes public_key = 2;
-  // Secret-bearing exportable private key material.
-  bytes secret_key = 3;
 }
 
 // CryptoKemEncapsulation is the protobuf boundary envelope for KEM

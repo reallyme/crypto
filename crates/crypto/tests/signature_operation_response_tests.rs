@@ -35,7 +35,6 @@ fn operation_response_exposes_every_raw_signature_result_branch() {
         CryptoOperation::SignatureGenerateKeyPair(Box::new(
             CryptoSignatureGenerateKeyPairRequest {
                 algorithm: MessageField::some(signature_identifier()),
-                __buffa_unknown_fields: Default::default(),
             },
         )),
         |branch| {
@@ -50,8 +49,7 @@ fn operation_response_exposes_every_raw_signature_result_branch() {
     assert_result_branch(
         CryptoOperation::SignatureDeriveKeyPair(Box::new(CryptoSignatureDeriveKeyPairRequest {
             algorithm: MessageField::some(signature_identifier()),
-            secret_key: ED25519_SEED.to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            secret_key: ED25519_SEED.to_vec().into(),
         })),
         |branch| {
             matches!(
@@ -65,9 +63,8 @@ fn operation_response_exposes_every_raw_signature_result_branch() {
     assert_result_branch(
         CryptoOperation::SignatureSign(Box::new(CryptoSignatureSignRequest {
             algorithm: MessageField::some(signature_identifier()),
-            secret_key: ED25519_SEED.to_vec(),
-            message: MESSAGE.to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            secret_key: ED25519_SEED.to_vec().into(),
+            message: MESSAGE.to_vec().into(),
         })),
         |branch| {
             matches!(
@@ -81,10 +78,9 @@ fn operation_response_exposes_every_raw_signature_result_branch() {
     assert_result_branch(
         CryptoOperation::SignatureVerify(Box::new(CryptoSignatureVerifyRequest {
             algorithm: MessageField::some(signature_identifier()),
-            public_key,
-            message: MESSAGE.to_vec(),
-            signature,
-            __buffa_unknown_fields: Default::default(),
+            public_key: public_key.into(),
+            message: MESSAGE.to_vec().into(),
+            signature: signature.into(),
         })),
         |branch| {
             matches!(
@@ -105,9 +101,8 @@ fn operation_response_preserves_seed_only_signature_rejection() {
     assert_error_reason(
         CryptoOperation::SignatureSign(Box::new(CryptoSignatureSignRequest {
             algorithm: MessageField::some(signature_identifier()),
-            secret_key: expanded,
-            message: MESSAGE.to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            secret_key: expanded.into(),
+            message: MESSAGE.to_vec().into(),
         })),
         CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY,
     );
@@ -118,7 +113,7 @@ fn assert_result_branch(
     assertion: impl FnOnce(&CryptoOperationResultBranch) -> bool,
 ) {
     let response = process_response(operation);
-    let Some(CryptoOperationOutcome::Result(result)) = response.outcome else {
+    let Some(CryptoOperationOutcome::Result(result)) = response.outcome.as_ref() else {
         panic!("operation response did not contain a result");
     };
     let Some(branch) = result.result.as_ref() else {
@@ -129,10 +124,10 @@ fn assert_result_branch(
 
 fn assert_error_reason(operation: CryptoOperation, expected: CryptoErrorReason) {
     let response = process_response(operation);
-    let Some(CryptoOperationOutcome::Error(error)) = response.outcome else {
+    let Some(CryptoOperationOutcome::Error(error)) = response.outcome.as_ref() else {
         panic!("operation response did not contain an error");
     };
-    let reason = match error.error {
+    let reason = match error.error.as_ref() {
         Some(CryptoErrorBranch::Primitive(error)) => error.reason.as_known(),
         Some(CryptoErrorBranch::Provider(error)) => error.reason.as_known(),
         Some(CryptoErrorBranch::Backend(error)) => error.reason.as_known(),
@@ -144,7 +139,6 @@ fn assert_error_reason(operation: CryptoOperation, expected: CryptoErrorReason) 
 fn process_response(operation: CryptoOperation) -> CryptoOperationResponse {
     let request = CryptoOperationRequest {
         operation: Some(operation),
-        __buffa_unknown_fields: Default::default(),
     };
     let output = reallyme_crypto::operation_contract::process_operation_response(
         request.encode_to_vec().as_slice(),
@@ -157,6 +151,5 @@ fn signature_identifier() -> CryptoAlgorithmIdentifier {
         algorithm: Some(ProtoAlgorithmBranch::Signature(EnumValue::from(
             SignatureAlgorithm::SIGNATURE_ALGORITHM_ED25519,
         ))),
-        __buffa_unknown_fields: Default::default(),
     }
 }

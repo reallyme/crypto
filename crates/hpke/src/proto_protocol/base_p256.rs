@@ -4,7 +4,7 @@
 
 //! Fixed Base-mode requests borrow the non-exportable native recipient owner.
 
-use super::requests::{check_length, copy_bytes, copy_into, require_known};
+use super::requests::{check_length, copy_bytes, copy_into};
 use crate::base_p256::{
     self, P256BasePlaintext, P256BaseSealed, P256RecipientKey, INFO_MAX_LEN, PLAINTEXT_MAX_LEN,
     PUBLIC_KEY_LEN, TAG_LEN,
@@ -36,14 +36,12 @@ pub fn p256_base_capabilities() -> Result<CryptoHpkeP256BaseCapabilities, HpkeEr
             .map_err(|_| HpkeError::PRIMITIVE_INVALID_LENGTH)?,
         empty_aad_only: true,
         private_key_exportable: false,
-        __buffa_unknown_fields: Default::default(),
     })
 }
 impl From<&P256RecipientKey> for CryptoHpkeP256BasePublicKey {
     fn from(value: &P256RecipientKey) -> Self {
         Self {
-            public_key: value.public_key().to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            public_key: value.public_key().to_vec().into(),
         }
     }
 }
@@ -72,7 +70,6 @@ impl P256BaseSealInputs {
 impl TryFrom<&CryptoHpkeP256BaseSealRequest> for P256BaseSealInputs {
     type Error = HpkeError;
     fn try_from(value: &CryptoHpkeP256BaseSealRequest) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         check_bounds(&value.info, value.plaintext.len())?;
         check_point_shape(
             &value.recipient_public_key,
@@ -101,7 +98,6 @@ impl P256BaseOpenInputs {
 impl TryFrom<&CryptoHpkeP256BaseOpenRequest> for P256BaseOpenInputs {
     type Error = HpkeError;
     fn try_from(value: &CryptoHpkeP256BaseOpenRequest) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         let plaintext_length = value
             .ciphertext
             .len()

@@ -37,6 +37,31 @@ public object CryptoKeyPairKt {
     internal fun _build(): me.really.crypto.v1.CryptoKeyPair = _builder.build()
 
     /**
+     * ```
+     * Compare secret material before public metadata, preserving constant-time comparison.
+     * ```
+     *
+     * `bytes secret_key = 3 [json_name = "secretKey"];`
+     */
+    public var secretKey: com.google.protobuf.ByteString
+      @kotlin.jvm.JvmName("getSecretKey")
+        get() = _builder.secretKey
+      @kotlin.jvm.JvmName("setSecretKey")
+        set(value) {
+        _builder.secretKey = value
+      }
+    /**
+     * ```
+     * Compare secret material before public metadata, preserving constant-time comparison.
+     * ```
+     *
+     * `bytes secret_key = 3 [json_name = "secretKey"];`
+     */
+    public fun clearSecretKey() {
+      _builder.clearSecretKey()
+    }
+
+    /**
      * `.reallyme.crypto.v1.CryptoAlgorithmIdentifier algorithm = 1 [json_name = "algorithm"];`
      */
     public var algorithm: me.really.crypto.v1.CryptoAlgorithmIdentifier
@@ -78,31 +103,6 @@ public object CryptoKeyPairKt {
      */
     public fun clearPublicKey() {
       _builder.clearPublicKey()
-    }
-
-    /**
-     * ```
-     * Secret-bearing exportable private key material.
-     * ```
-     *
-     * `bytes secret_key = 3 [json_name = "secretKey"];`
-     */
-    public var secretKey: com.google.protobuf.ByteString
-      @kotlin.jvm.JvmName("getSecretKey")
-        get() = _builder.secretKey
-      @kotlin.jvm.JvmName("setSecretKey")
-        set(value) {
-        _builder.secretKey = value
-      }
-    /**
-     * ```
-     * Secret-bearing exportable private key material.
-     * ```
-     *
-     * `bytes secret_key = 3 [json_name = "secretKey"];`
-     */
-    public fun clearSecretKey() {
-      _builder.clearSecretKey()
     }
   }
 }

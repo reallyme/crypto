@@ -390,14 +390,12 @@ fn legacy_schema_adapters_retain_independent_multiplication_reduction_and_icart_
         }
         let identifier = || CryptoPrimeGroupIdentifier {
             group: ProtoGroup::from(group).into(),
-            __buffa_unknown_fields: Default::default(),
         };
         let mut request = CryptoPrimeGroupScalarImportRequest {
             group: MessageField::some(identifier()),
-            scalar: Vec::new(),
-            __buffa_unknown_fields: Default::default(),
+            scalar: Vec::new().into(),
         };
-        request.scalar.resize(group.scalar_len(), 0);
+        assert!(request.scalar.resize(group.scalar_len(), 0).is_ok());
         *request.scalar.last_mut().expect("nonempty scalar") = 2;
         let wire = zeroize::Zeroizing::new(request.encode_to_vec());
         let decoded = CryptoPrimeGroupScalarImportRequest::decode_from_slice(&wire)
@@ -407,23 +405,20 @@ fn legacy_schema_adapters_retain_independent_multiplication_reduction_and_icart_
             .expect("clearing generator message");
         let multiply = CryptoPrimeGroupMultiplyRequest {
             base: MessageField::some(generator),
-            __buffa_unknown_fields: Default::default(),
         };
         let result = contract::multiply(&scalar, &multiply).expect("supplied-base multiplication");
         assert_eq!(result.encoding(), decode(&row.answers.multiple_2));
 
         let reduction = CryptoPrimeGroupReduceToFieldRequest {
             group: MessageField::some(identifier()),
-            input: decode(&row.answers.reduction_input),
-            __buffa_unknown_fields: Default::default(),
+            input: decode(&row.answers.reduction_input).into(),
         };
         let reduced = contract::reduce_to_field(&reduction).expect("protected field reduction");
         assert_eq!(reduced.as_bytes(), decode(&row.answers.reduction_expected));
         for answer in &row.answers.field_encodings {
             let input = CryptoPrimeGroupFieldValue {
                 group: MessageField::some(identifier()),
-                value: decode(&answer.input),
-                __buffa_unknown_fields: Default::default(),
+                value: decode(&answer.input).into(),
             };
             let mapped = contract::encode_field(&input).expect("protected Icart point");
             assert_eq!(mapped.encoding(), decode(&answer.expected));

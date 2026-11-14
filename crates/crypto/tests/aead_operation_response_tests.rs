@@ -39,10 +39,10 @@ fn operation_response_aead_seal_uses_operation_owner_for_aes256_gcm() {
         plaintext.clone(),
     ));
 
-    let Some(CryptoOperationOutcome::Result(result)) = response.outcome else {
+    let Some(CryptoOperationOutcome::Result(result)) = response.outcome.as_ref() else {
         panic!("operation response did not contain a generated result");
     };
-    let Some(CryptoOperationResultBranch::AeadSeal(result)) = result.result else {
+    let Some(CryptoOperationResultBranch::AeadSeal(result)) = result.result.as_ref() else {
         panic!("operation result did not contain the AEAD seal branch");
     };
 
@@ -81,10 +81,10 @@ fn operation_response_aead_open_uses_operation_owner_for_xchacha20_poly1305() {
         ciphertext_with_tag,
     ));
 
-    let Some(CryptoOperationOutcome::Result(result)) = response.outcome else {
+    let Some(CryptoOperationOutcome::Result(result)) = response.outcome.as_ref() else {
         panic!("operation response did not contain a generated result");
     };
-    let Some(CryptoOperationResultBranch::AeadOpen(result)) = result.result else {
+    let Some(CryptoOperationResultBranch::AeadOpen(result)) = result.result.as_ref() else {
         panic!("operation result did not contain the AEAD open branch");
     };
 
@@ -149,10 +149,10 @@ fn operation_response_aead_unspecified_algorithm_is_provider_error() {
         b"plaintext".to_vec(),
     ));
 
-    let Some(CryptoOperationOutcome::Error(error)) = response.outcome else {
+    let Some(CryptoOperationOutcome::Error(error)) = response.outcome.as_ref() else {
         panic!("operation response did not contain an error");
     };
-    let Some(CryptoErrorBranch::Provider(error)) = error.error else {
+    let Some(CryptoErrorBranch::Provider(error)) = error.error.as_ref() else {
         panic!("operation error did not contain the provider branch");
     };
     assert_eq!(
@@ -194,13 +194,11 @@ fn aead_seal_request(
     CryptoOperationRequest {
         operation: Some(CryptoOperation::AeadSeal(Box::new(CryptoAeadSealRequest {
             algorithm: MessageField::some(aead_identifier(algorithm)),
-            key,
-            nonce,
-            aad,
-            plaintext,
-            __buffa_unknown_fields: Default::default(),
+            key: key.into(),
+            nonce: nonce.into(),
+            aad: aad.into(),
+            plaintext: plaintext.into(),
         }))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -214,28 +212,25 @@ fn aead_open_request(
     CryptoOperationRequest {
         operation: Some(CryptoOperation::AeadOpen(Box::new(CryptoAeadOpenRequest {
             algorithm: MessageField::some(aead_identifier(algorithm)),
-            key,
-            nonce,
-            aad,
-            ciphertext_with_tag,
-            __buffa_unknown_fields: Default::default(),
+            key: key.into(),
+            nonce: nonce.into(),
+            aad: aad.into(),
+            ciphertext_with_tag: ciphertext_with_tag.into(),
         }))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
 fn aead_identifier(algorithm: AeadAlgorithm) -> CryptoAlgorithmIdentifier {
     CryptoAlgorithmIdentifier {
         algorithm: Some(ProtoAlgorithmBranch::Aead(EnumValue::from(algorithm))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
 fn assert_error_response(response: CryptoOperationResponse, reason: CryptoErrorReason) {
-    let Some(CryptoOperationOutcome::Error(error)) = response.outcome else {
+    let Some(CryptoOperationOutcome::Error(error)) = response.outcome.as_ref() else {
         panic!("operation response did not contain an error");
     };
-    let Some(CryptoErrorBranch::Primitive(error)) = error.error else {
+    let Some(CryptoErrorBranch::Primitive(error)) = error.error.as_ref() else {
         panic!("operation error did not contain the primitive branch");
     };
     assert_eq!(error.reason.as_known(), Some(reason));

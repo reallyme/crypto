@@ -32,6 +32,15 @@ import {
   flattenRouteGroupSymbols,
 } from "./crypto_operation_route_readiness.mjs";
 
+const removeGeneratedWipe = (source, type, field) => {
+  const start = source.indexOf(`impl ::buffa::sensitive::Zeroize for ${type} {`);
+  assert.ok(start >= 0);
+  const wipe = `::buffa::sensitive::Zeroize::zeroize(&mut self.${field});`;
+  const index = source.indexOf(wipe, start);
+  assert.ok(index >= start && index < source.indexOf("\nimpl ", start + 1));
+  return source.slice(0, index) + source.slice(index + wipe.length);
+};
+
 const fail = (message) => {
   throw new Error(message);
 };
@@ -329,10 +338,7 @@ assert.throws(
   () => assertMacSemanticOwnership({
     readText: withSourceMutation(
       "crates/proto/src/generated/buffa/reallyme.crypto.v1.crypto.rs",
-      (source) => source.replace(
-        "        ::zeroize::Zeroize::zeroize(&mut self.message);\n",
-        "",
-      ),
+      (source) => removeGeneratedWipe(source, "CryptoMacAuthenticateRequest", "message"),
     ),
     fail,
   }),
@@ -411,10 +417,7 @@ assert.throws(
   () => assertAeadSemanticOwnership({
     readText: withSourceMutation(
       "crates/proto/src/generated/buffa/reallyme.crypto.v1.crypto.rs",
-      (source) => source.replace(
-        "        ::zeroize::Zeroize::zeroize(&mut self.plaintext);\n",
-        "",
-      ),
+      (source) => removeGeneratedWipe(source, "CryptoAeadSealRequest", "plaintext"),
     ),
     fail,
   }),
@@ -467,10 +470,7 @@ assert.throws(
   () => assertKeyWrapSemanticOwnership({
     readText: withSourceMutation(
       "crates/proto/src/generated/buffa/reallyme.crypto.v1.crypto.rs",
-      (source) => source.replace(
-        "        ::zeroize::Zeroize::zeroize(&mut self.wrapped_key);\n",
-        "",
-      ),
+      (source) => removeGeneratedWipe(source, "CryptoKeyWrapResult", "wrapped_key"),
     ),
     fail,
   }),
@@ -506,10 +506,7 @@ assert.throws(
   () => assertKdfSemanticOwnership({
     readText: withSourceMutation(
       "crates/proto/src/generated/buffa/reallyme.crypto.v1.crypto.rs",
-      (source) => source.replace(
-        "        ::zeroize::Zeroize::zeroize(&mut self.output_key_material);\n",
-        "",
-      ),
+      (source) => removeGeneratedWipe(source, "CryptoHkdfDeriveResult", "output_key_material"),
     ),
     fail,
   }),
@@ -797,8 +794,8 @@ assert.throws(
     readText: withSourceMutation(
       "crates/crypto/src/operation_contract/request.rs",
       (source) => source.replace(
-        "CryptoOperation::Hash(request) => process_hash_request(*request),",
-        "CryptoOperation::Hash(request) => process_mac_verify_request(*request),",
+        "CryptoOperation::Hash(request) => process_hash_request(request),",
+        "CryptoOperation::Hash(request) => process_mac_verify_request(request),",
       ),
     ),
     fail,

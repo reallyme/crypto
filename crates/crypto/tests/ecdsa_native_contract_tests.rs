@@ -22,7 +22,7 @@ use reallyme_crypto::ecdsa_explicit::{
 fn message(bytes: &[u8]) -> CryptoEcdsaInput {
     let mut body = CryptoEcdsaMessageInput::default();
     body.hash = HashAlgorithm::HASH_ALGORITHM_SHA2_256.into();
-    body.message.extend_from_slice(bytes);
+    assert!(body.message.extend_from_slice(bytes).is_ok());
     let mut output = CryptoEcdsaInput::default();
     output.input = Some(Input::Message(Box::new(body)));
     output
@@ -43,7 +43,7 @@ fn import() -> CryptoEcdsaKeyImportRequest {
     curve.curve = ProtoCurve::ECDSA_CURVE_NIST_P256.into();
     let mut output = CryptoEcdsaKeyImportRequest::default();
     output.curve = MessageField::some(curve);
-    output.scalar.resize(32, 0);
+    assert!(output.scalar.resize(32, 0).is_ok());
     output.scalar[31] = 1;
     output
 }
@@ -125,7 +125,7 @@ fn invalid_prehash_unknown_modifiers_and_absent_options_fail_closed() {
         for length in [0, width - 1, width + 1] {
             let mut body = CryptoEcdsaPrehashInput::default();
             body.hash = hash.into();
-            body.digest.resize(length, 7);
+            assert!(body.digest.resize(length, 7).is_ok());
             let mut input = CryptoEcdsaInput::default();
             input.input = Some(Input::Prehash(Box::new(body)));
             assert!(matches!(EcdsaInput::try_from(&input),
@@ -133,15 +133,22 @@ fn invalid_prehash_unknown_modifiers_and_absent_options_fail_closed() {
         }
     }
     let mut input = message(b"exact");
-    input.merge_from_slice(&[0xa0, 0x06, 1]).unwrap();
-    assert!(matches!(EcdsaInput::try_from(&input),
-        Err(error) if error == CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM));
+    assert_unknown_wire(&input, &[0xa0, 0x06, 1]);
     let mut body = CryptoEcdsaMessageInput::default();
     body.hash = HashAlgorithm::HASH_ALGORITHM_SHA2_256.into();
-    body.merge_from_slice(&[0xa0, 0x06, 1]).unwrap();
+    let mut modified_child = body.encode_to_vec();
+    modified_child.extend_from_slice(&[0xa0, 0x06, 1]);
     input.input = Some(Input::Message(Box::new(body)));
-    assert!(matches!(EcdsaInput::try_from(&input),
-        Err(error) if error == CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM));
+    let mut modified = input.encode_to_vec();
+    // The duplicate child retains protobuf merge semantics but the unknown
+    // modifier must fail admission before any operation uses the message.
+    buffa::encoding::encode_varint((1u64 << 3) | 2, &mut modified);
+    buffa::encoding::encode_varint(
+        u64::try_from(modified_child.len()).unwrap_or(u64::MAX),
+        &mut modified,
+    );
+    modified.extend_from_slice(&modified_child);
+    assert!(crypto_proto::wire::decode_protobuf::<CryptoEcdsaInput>(&modified).is_err());
     let key = EcdsaKey::try_from(&import()).unwrap();
     assert!(
         matches!(contract::sign(&key, &CryptoEcdsaSignRequest::default()),
@@ -159,7 +166,7 @@ fn message_and_prehash_signing_preserve_native_results() -> Result<(), CryptoErr
     let digest = reallyme_crypto::sha2::digest(b"exact TBS bytes\0");
     let mut body = CryptoEcdsaPrehashInput::default();
     body.hash = HashAlgorithm::HASH_ALGORITHM_SHA2_256.into();
-    body.digest.extend_from_slice(digest.as_bytes());
+    assert!(body.digest.extend_from_slice(digest.as_bytes()).is_ok());
     let mut input = CryptoEcdsaInput::default();
     input.input = Some(Input::Prehash(Box::new(body)));
     let mut prehash = CryptoEcdsaSignRequest::default();
@@ -176,7 +183,10 @@ fn message_and_prehash_signing_preserve_native_results() -> Result<(), CryptoErr
     )?);
     verify.input = MessageField::some(message(b"exact TBS bytes\0"));
     verify.options = MessageField::some(options());
-    verify.signature.extend_from_slice(&signature.signature);
+    assert!(verify
+        .signature
+        .extend_from_slice(&signature.signature)
+        .is_ok());
     contract::verify(&verify)?;
     verify.input = MessageField::some(message(b"changed TBS bytes\0"));
     assert!(
@@ -268,16 +278,26 @@ fn native_and_transport_owners_have_drop_cleanup() {
 fn agreement_adapter_preserves_native_clearing_result_and_key_errors() -> Result<(), CryptoError> {
     let key = EcdsaKey::try_from(&import())?;
     let mut request = CryptoEcdsaAgreementRequest::default();
-    request.peer_sec1.extend_from_slice(key.public_key());
+    assert!(request
+        .peer_sec1
+        .extend_from_slice(key.public_key())
+        .is_ok());
     let native = key.agree(key.public_key())?;
     let adapted = contract::agree(&key, &request)?;
     assert_eq!(
         contract::agreement_result(&adapted)?.shared_secret,
         contract::agreement_result(&native)?.shared_secret
     );
-    request.peer_sec1.truncate(1);
+    request.peer_sec1.resize(1, 0)?;
     assert!(
         matches!(contract::agree(&key, &request), Err(error) if error == CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY)
     );
     Ok(())
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

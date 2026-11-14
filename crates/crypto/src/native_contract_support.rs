@@ -14,14 +14,6 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoNativeKeyCapabilities, NativeKeySource,
 };
 
-pub(crate) fn known_fields(empty: bool) -> Result<(), CryptoError> {
-    if empty {
-        Ok(())
-    } else {
-        Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
-    }
-}
-
 // The destination must already belong to a clearing generated message. Install
 // capacity and initialized length before copying any secret or privacy bytes.
 #[cfg(any(
@@ -49,16 +41,14 @@ pub(crate) fn known_fields(empty: bool) -> Result<(), CryptoError> {
         )
     )
 ))]
-pub(crate) fn copy_bytes(destination: &mut Vec<u8>, source: &[u8]) -> Result<(), CryptoError> {
+pub(crate) fn copy_bytes(
+    destination: &mut crypto_proto::SecretBytes,
+    source: &[u8],
+) -> Result<(), CryptoError> {
     if !destination.is_empty() {
         return Err(CryptoError::BACKEND_INVALID_STATE);
     }
-    destination
-        .try_reserve_exact(source.len())
-        .map_err(|_| CryptoError::BACKEND_INTERNAL)?;
-    destination.resize(source.len(), 0);
-    destination.copy_from_slice(source);
-    Ok(())
+    destination.extend_from_slice(source)
 }
 
 #[cfg(any(
@@ -88,7 +78,6 @@ pub(crate) fn capabilities(
         supports_explicit_zeroize: explicit_zeroize,
         zeroizes_private_storage_on_drop: !opaque,
         provider_managed_cleanup: opaque,
-        __buffa_unknown_fields: Default::default(),
     })
 }
 
@@ -100,6 +89,5 @@ pub(crate) fn verified(
     };
     CryptoNativeVerificationResult {
         status: CryptoVerificationStatus::CRYPTO_VERIFICATION_STATUS_VALID.into(),
-        __buffa_unknown_fields: Default::default(),
     }
 }

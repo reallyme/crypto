@@ -125,13 +125,11 @@ fn hkdf_request(info: Vec<u8>) -> CryptoHkdfDeriveRequest {
             algorithm: Some(Algorithm::Kdf(EnumValue::from(
                 KdfAlgorithm::KDF_ALGORITHM_HKDF_SHA256,
             ))),
-            __buffa_unknown_fields: Default::default(),
         }),
-        input_key_material: vec![0x0b; 22],
-        salt: Vec::new(),
-        info,
+        input_key_material: vec![0x0b; 22].into(),
+        salt: Vec::new().into(),
+        info: info.into(),
         output_length: 32,
-        __buffa_unknown_fields: Default::default(),
     }
 }
 

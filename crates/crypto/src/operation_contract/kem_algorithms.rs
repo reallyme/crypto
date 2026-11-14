@@ -27,6 +27,5 @@ pub(super) fn kem_algorithm(
 pub(super) fn kem_identifier(algorithm: KemAlgorithm) -> CryptoAlgorithmIdentifier {
     CryptoAlgorithmIdentifier {
         algorithm: Some(ProtoAlgorithmBranch::Kem(EnumValue::from(algorithm))),
-        __buffa_unknown_fields: Default::default(),
     }
 }

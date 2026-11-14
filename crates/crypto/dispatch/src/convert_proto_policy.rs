@@ -298,7 +298,6 @@ impl From<ProviderDecision> for ProtoProviderDecision {
             key_copy_boundary: ProtoKeyCopyBoundary::from(key_copy_boundary).into(),
             output_policy: ProtoProviderOutputPolicy::from(output_policy).into(),
             fallback: ProtoFallbackPolicy::from(fallback).into(),
-            __buffa_unknown_fields: Default::default(),
         }
     }
 }
@@ -314,13 +313,9 @@ impl TryFrom<&crypto_proto::generated::proto::reallyme::crypto::v1::ProviderDeci
         request: &crypto_proto::generated::proto::reallyme::crypto::v1::ProviderDecisionRequest,
     ) -> Result<Self, Self::Error> {
         use crypto_proto::generated::proto::reallyme::crypto::v1::CryptoKeyAlgorithmIdentifier;
-        if !request.__buffa_unknown_fields.is_empty() {
-            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
-        }
         let operation = ProviderOperation::try_from(request.operation)?;
         let key = CryptoKeyAlgorithmIdentifier {
             algorithm: request.algorithm,
-            __buffa_unknown_fields: Default::default(),
         };
         let algorithm = crypto_core::Algorithm::try_from(&key)?;
         Ok(crate::provider::provider_decision(operation, algorithm))
@@ -333,7 +328,6 @@ impl From<ProviderDecision>
     fn from(value: ProviderDecision) -> Self {
         Self {
             decision: buffa::MessageField::some(value.into()),
-            __buffa_unknown_fields: Default::default(),
         }
     }
 }

@@ -90,21 +90,25 @@ fn fixed_request_rejects_presence_invalid_inputs_and_unknown_modifiers(
         Some(CryptoError::PRIMITIVE_INVALID_SALT)
     );
     wire = request();
-    wire.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(
-        Argon2DeriveInputs::try_from(&wire).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
-    let mut profile = CryptoArgon2idProfileIdentifier {
+    assert_unknown_wire(&wire, &[0xa0, 0x06, 0x01]);
+    let profile = CryptoArgon2idProfileIdentifier {
         kdf_version: Argon2idKdfVersion::ARGON2ID_KDF_VERSION_V1.into(),
-        __buffa_unknown_fields: Default::default(),
     };
-    profile.merge_from_slice(&[0xa0, 0x06, 0x01])?;
+    let mut modified_child = profile.encode_to_vec();
+    modified_child.extend_from_slice(&[0xa0, 0x06, 0x01]);
     wire = request();
     wire.profile = MessageField::some(profile);
-    assert_eq!(
-        Argon2DeriveInputs::try_from(&wire).err(),
-        Some(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    let mut modified = wire.encode_to_vec();
+    // The duplicate child retains protobuf merge semantics but the unknown
+    // modifier must fail admission before any operation uses the message.
+    buffa::encoding::encode_varint((1u64 << 3) | 2, &mut modified);
+    buffa::encoding::encode_varint(
+        u64::try_from(modified_child.len()).unwrap_or(u64::MAX),
+        &mut modified,
+    );
+    modified.extend_from_slice(&modified_child);
+    assert!(
+        crypto_proto::wire::decode_protobuf::<CryptoArgon2FixedDeriveRequest>(&modified).is_err()
     );
     Ok(())
 }
@@ -112,11 +116,9 @@ fn request() -> CryptoArgon2FixedDeriveRequest {
     CryptoArgon2FixedDeriveRequest {
         profile: MessageField::some(CryptoArgon2idProfileIdentifier {
             kdf_version: Argon2idKdfVersion::ARGON2ID_KDF_VERSION_V1.into(),
-            __buffa_unknown_fields: Default::default(),
         }),
-        secret: vec![0, 0xff, 1],
-        salt: vec![0x11; 16],
-        __buffa_unknown_fields: Default::default(),
+        secret: vec![0, 0xff, 1].into(),
+        salt: vec![0x11; 16].into(),
     }
 }
 
@@ -127,4 +129,11 @@ fn generated_options_owners_clear_retained_storage() {
     require_cleanup::<
         crypto_proto::generated::proto::reallyme::crypto::v1::CryptoArgon2FixedDeriveRequest,
     >();
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

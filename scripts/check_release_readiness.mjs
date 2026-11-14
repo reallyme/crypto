@@ -23,7 +23,7 @@ if (policyPins.error !== undefined || policyPins.status !== 0) {
 }
 const { assertCryptoOperationRouteReadiness } = await import("./crypto_operation_route_readiness.mjs");
 const { REQUIRED_WORKFLOW_GATES, workflowGateViolation } = await import("./workflow_gate_policy.mjs");
-const { projectLegacyScalarChecks } = await import("./proto_scalar_policy.mjs");
+const { assertNativeBuffaReadiness } = await import("./native_buffa_readiness.mjs");
 // Environment configuration must not substitute an unreviewed core.
 const { createReleaseReadinessContext } = await import("./release-readiness/core.mjs");
 
@@ -31,6 +31,11 @@ const { createReleaseReadinessContext } = await import("./release-readiness/core
 // CARGO_TERM_COLOR=always, which otherwise inserts ANSI escapes into crate names
 // even when stdout is captured and makes exact registry lookups fail in CI.
 process.env.CARGO_TERM_COLOR = "never";
+
+const readinessContext = createReleaseReadinessContext({
+  scriptUrl: import.meta.url,
+  requireTrackedFiles: true,
+});
 
 const {
   readText,
@@ -44,9 +49,8 @@ const {
   assertCargoMetadataPolicy,
   assertCargoWorkspacePolicy,
   assertNodeWorkflowJobsPinNode,
-  assertReallyMeProtobufReleasePolicy,
   assertProtoContract,
-  assertReallyMeRustProtoRepositoryPolicy,
+  assertRustSourcePolicy,
   assertReallyMeVendoredCorePolicy,
   assertSpdxHeaders,
   assertWorkflowActionsPinned,
@@ -57,10 +61,7 @@ const {
   assertTypeScriptSourcePolicy,
   assertSwiftSourcePolicy,
   assertKotlinSourcePolicy,
-} = createReleaseReadinessContext({
-  scriptUrl: import.meta.url,
-  requireTrackedFiles: true,
-});
+} = readinessContext;
 
 const assertDocumented = (path, phrase) => {
   if (!readText(path).includes(phrase)) {
@@ -151,7 +152,7 @@ const rustCodecVersion = "0.3.4";
 const sdkCodecVersion = "0.3.2";
 const rustSemverBaselineCommit = "54de2955ebf73e9fd1c306eba207550b3716d767";
 const cargoSemverChecksVersion = "0.50.0";
-const buffaVersion = "0.9.2";
+const buffaVersion = "0.1.0";
 const releaseReadinessCommit = "18a6d91d99837e80f92e41fe04effb0b043d754e";
 const releaseReadinessCommand = "node scripts/run_pinned_release_readiness.mjs";
 const gradleWrapperValidationAction =
@@ -221,27 +222,6 @@ const collectCargoManifests = (directory) => {
   return paths;
 };
 
-const assertZeroizingGeneratedUnknownFieldOwner = (generatedPath, messageName) => {
-  const generated = readText(generatedPath);
-  const structNeedle = `pub struct ${messageName} {`;
-  const structStart = generated.indexOf(structNeedle);
-  if (structStart < 0) {
-    fail(`${generatedPath} is missing generated message ${messageName}`);
-  }
-  const nextStruct = generated.indexOf("\npub struct ", structStart + structNeedle.length);
-  const messageRegion = generated.slice(
-    structStart,
-    nextStruct < 0 ? generated.length : nextStruct,
-  );
-  if (
-    !messageRegion.includes(
-      "pub __buffa_unknown_fields: __ReallyMeZeroizingUnknownFields,",
-    )
-  ) {
-    fail(`${generatedPath} message ${messageName} does not own unknown fields in zeroizing storage`);
-  }
-};
-
 if (releaseVersionEnv !== undefined && !/^[0-9]+[.][0-9]+[.][0-9]+$/.test(releaseVersionEnv)) {
   fail("RELEASE_VERSION must be an exact semver release such as 0.3.17");
 }
@@ -257,7 +237,6 @@ if (!ciPolicyMode && !generatedFreshnessMode && sdkSourceMode === undefined) {
   runNodeCheck("--test", ["--test-concurrency=4", "scripts/**/*.test.mjs", "packages/ts/scripts/*.test.mjs"]);
 }
 runNodeCheck("scripts/publish_crates_in_order.mjs", ["order"]);
-runNodeCheck("scripts/redact_crypto_proto_debug.mjs", ["--check-idempotent"]);
 const byId = new Map();
 for (const algorithm of manifest.algorithms) {
   byId.set(algorithm.id, algorithm);
@@ -713,7 +692,7 @@ if (!cryptoProtoCargo.includes("publish = true")) {
 }
 if (
   !cryptoProtoCargo.includes(
-    'include = ["/proto/**/*.proto", "/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]',
+    'include = ["/proto/**/*.proto", "/src/**/*.rs", "/tests/fixtures/guarded/**", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]',
   )
 ) {
   fail("crates/proto/Cargo.toml must use an anchored package include allowlist");
@@ -1857,7 +1836,7 @@ assertContains(
 );
 assertContains(
   "crates/proto/src/generated/buffa/reallyme.crypto.v1.crypto.__view.rs",
-  "serialization of sensitive protobuf views is disabled",
+  "::buffa::json_helpers::ViewJsonErrorReason::Denied",
 );
 assertContains("fuzz/fuzz_targets/jwk_multikey.rs", "serde_json::from_str::<Jwk>");
 assertContains("fuzz/fuzz_targets/jwk_multikey.rs", "multikey_to_jwk(input, JwkOptions::default())");
@@ -2063,7 +2042,7 @@ assertContains("crates/proto/src/wire/codec.rs", "pub(crate) fn decode_json");
 assertContains("crates/proto/src/operation_response_wire.rs", "encode_operation_response");
 assertContains(
   "crates/proto/src/wire/codec.rs",
-  "pub fn encode_protobuf<M: Message>(message: &M) -> Zeroizing<Vec<u8>>",
+  "pub fn encode_protobuf<M: Message>(message: &M) -> Result<Zeroizing<Vec<u8>>, CryptoWireError>",
 );
 assertContains(
   "crates/proto/src/operation_response_wire.rs",
@@ -2345,146 +2324,6 @@ assertContains(".github/workflows/protobuf-ci.yml", "buf breaking --against '.gi
 assertNotContains(".github/workflows/protobuf-ci.yml", "cargo test -p");
 assertContains(".github/workflows/rust-ci.yml", "cargo nextest run --locked --workspace --all-features");
 assertContains("scripts/release-readiness/core.mjs", "assertReallyMeProtobufReleasePolicy");
-const protobufReleasePolicy = {
-  workflowMode: "delegated",
-  bufVersion: "1.75.0",
-  buffaVersion,
-  generatedFreshnessStepRun:
-    `${releaseReadinessCommand} --generated-freshness`,
-  installBufUses:
-    "bufbuild/buf-action@37ac33d8960807670a6e9719080e885197b09cc6",
-  hardeningPolicy: {
-    hardeningScript: "scripts/redact_crypto_proto_debug.mjs",
-    protoSchema: "crates/proto/proto/reallyme/crypto/v1/crypto.proto",
-    generatedRust: "crates/proto/src/generated/buffa/reallyme.crypto.v1.crypto.rs",
-    generatedView: "crates/proto/src/generated/buffa/reallyme.crypto.v1.crypto.__view.rs",
-    protoCargo: "crates/proto/Cargo.toml",
-    requiredScriptNeedles: [
-      "byteFieldNames",
-      "byteBearingMessageNames",
-      "messageNames",
-      "sensitiveMessageNames",
-      "redactedMessageNames",
-      "sensitiveViewSerializationError",
-      "unknownFieldDropOwnerNames",
-      "wrappedUnknownFieldOwnerNames",
-      "__ReallyMeZeroizingUnknownFields",
-      "impl ::core::ops::Drop for",
-      "deserialize_zeroizing_bytes",
-      "Zeroize::zeroize",
-      "debugDescription",
-      "public java.lang.String toString()",
-      '"--check-idempotent"',
-      "schemaCode",
-      "messageBodies",
-    ],
-    forbiddenScriptNeedles: ["return 0x524d"],
-    requiredCargoNeedles: ['"buffa/json"'],
-    // Every byte field derives the same strict privacy requirement. "Sensitive" here
-    // means the generated owner must redact and wipe the value; it includes
-    // public keys and protocol transcripts because they are often persistent
-    // identity correlators even when they are not cryptographic secrets.
-    scalarFieldClassifications: projectLegacyScalarChecks(
-      readText("crates/proto/proto/reallyme/crypto/v1/crypto.proto"),
-      readText("crates/proto/src/generated/buffa/reallyme.crypto.v1.crypto.rs"),
-    ),
-    requiredGeneratedNeedles: [
-      "pub use crate::error_types::CryptoErrorReason;",
-      '.field("secret_key", &"<redacted>")',
-      '.field("opaque_handle", &"<redacted>")',
-      "impl ::core::ops::Drop for CryptoAeadSealRequest",
-      "impl ::core::ops::Drop for CryptoPlatformPrivateKeyHandle",
-      "impl ::core::ops::Drop for CryptoPlatformKeyGenerateRequest",
-      "impl ::core::ops::Drop for CryptoPlatformKeyAttestRequest",
-      "impl ::core::ops::Drop for CryptoPlatformKeyAttestationCertificate",
-      "pub struct __ReallyMeZeroizingUnknownFields",
-      'formatter.write_str("__ReallyMeZeroizingUnknownFields(<redacted>)")',
-      "impl ::core::ops::Drop for __ReallyMeZeroizingUnknownFields",
-      "deserialize_zeroizing_bytes",
-    ],
-    forbiddenGeneratedNeedles: [
-      "pub enum CryptoErrorReason {",
-      "::buffa::alloc::format!(",
-      '.field("secret_key", &self.secret_key)',
-      '.field("payload", &self.payload)',
-    ],
-    requiredViewNeedles: [
-      'formatter.write_str("CryptoKmac256DeriveRequestOwnedView(<redacted>)")',
-      'formatter.write_str("CryptoOperationRequestOwnedView(<redacted>)")',
-      'formatter.write_str("CryptoOperationResponseOwnedView(<redacted>)")',
-      'formatter.write_str("CryptoOperationResultOwnedView(<redacted>)")',
-    ],
-    additionalGeneratedPolicies: [
-      {
-        path: "crates/proto/src/generated/error_contract.rs",
-        required: [
-          "pub enum CryptoErrorReason {",
-          "pub struct CryptoError {\n    reason: CryptoErrorReason,",
-          '#[error("{reason}")]',
-          "pub const fn try_new(reason: CryptoErrorReason) -> Result<Self, Self>",
-        ],
-        forbidden: [
-          "pub enum CryptoError {",
-          "impl Default for CryptoError {",
-          "pub reason:",
-        ],
-      },
-      {
-        path: "gen/swift/reallyme/crypto/v1/crypto.pb.swift",
-        required: [
-          "ReallyMeProtoCryptoOperationRequest(<redacted>)",
-          "ReallyMeProtoCryptoOperationResponse(<redacted>)",
-          "ReallyMeProtoCryptoOperationResult(<redacted>)",
-        ],
-      },
-      {
-        path: "gen/java/me/really/crypto/v1/CryptoOperationRequest.java",
-        required: ["CryptoOperationRequest{<redacted>}"],
-      },
-      {
-        path: "gen/java/me/really/crypto/v1/CryptoOperationResponse.java",
-        required: ["CryptoOperationResponse{<redacted>}"],
-      },
-      {
-        path: "gen/java/me/really/crypto/v1/CryptoOperationResult.java",
-        required: ["CryptoOperationResult{<redacted>}"],
-      },
-    ],
-  },
-  generatedFreshness: {
-    generatedPaths: [
-      "crates/hpke/src/generated",
-      "crates/proto/src/generated",
-      "packages/ts/src/proto/generated",
-      "gen",
-    ],
-    commands: [
-      ["buf", ["lint"]],
-      ["buf", ["generate"]],
-      ["node", ["scripts/redact_crypto_proto_debug.mjs"]],
-      ["node", ["scripts/generate_error_contract.mjs"]],
-      ["node", ["scripts/redact_crypto_proto_debug.mjs", "--check-idempotent"]],
-      ["cargo", ["fmt", "--package", "reallyme-crypto-proto"]],
-      ["cargo", ["run", "-p", "crypto-conformance-vectors", "--bin", "gen_vectors"]],
-    ],
-  },
-};
-
-for (const messageName of [
-  "CryptoOperationRequest",
-  "CryptoOperationResponse",
-  "CryptoOperationResult",
-]) {
-  // These oneof owners contain no directly classified scalar field, so the
-  // shared upstream policy cannot infer their unknown-field retention risk.
-  // Keep the repository-specific assertion here while the vendored core stays
-  // byte-for-byte identical to its independently reviewed upstream pin.
-  assertZeroizingGeneratedUnknownFieldOwner(
-    protobufReleasePolicy.hardeningPolicy.generatedRust,
-    messageName,
-  );
-}
-
 const primaryOperationBoundaryPolicy = {
   protoPath: "crates/proto/proto/reallyme/crypto/v1/crypto.proto",
   operationRequest: "CryptoOperationRequest",
@@ -2557,6 +2396,7 @@ const repositoryPolicy = {
     generatedPrefixes: [
       "crates/proto/src/generated.rs",
       "crates/proto/src/generated",
+      "crates/proto/tests/fixtures/guarded/generated",
     ],
     // The umbrella facade is documentation-heavy but contains only declarations
     // and re-exports. Keep a bounded allowance without relaxing implementation
@@ -2678,6 +2518,7 @@ const repositoryPolicy = {
     license: "SPDX-License-Identifier: MIT OR Apache-2.0",
     exclusions: [
       { path: "crates/proto/src/generated", reason: "generated" },
+      { path: "crates/proto/tests/fixtures/guarded/generated", reason: "generated" },
       { path: "packages/ts/src/proto/generated", reason: "generated" },
       { path: "gen", reason: "generated" },
     ],
@@ -2685,7 +2526,6 @@ const repositoryPolicy = {
     requireExclusionReasons: true,
   },
   protobufBoundary: primaryOperationBoundaryPolicy,
-  protobufRelease: protobufReleasePolicy,
   cargoMetadata: {
     // Push CI validates the reviewed manifest/lockfile below. Publication
     // freshness belongs to full local/release validation; a new upstream
@@ -2886,14 +2726,6 @@ if (sdkSourceMode !== undefined) {
   process.exit(0);
 }
 
-const primaryOperationBoundaryReady = () => {
-  const proto = readText(primaryOperationBoundaryPolicy.protoPath);
-  return (
-    proto.includes("message CryptoOperationResponse") &&
-    proto.includes("message CryptoOperationResult")
-  );
-};
-
 const assertReleaseWorkflowCredentialGates = () => {
   const releaseWorkflows = [
     ".github/workflows/crates-release.yml",
@@ -3061,29 +2893,54 @@ const assertNoTemplateMarkers = (value, path = "repositoryPolicy") => {
   }
 };
 
+const assertCryptoOperationBindings = (policy) => {
+  const { extractProtoBlocks, stripProtoLineComments } = readinessContext;
+  assertProtoContract(policy.protoPath);
+  const proto = stripProtoLineComments(readText(policy.protoPath));
+  const messages = new Map(extractProtoBlocks(proto, "message").map(({ name, body }) => [name, body]));
+  if (extractProtoBlocks(proto, "service").length !== 0 ||
+      !/\boneof\s+operation\s*\{/u.test(messages.get(policy.operationRequest) ?? "") ||
+      !/\boneof\s+result\s*\{/u.test(messages.get(policy.operationResult) ?? "") ||
+      !/\boneof\s+outcome\s*\{\s*CryptoOperationResult\s+result\s*=\s*1\s*;\s*CryptoError\s+error\s*=\s*2\s*;/u.test(messages.get(policy.operationResponse) ?? "")) {
+    fail("protobuf operation request, result or error boundary changed");
+  }
+  assertContains(policy.protoReadme, "JSON is a generated ProtoJSON request convenience. Results remain one fully");
+  for (const needle of [policy.operationRequest, policy.operationResponse, "Zeroizing<Vec<u8>>",
+    "pub fn process_operation_response(", "pub fn process_operation_response_json("]) assertContains(policy.wirePath, needle);
+  for (const needle of ["pub fn process_json(", "pub fn process_proto_with_operation", "pub fn process_proto_operation", "CodecProtoResultEnvelope"]) assertNotContains(policy.wirePath, needle);
+  for (const needle of ["DecodeOptions::new()", policy.binaryResponseNeedle, ...policy.requiredCodecNeedles]) assertContains(policy.codecPath, needle);
+  for (const needle of policy.forbiddenCodecNeedles) assertNotContains(policy.codecPath, needle);
+  for (const adapter of policy.sdkAdapters) {
+    for (const needle of [adapter.processOperationNeedle, adapter.processOperationJsonNeedle, adapter.binaryResponseNeedle]) assertContains(adapter.path, needle);
+  }
+};
+
 const assertRepositoryPolicy = () => {
   assertNoTemplateMarkers(repositoryPolicy);
-  if (primaryOperationBoundaryReady()) {
-    assertReallyMeRustProtoRepositoryPolicy(repositoryPolicy);
-  } else {
-    assertNotContains(primaryOperationBoundaryPolicy.protoPath, "message CryptoOperationResponse");
-    assertNotContains(primaryOperationBoundaryPolicy.protoPath, "message CryptoOperationResult");
-    assertReallyMeVendoredCorePolicy(repositoryPolicy.vendoredCore);
-    assertWorkflowActionsPinned(repositoryPolicy.workflowActions);
-    assertNodeWorkflowJobsPinNode(repositoryPolicy.nodeWorkflows);
-    assertCargoFuzzWorkflowPolicy(repositoryPolicy.cargoFuzz);
-    assertCargoWorkspacePolicy(repositoryPolicy.cargoWorkspace);
-    assertCargoMetadataPolicy(repositoryPolicy.cargoMetadata);
-    assertTextPolicy(repositoryPolicy.text);
-    assertSpdxHeaders(repositoryPolicy.spdx);
-    assertReallyMeProtobufReleasePolicy({
-      ...repositoryPolicy.protobufRelease,
-      generatedFreshnessMode: repositoryPolicy.generatedFreshnessMode,
-    });
-    for (const workflow of repositoryPolicy.workflows) {
-      assertWorkflowPolicy(workflow);
-    }
-  }
+  assertReallyMeVendoredCorePolicy(repositoryPolicy.vendoredCore);
+  assertWorkflowActionsPinned(repositoryPolicy.workflowActions);
+  assertNodeWorkflowJobsPinNode(repositoryPolicy.nodeWorkflows);
+  assertCargoFuzzWorkflowPolicy(repositoryPolicy.cargoFuzz);
+  assertCargoWorkspacePolicy(repositoryPolicy.cargoWorkspace);
+  assertRustSourcePolicy(repositoryPolicy.rustSource);
+  if (repositoryPolicy.typescriptSource !== undefined) assertTypeScriptSourcePolicy(repositoryPolicy.typescriptSource);
+  if (repositoryPolicy.swiftSource !== undefined) assertSwiftSourcePolicy(repositoryPolicy.swiftSource);
+  if (repositoryPolicy.kotlinSource !== undefined) assertKotlinSourcePolicy(repositoryPolicy.kotlinSource);
+  assertSpdxHeaders(repositoryPolicy.spdx);
+  // The pinned shared policy expects the upstream generator names. Validate
+  // the unchanged application contract through its independent primitives.
+  assertCryptoOperationBindings(primaryOperationBoundaryPolicy);
+  assertNativeBuffaReadiness(readinessContext, {
+    generatedFreshnessMode,
+    protoPath: primaryOperationBoundaryPolicy.protoPath,
+    paths: ["scripts/generate_protobuf.mjs", "scripts/generate_proto_enums.mjs",
+      "scripts/proto_generation_policy.mjs", "scripts/redact_sdk_proto_debug.mjs",
+      "scripts/native_buffa_readiness.mjs", "scripts/proto_scalar_policy.mjs",
+      "scripts/restrict_buffa_view_handles.mjs"],
+  });
+  assertCargoMetadataPolicy(repositoryPolicy.cargoMetadata);
+  assertTextPolicy(repositoryPolicy.text);
+  for (const workflow of repositoryPolicy.workflows) assertWorkflowPolicy(workflow);
   assertReleaseWorkflowCredentialGates();
   assertReleaseWorkflowPermissions();
 };
@@ -3128,7 +2985,7 @@ assertContains(
 );
 assertContains(
   "crates/proto/src/generated/buffa/reallyme.crypto.v1.crypto.rs",
-  "deserialize_zeroizing_bytes",
+  "::buffa::json_helpers::bytes_policy::deserialize(d)",
 );
 assertContains(
   "crates/crypto/core/tests/wire_tests.rs",

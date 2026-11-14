@@ -37,7 +37,6 @@ impl ZeroizeOnDrop for ProtectedJwkOptions {}
 impl TryFrom<&CryptoJwkOptions> for ProtectedJwkOptions {
     type Error = CryptoError;
     fn try_from(value: &CryptoJwkOptions) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         let kid = read_optional_text(value.kid.as_deref())?;
         let mut owner = Self {
             options: JwkOptions {
@@ -120,11 +119,9 @@ impl ZeroizeOnDrop for ProtectedJwk {}
 impl TryFrom<&PublicJwk> for ProtectedJwk {
     type Error = CryptoError;
     fn try_from(value: &PublicJwk) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         let mut owner = Self { jwk: empty_jwk() };
         match &value.key {
             Some(Key::Ec(value)) => {
-                require_known(value.__buffa_unknown_fields.is_empty())?;
                 let metadata = metadata(value.key_algorithm, Shape::Ec)?;
                 let alg = read_optional_text(value.alg.as_deref())?;
                 let usage = read_optional_text(value.usage.as_deref())?;
@@ -153,7 +150,6 @@ impl TryFrom<&PublicJwk> for ProtectedJwk {
                 }
             }
             Some(Key::Okp(value)) => {
-                require_known(value.__buffa_unknown_fields.is_empty())?;
                 let metadata = metadata(value.key_algorithm, Shape::Okp)?;
                 let alg = read_optional_text(value.alg.as_deref())?;
                 let usage = read_optional_text(value.usage.as_deref())?;
@@ -172,7 +168,6 @@ impl TryFrom<&PublicJwk> for ProtectedJwk {
                 }
             }
             Some(Key::Akp(value)) => {
-                require_known(value.__buffa_unknown_fields.is_empty())?;
                 let metadata = metadata(value.key_algorithm, Shape::Akp)?;
                 let usage = read_optional_text(value.usage.as_deref())?;
                 let public_key = read_text(&value.public_key_base64url)?;
@@ -258,10 +253,7 @@ impl TryFrom<&Jwk> for PublicJwk {
                 Key::Akp(Box::new(output))
             }
         };
-        Ok(Self {
-            key: Some(key),
-            __buffa_unknown_fields: Default::default(),
-        })
+        Ok(Self { key: Some(key) })
     }
 }
 
@@ -291,7 +283,6 @@ impl ZeroizeOnDrop for ProtectedJwks {}
 impl TryFrom<&PublicJwks> for ProtectedJwks {
     type Error = CryptoError;
     fn try_from(value: &PublicJwks) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         check_count(value.keys.len())?;
         let mut owner = Self {
             jwks: Jwks::new(Vec::new()),
@@ -312,15 +303,15 @@ impl TryFrom<&Jwks> for PublicJwks {
     type Error = CryptoError;
     fn try_from(value: &Jwks) -> Result<Self, Self::Error> {
         check_count(value.keys.len())?;
-        let mut output = Self::default();
-        output
-            .keys
-            .try_reserve_exact(value.keys.len())
+        // Reserve before inserting any guarded element. List takes ownership of
+        // this allocation without copying; a failed conversion drops each owner.
+        let mut keys = Vec::new();
+        keys.try_reserve_exact(value.keys.len())
             .map_err(|_| CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED)?;
         for key in &value.keys {
-            output.keys.push(PublicJwk::try_from(key)?);
+            keys.push(PublicJwk::try_from(key)?);
         }
-        Ok(output)
+        Ok(Self { keys: keys.into() })
     }
 }
 
@@ -434,35 +425,26 @@ fn read_text(value: &[u8]) -> Result<&str, CryptoError> {
 fn read_optional_text(value: Option<&[u8]>) -> Result<Option<&str>, CryptoError> {
     value.map(read_text).transpose()
 }
-fn require_known(known: bool) -> Result<(), CryptoError> {
-    if known {
-        Ok(())
-    } else {
-        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    }
-}
 
 // All copies are installed in their final clearing owner before allocation.
-fn copy_into(output: &mut Vec<u8>, value: &[u8]) -> Result<(), CryptoError> {
+fn copy_into(output: &mut crypto_proto::SecretBytes, value: &[u8]) -> Result<(), CryptoError> {
     check_length(value)?;
     if !output.is_empty() {
         return Err(CryptoError::BACKEND_INVALID_STATE);
     }
     output
-        .try_reserve_exact(value.len())
-        .map_err(|_| CryptoError::BACKEND_INTERNAL)?;
-    output.extend_from_slice(value);
-    Ok(())
+        .extend_from_slice(value)
+        .map_err(|_| CryptoError::BACKEND_INTERNAL)
 }
 fn copy_optional_bytes(
-    output: &mut Option<Vec<u8>>,
+    output: &mut Option<crypto_proto::SecretBytes>,
     value: Option<&str>,
 ) -> Result<(), CryptoError> {
     if output.is_some() {
         return Err(CryptoError::BACKEND_INVALID_STATE);
     }
     if let Some(value) = value {
-        let field = output.get_or_insert_with(Vec::new);
+        let field = output.get_or_insert_with(crypto_proto::SecretBytes::default);
         copy_into(field, value.as_bytes())?;
     }
     Ok(())

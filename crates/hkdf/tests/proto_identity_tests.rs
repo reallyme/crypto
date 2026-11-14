@@ -18,10 +18,7 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 #[cfg_attr(not(target_arch = "wasm32"), test)]
 fn hkdf_suite_parity_covers_every_generated_identity_and_exact_wire_bytes() {
     for &value in HashAlgorithm::values() {
-        let identifier = CryptoHkdfSuiteIdentifier {
-            hash: value.into(),
-            __buffa_unknown_fields: Default::default(),
-        };
+        let identifier = CryptoHkdfSuiteIdentifier { hash: value.into() };
         let expected: Option<(HkdfSuite, &[u8])> = match value {
             HashAlgorithm::HASH_ALGORITHM_SHA2_256 => Some((HkdfSuite::Sha2_256, &[0x08, 0x64])),
             HashAlgorithm::HASH_ALGORITHM_SHA2_384 => Some((HkdfSuite::Sha2_384, &[0x08, 0x6e])),
@@ -35,7 +32,6 @@ fn hkdf_suite_parity_covers_every_generated_identity_and_exact_wire_bytes() {
                 assert_eq!(HkdfSuite::try_from(&identifier), Ok(native));
                 let reverse = CryptoHkdfSuiteIdentifier::from(native);
                 assert_eq!(reverse.hash.as_known(), Some(value));
-                assert!(reverse.__buffa_unknown_fields.is_empty());
                 assert_eq!(reverse.encode_to_vec().as_slice(), wire);
             }
             None => {
@@ -54,7 +50,6 @@ fn hkdf_suite_rejects_zero_negative_and_unknown_numbers() {
     for number in [i32::MIN, -1, 0, 99_999, i32::MAX] {
         let identifier = CryptoHkdfSuiteIdentifier {
             hash: number.into(),
-            __buffa_unknown_fields: Default::default(),
         };
         assert_eq!(
             HkdfSuite::try_from(&identifier),
@@ -65,16 +60,14 @@ fn hkdf_suite_rejects_zero_negative_and_unknown_numbers() {
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
-fn hkdf_suite_rejects_retained_unknown_modifiers() -> Result<(), buffa::DecodeError> {
-    let mut identifier = CryptoHkdfSuiteIdentifier::from(HkdfSuite::Sha2_256);
-    // Unknown field 100 is public test data, not an accepted policy modifier.
-    identifier.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert!(!identifier.__buffa_unknown_fields.is_empty());
+fn hkdf_suite_rejects_unknown_wire_modifiers() {
+    let identifier = CryptoHkdfSuiteIdentifier::from(HkdfSuite::Sha2_256);
+    let mut bytes = identifier.encode_to_vec();
+    bytes.extend_from_slice(&[0xa0, 0x06, 0x01]);
     assert_eq!(
-        HkdfSuite::try_from(&identifier),
-        Err(UnsupportedProtoAlgorithm)
+        crypto_proto::wire::decode_protobuf::<CryptoHkdfSuiteIdentifier>(&bytes),
+        Err(crypto_proto::wire::CryptoWireError::malformed_protobuf())
     );
-    Ok(())
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]

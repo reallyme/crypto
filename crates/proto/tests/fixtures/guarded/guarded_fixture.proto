@@ -1,0 +1,30 @@
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+syntax = "proto3";
+
+package guarded_fixture;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+message Fixture {
+  repeated float embedding = 1;
+  map<string, bytes> entries = 2;
+  google.protobuf.Timestamp time = 3;
+  google.protobuf.Duration interval = 4;
+  google.protobuf.Value value = 5;
+  google.protobuf.Struct object = 6;
+  google.protobuf.ListValue list = 7;
+  Child child = 8;
+}
+
+message Child {
+  bytes data = 1;
+  oneof selection {
+    string note = 2;
+    uint64 number = 3;
+  }
+}

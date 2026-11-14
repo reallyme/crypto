@@ -27,9 +27,7 @@ pub(crate) fn result_response(result: CryptoOperationResultBranch) -> CryptoOper
         outcome: Some(CryptoOperationOutcome::Result(Box::new(
             CryptoOperationResult {
                 result: Some(result),
-                __buffa_unknown_fields: Default::default(),
             },
         ))),
-        __buffa_unknown_fields: Default::default(),
     }
 }

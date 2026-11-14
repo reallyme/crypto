@@ -294,9 +294,11 @@ fn rsa_result(
     let response = process_response(CryptoOperation::RsaVerify(Box::new(rsa_request(
         algorithm, public_key, message, signature,
     ))));
-    match response.outcome {
-        Some(CryptoOperationOutcome::Result(result)) => match result.result {
-            Some(CryptoOperationResultBranch::RsaVerify(verification)) => Some(*verification),
+    match response.outcome.as_ref() {
+        Some(CryptoOperationOutcome::Result(result)) => match result.result.as_ref() {
+            Some(CryptoOperationResultBranch::RsaVerify(verification)) => {
+                Some(verification.as_ref().clone())
+            }
             _ => None,
         },
         _ => None,
@@ -311,18 +313,16 @@ fn rsa_request(
 ) -> CryptoRsaVerifyRequest {
     CryptoRsaVerifyRequest {
         algorithm: MessageField::some(signature_identifier(algorithm)),
-        signature,
-        message,
-        public_key_der: public_key,
+        signature: signature.into(),
+        message: message.into(),
+        public_key_der: public_key.into(),
         public_key_encoding: EnumValue::from(ProtoKeyEncoding::RSA_PUBLIC_KEY_DER_ENCODING_PKCS1),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
 fn process_response(operation: CryptoOperation) -> CryptoOperationResponse {
     let request = CryptoOperationRequest {
         operation: Some(operation),
-        __buffa_unknown_fields: Default::default(),
     };
     let output = reallyme_crypto::operation_contract::process_operation_response(
         request.encode_to_vec().as_slice(),
@@ -371,7 +371,6 @@ fn error_reason(error: &CryptoErrorBranch) -> Option<CryptoErrorReason> {
 fn signature_identifier(algorithm: SignatureAlgorithm) -> CryptoAlgorithmIdentifier {
     CryptoAlgorithmIdentifier {
         algorithm: Some(ProtoAlgorithmBranch::Signature(EnumValue::from(algorithm))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 

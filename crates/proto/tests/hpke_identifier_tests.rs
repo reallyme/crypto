@@ -87,9 +87,7 @@ fn hpke_suite_identifier_wire_contract_is_stable() -> Result<(), buffa::DecodeEr
             kem: EnumValue::from(HpkeKemId::HPKE_KEM_ID_ML_KEM_1024),
             kdf: EnumValue::from(HpkeKdfId::HPKE_KDF_ID_SHAKE256),
             aead: EnumValue::from(HpkeAeadId::HPKE_AEAD_ID_AES_256_GCM),
-            __buffa_unknown_fields: Default::default(),
         }))),
-        __buffa_unknown_fields: Default::default(),
     };
     let expected = [0x5a, 0x06, 0x08, 0x42, 0x10, 0x11, 0x18, 0x02];
 

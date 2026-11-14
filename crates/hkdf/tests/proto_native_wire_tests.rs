@@ -75,22 +75,11 @@ fn check_inputs(wire: &CryptoHkdfNativeDeriveRequest, salt: Option<&[u8]>) {
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
 fn zero_unknown_and_modified_schema_values_fail_closed() {
-    let mut outer = request(None);
-    outer
-        .merge_from_slice(&[0xa0, 0x06, 0x01])
-        .expect("retained outer modifier");
-    // Outer shape is checked before the deliberately inconsistent width.
-    outer.output_length = 0;
-    assert_eq!(
-        HkdfNativeDeriveInputs::<17>::try_from(&outer).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    let outer = request(None);
+    assert_unknown_wire(&outer, &[0xa0, 0x06, 0x01]);
 
-    let mut inner = inputs(None);
-    inner
-        .merge_from_slice(&[0xa0, 0x06, 0x01])
-        .expect("retained input modifier");
-    assert_eq!(adapt(inner), Some(CryptoError::PRIMITIVE_INVALID_PARAMETER));
+    let inner = inputs(None);
+    assert_unknown_wire(&inner, &[0xa0, 0x06, 0x01]);
     let mut absent = inputs(None);
     absent.suite = MessageField::none();
     assert_eq!(
@@ -102,7 +91,6 @@ fn zero_unknown_and_modified_schema_values_fail_closed() {
         let mut inner = inputs(None);
         inner.suite = MessageField::some(CryptoHkdfSuiteIdentifier {
             hash: EnumValue::from(hash),
-            __buffa_unknown_fields: Default::default(),
         });
         assert_eq!(
             adapt(inner),
@@ -112,29 +100,32 @@ fn zero_unknown_and_modified_schema_values_fail_closed() {
     let mut wrong_suite = inputs(None);
     wrong_suite.suite = MessageField::some(CryptoHkdfSuiteIdentifier {
         hash: HashAlgorithm::HASH_ALGORITHM_SHA2_512.into(),
-        __buffa_unknown_fields: Default::default(),
     });
     assert_eq!(
         adapt(wrong_suite),
         Some(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     );
-    let mut suite = CryptoHkdfSuiteIdentifier::from(HkdfSuite::Sha2_256);
-    suite
-        .merge_from_slice(&[0xa0, 0x06, 0x01])
-        .expect("retained suite modifier");
+    let suite = CryptoHkdfSuiteIdentifier::from(HkdfSuite::Sha2_256);
+    let mut modified_child = suite.encode_to_vec();
+    modified_child.extend_from_slice(&[0xa0, 0x06, 0x01]);
     let mut modified_suite = inputs(None);
     modified_suite.suite = MessageField::some(suite);
-    assert_eq!(
-        adapt(modified_suite),
-        Some(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    let mut modified = modified_suite.encode_to_vec();
+    // The duplicate child retains protobuf merge semantics but the unknown
+    // modifier must fail admission before any operation uses the message.
+    buffa::encoding::encode_varint((1u64 << 3) | 2, &mut modified);
+    buffa::encoding::encode_varint(
+        u64::try_from(modified_child.len()).unwrap_or(u64::MAX),
+        &mut modified,
     );
+    modified.extend_from_slice(&modified_child);
+    assert!(crypto_proto::wire::decode_protobuf::<CryptoHkdfDeriveInputs>(&modified).is_err());
 }
 
 fn adapt(inputs: CryptoHkdfDeriveInputs) -> Option<CryptoError> {
     let wire = CryptoHkdfNativeDeriveRequest {
         inputs: MessageField::some(inputs),
         output_length: 17,
-        __buffa_unknown_fields: Default::default(),
     };
     HkdfNativeDeriveInputs::<17>::try_from(&wire).err()
 }
@@ -170,16 +161,21 @@ fn request(salt: Option<&[u8]>) -> CryptoHkdfNativeDeriveRequest {
     CryptoHkdfNativeDeriveRequest {
         inputs: MessageField::some(inputs(salt)),
         output_length: 17,
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
 fn inputs(salt: Option<&[u8]>) -> CryptoHkdfDeriveInputs {
     CryptoHkdfDeriveInputs {
         suite: MessageField::some(CryptoHkdfSuiteIdentifier::from(HkdfSuite::Sha2_256)),
-        input_key_material: vec![0, 0xff],
-        salt: salt.map(<[u8]>::to_vec),
-        info: vec![0, 0x20],
-        __buffa_unknown_fields: Default::default(),
+        input_key_material: vec![0, 0xff].into(),
+        salt: salt.map(|value| value.to_vec().into()),
+        info: vec![0, 0x20].into(),
     }
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

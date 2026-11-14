@@ -165,14 +165,23 @@ const assertGeneratedDropZeroizesFields = ({
   fields,
 }) => {
   const source = readText(generatedCryptoRustPath);
-  const implementation = extractBraceDelimitedBlock(
+  const drop = extractBraceDelimitedBlock(
     source,
     `impl ::core::ops::Drop for ${typeName}`,
     `${area} generated secret cleanup`,
     fail,
   );
+  if (!drop.includes("::buffa::sensitive::Zeroize::zeroize(self);")) {
+    fail(`${area} generated secret cleanup must call Zeroize from ${typeName}::drop`);
+  }
+  const implementation = extractBraceDelimitedBlock(
+    source,
+    `impl ::buffa::sensitive::Zeroize for ${typeName}`,
+    `${area} generated secret cleanup`,
+    fail,
+  );
   for (const field of fields) {
-    const required = `::zeroize::Zeroize::zeroize(&mut self.${field});`;
+    const required = `::buffa::sensitive::Zeroize::zeroize(&mut self.${field});`;
     if (!implementation.includes(required)) {
       fail(`${area} generated secret cleanup must zeroize ${typeName}.${field}`);
     }
@@ -431,14 +440,14 @@ export const extractOperationResponseRouteSymbols = (source, fail) => {
   const handledVariants = [];
 
   for (const match of operationMatch.matchAll(
-    /CryptoOperation::([A-Za-z0-9_]+)\(request\)\s*=>\s*(?:(?!CryptoOperation::)[\s\S])*?process_(?:encoded_)?request\(\s*\*request\s*,\s*(process_[a-z0-9_]+)\s*,/gu,
+    /CryptoOperation::([A-Za-z0-9_]+)\(request\)\s*=>\s*(?:(?!CryptoOperation::)[\s\S])*?process_(?:encoded_)?request\(\s*request(?:\.as_ref\(\))?\s*,\s*(process_[a-z0-9_]+)\s*,/gu,
   )) {
     handledVariants.push(match[1]);
     routes.push(`CryptoOperation::${match[1]} => ${match[2]}`);
   }
 
   for (const match of operationMatch.matchAll(
-    /CryptoOperation::([A-Za-z0-9_]+)\(request\)\s*=>\s*(?:\{\s*)?(process_[a-z0-9_]+_request)\(\s*\*request\s*\)/gu,
+    /CryptoOperation::([A-Za-z0-9_]+)\(request\)\s*=>\s*(?:\{\s*)?(process_[a-z0-9_]+_request)\(\s*request\s*\)/gu,
   )) {
     const semanticHandler = match[2].replace(/_request$/u, "");
     handledVariants.push(match[1]);

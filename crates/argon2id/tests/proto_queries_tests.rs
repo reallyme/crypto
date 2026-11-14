@@ -21,7 +21,6 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 fn profile(version: Argon2idKdfVersion) -> CryptoArgon2idProfileIdentifier {
     CryptoArgon2idProfileIdentifier {
         kdf_version: version.into(),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -31,7 +30,6 @@ fn budget(version: Argon2idKdfVersion, caps: Argon2Caps) -> CryptoArgon2BudgetFi
         memory_limit_kib: Some(caps.mem_cap_kib),
         time_cost_limit: Some(caps.time_cost_cap),
         lanes_limit: Some(caps.lanes_cap),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -53,7 +51,6 @@ fn platform_query_matches_both_existing_profiles_and_platforms() {
             let request = CryptoArgon2PlatformResolveRequest {
                 profile: MessageField::some(profile(version)),
                 platform: ProtoPlatform::from(native_platform).into(),
-                __buffa_unknown_fields: Default::default(),
             };
             let expected = resolve_profile_params_for_platform(number, native_platform)
                 .map(Argon2ParamsProfile::from);
@@ -172,7 +169,6 @@ fn queries_reject_missing_unknown_identities_platforms_and_modifiers(
     let mut request = CryptoArgon2PlatformResolveRequest {
         profile: MessageField::none(),
         platform: ProtoPlatform::ARGON2_PLATFORM_CLASS_MOBILE_MODERN.into(),
-        __buffa_unknown_fields: Default::default(),
     };
     assert_eq!(
         resolve_platform(&request),
@@ -189,7 +185,6 @@ fn queries_reject_missing_unknown_identities_platforms_and_modifiers(
     for unknown in [0, -1, 3, i32::MAX] {
         let identity = CryptoArgon2idProfileIdentifier {
             kdf_version: EnumValue::from(unknown),
-            __buffa_unknown_fields: Default::default(),
         };
         request.profile = MessageField::some(identity);
         request.platform = ProtoPlatform::ARGON2_PLATFORM_CLASS_MOBILE_MODERN.into();
@@ -198,19 +193,25 @@ fn queries_reject_missing_unknown_identities_platforms_and_modifiers(
             Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
         );
     }
-    let mut identity = CryptoArgon2idProfileIdentifier::from(Argon2KdfVersion::V1);
-    identity.merge_from_slice(&[0xa0, 0x06, 1])?;
+    let identity = CryptoArgon2idProfileIdentifier::from(Argon2KdfVersion::V1);
+    let mut modified_child = identity.encode_to_vec();
+    modified_child.extend_from_slice(&[0xa0, 0x06, 1]);
     request.profile = MessageField::some(identity);
-    assert_eq!(
-        resolve_platform(&request),
-        Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    let mut modified = request.encode_to_vec();
+    // The duplicate child retains protobuf merge semantics but the unknown
+    // modifier must fail admission before any operation uses the message.
+    buffa::encoding::encode_varint((1u64 << 3) | 2, &mut modified);
+    buffa::encoding::encode_varint(
+        u64::try_from(modified_child.len()).unwrap_or(u64::MAX),
+        &mut modified,
+    );
+    modified.extend_from_slice(&modified_child);
+    assert!(
+        crypto_proto::wire::decode_protobuf::<CryptoArgon2PlatformResolveRequest>(&modified)
+            .is_err()
     );
     request.profile = MessageField::some(profile(Argon2idKdfVersion::ARGON2ID_KDF_VERSION_V1));
-    request.merge_from_slice(&[0xa0, 0x06, 1])?;
-    assert_eq!(
-        resolve_platform(&request),
-        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    assert_unknown_wire(&request, &[0xa0, 0x06, 1]);
 
     let mut request = budget(
         Argon2idKdfVersion::ARGON2ID_KDF_VERSION_V1,
@@ -225,24 +226,32 @@ fn queries_reject_missing_unknown_identities_platforms_and_modifiers(
         resolve_budget(&request),
         Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
     );
-    let mut identity = CryptoArgon2idProfileIdentifier::from(Argon2KdfVersion::V1);
-    identity.merge_from_slice(&[0xa0, 0x06, 1])?;
+    let identity = CryptoArgon2idProfileIdentifier::from(Argon2KdfVersion::V1);
+    let mut modified_child = identity.encode_to_vec();
+    modified_child.extend_from_slice(&[0xa0, 0x06, 1]);
     request.profile = MessageField::some(identity);
-    assert_eq!(
-        resolve_budget(&request),
-        Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    let mut modified = request.encode_to_vec();
+    // The duplicate child retains protobuf merge semantics but the unknown
+    // modifier must fail admission before any operation uses the message.
+    buffa::encoding::encode_varint((1u64 << 3) | 2, &mut modified);
+    buffa::encoding::encode_varint(
+        u64::try_from(modified_child.len()).unwrap_or(u64::MAX),
+        &mut modified,
+    );
+    modified.extend_from_slice(&modified_child);
+    assert!(
+        crypto_proto::wire::decode_protobuf::<CryptoArgon2BudgetFitRequest>(&modified).is_err()
     );
     request.profile = MessageField::some(profile(Argon2idKdfVersion::ARGON2ID_KDF_VERSION_V1));
-    request.merge_from_slice(&[0xa0, 0x06, 1])?;
-    assert_eq!(
-        resolve_budget(&request),
-        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
-    let mut mobile = CryptoArgon2MobileUnlockRequest::default();
-    mobile.merge_from_slice(&[0xa0, 0x06, 1])?;
-    assert_eq!(
-        select_mobile_unlock(&mobile),
-        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    assert_unknown_wire(&request, &[0xa0, 0x06, 1]);
+    let mobile = CryptoArgon2MobileUnlockRequest::default();
+    assert_unknown_wire(&mobile, &[0xa0, 0x06, 1]);
     Ok(())
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

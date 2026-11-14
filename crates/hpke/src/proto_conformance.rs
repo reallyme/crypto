@@ -21,7 +21,6 @@ use zeroize::Zeroizing;
 impl<'a> TryFrom<&'a CryptoHpkeBaseSealConformanceRequest> for HpkeDerandSealRequest<'a> {
     type Error = HpkeError;
     fn try_from(value: &'a CryptoHpkeBaseSealConformanceRequest) -> Result<Self, Self::Error> {
-        known(value.__buffa_unknown_fields.is_empty())?;
         Ok(Self {
             suite: suite(value.suite.as_option())?,
             recipient_public_key: &value.recipient_public_key,
@@ -37,7 +36,6 @@ impl<'a> TryFrom<&'a CryptoHpkeSenderExportConformanceRequest>
 {
     type Error = HpkeError;
     fn try_from(value: &'a CryptoHpkeSenderExportConformanceRequest) -> Result<Self, Self::Error> {
-        known(value.__buffa_unknown_fields.is_empty())?;
         Ok(Self {
             suite: suite(value.suite.as_option())?,
             recipient_public_key: &value.recipient_public_key,
@@ -56,7 +54,6 @@ impl<'a> TryFrom<&'a CryptoHpkePskSenderSetupConformanceRequest>
     fn try_from(
         value: &'a CryptoHpkePskSenderSetupConformanceRequest,
     ) -> Result<Self, Self::Error> {
-        known(value.__buffa_unknown_fields.is_empty())?;
         Ok(Self {
             suite: suite(value.suite.as_option())?,
             recipient_public_key: &value.recipient_public_key,
@@ -81,9 +78,8 @@ pub fn seal_base(
     let ciphertext = Zeroizing::new(sealed.ciphertext);
     let mut output = CryptoHpkeSealedMessage {
         algorithm: MessageField::some(identifier(native.suite)?),
-        encapsulated_key: Vec::new(),
-        ciphertext: Vec::new(),
-        __buffa_unknown_fields: Default::default(),
+        encapsulated_key: Vec::new().into(),
+        ciphertext: Vec::new().into(),
     };
     copy_into(&mut output.encapsulated_key, &encapsulated)?;
     copy_into(&mut output.ciphertext, &ciphertext)?;
@@ -100,9 +96,8 @@ pub fn sender_export(
     let encapsulated = Zeroizing::new(core::mem::take(&mut exported.encapsulated_key));
     let mut output = CryptoHpkeSenderExportResult {
         algorithm: MessageField::some(identifier(native.suite)?),
-        encapsulated_key: Vec::new(),
-        exporter_secret: Vec::new(),
-        __buffa_unknown_fields: Default::default(),
+        encapsulated_key: Vec::new().into(),
+        exporter_secret: Vec::new().into(),
     };
     copy_into(&mut output.encapsulated_key, &encapsulated)?;
     copy_into(&mut output.exporter_secret, exported.exporter_secret())?;
@@ -122,13 +117,6 @@ pub fn setup_sender_psk(
     Ok((setup.context, output))
 }
 
-fn known(value: bool) -> Result<(), HpkeError> {
-    if value {
-        Ok(())
-    } else {
-        Err(HpkeError::PRIMITIVE_INVALID_PARAMETER)
-    }
-}
 fn suite(value: Option<&HpkeSuiteIdentifier>) -> Result<HpkeSuite, HpkeError> {
     HpkeSuite::try_from(value.ok_or(HpkeError::PRIMITIVE_INVALID_PARAMETER)?)
 }
@@ -137,17 +125,13 @@ fn identifier(value: HpkeSuite) -> Result<CryptoAlgorithmIdentifier, HpkeError> 
         algorithm: Some(Algorithm::HpkeSuite(Box::new(
             HpkeSuiteIdentifier::try_from(value)?,
         ))),
-        __buffa_unknown_fields: Default::default(),
     })
 }
-fn copy_into(output: &mut Vec<u8>, value: &[u8]) -> Result<(), HpkeError> {
+fn copy_into(output: &mut crypto_proto::SecretBytes, value: &[u8]) -> Result<(), HpkeError> {
     if !output.is_empty() {
         return Err(HpkeError::BACKEND_INVALID_STATE);
     }
     output
-        .try_reserve_exact(value.len())
-        .map_err(|_| HpkeError::BACKEND_INTERNAL)?;
-    output.resize(value.len(), 0);
-    output.copy_from_slice(value);
-    Ok(())
+        .extend_from_slice(value)
+        .map_err(|_| HpkeError::BACKEND_INTERNAL)
 }

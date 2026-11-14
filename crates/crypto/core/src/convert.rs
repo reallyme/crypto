@@ -50,7 +50,6 @@ impl TryFrom<SignatureAlgorithm> for Algorithm {
         // identity decision through the total generated-message conversion.
         Self::try_from(&CryptoAlgorithmIdentifier {
             algorithm: Some(crypto_proto::generated::proto::reallyme::crypto::v1::__buffa::oneof::crypto_algorithm_identifier::Algorithm::Signature(value.into())),
-            __buffa_unknown_fields: Default::default(),
         })
     }
 }
@@ -63,7 +62,6 @@ impl TryFrom<KeyAgreementAlgorithm> for Algorithm {
         // identity decision through the total generated-message conversion.
         Self::try_from(&CryptoAlgorithmIdentifier {
             algorithm: Some(crypto_proto::generated::proto::reallyme::crypto::v1::__buffa::oneof::crypto_algorithm_identifier::Algorithm::KeyAgreement(value.into())),
-            __buffa_unknown_fields: Default::default(),
         })
     }
 }
@@ -76,7 +74,6 @@ impl TryFrom<KemAlgorithm> for Algorithm {
         // identity decision through the total generated-message conversion.
         Self::try_from(&CryptoAlgorithmIdentifier {
             algorithm: Some(crypto_proto::generated::proto::reallyme::crypto::v1::__buffa::oneof::crypto_algorithm_identifier::Algorithm::Kem(value.into())),
-            __buffa_unknown_fields: Default::default(),
         })
     }
 }
@@ -89,7 +86,6 @@ impl TryFrom<ProtoAead> for CoreAead {
         // identity decision through the total generated-message conversion.
         Self::try_from(&CryptoAlgorithmIdentifier {
             algorithm: Some(crypto_proto::generated::proto::reallyme::crypto::v1::__buffa::oneof::crypto_algorithm_identifier::Algorithm::Aead(value.into())),
-            __buffa_unknown_fields: Default::default(),
         })
     }
 }
@@ -102,7 +98,6 @@ impl TryFrom<ProtoHash> for CoreHash {
         // identity decision through the total generated-message conversion.
         Self::try_from(&CryptoAlgorithmIdentifier {
             algorithm: Some(crypto_proto::generated::proto::reallyme::crypto::v1::__buffa::oneof::crypto_algorithm_identifier::Algorithm::Hash(value.into())),
-            __buffa_unknown_fields: Default::default(),
         })
     }
 }

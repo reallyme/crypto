@@ -31,6 +31,5 @@ pub(super) fn key_agreement_identifier(
         algorithm: Some(ProtoAlgorithmBranch::KeyAgreement(EnumValue::from(
             algorithm,
         ))),
-        __buffa_unknown_fields: Default::default(),
     }
 }

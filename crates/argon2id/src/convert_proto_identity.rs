@@ -15,11 +15,6 @@ impl TryFrom<&CryptoArgon2idProfileIdentifier> for Argon2Profile {
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(identifier: &CryptoArgon2idProfileIdentifier) -> Result<Self, Self::Error> {
-        // Unknown modifiers must not be silently stripped from a recognized
-        // identity. The decoded clearing owner retains them on this error path.
-        if !identifier.__buffa_unknown_fields.is_empty() {
-            return Err(UnsupportedProtoAlgorithm);
-        }
         match identifier.kdf_version.as_known() {
             Some(Argon2idKdfVersion::ARGON2ID_KDF_VERSION_V1) => Ok(Self::V1),
             Some(Argon2idKdfVersion::ARGON2ID_KDF_VERSION_V2) => Ok(Self::V2),
@@ -38,7 +33,6 @@ impl From<Argon2Profile> for CryptoArgon2idProfileIdentifier {
         };
         Self {
             kdf_version: identity.into(),
-            __buffa_unknown_fields: Default::default(),
         }
     }
 }
@@ -47,11 +41,6 @@ impl TryFrom<&CryptoArgon2idProfileIdentifier> for Argon2KdfVersion {
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(identifier: &CryptoArgon2idProfileIdentifier) -> Result<Self, Self::Error> {
-        // Unknown modifiers must not be silently stripped from a recognized
-        // identity. The decoded clearing owner retains them on this error path.
-        if !identifier.__buffa_unknown_fields.is_empty() {
-            return Err(UnsupportedProtoAlgorithm);
-        }
         match identifier.kdf_version.as_known() {
             Some(Argon2idKdfVersion::ARGON2ID_KDF_VERSION_V1) => Ok(Self::V1),
             Some(Argon2idKdfVersion::ARGON2ID_KDF_VERSION_V2) => Ok(Self::V2),
@@ -70,7 +59,6 @@ impl From<Argon2KdfVersion> for CryptoArgon2idProfileIdentifier {
         };
         Self {
             kdf_version: identity.into(),
-            __buffa_unknown_fields: Default::default(),
         }
     }
 }

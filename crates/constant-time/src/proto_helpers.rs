@@ -39,16 +39,12 @@ impl ConstantTimeInputs {
     pub fn compare_result(&self) -> CryptoConstantTimeCompareResult {
         CryptoConstantTimeCompareResult {
             equal: self.equal(),
-            __buffa_unknown_fields: Default::default(),
         }
     }
 }
 impl TryFrom<&CryptoConstantTimeCompareRequest> for ConstantTimeInputs {
     type Error = CryptoError;
     fn try_from(value: &CryptoConstantTimeCompareRequest) -> Result<Self, Self::Error> {
-        if !value.__buffa_unknown_fields.is_empty() {
-            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
-        }
         Ok(Self {
             left: copy_bytes(&value.left)?,
             right: copy_bytes(&value.right)?,

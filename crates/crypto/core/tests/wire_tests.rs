@@ -71,10 +71,8 @@ fn wire_error_preserves_unknown_reason_code_within_branch_range() {
         error: Some(CryptoErrorBranch::Primitive(Box::new(
             CryptoPrimitiveError {
                 reason: EnumValue::from(FUTURE_REASON_CODE),
-                __buffa_unknown_fields: Default::default(),
             },
         ))),
-        __buffa_unknown_fields: Default::default(),
     };
 
     let decoded = CryptoWireError::decode(&error.encode_to_vec()).unwrap();
@@ -99,10 +97,8 @@ fn wire_error_rejects_unknown_reason_code_outside_branch_range() {
         error: Some(CryptoErrorBranch::Primitive(Box::new(
             CryptoPrimitiveError {
                 reason: EnumValue::from(INVALID_REASON_CODE),
-                __buffa_unknown_fields: Default::default(),
             },
         ))),
-        __buffa_unknown_fields: Default::default(),
     };
 
     let decoded = CryptoWireError::decode(&error.encode_to_vec()).unwrap_err();
@@ -142,25 +138,18 @@ fn protobuf_decode_rejects_unknown_fields() {
 
 #[test]
 fn wire_error_rejects_missing_unspecified_or_mismatched_error_envelopes() {
-    let missing = ProtoCryptoError {
-        error: None,
-        __buffa_unknown_fields: Default::default(),
-    };
+    let missing = ProtoCryptoError { error: None };
     let unspecified = ProtoCryptoError {
         error: Some(CryptoErrorBranch::Primitive(Box::new(
             CryptoPrimitiveError {
                 reason: EnumValue::from(CryptoErrorReason::CRYPTO_ERROR_REASON_UNSPECIFIED),
-                __buffa_unknown_fields: Default::default(),
             },
         ))),
-        __buffa_unknown_fields: Default::default(),
     };
     let mismatched = ProtoCryptoError {
         error: Some(CryptoErrorBranch::Provider(Box::new(CryptoProviderError {
             reason: EnumValue::from(CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY),
-            __buffa_unknown_fields: Default::default(),
         }))),
-        __buffa_unknown_fields: Default::default(),
     };
 
     for encoded in [

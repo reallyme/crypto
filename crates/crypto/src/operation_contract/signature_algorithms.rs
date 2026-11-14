@@ -42,16 +42,12 @@ pub(super) fn signature_algorithm_value(
 pub(super) fn rsa_public_key_der_encoding(
     encoding: EnumValue<RsaPublicKeyDerEncoding>,
 ) -> Result<crypto_rsa::RsaPublicKeyDerEncoding, CryptoWireError> {
-    let identity = CryptoRsaPublicKeyDerEncodingIdentifier {
-        encoding,
-        __buffa_unknown_fields: Default::default(),
-    };
+    let identity = CryptoRsaPublicKeyDerEncodingIdentifier { encoding };
     crypto_rsa::RsaPublicKeyDerEncoding::try_from(&identity).map_err(|_| invalid_parameter())
 }
 
 pub(super) fn signature_identifier(algorithm: SignatureAlgorithm) -> CryptoAlgorithmIdentifier {
     CryptoAlgorithmIdentifier {
         algorithm: Some(ProtoAlgorithmBranch::Signature(EnumValue::from(algorithm))),
-        __buffa_unknown_fields: Default::default(),
     }
 }

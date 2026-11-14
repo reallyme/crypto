@@ -37,10 +37,9 @@ fn primary_operation_contract_executes_all_hpke_branches() {
         return;
     }
 
-    let CryptoOperationResultBranch::HpkeGenerateKeyPair(generated) = execute(
+    let CryptoOperationResultBranch::HpkeGenerateKeyPair(generated) = &execute(
         CryptoOperation::HpkeGenerateKeyPair(Box::new(CryptoHpkeGenerateKeyPairRequest {
             algorithm: MessageField::some(algorithm.clone()),
-            __buffa_unknown_fields: Default::default(),
         })),
     ) else {
         panic!("HPKE keygen returned the wrong operation-result branch");
@@ -48,95 +47,88 @@ fn primary_operation_contract_executes_all_hpke_branches() {
     assert_eq!(generated.public_key.len(), 65);
     assert_eq!(generated.secret_key.len(), 32);
 
-    let CryptoOperationResultBranch::HpkeDeriveKeyPair(key_pair) = execute(
+    let CryptoOperationResultBranch::HpkeDeriveKeyPair(key_pair) = &execute(
         CryptoOperation::HpkeDeriveKeyPair(Box::new(CryptoHpkeDeriveKeyPairRequest {
             algorithm: MessageField::some(algorithm.clone()),
-            input_key_material: vec![0x4c; 32],
-            __buffa_unknown_fields: Default::default(),
+            input_key_material: vec![0x4c; 32].into(),
         })),
     ) else {
         panic!("HPKE derive-keypair returned the wrong operation-result branch");
     };
 
     let CryptoOperationResultBranch::HpkeSeal(sealed) =
-        execute(CryptoOperation::HpkeSeal(Box::new(CryptoHpkeSealRequest {
+        &execute(CryptoOperation::HpkeSeal(Box::new(CryptoHpkeSealRequest {
             algorithm: MessageField::some(algorithm.clone()),
             recipient_public_key: key_pair.public_key.clone(),
-            info: INFO.to_vec(),
-            aad: AAD.to_vec(),
-            plaintext: PLAINTEXT.to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            info: INFO.to_vec().into(),
+            aad: AAD.to_vec().into(),
+            plaintext: PLAINTEXT.to_vec().into(),
         })))
     else {
         panic!("HPKE seal returned the wrong operation-result branch");
     };
     let CryptoOperationResultBranch::HpkeOpen(opened) =
-        execute(CryptoOperation::HpkeOpen(Box::new(CryptoHpkeOpenRequest {
+        &execute(CryptoOperation::HpkeOpen(Box::new(CryptoHpkeOpenRequest {
             algorithm: MessageField::some(algorithm.clone()),
-            recipient_secret_key: key_pair.secret_key.clone(),
+            recipient_secret_key: key_pair.secret_key.clone().into_zeroizing().into(),
             encapsulated_key: sealed.encapsulated_key.clone(),
-            info: INFO.to_vec(),
-            aad: AAD.to_vec(),
+            info: INFO.to_vec().into(),
+            aad: AAD.to_vec().into(),
             ciphertext: sealed.ciphertext.clone(),
-            __buffa_unknown_fields: Default::default(),
         })))
     else {
         panic!("HPKE open returned the wrong operation-result branch");
     };
     assert_eq!(opened.plaintext, PLAINTEXT);
 
-    let CryptoOperationResultBranch::HpkeSenderExport(sender) = execute(
+    let CryptoOperationResultBranch::HpkeSenderExport(sender) = &execute(
         CryptoOperation::HpkeSenderExport(Box::new(CryptoHpkeSenderExportRequest {
             algorithm: MessageField::some(algorithm.clone()),
             recipient_public_key: key_pair.public_key.clone(),
-            info: INFO.to_vec(),
-            exporter_context: EXPORTER_CONTEXT.to_vec(),
+            info: INFO.to_vec().into(),
+            exporter_context: EXPORTER_CONTEXT.to_vec().into(),
             output_length: 48,
-            __buffa_unknown_fields: Default::default(),
         })),
     ) else {
         panic!("HPKE sender-export returned the wrong operation-result branch");
     };
-    let CryptoOperationResultBranch::HpkeReceiverExport(receiver) = execute(
+    let CryptoOperationResultBranch::HpkeReceiverExport(receiver) = &execute(
         CryptoOperation::HpkeReceiverExport(Box::new(CryptoHpkeReceiverExportRequest {
             algorithm: MessageField::some(algorithm.clone()),
-            recipient_secret_key: key_pair.secret_key.clone(),
+            recipient_secret_key: key_pair.secret_key.clone().into_zeroizing().into(),
             encapsulated_key: sender.encapsulated_key.clone(),
-            info: INFO.to_vec(),
-            exporter_context: EXPORTER_CONTEXT.to_vec(),
+            info: INFO.to_vec().into(),
+            exporter_context: EXPORTER_CONTEXT.to_vec().into(),
             output_length: 48,
-            __buffa_unknown_fields: Default::default(),
         })),
     ) else {
         panic!("HPKE receiver-export returned the wrong operation-result branch");
     };
     assert_eq!(sender.exporter_secret, receiver.exporter_secret);
 
-    let CryptoOperationResultBranch::HpkePskSeal(psk_sealed) = execute(
+    let CryptoOperationResultBranch::HpkePskSeal(psk_sealed) = &execute(
         CryptoOperation::HpkePskSeal(Box::new(CryptoHpkePskSealRequest {
             algorithm: MessageField::some(algorithm.clone()),
             recipient_public_key: key_pair.public_key.clone(),
-            info: INFO.to_vec(),
-            aad: AAD.to_vec(),
-            plaintext: PLAINTEXT.to_vec(),
-            psk: PSK.to_vec(),
-            psk_id: PSK_ID.to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            info: INFO.to_vec().into(),
+            aad: AAD.to_vec().into(),
+            plaintext: PLAINTEXT.to_vec().into(),
+            psk: PSK.to_vec().into(),
+            psk_id: PSK_ID.to_vec().into(),
         })),
     ) else {
         panic!("HPKE PSK seal returned the wrong operation-result branch");
     };
-    let CryptoOperationResultBranch::HpkePskOpen(psk_opened) = execute(
+    let CryptoOperationResultBranch::HpkePskOpen(psk_opened) = &execute(
         CryptoOperation::HpkePskOpen(Box::new(CryptoHpkePskOpenRequest {
             algorithm: MessageField::some(algorithm),
-            recipient_secret_key: key_pair.secret_key.clone(),
+            recipient_secret_key: key_pair.secret_key.clone().into_zeroizing().into(),
             encapsulated_key: psk_sealed.encapsulated_key.clone(),
-            info: INFO.to_vec(),
-            aad: AAD.to_vec(),
+            info: INFO.to_vec().into(),
+            aad: AAD.to_vec().into(),
             ciphertext: psk_sealed.ciphertext.clone(),
-            psk: PSK.to_vec(),
-            psk_id: PSK_ID.to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            psk: PSK.to_vec().into(),
+            psk_id: PSK_ID.to_vec().into(),
         })),
     ) else {
         panic!("HPKE PSK open returned the wrong operation-result branch");
@@ -155,69 +147,63 @@ fn post_quantum_hpke_suites_execute_through_the_serialized_contract() {
         assert_error_reason(
             CryptoOperation::HpkeDeriveKeyPair(Box::new(CryptoHpkeDeriveKeyPairRequest {
                 algorithm: MessageField::some(algorithm.clone()),
-                input_key_material: vec![0x31; 31],
-                __buffa_unknown_fields: Default::default(),
+                input_key_material: vec![0x31; 31].into(),
             })),
             CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH,
         );
-        let CryptoOperationResultBranch::HpkeDeriveKeyPair(key_pair) = execute(
+        let CryptoOperationResultBranch::HpkeDeriveKeyPair(key_pair) = &execute(
             CryptoOperation::HpkeDeriveKeyPair(Box::new(CryptoHpkeDeriveKeyPairRequest {
                 algorithm: MessageField::some(algorithm.clone()),
-                input_key_material: b"arbitrary-length protobuf OpenMLS secret".to_vec(),
-                __buffa_unknown_fields: Default::default(),
+                input_key_material: b"arbitrary-length protobuf OpenMLS secret".to_vec().into(),
             })),
         ) else {
             panic!("HPKE derive-keypair returned the wrong operation-result branch");
         };
 
         let CryptoOperationResultBranch::HpkeSeal(sealed) =
-            execute(CryptoOperation::HpkeSeal(Box::new(CryptoHpkeSealRequest {
+            &execute(CryptoOperation::HpkeSeal(Box::new(CryptoHpkeSealRequest {
                 algorithm: MessageField::some(algorithm.clone()),
                 recipient_public_key: key_pair.public_key.clone(),
-                info: INFO.to_vec(),
-                aad: AAD.to_vec(),
-                plaintext: PLAINTEXT.to_vec(),
-                __buffa_unknown_fields: Default::default(),
+                info: INFO.to_vec().into(),
+                aad: AAD.to_vec().into(),
+                plaintext: PLAINTEXT.to_vec().into(),
             })))
         else {
             panic!("HPKE seal returned the wrong operation-result branch");
         };
         let CryptoOperationResultBranch::HpkeOpen(opened) =
-            execute(CryptoOperation::HpkeOpen(Box::new(CryptoHpkeOpenRequest {
+            &execute(CryptoOperation::HpkeOpen(Box::new(CryptoHpkeOpenRequest {
                 algorithm: MessageField::some(algorithm.clone()),
-                recipient_secret_key: key_pair.secret_key.clone(),
+                recipient_secret_key: key_pair.secret_key.clone().into_zeroizing().into(),
                 encapsulated_key: sealed.encapsulated_key.clone(),
-                info: INFO.to_vec(),
-                aad: AAD.to_vec(),
+                info: INFO.to_vec().into(),
+                aad: AAD.to_vec().into(),
                 ciphertext: sealed.ciphertext.clone(),
-                __buffa_unknown_fields: Default::default(),
             })))
         else {
             panic!("HPKE open returned the wrong operation-result branch");
         };
         assert_eq!(opened.plaintext, PLAINTEXT);
 
-        let CryptoOperationResultBranch::HpkeSenderExport(sender) = execute(
+        let CryptoOperationResultBranch::HpkeSenderExport(sender) = &execute(
             CryptoOperation::HpkeSenderExport(Box::new(CryptoHpkeSenderExportRequest {
                 algorithm: MessageField::some(algorithm.clone()),
                 recipient_public_key: key_pair.public_key.clone(),
-                info: INFO.to_vec(),
-                exporter_context: EXPORTER_CONTEXT.to_vec(),
+                info: INFO.to_vec().into(),
+                exporter_context: EXPORTER_CONTEXT.to_vec().into(),
                 output_length: 48,
-                __buffa_unknown_fields: Default::default(),
             })),
         ) else {
             panic!("HPKE sender export returned the wrong operation-result branch");
         };
-        let CryptoOperationResultBranch::HpkeReceiverExport(receiver) = execute(
+        let CryptoOperationResultBranch::HpkeReceiverExport(receiver) = &execute(
             CryptoOperation::HpkeReceiverExport(Box::new(CryptoHpkeReceiverExportRequest {
                 algorithm: MessageField::some(algorithm.clone()),
-                recipient_secret_key: key_pair.secret_key.clone(),
+                recipient_secret_key: key_pair.secret_key.clone().into_zeroizing().into(),
                 encapsulated_key: sender.encapsulated_key.clone(),
-                info: INFO.to_vec(),
-                exporter_context: EXPORTER_CONTEXT.to_vec(),
+                info: INFO.to_vec().into(),
+                exporter_context: EXPORTER_CONTEXT.to_vec().into(),
                 output_length: 48,
-                __buffa_unknown_fields: Default::default(),
             })),
         ) else {
             panic!("HPKE receiver export returned the wrong operation-result branch");
@@ -227,11 +213,10 @@ fn post_quantum_hpke_suites_execute_through_the_serialized_contract() {
         assert_error_reason(
             CryptoOperation::HpkeSeal(Box::new(CryptoHpkeSealRequest {
                 algorithm: MessageField::some(algorithm.clone()),
-                recipient_public_key: vec![0_u8; 1],
-                info: INFO.to_vec(),
-                aad: AAD.to_vec(),
-                plaintext: PLAINTEXT.to_vec(),
-                __buffa_unknown_fields: Default::default(),
+                recipient_public_key: vec![0_u8; 1].into(),
+                info: INFO.to_vec().into(),
+                aad: AAD.to_vec().into(),
+                plaintext: PLAINTEXT.to_vec().into(),
             })),
             CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PUBLIC_KEY,
         );
@@ -243,12 +228,11 @@ fn post_quantum_hpke_suites_execute_through_the_serialized_contract() {
         assert_error_reason(
             CryptoOperation::HpkeOpen(Box::new(CryptoHpkeOpenRequest {
                 algorithm: MessageField::some(algorithm.clone()),
-                recipient_secret_key: key_pair.secret_key.clone(),
+                recipient_secret_key: key_pair.secret_key.clone().into_zeroizing().into(),
                 encapsulated_key: sealed.encapsulated_key.clone(),
-                info: INFO.to_vec(),
-                aad: AAD.to_vec(),
+                info: INFO.to_vec().into(),
+                aad: AAD.to_vec().into(),
                 ciphertext: tampered_ciphertext,
-                __buffa_unknown_fields: Default::default(),
             })),
             CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED,
         );
@@ -256,10 +240,9 @@ fn post_quantum_hpke_suites_execute_through_the_serialized_contract() {
             CryptoOperation::HpkeSenderExport(Box::new(CryptoHpkeSenderExportRequest {
                 algorithm: MessageField::some(algorithm),
                 recipient_public_key: key_pair.public_key.clone(),
-                info: INFO.to_vec(),
-                exporter_context: EXPORTER_CONTEXT.to_vec(),
+                info: INFO.to_vec().into(),
+                exporter_context: EXPORTER_CONTEXT.to_vec().into(),
                 output_length: u32::MAX,
-                __buffa_unknown_fields: Default::default(),
             })),
             CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_LENGTH,
         );
@@ -268,19 +251,18 @@ fn post_quantum_hpke_suites_execute_through_the_serialized_contract() {
 
 fn execute(operation: CryptoOperation) -> CryptoOperationResultBranch {
     let response = process_response(operation);
-    let Some(CryptoOperationOutcome::Result(result)) = response.outcome else {
+    let Some(CryptoOperationOutcome::Result(result)) = response.outcome.as_ref() else {
         panic!("HPKE operation contract returned an error");
     };
-    let Some(result) = result.result else {
+    let Some(result) = result.result.as_ref() else {
         panic!("HPKE operation contract returned an empty result");
     };
-    result
+    result.clone()
 }
 
 fn process_response(operation: CryptoOperation) -> CryptoOperationResponse {
     let request = CryptoOperationRequest {
         operation: Some(operation),
-        __buffa_unknown_fields: Default::default(),
     };
     let response_bytes = reallyme_crypto::operation_contract::process_operation_response(
         request.encode_to_vec().as_slice(),
@@ -292,8 +274,8 @@ fn process_response(operation: CryptoOperation) -> CryptoOperationResponse {
 }
 
 fn assert_error_reason(operation: CryptoOperation, expected: CryptoErrorReason) {
-    let reason = match process_response(operation).outcome {
-        Some(CryptoOperationOutcome::Error(error)) => match error.error {
+    let reason = match process_response(operation).outcome.as_ref() {
+        Some(CryptoOperationOutcome::Error(error)) => match error.error.as_ref() {
             Some(CryptoErrorBranch::Primitive(error)) => error.reason.as_known(),
             Some(CryptoErrorBranch::Provider(error)) => error.reason.as_known(),
             Some(CryptoErrorBranch::Backend(error)) => error.reason.as_known(),
@@ -311,10 +293,8 @@ fn suite_identifier() -> CryptoAlgorithmIdentifier {
                 kem: EnumValue::from(HpkeKemId::HPKE_KEM_ID_DHKEM_P256_HKDF_SHA256),
                 kdf: EnumValue::from(HpkeKdfId::HPKE_KDF_ID_HKDF_SHA256),
                 aead: EnumValue::from(HpkeAeadId::HPKE_AEAD_ID_AES_256_GCM),
-                __buffa_unknown_fields: Default::default(),
             },
         ))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -362,10 +342,8 @@ fn suite_identifier_for(case: HpkeSuiteCase) -> CryptoAlgorithmIdentifier {
                 kem: EnumValue::from(case.kem),
                 kdf: EnumValue::from(case.kdf),
                 aead: EnumValue::from(case.aead),
-                __buffa_unknown_fields: Default::default(),
             },
         ))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -396,8 +374,7 @@ fn assert_suite_unavailable(algorithm: &CryptoAlgorithmIdentifier) {
     assert_error_reason(
         CryptoOperation::HpkeDeriveKeyPair(Box::new(CryptoHpkeDeriveKeyPairRequest {
             algorithm: MessageField::some(algorithm.clone()),
-            input_key_material: vec![0x4c; 32],
-            __buffa_unknown_fields: Default::default(),
+            input_key_material: vec![0x4c; 32].into(),
         })),
         CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_ALGORITHM,
     );

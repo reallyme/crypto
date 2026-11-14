@@ -20,19 +20,18 @@ fn algorithm(suite: HpkeSuite) -> CryptoAlgorithmIdentifier {
         algorithm: Some(Algorithm::HpkeSuite(Box::new(
             HpkeSuiteIdentifier::try_from(suite).unwrap(),
         ))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 fn flexible(suite: HpkeSuite, bytes: &[u8]) -> CryptoHpkeDeriveKeyPairRequest {
     let mut request = CryptoHpkeDeriveKeyPairRequest::default();
     request.algorithm = MessageField::some(algorithm(suite));
-    request.input_key_material.extend_from_slice(bytes);
+    assert!(request.input_key_material.extend_from_slice(bytes).is_ok());
     request
 }
 fn exact(suite: HpkeSuite, bytes: &[u8]) -> CryptoHpkeExactWidthDeriveKeyPairRequest {
     let mut request = CryptoHpkeExactWidthDeriveKeyPairRequest::default();
     request.suite = MessageField::some(HpkeSuiteIdentifier::try_from(suite).unwrap());
-    request.input_key_material.extend_from_slice(bytes);
+    assert!(request.input_key_material.extend_from_slice(bytes).is_ok());
     request
 }
 
@@ -160,10 +159,8 @@ fn key_material_requests_reject_unknown_missing_and_zero_suite_without_backend_f
                 kem: value.into(),
                 kdf: 1.into(),
                 aead: 1.into(),
-                __buffa_unknown_fields: Default::default(),
             }),
-            input_key_material: vec![1; 32],
-            __buffa_unknown_fields: Default::default(),
+            input_key_material: vec![1; 32].into(),
         };
         assert!(
             matches!(proto_key_material::derive_keypair_exact(&request),Err(e)if e==HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM)
@@ -175,7 +172,10 @@ fn key_material_requests_reject_unknown_missing_and_zero_suite_without_backend_f
         matches!(proto_key_material::derive_keypair_exact(&modified),Err(e)if e==HpkeError::PRIMITIVE_INVALID_PARAMETER)
     );
     let mut request = CryptoHpkeExactWidthDeriveKeyPairRequest::default();
-    request.input_key_material.extend_from_slice(&[1; 32]);
+    assert!(request
+        .input_key_material
+        .extend_from_slice(&[1; 32])
+        .is_ok());
     buffa::Message::clear(&mut request);
     assert!(
         request.input_key_material.is_empty() || request.input_key_material.iter().all(|b| *b == 0)

@@ -18,9 +18,7 @@ fn request(value: EnumValue<KeyAgreementAlgorithm>) -> CryptoKeyAgreementGenerat
     CryptoKeyAgreementGenerateKeyPairRequest {
         algorithm: MessageField::some(CryptoAlgorithmIdentifier {
             algorithm: Some(Branch::KeyAgreement(value)),
-            __buffa_unknown_fields: Default::default(),
         }),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -36,7 +34,6 @@ fn missing_wrong_family_unknown_identities_and_modifiers_fail_closed() {
         algorithm: Some(Branch::Signature(
             SignatureAlgorithm::SIGNATURE_ALGORITHM_ED25519.into(),
         )),
-        __buffa_unknown_fields: Default::default(),
     });
     assert_eq!(
         generate_key_pair(&wrong).err(),
@@ -54,25 +51,30 @@ fn missing_wrong_family_unknown_identities_and_modifiers_fail_closed() {
             Some(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
         );
     }
-    let mut nested = CryptoAlgorithmIdentifier {
+    let nested = CryptoAlgorithmIdentifier {
         algorithm: Some(Branch::KeyAgreement(
             KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_X25519.into(),
         )),
-        __buffa_unknown_fields: Default::default(),
     };
-    nested.merge_from_slice(&[0xa2, 6, 3, 0, 255, 1]).unwrap();
+    let mut modified_child = nested.encode_to_vec();
+    modified_child.extend_from_slice(&[0xa2, 6, 3, 0, 255, 1]);
     let mut modified = request(KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_X25519.into());
     modified.algorithm = MessageField::some(nested);
-    assert_eq!(
-        generate_key_pair(&modified).err(),
-        Some(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    let mut modified = modified.encode_to_vec();
+    // The duplicate child retains protobuf merge semantics but the unknown
+    // modifier must fail admission before any operation uses the message.
+    buffa::encoding::encode_varint((1u64 << 3) | 2, &mut modified);
+    buffa::encoding::encode_varint(
+        u64::try_from(modified_child.len()).unwrap_or(u64::MAX),
+        &mut modified,
     );
-    let mut outer = request(KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_X25519.into());
-    outer.merge_from_slice(&[0xa2, 6, 3, 0, 255, 1]).unwrap();
-    assert_eq!(
-        generate_key_pair(&outer).err(),
-        Some(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    modified.extend_from_slice(&modified_child);
+    assert!(
+        crypto_proto::wire::decode_protobuf::<CryptoKeyAgreementGenerateKeyPairRequest>(&modified)
+            .is_err()
     );
+    let outer = request(KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_X25519.into());
+    assert_unknown_wire(&outer, &[0xa2, 6, 3, 0, 255, 1]);
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -201,4 +203,11 @@ fn generation_request_and_result_have_clearing_owners_and_exact_wire_identity() 
     clearing::<CryptoKeyPair>();
     let probe = request(KeyAgreementAlgorithm::KEY_AGREEMENT_ALGORITHM_X25519.into());
     assert_eq!(probe.encode_to_vec(), [10, 2, 16, 100]);
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

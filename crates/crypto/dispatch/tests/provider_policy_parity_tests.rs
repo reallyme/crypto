@@ -92,7 +92,6 @@ fn decision_record_preserves_every_native_policy_field() {
         let native = provider_decision(operation, Algorithm::X25519);
         let wire = ProtoProviderDecision::from(native);
         assert_decision_fields(native, &wire);
-        assert!(wire.__buffa_unknown_fields.is_empty());
     }
     let native = provider_decision(ProviderOperation::Sign, Algorithm::X25519);
     assert_eq!(native.disposition, ProviderDisposition::Rejected);
@@ -185,14 +184,12 @@ where
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
 fn query_requests_recompute_the_native_decision_and_reject_modifiers() {
-    use buffa::Message;
     use crypto_proto::generated::proto::reallyme::crypto::v1::{
         KeyAlgorithm, ProviderDecisionRequest,
     };
     let mut request = ProviderDecisionRequest {
         operation: ProtoProviderOperation::PROVIDER_OPERATION_VERIFY.into(),
         algorithm: KeyAlgorithm::KEY_ALGORITHM_P256.into(),
-        __buffa_unknown_fields: Default::default(),
     };
     assert_eq!(
         ProviderDecision::try_from(&request),
@@ -207,9 +204,12 @@ fn query_requests_recompute_the_native_decision_and_reject_modifiers() {
         Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
     );
     request.operation = ProtoProviderOperation::PROVIDER_OPERATION_VERIFY.into();
-    assert!(request.merge_from_slice(&[0xa0, 0x06, 0x01]).is_ok());
-    assert_eq!(
-        ProviderDecision::try_from(&request),
-        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    assert_unknown_wire(&request, &[0xa0, 0x06, 0x01]);
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

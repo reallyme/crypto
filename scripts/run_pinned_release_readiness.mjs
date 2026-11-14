@@ -14,12 +14,13 @@ const RELEASE_READINESS_COMMIT = "18a6d91d99837e80f92e41fe04effb0b043d754e";
 const RELEASE_READINESS_CORE_SHA256 =
   "7614b0cbf9e36a4653c2fa9008bee0d1e22542de0e4a08a10e640c836a5c93db";
 const LOCAL_CHECKER_SHA256 =
-  "690e61465638edb1c4a436a530d383e651f88b2df3ef3fd9e5b4f31da596b12b";
+  "b9add86b8112f9fdcdd5ae8b389dda1fb47a667ad4d59e40f3ce14eaa39954ef";
 // The checker imports local policy modules. Pinning only its entry file
 // would let an unreviewed dependency change the release decision.
 const LOCAL_CHECKER_DEPENDENCIES = [
-  ["scripts/proto_scalar_policy.mjs", "b1d8ac8a0a11ba85d05c69738d01131a3512273647f702166aec63ce4e1e86e7"],
-  ["scripts/crypto_operation_route_readiness.mjs", "1ecb7b2cd1efb8cefb4ff2875bdcd402b11b6add2135c1ae757e469bfd72ea61"],
+  ["scripts/native_buffa_readiness.mjs", "cfbd2806fd69b3e23c82af9c89758b2ab343e57dd4182fa155d9dbeb3c7e5ae3"],
+  ["scripts/proto_scalar_policy.mjs", "f7b071722aa93a0f75a7fe57f994ae7a12e030ee0bedb1be7058e48543cac377"],
+  ["scripts/crypto_operation_route_readiness.mjs", "2b15c4e6778f18cf10b493fb5644e47baf537185b6e4411909ba875b5bd38db4"],
   ["scripts/workflow_gate_policy.mjs", "a5b0ac299de016810c08e8802d74aa9dc00b6ae8ee434f8334a2e0c26a6d7fcc"],
 ];
 const RELEASE_READINESS_CORE_URL =

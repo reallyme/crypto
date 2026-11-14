@@ -16,12 +16,15 @@ import test from "node:test";
 
 const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
 const runnerPath = "scripts/run_pinned_release_readiness.mjs";
+const checkerPath = "scripts/check_release_readiness.mjs";
+const corePath = "scripts/release-readiness/core.mjs";
 const pinnedInputs = [
   { path: "scripts/proto_scalar_policy.mjs", maximumBytes: 524_288 },
   { path: "scripts/check_release_readiness.mjs", maximumBytes: 524_288 },
   { path: "scripts/release-readiness/core.mjs", maximumBytes: 262_144 },
   { path: "scripts/crypto_operation_route_readiness.mjs", maximumBytes: 524_288 },
   { path: "scripts/workflow_gate_policy.mjs", maximumBytes: 524_288 },
+  { path: "scripts/native_buffa_readiness.mjs", maximumBytes: 524_288 },
 ];
 // Any attempted upstream request must fail the test, even on a connected host.
 const forbidNetwork = `data:text/javascript,${encodeURIComponent("globalThis.fetch = () => { process.exit(97); };")}`;
@@ -120,7 +123,7 @@ test("runner resolves policy and checker working directory from its own reposito
   const result = verifyPins(root, [], { cwd: tmpdir() });
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stdout, realpathSync(root));
-  writeFileSync(join(root, pinnedInputs[1].path), "modified core\n");
+  writeFileSync(join(root, corePath), "modified core\n");
   assertRejected(verifyPins(root, ["--check-pins"], { cwd: repositoryRoot }));
 });
 
@@ -134,7 +137,7 @@ test("explicit upstream verification authenticates downloaded bytes and request 
           !(options.signal instanceof AbortSignal)) {
         process.exit(96);
       }
-      return new Response(readFileSync(${JSON.stringify(join(root, pinnedInputs[1].path))}));
+      return new Response(readFileSync(${JSON.stringify(join(root, corePath))}));
     };
   `;
   const result = verifyPins(root, ["--check-pins", "--verify-upstream"], {
@@ -169,7 +172,7 @@ test("explicit checker pin refresh is local, reviewable, and idempotent", (conte
   const root = fixture(context);
   const runner = join(root, runnerPath);
   const before = readFileSync(runner, "utf8");
-  const checker = join(root, pinnedInputs[0].path);
+  const checker = join(root, checkerPath);
   writeFileSync(checker, `${readFileSync(checker, "utf8")}\n// Reviewed policy change.\n`);
   assertRejected(verifyPins(root));
   const options = { env: localEnvironment() };
@@ -198,7 +201,7 @@ test("checker pin refresh is forbidden in CI without changing files", (context) 
   }
 });
 
-for (const { path } of pinnedInputs.slice(1)) {
+for (const { path } of pinnedInputs.filter(({ path }) => path !== checkerPath)) {
   test(`checker pin refresh cannot approve a changed ${path}`, (context) => {
     const root = fixture(context);
     writeFileSync(join(root, path), "modified policy\n");
@@ -267,7 +270,7 @@ for (const { path } of pinnedInputs) {
     const root = fixture(context);
     const target = join(root, path);
     writeFileSync(target, `${readFileSync(target, "utf8")}\nprocess.exit(94);\n`);
-    const result = spawnSync(process.execPath, [join(root, pinnedInputs[0].path)], {
+    const result = spawnSync(process.execPath, [join(root, checkerPath)], {
       cwd: root, encoding: "utf8", timeout: 10_000,
     });
     assert.equal(result.error, undefined);

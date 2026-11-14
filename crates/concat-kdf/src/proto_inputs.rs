@@ -27,16 +27,10 @@ pub struct ConcatKdfInputs<const N: usize> {
 impl<const N: usize> TryFrom<&CryptoJwaConcatKdfSha256DeriveRequest> for ConcatKdfInputs<N> {
     type Error = CryptoError;
     fn try_from(request: &CryptoJwaConcatKdfSha256DeriveRequest) -> Result<Self, Self::Error> {
-        if !request.__buffa_unknown_fields.is_empty() {
-            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
-        }
         let algorithm = request
             .algorithm
             .as_option()
             .ok_or(CryptoError::PRIMITIVE_INVALID_PARAMETER)?;
-        if !algorithm.__buffa_unknown_fields.is_empty() {
-            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
-        }
         match algorithm.algorithm.as_ref() {
             Some(Algorithm::Kdf(value))
                 if value.as_known() == Some(KdfAlgorithm::KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256) => {}
@@ -86,16 +80,14 @@ impl<const N: usize> ConcatKdfInputs<N> {
                 algorithm: Some(Algorithm::Kdf(
                     KdfAlgorithm::KDF_ALGORITHM_JWA_CONCAT_KDF_SHA256.into(),
                 )),
-                __buffa_unknown_fields: Default::default(),
             }),
-            derived_key: Vec::new(),
-            __buffa_unknown_fields: Default::default(),
+            derived_key: Default::default(),
         };
         result
             .derived_key
             .try_reserve_exact(N)
             .map_err(|_| CryptoError::BACKEND_INTERNAL)?;
-        result.derived_key.resize(N, 0);
+        result.derived_key.resize(N, 0)?;
         result.derived_key.copy_from_slice(output.as_bytes());
         Ok(result)
     }

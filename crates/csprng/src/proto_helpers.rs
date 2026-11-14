@@ -60,9 +60,6 @@ impl RandomBytesRequest {
 impl TryFrom<&CryptoRandomBytesRequest> for RandomBytesRequest {
     type Error = CryptoError;
     fn try_from(value: &CryptoRandomBytesRequest) -> Result<Self, Self::Error> {
-        if !value.__buffa_unknown_fields.is_empty() {
-            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
-        }
         Ok(Self {
             purpose: RngOutputKind::try_from(value.purpose)?,
             output_length: usize::try_from(value.output_length)
@@ -77,7 +74,6 @@ impl TryFrom<RandomBytesRequest> for CryptoRandomBytesRequest {
             purpose: ProtoKind::from(value.purpose).into(),
             output_length: u64::try_from(value.output_length)
                 .map_err(|_| CryptoError::PRIMITIVE_INVALID_LENGTH)?,
-            __buffa_unknown_fields: Default::default(),
         })
     }
 }
@@ -88,14 +84,13 @@ fn random_result(
     u64::try_from(bytes.len()).map_err(|_| CryptoError::PRIMITIVE_INVALID_LENGTH)?;
     let mut output = CryptoRandomBytesResult {
         purpose: ProtoKind::from(purpose).into(),
-        value: Vec::new(),
-        __buffa_unknown_fields: Default::default(),
+        value: Default::default(),
     };
     output
         .value
         .try_reserve_exact(bytes.len())
         .map_err(|_| CryptoError::BACKEND_INTERNAL)?;
-    output.value.extend_from_slice(bytes);
+    output.value.extend_from_slice(bytes)?;
     Ok(output)
 }
 
