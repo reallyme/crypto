@@ -568,6 +568,7 @@ fn concrete_enum_json_rejection_uses_a_fixed_reason() {
     for (invalid, reason) in [
         (r#""untrusted-enum-selector""#, "unknown enum name"),
         ("4294967295", "enum number out of i32 range"),
+        ("-2147483649", "enum number out of i32 range"),
         ("-123", "unknown enum number"),
     ] {
         let result = serde_json::from_str::<HashAlgorithm>(invalid);
@@ -580,6 +581,10 @@ fn concrete_enum_json_rejection_uses_a_fixed_reason() {
         serde_json::from_str::<HashAlgorithm>(r#""HASH_ALGORITHM_SHA2_256""#),
         Ok(HashAlgorithm::HASH_ALGORITHM_SHA2_256)
     ));
+    assert_eq!(
+        serde_json::from_str::<HashAlgorithm>("null").ok(),
+        Some(HashAlgorithm::HASH_ALGORITHM_UNSPECIFIED)
+    );
 }
 
 #[test]
@@ -590,6 +595,7 @@ fn guarded_enum_fields_keep_numeric_wire_values_and_fixed_json_diagnostics() {
             "unknown protobuf enum value",
         ),
         ("4294967295", "protobuf enum number is outside i32 range"),
+        ("-2147483649", "protobuf enum number is outside i32 range"),
     ] {
         let json = format!(r#"{{"hash":{invalid}}}"#);
         let result = serde_json::from_str::<CryptoAlgorithmIdentifier>(&json);
@@ -602,6 +608,33 @@ fn guarded_enum_fields_keep_numeric_wire_values_and_fixed_json_diagnostics() {
         serde_json::from_str::<CryptoAlgorithmIdentifier>(r#"{"hash":-123}"#),
         Ok(value) if matches!(value.algorithm.as_ref(), Some(Algorithm::Hash(EnumValue::Unknown(-123))))
     ));
+    assert!(matches!(
+        serde_json::from_str::<CryptoAlgorithmIdentifier>(r#"{"hash":null}"#),
+        Ok(value) if value.algorithm.is_none()
+    ));
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn lenient_enum_json_still_filters_only_unknown_names() {
+    use buffa::json::{with_json_parse_options, JsonParseOptions};
+
+    let lenient = JsonParseOptions::new().ignore_unknown_enum_values(true);
+    with_json_parse_options(&lenient, || {
+        let unknown = r#""untrusted-enum-selector""#;
+        assert!(serde_json::from_str::<HashAlgorithm>(unknown).is_err());
+        assert!(matches!(
+            serde_json::from_str::<CryptoAlgorithmIdentifier>(r#"{"hash":"untrusted-enum-selector"}"#),
+            Ok(value) if value.algorithm.is_none()
+        ));
+        assert!(matches!(
+            serde_json::from_str::<CryptoAlgorithmIdentifier>(r#"{"hash":12345}"#),
+            Ok(value) if matches!(value.algorithm.as_ref(), Some(Algorithm::Hash(EnumValue::Unknown(12345))))
+        ));
+        assert!(
+            serde_json::from_str::<CryptoAlgorithmIdentifier>(r#"{"hash":-2147483649}"#).is_err()
+        );
+    });
 }
 
 #[test]

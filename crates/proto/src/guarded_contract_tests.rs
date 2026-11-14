@@ -12,7 +12,9 @@ use buffa_descriptor::reflect::{
 use zeroize::ZeroizeOnDrop;
 
 use crate::{SecretBytes, SecretString};
-use guarded_fixture_bindings::guarded_fixture::{Fixture, FixtureLazyView, FixtureView};
+use guarded_fixture_bindings::guarded_fixture::{
+    Child, ChildLazyView, ChildView, Fixture, FixtureLazyView, FixtureView,
+};
 
 // The fixture's reflection pool is generated from a fixed, compiled schema.
 #[allow(clippy::expect_used)]
@@ -116,8 +118,8 @@ fn guarded_collections_and_wkt_trees_round_trip_without_dynamic_snapshots() {
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
 fn lazy_construction_cannot_admit_unvalidated_children() {
-    // Field 8 contains a child with unknown field 100.
-    let bytes = [0x42, 3, 0xa0, 0x06, 1];
+    // Field 8 contains a child with unknown length-delimited field 100.
+    let bytes = *b"\x42\x09\xa2\x06\x06marker";
     let opts = DecodeOptions::new().reject_unknown_fields();
     assert!(matches!(
         opts.decode_from_slice::<Fixture>(&bytes),
@@ -128,8 +130,39 @@ fn lazy_construction_cannot_admit_unvalidated_children() {
         Err(DecodeError::UnknownFieldLimitExceeded)
     ));
     let pending = opts.decode_lazy_view::<FixtureLazyView>(&bytes).unwrap();
+    assert!(!format!("{pending:?}").contains("marker"));
     assert!(matches!(
         pending.to_owned_message(),
         Err(DecodeError::UnknownFieldLimitExceeded)
     ));
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn guarded_view_debug_hides_oneof_and_json_denies_even_empty_views() {
+    let child = serde_json::from_str::<Child>(r#"{"note":"private-note-marker"}"#).unwrap();
+    let bytes = crate::wire::encode_protobuf(&child).unwrap();
+    let options = DecodeOptions::new().reject_unknown_fields();
+    let eager = options.decode_view::<ChildView>(&bytes).unwrap();
+    let lazy = options.decode_lazy_view::<ChildLazyView>(&bytes).unwrap();
+    let owned = crate::GuardedOwnedView::<ChildView<'static>>::from_owned(&child).unwrap();
+    assert_eq!(eager.to_owned_message().unwrap(), child);
+    assert_eq!(lazy.to_owned_message().unwrap(), child);
+    assert_eq!(owned.to_owned_message().unwrap(), child);
+    for debug in [
+        format!("{eager:?}"),
+        format!("{lazy:?}"),
+        format!("{owned:?}"),
+        format!("{:?}", eager.selection.as_ref().unwrap()),
+        format!("{:?}", lazy.selection.as_ref().unwrap()),
+        format!("{:?}", owned.view().selection.as_ref().unwrap()),
+    ] {
+        assert!(!debug.contains("private-note-marker"));
+        assert!(!debug.contains("Note"));
+    }
+    let empty_owned =
+        crate::GuardedOwnedView::<ChildView<'static>>::from_owned(&Child::default()).unwrap();
+    assert!(serde_json::to_string(&ChildView::default()).is_err());
+    assert!(serde_json::to_string(&ChildLazyView::default()).is_err());
+    assert!(serde_json::to_string(&empty_owned).is_err());
 }
