@@ -4,7 +4,7 @@
 
 - Updates ReallyMe Buffa to `0.1.2` and ReallyMe Codec to `0.4.2` across all SDKs.
   The Swift package builds alongside CSecp256k1 under Swift Build.
-- Updates the release checks to ReallyMe Release Readiness `0.8.0`.
+- Updates release-readiness to `0.8.0`, Gradle to `9.9.1`, and OSV Scanner to `2.7.1`.
 - Refreshes compatible Rust dependencies and updates Bouncy Castle to `1.87` and
   SwiftProtobuf to `1.41.0`.
 
