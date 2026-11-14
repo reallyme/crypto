@@ -91,11 +91,11 @@ the package manifest to the matching XCFramework artifact.
   JWK/multikey, RSA DER, and P-256 SEC1/ECDSA DER boundaries. The complete
   current coverage and gap inventory is in `fuzz/README.md`; we do not claim
   that every parser and platform decoder is fuzzed yet.
-- The symbolic HPKE Base composition in `formal/` has a Tamarin secrecy proof
-  against a network adversary under idealized primitive and static-key secrecy
-  assumptions. This model does not prove the implementation or every HPKE
-  suite. Run `tamarin-prover --prove formal/tamarin/hpke_base.spthy` to check
-  the current model.
+- The symbolic HPKE Base and PSK model verifies plaintext secrecy and agreement
+  on the suite, recipient public key, `info`, and AAD for successful opens of
+  the same ciphertext. Its assumptions and independent implementation vectors
+  are documented in [Formal verification](formal/README.md#symbolic-hpke-model).
+  Run `bash formal/tamarin/verify.sh` to check the model.
 - Provider choice is part of the security contract. The generated backend
   matrix in `PROVIDER_POLICY.md` records each Swift, Kotlin/JVM,
   Kotlin/Android, and TypeScript/WASM lane; unsupported lanes must fail with a

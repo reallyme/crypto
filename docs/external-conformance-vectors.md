@@ -107,7 +107,7 @@ when their corpus has not been vendored, so they never pass vacuously.
 | BIP-340 `test-vectors.csv` | `verify_bip340_schnorr` positive and negative cases for the 32-byte message API; four variable-length extension rows must be rejected | [bip340_schnorr.rs](../tools/external-vector-audit/tests/bip340_schnorr.rs) |
 | RFC 8032 `sign.input` | `sign_ed25519` deterministic **signature generation** | [rfc8032_ed25519_siggen.rs](../tools/external-vector-audit/tests/rfc8032_ed25519_siggen.rs) |
 | X-Wing CFRG draft `spec/test-vectors.json` | `generate_x_wing_768_keypair_derand` / `x_wing_768_encapsulate_derand` / `x_wing_768_decapsulate` full KAT | [xwing768_kat.rs](../tools/external-vector-audit/tests/xwing768_kat.rs) |
-| HPKE RFC 9180 `test-vectors.json` | `seal_base_derand` / `open_base` for the supported base-mode suites | [rfc9180_hpke.rs](../tools/external-vector-audit/tests/rfc9180_hpke.rs) |
+| HPKE RFC 9180 `test-vectors.json` | Deterministic Base seal, Base and PSK opens, and typed authentication failure after independent suite, recipient-key, `info`, or AAD substitution | [rfc9180_hpke.rs](../tools/external-vector-audit/tests/rfc9180_hpke.rs) |
 | PBKDF2 RFC 6070-derived (brycx corpus) | `derive_key` for both public PRFs (SHA-256, SHA-512) | [pbkdf2_rfc6070.rs](../tools/external-vector-audit/tests/pbkdf2_rfc6070.rs) |
 
 **Argon2id** has no executable external route: the public boundary derives only

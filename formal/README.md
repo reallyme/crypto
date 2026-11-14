@@ -86,28 +86,44 @@ configuration. See [Provider Selection](../docs/provider-selection.md).
 
 ## Symbolic HPKE model
 
-The [HPKE Base model](tamarin/hpke_base.spthy) exercises a single seal/open
-exchange using DHKEM, a symbolic key derivation function, and idealized
-authenticated encryption. It keeps HPKE `info` and AEAD `aad` separate. The
-secrecy lemma ties adversary knowledge of an honestly generated plaintext to
-revelation of the recipient's static key. An existence lemma checks that an
-honest round trip is possible. The model abstracts away curve and AEAD choices,
-byte encodings, and multi-record state.
+The [HPKE model](tamarin/hpke.spthy) covers single-record Base and PSK modes.
+When a modeled ciphertext opens successfully, the opening and sealing events
+agree on the KEM/KDF/AEAD suite, the recipient public key, the mode, the
+encapsulation, HPKE `info`, the AEAD AAD, and the plaintext. A round-trip lemma
+for each mode establishes that successful opens are reachable. The secrecy
+lemma ties adversary knowledge of an honestly sealed plaintext to revelation of
+the recipient's static key. The [RFC 9180 construction] uses distinct KEM and
+HPKE suite labels and authenticates AAD at the record layer.
 
-Run with Tamarin 1.12.0 and Maude on `PATH`:
+The model uses ideal DH, labeled derivation, and authenticated encryption. Its
+scope excludes byte encodings, concrete cipher properties, multi-record state,
+and sender authentication in Base mode.
+
+The [RFC 9180 audit](../tools/external-vector-audit/tests/rfc9180_hpke.rs) opens
+ten published sequence-zero records spanning five suites in Base and PSK modes.
+It requires typed authentication failure on fifty substitutions that change the
+KDF, AEAD, recipient private key, `info`, or AAD independently. The substituted
+key comes from the other mode's valid record for the same suite. The tests keep
+the encapsulated key and ciphertext fixed. The pinned corpus and its provenance
+are recorded in [the external vector inventory](../vectors/external/provenance.json).
+
+The formal verification workflow uses Tamarin 1.12.0 and Maude 3.5.1. Run
+locally with both tools on `PATH`.
 
 ```sh
-tamarin-prover --prove --quit-on-warning formal/tamarin/hpke_base.spthy
+bash formal/tamarin/verify.sh
+cargo test --locked -p external-vector-audit --no-default-features --features native --test rfc9180_hpke -- --ignored
 ```
 
-The summary must report both `sanity_roundtrip_exists` and `plaintext_secrecy`
-as verified. Tamarin can exit successfully with an incomplete proof, so check
-the lemma results.
+The verifier checks both round-trip lemmas, `successful_open_binds_context`,
+and `plaintext_secrecy`. It fails if a lemma is missing, falsified, or incomplete.
+
+[RFC 9180 construction]: https://www.rfc-editor.org/rfc/rfc9180.html#section-5.1
 
 ## Next targets for 0.5.0
 
 | Target | Property and method |
 | --- | --- |
-| HPKE context binding | Model agreement on suite, recipient key, and `info`/`aad`. Check mismatched-context rejection with independent byte-level vectors for the key schedule. |
+| HPKE key schedule and export | Check intermediate labeled derivation and exporter bytes against independent vectors. Extend the symbolic model to cover exporter context and PSK identifier binding. |
 | Additional provider profiles | Repeat the provider reachability checks for reduced WASM and mixed signature/KEM profiles, including feature-specific dispatch differences. |
 | Encoding and primitive equivalence | Start with ML-KEM coefficient encoding and decoding, strict ECDSA low-S handling, and X25519/X448 input and shared-secret checks. Use an independent Cryptol specification and SAW where a small fixed-size implementation can be connected reproducibly to the verified artifact. AES-KW, Keccak, and hybrid KEM composition are candidates after that integration is established. |

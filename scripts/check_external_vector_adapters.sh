@@ -19,6 +19,7 @@ adapters=(
   'rfc8032_ed25519_siggen:rfc8032_ed25519_siggen_vectors_match_public_signer'
   'xwing768_kat:xwing768_draft_vectors_match_public_api'
   'rfc9180_hpke:rfc9180_hpke_base_vectors_execute_against_public_api'
+  'rfc9180_hpke:rfc9180_hpke_open_binds_context_in_base_and_psk_modes'
   'pbkdf2_rfc6070:pbkdf2_rfc6070_derived_vectors_match_public_api'
 )
 

@@ -1,0 +1,113 @@
+/*
+SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+
+SPDX-License-Identifier: MIT OR Apache-2.0
+
+Symbolic HPKE Base and PSK modes for a single record, following RFC 9180
+sections 4.1, 5.1, and 5.2. The model uses Tamarin's Diffie-Hellman theory,
+distinct suite identities, a free function for labeled derivation, and ideal
+authenticated encryption. It abstracts byte encodings, concrete cipher
+behavior, and record sequence state. Base mode allows any sender to seal to
+a recipient public key. The agreement property concerns the same sealed
+record. The PSK is provisioned per recipient and modeled as a fresh secret.
+*/
+
+theory HPKE
+begin
+
+builtins: diffie-hellman
+
+functions: kdf/1, aead/3, adec/3
+equations: adec(aead(m, k, ad), k, ad) = m
+
+rule Register_Recipient:
+    let pkR = 'g'^~skR
+    in
+    [ Fr(~skR) ]
+  --[ RegisterR(pkR) ]->
+    [ !RecipientSecret(pkR, ~skR), !RecipientPublic(pkR), Out(pkR)
+    , !Mode(pkR, 'base', 'empty_id', 'empty_psk')
+    ]
+
+rule Provision_Psk:
+    [ !RecipientPublic(pkR), Fr(~pskId), Fr(~psk) ]
+  -->
+    [ !Mode(pkR, 'psk', ~pskId, ~psk), Out(~pskId) ]
+
+rule Reveal_Psk:
+    [ !Mode(pkR, 'psk', pskId, psk) ]
+  -->
+    [ Out(psk) ]
+
+rule Reveal_Recipient:
+    [ !RecipientSecret(pkR, skR) ]
+  --[ RevealR(pkR) ]->
+    [ Out(skR) ]
+
+/* The KEM context includes both public keys. The labeled HPKE record key binds
+   the complete suite (KEM/KDF/AEAD), mode, info, and PSK inputs. The ideal AEAD
+   ciphertext then binds the record key and AAD. The public suite, info and AAD
+   travel alongside the record so the adversary may replace any of them. */
+rule Seal:
+    let suite = <$kem, $kdf, $aeadId>
+        enc = 'g'^~skE
+        dh  = pkR^~skE
+        ss  = kdf(<'dhkem', $kem, enc, pkR, dh>)
+        key = kdf(<'record_key', $mode, suite, ss, $info, pskId, psk>)
+        ct  = aead(~pt, key, $aad)
+    in
+    [ Fr(~skE), Fr(~pt), !Mode(pkR, $mode, pskId, psk) ]
+  --[ Seal(enc, ct, pkR, $mode, suite, $info, $aad, ~pt) ]->
+    [ Out(<enc, ct, $mode, suite, $info, $aad, pskId>) ]
+
+/* In the symbolic algebra, re-encrypting the destructor's result equals the
+   input ciphertext exactly when decryption succeeds. This is a model of the
+   AEAD success condition. The recorded recipient identity is the public key
+   for the actual decapsulating secret. */
+rule Open:
+    let suite = <$kem, $kdf, $aeadId>
+        dh  = enc^skR
+        ss  = kdf(<'dhkem', $kem, enc, pkR, dh>)
+        key = kdf(<'record_key', $mode, suite, ss, $info, pskId, psk>)
+        pt  = adec(ct, key, $aad)
+    in
+    [ !RecipientSecret(pkR, skR), !Mode(pkR, $mode, pskId, psk)
+    , In(<enc, ct, $mode, suite, $info, $aad, pskId>)
+    ]
+  --[ Eq(ct, aead(pt, key, $aad)), Open(enc, ct, pkR, $mode, suite, $info, $aad, pt) ]->
+    [ ]
+
+restriction Successful_Authentication:
+  "All actual expected #i. Eq(actual, expected) @ i ==> actual = expected"
+
+lemma base_roundtrip_exists:
+  exists-trace
+  "Ex enc ct pkR suite info aad pt #i #j.
+     Seal(enc, ct, pkR, 'base', suite, info, aad, pt) @ i
+     & Open(enc, ct, pkR, 'base', suite, info, aad, pt) @ j
+     & i < j"
+
+lemma psk_roundtrip_exists:
+  exists-trace
+  "Ex enc ct pkR suite info aad pt #i #j.
+     Seal(enc, ct, pkR, 'psk', suite, info, aad, pt) @ i
+     & Open(enc, ct, pkR, 'psk', suite, info, aad, pt) @ j
+     & i < j"
+
+/* Compare events for the exact ciphertext so a separately sealed record
+   cannot satisfy the antecedent. Binding does not require key secrecy. */
+lemma successful_open_binds_context:
+  all-traces
+  "All enc ct pkR mode suite info aad pt enc2 pkR2 mode2 suite2 info2 aad2 pt2 #i #j.
+     Seal(enc, ct, pkR, mode, suite, info, aad, pt) @ i
+     & Open(enc2, ct, pkR2, mode2, suite2, info2, aad2, pt2) @ j
+       ==> enc = enc2 & pkR = pkR2 & mode = mode2 & suite = suite2
+         & info = info2 & aad = aad2 & pt = pt2"
+
+lemma plaintext_secrecy:
+  all-traces
+  "All enc ct pkR mode suite info aad pt #i.
+     Seal(enc, ct, pkR, mode, suite, info, aad, pt) @ i & (Ex #k. K(pt) @ k)
+       ==> (Ex #r. RevealR(pkR) @ r)"
+
+end
