@@ -19,6 +19,7 @@ export const REQUIRED_WORKFLOW_GATES = [
     "cargo deny check",
     "node scripts/run_pinned_release_readiness.mjs --ci-policy",
     "node scripts/run_pinned_release_readiness.mjs --typescript-source",
+    "npm --prefix packages/ts run pack:check -- --use-built",
     "node scripts/run_pinned_release_readiness.mjs --swift-source",
     "node scripts/run_pinned_release_readiness.mjs --kotlin-source",
     "node packages/ts/scripts/browser-wasm-test.mjs",
@@ -39,6 +40,7 @@ export const REQUIRED_WORKFLOW_GATES = [
   [".github/workflows/npm-package-preflight.yml", [
     "node scripts/run_pinned_release_readiness.mjs --release-packages",
     "npm test",
+    "npm run pack:check -- --use-built",
   ]],
   [".github/workflows/kotlin-android-package-preflight.yml", [
     "node scripts/run_pinned_release_readiness.mjs --release-packages",
@@ -49,6 +51,7 @@ export const REQUIRED_WORKFLOW_GATES = [
   ]],
   [".github/workflows/npm-package-release.yml", [
     "node scripts/run_pinned_release_readiness.mjs --release-packages",
+    "npm run pack:check -- --use-built",
     "npm publish \"reallyme-crypto-${RELEASE_VERSION}.tgz\" --provenance --access public",
   ]],
   [".github/workflows/swift-package-release.yml", [

@@ -21,7 +21,7 @@ const LOCAL_CHECKER_DEPENDENCIES = [
   ["scripts/native_buffa_readiness.mjs", "fb7433ffbbd638c5d33c2c55a0d7ae1277f475fefd433757e9f74de2e90364d2"],
   ["scripts/proto_scalar_policy.mjs", "f7b071722aa93a0f75a7fe57f994ae7a12e030ee0bedb1be7058e48543cac377"],
   ["scripts/crypto_operation_route_readiness.mjs", "2b15c4e6778f18cf10b493fb5644e47baf537185b6e4411909ba875b5bd38db4"],
-  ["scripts/workflow_gate_policy.mjs", "a5b0ac299de016810c08e8802d74aa9dc00b6ae8ee434f8334a2e0c26a6d7fcc"],
+  ["scripts/workflow_gate_policy.mjs", "a64db4f5fc5b98832d485e982efcb45629c3d4ef6349e4ebccefb0fb0ea4deb2"],
 ];
 const RELEASE_READINESS_CORE_URL =
   `https://raw.githubusercontent.com/reallyme/release-readiness/${RELEASE_READINESS_COMMIT}/core.mjs`;

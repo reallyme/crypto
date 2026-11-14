@@ -20,8 +20,9 @@ tests. Protobuf Checks owns reproducible generation, hardening and committed
 byte freshness. Both obligations remain required when protobuf changes.
 
 The TypeScript source-policy invocation builds the SDK before its Node tests.
-The browser runner consumes those same built files, avoiding a second package
-build. Android native artifacts are built and checked by the Kotlin lane;
+The npm tarball check and browser runner consume those same built files.
+The tarball check verifies WASM imports on ordinary pushes. Android native
+artifacts are built and checked by the Kotlin lane;
 CodeQL compiles the Java/Kotlin source sets for extraction without rebuilding
 unrelated JNI artifacts. Its traced compiles retain `--no-build-cache` and
 `--rerun-tasks`.

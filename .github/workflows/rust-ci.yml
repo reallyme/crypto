@@ -384,6 +384,9 @@ jobs:
       - name: Test TypeScript source policy
         run: node scripts/run_pinned_release_readiness.mjs --typescript-source
 
+      - name: Check npm tarball contents and WASM surface
+        run: npm --prefix packages/ts run pack:check -- --use-built
+
       - name: Test TypeScript package in Chromium
         run: node packages/ts/scripts/browser-wasm-test.mjs
 
