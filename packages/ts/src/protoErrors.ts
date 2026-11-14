@@ -5,6 +5,7 @@
 
 import { create, fromBinary, toBinary } from "@bufbuild/protobuf";
 import { ReallyMeCryptoError } from "./errors.js";
+import type { ReallyMeCryptoErrorCode } from "./errors.js";
 import {
   CryptoBackendErrorSchema,
   CryptoErrorReason,
@@ -32,70 +33,55 @@ export type ReallyMeCryptoWireErrorValidationResult =
   | Readonly<{ ok: false; error: ReallyMeCryptoWireErrorValidationCode }>;
 
 
-const cryptoErrorReasonToFacadeError = (
-  reason: CryptoErrorReason,
-): ReallyMeCryptoError => {
-  switch (reason) {
-    case CryptoErrorReason.PRIMITIVE_INVALID_SIGNATURE:
-    case CryptoErrorReason.PRIMITIVE_VERIFICATION_FAILED:
-      return new ReallyMeCryptoError("invalid-signature");
-    case CryptoErrorReason.PROVIDER_UNSUPPORTED_ALGORITHM:
-    case CryptoErrorReason.PROVIDER_UNSUPPORTED_BACKEND:
-      return new ReallyMeCryptoError("unsupported-algorithm");
-    case CryptoErrorReason.PROVIDER_UNAVAILABLE:
-    case CryptoErrorReason.PROVIDER_RANDOMNESS_UNAVAILABLE:
-    case CryptoErrorReason.PROVIDER_KEY_EXISTS:
-    case CryptoErrorReason.PROVIDER_KEY_NOT_FOUND:
-    case CryptoErrorReason.PROVIDER_ACCESS_DENIED:
-    case CryptoErrorReason.PROVIDER_USER_AUTHENTICATION_REQUIRED:
-    case CryptoErrorReason.PROVIDER_USER_CANCELED:
-    case CryptoErrorReason.PROVIDER_HARDWARE_UNAVAILABLE:
-    case CryptoErrorReason.PROVIDER_HARDWARE_REJECTED_KEY:
-    case CryptoErrorReason.BACKEND_INVALID_STATE:
-    case CryptoErrorReason.BACKEND_INTERNAL:
-      return new ReallyMeCryptoError("provider-failure");
-    case CryptoErrorReason.PRIMITIVE_INVALID_PARAMETER:
-    case CryptoErrorReason.PRIMITIVE_INVALID_LENGTH:
-    case CryptoErrorReason.PRIMITIVE_INVALID_KEY:
-    case CryptoErrorReason.PRIMITIVE_INVALID_PUBLIC_KEY:
-    case CryptoErrorReason.PRIMITIVE_INVALID_PRIVATE_KEY:
-    case CryptoErrorReason.PRIMITIVE_INVALID_NONCE:
-    case CryptoErrorReason.PRIMITIVE_INVALID_SALT:
-    case CryptoErrorReason.PRIMITIVE_INVALID_PASSWORD:
-    case CryptoErrorReason.PRIMITIVE_INVALID_ENCODING:
-    case CryptoErrorReason.PRIMITIVE_INVALID_SHARED_SECRET:
-    case CryptoErrorReason.PRIMITIVE_MALFORMED_CIPHERTEXT:
-    case CryptoErrorReason.PRIMITIVE_INVALID_TAG:
-    case CryptoErrorReason.PRIMITIVE_MALFORMED_PROTOBUF:
-    case CryptoErrorReason.PRIMITIVE_MALFORMED_JSON:
-    case CryptoErrorReason.PRIMITIVE_RESOURCE_LIMIT_EXCEEDED:
-    case CryptoErrorReason.PRIMITIVE_MISSING_OPERATION:
-      return new ReallyMeCryptoError("invalid-input");
-    case CryptoErrorReason.PRIMITIVE_AUTHENTICATION_FAILED:
-      return new ReallyMeCryptoError("authentication-failed");
-    default:
-      return new ReallyMeCryptoError("invalid-input");
-  }
+type KnownErrorReason = Exclude<CryptoErrorReason, CryptoErrorReason.UNSPECIFIED>;
+
+// The public SDK categories predate the wire contract. This exhaustive projection
+// keeps them stable while the wire adapter retains the original reason code.
+const facadeErrorCodes: Readonly<Record<KnownErrorReason, ReallyMeCryptoErrorCode>> = {
+  [CryptoErrorReason.PRIMITIVE_INVALID_PARAMETER]: "invalid-input",
+  [CryptoErrorReason.PRIMITIVE_INVALID_LENGTH]: "invalid-input",
+  [CryptoErrorReason.PRIMITIVE_INVALID_KEY]: "invalid-input",
+  [CryptoErrorReason.PRIMITIVE_INVALID_PUBLIC_KEY]: "invalid-input",
+  [CryptoErrorReason.PRIMITIVE_INVALID_PRIVATE_KEY]: "invalid-input",
+  [CryptoErrorReason.PRIMITIVE_INVALID_NONCE]: "invalid-input",
+  [CryptoErrorReason.PRIMITIVE_INVALID_SALT]: "invalid-input",
+  [CryptoErrorReason.PRIMITIVE_INVALID_PASSWORD]: "invalid-input",
+  [CryptoErrorReason.PRIMITIVE_INVALID_ENCODING]: "invalid-input",
+  [CryptoErrorReason.PRIMITIVE_INVALID_SIGNATURE]: "invalid-signature",
+  [CryptoErrorReason.PRIMITIVE_VERIFICATION_FAILED]: "invalid-signature",
+  [CryptoErrorReason.PRIMITIVE_AUTHENTICATION_FAILED]: "authentication-failed",
+  [CryptoErrorReason.PRIMITIVE_MALFORMED_CIPHERTEXT]: "invalid-input",
+  [CryptoErrorReason.PRIMITIVE_INVALID_TAG]: "invalid-input",
+  [CryptoErrorReason.PRIMITIVE_INVALID_SHARED_SECRET]: "invalid-input",
+  [CryptoErrorReason.PRIMITIVE_MALFORMED_PROTOBUF]: "invalid-input",
+  [CryptoErrorReason.PRIMITIVE_MALFORMED_JSON]: "invalid-input",
+  [CryptoErrorReason.PRIMITIVE_RESOURCE_LIMIT_EXCEEDED]: "invalid-input",
+  [CryptoErrorReason.PRIMITIVE_MISSING_OPERATION]: "invalid-input",
+  [CryptoErrorReason.PROVIDER_UNSUPPORTED_ALGORITHM]: "unsupported-algorithm",
+  [CryptoErrorReason.PROVIDER_UNSUPPORTED_BACKEND]: "unsupported-algorithm",
+  [CryptoErrorReason.PROVIDER_UNAVAILABLE]: "provider-failure",
+  [CryptoErrorReason.PROVIDER_RANDOMNESS_UNAVAILABLE]: "provider-failure",
+  [CryptoErrorReason.PROVIDER_KEY_EXISTS]: "provider-failure",
+  [CryptoErrorReason.PROVIDER_KEY_NOT_FOUND]: "provider-failure",
+  [CryptoErrorReason.PROVIDER_ACCESS_DENIED]: "provider-failure",
+  [CryptoErrorReason.PROVIDER_USER_AUTHENTICATION_REQUIRED]: "provider-failure",
+  [CryptoErrorReason.PROVIDER_USER_CANCELED]: "provider-failure",
+  [CryptoErrorReason.PROVIDER_HARDWARE_UNAVAILABLE]: "provider-failure",
+  [CryptoErrorReason.PROVIDER_HARDWARE_REJECTED_KEY]: "provider-failure",
+  [CryptoErrorReason.BACKEND_INVALID_STATE]: "provider-failure",
+  [CryptoErrorReason.BACKEND_INTERNAL]: "provider-failure",
 };
 
-const invalidInputReasons = new Set<CryptoErrorReason>([
-  CryptoErrorReason.PRIMITIVE_INVALID_PARAMETER,
-  CryptoErrorReason.PRIMITIVE_INVALID_LENGTH,
-  CryptoErrorReason.PRIMITIVE_INVALID_KEY,
-  CryptoErrorReason.PRIMITIVE_INVALID_PUBLIC_KEY,
-  CryptoErrorReason.PRIMITIVE_INVALID_PRIVATE_KEY,
-  CryptoErrorReason.PRIMITIVE_INVALID_NONCE,
-  CryptoErrorReason.PRIMITIVE_INVALID_SALT,
-  CryptoErrorReason.PRIMITIVE_INVALID_PASSWORD,
-  CryptoErrorReason.PRIMITIVE_INVALID_ENCODING,
-  CryptoErrorReason.PRIMITIVE_INVALID_SHARED_SECRET,
-  CryptoErrorReason.PRIMITIVE_MALFORMED_CIPHERTEXT,
-  CryptoErrorReason.PRIMITIVE_INVALID_TAG,
-  CryptoErrorReason.PRIMITIVE_MALFORMED_PROTOBUF,
-  CryptoErrorReason.PRIMITIVE_MALFORMED_JSON,
-  CryptoErrorReason.PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
-  CryptoErrorReason.PRIMITIVE_MISSING_OPERATION,
-]);
+const isKnownErrorReason = (reason: unknown): reason is KnownErrorReason =>
+  typeof reason === "number" && Number.isInteger(reason) && Object.hasOwn(facadeErrorCodes, reason);
+
+const facadeErrorReasons: Readonly<Record<ReallyMeCryptoErrorCode, ReallyMeCryptoWireError>> = {
+  "invalid-input": { branch: "primitive", reason: CryptoErrorReason.PRIMITIVE_INVALID_PARAMETER },
+  "invalid-signature": { branch: "primitive", reason: CryptoErrorReason.PRIMITIVE_INVALID_SIGNATURE },
+  "authentication-failed": { branch: "primitive", reason: CryptoErrorReason.PRIMITIVE_AUTHENTICATION_FAILED },
+  "provider-failure": { branch: "backend", reason: CryptoErrorReason.BACKEND_INTERNAL },
+  "unsupported-algorithm": { branch: "provider", reason: CryptoErrorReason.PROVIDER_UNSUPPORTED_ALGORITHM },
+};
 
 export const cryptoWireErrorToProto = (
   error: ReallyMeCryptoWireError,
@@ -175,11 +161,11 @@ export const cryptoWireErrorTryNew = (
   if (reason === CryptoErrorReason.UNSPECIFIED) {
     return { ok: false, error: "unspecified-reason" };
   }
-  if (knownCryptoErrorReasons.has(reason) && !cryptoErrorReasonMatchesBranch(branch, reason)) {
-    return { ok: false, error: "branch-reason-mismatch" };
-  }
-  if (!cryptoErrorReasonCodeMatchesBranch(branch, reason)) {
-    return { ok: false, error: "reason-code-out-of-range" };
+  if (!Number.isInteger(reason) || !cryptoErrorReasonCodeMatchesBranch(branch, reason)) {
+    return {
+      ok: false,
+      error: isKnownErrorReason(reason) ? "branch-reason-mismatch" : "reason-code-out-of-range",
+    };
   }
   return { ok: true, value: { branch, reason, reasonCode: reason } };
 };
@@ -204,134 +190,18 @@ const cryptoErrorReasonCodeMatchesBranch = (
   }
 };
 
-const cryptoErrorReasonMatchesBranch = (
-  branch: ReallyMeCryptoWireErrorBranch,
-  reason: CryptoErrorReason,
-): boolean => {
-  switch (branch) {
-    case "primitive":
-      return primitiveCryptoErrorReasons.has(reason);
-    case "provider":
-      return providerCryptoErrorReasons.has(reason);
-    case "backend":
-      return backendCryptoErrorReasons.has(reason);
-  }
-};
-
-const primitiveCryptoErrorReasons = new Set<CryptoErrorReason>([
-  CryptoErrorReason.PRIMITIVE_INVALID_PARAMETER,
-  CryptoErrorReason.PRIMITIVE_INVALID_LENGTH,
-  CryptoErrorReason.PRIMITIVE_INVALID_KEY,
-  CryptoErrorReason.PRIMITIVE_INVALID_PUBLIC_KEY,
-  CryptoErrorReason.PRIMITIVE_INVALID_PRIVATE_KEY,
-  CryptoErrorReason.PRIMITIVE_INVALID_NONCE,
-  CryptoErrorReason.PRIMITIVE_INVALID_SALT,
-  CryptoErrorReason.PRIMITIVE_INVALID_PASSWORD,
-  CryptoErrorReason.PRIMITIVE_INVALID_ENCODING,
-  CryptoErrorReason.PRIMITIVE_INVALID_SIGNATURE,
-  CryptoErrorReason.PRIMITIVE_VERIFICATION_FAILED,
-  CryptoErrorReason.PRIMITIVE_AUTHENTICATION_FAILED,
-  CryptoErrorReason.PRIMITIVE_MALFORMED_CIPHERTEXT,
-  CryptoErrorReason.PRIMITIVE_INVALID_TAG,
-  CryptoErrorReason.PRIMITIVE_INVALID_SHARED_SECRET,
-  CryptoErrorReason.PRIMITIVE_MALFORMED_PROTOBUF,
-  CryptoErrorReason.PRIMITIVE_MALFORMED_JSON,
-  CryptoErrorReason.PRIMITIVE_RESOURCE_LIMIT_EXCEEDED,
-  CryptoErrorReason.PRIMITIVE_MISSING_OPERATION,
-]);
-
-const providerCryptoErrorReasons = new Set<CryptoErrorReason>([
-  CryptoErrorReason.PROVIDER_UNSUPPORTED_ALGORITHM,
-  CryptoErrorReason.PROVIDER_UNSUPPORTED_BACKEND,
-  CryptoErrorReason.PROVIDER_UNAVAILABLE,
-  CryptoErrorReason.PROVIDER_RANDOMNESS_UNAVAILABLE,
-  CryptoErrorReason.PROVIDER_KEY_EXISTS,
-  CryptoErrorReason.PROVIDER_KEY_NOT_FOUND,
-  CryptoErrorReason.PROVIDER_ACCESS_DENIED,
-  CryptoErrorReason.PROVIDER_USER_AUTHENTICATION_REQUIRED,
-  CryptoErrorReason.PROVIDER_USER_CANCELED,
-  CryptoErrorReason.PROVIDER_HARDWARE_UNAVAILABLE,
-  CryptoErrorReason.PROVIDER_HARDWARE_REJECTED_KEY,
-]);
-
-const backendCryptoErrorReasons = new Set<CryptoErrorReason>([
-  CryptoErrorReason.BACKEND_INVALID_STATE,
-  CryptoErrorReason.BACKEND_INTERNAL,
-]);
-
-const knownCryptoErrorReasons = new Set<CryptoErrorReason>([
-  ...primitiveCryptoErrorReasons,
-  ...providerCryptoErrorReasons,
-  ...backendCryptoErrorReasons,
-]);
-
 export const cryptoWireErrorToFacadeError = (
   error: ReallyMeCryptoWireError,
-): ReallyMeCryptoError => {
-  if (!knownCryptoErrorReasons.has(error.reason)) {
-    return new ReallyMeCryptoError("provider-failure");
-  }
-  const facadeError = cryptoErrorReasonToFacadeError(error.reason);
-  if (facadeError.code !== "invalid-input" || invalidInputReasons.has(error.reason)) {
-    return facadeError;
-  }
-  switch (error.branch) {
-    case "primitive":
-      return facadeError;
-    case "provider":
-    case "backend":
-      return new ReallyMeCryptoError("provider-failure");
-  }
-};
+): ReallyMeCryptoError => new ReallyMeCryptoError(
+  isKnownErrorReason(error.reason) ? facadeErrorCodes[error.reason] : "provider-failure",
+);
 
 export const cryptoErrorToProto = (error: ReallyMeCryptoError): CryptoError => {
-  switch (error.code) {
-    case "invalid-input":
-      return create(CryptoErrorSchema, {
-        error: {
-          case: "primitive",
-          value: create(CryptoPrimitiveErrorSchema, {
-            reason: CryptoErrorReason.PRIMITIVE_INVALID_PARAMETER,
-          }),
-        },
-      });
-    case "invalid-signature":
-      return create(CryptoErrorSchema, {
-        error: {
-          case: "primitive",
-          value: create(CryptoPrimitiveErrorSchema, {
-            reason: CryptoErrorReason.PRIMITIVE_INVALID_SIGNATURE,
-          }),
-        },
-      });
-    case "authentication-failed":
-      return create(CryptoErrorSchema, {
-        error: {
-          case: "primitive",
-          value: create(CryptoPrimitiveErrorSchema, {
-            reason: CryptoErrorReason.PRIMITIVE_AUTHENTICATION_FAILED,
-          }),
-        },
-      });
-    case "provider-failure":
-      return create(CryptoErrorSchema, {
-        error: {
-          case: "backend",
-          value: create(CryptoBackendErrorSchema, {
-            reason: CryptoErrorReason.BACKEND_INTERNAL,
-          }),
-        },
-      });
-    case "unsupported-algorithm":
-      return create(CryptoErrorSchema, {
-        error: {
-          case: "provider",
-          value: create(CryptoProviderErrorSchema, {
-            reason: CryptoErrorReason.PROVIDER_UNSUPPORTED_ALGORITHM,
-          }),
-        },
-      });
+  const code = error.code;
+  if (typeof code !== "string" || !Object.hasOwn(facadeErrorReasons, code)) {
+    return cryptoWireErrorToProto(facadeErrorReasons["invalid-input"]);
   }
+  return cryptoWireErrorToProto(facadeErrorReasons[code]);
 };
 
 export const cryptoErrorToProtoBytes = (error: ReallyMeCryptoError): Uint8Array =>

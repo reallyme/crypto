@@ -125,9 +125,11 @@ let package = Package(
     ),
   ],
   dependencies: [
+    // Codec 0.4.0 packages a static module map that collides with
+    // CSecp256k1 under Swift Build. Keep the verified consumer dependency.
     .package(
       url: "https://github.com/reallyme/codec",
-      from: "0.3.2"
+      exact: "0.3.2"
     ),
     .package(
       url: "https://github.com/reallyme/CSecp256k1",

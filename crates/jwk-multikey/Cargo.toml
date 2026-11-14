@@ -31,7 +31,7 @@ zeroize = { workspace = true }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.4.0", path = "../crypto/core", default-features = false }
 
 # multikey codec (decode / encode)
-codec-multikey = { package = "reallyme-codec-multikey", version = "0.3.4" }
+codec-multikey = { package = "reallyme-codec-multikey", version = "0.4.0" }
 
 # JWK envelope
 envelopes-jwk = { package = "reallyme-crypto-jwk", version = "=0.4.0", path = "../jwk", default-features = false }
@@ -39,7 +39,7 @@ envelopes-jwk = { package = "reallyme-crypto-jwk", version = "=0.4.0", path = ".
 [dev-dependencies]
 wasm-bindgen-test = { workspace = true }
 serde_json = { workspace = true }
-codec-base64url = { package = "reallyme-codec-base64url", version = "0.3.4" }
+codec-base64url = { package = "reallyme-codec-base64url", version = "0.4.0" }
 crypto-dispatch = { package = "reallyme-crypto-dispatch", version = "=0.4.0", path = "../crypto/dispatch", default-features = false, features = ["native", "p256"] }
 
 [lints]

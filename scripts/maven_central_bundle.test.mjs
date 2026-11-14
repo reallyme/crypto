@@ -112,6 +112,34 @@ test("installs the latest stable NDK with numeric revision ordering", t => {
   ]);
 });
 
+for (const installed of [false, true]) {
+  test("reads Android CLI slash paths and aligned columns, installed=" + installed, t => {
+    const f = fixture(t);
+    const revision = "30.0.16248370";
+    const separator = installed ? "       " : "\t";
+    writeFileSync(f.packages, [
+      "Installed packages:",
+      "  ndk/29.0.14206865       29.0.14206865       NDK (Side by side) 29.0.14206865",
+      "Available packages:",
+      "  ndk/30.0.16138531       30.0.16138531-rc.3  NDK (Side by side) 30.0.16138531",
+      "  ndk/31.0.999            31.0.999 rc1        NDK preview",
+      "\tndk/32.0.999\t32.0.999 beta1\tNDK preview",
+      "  ndk/33.0.123            33.0.124            Mismatched revision",
+      `  ndk/${revision}${separator}${revision}${separator}NDK (Side by side) ${revision}`,
+      "",
+    ].join("\n"));
+    if (installed) f.installed(revision);
+
+    const result = f.run();
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(JSON.parse(result.stdout).ndk, join(f.sdk, "ndk", revision));
+    assert.deepEqual(f.calls(), [
+      ["--sdk_root=" + f.sdk, "--list", "--channel=0"],
+      ...(installed ? [] : [["--sdk_root=" + f.sdk, "--install", "ndk;" + revision, "--channel=0"]]),
+    ]);
+  });
+}
+
 test("checks for updates on every run without reinstalling the current NDK", t => {
   const f = fixture(t);
   f.installed("30.10.10");

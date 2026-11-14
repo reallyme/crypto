@@ -127,7 +127,7 @@ public class ReallyMeCryptoWireError private constructor(
                     ReallyMeCryptoWireErrorValidationError.UNSPECIFIED_REASON,
                 )
             }
-            if (!reasonMatchesBranch(branch, reason)) {
+            if (!reasonCodeMatchesBranch(branch, reason.number)) {
                 return ReallyMeCryptoWireErrorValidationResult.Failure(
                     ReallyMeCryptoWireErrorValidationError.BRANCH_REASON_MISMATCH,
                 )
@@ -149,12 +149,6 @@ public class ReallyMeCryptoWireError private constructor(
             if (!reasonCodeMatchesBranch(branch, reasonCode)) {
                 return ReallyMeCryptoWireErrorValidationResult.Failure(
                     ReallyMeCryptoWireErrorValidationError.REASON_CODE_OUT_OF_RANGE,
-                )
-            }
-            val known = CryptoErrorReason.forNumber(reasonCode)
-            if (known != null && !reasonMatchesBranch(branch, known)) {
-                return ReallyMeCryptoWireErrorValidationResult.Failure(
-                    ReallyMeCryptoWireErrorValidationError.BRANCH_REASON_MISMATCH,
                 )
             }
             return ReallyMeCryptoWireErrorValidationResult.Success(

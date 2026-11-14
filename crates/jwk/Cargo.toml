@@ -38,8 +38,8 @@ crypto-core = { package = "reallyme-crypto-core", version = "=0.4.0", path = "..
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 
-codec-base64url = { package = "reallyme-codec-base64url", version = "0.3.4" }
-codec-jcs = { package = "reallyme-codec-jcs", version = "0.3.4" }
+codec-base64url = { package = "reallyme-codec-base64url", version = "0.4.0" }
+codec-jcs = { package = "reallyme-codec-jcs", version = "0.4.0" }
 crypto-p256 = { package = "reallyme-crypto-p256", version = "=0.4.0", path = "../p256", default-features = false }
 crypto-ed25519 = { package = "reallyme-crypto-ed25519", version = "=0.4.0", path = "../ed25519", default-features = false }
 crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "=0.4.0", path = "../secp256k1", default-features = false }

@@ -869,6 +869,42 @@ test("proto wire errors preserve branch and exact reason", () => {
   assert.equal(decoded.reason, CryptoErrorReason.PRIMITIVE_INVALID_PRIVATE_KEY);
 });
 
+test("all protobuf error reasons project to stable SDK codes", () => {
+  const canonical = [
+    ["invalid-input", "primitive", CryptoErrorReason.PRIMITIVE_INVALID_PARAMETER],
+    ["invalid-signature", "primitive", CryptoErrorReason.PRIMITIVE_INVALID_SIGNATURE],
+    ["authentication-failed", "primitive", CryptoErrorReason.PRIMITIVE_AUTHENTICATION_FAILED],
+    ["provider-failure", "backend", CryptoErrorReason.BACKEND_INTERNAL],
+    ["unsupported-algorithm", "provider", CryptoErrorReason.PROVIDER_UNSUPPORTED_ALGORITHM],
+  ];
+  for (const [code, branch, reason] of canonical) {
+    const bytes = cryptoErrorToProtoBytes(new ReallyMeCryptoError(code));
+    assert.deepEqual(cryptoWireErrorFromProtoBytes(bytes), { branch, reason, reasonCode: reason });
+    assert.equal(cryptoErrorFromProtoBytes(bytes).code, code);
+  }
+
+  for (const reason of Object.values(CryptoErrorReason)) {
+    if (typeof reason !== "number" || reason === CryptoErrorReason.UNSPECIFIED) continue;
+    const branch = reason < 200 ? "primitive" : reason < 300 ? "provider" : "backend";
+    const result = cryptoWireErrorTryNew(branch, reason);
+    assert.equal(result.ok, true);
+    const bytes = cryptoWireErrorToProtoBytes(result.value);
+    assert.deepEqual(cryptoWireErrorFromProtoBytes(bytes), result.value);
+    assert.ok(canonical.some(([code]) => code === cryptoErrorFromProtoBytes(bytes).code));
+  }
+
+  assert.deepEqual(cryptoWireErrorTryNew("provider", CryptoErrorReason.BACKEND_INTERNAL), {
+    ok: false,
+    error: "branch-reason-mismatch",
+  });
+  assert.deepEqual(cryptoWireErrorTryNew("primitive", 100.5), {
+    ok: false,
+    error: "reason-code-out-of-range",
+  });
+  const invalidCode = cryptoErrorToProtoBytes(new ReallyMeCryptoError("__proto__"));
+  assert.equal(cryptoErrorFromProtoBytes(invalidCode).code, "invalid-input");
+});
+
 test("proto wire errors preserve future branch reason codes", () => {
   const encoded = toBinary(
     CryptoErrorSchema,

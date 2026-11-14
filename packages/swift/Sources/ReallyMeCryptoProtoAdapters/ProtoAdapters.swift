@@ -81,18 +81,15 @@ public struct ReallyMeCryptoWireError: Equatable, Sendable {
     if reason == .unspecified {
       throw ReallyMeCryptoWireErrorValidationError.unspecifiedReason
     }
-    if case .UNRECOGNIZED = reason {
-      guard
-        ReallyMeCryptoProtoAdapters.reasonCodeMatchesBranch(
-          branch: branch,
-          reasonCode: reason.rawValue
-        )
-      else {
+    guard
+      ReallyMeCryptoProtoAdapters.reasonCodeMatchesBranch(
+        branch: branch,
+        reasonCode: reason.rawValue
+      )
+    else {
+      if case .UNRECOGNIZED = reason {
         throw ReallyMeCryptoWireErrorValidationError.reasonCodeOutOfRange
       }
-      return ReallyMeCryptoWireError(uncheckedBranch: branch, reason: reason)
-    }
-    guard ReallyMeCryptoProtoAdapters.reasonMatchesBranch(branch: branch, reason: reason) else {
       throw ReallyMeCryptoWireErrorValidationError.branchReasonMismatch
     }
     return ReallyMeCryptoWireError(uncheckedBranch: branch, reason: reason)

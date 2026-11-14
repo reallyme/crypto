@@ -88,37 +88,24 @@ extension ReallyMeCryptoProtoAdapters {
   public static func toProto(
     _ value: ReallyMeCryptoError
   ) -> ReallyMeCryptoProto.ReallyMeProtoCryptoError {
-    var error = ReallyMeCryptoProto.ReallyMeProtoCryptoError()
+    let wireError: ReallyMeCryptoWireError
     switch value {
     case .invalidInput:
-      var primitive = ReallyMeCryptoProto.ReallyMeProtoCryptoPrimitiveError()
-      primitive.reason = .primitiveInvalidParameter
-      error.primitive = primitive
+      wireError = .init(uncheckedBranch: .primitive, reason: .primitiveInvalidParameter)
     case .invalidSignature:
-      var primitive = ReallyMeCryptoProto.ReallyMeProtoCryptoPrimitiveError()
-      primitive.reason = .primitiveInvalidSignature
-      error.primitive = primitive
+      wireError = .init(uncheckedBranch: .primitive, reason: .primitiveInvalidSignature)
     case .authenticationFailed:
-      var primitive = ReallyMeCryptoProto.ReallyMeProtoCryptoPrimitiveError()
-      primitive.reason = .primitiveAuthenticationFailed
-      error.primitive = primitive
+      wireError = .init(uncheckedBranch: .primitive, reason: .primitiveAuthenticationFailed)
     case .unsupportedAlgorithm:
-      var provider = ReallyMeCryptoProto.ReallyMeProtoCryptoProviderError()
-      provider.reason = .providerUnsupportedAlgorithm
-      error.provider = provider
+      wireError = .init(uncheckedBranch: .provider, reason: .providerUnsupportedAlgorithm)
     case .unsupportedPlatform:
-      var provider = ReallyMeCryptoProto.ReallyMeProtoCryptoProviderError()
-      provider.reason = .providerUnsupportedBackend
-      error.provider = provider
-    case .providerFailure,
-      .dynamicLibraryNotFound,
-      .dynamicLibraryLoadFailed,
-      .symbolNotFound:
-      var backend = ReallyMeCryptoProto.ReallyMeProtoCryptoBackendError()
-      backend.reason = .backendInternal
-      error.backend = backend
+      wireError = .init(uncheckedBranch: .provider, reason: .providerUnsupportedBackend)
+    case .providerFailure, .dynamicLibraryNotFound, .dynamicLibraryLoadFailed, .symbolNotFound:
+      // Loader details are meaningful to Swift callers. The portable envelope
+      // carries the shared backend failure reason.
+      wireError = .init(uncheckedBranch: .backend, reason: .backendInternal)
     }
-    return error
+    return wireErrorToProto(wireError)
   }
 
   public static func toProtoBytes(_ value: ReallyMeCryptoError) throws(ReallyMeCryptoError)
@@ -193,20 +180,6 @@ extension ReallyMeCryptoProtoAdapters {
     ReallyMeCryptoWireError(uncheckedBranch: .primitive, reason: .primitiveMalformedProtobuf)
   }
 
-  static func reasonMatchesBranch(
-    branch: ReallyMeCryptoWireErrorBranch,
-    reason: ReallyMeCryptoProto.ReallyMeProtoCryptoErrorReason
-  ) -> Bool {
-    switch branch {
-    case .primitive:
-      return primitiveCryptoErrorReasons.contains(reason)
-    case .provider:
-      return providerCryptoErrorReasons.contains(reason)
-    case .backend:
-      return backendCryptoErrorReasons.contains(reason)
-    }
-  }
-
   static func reasonCodeMatchesBranch(
     branch: ReallyMeCryptoWireErrorBranch,
     reasonCode: Int
@@ -220,50 +193,6 @@ extension ReallyMeCryptoProtoAdapters {
       return (300...399).contains(reasonCode)
     }
   }
-
-  private static let primitiveCryptoErrorReasons:
-    Set<ReallyMeCryptoProto.ReallyMeProtoCryptoErrorReason> = [
-      .primitiveInvalidParameter,
-      .primitiveInvalidLength,
-      .primitiveInvalidKey,
-      .primitiveInvalidPublicKey,
-      .primitiveInvalidPrivateKey,
-      .primitiveInvalidNonce,
-      .primitiveInvalidSalt,
-      .primitiveInvalidPassword,
-      .primitiveInvalidEncoding,
-      .primitiveInvalidSignature,
-      .primitiveVerificationFailed,
-      .primitiveAuthenticationFailed,
-      .primitiveMalformedCiphertext,
-      .primitiveInvalidTag,
-      .primitiveInvalidSharedSecret,
-      .primitiveMalformedProtobuf,
-      .primitiveMalformedJson,
-      .primitiveResourceLimitExceeded,
-      .primitiveMissingOperation,
-    ]
-
-  private static let providerCryptoErrorReasons:
-    Set<ReallyMeCryptoProto.ReallyMeProtoCryptoErrorReason> = [
-      .providerUnsupportedAlgorithm,
-      .providerUnsupportedBackend,
-      .providerUnavailable,
-      .providerRandomnessUnavailable,
-      .providerKeyExists,
-      .providerKeyNotFound,
-      .providerAccessDenied,
-      .providerUserAuthenticationRequired,
-      .providerUserCanceled,
-      .providerHardwareUnavailable,
-      .providerHardwareRejectedKey,
-    ]
-
-  private static let backendCryptoErrorReasons:
-    Set<ReallyMeCryptoProto.ReallyMeProtoCryptoErrorReason> = [
-      .backendInvalidState,
-      .backendInternal,
-    ]
 
   public static func fromProto(
     _ value: ReallyMeCryptoProto.ReallyMeProtoJsonWebKey
