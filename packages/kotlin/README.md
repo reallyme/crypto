@@ -184,7 +184,7 @@ supply-chain event:
 Gradle builds use strict dependency verification and validate the checked-in
 wrapper jars.
 
-The JVM package, Kotlin conformance lane, and Android package use Gradle 9.9.0.
+The JVM package, Kotlin conformance lane, and Android package use Gradle 9.9.1.
 The Android package uses Android Gradle Plugin 9.5.1 with built-in Kotlin. Each
 lane pins its distribution checksum, validates its wrapper jar, and uses strict
 dependency verification.

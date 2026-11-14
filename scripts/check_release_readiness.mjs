@@ -1334,7 +1334,7 @@ const gradleWrapperPaths = [
   "crates/conformance/platform/kotlin/gradle/wrapper/gradle-wrapper.properties",
 ];
 const gradleDistributionSha256 =
-  "0b00b0ffe07c4d4789c12d4935a44a7057d55774b7540bd4a3f76f336deb177a";
+  "d8a18a7a841dd5df825d35a685fad6f2d7f12ac0c280e57b67c27b4a520ba228";
 const gradleNetworkTimeoutMs = 60_000;
 const gradleDownloadRetries = 3;
 const gradleRetryBackOffMs = 1_000;
@@ -1548,7 +1548,7 @@ assertContains(
   "docs/maven-provenance.md",
   "a3d61910e69398a199ca11305ca555a28f4fa09b",
 );
-assertContains("packages/kotlin/README.md", "Android package use Gradle 9.9.0");
+assertContains("packages/kotlin/README.md", "Android package use Gradle 9.9.1");
 assertContains("packages/kotlin/README.md", "Android package uses Android Gradle Plugin 9.5.1");
 
 const kotlinAndroidBuild = readText("packages/kotlin-android/build.gradle.kts");
