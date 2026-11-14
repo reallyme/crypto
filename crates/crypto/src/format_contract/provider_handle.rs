@@ -22,6 +22,7 @@ pub fn encode_p256_handle(
     }
     #[cfg(not(any(feature = "p256", feature = "ecdsa-explicit")))]
     {
+        let _ = request;
         Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }
@@ -42,6 +43,7 @@ pub fn decode_p256_handle(
     }
     #[cfg(not(any(feature = "p256", feature = "ecdsa-explicit")))]
     {
+        let _ = request;
         Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
     }
 }

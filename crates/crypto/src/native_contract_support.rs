@@ -4,7 +4,6 @@
 
 //! Shared protected output construction for standalone native contracts.
 
-use crypto_core::CryptoError;
 #[cfg(any(
     feature = "ecdsa-explicit",
     feature = "ed448",
@@ -44,9 +43,9 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 pub(crate) fn copy_bytes(
     destination: &mut crypto_proto::SecretBytes,
     source: &[u8],
-) -> Result<(), CryptoError> {
+) -> Result<(), crypto_core::CryptoError> {
     if !destination.is_empty() {
-        return Err(CryptoError::BACKEND_INVALID_STATE);
+        return Err(crypto_core::CryptoError::BACKEND_INVALID_STATE);
     }
     destination.extend_from_slice(source)
 }
@@ -62,12 +61,12 @@ pub(crate) fn capabilities(
     agreement: bool,
     private_export: bool,
     explicit_zeroize: bool,
-) -> Result<CryptoNativeKeyCapabilities, CryptoError> {
+) -> Result<CryptoNativeKeyCapabilities, crypto_core::CryptoError> {
     let opaque = match source {
         NativeKeySource::NATIVE_KEY_SOURCE_SOFTWARE_OWNER => false,
         NativeKeySource::NATIVE_KEY_SOURCE_OPAQUE_SIGNER => true,
         NativeKeySource::NATIVE_KEY_SOURCE_UNSPECIFIED => {
-            return Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM);
+            return Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM);
         }
     };
     Ok(CryptoNativeKeyCapabilities {

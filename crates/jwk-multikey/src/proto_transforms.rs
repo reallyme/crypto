@@ -6,6 +6,8 @@
 
 use buffa::MessageField;
 use crypto_core::CryptoError;
+#[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
+use crypto_proto::generated::proto::reallyme::crypto::v1::__buffa::oneof::public_jwk::Key;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoJwkToMultikeyRequest, CryptoJwkToMultikeyResult, CryptoMultikeyToJwkRequest,
     CryptoMultikeyToJwkResult, PublicJwk,
@@ -43,7 +45,7 @@ impl TryFrom<&CryptoJwkToMultikeyRequest> for JwkToMultikeyInputs {
             .as_option()
             .ok_or(CryptoError::PRIMITIVE_INVALID_PARAMETER)?;
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
-        if let Some(crypto_proto::generated::proto::reallyme::crypto::v1::__buffa::oneof::public_jwk::Key::Ec(ec)) = jwk.key.as_ref() {
+        if matches!(jwk.key.as_ref(), Some(Key::Ec(_))) {
             // Keep this adapter's own native gate even if a sibling enables
             // the JWK dependency's backend through Cargo feature unification.
             return Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM);
