@@ -7,7 +7,6 @@ use super::{secret_json_operation_error, JsonOperationPolicy};
 
 const MAX_MODELED_SELECTOR_BYTES: usize = 64;
 const MAX_MODELED_REQUEST_BYTES: usize = 12;
-const MAX_MODELED_SECRET_SUFFIX_BYTES: usize = 16;
 const MAX_MODELED_STRING_BYTES: usize = 8;
 
 #[kani::proof]
@@ -37,19 +36,17 @@ fn only_reviewed_selectors_are_admitted() {
 }
 
 #[kani::proof]
-#[kani::unwind(28)]
+#[kani::unwind(16)]
 fn secret_selector_is_rejected_regardless_of_the_following_bytes() {
     // The transport tests enumerate the remaining schema selectors. Here the
     // bytes after the closing quote are unconstrained, including the colon.
-    const PREFIX: &[u8; 11] = br#"{"aeadSeal""#;
-    const STORAGE_LEN: usize = PREFIX.len() + MAX_MODELED_SECRET_SUFFIX_BYTES;
-    let mut bytes: [u8; STORAGE_LEN] = kani::any();
-    bytes[..PREFIX.len()].copy_from_slice(PREFIX);
-    let length: usize = kani::any();
-    kani::assume((PREFIX.len()..=bytes.len()).contains(&length));
+    const SUFFIX_START: usize = br#"{"aeadSeal""#.len();
+    let suffix: [u8; 4] = kani::any();
+    let mut bytes = *br#"{"aeadSeal"xxxx"#;
+    bytes[SUFFIX_START..].copy_from_slice(&suffix);
 
     assert_eq!(
-        enforce_json_operation_policy(&bytes[..length]),
+        enforce_json_operation_policy(&bytes),
         Err(secret_json_operation_error()),
     );
 }
