@@ -42,6 +42,15 @@ function assertNotContains(label, text, needle) {
   }
 }
 
+const args = process.argv.slice(2);
+if (args.length > 1 || (args.length === 1 && args[0] !== "--use-built")) {
+  fail("usage: node scripts/check-pack.mjs [--use-built]");
+}
+const packArgs = ["pack", "--dry-run", "--json"];
+if (args[0] === "--use-built") {
+  packArgs.push("--ignore-scripts");
+}
+
 const packageJson = JSON.parse(readUtf8(packageJsonPath));
 const packageExports = packageJson.exports;
 if (
@@ -70,7 +79,7 @@ const npmCacheDirectory = mkdtempSync(
 );
 let result;
 try {
-  result = spawnSync("npm", ["pack", "--dry-run", "--json"], {
+  result = spawnSync("npm", packArgs, {
     cwd: packageDirectory,
     encoding: "utf8",
     env: {

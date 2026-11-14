@@ -122,7 +122,7 @@ jobs:
         working-directory: packages/ts
 
       - name: Check npm tarball contents and WASM surface
-        run: npm run pack:check
+        run: npm run pack:check -- --use-built
         working-directory: packages/ts
 
       - name: Build immutable npm tarball
