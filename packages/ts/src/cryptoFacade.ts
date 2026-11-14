@@ -61,7 +61,7 @@ export const createReallyMeCrypto = (
     : requireTrustedReallyMeWasmProvider(configuredProvider);
   return createReallyMeCryptoFacade(() => {
     if (trustedProvider === undefined) {
-      throw new ReallyMeCryptoError("provider-failure");
+      throw new ReallyMeCryptoError("unsupported-algorithm");
     }
     return trustedProvider;
   });

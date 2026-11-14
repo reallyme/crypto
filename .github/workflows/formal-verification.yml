@@ -15,10 +15,10 @@ on:
       - "crates/aes256-gcm-siv/**"
       - "crates/chacha20-poly1305/**"
       - "crates/crypto/core/**"
+      - "crates/crypto/dispatch/**"
       - "crates/crypto/src/operation_contract/**"
-      - "crates/crypto/src/operations/aead/**"
-      - "crates/crypto/src/operations/aead.rs"
-      - "crates/crypto/src/operations/hpke.rs"
+      - "crates/crypto/src/operations/**"
+      - "crates/crypto/tests/restricted_operation_dispatch_tests.rs"
       - "crates/ffi/**"
       - "crates/hpke/**"
       - "crates/proto/**"
@@ -36,10 +36,10 @@ on:
       - "crates/aes256-gcm-siv/**"
       - "crates/chacha20-poly1305/**"
       - "crates/crypto/core/**"
+      - "crates/crypto/dispatch/**"
       - "crates/crypto/src/operation_contract/**"
-      - "crates/crypto/src/operations/aead/**"
-      - "crates/crypto/src/operations/aead.rs"
-      - "crates/crypto/src/operations/hpke.rs"
+      - "crates/crypto/src/operations/**"
+      - "crates/crypto/tests/restricted_operation_dispatch_tests.rs"
       - "crates/ffi/**"
       - "crates/hpke/**"
       - "crates/proto/**"
@@ -88,6 +88,15 @@ jobs:
           CARGO_PROFILE_DEV_DEBUG_ASSERTIONS: "false"
           CARGO_NET_OFFLINE: "true"
         run: cargo kani -p reallyme-crypto --features operation-response --lib -Z stubbing --jobs 2 --output-format terse
+
+      - name: Verify restricted operation and provider dispatch
+        env:
+          CARGO_PROFILE_DEV_DEBUG_ASSERTIONS: "false"
+          CARGO_NET_OFFLINE: "true"
+        run: |
+          cargo kani -p reallyme-crypto-dispatch --no-default-features --features proto,native,ed25519 --lib -Z stubbing --jobs 2 --output-format terse
+          cargo kani -p reallyme-crypto --no-default-features --features operation-response,native,ed25519 --lib -Z stubbing --jobs 2 --output-format terse
+          cargo test --locked -p reallyme-crypto --no-default-features --features operation-response,native,ed25519 --test restricted_operation_dispatch_tests
 
       - name: Prove HPKE dispatch with the full native profile
         env:

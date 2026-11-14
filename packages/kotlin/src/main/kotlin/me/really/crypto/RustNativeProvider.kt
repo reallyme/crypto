@@ -377,7 +377,7 @@ public object ReallyMeRustNativeProvider {
     @Synchronized
     internal fun requireLoaded() {
         if (!loaded) {
-            throw ReallyMeCryptoException.ProviderFailure()
+            throw ReallyMeCryptoException.UnsupportedAlgorithm()
         }
     }
 

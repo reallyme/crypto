@@ -151,7 +151,10 @@ public struct ReallyMeCrypto: Sendable {
 
   func requireRustCAbiLibrary() throws(ReallyMeCryptoError) -> ReallyMeRustCAbiLibrary {
     guard let library = providers.rustCAbiLibrary else {
-      throw ReallyMeCryptoError.providerFailure
+      if providers.rustCAbiDiagnostic == .bundledProviderLoadFailed {
+        throw ReallyMeCryptoError.providerFailure
+      }
+      throw ReallyMeCryptoError.unsupportedAlgorithm
     }
     return library
   }

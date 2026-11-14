@@ -34,7 +34,7 @@ public final class ReallyMeRustCAbiLibrary: Sendable {
     #if REALLYME_CRYPTO_LINKED_FFI
       return ReallyMeRustCAbiLibrary(linkedSymbols: ())
     #else
-      throw ReallyMeCryptoError.providerFailure
+      throw ReallyMeCryptoError.unsupportedAlgorithm
     #endif
   }
 

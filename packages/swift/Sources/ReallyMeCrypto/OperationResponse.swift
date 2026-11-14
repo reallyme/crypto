@@ -93,9 +93,7 @@ extension ReallyMeCrypto {
   /// The returned bytes are always a binary `CryptoOperationResponse` with a
   /// generated `CryptoOperationResult` or generated `CryptoError` outcome.
   public func processOperationResponse(_ request: [UInt8]) throws(ReallyMeCryptoError) -> [UInt8] {
-    guard let library = providers.rustCAbiLibrary else {
-      throw ReallyMeCryptoError.providerFailure
-    }
+    let library = try requireRustCAbiLibrary()
     return try ReallyMeRustCAbiOperationResponseProcessor(library: library)
       .processOperationResponse(request)
   }
@@ -108,9 +106,7 @@ extension ReallyMeCrypto {
   public func processOperationResponseJson(_ requestJson: [UInt8]) throws(ReallyMeCryptoError)
     -> [UInt8]
   {
-    guard let library = providers.rustCAbiLibrary else {
-      throw ReallyMeCryptoError.providerFailure
-    }
+    let library = try requireRustCAbiLibrary()
     return try ReallyMeRustCAbiOperationResponseProcessor(library: library)
       .processOperationResponseJson(requestJson)
   }

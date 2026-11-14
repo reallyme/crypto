@@ -8,6 +8,10 @@ use crypto_core::Algorithm;
 
 use crate::AlgorithmError;
 
+#[cfg(all(kani, feature = "proto", feature = "native", feature = "ed25519"))]
+#[path = "provider/proof_tests.rs"]
+mod proof_tests;
+
 /// Operation requested from the dispatch provider.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]

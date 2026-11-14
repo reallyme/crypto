@@ -54,6 +54,19 @@ const assertReallyMeError = (operation, code) => {
   );
 };
 
+test("package-global AEAD requires an installed WASM provider", () => {
+  assertReallyMeError(
+    () => ReallyMeAead.seal(
+      "AES-256-GCM-SIV",
+      new Uint8Array(32),
+      new Uint8Array(12),
+      new Uint8Array(),
+      new Uint8Array(),
+    ),
+    "unsupported-algorithm",
+  );
+});
+
 test("raw WASM and TypeScript AEAD opens expose only a typed error for unauthenticated records", () => {
   const cases = [
     ["AES-128-GCM", "aes128Gcm", 16, 12],

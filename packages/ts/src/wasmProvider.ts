@@ -442,7 +442,7 @@ export const installReallyMeWasmProvider = (module: unknown): void => {
 
 export const requireReallyMeWasmProvider = (): ReallyMeWasmProvider => {
   if (installedProvider === undefined) {
-    throw new ReallyMeCryptoError("provider-failure");
+    throw new ReallyMeCryptoError("unsupported-algorithm");
   }
   return installedProvider;
 };

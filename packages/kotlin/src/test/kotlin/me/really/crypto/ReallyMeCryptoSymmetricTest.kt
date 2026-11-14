@@ -527,7 +527,7 @@ class ReallyMeCryptoSymmetricTest : ReallyMeCryptoTestSupport() {
                     "somesaltvalue1234".toByteArray(),
                 ),
             )
-        } catch (_: ReallyMeCryptoException.ProviderFailure) {
+        } catch (_: ReallyMeCryptoException.UnsupportedAlgorithm) {
             // The default test lane intentionally leaves the explicit Rust
             // provider unloaded. Provider-enabled matrix jobs execute and
             // assert the same known answer instead.

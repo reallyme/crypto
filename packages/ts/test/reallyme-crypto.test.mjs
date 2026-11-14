@@ -685,7 +685,11 @@ test("explicit crypto provider instances fail closed without WASM provider", () 
   );
   assertReallyMeError(
     () => crypto.processOperationResponse(new Uint8Array()),
-    "provider-failure",
+    "unsupported-algorithm",
+  );
+  assertReallyMeError(
+    () => crypto.processOperationResponseJson(new TextEncoder().encode("{}")),
+    "unsupported-algorithm",
   );
   assertReallyMeError(
     () => crypto.deriveKey("Argon2id", new TextEncoder().encode("password"), salt, 1, 16),
@@ -697,19 +701,23 @@ test("explicit crypto provider instances fail closed without WASM provider", () 
   );
   assertReallyMeError(
     () => crypto.deriveArgon2id(ARGON2ID_V1, new TextEncoder().encode("password"), salt),
-    "provider-failure",
+    "unsupported-algorithm",
   );
   assertReallyMeError(
-    () => crypto.seal("AES-256-GCM", key, nonce, new Uint8Array(), new Uint8Array()),
-    "provider-failure",
+    () => crypto.seal("AES-256-GCM-SIV", key, nonce, new Uint8Array(), new Uint8Array()),
+    "unsupported-algorithm",
+  );
+  assertReallyMeError(
+    () => crypto.open("AES-256-GCM-SIV", key, nonce, new Uint8Array(), new Uint8Array(16)),
+    "unsupported-algorithm",
   );
   assertReallyMeError(
     () => crypto.generateKemKeyPair("ML-KEM-768"),
-    "provider-failure",
+    "unsupported-algorithm",
   );
   assertReallyMeError(
     () => crypto.deriveKemKeyPair("X-Wing-768", new Uint8Array(32)),
-    "provider-failure",
+    "unsupported-algorithm",
   );
 });
 
@@ -797,7 +805,7 @@ test("explicit crypto provider instances do not leak into one another", () => {
   );
   assertReallyMeError(
     () => missingProviderCrypto.deriveArgon2id(ARGON2ID_V1, secret, salt),
-    "provider-failure",
+    "unsupported-algorithm",
   );
   assert.notDeepEqual(
     ReallyMeCrypto.deriveArgon2id(ARGON2ID_V1, secret, salt),

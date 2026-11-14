@@ -65,22 +65,33 @@ extension ReallyMeCryptoTests {
     } else {
       XCTAssertNil(providers.rustCAbiLibrary)
       XCTAssertEqual(providers.rustCAbiDiagnostic, .bundledProviderNotLinked)
+      XCTAssertThrowsError(try ReallyMeRustCAbiLibrary.bundledProvider()) { error in
+        XCTAssertEqual(error as? ReallyMeCryptoError, .unsupportedAlgorithm)
+      }
     }
   }
 
   func testExplicitProviderContextFailsClosedWithoutRustProvider() {
     let crypto = ReallyMeCrypto(providers: ReallyMeCryptoProviders())
     let empty = [UInt8]()
+    let key = [UInt8](repeating: 0, count: 32)
+    let nonce = [UInt8](repeating: 0, count: 12)
 
     XCTAssertThrowsError(
-      try crypto.seal(.aes256GcmSiv, key: empty, nonce: empty, aad: empty, plaintext: empty)
+      try crypto.seal(.aes256GcmSiv, key: key, nonce: nonce, aad: empty, plaintext: empty)
     ) { error in
-      XCTAssertEqual(error as? ReallyMeCryptoError, .providerFailure)
+      XCTAssertEqual(error as? ReallyMeCryptoError, .unsupportedAlgorithm)
+    }
+    XCTAssertThrowsError(try crypto.processOperationResponse(empty)) { error in
+      XCTAssertEqual(error as? ReallyMeCryptoError, .unsupportedAlgorithm)
+    }
+    XCTAssertThrowsError(try crypto.processOperationResponseJson(Array("{}".utf8))) { error in
+      XCTAssertEqual(error as? ReallyMeCryptoError, .unsupportedAlgorithm)
     }
     XCTAssertThrowsError(
       try crypto.wrapKey(.aes256Kw, wrappingKey: empty, keyToWrap: empty)
     ) { error in
-      XCTAssertEqual(error as? ReallyMeCryptoError, .providerFailure)
+      XCTAssertEqual(error as? ReallyMeCryptoError, .unsupportedAlgorithm)
     }
     XCTAssertThrowsError(
       try crypto.deriveKey(.argon2id, password: empty, salt: empty, iterations: 1, outputLength: 32)
@@ -90,7 +101,7 @@ extension ReallyMeCryptoTests {
     XCTAssertThrowsError(
       try crypto.deriveArgon2idKey(kdfVersion: 1, secret: empty, salt: empty)
     ) { error in
-      XCTAssertEqual(error as? ReallyMeCryptoError, .providerFailure)
+      XCTAssertEqual(error as? ReallyMeCryptoError, .unsupportedAlgorithm)
     }
     XCTAssertThrowsError(
       try crypto.verify(
@@ -101,7 +112,7 @@ extension ReallyMeCryptoTests {
         publicKeyEncoding: .pkcs1
       )
     ) { error in
-      XCTAssertEqual(error as? ReallyMeCryptoError, .providerFailure)
+      XCTAssertEqual(error as? ReallyMeCryptoError, .unsupportedAlgorithm)
     }
     XCTAssertThrowsError(
       try crypto.sign(.bip340SchnorrSecp256k1Sha256, message: empty, secretKey: empty)
@@ -116,15 +127,23 @@ extension ReallyMeCryptoTests {
         auxRand32: empty
       )
     ) { error in
-      XCTAssertEqual(error as? ReallyMeCryptoError, .providerFailure)
+      XCTAssertEqual(error as? ReallyMeCryptoError, .unsupportedAlgorithm)
     }
     XCTAssertThrowsError(
       try crypto.deriveKeyPair(.ed25519, secretKey: empty)
     ) { error in
-      XCTAssertEqual(error as? ReallyMeCryptoError, .providerFailure)
+      XCTAssertEqual(error as? ReallyMeCryptoError, .unsupportedAlgorithm)
     }
     XCTAssertThrowsError(
       try crypto.deriveXWingKeyPair(.xWing768, secretKey: empty)
+    ) { error in
+      XCTAssertEqual(error as? ReallyMeCryptoError, .unsupportedAlgorithm)
+    }
+
+    let brokenProvider = ReallyMeCrypto(
+      providers: ReallyMeCryptoProviders(rustCAbiDiagnostic: .bundledProviderLoadFailed))
+    XCTAssertThrowsError(
+      try brokenProvider.seal(.aes256GcmSiv, key: key, nonce: nonce, aad: empty, plaintext: empty)
     ) { error in
       XCTAssertEqual(error as? ReallyMeCryptoError, .providerFailure)
     }

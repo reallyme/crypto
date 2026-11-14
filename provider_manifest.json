@@ -83,7 +83,7 @@
         "swift": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustCAbiRsa verify", "fallback": "explicit_provider_required"},
         "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeRsa verify", "fallback": "typed_provider_failure"},
         "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeRsa verify", "fallback": "typed_provider_failure"},
-        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeRsa verify", "fallback": "typed_provider_failure"}
+        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeRsa verify", "fallback": "typed_unsupported_algorithm"}
       }
     },
     {
@@ -136,7 +136,7 @@
         "swift": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustCAbiMlDsa", "fallback": "explicit_provider_required"},
         "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeCrypto ML-DSA keygen/sign/verify", "fallback": "typed_provider_failure"},
         "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeCrypto ML-DSA keygen/sign/verify", "fallback": "typed_provider_failure"},
-        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeMlDsa", "fallback": "typed_provider_failure"}
+        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeMlDsa", "fallback": "typed_unsupported_algorithm"}
       }
     },
     {
@@ -159,7 +159,7 @@
         "swift": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustCAbiSlhDsa", "fallback": "explicit_provider_required"},
         "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeSlhDsa", "fallback": "typed_provider_failure"},
         "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeSlhDsa", "fallback": "typed_provider_failure"},
-        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeSlhDsa", "fallback": "typed_provider_failure"}
+        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeSlhDsa", "fallback": "typed_unsupported_algorithm"}
       }
     },
     {
@@ -214,7 +214,7 @@
         "swift": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustCAbiMlKem", "fallback": "explicit_provider_required"},
         "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeMlKem", "fallback": "typed_provider_failure"},
         "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeMlKem", "fallback": "typed_provider_failure"},
-        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeMlKem", "fallback": "typed_provider_failure"}
+        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeMlKem", "fallback": "typed_unsupported_algorithm"}
       }
     },
     {
@@ -237,7 +237,7 @@
         "swift": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustCAbiXWing", "fallback": "explicit_provider_required"},
         "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeXWing", "fallback": "typed_provider_failure"},
         "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeXWing", "fallback": "typed_provider_failure"},
-        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeXWing", "fallback": "typed_provider_failure"}
+        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeXWing", "fallback": "typed_unsupported_algorithm"}
       }
     },
     {
@@ -248,7 +248,7 @@
         "swift": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustCAbiHpke", "fallback": "explicit_provider_required"},
         "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeHpke", "fallback": "typed_provider_failure"},
         "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeHpke", "fallback": "typed_provider_failure"},
-        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeHpke", "fallback": "typed_provider_failure"}
+        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeHpke", "fallback": "typed_unsupported_algorithm"}
       }
     },
     {
@@ -265,7 +265,7 @@
         "swift": {"status": "supported", "providers": ["CryptoKit"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
         "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
         "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
-        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAead", "fallback": "typed_provider_failure"}
+        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAead", "fallback": "typed_unsupported_algorithm"}
       }
     },
     {
@@ -276,7 +276,7 @@
         "swift": {"status": "supported", "providers": ["CryptoKit"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
         "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
         "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
-        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAead", "fallback": "typed_provider_failure"}
+        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAead", "fallback": "typed_unsupported_algorithm"}
       }
     },
     {
@@ -287,7 +287,7 @@
         "swift": {"status": "supported", "providers": ["CryptoKit"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
         "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
         "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeAesGcm", "fallback": "typed_provider_failure"},
-        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAead", "fallback": "typed_provider_failure"}
+        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAead", "fallback": "typed_unsupported_algorithm"}
       }
     },
     {
@@ -298,7 +298,7 @@
         "swift": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustCAbiAead", "fallback": "explicit_provider_required"},
         "kotlin_jvm": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustNativeProvider + ReallyMeRustAead", "fallback": "explicit_provider_required"},
         "kotlin_android": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustNativeProvider + ReallyMeRustAead", "fallback": "explicit_provider_required"},
-        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAead", "fallback": "typed_provider_failure"}
+        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAead", "fallback": "typed_unsupported_algorithm"}
       }
     },
     {
@@ -309,7 +309,7 @@
         "swift": {"status": "supported", "providers": ["CryptoKit"], "usesRust": false, "api": "ReallyMeChaCha20Poly1305", "fallback": "typed_provider_failure"},
         "kotlin_jvm": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustNativeProvider + ReallyMeRustAead", "fallback": "explicit_provider_required"},
         "kotlin_android": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustNativeProvider + ReallyMeRustAead", "fallback": "explicit_provider_required"},
-        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAead", "fallback": "typed_provider_failure"}
+        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAead", "fallback": "typed_unsupported_algorithm"}
       }
     },
     {
@@ -320,7 +320,7 @@
         "swift": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustCAbiAead", "fallback": "explicit_provider_required"},
         "kotlin_jvm": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustNativeProvider + ReallyMeRustAead", "fallback": "explicit_provider_required"},
         "kotlin_android": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustNativeProvider + ReallyMeRustAead", "fallback": "explicit_provider_required"},
-        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAead", "fallback": "typed_provider_failure"}
+        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAead", "fallback": "typed_unsupported_algorithm"}
       }
     },
     {
@@ -428,7 +428,7 @@
         "swift": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustCAbiArgon2id", "fallback": "explicit_provider_required"},
         "kotlin_jvm": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustNativeProvider + ReallyMeArgon2id", "fallback": "explicit_provider_required"},
         "kotlin_android": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustNativeProvider + ReallyMeArgon2id", "fallback": "explicit_provider_required"},
-        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeArgon2id", "fallback": "typed_provider_failure"}
+        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeArgon2id", "fallback": "typed_unsupported_algorithm"}
       }
     },
     {
@@ -467,7 +467,7 @@
         "swift": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustCAbiKmac", "fallback": "explicit_provider_required"},
         "kotlin_jvm": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustNativeProvider + ReallyMeKmac", "fallback": "explicit_provider_required"},
         "kotlin_android": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustNativeProvider + ReallyMeKmac", "fallback": "explicit_provider_required"},
-        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeKmac", "fallback": "typed_provider_failure"}
+        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeKmac", "fallback": "typed_unsupported_algorithm"}
       }
     },
     {
@@ -478,7 +478,7 @@
         "swift": {"status": "provider_aware", "providers": ["ReallyMe Rust C ABI"], "usesRust": true, "api": "ReallyMeRustCAbiAesKw", "fallback": "explicit_provider_required"},
         "kotlin_jvm": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeAesKw", "fallback": "typed_provider_failure"},
         "kotlin_android": {"status": "supported", "providers": ["BouncyCastle"], "usesRust": false, "api": "ReallyMeAesKw", "fallback": "typed_provider_failure"},
-        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAesKw", "fallback": "typed_provider_failure"}
+        "typescript_wasm": {"status": "supported", "providers": ["ReallyMe Rust WASM"], "usesRust": true, "api": "ReallyMeAesKw", "fallback": "typed_unsupported_algorithm"}
       }
     },
     {
