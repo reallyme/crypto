@@ -1,0 +1,79 @@
+# SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+name: Formal Verification
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "rust-toolchain.toml"
+      - "crates/crypto/core/**"
+      - "crates/hpke/**"
+      - "crates/proto/**"
+      - ".github/workflows/formal-verification.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "rust-toolchain.toml"
+      - "crates/crypto/core/**"
+      - "crates/hpke/**"
+      - "crates/proto/**"
+      - ".github/workflows/formal-verification.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || (github.event_name == 'push' && github.ref) || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
+
+jobs:
+  kani:
+    name: Kani production boundary proofs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: 1.100.0
+
+      - name: Install Kani and its verification toolchain
+        run: |
+          cargo install --locked kani-verifier@0.68.0
+          cargo kani setup
+
+      - name: Fetch locked workspace dependencies
+        run: cargo fetch --locked --target x86_64-unknown-linux-gnu
+
+      - name: Prove the ProtoJSON request policy
+        env:
+          CARGO_NET_OFFLINE: "true"
+        run: cargo kani -p reallyme-crypto-proto --features generated --jobs 2 --output-format terse
+
+      - name: Prove HPKE dispatch with the full native profile
+        env:
+          CARGO_NET_OFFLINE: "true"
+        run: cargo kani -p reallyme-crypto-hpke --no-default-features --features native --jobs 2 --output-format terse
+
+      - name: Prove HPKE dispatch with a restricted profile
+        env:
+          CARGO_NET_OFFLINE: "true"
+        run: >-
+          cargo kani -p reallyme-crypto-hpke --no-default-features
+          --features base-p256-aes128gcm,aead-export-only --jobs 2 --output-format terse
+
+      - name: Verify the resolution still matches the checked-in lockfile
+        run: git diff --exit-code -- Cargo.lock

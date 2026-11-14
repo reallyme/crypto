@@ -201,3 +201,6 @@ const fn secret_json_operation_error() -> CryptoWireError {
         CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_BACKEND,
     )
 }
+
+#[cfg(kani)]
+mod proof_tests;

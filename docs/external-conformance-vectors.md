@@ -158,7 +158,8 @@ sign-prefix rules. Kani was adopted first because it is Rust-native (no separate
 specification language), proves the "no panic" and round-trip invariants
 directly, and gates cleanly in the audit workflow. It runs only in the
 [External Vector Audit](../.github/workflows/external-vectors-audit.yml)
-workflow, never on the per-PR wall.
+workflow. The [formal verification inventory](../formal/README.md) covers
+production Rust proofs and the symbolic HPKE model.
 
 **Cryptol + SAW (deferred).** A small Cryptol specification checked with SAW
 against a pure, fixed-size function remains the right tool where a golden
@@ -181,7 +182,7 @@ with the normal code checks; larger exhaustive sweeps run separately:
 | Committed corpus hashes and CCTV markers | Vector integrity checks. |
 | Re-download and byte-for-byte comparison of every committed file with its pinned upstream commit | Vector changes and the scheduled integrity check. |
 | Wycheproof / BIP-340 / RFC 8032 / X-Wing / HPKE / PBKDF2 adapters | Normal code checks against the committed corpora. |
-| Exhaustive ACVP/CCTV sweeps and bounded Kani proofs | Separate scheduled or explicitly requested checks. |
+| Exhaustive ACVP/CCTV sweeps and bounded reference DER encoder proofs | Separate scheduled or explicitly requested checks. |
 
 The pinned SHA-256 provenance check is what turns the manifest from
 documentation into an enforced invariant: it is cheap enough to run on every
