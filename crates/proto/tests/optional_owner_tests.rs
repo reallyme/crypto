@@ -14,6 +14,9 @@ use reallyme_crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoHkdfExtractSha384Result, CryptoJwkOptions, CryptoRsaPssParams, PublicAkpJwk, PublicEcJwk,
     PublicJwk, PublicJwkDocument, PublicJwks, PublicOkpJwk,
 };
+use reallyme_crypto_proto::wire::{
+    merge_protobuf, CryptoWireError, MAX_CRYPTO_PROTO_MESSAGE_BYTES,
+};
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
@@ -97,9 +100,25 @@ fn optional_scalar_zero_has_presence_and_closed_json_fields() -> Result<(), Deco
 #[cfg_attr(not(target_arch = "wasm32"), test)]
 fn malformed_optional_replacement_clears_destination() {
     let mut request = CryptoHkdfExtractSha384Request::default().with_salt(vec![0xa5; 64]);
+    // An accepted field precedes a truncated duplicate. Both old and newly
+    // decoded values must be discarded before the caller sees the error.
     assert_eq!(
-        reallyme_crypto_proto::wire::merge_protobuf(&mut request, &[0x12, 2, 9]),
-        Err(reallyme_crypto_proto::wire::CryptoWireError::malformed_protobuf())
+        merge_protobuf(&mut request, &[0x0a, 1, 8, 0x12, 2, 9]),
+        Err(CryptoWireError::malformed_protobuf())
+    );
+    assert_eq!(request, CryptoHkdfExtractSha384Request::default());
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn oversized_merge_clears_destination_with_resource_limit_reason() {
+    use reallyme_crypto_proto::error_types::CryptoErrorReason;
+
+    let mut request = CryptoHkdfExtractSha384Request::default().with_salt(vec![0xa5; 64]);
+    let input = vec![0; MAX_CRYPTO_PROTO_MESSAGE_BYTES.saturating_add(1)];
+    assert_eq!(
+        merge_protobuf(&mut request, &input).map_err(CryptoWireError::reason_code),
+        Err(CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_RESOURCE_LIMIT_EXCEEDED.code())
     );
     assert!(request.salt.is_none());
 }

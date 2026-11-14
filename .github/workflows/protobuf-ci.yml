@@ -25,10 +25,8 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
       - "scripts/generate_protobuf.mjs"
-      - "scripts/generate_proto_enums.mjs"
       - "scripts/proto_generation_policy.mjs"
       - "scripts/redact_sdk_proto_debug.mjs"
-      - "scripts/restrict_buffa_view_handles.mjs"
       - "scripts/native_buffa_readiness.mjs"
       - "scripts/generate_error_contract.mjs"
       - "scripts/generate_error_contract.test.mjs"
@@ -69,10 +67,8 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
       - "scripts/generate_protobuf.mjs"
-      - "scripts/generate_proto_enums.mjs"
       - "scripts/proto_generation_policy.mjs"
       - "scripts/redact_sdk_proto_debug.mjs"
-      - "scripts/restrict_buffa_view_handles.mjs"
       - "scripts/native_buffa_readiness.mjs"
       - "scripts/generate_error_contract.mjs"
       - "scripts/generate_error_contract.test.mjs"
@@ -102,7 +98,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
 
 env:
-  BUFFA_VERSION: 0.1.0
+  BUFFA_VERSION: 0.1.1
   BUF_VERSION: 1.75.0
 
 jobs:

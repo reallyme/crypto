@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use buffa::view::{MessageView, OwnedView, ViewLifetimeParametric, ViewReborrow};
+use buffa::sensitive::{GuardedOwnedView as BuffaOwnedView, GuardedViewError};
+use buffa::view::{ViewLifetimeParametric, ViewReborrow};
 use buffa::{bytes::Bytes, DecodeError, DecodeOptions};
 
 use crate::contract_constants::proto_wire::{
@@ -29,7 +30,7 @@ use crate::contract_constants::proto_wire::{
 /// fn duplicate(view: &Raw) -> Raw { (*view).clone() }
 /// ```
 pub struct GuardedOwnedView<V> {
-    inner: OwnedView<V>,
+    inner: BuffaOwnedView<V>,
 }
 
 impl<V: ViewLifetimeParametric> GuardedOwnedView<V> {
@@ -43,28 +44,29 @@ impl<V: ViewLifetimeParametric> GuardedOwnedView<V> {
         let limit = options
             .max_message_size()
             .min(MAX_CRYPTO_PROTO_MESSAGE_BYTES);
-        if bytes.len() > limit {
-            return Err(DecodeError::MessageTooLarge);
-        }
-        // Admission is eager: nested messages cannot defer validation until use.
-        let owner = crate::SecretBytes::try_from_slice(&bytes)
-            .map_err(|_| DecodeError::ElementMemoryLimitExceeded)?;
         let options = options
             .clone()
             .with_max_message_size(limit)
             .with_recursion_limit(options.recursion_limit().min(CRYPTO_PROTO_RECURSION_LIMIT))
             .reject_unknown_fields();
-        let inner = OwnedView::decode_with_options(Bytes::from_owner(owner), &options)?;
+        let inner = BuffaOwnedView::decode(&bytes, &options).map_err(decode_error)?;
         Ok(Self { inner })
     }
 
     /// Encodes directly into reserved clearing storage before admitting a view.
     pub fn from_owned(message: &V::Owned) -> Result<Self, DecodeError> {
-        let bytes =
-            crate::wire::encode_protobuf(message).map_err(|_| DecodeError::MessageTooLarge)?;
-        let owner = crate::SecretBytes::from(bytes);
-        let inner = OwnedView::decode_with_options(Bytes::from_owner(owner), &admission_options())?;
+        let inner =
+            BuffaOwnedView::from_owned(message, &admission_options()).map_err(decode_error)?;
         Ok(Self { inner })
+    }
+}
+
+fn decode_error(error: GuardedViewError) -> DecodeError {
+    match error {
+        GuardedViewError::Decode(error) => error,
+        GuardedViewError::Allocation => DecodeError::ElementMemoryLimitExceeded,
+        // Buffa also checks that the encoder honors its declared length.
+        _ => DecodeError::MessageTooLarge,
     }
 }
 
@@ -78,12 +80,12 @@ fn admission_options() -> DecodeOptions {
 impl<V: ViewReborrow> GuardedOwnedView<V> {
     /// Borrows a view whose lifetime is tied to this clearing owner.
     pub fn view(&self) -> &V::Reborrowed<'_> {
-        self.inner.reborrow()
+        self.inner.view()
     }
 
     /// Copies fields into their generated clearing owners without a panic path.
     pub fn to_owned_message(&self) -> Result<V::Owned, DecodeError> {
-        self.view().to_owned_message()
+        self.inner.to_owned_message()
     }
 
     /// Borrows wire bytes without exposing a clonable reference-counted handle.
@@ -98,9 +100,7 @@ impl<V> core::fmt::Debug for GuardedOwnedView<V> {
     }
 }
 
-// The Bytes owner is released after its view. Its last reference drops the
-// clearing byte allocation, including on a failed admission.
-impl<V> zeroize::ZeroizeOnDrop for GuardedOwnedView<V> {}
+impl<V: zeroize::ZeroizeOnDrop> zeroize::ZeroizeOnDrop for GuardedOwnedView<V> {}
 
 impl<V> serde::Serialize for GuardedOwnedView<V> {
     fn serialize<S: serde::Serializer>(&self, _: S) -> Result<S::Ok, S::Error> {

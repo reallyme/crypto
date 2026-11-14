@@ -1252,9 +1252,9 @@ checksum = "63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69"
 
 [[package]]
 name = "reallyme-buffa"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e82fe6eb1b04fe7febf7e294f9f60fe38b6834d13cc028047c4890f800144c8"
+checksum = "31bd0cb979778af72031e54eb095b4cf2f0ebd656a2384555314ecfa959c4c8d"
 dependencies = [
  "base64 0.22.1",
  "bytes",

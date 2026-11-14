@@ -29,8 +29,8 @@ thiserror = { workspace = true, optional = true }
 zeroize = { workspace = true, optional = true }
 
 [dev-dependencies]
-buffa-descriptor = { package = "reallyme-buffa-descriptor", version = "=0.1.0", default-features = false, features = ["reflect", "zeroize"] }
-buffa-types = { package = "reallyme-buffa-types", version = "=0.1.0", default-features = false, features = ["json", "sensitive", "reflect"] }
+buffa-descriptor = { package = "reallyme-buffa-descriptor", version = "=0.1.1", default-features = false, features = ["reflect", "zeroize"] }
+buffa-types = { package = "reallyme-buffa-types", version = "=0.1.1", default-features = false, features = ["json", "sensitive", "reflect"] }
 wasm-bindgen-test = { workspace = true }
 
 [lints]

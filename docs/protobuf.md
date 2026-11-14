@@ -32,20 +32,20 @@ lanes may execute each algorithm and what output they must produce.
 ## Generation
 
 From the repository root, using Buf `1.75.0` and the published ReallyMe
-Buffa `0.1.0` generators, matching protobuf CI:
+Buffa `0.1.1` generators, matching protobuf CI:
 
 ```sh
-cargo install reallyme-protoc-gen-buffa --version '=0.1.0' --locked
-cargo install reallyme-protoc-gen-buffa-packaging --version '=0.1.0' --locked
+cargo install reallyme-protoc-gen-buffa --version '=0.1.1' --locked
+cargo install reallyme-protoc-gen-buffa-packaging --version '=0.1.1' --locked
 buf lint
 node scripts/generate_protobuf.mjs
 ```
 
 The driver verifies the exact executable names and versions. Buffa generates
 Rust redaction, cleanup, guarded collection storage, and view export policy
-from `buf.gen.yaml`. The driver does not edit generated field or cleanup code.
-A narrow compatibility step removes the raw `HasMessageView` handle from
-secret message families until Buffa supports protected owned handles.
+from `buf.gen.yaml`. The `borrowed_views_only_in` selectors omit standard
+owned handles for private message families. The driver leaves generated
+Buffa code intact.
 Use `--rust-only` when working without the hosted SDK generators. The separate
 SDK step retains Swift and Java diagnostic redaction. Rust outputs live under
 `crates/proto/src/generated`, TypeScript
@@ -406,12 +406,11 @@ deterministic destruction; keep secret-bearing messages short-lived, avoid
 unnecessary copies, and move secret bytes into the package's explicit
 best-effort-clearing APIs as soon as the boundary permits.
 
-Buffa zero-copy owned views are a transport optimization, not a secret owner:
-they retain immutable reference-counted wire bytes that cannot be wiped safely
-when the final reference is not known. ReallyMe removes `Clone` and redacts
-`Debug` for byte-bearing generated owned-view wrappers, but callers must not
-retain secret-bearing requests in those views. Decode into the Rust owned
-message when deterministic drop-time zeroization is required.
+For secret-bearing requests, the Rust guarded view uses Buffa's private wiping
+storage. It eagerly validates nested wire data and borrows from its own
+allocation. Its constructors keep Crypto's size, recursion, and unknown-field
+limits. Standard reference-counted owned views remain available for public
+metadata. The caller owns any input buffer it passes to a decoder.
 
 Do not add casual JSON convenience wrappers such as `hash_json(value)` or
 stringly typed crypto APIs. If an application wants to hash a JSON document, it
