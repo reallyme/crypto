@@ -7,10 +7,8 @@ import { spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { generateProtoEnums, parseProtoEnums } from "./generate_proto_enums.mjs";
 import { protoGenerationPolicy } from "./proto_generation_policy.mjs";
 import { normalizeSdkProtos, redactSdkProtoDebug } from "./redact_sdk_proto_debug.mjs";
-import { restrictBuffaViewHandles } from "./restrict_buffa_view_handles.mjs";
 
 export class ProtobufGenerationError extends Error {
   constructor(code) { super("protobuf generation failed"); this.name = "ProtobufGenerationError"; this.code = code; }
@@ -21,6 +19,7 @@ const snake = (name) => name.replace(/([A-Z]+)([A-Z][a-z])/gu, "$1_$2").replace(
 const FIXTURE_DIRECTORY = "crates/proto/tests/fixtures/guarded";
 const FIXTURE_OPTIONS = ["views=true", "lazy_views=true", "json=true", "reflection=true", "zeroize=true",
   "unknown_fields=false", "deny_unknown_json_fields=true", "deny_view_json=.guarded_fixture.Child",
+  "borrowed_views_only_in=.guarded_fixture.Child",
   "bytes_type_custom_in=.guarded_fixture=crate::SecretBytes", "string_type_custom_in=.guarded_fixture=crate::SecretString",
   "custom_type_impls=false", "json_policy_type=crate::SecretBytes", "json_policy_type=crate::SecretString",
   ...["Timestamp", "Duration", "Value", "Struct", "ListValue"].map((name) => `extern_path=.google.protobuf.${name}=::buffa_types::sensitive::${name}`)];
@@ -33,15 +32,21 @@ export function nativeOptions(document) {
     "bytes_type_custom_in=.reallyme.crypto.v1.CryptoKeyPair.secret_key=crate::PrivateBytes",
     "string_type_custom_in=.reallyme.crypto.v1=crate::SecretString",
     "json_policy_type=crate::SecretBytes", "json_policy_type=crate::PrivateBytes", "json_policy_type=crate::SecretString",
-    ...parseProtoEnums(document).map(({ name }) => `extern_path=.reallyme.crypto.v1.${name}=crate::enum_contracts::${name}`),
-    ...[...policy.privateNames].sort().map((name) => `deny_view_json=.reallyme.crypto.v1.${name}`)];
+    "extern_path=.reallyme.crypto.v1.CryptoErrorReason=crate::error_types::CryptoErrorReason",
+    ...[...policy.privateNames].sort().flatMap((name) => [
+      `deny_view_json=.${policy.package}.${name}`,
+      `borrowed_views_only_in=.${policy.package}.${name}`,
+    ])];
 }
 
-/** Keep raw clonable views private; expose guarded owners through stable package paths. */
+/** Expose generated bindings and guarded owners through stable package paths. */
 export function publicFacade(document) {
   const policy = protoGenerationPolicy(document);
   const lines = [HEADER, "// Generated from canonical descriptors by scripts/generate_protobuf.mjs.", "pub mod reallyme {", "pub mod crypto {", "pub mod v1 {"];
-  for (const { name } of parseProtoEnums(document)) lines.push(`pub use crate::enum_contracts::${name};`);
+  lines.push("pub use crate::error_types::CryptoErrorReason;");
+  for (const { name } of policy.enums) {
+    if (name !== "CryptoErrorReason") lines.push(`pub use crate::generated::raw::reallyme::crypto::v1::${name};`);
+  }
   for (const { name } of policy.messages) lines.push(`pub use crate::generated::raw::reallyme::crypto::v1::${name};`);
   lines.push("pub mod __buffa {", "pub mod oneof {");
   for (const message of policy.messages.filter((entry) => (entry.oneofDecl ?? []).some((oneof) => !oneof.name.startsWith("_")))) lines.push(`pub use crate::generated::raw::reallyme::crypto::v1::__buffa::oneof::${snake(message.name)};`);
@@ -70,7 +75,7 @@ function main() {
     return result.stdout;
   };
   for (const executable of ["protoc-gen-reallyme-buffa", "protoc-gen-reallyme-buffa-packaging"]) {
-    if (run(executable, ["--version"]).trim() !== `${executable} 0.1.0`) fail("generator-version");
+    if (run(executable, ["--version"]).trim() !== `${executable} 0.1.1`) fail("generator-version");
   }
   if (run("buf", ["--version"]).trim() !== "1.75.0") fail("buf-version");
   const document = JSON.parse(run("buf", ["build", "--exclude-source-info", "--as-file-descriptor-set", "-o", "-#format=json"]));
@@ -89,14 +94,12 @@ function main() {
       { local: "protoc-gen-reallyme-buffa-packaging", out: "crates/proto/src/generated/buffa", strategy: "all" },
     ] })]);
   } else run("buf", ["generate"]);
-  restrictBuffaViewHandles(root, policy);
   // A separate local schema exercises imported guarded types without adding
   // them to the production descriptor or sending fixtures to hosted plugins.
   run("buf", ["generate", FIXTURE_DIRECTORY, "--template", JSON.stringify({ version: "v2", plugins: [
     { local: "protoc-gen-reallyme-buffa", out: `${FIXTURE_DIRECTORY}/generated`, strategy: "all", opt: FIXTURE_OPTIONS },
     { local: "protoc-gen-reallyme-buffa-packaging", out: `${FIXTURE_DIRECTORY}/generated`, strategy: "all" },
   ] })]);
-  generateProtoEnums(root, document);
   const facade = run("rustfmt", ["--edition", "2021", "--emit", "stdout"], publicFacade(document));
   const facadePath = resolve(root, "crates/proto/src/generated/public.rs");
   let before = "";

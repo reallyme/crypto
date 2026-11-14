@@ -30,12 +30,7 @@ mod guarded_view;
 pub use guarded_view::GuardedOwnedView;
 
 #[cfg(feature = "generated")]
-mod enum_json;
-
-/// Schema-owned concrete enum authority with fixed boundary diagnostics.
-#[cfg(feature = "generated")]
-#[path = "generated/enum_contracts.rs"]
-pub mod enum_contracts;
+mod error_reason_codec;
 
 #[cfg(feature = "generated")]
 mod deserialize_sensitive;

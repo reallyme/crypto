@@ -74,15 +74,18 @@ pub fn merge_protobuf<M: Message + ZeroizeOnDrop>(
     message: &mut M,
     bytes: &[u8],
 ) -> Result<(), CryptoWireError> {
-    let result = check_size(bytes, MAX_CRYPTO_PROTO_MESSAGE_BYTES).and_then(|()| {
-        strict_options(MAX_CRYPTO_PROTO_MESSAGE_BYTES)
-            .merge_from_slice(message, bytes)
-            .map_err(|_| CryptoWireError::malformed_protobuf())
-    });
-    if result.is_err() {
-        message.clear();
-    }
-    result
+    strict_options(MAX_CRYPTO_PROTO_MESSAGE_BYTES)
+        .clear_on_merge_error()
+        .merge_from_slice(message, bytes)
+        .map_err(|_| {
+            // Preserve the public distinction between an oversized input
+            // and a malformed field within the admitted message size.
+            if bytes.len() > MAX_CRYPTO_PROTO_MESSAGE_BYTES {
+                resource_limit()
+            } else {
+                CryptoWireError::malformed_protobuf()
+            }
+        })
 }
 
 fn strict_options(max_bytes: usize) -> DecodeOptions {

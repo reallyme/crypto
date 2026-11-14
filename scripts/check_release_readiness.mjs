@@ -152,7 +152,7 @@ const rustCodecVersion = "0.3.4";
 const sdkCodecVersion = "0.3.2";
 const rustSemverBaselineCommit = "54de2955ebf73e9fd1c306eba207550b3716d767";
 const cargoSemverChecksVersion = "0.50.0";
-const buffaVersion = "0.1.0";
+const buffaVersion = "0.1.1";
 const releaseReadinessCommit = "18a6d91d99837e80f92e41fe04effb0b043d754e";
 const releaseReadinessCommand = "node scripts/run_pinned_release_readiness.mjs";
 const gradleWrapperValidationAction =
@@ -2933,10 +2933,9 @@ const assertRepositoryPolicy = () => {
   assertNativeBuffaReadiness(readinessContext, {
     generatedFreshnessMode,
     protoPath: primaryOperationBoundaryPolicy.protoPath,
-    paths: ["scripts/generate_protobuf.mjs", "scripts/generate_proto_enums.mjs",
+    paths: ["scripts/generate_protobuf.mjs",
       "scripts/proto_generation_policy.mjs", "scripts/redact_sdk_proto_debug.mjs",
-      "scripts/native_buffa_readiness.mjs", "scripts/proto_scalar_policy.mjs",
-      "scripts/restrict_buffa_view_handles.mjs"],
+      "scripts/native_buffa_readiness.mjs", "scripts/proto_scalar_policy.mjs"],
   });
   assertCargoMetadataPolicy(repositoryPolicy.cargoMetadata);
   assertTextPolicy(repositoryPolicy.text);

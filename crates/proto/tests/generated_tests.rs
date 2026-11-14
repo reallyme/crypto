@@ -17,12 +17,12 @@ use reallyme_crypto_proto::generated::{
         },
         AeadAlgorithm, CryptoAeadSealRequest, CryptoAlgorithmIdentifier, CryptoBackendError,
         CryptoError, CryptoErrorReason, CryptoHashRequest, CryptoKeyPair,
-        CryptoKmac256DeriveRequest, CryptoKmac256DeriveRequestOwnedView, CryptoOperationResponse,
-        CryptoOperationResponseOwnedView, CryptoOperationResult, CryptoPrimitiveError,
-        CryptoProviderError, CryptoVerificationResult, CryptoVerificationStatus, HashAlgorithm,
-        HpkeAeadId, HpkeKdfId, HpkeKemId, HpkeSuiteIdentifier, KdfAlgorithm, KemAlgorithm,
-        KeyAgreementAlgorithm, KeyWrapAlgorithm, MacAlgorithm, MulticodecKeyAlgorithm,
-        SignatureAlgorithm,
+        CryptoKmac256DeriveRequest, CryptoKmac256DeriveRequestOwnedView,
+        CryptoOperationRequestOwnedView, CryptoOperationResponse, CryptoOperationResponseOwnedView,
+        CryptoOperationResult, CryptoPrimitiveError, CryptoProviderError, CryptoVerificationResult,
+        CryptoVerificationStatus, HashAlgorithm, HpkeAeadId, HpkeKdfId, HpkeKemId,
+        HpkeSuiteIdentifier, KdfAlgorithm, KemAlgorithm, KeyAgreementAlgorithm, KeyWrapAlgorithm,
+        MacAlgorithm, MulticodecKeyAlgorithm, SignatureAlgorithm,
     },
     CRYPTO_PROTO_PACKAGE,
 };
@@ -131,6 +131,34 @@ fn generated_sensitive_views_refuse_serde_serialization() -> Result<(), buffa::D
     assert!(serde_json::to_string(owned_view.view()).is_err());
     assert!(serde_json::to_string(&owned_view).is_err());
     Ok(())
+}
+
+#[test]
+fn guarded_owned_view_applies_crypto_admission_limits() {
+    use buffa::{bytes::Bytes, DecodeError, DecodeOptions};
+    use reallyme_crypto_proto::wire::MAX_CRYPTO_PROTO_MESSAGE_BYTES;
+
+    // Field 1 contains a hash request. Its nested field 100 is unknown.
+    let unknown_nested = Bytes::from_static(&[0x0a, 3, 0xa0, 0x06, 1]);
+    let permissive = DecodeOptions::new().with_unknown_field_limit(10);
+    assert!(matches!(
+        CryptoOperationRequestOwnedView::decode_with_options(unknown_nested, &permissive),
+        Err(DecodeError::UnknownFieldLimitExceeded)
+    ));
+    let too_small = DecodeOptions::new().with_max_message_size(1);
+    assert!(matches!(
+        CryptoOperationRequestOwnedView::decode_with_options(
+            Bytes::from_static(&[0x0a, 0]),
+            &too_small
+        ),
+        Err(DecodeError::MessageTooLarge)
+    ));
+    let oversized = Bytes::from(vec![0; MAX_CRYPTO_PROTO_MESSAGE_BYTES.saturating_add(1)]);
+    let caller_limit = DecodeOptions::new().with_max_message_size(oversized.len());
+    assert!(matches!(
+        CryptoOperationRequestOwnedView::decode_with_options(oversized, &caller_limit),
+        Err(DecodeError::MessageTooLarge)
+    ));
 }
 
 #[test]
@@ -537,17 +565,42 @@ fn private_keypair_json_import_does_not_grant_export() -> Result<(), GeneratedJs
 
 #[test]
 fn concrete_enum_json_rejection_uses_a_fixed_reason() {
-    for invalid in [r#""untrusted-enum-selector""#, "4294967295", "-123"] {
+    for (invalid, reason) in [
+        (r#""untrusted-enum-selector""#, "unknown enum name"),
+        ("4294967295", "enum number out of i32 range"),
+        ("-123", "unknown enum number"),
+    ] {
         let result = serde_json::from_str::<HashAlgorithm>(invalid);
         assert!(matches!(result, Err(error) if {
             let message = error.to_string();
-            message.contains("CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_PARAMETER")
-                && !message.contains(invalid.trim_matches('"'))
+            message.contains(reason) && !message.contains(invalid.trim_matches('"'))
         }));
     }
     assert!(matches!(
         serde_json::from_str::<HashAlgorithm>(r#""HASH_ALGORITHM_SHA2_256""#),
         Ok(HashAlgorithm::HASH_ALGORITHM_SHA2_256)
+    ));
+}
+
+#[test]
+fn guarded_enum_fields_keep_numeric_wire_values_and_fixed_json_diagnostics() {
+    for (invalid, reason) in [
+        (
+            r#""untrusted-enum-selector""#,
+            "unknown protobuf enum value",
+        ),
+        ("4294967295", "protobuf enum number is outside i32 range"),
+    ] {
+        let json = format!(r#"{{"hash":{invalid}}}"#);
+        let result = serde_json::from_str::<CryptoAlgorithmIdentifier>(&json);
+        assert!(matches!(result, Err(error) if {
+            let message = error.to_string();
+            message.contains(reason) && !message.contains(invalid.trim_matches('"'))
+        }));
+    }
+    assert!(matches!(
+        serde_json::from_str::<CryptoAlgorithmIdentifier>(r#"{"hash":-123}"#),
+        Ok(value) if matches!(value.algorithm.as_ref(), Some(Algorithm::Hash(EnumValue::Unknown(-123))))
     ));
 }
 

@@ -1,8 +1,8 @@
 # ReallyMe Buffa integration
 
-The migration targets the published ReallyMe Buffa 0.1.0 family, following its
-[release contract](https://github.com/reallyme/buffa/blob/reallyme-v0.1.0/FORK.md)
-and [guarded-field guide](https://github.com/reallyme/buffa/blob/reallyme-v0.1.0/docs/guarded-fields.md).
+The migration uses the published ReallyMe Buffa 0.1.1 family, following its
+[release contract](https://github.com/reallyme/buffa/blob/reallyme-v0.1.1/FORK.md)
+and [guarded-field guide](https://github.com/reallyme/buffa/blob/reallyme-v0.1.1/docs/guarded-fields.md).
 Existing protobuf package names, field numbers and wire meanings remain the
 authority. This inventory precedes implementation changes and binds the
 previous integration to source commit `293cf032dc74a62ed6973b5bdda4cafc088f6886`.
@@ -50,10 +50,10 @@ previous integration to source commit `293cf032dc74a62ed6973b5bdda4cafc088f6886`
 | Secret keypair JSON serializer rejection | A distinct selected custom byte policy on the keypair's secret field | Owned and view export refusal, import behavior and permitted public-field encoding. |
 | Injected keypair constant-time equality | Constant-time byte-owner equality with secret-first native comparison; preserve schema numbers and canonical encoding | Equal/different secrets and metadata, secret comparison order, unchanged wire goldens. |
 | Secret-bearing eager/owned view JSON rewrites | Native `deny_view_json` over the sensitive-owner closure | Denial before output, including empty values and containing messages; permitted numeric metadata remains explicit. |
-| Removing Clone from secret-bearing generated owned-view wrappers | A handwritten non-Clone owner boundary, keeping raw generated owned wrappers private | Compile-fail Clone restriction, redacted diagnostics, safe reborrows and clearing backing ownership. |
+| Removing Clone from secret-bearing generated owned-view wrappers | Native borrowed-only generation and guarded view storage, with Crypto's admission limits | Compile-fail Clone restriction, redacted diagnostics, safe reborrows and clearing backing ownership. |
 | Ordinary repeated message/string storage | Native guarded collection selection and wipe-owning elements | Repeated growth, replacement and failure cleanup; fixture coverage for numeric lists/maps. |
 | Supplemental numeric-message hardening and private unknown storage | Native recursive cleanup and explicit admission rejection | Scalar cleanup and malformed/unknown input; preserve permitted metadata projection. |
-| Rewriting untrusted enum diagnostics | Fixed domain-error mapping at public wire boundaries; audit generator diagnostics rather than reflecting parser text | No caller-controlled diagnostics from public adapters. |
+| Rewriting untrusted enum diagnostics | Native fixed enum JSON diagnostics and typed errors at public admission | No caller-controlled diagnostics from concrete enums, guarded enum fields or public adapters. |
 | Swift debugDescription and Java toString post-processing | Retained SDK-only redaction driver; Buffa cannot configure another generator | Direct/nested secret redaction in matching platform tests. |
 | Generated whitespace normalization | Retained deterministic formatting responsibility | Repeat generation without content drift or gratuitous timestamp changes. |
 | Shared canonical error-enum authority and native constants generation | Retained schema-contract generation; unrelated to secret hardening | Minimal-feature authority, generated/native parity and freshness. |
@@ -88,26 +88,23 @@ moving them out of an owner that implements `Drop`. `wire::encode_protobuf` and
 guarded view conversion return typed results. Use `view()` to borrow fields from
 a guarded owned view; `bytes()` returns a slice and cannot share the allocation.
 
-## Remaining Buffa 0.1.0 limitations
+## Buffa 0.1.1 integration
 
-- `HasMessageView::ViewHandle` exposes the generated clonable owned wrapper
-  even when its module is private. Its required `From<OwnedView<_>>` and
-  `AsRef<OwnedView<_>>` also expose ordinary shared wire storage. A precise
-  generator option to omit the owned handle and trait implementation for
-  selected messages, while keeping borrowed views, would remove the remaining
-  Rust source edit in `restrict_buffa_view_handles.mjs`.
-- Concrete generated enum JSON errors can include the offending value.
-  Crypto selects schema-derived enum types with fixed diagnostics through
-  `extern_path`. The runtime `EnumValue` can also echo invalid input; public
-  operation decoders discard this diagnostic and report a typed reason. Native
-  fixed diagnostics for both paths would eliminate the enum policy adapter.
-- The raw runtime merge method decodes a duplicate field before replacing
-  its previous value. If decoding fails, that value can remain in the live
-  destination. `wire::merge_protobuf` clears the destination on any admission
-  error. Fresh decode drops the partial message on failure.
-- The guarded repeated list has no fallible reserve or append API. JWK set
-  construction reserves a vector of guarded elements before inserting them,
-  then transfers that allocation to the guarded list without copying bytes.
+`borrowed_views_only_in` omits standard owned wrappers and their
+`HasMessageView` implementations for private messages and their containers.
+Crypto's public view facade uses Buffa's `sensitive::GuardedOwnedView` for storage
+and preserves the existing Crypto constructors, admission limits and JSON
+export refusal. Generated Rust needs no source edits.
+
+Buffa generates the public enums and their fixed JSON diagnostics. The one
+external enum mapping keeps the schema's `CryptoErrorReason` shared with the
+minimal `error-types` feature. The public wire decoder still maps parser
+failures to Crypto's typed reasons. `wire::merge_protobuf` requests Buffa's
+`clear_on_merge_error` option to wipe existing and partially applied fields.
+
+The guarded repeated list still lacks fallible reserve and append operations.
+JWK set construction reserves a vector of guarded elements before inserting
+them, then transfers that allocation to the guarded list without copying bytes.
 
 The allocator regression observes initialized memory just before deallocation
 on growth, successful replacement, failed merge, clone drop, oneof switch and

@@ -28,280 +28,447 @@ plugins:
       - json_policy_type=crate::SecretBytes
       - json_policy_type=crate::PrivateBytes
       - json_policy_type=crate::SecretString
-      - extern_path=.reallyme.crypto.v1.P256KeyContainerFormat=crate::enum_contracts::P256KeyContainerFormat
-      - extern_path=.reallyme.crypto.v1.PublicKeyFormatOperation=crate::enum_contracts::PublicKeyFormatOperation
-      - extern_path=.reallyme.crypto.v1.Argon2PlatformClass=crate::enum_contracts::Argon2PlatformClass
-      - extern_path=.reallyme.crypto.v1.HkdfDomainKeyPurpose=crate::enum_contracts::HkdfDomainKeyPurpose
-      - extern_path=.reallyme.crypto.v1.EcdsaEncoding=crate::enum_contracts::EcdsaEncoding
-      - extern_path=.reallyme.crypto.v1.Ed448Operation=crate::enum_contracts::Ed448Operation
-      - extern_path=.reallyme.crypto.v1.NativeKeySource=crate::enum_contracts::NativeKeySource
-      - extern_path=.reallyme.crypto.v1.HpkeComponentSupport=crate::enum_contracts::HpkeComponentSupport
-      - extern_path=.reallyme.crypto.v1.ProviderOperation=crate::enum_contracts::ProviderOperation
-      - extern_path=.reallyme.crypto.v1.ProviderKind=crate::enum_contracts::ProviderKind
-      - extern_path=.reallyme.crypto.v1.ProviderLane=crate::enum_contracts::ProviderLane
-      - extern_path=.reallyme.crypto.v1.KeyResidency=crate::enum_contracts::KeyResidency
-      - extern_path=.reallyme.crypto.v1.KeyCopyBoundary=crate::enum_contracts::KeyCopyBoundary
-      - extern_path=.reallyme.crypto.v1.ProviderOutputPolicy=crate::enum_contracts::ProviderOutputPolicy
-      - extern_path=.reallyme.crypto.v1.ProviderPolicyReason=crate::enum_contracts::ProviderPolicyReason
-      - extern_path=.reallyme.crypto.v1.ProviderDisposition=crate::enum_contracts::ProviderDisposition
-      - extern_path=.reallyme.crypto.v1.FallbackPolicy=crate::enum_contracts::FallbackPolicy
-      - extern_path=.reallyme.crypto.v1.BufferOwner=crate::enum_contracts::BufferOwner
-      - extern_path=.reallyme.crypto.v1.SecretSensitivity=crate::enum_contracts::SecretSensitivity
-      - extern_path=.reallyme.crypto.v1.OutputMaterial=crate::enum_contracts::OutputMaterial
-      - extern_path=.reallyme.crypto.v1.RetentionPolicy=crate::enum_contracts::RetentionPolicy
-      - extern_path=.reallyme.crypto.v1.ExportPolicy=crate::enum_contracts::ExportPolicy
-      - extern_path=.reallyme.crypto.v1.ZeroizationPolicy=crate::enum_contracts::ZeroizationPolicy
-      - extern_path=.reallyme.crypto.v1.DestructionPolicy=crate::enum_contracts::DestructionPolicy
-      - extern_path=.reallyme.crypto.v1.SecretMaterialOperation=crate::enum_contracts::SecretMaterialOperation
-      - extern_path=.reallyme.crypto.v1.RngOutputKind=crate::enum_contracts::RngOutputKind
-      - extern_path=.reallyme.crypto.v1.PlatformKeyOperation=crate::enum_contracts::PlatformKeyOperation
-      - extern_path=.reallyme.crypto.v1.CryptoErrorReason=crate::enum_contracts::CryptoErrorReason
-      - extern_path=.reallyme.crypto.v1.CryptoAlgorithmFamily=crate::enum_contracts::CryptoAlgorithmFamily
-      - extern_path=.reallyme.crypto.v1.KeyAlgorithm=crate::enum_contracts::KeyAlgorithm
-      - extern_path=.reallyme.crypto.v1.EcdsaCurve=crate::enum_contracts::EcdsaCurve
-      - extern_path=.reallyme.crypto.v1.PrimeGroup=crate::enum_contracts::PrimeGroup
-      - extern_path=.reallyme.crypto.v1.SignatureAlgorithm=crate::enum_contracts::SignatureAlgorithm
-      - extern_path=.reallyme.crypto.v1.KeyAgreementAlgorithm=crate::enum_contracts::KeyAgreementAlgorithm
-      - extern_path=.reallyme.crypto.v1.KemAlgorithm=crate::enum_contracts::KemAlgorithm
-      - extern_path=.reallyme.crypto.v1.HpkeKemId=crate::enum_contracts::HpkeKemId
-      - extern_path=.reallyme.crypto.v1.HpkeKdfId=crate::enum_contracts::HpkeKdfId
-      - extern_path=.reallyme.crypto.v1.HpkeAeadId=crate::enum_contracts::HpkeAeadId
-      - extern_path=.reallyme.crypto.v1.AeadAlgorithm=crate::enum_contracts::AeadAlgorithm
-      - extern_path=.reallyme.crypto.v1.HashAlgorithm=crate::enum_contracts::HashAlgorithm
-      - extern_path=.reallyme.crypto.v1.MacAlgorithm=crate::enum_contracts::MacAlgorithm
-      - extern_path=.reallyme.crypto.v1.KdfAlgorithm=crate::enum_contracts::KdfAlgorithm
-      - extern_path=.reallyme.crypto.v1.Argon2idKdfVersion=crate::enum_contracts::Argon2idKdfVersion
-      - extern_path=.reallyme.crypto.v1.KeyWrapAlgorithm=crate::enum_contracts::KeyWrapAlgorithm
-      - extern_path=.reallyme.crypto.v1.MulticodecKeyAlgorithm=crate::enum_contracts::MulticodecKeyAlgorithm
-      - extern_path=.reallyme.crypto.v1.RsaHashAlgorithm=crate::enum_contracts::RsaHashAlgorithm
-      - extern_path=.reallyme.crypto.v1.RsaPublicKeyDerEncoding=crate::enum_contracts::RsaPublicKeyDerEncoding
-      - extern_path=.reallyme.crypto.v1.PlatformKeyProvider=crate::enum_contracts::PlatformKeyProvider
-      - extern_path=.reallyme.crypto.v1.PlatformKeySecurityLevel=crate::enum_contracts::PlatformKeySecurityLevel
-      - extern_path=.reallyme.crypto.v1.PlatformKeyPurpose=crate::enum_contracts::PlatformKeyPurpose
-      - extern_path=.reallyme.crypto.v1.AppleSecureEnclaveAccessPolicy=crate::enum_contracts::AppleSecureEnclaveAccessPolicy
-      - extern_path=.reallyme.crypto.v1.AppleKeychainAccessibility=crate::enum_contracts::AppleKeychainAccessibility
-      - extern_path=.reallyme.crypto.v1.CryptoVerificationStatus=crate::enum_contracts::CryptoVerificationStatus
-      - extern_path=.reallyme.crypto.v1.CryptoProviderSupportStatus=crate::enum_contracts::CryptoProviderSupportStatus
+      - extern_path=.reallyme.crypto.v1.CryptoErrorReason=crate::error_types::CryptoErrorReason
       - deny_view_json=.reallyme.crypto.v1.AndroidPlatformKeyPolicy
+      - borrowed_views_only_in=.reallyme.crypto.v1.AndroidPlatformKeyPolicy
       - deny_view_json=.reallyme.crypto.v1.CryptoAeadOpenRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoAeadOpenRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoAeadOpenResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoAeadOpenResult
       - deny_view_json=.reallyme.crypto.v1.CryptoAeadSealRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoAeadSealRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoAeadSealResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoAeadSealResult
       - deny_view_json=.reallyme.crypto.v1.CryptoAlgorithmIdentifier
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoAlgorithmIdentifier
       - deny_view_json=.reallyme.crypto.v1.CryptoArgon2BudgetFitRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoArgon2BudgetFitRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoArgon2FixedDeriveRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoArgon2FixedDeriveRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoArgon2MobileUnlockRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoArgon2MobileUnlockRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoArgon2PlatformResolveRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoArgon2PlatformResolveRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoArgon2idDeriveRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoArgon2idDeriveRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoArgon2idProfileIdentifier
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoArgon2idProfileIdentifier
       - deny_view_json=.reallyme.crypto.v1.CryptoBip340SchnorrSignRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoBip340SchnorrSignRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoConstantTimeCompareRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoConstantTimeCompareRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoConstantTimeCompareResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoConstantTimeCompareResult
       - deny_view_json=.reallyme.crypto.v1.CryptoConstantTimeRequireEqualResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoConstantTimeRequireEqualResult
       - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaAgreementRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaAgreementRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaCurveIdentifier
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaCurveIdentifier
       - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaInput
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaInput
       - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaKeyDescriptor
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaKeyDescriptor
       - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaKeyGenerateRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaKeyGenerateRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaKeyImportRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaKeyImportRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaMessageInput
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaMessageInput
       - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaPrehashInput
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaPrehashInput
       - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaPublicKey
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaPublicKey
       - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaPublicKeyValidationRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaPublicKeyValidationRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaSignOptions
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaSignOptions
       - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaSignRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaSignRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaSignatureTranscodeRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaSignatureTranscodeRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaVerifyRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaVerifyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoEd448KeyDescriptor
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEd448KeyDescriptor
       - deny_view_json=.reallyme.crypto.v1.CryptoEd448KeyImportRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEd448KeyImportRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoEd448OrdinarySignRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEd448OrdinarySignRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoEd448OrdinaryVerifyRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEd448OrdinaryVerifyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoEd448PublicKey
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEd448PublicKey
       - deny_view_json=.reallyme.crypto.v1.CryptoEd448SupportRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEd448SupportRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoGenerateMultikeyKeypairRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoGenerateMultikeyKeypairRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoGenerateMultikeyKeypairResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoGenerateMultikeyKeypairResult
       - deny_view_json=.reallyme.crypto.v1.CryptoHashRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHashRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHashResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHashResult
       - deny_view_json=.reallyme.crypto.v1.CryptoHkdfDeriveInputs
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHkdfDeriveInputs
       - deny_view_json=.reallyme.crypto.v1.CryptoHkdfDeriveRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHkdfDeriveRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHkdfDeriveResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHkdfDeriveResult
       - deny_view_json=.reallyme.crypto.v1.CryptoHkdfDomainKey32Request
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHkdfDomainKey32Request
       - deny_view_json=.reallyme.crypto.v1.CryptoHkdfDomainTag
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHkdfDomainTag
       - deny_view_json=.reallyme.crypto.v1.CryptoHkdfExpandSha384Request
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHkdfExpandSha384Request
       - deny_view_json=.reallyme.crypto.v1.CryptoHkdfExtractSha384Request
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHkdfExtractSha384Request
       - deny_view_json=.reallyme.crypto.v1.CryptoHkdfExtractSha384Result
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHkdfExtractSha384Result
       - deny_view_json=.reallyme.crypto.v1.CryptoHkdfNativeDeriveRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHkdfNativeDeriveRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHkdfNativeDeriveResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHkdfNativeDeriveResult
       - deny_view_json=.reallyme.crypto.v1.CryptoHkdfSuiteIdentifier
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHkdfSuiteIdentifier
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeBaseSealConformanceRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeBaseSealConformanceRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeComponentCapability
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeComponentCapability
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeDeriveKeyPairRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeDeriveKeyPairRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeExactWidthDeriveKeyPairRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeExactWidthDeriveKeyPairRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeGenerateKeyPairRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeGenerateKeyPairRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeOpenRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeOpenRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeOpenResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeOpenResult
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeP256BaseCapabilities
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeP256BaseCapabilities
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeP256BaseOpenRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeP256BaseOpenRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeP256BaseOpenResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeP256BaseOpenResult
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeP256BasePublicKey
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeP256BasePublicKey
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeP256BaseRecipientGenerateRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeP256BaseRecipientGenerateRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeP256BaseRecipientImportRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeP256BaseRecipientImportRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeP256BaseSealRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeP256BaseSealRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeP256BaseSealedResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeP256BaseSealedResult
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkePskOpenRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkePskOpenRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkePskReceiverSetupRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkePskReceiverSetupRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkePskReceiverSetupResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkePskReceiverSetupResult
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkePskSealRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkePskSealRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkePskSenderSetupConformanceRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkePskSenderSetupConformanceRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkePskSenderSetupRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkePskSenderSetupRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkePskSenderSetupResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkePskSenderSetupResult
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkePublicKeyDescriptor
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkePublicKeyDescriptor
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeReceiverExportRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeReceiverExportRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeReceiverExportResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeReceiverExportResult
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeReceiverOpenRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeReceiverOpenRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeReceiverOpenResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeReceiverOpenResult
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeSealRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeSealRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeSealedMessage
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeSealedMessage
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeSenderExportConformanceRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeSenderExportConformanceRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeSenderExportRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeSenderExportRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeSenderExportResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeSenderExportResult
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeSenderSealRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeSenderSealRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeSenderSealResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeSenderSealResult
       - deny_view_json=.reallyme.crypto.v1.CryptoJwaConcatKdfSha256DeriveRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoJwaConcatKdfSha256DeriveRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoJwaConcatKdfSha256DeriveResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoJwaConcatKdfSha256DeriveResult
       - deny_view_json=.reallyme.crypto.v1.CryptoJwkOptions
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoJwkOptions
       - deny_view_json=.reallyme.crypto.v1.CryptoJwkToMultikeyRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoJwkToMultikeyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoJwkToMultikeyResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoJwkToMultikeyResult
       - deny_view_json=.reallyme.crypto.v1.CryptoKdfDeriveKeyRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKdfDeriveKeyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoKdfDeriveKeyResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKdfDeriveKeyResult
       - deny_view_json=.reallyme.crypto.v1.CryptoKemConformanceEncapsulateRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKemConformanceEncapsulateRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoKemDecapsulateRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKemDecapsulateRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoKemDecapsulateResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKemDecapsulateResult
       - deny_view_json=.reallyme.crypto.v1.CryptoKemDeriveKeyPairRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKemDeriveKeyPairRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoKemEncapsulateRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKemEncapsulateRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoKemEncapsulation
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKemEncapsulation
       - deny_view_json=.reallyme.crypto.v1.CryptoKemGenerateKeyPairRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKemGenerateKeyPairRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoKeyAgreementDeriveKeyPairRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKeyAgreementDeriveKeyPairRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoKeyAgreementDeriveSharedSecretRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKeyAgreementDeriveSharedSecretRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoKeyAgreementDeriveSharedSecretResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKeyAgreementDeriveSharedSecretResult
       - deny_view_json=.reallyme.crypto.v1.CryptoKeyAgreementGenerateKeyPairRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKeyAgreementGenerateKeyPairRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoKeyAlgorithmIdentifier
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKeyAlgorithmIdentifier
       - deny_view_json=.reallyme.crypto.v1.CryptoKeyPair
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKeyPair
       - deny_view_json=.reallyme.crypto.v1.CryptoKeyUnwrapRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKeyUnwrapRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoKeyUnwrapResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKeyUnwrapResult
       - deny_view_json=.reallyme.crypto.v1.CryptoKeyWrapRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKeyWrapRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoKeyWrapResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKeyWrapResult
       - deny_view_json=.reallyme.crypto.v1.CryptoKmac256DeriveRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKmac256DeriveRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoKmac256DeriveResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKmac256DeriveResult
       - deny_view_json=.reallyme.crypto.v1.CryptoMacAuthenticateRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoMacAuthenticateRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoMacAuthenticateResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoMacAuthenticateResult
       - deny_view_json=.reallyme.crypto.v1.CryptoMacVerifyRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoMacVerifyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoMaterialPolicyQueryRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoMaterialPolicyQueryRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoMultikeyToJwkRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoMultikeyToJwkRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoMultikeyToJwkResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoMultikeyToJwkResult
       - deny_view_json=.reallyme.crypto.v1.CryptoNativeAgreementResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoNativeAgreementResult
       - deny_view_json=.reallyme.crypto.v1.CryptoNativeKeyCapabilities
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoNativeKeyCapabilities
       - deny_view_json=.reallyme.crypto.v1.CryptoNativeKeyGenerateRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoNativeKeyGenerateRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoNativePublicKeyRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoNativePublicKeyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoNativeSignatureResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoNativeSignatureResult
       - deny_view_json=.reallyme.crypto.v1.CryptoNativeVerificationResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoNativeVerificationResult
       - deny_view_json=.reallyme.crypto.v1.CryptoOperationRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoOperationRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoOperationResponse
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoOperationResponse
       - deny_view_json=.reallyme.crypto.v1.CryptoOperationResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoOperationResult
       - deny_view_json=.reallyme.crypto.v1.CryptoP256CompressedPublicKeyRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoP256CompressedPublicKeyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoP256LowSSignRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoP256LowSSignRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoP256LowSVerifyRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoP256LowSVerifyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoP256PrivateKeyContainerImportRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoP256PrivateKeyContainerImportRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoP256PublicKeyContainerImportRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoP256PublicKeyContainerImportRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoP256SecureEnclaveHandleDecodeRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoP256SecureEnclaveHandleDecodeRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoP256SecureEnclaveHandleDecodeResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoP256SecureEnclaveHandleDecodeResult
       - deny_view_json=.reallyme.crypto.v1.CryptoP256SecureEnclaveHandleEncodeRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoP256SecureEnclaveHandleEncodeRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoP256SecureEnclaveHandleEncodeResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoP256SecureEnclaveHandleEncodeResult
       - deny_view_json=.reallyme.crypto.v1.CryptoP256SignatureNormalizeRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoP256SignatureNormalizeRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPbkdf2PrfIdentifier
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPbkdf2PrfIdentifier
       - deny_view_json=.reallyme.crypto.v1.CryptoPbkdf2StandardsDeriveRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPbkdf2StandardsDeriveRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPlatformKeyAgreementDeriveSharedSecretRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPlatformKeyAgreementDeriveSharedSecretRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPlatformKeyAgreementDeriveSharedSecretResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPlatformKeyAgreementDeriveSharedSecretResult
       - deny_view_json=.reallyme.crypto.v1.CryptoPlatformKeyAttestRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPlatformKeyAttestRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPlatformKeyAttestResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPlatformKeyAttestResult
       - deny_view_json=.reallyme.crypto.v1.CryptoPlatformKeyAttestationCertificate
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPlatformKeyAttestationCertificate
       - deny_view_json=.reallyme.crypto.v1.CryptoPlatformKeyDeleteRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPlatformKeyDeleteRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPlatformKeyGenerateRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPlatformKeyGenerateRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPlatformKeyGenerateResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPlatformKeyGenerateResult
       - deny_view_json=.reallyme.crypto.v1.CryptoPlatformKeyGetPublicKeyRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPlatformKeyGetPublicKeyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPlatformKeyGetPublicKeyResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPlatformKeyGetPublicKeyResult
       - deny_view_json=.reallyme.crypto.v1.CryptoPlatformPrivateKeyHandle
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPlatformPrivateKeyHandle
       - deny_view_json=.reallyme.crypto.v1.CryptoPlatformSignatureSignRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPlatformSignatureSignRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPlatformSignatureSignResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPlatformSignatureSignResult
       - deny_view_json=.reallyme.crypto.v1.CryptoPlatformSignatureVerifyRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPlatformSignatureVerifyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPoseidon2HashRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPoseidon2HashRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPoseidon2HashResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPoseidon2HashResult
       - deny_view_json=.reallyme.crypto.v1.CryptoPrimeGroupCurveCoefficients
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPrimeGroupCurveCoefficients
       - deny_view_json=.reallyme.crypto.v1.CryptoPrimeGroupDhParametersValidationRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPrimeGroupDhParametersValidationRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPrimeGroupDhParametersValidationResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPrimeGroupDhParametersValidationResult
       - deny_view_json=.reallyme.crypto.v1.CryptoPrimeGroupDomainRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPrimeGroupDomainRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPrimeGroupDomainResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPrimeGroupDomainResult
       - deny_view_json=.reallyme.crypto.v1.CryptoPrimeGroupElement
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPrimeGroupElement
       - deny_view_json=.reallyme.crypto.v1.CryptoPrimeGroupFieldValue
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPrimeGroupFieldValue
       - deny_view_json=.reallyme.crypto.v1.CryptoPrimeGroupIdentifier
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPrimeGroupIdentifier
       - deny_view_json=.reallyme.crypto.v1.CryptoPrimeGroupLinearCombinationRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPrimeGroupLinearCombinationRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPrimeGroupMultiplyRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPrimeGroupMultiplyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPrimeGroupReduceToFieldRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPrimeGroupReduceToFieldRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPrimeGroupScalarDescriptor
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPrimeGroupScalarDescriptor
       - deny_view_json=.reallyme.crypto.v1.CryptoPrimeGroupScalarGenerateRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPrimeGroupScalarGenerateRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPrimeGroupScalarImportRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPrimeGroupScalarImportRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoProviderCapability
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoProviderCapability
       - deny_view_json=.reallyme.crypto.v1.CryptoProviderCapabilitySet
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoProviderCapabilitySet
       - deny_view_json=.reallyme.crypto.v1.CryptoPublicKeyAffineCoordinates
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPublicKeyAffineCoordinates
       - deny_view_json=.reallyme.crypto.v1.CryptoPublicKeyBytes
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPublicKeyBytes
       - deny_view_json=.reallyme.crypto.v1.CryptoPublicKeyFormatRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPublicKeyFormatRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPublicKeyFormatResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPublicKeyFormatResult
       - deny_view_json=.reallyme.crypto.v1.CryptoPublicKeyToJcsResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPublicKeyToJcsResult
       - deny_view_json=.reallyme.crypto.v1.CryptoPublicKeyToJwkRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPublicKeyToJwkRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPublicKeyToJwkResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPublicKeyToJwkResult
       - deny_view_json=.reallyme.crypto.v1.CryptoPublicKeyToMultikeyRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPublicKeyToMultikeyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoPublicKeyToMultikeyResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoPublicKeyToMultikeyResult
       - deny_view_json=.reallyme.crypto.v1.CryptoRandomBytesRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRandomBytesRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoRandomBytesResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRandomBytesResult
       - deny_view_json=.reallyme.crypto.v1.CryptoRandomFillPolicyQueryRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRandomFillPolicyQueryRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoRsaHashIdentifier
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaHashIdentifier
       - deny_view_json=.reallyme.crypto.v1.CryptoRsaPssParams
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaPssParams
       - deny_view_json=.reallyme.crypto.v1.CryptoRsaPssVerifyRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaPssVerifyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoRsaPublicKeyDerEncodingIdentifier
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaPublicKeyDerEncodingIdentifier
       - deny_view_json=.reallyme.crypto.v1.CryptoRsaPublicRepresentativesRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaPublicRepresentativesRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoRsaPublicRepresentativesResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaPublicRepresentativesResult
       - deny_view_json=.reallyme.crypto.v1.CryptoRsaVerifyRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaVerifyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoSecp256k1AgreementRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoSecp256k1AgreementRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoSecp256k1SignatureTranscodeRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoSecp256k1SignatureTranscodeRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoShake256ExpandRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoShake256ExpandRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoShake256ExpandResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoShake256ExpandResult
       - deny_view_json=.reallyme.crypto.v1.CryptoSignatureDeriveKeyPairRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoSignatureDeriveKeyPairRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoSignatureGenerateKeyPairRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoSignatureGenerateKeyPairRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoSignatureSignRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoSignatureSignRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoSignatureSignResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoSignatureSignResult
       - deny_view_json=.reallyme.crypto.v1.CryptoSignatureVerifyRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoSignatureVerifyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoSubjectKeyIdentifierRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoSubjectKeyIdentifierRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoSubjectKeyIdentifierResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoSubjectKeyIdentifierResult
       - deny_view_json=.reallyme.crypto.v1.CryptoVerificationMethodMultikeyRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoVerificationMethodMultikeyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoVerificationMethodMultikeyResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoVerificationMethodMultikeyResult
       - deny_view_json=.reallyme.crypto.v1.CryptoVerificationResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoVerificationResult
       - deny_view_json=.reallyme.crypto.v1.CryptoX448AgreementRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoX448AgreementRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoX448KeyDescriptor
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoX448KeyDescriptor
       - deny_view_json=.reallyme.crypto.v1.CryptoX448PrivateKeyInput
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoX448PrivateKeyInput
       - deny_view_json=.reallyme.crypto.v1.CryptoX448PublicKey
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoX448PublicKey
       - deny_view_json=.reallyme.crypto.v1.HpkeSuiteIdentifier
+      - borrowed_views_only_in=.reallyme.crypto.v1.HpkeSuiteIdentifier
       - deny_view_json=.reallyme.crypto.v1.JsonWebKey
+      - borrowed_views_only_in=.reallyme.crypto.v1.JsonWebKey
       - deny_view_json=.reallyme.crypto.v1.JsonWebKeySet
+      - borrowed_views_only_in=.reallyme.crypto.v1.JsonWebKeySet
       - deny_view_json=.reallyme.crypto.v1.PlatformKeyPolicy
+      - borrowed_views_only_in=.reallyme.crypto.v1.PlatformKeyPolicy
       - deny_view_json=.reallyme.crypto.v1.ProviderDecision
+      - borrowed_views_only_in=.reallyme.crypto.v1.ProviderDecision
       - deny_view_json=.reallyme.crypto.v1.ProviderDecisionRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.ProviderDecisionRequest
       - deny_view_json=.reallyme.crypto.v1.ProviderDecisionResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.ProviderDecisionResult
       - deny_view_json=.reallyme.crypto.v1.PublicAkpJwk
+      - borrowed_views_only_in=.reallyme.crypto.v1.PublicAkpJwk
       - deny_view_json=.reallyme.crypto.v1.PublicEcJwk
+      - borrowed_views_only_in=.reallyme.crypto.v1.PublicEcJwk
       - deny_view_json=.reallyme.crypto.v1.PublicJwk
+      - borrowed_views_only_in=.reallyme.crypto.v1.PublicJwk
       - deny_view_json=.reallyme.crypto.v1.PublicJwkDocument
+      - borrowed_views_only_in=.reallyme.crypto.v1.PublicJwkDocument
       - deny_view_json=.reallyme.crypto.v1.PublicJwks
+      - borrowed_views_only_in=.reallyme.crypto.v1.PublicJwks
       - deny_view_json=.reallyme.crypto.v1.PublicOkpJwk
+      - borrowed_views_only_in=.reallyme.crypto.v1.PublicOkpJwk
   - local: protoc-gen-reallyme-buffa-packaging
     out: crates/proto/src/generated/buffa
     strategy: all

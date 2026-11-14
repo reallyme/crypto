@@ -7,15 +7,19 @@ import test from "node:test";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
-import { BuffaViewHandlePolicyError, restrictViewHandles } from "./restrict_buffa_view_handles.mjs";
 import { checkGeneratedOwners } from "./native_buffa_readiness.mjs";
 
 test("a secret owned view cannot escape through the native trait", () => {
-  const raw = `impl ::buffa::HasMessageView\nfor super::super::Private {\n    type View<'a> = PrivateView<'a>;\n    type ViewHandle = PrivateOwnedView;\n}\n`;
-  const other = raw.replaceAll("Private", "Metadata");
-  assert.equal(restrictViewHandles(raw + other, ["Private"]), other);
-  assert.throws(() => restrictViewHandles(other, ["Private"]), BuffaViewHandlePolicyError);
-  assert.throws(() => restrictViewHandles(raw + raw, ["Private"]), BuffaViewHandlePolicyError);
+  const root = "../crates/proto/tests/fixtures/guarded/generated/";
+  const eager = readFileSync(new URL(root + "guarded_fixture.__view.rs", import.meta.url), "utf8");
+  const lazy = readFileSync(new URL(root + "guarded_fixture.__lazy_view.rs", import.meta.url), "utf8");
+  // The selector names Child. Its containing message must lose the raw handle too.
+  for (const name of ["Child", "Fixture"]) {
+    assert.match(eager, new RegExp(`pub struct ${name}View`, "u"));
+    assert.match(lazy, new RegExp(`pub struct ${name}LazyView`, "u"));
+    assert.doesNotMatch(eager, new RegExp(`\\b${name}OwnedView\\b`, "u"));
+    assert.doesNotMatch(eager, new RegExp(`HasMessageView\\s+for\\s+super::super::${name}\\b`, "u"));
+  }
 });
 
 test("native guards cover optional and nonoptional byte slots", () => {

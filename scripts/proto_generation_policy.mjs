@@ -32,9 +32,14 @@ export function protoGenerationPolicy(document) {
   const files = document.file.filter((file) => file.package === PACKAGE);
   if (files.length === 0) fail("package");
   const messages = [];
+  const enums = [];
   const privateNames = new Set();
   const sdkNames = new Set();
   for (const file of files) {
+    for (const enumeration of file.enumType ?? []) {
+      if (typeof enumeration.name !== "string" || !/^[A-Za-z_][A-Za-z0-9_]*$/u.test(enumeration.name)) fail("enum");
+      enums.push(enumeration);
+    }
     for (const message of file.messageType ?? []) {
       if (typeof message.name !== "string" || !/^[A-Za-z_][A-Za-z0-9_]*$/u.test(message.name) ||
           (message.nestedType?.length ?? 0) !== 0) fail("message");
@@ -55,5 +60,5 @@ export function protoGenerationPolicy(document) {
     }
   }
   for (const name of privateNames) sdkNames.add(name);
-  return { package: PACKAGE, messages, privateNames, sdkNames };
+  return { package: PACKAGE, messages, enums, privateNames, sdkNames };
 }
