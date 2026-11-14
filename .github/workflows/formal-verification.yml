@@ -24,6 +24,8 @@ on:
       - "crates/proto/**"
       - "crates/wasm/**"
       - "formal/hpke/**"
+      - "vectors/external/hpke/rfc9180_test_vectors.json"
+      - "vectors/external/provenance.json"
       - "formal/tamarin/**"
       - ".github/workflows/formal-verification.yml"
   push:
@@ -46,6 +48,8 @@ on:
       - "crates/proto/**"
       - "crates/wasm/**"
       - "formal/hpke/**"
+      - "vectors/external/hpke/rfc9180_test_vectors.json"
+      - "vectors/external/provenance.json"
       - "formal/tamarin/**"
       - ".github/workflows/formal-verification.yml"
 
@@ -164,6 +168,9 @@ jobs:
         run: |
           python3 -B formal/hpke/verify_test.py
           python3 formal/hpke/verify.py
+
+      - name: Verify the locked HPKE key schedule and exporter against RFC 9180 vectors
+        run: python3 -B formal/hpke/check_schedule_vectors.py
 
       - name: Verify the resolution still matches the checked-in lockfile
         run: git diff --exit-code -- Cargo.lock

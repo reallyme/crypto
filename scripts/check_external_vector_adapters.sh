@@ -20,6 +20,7 @@ adapters=(
   'xwing768_kat:xwing768_draft_vectors_match_public_api'
   'rfc9180_hpke:rfc9180_hpke_base_vectors_execute_against_public_api'
   'rfc9180_hpke:rfc9180_hpke_open_binds_context_in_base_and_psk_modes'
+  'rfc9180_hpke:rfc9180_hpke_public_base_exporters_match'
   'pbkdf2_rfc6070:pbkdf2_rfc6070_derived_vectors_match_public_api'
 )
 

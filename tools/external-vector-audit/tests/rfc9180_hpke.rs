@@ -13,8 +13,9 @@
 //! via `scripts/vendor_external_vectors.mjs`; ignored by default.
 
 use crypto_hpke::{
-    open_base, open_psk, seal_base_derand, HpkeAeadId, HpkeDerandSealRequest, HpkeError, HpkeKdfId,
-    HpkeOpenOutput, HpkeOpenRequest, HpkePskOpenRequest, HpkeSuite,
+    open_base, open_psk, receiver_export, seal_base_derand, sender_export_derand, HpkeAeadId,
+    HpkeDerandSealRequest, HpkeDerandSenderExportRequest, HpkeError, HpkeKdfId, HpkeKemId,
+    HpkeOpenOutput, HpkeOpenRequest, HpkePskOpenRequest, HpkeReceiverExportRequest, HpkeSuite,
     HPKE_DHKEM_P256_HKDF_SHA256_AES128GCM, HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM,
     HPKE_DHKEM_P521_HKDF_SHA512_AES256GCM, HPKE_DHKEM_X25519_HKDF_SHA256_AES128GCM,
     HPKE_DHKEM_X25519_HKDF_SHA256_CHACHA20POLY1305,
@@ -49,8 +50,17 @@ struct HpkeVector {
     ikm_e: String,
     enc: String,
     encryptions: Vec<HpkeEncryption>,
+    exports: Vec<HpkeExport>,
     psk: Option<String>,
     psk_id: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct HpkeExport {
+    exporter_context: String,
+    #[serde(rename = "L")]
+    length: usize,
+    exported_value: String,
 }
 
 #[derive(Deserialize)]
@@ -264,6 +274,17 @@ fn check_context(
             suite,
         );
     }
+    // Keep the PSK bytes and the encryption transcript fixed so this checks
+    // that changing only the identifier invalidates the record.
+    if let Some((key, id)) = psk {
+        let mut wrong_id = id.to_vec();
+        *wrong_id.first_mut().ok_or(AuditError::Shape)? ^= 1;
+        assert_eq!(
+            open_vector(&baseline, Some((key, &wrong_id))).err(),
+            Some(HpkeError::PRIMITIVE_AUTHENTICATION_FAILED),
+            "RFC 9180 PSK suite {suite:?}, changed PSK identifier",
+        );
+    }
     Ok(())
 }
 
@@ -284,4 +305,65 @@ fn open_vector(
             psk_id,
         }),
     }
+}
+
+#[test]
+#[ignore = "vendored RFC 9180 corpus; run via the external-vectors audit workflow after vendoring"]
+fn rfc9180_hpke_public_base_exporters_match() -> Result<(), AuditError> {
+    let vectors: Vec<HpkeVector> = load_json(CORPUS)?;
+    let export_only = HpkeSuite::new(
+        HpkeKemId::DhKemX25519HkdfSha256,
+        HpkeKdfId::HkdfSha256,
+        HpkeAeadId::ExportOnly,
+    );
+    for suite in AUDITED_SUITES.into_iter().chain([export_only]) {
+        let vector = find_vector(&vectors, BASE_MODE, suite)?;
+        assert_eq!(vector.exports.len(), 3);
+        let recipient_public_key = hex_bytes(&vector.pk_rm)?;
+        let recipient_private_key = Zeroizing::new(hex_bytes(&vector.sk_rm)?);
+        let encapsulation_randomness = Zeroizing::new(hex_bytes(&vector.ikm_e)?);
+        let enc = hex_bytes(&vector.enc)?;
+        let info = hex_bytes(&vector.info)?;
+        for export in &vector.exports {
+            let context = hex_bytes(&export.exporter_context)?;
+            let expected = Zeroizing::new(hex_bytes(&export.exported_value)?);
+            let sender = sender_export_derand(&HpkeDerandSenderExportRequest {
+                suite,
+                recipient_public_key: &recipient_public_key,
+                encapsulation_randomness: &encapsulation_randomness,
+                info: &info,
+                exporter_context: &context,
+                output_length: export.length,
+            })
+            .map_err(|_| AuditError::Mismatch)?;
+            assert_bytes_eq(&sender.encapsulated_key, &enc)?;
+            assert_bytes_eq(sender.exporter_secret(), &expected)?;
+
+            let request = HpkeReceiverExportRequest {
+                suite,
+                encapsulated_key: &enc,
+                recipient_private_key: &recipient_private_key,
+                info: &info,
+                exporter_context: &context,
+                output_length: export.length,
+            };
+            let receiver = receiver_export(&request).map_err(|_| AuditError::Mismatch)?;
+            assert_bytes_eq(receiver.as_slice(), &expected)?;
+
+            // RFC 9180 includes L in LabeledExpand. A longer export with the
+            // same context must derive new bytes instead of extending a prefix.
+            let longer_length = export.length.checked_add(1).ok_or(AuditError::Shape)?;
+            let longer = receiver_export(&HpkeReceiverExportRequest {
+                output_length: longer_length,
+                ..request
+            })
+            .map_err(|_| AuditError::Mismatch)?;
+            assert_eq!(longer.as_slice().len(), longer_length);
+            assert!(
+                !longer.as_slice().starts_with(&expected),
+                "export length binding"
+            );
+        }
+    }
+    Ok(())
 }

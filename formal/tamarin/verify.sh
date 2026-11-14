@@ -9,7 +9,7 @@ model_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 proof_output=$(mktemp)
 trap 'rm -f -- "$proof_output"' EXIT
 
-if ! tamarin-prover --prove --quit-on-warning "$model_dir/hpke.spthy" >"$proof_output" 2>&1; then
+if ! tamarin-prover --prove --quit-on-warning --derivcheck-timeout=90 "$model_dir/hpke.spthy" >"$proof_output" 2>&1; then
   cat -- "$proof_output" >&2
   exit 1
 fi
@@ -31,6 +31,11 @@ if ! awk '
           verified["base_roundtrip_exists"] != "(exists-trace):" ||
           verified["psk_roundtrip_exists"] != "(exists-trace):" ||
           verified["successful_open_binds_context"] != "(all-traces):" ||
+          verified["successful_open_binds_psk_identifier"] != "(all-traces):" ||
+          verified["base_export_agreement_exists"] != "(exists-trace):" ||
+          verified["psk_export_agreement_exists"] != "(exists-trace):" ||
+          verified["alternate_psk_identifier_can_be_selected"] != "(exists-trace):" ||
+          verified["matching_exports_bind_context"] != "(all-traces):" ||
           verified["plaintext_secrecy"] != "(all-traces):")
   }
 ' "$proof_output"; then

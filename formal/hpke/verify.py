@@ -83,7 +83,7 @@ def prepare_archive(archive, digest, destination, package_dir):
         package.extractall(destination, members=members, filter="data")
 
 
-def prepare_proof_package(destination, lock_text, backend):
+def prepare_backend_package(destination, lock_text, backend):
     workspace_manifest = ROOT / "Cargo.toml"
     metadata = subprocess.check_output(
         [
@@ -120,8 +120,8 @@ def prepare_proof_package(destination, lock_text, backend):
     package = destination / package_dir
 
     manifest = package / "Cargo.toml"
-    # The harness is appended to a normal library build. Upstream benchmark
-    # and test dependencies are outside this proof's dependency graph.
+    # Both verification lanes use a normal library build. Upstream benchmark
+    # and test dependencies are outside the reviewed dependency graph.
     upstream = manifest.read_text(encoding="utf-8")
     manifest_sections = upstream.split("\n[dev-dependencies.", maxsplit=1)
     if len(manifest_sections) != 2:
@@ -149,14 +149,10 @@ def prepare_proof_package(destination, lock_text, backend):
     sections[index] = sections[index].replace(locked_source, "")
     (package / "Cargo.lock").write_text("\n[[package]]\n".join(sections), encoding="utf-8")
 
-    harness = Path(__file__).with_name("aead_state_proof_tests.rs")
-    (package / "src" / harness.name).write_bytes(harness.read_bytes())
-    with (package / "src" / "aead.rs").open("a", encoding="utf-8") as aead_source:
-        aead_source.write(PROOF_MODULE)
     return manifest
 
 
-def main():
+def locked_backend():
     root_lock = (ROOT / "Cargo.lock").read_text(encoding="utf-8")
     packages = tomllib.loads(root_lock)["package"]
     backend = exactly_one(
@@ -165,25 +161,36 @@ def main():
     )
     if backend.get("source") != CRATES_IO or "checksum" not in backend:
         raise VerificationError("HPKE must resolve to a checksummed crates.io release")
+    return root_lock, packages, backend
+
+
+def resolve_backend_package(manifest, options, packages, backend):
+    subprocess.run(
+        [
+            "cargo", "metadata", "--offline", "--format-version", "1",
+            "--manifest-path", manifest, *options,
+        ],
+        cwd=ROOT,
+        stdout=subprocess.DEVNULL,
+        check=True,
+    )
+    resolved = manifest.with_name("Cargo.lock").read_text(encoding="utf-8")
+    verify_resolution(resolved, packages, backend)
+    return resolved
+
+
+def main():
+    root_lock, packages, backend = locked_backend()
 
     with tempfile.TemporaryDirectory(prefix="hpke-verification-") as directory:
-        manifest = prepare_proof_package(Path(directory), root_lock, backend)
-        subprocess.run(
-            [
-                "cargo",
-                "metadata",
-                "--offline",
-                "--format-version", "1",
-                "--manifest-path", manifest,
-                *FEATURE_OPTIONS,
-            ],
-            cwd=ROOT,
-            stdout=subprocess.DEVNULL,
-            check=True,
-        )
+        manifest = prepare_backend_package(Path(directory), root_lock, backend)
+        source = manifest.parent / "src"
+        harness = Path(__file__).with_name("aead_state_proof_tests.rs")
+        (source / harness.name).write_bytes(harness.read_bytes())
+        with (source / "aead.rs").open("a", encoding="utf-8") as aead_source:
+            aead_source.write(PROOF_MODULE)
         proof_lock = manifest.with_name("Cargo.lock")
-        resolved = proof_lock.read_text(encoding="utf-8")
-        verify_resolution(resolved, packages, backend)
+        resolved = resolve_backend_package(manifest, FEATURE_OPTIONS, packages, backend)
         # Kani does not accept Cargo's --locked option. Resolve offline first,
         # then reject any lockfile change made during verification.
         subprocess.run(

@@ -87,43 +87,55 @@ configuration. See [Provider Selection](../docs/provider-selection.md).
 ## Symbolic HPKE model
 
 The [HPKE model](tamarin/hpke.spthy) covers single-record Base and PSK modes.
-When a modeled ciphertext opens successfully, the opening and sealing events
-agree on the KEM/KDF/AEAD suite, the recipient public key, the mode, the
-encapsulation, HPKE `info`, the AEAD AAD, and the plaintext. A round-trip lemma
-for each mode establishes that successful opens are reachable. The secrecy
-lemma ties adversary knowledge of an honestly sealed plaintext to revelation of
-the recipient's static key. The [RFC 9180 construction] uses distinct KEM and
-HPKE suite labels and authenticates AAD at the record layer.
+When a modeled ciphertext opens successfully, sealing and opening agree on
+suite, recipient public key, mode, encapsulation, `info`, AAD, PSK identifier,
+and plaintext. The model provisions two distinct identifiers for one PSK and
+verifies reachability of the alternate identifier. This exercises identifier
+binding while holding the PSK bytes fixed.
 
-The model uses ideal DH, labeled derivation, and authenticated encryption. Its
-scope excludes byte encodings, concrete cipher properties, multi-record state,
-and sender authentication in Base mode.
+HPKE exports immediately after setup. In the model a matching sender and
+receiver export binds the setup inputs, including `info` and the PSK identifier,
+the separate `exporter_context`, and the requested output length. Base and PSK
+round-trip and export witnesses establish reachability. Plaintext secrecy
+continues to hold under ideal DH, labeled derivation, and authenticated
+encryption. Export equality is symbolic and assumes ideal derivation. The
+model abstracts byte encodings, concrete cipher properties, multi-record state,
+and sender authentication in Base mode. [RFC 9180 §§5.1–5.3][RFC9180].
 
-The [RFC 9180 audit](../tools/external-vector-audit/tests/rfc9180_hpke.rs) opens
-ten published sequence-zero records spanning five suites in Base and PSK modes.
-It requires typed authentication failure on fifty substitutions that change the
-KDF, AEAD, recipient private key, `info`, or AAD independently. The substituted
-key comes from the other mode's valid record for the same suite. The tests keep
-the encapsulated key and ciphertext fixed. The pinned corpus and its provenance
-are recorded in [the external vector inventory](../vectors/external/provenance.json).
+The [backend schedule audit](hpke/check_schedule_vectors.py) verifies the
+registry archive against `Cargo.lock` and the independent CFRG corpus against
+[its recorded checksum](../vectors/external/provenance.json). In a temporary
+copy it observes the production receiver's KEM shared secret, key-schedule
+context, extraction secret, traffic key, base nonce, and exporter secret.
+Twelve vectors cover Base and PSK across five record suites plus X25519
+export-only. Each checks three exporter outputs. The export-only vectors
+omit the record nonce, so that comparison applies to the five record suites.
+The observer compares bytes in place and reports only the field name on failure.
 
-The formal verification workflow uses Tamarin 1.12.0 and Maude 3.5.1. Run
-locally with both tools on `PATH`.
+The [public HPKE audit](../tools/external-vector-audit/tests/rfc9180_hpke.rs)
+checks Base sender and receiver export bytes, including three distinct exporter
+contexts and a test that changing the requested length changes the output
+prefix. Open tests use ten sequence-zero records and require typed
+authentication failure for fifty-five one-input substitutions, including five
+PSK identifier changes that retain the original PSK and ciphertext.
+
+The formal verification workflow uses Tamarin 1.12.0 and Maude 3.5.1. Run with
+both tools on `PATH` and the locked Rust dependencies cached.
 
 ```sh
 bash formal/tamarin/verify.sh
+python3 -B formal/hpke/check_schedule_vectors.py
 cargo test --locked -p external-vector-audit --no-default-features --features native --test rfc9180_hpke -- --ignored
 ```
 
-The verifier checks both round-trip lemmas, `successful_open_binds_context`,
-and `plaintext_secrecy`. It fails if a lemma is missing, falsified, or incomplete.
+The symbolic verifier requires all nine lemmas to be present and verified.
 
-[RFC 9180 construction]: https://www.rfc-editor.org/rfc/rfc9180.html#section-5.1
+[RFC9180]: https://www.rfc-editor.org/rfc/rfc9180.html#section-5.1
 
 ## Next targets for 0.5.0
 
 | Target | Property and method |
 | --- | --- |
-| HPKE key schedule and export | Check intermediate labeled derivation and exporter bytes against independent vectors. Extend the symbolic model to cover exporter context and PSK identifier binding. |
+| Post-quantum HPKE composition | Verify ML-KEM and X-Wing schedule and exporter vectors, then model KEM identity, hybrid component binding, and authentication failure after implicit rejection. |
 | Additional provider profiles | Repeat the provider reachability checks for reduced WASM and mixed signature/KEM profiles, including feature-specific dispatch differences. |
 | Encoding and primitive equivalence | Start with ML-KEM coefficient encoding and decoding, strict ECDSA low-S handling, and X25519/X448 input and shared-secret checks. Use an independent Cryptol specification and SAW where a small fixed-size implementation can be connected reproducibly to the verified artifact. AES-KW, Keccak, and hybrid KEM composition are candidates after that integration is established. |

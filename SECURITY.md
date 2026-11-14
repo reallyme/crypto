@@ -92,8 +92,9 @@ the package manifest to the matching XCFramework artifact.
   current coverage and gap inventory is in `fuzz/README.md`; we do not claim
   that every parser and platform decoder is fuzzed yet.
 - The symbolic HPKE Base and PSK model verifies plaintext secrecy and agreement
-  on the suite, recipient public key, `info`, and AAD for successful opens of
-  the same ciphertext. Its assumptions and independent implementation vectors
+  on the suite, recipient public key, `info`, AAD, and PSK identifier for
+  successful opens of the same ciphertext. Matching exports bind the setup
+  inputs, exporter context, and requested length. Its assumptions and vectors
   are documented in [Formal verification](formal/README.md#symbolic-hpke-model).
   Run `bash formal/tamarin/verify.sh` to check the model.
 - Provider choice is part of the security contract. The generated backend
