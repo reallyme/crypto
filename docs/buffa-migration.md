@@ -3,18 +3,18 @@
 The migration uses the published ReallyMe Buffa 0.1.1 family, following its
 [release contract](https://github.com/reallyme/buffa/blob/reallyme-v0.1.1/FORK.md)
 and [guarded-field guide](https://github.com/reallyme/buffa/blob/reallyme-v0.1.1/docs/guarded-fields.md).
-Existing protobuf package names, field numbers and wire meanings remain the
-authority. This inventory precedes implementation changes and binds the
-previous integration to source commit `293cf032dc74a62ed6973b5bdda4cafc088f6886`.
+The protobuf schema defines package names, field numbers and wire meanings.
+The upstream inventory below describes commit
+`293cf032dc74a62ed6973b5bdda4cafc088f6886`, before the fork migration.
 
-## Existing integration
+## Upstream baseline
 
 - The workspace aliases `buffa` to upstream 0.9.2. Nineteen workspace packages
   consume it: conformance vectors, FFI, the umbrella library, Argon2id,
   Concat KDF, constant-time helpers, core, CSPRNG, dispatch, HKDF, HPKE, JWK,
   JWK multikey, PBKDF2, Poseidon2, protobuf, RSA, secp256k1 and SHA-3.
   The resolved all-feature graph has one Buffa runtime and no external
-  package requiring it. No current workspace manifest uses `buffa-build`,
+  package requiring it. The baseline manifests do not use `buffa-build`,
   `buffa-types`, descriptor, codegen, proto-options or remote-derive directly.
 - `crates/proto` owns all runtime-generated Rust bindings. Its optional
   `generated` feature enables JSON and views; minimal error and immutable
@@ -32,7 +32,7 @@ previous integration to source commit `293cf032dc74a62ed6973b5bdda4cafc088f6886`
   policy/identity records. The separate `contract/v1` schemas define immutable
   maintenance metadata and custom descriptor options; they are excluded from
   runtime message generation. No runtime WKT import, map field, numeric repeated
-  field, chrono/jiff adapter or reflection generation is currently present.
+  field, chrono/jiff adapter or reflection generation is present at that point.
 - TypeScript uses the ES generator and its own runtime. Swift and Java/Kotlin
   use their platform generators. Their independent diagnostic and buffer
   protections must survive the Rust runtime migration.
@@ -90,6 +90,19 @@ a guarded owned view; `bytes()` returns a slice and cannot share the allocation.
 
 ## Buffa 0.1.1 integration
 
+The workspace pins `reallyme-buffa` at `=0.1.1`. The guarded reflection and
+WKT fixtures pin `reallyme-buffa-descriptor` and `reallyme-buffa-types` at
+`=0.1.1` as dev dependencies. The workspace and fuzz lockfiles resolve only
+the fork. The vector-audit tool lockfile has no Buffa dependency.
+
+Both Buf plugins come from their published `0.1.1` Cargo packages and must
+report that exact version. The generator cache key includes the Buffa version.
+The driver regenerates the runtime crate under `crates/proto/src/generated`
+and the separate bindings under `crates/proto/tests/fixtures/guarded/generated`.
+It also verifies the schema-derived error and HPKE contracts and regenerates
+the SDK bindings through the existing plugins. Crypto's schema declares no
+RPC services, and neither vector-audit build script generates protobuf code.
+
 `borrowed_views_only_in` omits standard owned wrappers and their
 `HasMessageView` implementations for private messages and their containers.
 Crypto's public view facade uses Buffa's `sensitive::GuardedOwnedView` for storage
@@ -108,8 +121,12 @@ them, then transfers that allocation to the guarded list without copying bytes.
 
 The allocator regression observes initialized memory just before deallocation
 on growth, successful replacement, failed merge, clone drop, oneof switch and
-owned view drop. The generated message tests cover redaction, private key JSON,
-optional presence and binary goldens. The guarded fixture tests cover nested
-WKT cleanup, repeated and map fields, and eager versus lazy admission. These
-checks supplement the earlier schema contract provenance record, which remains
-bound to its original checkpoint.
+owned view drop (`guarded_allocation_tests.rs`). `generated_tests.rs` covers
+binary goldens, private-key JSON export refusal and enum parsing, including
+strict standalone values and lenient message fields. `optional_owner_tests.rs`
+covers presence and whole-destination cleanup after a failed merge.
+`guarded_contract_tests.rs` covers nested WKT cleanup, repeated and map fields,
+direct view oneof redaction, empty view export refusal and lazy admission.
+Crypto's guarded runtime bindings discard unknown fields and its admission path
+rejects them. The fixture tests unknown bytes in a deferred child as well as
+their rejection by eager admission.
