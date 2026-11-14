@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use super::{classify_json_operation, enforce_json_operation_policy, malformed_json_error};
+use super::{
+    classify_json_operation, decode_admitted_json, enforce_json_operation_policy,
+    malformed_json_error,
+};
 use super::{secret_json_operation_error, JsonOperationPolicy};
 
 const MAX_MODELED_SELECTOR_BYTES: usize = 64;
@@ -47,6 +50,37 @@ fn secret_selector_is_rejected_regardless_of_the_following_bytes() {
 
     assert_eq!(
         enforce_json_operation_policy(&bytes),
+        Err(secret_json_operation_error()),
+    );
+}
+
+#[kani::proof]
+#[kani::unwind(19)]
+fn aead_open_selector_fails_the_pre_decode_policy() {
+    reject_open_selector(*br#"{"aeadOpen"xxxx"#);
+}
+
+#[kani::proof]
+#[kani::unwind(19)]
+fn hpke_base_open_selector_fails_the_pre_decode_policy() {
+    reject_open_selector(*br#"{"hpkeOpen"xxxx"#);
+}
+
+#[kani::proof]
+#[kani::unwind(19)]
+fn hpke_psk_open_selector_fails_the_pre_decode_policy() {
+    reject_open_selector(*br#"{"hpkePskOpen"xxxx"#);
+}
+
+fn reject_open_selector<const N: usize>(mut request: [u8; N]) {
+    // Include even malformed bytes immediately after the selector.
+    let suffix: [u8; 4] = kani::any();
+    request[N - 4..].copy_from_slice(&suffix);
+    assert_eq!(
+        decode_admitted_json(&request, |_| {
+            kani::assert(false, "rejected open request reached the value decoder");
+            Ok(())
+        }),
         Err(secret_json_operation_error()),
     );
 }

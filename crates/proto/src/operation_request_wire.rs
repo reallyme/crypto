@@ -33,8 +33,15 @@ pub fn decode_operation_request(bytes: &[u8]) -> Result<CryptoOperationRequest, 
 pub fn decode_operation_request_json(
     bytes: &[u8],
 ) -> Result<CryptoOperationRequest, CryptoWireError> {
+    decode_admitted_json(bytes, decode_json::<CryptoOperationRequest>)
+}
+
+fn decode_admitted_json<R>(
+    bytes: &[u8],
+    decode: impl FnOnce(&[u8]) -> Result<R, CryptoWireError>,
+) -> Result<R, CryptoWireError> {
     enforce_json_operation_policy(bytes)?;
-    decode_json::<CryptoOperationRequest>(bytes)
+    decode(bytes)
 }
 
 fn enforce_json_operation_policy(bytes: &[u8]) -> Result<(), CryptoWireError> {

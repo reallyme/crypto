@@ -18,6 +18,10 @@ use zeroize::Zeroizing;
 use super::error::error_response;
 use super::request::process_operation_request;
 
+#[cfg(all(kani, feature = "native", feature = "aes", feature = "hpke-api"))]
+#[path = "boundary/proof_tests.rs"]
+mod proof_tests;
+
 /// Execute a binary generated-protobuf crypto operation request and return the
 /// generated operation response contract.
 #[must_use]

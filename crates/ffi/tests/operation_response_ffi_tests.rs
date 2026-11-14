@@ -233,7 +233,13 @@ fn ffi_result(operation: CryptoOperation) -> CryptoOperationResultBranch {
 }
 
 fn assert_ffi_error_reason(operation: CryptoOperation, expected: CryptoErrorReason) {
-    let reason = match ffi_response(operation).outcome.as_ref() {
+    let wire = ffi_response_bytes(operation);
+    if expected == CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED {
+        // Decode alone could conceal a result field followed by the error.
+        assert_eq!(wire.as_slice(), &[0x12, 0x04, 0x0a, 0x02, 0x08, 122]);
+    }
+    let response = decode_operation_response(&wire).expect("FFI response decodes");
+    let reason = match response.outcome.as_ref() {
         Some(CryptoOperationOutcome::Error(error)) => match error.error.as_ref() {
             Some(CryptoErrorBranch::Primitive(error)) => error.reason.as_known(),
             Some(CryptoErrorBranch::Provider(error)) => error.reason.as_known(),
@@ -246,6 +252,10 @@ fn assert_ffi_error_reason(operation: CryptoOperation, expected: CryptoErrorReas
 }
 
 fn ffi_response(operation: CryptoOperation) -> CryptoOperationResponse {
+    decode_operation_response(&ffi_response_bytes(operation)).expect("FFI response decodes")
+}
+
+fn ffi_response_bytes(operation: CryptoOperation) -> Zeroizing<Vec<u8>> {
     let request = CryptoOperationRequest {
         operation: Some(operation),
     };
@@ -266,10 +276,9 @@ fn ffi_response(operation: CryptoOperation) -> CryptoOperationResponse {
         )
     };
     assert_eq!(result_status, status::CRYPTO_OK);
-    let Ok(response) = decode_operation_response(&output[..output_len]) else {
-        panic!("FFI operation response did not decode");
-    };
-    response
+    assert!(output_len <= output.len());
+    output.truncate(output_len);
+    output
 }
 
 #[derive(Clone, Copy)]

@@ -13,7 +13,8 @@ source revision, dependency lockfile, target, and Cargo features of that run.
 
 | Production code | Property | Scope |
 | --- | --- | --- |
-| [ProtoJSON request policy](../crates/proto/src/operation_request_wire.rs) | Only reviewed selectors can pass classification. An `aeadSeal` selector returns the typed policy error before scanning its value. A second top-level member is rejected when an allowed request contains a string with JSON delimiters. | All selector byte strings through 64 bytes, an `aeadSeal` prefix followed by four arbitrary bytes, and a `hash` object with eight arbitrary unescaped string bytes followed by an optional fixed second member. A separate harness checks panic freedom for arbitrary requests through 12 bytes. The schema parity and transport tests cover the complete selector list and the generated JSON decoder. |
+| [ProtoJSON request policy](../crates/proto/src/operation_request_wire.rs) | Only reviewed selectors can pass classification. The production JSON gate returns the typed policy error for `aeadOpen`, `hpkeOpen`, and `hpkePskOpen` before invoking the value decoder. A second top-level member is rejected when an allowed request contains a string with JSON delimiters. | All selector byte strings through 64 bytes, each open selector and `aeadSeal` followed by four arbitrary bytes, and a `hash` object with eight arbitrary unescaped string bytes followed by an optional fixed second member. A separate harness checks panic freedom for arbitrary requests through 12 bytes. The public transport tests cover whitespace, escaped and snake-case selectors, additional members, and the generated JSON decoder. |
+| [Binary operation open failures](../crates/crypto/src/operation_contract/boundary/proof_tests.rs) | The AEAD, HPKE Base, and HPKE PSK handlers convert a reported authentication failure into the primitive error branch. The generated protobuf writer emits exactly the six-byte error envelope. | The native AES-128-GCM and P-256 HPKE request fixtures use symbolic 17-byte records and stub the operation owners to report authentication failure. The serialization harness verifies the generated size and write passes with a fixed sink. Rust and C ABI integration tests run the binary request decoder, dispatcher, and bounded response encoder with real providers. |
 | [HPKE component dispatch](../crates/hpke/src/dispatch.rs) | Unknown IDs return the typed unsupported-algorithm error. A registered ID routes to the implementation with the same ID if enabled and returns that error otherwise. Export-only AEAD is rejected by encryption dispatch. | All 65,536 numeric inputs in each of the KEM, KDF, and AEAD families, under the full native profile and a restricted P-256 profile with export-only enabled. The callbacks read the actual implementation types' associated IDs. The proofs compare dispatch with the registry and the build's declared support, and do not execute the implementations or exercise SDK provider routing. |
 | [HPKE backend nonce and sequence state](hpke/aead_state_proof_tests.rs) | Each supported record AEAD derives the nonce prescribed by [RFC 9180 §5.2](https://www.rfc-editor.org/rfc/rfc9180.html#section-5.2), and distinct sequence numbers produce distinct nonces for the same base nonce. Sender and receiver pass the current nonce to the AEAD, advance once on success, preserve their state on an AEAD error, and reject records once exhausted. | All 64-bit sequence values and all 96-bit base nonces. Nonce proofs instantiate the real AES-128-GCM, AES-256-GCM, and ChaCha20-Poly1305 types. One-step state proofs run the actual detached seal/open methods with a test AEAD that can succeed or fail, plus a second call at sequence exhaustion. They abstract the cipher, key schedule and KEM. |
 | [AEAD plaintext handoff](../crates/crypto/core/src/authenticate_record.rs) | The shared open path splits the tag and gives the backend a mutable slice of a clearing buffer. Authentication failure cannot return that buffer, even if the backend has written candidate plaintext. Records with truncated tags never call the backend. | All four-byte ciphertexts, 16-byte tags, candidate output bytes, and subsets of output bytes written. The harness checks reachability of success and failure after both partial and complete writes. AES-128/192/256-GCM, AES-256-GCM-SIV, ChaCha20-Poly1305, XChaCha20-Poly1305, and HPKE Base and PSK opens use this handoff. The proof assumes the backend reports authentication correctly. It covers Rust ownership and release, while cipher internals and physical erasure require separate evidence. |
@@ -30,6 +31,7 @@ cargo install --locked kani-verifier@0.68.0
 cargo kani setup
 cargo fetch --locked
 CARGO_NET_OFFLINE=true cargo kani -p reallyme-crypto-proto --features generated
+CARGO_PROFILE_DEV_DEBUG_ASSERTIONS=false CARGO_NET_OFFLINE=true cargo kani -p reallyme-crypto --features operation-response --lib -Z stubbing --jobs 2 --output-format terse
 CARGO_NET_OFFLINE=true cargo kani -p reallyme-crypto-core
 CARGO_NET_OFFLINE=true cargo kani -p crypto-ffi --lib -Z stubbing --jobs 2 --output-format terse
 CARGO_NET_OFFLINE=true cargo kani -p reallyme-crypto-wasm --lib --jobs 2 --output-format terse
@@ -38,6 +40,10 @@ CARGO_NET_OFFLINE=true cargo kani -p reallyme-crypto-hpke --no-default-features 
 python3 formal/hpke/verify.py
 git diff --exit-code -- Cargo.lock
 ```
+
+The operation-response command uses release-style dependency assertions to
+keep generated-message verification tractable. Kani still checks arithmetic,
+memory safety, loop bounds, and the harness assertions.
 
 The backend runner requires Python 3.12 or later. It verifies the crates.io
 HPKE archive against the checksum in the workspace lockfile, resolves its
@@ -89,5 +95,4 @@ the lemma results.
 | --- | --- |
 | Provider selection and operation dispatch | Extend Kani to Rust operation, algorithm, and key-family gates. Use the provider manifest and executable SDK conformance checks to cover missing-provider behavior in Swift, Kotlin and TypeScript. |
 | HPKE context binding | Extend the symbolic model to cover context binding and use independent conformance vectors for the byte-level key schedule. |
-| Structured operation responses | Prove that a failed open produces only the error branch of the operation response and that the Rust, C/JNI, and WASM serializers cannot emit a plaintext result alongside it. Exercise binary requests and verify ProtoJSON policy rejects open requests before dispatch. |
 | Encoding and primitive equivalence | Start with ML-KEM coefficient encoding and decoding, strict ECDSA low-S handling, and X25519/X448 input and shared-secret checks. Use an independent Cryptol specification and SAW where a small fixed-size implementation can be connected reproducibly to the verified artifact. AES-KW, Keccak, and hybrid KEM composition are candidates after that integration is established. |

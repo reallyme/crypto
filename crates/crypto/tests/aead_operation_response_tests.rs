@@ -24,6 +24,7 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 };
 use crypto_proto::operation_response_wire::decode_operation_response;
 use crypto_proto::wire::MAX_CRYPTO_PROTO_MESSAGE_BYTES;
+use zeroize::Zeroizing;
 
 #[test]
 fn operation_response_aead_seal_uses_operation_owner_for_aes256_gcm() {
@@ -109,16 +110,19 @@ fn operation_response_aead_open_reports_tampering_as_primitive_authentication_er
         .expect("ciphertext with tag is not empty");
     *first ^= 0x01;
 
-    let response = process_response(aead_open_request(
+    let request = aead_open_request(
         AeadAlgorithm::AEAD_ALGORITHM_AES_256_GCM,
         key,
         nonce,
         aad,
         ciphertext_with_tag,
-    ));
+    );
+    let bytes = Zeroizing::new(request.encode_to_vec());
+    let output = reallyme_crypto::operation_contract::process_operation_response(&bytes);
+    assert_eq!(output.as_slice(), &[0x12, 0x04, 0x0a, 0x02, 0x08, 122]);
 
     assert_error_response(
-        response,
+        decode_operation_response(&output).expect("response decodes"),
         CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_AUTHENTICATION_FAILED,
     );
 }

@@ -15,6 +15,7 @@ on:
       - "crates/aes256-gcm-siv/**"
       - "crates/chacha20-poly1305/**"
       - "crates/crypto/core/**"
+      - "crates/crypto/src/operation_contract/**"
       - "crates/crypto/src/operations/aead/**"
       - "crates/crypto/src/operations/aead.rs"
       - "crates/crypto/src/operations/hpke.rs"
@@ -35,6 +36,7 @@ on:
       - "crates/aes256-gcm-siv/**"
       - "crates/chacha20-poly1305/**"
       - "crates/crypto/core/**"
+      - "crates/crypto/src/operation_contract/**"
       - "crates/crypto/src/operations/aead/**"
       - "crates/crypto/src/operations/aead.rs"
       - "crates/crypto/src/operations/hpke.rs"
@@ -80,6 +82,12 @@ jobs:
         env:
           CARGO_NET_OFFLINE: "true"
         run: cargo kani -p reallyme-crypto-proto --features generated --jobs 2 --output-format terse
+
+      - name: Prove open failures serialize only a protobuf error
+        env:
+          CARGO_PROFILE_DEV_DEBUG_ASSERTIONS: "false"
+          CARGO_NET_OFFLINE: "true"
+        run: cargo kani -p reallyme-crypto --features operation-response --lib -Z stubbing --jobs 2 --output-format terse
 
       - name: Prove HPKE dispatch with the full native profile
         env:
