@@ -32,11 +32,11 @@ lanes may execute each algorithm and what output they must produce.
 ## Generation
 
 From the repository root, using Buf `1.75.0` and the published ReallyMe
-Buffa `0.1.1` generators, matching protobuf CI:
+Buffa `0.1.2` generators, matching protobuf CI:
 
 ```sh
-cargo install reallyme-protoc-gen-buffa --version '=0.1.1' --locked
-cargo install reallyme-protoc-gen-buffa-packaging --version '=0.1.1' --locked
+cargo install reallyme-protoc-gen-buffa --version '=0.1.2' --locked
+cargo install reallyme-protoc-gen-buffa-packaging --version '=0.1.2' --locked
 buf lint
 node scripts/generate_protobuf.mjs
 ```

@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "me.really"
-version = "0.4.0"
+version = "0.4.1"
 
 dependencyLocking {
     lockAllConfigurations()
@@ -309,10 +309,10 @@ dependencies {
     implementation("com.google.code.gson:gson:2.15.0")
     api("com.google.protobuf:protobuf-javalite:4.36.2")
     api("com.google.protobuf:protobuf-kotlin-lite:4.36.2")
-    implementation("org.bouncycastle:bcprov-jdk18on:1.86")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.87")
     implementation("fr.acinq.secp256k1:secp256k1-kmp:0.24.0")
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.24.0")
-    implementation("me.really:codec-android:0.3.2")
+    implementation("me.really:codec-android:0.4.2")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
 }

@@ -8,7 +8,7 @@
 // SwiftPM and Xcode only read a `Package.swift` at the repository root when a
 // package is consumed by URL, e.g.
 //
-//     .package(url: "https://github.com/reallyme/crypto", from: "0.3.17")
+//     .package(url: "https://github.com/reallyme/crypto", from: "0.4.0")
 //     .product(name: "ReallyMeCrypto", package: "crypto")
 //
 // The Swift sources live under `packages/swift/` to keep symmetry with the
@@ -18,8 +18,8 @@
 import Foundation
 import PackageDescription
 
-let ffiArtifactChecksum = "b48099114f98686f4ed18c4c514a6465c294c4a4df898905159ef53330b5d978"
-let ffiArtifactVersion = "0.3.17"
+let ffiArtifactChecksum = "f63419c521b4a1c16b74d22ef412ffea3260777c7642ec147422c329741b4318"
+let ffiArtifactVersion = "0.4.0"
 let ffiArtifactLocalPathOverride = ""
 // Source-tree CI explicitly exercises the runtime loader before testing the
 // linked release artifact. Public consumers do not set this development-only
@@ -125,11 +125,9 @@ let package = Package(
     ),
   ],
   dependencies: [
-    // Codec 0.4.0 packages a static module map that collides with
-    // CSecp256k1 under Swift Build. Keep the verified consumer dependency.
     .package(
       url: "https://github.com/reallyme/codec",
-      exact: "0.3.2"
+      exact: "0.4.2"
     ),
     .package(
       url: "https://github.com/reallyme/CSecp256k1",
@@ -144,7 +142,7 @@ let package = Package(
     ),
     .package(
       url: "https://github.com/apple/swift-protobuf.git",
-      from: "1.30.0"
+      from: "1.41.0"
     ),
   ],
   targets: packageTargets

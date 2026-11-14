@@ -75,7 +75,7 @@ function main() {
     return result.stdout;
   };
   for (const executable of ["protoc-gen-reallyme-buffa", "protoc-gen-reallyme-buffa-packaging"]) {
-    if (run(executable, ["--version"]).trim() !== `${executable} 0.1.1`) fail("generator-version");
+    if (run(executable, ["--version"]).trim() !== `${executable} 0.1.2`) fail("generator-version");
   }
   if (run("buf", ["--version"]).trim() !== "1.75.0") fail("buf-version");
   const document = JSON.parse(run("buf", ["build", "--exclude-source-info", "--as-file-descriptor-set", "-o", "-#format=json"]));

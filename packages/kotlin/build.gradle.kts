@@ -18,7 +18,7 @@ plugins {
 }
 
 group = "me.really"
-version = "0.4.0"
+version = "0.4.1"
 
 dependencyLocking {
     lockAllConfigurations()
@@ -225,7 +225,7 @@ dependencies {
     api("com.google.protobuf:protobuf-kotlin-lite:4.36.2")
     // Same pinned BouncyCastle the Kotlin conformance lane proves vectors
     // against; the SDK and the oracle must not drift apart.
-    implementation("org.bouncycastle:bcprov-jdk18on:1.86")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.87")
     // secp256k1 ECDSA and BIP-340 Schnorr are backed by Bitcoin Core
     // libsecp256k1 (the constant-time reference implementation) via ACINQ's
     // JNI bindings. This is the same C library the Swift lane uses through
@@ -234,7 +234,7 @@ dependencies {
     // natives; an Android consumer swaps it for `secp256k1-kmp-jni-android`.
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jvm:0.24.0")
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.24.0")
-    implementation("me.really:codec:0.3.2")
+    implementation("me.really:codec:0.4.2")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.3")
     testImplementation(kotlin("test"))

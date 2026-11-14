@@ -206,7 +206,7 @@ no-default consumers from pulling unused cryptography while still forwarding
 the selected backend into every enabled primitive crate. The `wasm` lane is for
 `wasm32` builds; host builds should use `native`.
 
-The 0.4.0 source tree also provides the following protected Rust interfaces.
+The Rust source also provides the following protected Rust interfaces.
 
 | Interface | Selection | Contract |
 |---|---|---|

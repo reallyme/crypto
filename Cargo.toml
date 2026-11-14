@@ -129,7 +129,7 @@ ml-dsa = { version = "0.1.2", default-features = false }
 ml-kem = "0.3.4"
 slh-dsa = "0.2.0-rc.5"
 # Encoding / serialization
-buffa = { package = "reallyme-buffa", version = "=0.1.1", default-features = false }
+buffa = { package = "reallyme-buffa", version = "=0.1.2", default-features = false }
 base64 = "0.23"
 serde = "1.0"
 serde_json = "1.0"

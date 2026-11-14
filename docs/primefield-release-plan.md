@@ -84,7 +84,7 @@ The canonical crypto manifests and lockfiles contain no such override.
 
 ## Registry release path
 
-As checked on **2026-11-13**, the registry's latest stable `primefield` is
+As checked on **2026-11-14**, the registry's latest stable `primefield` is
 **0.14.0**, without this repair. The preferred resolution is an upstream
 compatible release carrying the reviewed ownership fix. **0.14.1 is a proposed
 release target, not an existing or reserved fixed version**; the maintainer's
@@ -95,12 +95,11 @@ actual version and packaged source must replace that target before integration.
 | `primefield` | 0.14.0 | Upstream publishes a reviewed compatible fixed release; proposed minimum 0.14.1. Record its actual archive checksum and compare the packaged source. |
 | `primeorder`, `bp256`, `bp384`, `p256`, `p384`, `p521` | 0.14.0 each | Their existing compatible `primefield` requirements can resolve the upstream fixed release. No new release is required solely to rename a dependency; audit their resolved packaged graphs. |
 | `wnaf` | 0.14.1 | Retain its compatible dependency identity; inspect it in the same reverse graph. |
-| `crypto-bigint` / `hybrid-array` / `zeroize` | 0.7.10 / 0.4.15 / 1.9.1 in canonical crypto | The patch adds no required new release. Standalone compilation also checks `crypto-bigint` 0.7.11, `hybrid-array` 0.4.12 and `zeroize` 1.9.0. |
-| ReallyMe Rust release set, including `reallyme-crypto`, `reallyme-crypto-rsa` and `reallyme-crypto-proto` | Unpublished 0.4.0 source | Publish the approved coordinated set only after dependency and runtime gates. Existing 0.3.17 packages stay unchanged. |
+| `crypto-bigint` / `hybrid-array` / `zeroize` | 0.7.11 / 0.4.15 / 1.9.1 in Crypto 0.4.1 | The patch adds no required new release. Standalone compilation also checks `crypto-bigint` 0.7.11, `hybrid-array` 0.4.12 and `zeroize` 1.9.0. |
+| ReallyMe Rust release set, including `reallyme-crypto`, `reallyme-crypto-rsa` and `reallyme-crypto-proto` | 0.4.1 source | Confirm the fixed archive and test all affected package lanes before release. |
 
-The [exact workspace package list](schema-contract-current-versions.csv) records
-all source versions. `node scripts/publish_crates_in_order.mjs order` reports
-the current 41 publishable packages in dependency order without publishing.
+`node scripts/publish_crates_in_order.mjs order` reports the publishable
+packages in dependency order.
 RSA's 0.4 API migration is part of that coordinated set; RSA does not become a
 prime-field operation through this repair.
 
