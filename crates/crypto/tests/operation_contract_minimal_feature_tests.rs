@@ -101,10 +101,10 @@ fn every_declared_branch_fails_closed_without_algorithm_features() {
 fn assert_unsupported_provider(
     response: crypto_proto::generated::proto::reallyme::crypto::v1::CryptoOperationResponse,
 ) {
-    let Some(CryptoOperationOutcome::Error(error)) = response.outcome else {
+    let Some(CryptoOperationOutcome::Error(error)) = &response.outcome else {
         panic!("unavailable operation family must return an error outcome");
     };
-    let Some(CryptoErrorBranch::Provider(provider)) = error.error else {
+    let Some(CryptoErrorBranch::Provider(provider)) = &error.error else {
         panic!("unavailable operation family must return a provider error");
     };
     assert_eq!(

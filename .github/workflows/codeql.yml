@@ -90,9 +90,11 @@ jobs:
         # Android extraction needs compiled JVM sources, not rebuilt JNI artifacts;
         # the Kotlin/native ABI gates validate those artifacts separately.
         run: |
-          packages/kotlin/gradlew -p packages/kotlin --dependency-verification strict --no-daemon --no-build-cache --rerun-tasks compileKotlin compileJava
-          packages/kotlin-android/gradlew -p packages/kotlin-android --dependency-verification strict --no-daemon --no-build-cache --rerun-tasks compileReleaseKotlin compileReleaseJavaWithJavac -x buildAndroidJniLibs -x generateAndroidNativeManifest -x verifyAndroidJniLibs
-          crates/conformance/platform/kotlin/gradlew -p crates/conformance/platform/kotlin --dependency-verification strict --no-daemon --no-build-cache --rerun-tasks compileKotlin
+          # Tracing the generated protobuf DSLs exceeds the default compiler heap.
+          gradle_args=(--dependency-verification strict --no-daemon --no-build-cache --rerun-tasks -Pkotlin.daemon.jvmargs=-Xmx2g)
+          packages/kotlin/gradlew -p packages/kotlin "${gradle_args[@]}" compileKotlin compileJava
+          packages/kotlin-android/gradlew -p packages/kotlin-android "${gradle_args[@]}" compileReleaseKotlin compileReleaseJavaWithJavac -x buildAndroidJniLibs -x generateAndroidNativeManifest -x verifyAndroidJniLibs
+          crates/conformance/platform/kotlin/gradlew -p crates/conformance/platform/kotlin "${gradle_args[@]}" compileKotlin
 
       - name: Analyze CodeQL
         uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
