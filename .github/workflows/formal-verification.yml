@@ -11,7 +11,12 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
       - "rust-toolchain.toml"
+      - "crates/aes256-gcm/**"
+      - "crates/aes256-gcm-siv/**"
+      - "crates/chacha20-poly1305/**"
       - "crates/crypto/core/**"
+      - "crates/crypto/src/operations/aead/**"
+      - "crates/crypto/src/operations/aead.rs"
       - "crates/hpke/**"
       - "crates/proto/**"
       - "formal/hpke/**"
@@ -23,7 +28,12 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
       - "rust-toolchain.toml"
+      - "crates/aes256-gcm/**"
+      - "crates/aes256-gcm-siv/**"
+      - "crates/chacha20-poly1305/**"
       - "crates/crypto/core/**"
+      - "crates/crypto/src/operations/aead/**"
+      - "crates/crypto/src/operations/aead.rs"
       - "crates/hpke/**"
       - "crates/proto/**"
       - "formal/hpke/**"
@@ -76,6 +86,11 @@ jobs:
         run: >-
           cargo kani -p reallyme-crypto-hpke --no-default-features
           --features base-p256-aes128gcm,aead-export-only --jobs 2 --output-format terse
+
+      - name: Prove the shared AEAD plaintext handoff
+        env:
+          CARGO_NET_OFFLINE: "true"
+        run: cargo kani -p reallyme-crypto-core --jobs 2 --output-format terse
 
       - name: Prove the locked HPKE backend nonce and state transitions
         run: |

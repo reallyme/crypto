@@ -24,11 +24,11 @@ protobuf = ["crypto-proto/generated", "dep:buffa"]
 [dependencies]
 crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../../proto", default-features = false, features = ["contract-types", "error-types"] }
 buffa = { workspace = true, optional = true }
+zeroize = { workspace = true }
 
 [dev-dependencies]
 wasm-bindgen-test = { workspace = true }
 serde_json = { workspace = true }
-zeroize = { workspace = true }
 
 [lints]
 workspace = true

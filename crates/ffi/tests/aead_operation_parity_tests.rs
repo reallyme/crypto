@@ -150,6 +150,9 @@ fn c_abi_aead_routes_match_operation_owner_and_reject_tampering() {
             .first_mut()
             .expect("ciphertext with tag is not empty");
         *first ^= 0x01;
+        const UNWRITTEN: u8 = 0xa5;
+        decrypted.fill(UNWRITTEN);
+        decrypted_len = usize::MAX;
         let status = unsafe {
             (case.decrypt)(
                 key.as_ptr(),
@@ -166,6 +169,8 @@ fn c_abi_aead_routes_match_operation_owner_and_reject_tampering() {
             )
         };
         assert_eq!(status, status::CRYPTO_AUTHENTICATION_FAILED);
+        assert!(decrypted.iter().all(|byte| *byte == UNWRITTEN));
+        assert_eq!(decrypted_len, usize::MAX);
     }
 }
 

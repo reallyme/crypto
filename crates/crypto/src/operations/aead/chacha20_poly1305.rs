@@ -61,7 +61,7 @@ pub(super) fn open_chacha20_poly1305(
         aad,
         ciphertext: &ciphertext,
     };
-    crypto_chacha20_poly1305::decrypt(&request).map(Zeroizing::new)
+    crypto_chacha20_poly1305::decrypt_zeroizing(&request)
 }
 
 #[cfg(not(all(
@@ -132,7 +132,7 @@ pub(super) fn open_xchacha20_poly1305(
         aad,
         ciphertext: &ciphertext,
     };
-    crypto_chacha20_poly1305::decrypt_xchacha20_poly1305(&request).map(Zeroizing::new)
+    crypto_chacha20_poly1305::decrypt_xchacha20_poly1305_zeroizing(&request)
 }
 
 #[cfg(not(all(

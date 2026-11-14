@@ -60,7 +60,7 @@ pub(super) fn open_aes128_gcm(
         aad,
         ciphertext: &ciphertext,
     };
-    crypto_aes256_gcm::decrypt_aes128_gcm(&request).map(Zeroizing::new)
+    crypto_aes256_gcm::decrypt_aes128_gcm_zeroizing(&request)
 }
 
 #[cfg(not(all(
@@ -130,7 +130,7 @@ pub(super) fn open_aes192_gcm(
         aad,
         ciphertext: &ciphertext,
     };
-    crypto_aes256_gcm::decrypt_aes192_gcm(&request).map(Zeroizing::new)
+    crypto_aes256_gcm::decrypt_aes192_gcm_zeroizing(&request)
 }
 
 #[cfg(not(all(
@@ -199,7 +199,7 @@ pub(super) fn open_aes256_gcm(
         aad,
         ciphertext: &ciphertext,
     };
-    crypto_aes256_gcm::decrypt(&request).map(Zeroizing::new)
+    crypto_aes256_gcm::decrypt_zeroizing(&request)
 }
 
 #[cfg(not(all(

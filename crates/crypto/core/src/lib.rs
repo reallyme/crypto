@@ -10,6 +10,7 @@
 
 /// Algorithm identifier enums shared across the workspace.
 pub mod algorithm;
+mod authenticate_record;
 /// Canonical schema-defined error types.
 pub mod error;
 
@@ -17,6 +18,8 @@ pub mod error;
 pub mod random;
 
 pub use algorithm::{AeadAlgorithm, Algorithm, HashAlgorithm, KeyWrapAlgorithm, MacAlgorithm};
+#[doc(hidden)]
+pub use authenticate_record::authenticate_record;
 /// Immutable primitive parameters and limits generated from the schema.
 pub use crypto_proto::contract_constants;
 pub use error::{CryptoError, CryptoErrorBranch, CryptoErrorReason};

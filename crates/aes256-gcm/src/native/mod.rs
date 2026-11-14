@@ -7,7 +7,9 @@ mod encrypt;
 
 pub use decrypt::decrypt;
 pub use decrypt::decrypt_aes128_gcm;
+pub use decrypt::decrypt_aes128_gcm_zeroizing;
 pub use decrypt::decrypt_aes192_gcm;
+pub use decrypt::decrypt_aes192_gcm_zeroizing;
 pub use decrypt::decrypt_zeroizing;
 pub use encrypt::encrypt;
 pub use encrypt::encrypt_aes128_gcm;

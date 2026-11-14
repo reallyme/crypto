@@ -226,19 +226,16 @@ where
     let encapsulated_key =
         <Kem::EncappedKey as Deserializable>::from_bytes(request.encapsulated_key)
             .map_err(|_| HpkeError::PRIMITIVE_MALFORMED_CIPHERTEXT)?;
-    let plaintext = hpke::single_shot_open::<Aead, Kdf, Kem>(
+    let mut context = hpke::setup_receiver::<Aead, Kdf, Kem>(
         &OpModeR::Base,
         &recipient_private_key,
         &encapsulated_key,
         request.info,
-        request.ciphertext,
-        request.aad,
     )
     .map_err(map_open_error)?;
 
-    Ok(HpkeOpenOutput {
-        plaintext: Zeroizing::new(plaintext),
-    })
+    let plaintext = crate::open_record::open_record(&mut context, request.aad, request.ciphertext)?;
+    Ok(HpkeOpenOutput { plaintext })
 }
 
 #[cfg(any(

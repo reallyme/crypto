@@ -42,6 +42,10 @@ Protocol crates may impose stricter rules. They must not weaken this model.
 
 - Cryptographic operations run on bounded inputs with typed domain separation.
 - Temporary secrets use `Zeroizing<T>` or an owner that implements `ZeroizeOnDrop`.
+- Rust AEAD and HPKE open paths lend the backend a slice of a zeroizing
+  buffer, then return that owner only after authentication succeeds. The
+  caller owns clearing for plaintext explicitly returned as `Vec<u8>`.
+  See the [plaintext handoff proof](formal/README.md#rust-implementation-proofs).
 - Authentication failures return typed errors and must not expose backend exception text, raw input, or secret-bearing context.
 - Comparisons of MACs, tags, signatures, and derived values use constant-time primitives when the value is security-sensitive.
 
