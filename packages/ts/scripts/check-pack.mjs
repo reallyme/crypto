@@ -162,6 +162,7 @@ const allowedWasmImportNames = [
   /^__wbg_length_[0-9a-f]+$/,
   /^__wbg_prototypesetcall_[0-9a-f]+$/,
   /^__wbg_new_from_slice_[0-9a-f]+$/,
+  /^__wbg_fill_6ab2ffab47cad7ab$/,
   /^__wbg_set_[0-9a-f]+$/,
   /^__wbg_getRandomValues_[0-9a-f]+$/,
   /^__wbg___wbindgen_throw_[0-9a-f]+$/,
@@ -169,9 +170,18 @@ const allowedWasmImportNames = [
   /^__wbindgen_cast_[0-9a-f]+$/,
   /^__wbindgen_generic_000000000000000[12]$/,
 ];
-// wasm-bindgen 0.2.130 emits these cast intrinsics. Review their exact glue
+// wasm-bindgen 0.2.130 emits these helpers. Review their exact glue
 // so the allowlist cannot silently admit a new ambient JavaScript dependency.
-const reviewedCastIntrinsics = [
+const reviewedWasmImports = [
+  {
+    name: "__wbg_fill_6ab2ffab47cad7ab",
+    body: [
+      "__wbg_fill_6ab2ffab47cad7ab: function(arg0, arg1, arg2, arg3) {",
+      "            const ret = arg0.fill(arg1, arg2 >>> 0, arg3 >>> 0);",
+      "            return ret;",
+      "        },",
+    ].join("\n"),
+  },
   {
     name: "__wbindgen_generic_0000000000000001",
     body: [
@@ -193,7 +203,7 @@ const reviewedCastIntrinsics = [
     ].join("\n"),
   },
 ];
-for (const intrinsic of reviewedCastIntrinsics) {
+for (const intrinsic of reviewedWasmImports) {
   const occurrenceCount = generatedWasmGlue.split(`${intrinsic.name}: function(`).length - 1;
   if (occurrenceCount !== 1) {
     fail(`generated WASM glue has an unexpected ${intrinsic.name} definition count`);
