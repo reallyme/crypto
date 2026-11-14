@@ -10,15 +10,15 @@ import { fileURLToPath } from "node:url";
 
 // The upstream core and this repository's policy checker are separate inputs.
 // Pinning both makes an unreviewed policy edit fail before the checker runs.
-const RELEASE_READINESS_COMMIT = "18a6d91d99837e80f92e41fe04effb0b043d754e";
+const RELEASE_READINESS_COMMIT = "01fe1556413f86e6f8fcf3c4d09a6778fa0805da";
 const RELEASE_READINESS_CORE_SHA256 =
-  "7614b0cbf9e36a4653c2fa9008bee0d1e22542de0e4a08a10e640c836a5c93db";
+  "1519b407c89eb2ecc2307f9a402efd8aa3a190dc5911a59b64ecec0e9742d14c";
 const LOCAL_CHECKER_SHA256 =
-  "a965a1990bde9eceec714e212a4ee9e9b9f6adca5da504bab6babd87d77187f9";
+  "660c502cb7c3f6e6efbba07bab50213d3d145d9371c3943688e0d5b231731210";
 // The checker imports local policy modules. Pinning only its entry file
 // would let an unreviewed dependency change the release decision.
 const LOCAL_CHECKER_DEPENDENCIES = [
-  ["scripts/native_buffa_readiness.mjs", "fb7433ffbbd638c5d33c2c55a0d7ae1277f475fefd433757e9f74de2e90364d2"],
+  ["scripts/native_buffa_readiness.mjs", "3748304ee9e8ad5c6ebc39b05f0b70669b846c4657a7e39c2a4dab721b0a6625"],
   ["scripts/proto_scalar_policy.mjs", "f7b071722aa93a0f75a7fe57f994ae7a12e030ee0bedb1be7058e48543cac377"],
   ["scripts/crypto_operation_route_readiness.mjs", "2b15c4e6778f18cf10b493fb5644e47baf537185b6e4411909ba875b5bd38db4"],
   ["scripts/workflow_gate_policy.mjs", "b735975be482999f283b2081ffc9176b97b3c61be921ff6feb7b246333bb4614"],

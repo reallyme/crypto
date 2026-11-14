@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-rsa"
-version = "0.4.0"
+version = "0.4.1"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -24,8 +24,8 @@ native = []
 wasm = []
 
 [dependencies]
-crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../proto", optional = true, default-features = false, features = ["generated"] }
-crypto-core = { package = "reallyme-crypto-core", version = "=0.4.0", path = "../crypto/core" }
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.1", path = "../proto", optional = true, default-features = false, features = ["generated"] }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.4.1", path = "../crypto/core" }
 sha1 = { workspace = true }
 sha2 = { workspace = true }
 crypto-bigint = { workspace = true, features = ["zeroize"] }

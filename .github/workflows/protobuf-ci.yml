@@ -98,7 +98,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
 
 env:
-  BUFFA_VERSION: 0.1.1
+  BUFFA_VERSION: 0.1.2
   BUF_VERSION: 1.75.0
 
 jobs:

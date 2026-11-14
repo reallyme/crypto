@@ -143,19 +143,19 @@ for (const path of ["packages/kotlin/build.gradle.kts", "packages/kotlin-android
   assertContains(path, 'name.set("Apache License, Version 2.0")');
 }
 
-const rustRootVersion = "0.4.0";
-const cryptoProtoPackageVersion = "0.4.0";
-const typescriptPackageVersion = "0.4.0";
-const kotlinPackageVersion = "0.4.0";
-const kotlinAndroidPackageVersion = "0.4.0";
-const rustCodecVersion = "0.4.0";
-const tsCodecVersion = "0.4.0";
-const swiftCodecVersion = "0.3.2";
-const mavenCodecVersion = "0.3.2";
+const rustRootVersion = "0.4.1";
+const cryptoProtoPackageVersion = "0.4.1";
+const typescriptPackageVersion = "0.4.1";
+const kotlinPackageVersion = "0.4.1";
+const kotlinAndroidPackageVersion = "0.4.1";
+const rustCodecVersion = "0.4.2";
+const tsCodecVersion = "0.4.2";
+const swiftCodecVersion = "0.4.2";
+const mavenCodecVersion = "0.4.2";
 const rustSemverBaselineCommit = "54de2955ebf73e9fd1c306eba207550b3716d767";
 const cargoSemverChecksVersion = "0.50.0";
-const buffaVersion = "0.1.1";
-const releaseReadinessCommit = "18a6d91d99837e80f92e41fe04effb0b043d754e";
+const buffaVersion = "0.1.2";
+const releaseReadinessCommit = "01fe1556413f86e6f8fcf3c4d09a6778fa0805da";
 const releaseReadinessCommand = "node scripts/run_pinned_release_readiness.mjs";
 const gradleWrapperValidationAction =
   "gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c";
@@ -429,14 +429,14 @@ const assertCodecDependencyProvenance = () => {
   }
 
   const registryCodecChecksums = new Map([
-    ["reallyme-codec", "bf1587389c38704cd7d2d3e5e541b4ad9380031505314d69b6437a9b3db09ab7"],
-    ["reallyme-codec-base64url", "180f351fc814b55d62604b3aafda58ddd077550fb361d2c1f54ceca27b544408"],
-    ["reallyme-codec-jcs", "77b0de7afcd27187feaaa42d9b3b3c30d472e4e697d98534924f8e20eee6e3ad"],
-    ["reallyme-codec-multibase", "528574f9f9bbdde21d37aad53757b53c3d592e1ac3cf2283c651948ddb8248f0"],
-    ["reallyme-codec-multicodec", "5125e4490f9c29d0d9818e12561dded708b5c2d638b48deb2e93231b8dc905aa"],
-    ["reallyme-codec-multikey", "2b89ba3c17a4e4c9c182238956429b590dfd5aea0b2fa976e4dc7e29d40e4871"],
-    ["reallyme-codec-pem", "5ffae059159de7a9a392ebf39158cdecec2bf4f5785c0ccce48b172794c2569f"],
-    ["reallyme-codec-proto", "80f4cf8372f6ecf73de9a6f0b15f295482579090deacd2c44d6b7da75042ca92"],
+    ["reallyme-codec", "04d9adee15be559d90a4c8a51182af4dab230bc73ce752096cb1cb88b909ce7d"],
+    ["reallyme-codec-base64url", "aff2949e3ac2498af4747c3a7d82d80b788a464035f668153c4d237b9a582a95"],
+    ["reallyme-codec-jcs", "d658fc4c8bed542073d483e8543de6703154ba33ef7907d2ef54bce087fd210c"],
+    ["reallyme-codec-multibase", "22796124c9f786dcc8bc669c3b408e5018f48995c51bdff46234eb1f5e60c328"],
+    ["reallyme-codec-multicodec", "a1df902e2f8cad07b0b4f528dbf1408e56a466c36e45b38e0b6aae51cd45dcad"],
+    ["reallyme-codec-multikey", "9918db7b11bb8d5ad1914f3ae70e4a6991c200d4a256fec76108f41b6d1adeda"],
+    ["reallyme-codec-pem", "9c3f9abacd6daf0ab6b7f5e85d08a4c0f9bb00d23b8e60d241fe1507397722c6"],
+    ["reallyme-codec-proto", "f2ef69a50f005eee4540d76dbbd5c3db8a33a4c12082563d323b3681f2d708e3"],
   ]);
   for (const lockPath of ["Cargo.lock", "fuzz/Cargo.lock"]) {
     for (const [packageName, checksum] of registryCodecChecksums) {
@@ -2371,7 +2371,7 @@ const primaryOperationBoundaryPolicy = {
 const repositoryPolicy = {
   generatedFreshnessMode,
   vendoredCore: {
-    version: "0.7.0",
+    version: "0.8.0",
     scriptPath: "scripts/check_release_readiness.mjs",
     corePath: "scripts/release-readiness/core.mjs",
   },
@@ -2678,7 +2678,7 @@ const repositoryPolicy = {
         path: "scripts/run_pinned_release_readiness.mjs",
         required: [
           `const RELEASE_READINESS_COMMIT = "${releaseReadinessCommit}";`,
-          'const RELEASE_READINESS_CORE_SHA256 =\n  "7614b0cbf9e36a4653c2fa9008bee0d1e22542de0e4a08a10e640c836a5c93db";',
+          'const RELEASE_READINESS_CORE_SHA256 =\n  "1519b407c89eb2ecc2307f9a402efd8aa3a190dc5911a59b64ecec0e9742d14c";',
           "const LOCAL_CHECKER_SHA256 =",
           "const LOCAL_CHECKER_DEPENDENCIES =",
           "scripts/crypto_operation_route_readiness.mjs",
@@ -2929,11 +2929,12 @@ const assertRepositoryPolicy = () => {
   if (repositoryPolicy.swiftSource !== undefined) assertSwiftSourcePolicy(repositoryPolicy.swiftSource);
   if (repositoryPolicy.kotlinSource !== undefined) assertKotlinSourcePolicy(repositoryPolicy.kotlinSource);
   assertSpdxHeaders(repositoryPolicy.spdx);
-  // The pinned shared policy expects the upstream generator names. Validate
-  // the unchanged application contract through its independent primitives.
+  // The shared Buffa policy does not recognize rustfmt's multiline trait
+  // implementations. Verify the generated owners with Crypto's checker.
   assertCryptoOperationBindings(primaryOperationBoundaryPolicy);
   assertNativeBuffaReadiness(readinessContext, {
     generatedFreshnessMode,
+    buffaVersion,
     protoPath: primaryOperationBoundaryPolicy.protoPath,
     paths: ["scripts/generate_protobuf.mjs",
       "scripts/proto_generation_policy.mjs", "scripts/redact_sdk_proto_debug.mjs",

@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-poseidon2"
-version = "0.4.0"
+version = "0.4.1"
 include = ["/src/**/*.rs", "/tests/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -23,8 +23,8 @@ native = []
 wasm = ["dep:getrandom02"]
 
 [dependencies]
-crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../proto", optional = true, default-features = false, features = ["generated"] }
-crypto-core = { package = "reallyme-crypto-core", version = "=0.4.0", path = "../crypto/core", default-features = false }
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.1", path = "../proto", optional = true, default-features = false, features = ["generated"] }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.4.1", path = "../crypto/core", default-features = false }
 ark-bn254 = { workspace = true }
 ark-ff = { workspace = true }
 taceo-poseidon2 = { workspace = true }

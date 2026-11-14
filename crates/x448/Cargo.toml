@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-x448"
-version = "0.4.0"
+version = "0.4.1"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -24,9 +24,9 @@ native = ["dep:getrandom", "dep:x448"]
 wasm = ["native"]
 
 [dependencies]
-crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../proto", optional = true, default-features = false, features = ["generated"] }
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.1", path = "../proto", optional = true, default-features = false, features = ["generated"] }
 buffa = { workspace = true, optional = true }
-crypto-core = { package = "reallyme-crypto-core", version = "=0.4.0", path = "../crypto/core" }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.4.1", path = "../crypto/core" }
 getrandom = { workspace = true, optional = true, features = ["wasm_js"] }
 subtle = { workspace = true }
 x448 = { workspace = true, features = ["static_secrets"], optional = true }

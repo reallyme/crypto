@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-constant-time"
-version = "0.4.0"
+version = "0.4.1"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -23,9 +23,9 @@ native = []
 wasm = []
 
 [dependencies]
-crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../proto", optional = true, default-features = false, features = ["generated"] }
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.1", path = "../proto", optional = true, default-features = false, features = ["generated"] }
 zeroize = { workspace = true, features = ["derive"], optional = true }
-crypto-core = { package = "reallyme-crypto-core", version = "=0.4.0", path = "../crypto/core" }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.4.1", path = "../crypto/core" }
 subtle = { workspace = true }
 
 [dev-dependencies]
