@@ -4,7 +4,6 @@
 
 import Foundation
 import ReallyMeCrypto
-import ReallyMeCodec
 import XCTest
 
 final class ReallyMeCryptoJwkTests: XCTestCase {
@@ -88,7 +87,7 @@ final class ReallyMeCryptoJwkTests: XCTestCase {
   }
 
   func testEd25519EnvelopesRejectInvalidPointIdentities() throws {
-    try installReallyMeCodecProviderForTest()
+    let codec = try installReallyMeCodecProviderForTest()
     var identity = [UInt8](repeating: 0, count: 32)
     identity[0] = 1
     var aliasedIdentity = [UInt8](repeating: 0xff, count: 32)
@@ -103,7 +102,7 @@ final class ReallyMeCryptoJwkTests: XCTestCase {
         error in
         XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
       }
-      let rawMultikey = try ReallyMeCodec().multikeyEncode(
+      let rawMultikey = try codec.multikeyEncode(
         codecName: "ed25519-pub", publicKey: publicKey)
       XCTAssertThrowsError(try ReallyMeMultikey.parse(rawMultikey)) { error in
         XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)

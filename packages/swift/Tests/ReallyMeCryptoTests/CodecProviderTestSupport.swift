@@ -6,17 +6,19 @@ import ReallyMeCodec
 import ReallyMeCrypto
 import XCTest
 
-func installReallyMeCodecProviderForTest() throws {
+@discardableResult
+func installReallyMeCodecProviderForTest() throws -> ReallyMeCodec {
+  let codec: ReallyMeCodec
   if let libraryPath = ProcessInfo.processInfo.environment["REALLYME_CODEC_FFI_LIBRARY_PATH"],
     !libraryPath.isEmpty
   {
-    let codec = try ReallyMeCodec(
+    codec = try ReallyMeCodec(
       rustCAbiLibrary: ReallyMeCodecRustCAbiLibrary(path: libraryPath)
     )
-    ReallyMeCryptoCodecProvider.install(codec)
-    return
+  } else {
+    codec = try ReallyMeCodec()
   }
 
-  let codec = try ReallyMeCodec()
   ReallyMeCryptoCodecProvider.install(codec)
+  return codec
 }
