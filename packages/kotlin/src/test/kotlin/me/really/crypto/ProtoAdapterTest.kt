@@ -148,6 +148,25 @@ class ProtoAdapterTest {
     }
 
     @Test
+    fun everyGeneratedErrorReasonRoundTripsOnItsDeclaredBranch() {
+        for (reason in CryptoErrorReason.entries) {
+            if (reason == CryptoErrorReason.UNRECOGNIZED ||
+                reason == CryptoErrorReason.CRYPTO_ERROR_REASON_UNSPECIFIED
+            ) continue
+
+            val branch = when {
+                reason.name.startsWith("CRYPTO_ERROR_REASON_PRIMITIVE_") -> ReallyMeCryptoWireErrorBranch.PRIMITIVE
+                reason.name.startsWith("CRYPTO_ERROR_REASON_PROVIDER_") -> ReallyMeCryptoWireErrorBranch.PROVIDER
+                reason.name.startsWith("CRYPTO_ERROR_REASON_BACKEND_") -> ReallyMeCryptoWireErrorBranch.BACKEND
+                else -> fail("error reason is missing a schema branch")
+            }
+            val wire = ReallyMeCryptoWireError.tryNew(branch, reason).let(::validatedWireError)
+            val bytes = ReallyMeCryptoProtoAdapters.wireErrorToProtoBytes(wire)
+            assertEquals(wire, ReallyMeCryptoProtoAdapters.wireErrorFromProtoBytes(bytes))
+        }
+    }
+
+    @Test
     fun protoWireErrorsPreserveFutureBranchReasonCodes() {
         val encoded = CryptoError.newBuilder()
             .setPrimitive(CryptoPrimitiveError.newBuilder().setReasonValue(199))

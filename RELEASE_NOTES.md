@@ -1,5 +1,14 @@
 # Release Notes
 
+## 0.4.0
+
+- Migrated to ReallyMe Buffa `0.1.1` for generated Rust zeroization, guarded views, and redaction.
+- Preserves the published protobuf field numbers and encodings. Rust now returns canonical
+  `CryptoErrorReason` values in place of per-operation error variants. SDKs keep their typed errors.
+- Adds protected prime-group and RSA representative operations. Deprecated X25519 and secp256k1
+  key-generation functions now return `Result`.
+- Updates Rust and TypeScript/WASM Codec dependencies to `0.4.0` and fixes Android NDK discovery.
+
 ## 0.3.17
 
 - Makes HPKE sender and receiver contexts `Send` through explicit backend

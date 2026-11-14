@@ -105,6 +105,31 @@ extension ReallyMeCryptoTests {
     XCTAssertEqual(decoded, wireError)
   }
 
+  func testEverySwiftErrorCaseProjectsToItsDocumentedProtoReason() throws {
+    let cases: [(ReallyMeCryptoError, ReallyMeProtoCryptoErrorReason, ReallyMeCryptoError)] = [
+      (.unsupportedPlatform, .providerUnsupportedBackend, .unsupportedAlgorithm),
+      (.dynamicLibraryNotFound, .backendInternal, .providerFailure),
+      (.dynamicLibraryLoadFailed, .backendInternal, .providerFailure),
+      (.symbolNotFound, .backendInternal, .providerFailure),
+      (.invalidInput, .primitiveInvalidParameter, .invalidInput),
+      (.invalidSignature, .primitiveInvalidSignature, .invalidSignature),
+      (.authenticationFailed, .primitiveAuthenticationFailed, .authenticationFailed),
+      (.providerFailure, .backendInternal, .providerFailure),
+      (.unsupportedAlgorithm, .providerUnsupportedAlgorithm, .unsupportedAlgorithm),
+    ]
+    for (error, reason, projectedError) in cases {
+      let bytes = try ReallyMeCryptoProtoAdapters.toProtoBytes(error)
+      let wire = try ReallyMeCryptoProtoAdapters.wireError(fromProtoErrorBytes: bytes)
+      XCTAssertEqual(wire.reason, reason)
+      XCTAssertEqual(try ReallyMeCryptoProtoAdapters.fromProtoErrorBytes(bytes), projectedError)
+    }
+    XCTAssertThrowsError(
+      try ReallyMeCryptoWireError.tryNew(branch: .provider, reason: .backendInternal)
+    ) { error in
+      XCTAssertEqual(error as? ReallyMeCryptoWireErrorValidationError, .branchReasonMismatch)
+    }
+  }
+
   func testProtoWireErrorsPreserveFutureBranchReasonCodes() throws {
     var error = ReallyMeCryptoProto.ReallyMeProtoCryptoError()
     var primitive = ReallyMeCryptoProto.ReallyMeProtoCryptoPrimitiveError()

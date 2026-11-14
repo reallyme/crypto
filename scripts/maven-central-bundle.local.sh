@@ -9,7 +9,8 @@ IFS=$'\n\t'
 # Load MAVEN_SIGNING_PASSWORD from a secret manager or a non-echoing prompt
 # before running; do not put the passphrase in shell history.
 # Usage:
-#   MAVEN_SIGNING_KEY_ID=<long-gpg-key-id-or-fingerprint> \
+#   env -u KOTLIN_NATIVE_RESOURCES_DIR -u ANDROID_NDK_HOME -u ANDROID_NDK_VERSION \
+#   MAVEN_SIGNING_KEY_ID=YOUR_GPG_KEY_ID \
 #   ./scripts/maven-central-bundle.local.sh
 #
 # JVM native resources are downloaded automatically. Unless ANDROID_NDK_HOME
@@ -240,10 +241,18 @@ prepare_android_ndk_home() {
     ANDROID_NDK_VERSION="$(printf '%s\n' "$packages" | awk -F '|' '
       {
         path = $1
-        gsub(/^[[:space:]]+|[[:space:]]+$/, "", path)
-        if (path !~ /^ndk;[0-9]+\.[0-9]+\.[0-9]+$/) next
-        sub(/^ndk;/, "", path)
         version = $2
+        # The Android CLI uses slash paths and aligned columns. Read the
+        # whole version column so a preview qualifier cannot be dropped.
+        if (NF == 1) {
+          sub(/^[[:blank:]]+/, "", path)
+          split(path, columns, /[[:blank:]][[:blank:]]+|\t/)
+          path = columns[1]
+          version = columns[2]
+        }
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", path)
+        if (path !~ /^ndk[;\/][0-9]+\.[0-9]+\.[0-9]+$/) next
+        sub(/^ndk[;\/]/, "", path)
         gsub(/^[[:space:]]+|[[:space:]]+$/, "", version)
         # Installed previews can still appear in a stable-channel listing.
         if (version != path) next

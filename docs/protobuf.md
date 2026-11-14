@@ -161,6 +161,14 @@ generated `CryptoError`. Callers that need native ergonomics may project that
 error to `ReallyMeCryptoError` / `ReallyMeCryptoException`, but Connect wrappers
 should pass the structured protobuf error through unchanged.
 
+Use the same protobuf reason for the same operation failure across Swift,
+WASM, and JNI. Each SDK can surface that reason through its existing error type.
+Setup failures may have platform-specific codes. Swift's `symbolNotFound`
+helps a caller diagnose a native library. TypeScript and Kotlin can report a
+generic provider failure when their callers have the same recovery path.
+Add an SDK error code when it gives callers a distinct action to take. Add a
+shared protobuf reason when the distinction needs to cross the wire.
+
 The schema defines messages only and intentionally declares no protobuf
 service. `CryptoOperationRequest` carries one typed request in its `oneof`, and
 `CryptoOperationResponse` carries either one typed generated result branch or a

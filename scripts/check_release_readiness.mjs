@@ -145,11 +145,13 @@ for (const path of ["packages/kotlin/build.gradle.kts", "packages/kotlin-android
 
 const rustRootVersion = "0.4.0";
 const cryptoProtoPackageVersion = "0.4.0";
-const typescriptPackageVersion = "0.3.17";
-const kotlinPackageVersion = "0.3.17";
-const kotlinAndroidPackageVersion = "0.3.17";
-const rustCodecVersion = "0.3.4";
-const sdkCodecVersion = "0.3.2";
+const typescriptPackageVersion = "0.4.0";
+const kotlinPackageVersion = "0.4.0";
+const kotlinAndroidPackageVersion = "0.4.0";
+const rustCodecVersion = "0.4.0";
+const tsCodecVersion = "0.4.0";
+const swiftCodecVersion = "0.3.2";
+const mavenCodecVersion = "0.3.2";
 const rustSemverBaselineCommit = "54de2955ebf73e9fd1c306eba207550b3716d767";
 const cargoSemverChecksVersion = "0.50.0";
 const buffaVersion = "0.1.1";
@@ -427,13 +429,14 @@ const assertCodecDependencyProvenance = () => {
   }
 
   const registryCodecChecksums = new Map([
-    ["reallyme-codec", "ae315c3d9cfddd227fba255b583b73caf6123ffe1e6121b98a9f960faa0ed75a"],
-    ["reallyme-codec-base64url", "c9ca2853922d0f3bc59f38d7deae3e1888e12e22dd568cc8f9ade5bed823daba"],
-    ["reallyme-codec-jcs", "f9fc18c7f332a515b3bb06b5ced6e795fbbc3cbc3c12f43e09dad20a0a7726c9"],
-    ["reallyme-codec-multibase", "9fd15760acac470315db35571be995f6b243ffbb6b819e492f184312ae05c828"],
-    ["reallyme-codec-multicodec", "3265903196e8a6a92d2d2dc6169e260d6f30b5b7e9a4913658dc32ef485a1317"],
-    ["reallyme-codec-multikey", "0260b9205d863c180c9b946ca4ac1e15f463fe85fc9c47195efb27fab99d9f82"],
-    ["reallyme-codec-pem", "8de86a70e85b91b0d5a611a20c0f05c1117c952da36868e0e813be3d93f7104d"],
+    ["reallyme-codec", "bf1587389c38704cd7d2d3e5e541b4ad9380031505314d69b6437a9b3db09ab7"],
+    ["reallyme-codec-base64url", "180f351fc814b55d62604b3aafda58ddd077550fb361d2c1f54ceca27b544408"],
+    ["reallyme-codec-jcs", "77b0de7afcd27187feaaa42d9b3b3c30d472e4e697d98534924f8e20eee6e3ad"],
+    ["reallyme-codec-multibase", "528574f9f9bbdde21d37aad53757b53c3d592e1ac3cf2283c651948ddb8248f0"],
+    ["reallyme-codec-multicodec", "5125e4490f9c29d0d9818e12561dded708b5c2d638b48deb2e93231b8dc905aa"],
+    ["reallyme-codec-multikey", "2b89ba3c17a4e4c9c182238956429b590dfd5aea0b2fa976e4dc7e29d40e4871"],
+    ["reallyme-codec-pem", "5ffae059159de7a9a392ebf39158cdecec2bf4f5785c0ccce48b172794c2569f"],
+    ["reallyme-codec-proto", "80f4cf8372f6ecf73de9a6f0b15f295482579090deacd2c44d6b7da75042ca92"],
   ]);
   for (const lockPath of ["Cargo.lock", "fuzz/Cargo.lock"]) {
     for (const [packageName, checksum] of registryCodecChecksums) {
@@ -453,16 +456,16 @@ const assertCodecDependencyProvenance = () => {
   if (JSON.stringify(tsPackage.dependencies ?? {}).includes("../../../codec")) {
     fail("packages/ts/package.json must not depend on a local codec package path");
   }
-  if ((tsPackage.dependencies ?? {})["@reallyme/codec"] !== sdkCodecVersion) {
-    fail(`packages/ts/package.json must depend on published @reallyme/codec ${sdkCodecVersion}`);
+  if ((tsPackage.dependencies ?? {})["@reallyme/codec"] !== tsCodecVersion) {
+    fail(`packages/ts/package.json must depend on published @reallyme/codec ${tsCodecVersion}`);
   }
 
   assertContains("Package.swift", 'url: "https://github.com/reallyme/codec"');
-  assertContains("Package.swift", `from: "${sdkCodecVersion}"`);
-  assertContains("packages/kotlin/build.gradle.kts", `implementation("me.really:codec:${sdkCodecVersion}")`);
+  assertContains("Package.swift", `exact: "${swiftCodecVersion}"`);
+  assertContains("packages/kotlin/build.gradle.kts", `implementation("me.really:codec:${mavenCodecVersion}")`);
   assertContains(
     "packages/kotlin-android/build.gradle.kts",
-    `implementation("me.really:codec-android:${sdkCodecVersion}")`,
+    `implementation("me.really:codec-android:${mavenCodecVersion}")`,
   );
   assertNotContains("packages/kotlin/settings.gradle.kts", "includeBuild");
   assertNotContains("packages/kotlin/settings.gradle.kts", "../../../codec");
@@ -877,8 +880,8 @@ if (
 if (JSON.stringify(tsPackage.dependencies ?? {}).includes("../../../codec")) {
   fail("packages/ts/package.json must not depend on a local codec package path");
 }
-if ((tsPackage.dependencies ?? {})["@reallyme/codec"] !== sdkCodecVersion) {
-  fail(`packages/ts/package.json must depend on published @reallyme/codec ${sdkCodecVersion}`);
+if ((tsPackage.dependencies ?? {})["@reallyme/codec"] !== tsCodecVersion) {
+  fail(`packages/ts/package.json must depend on published @reallyme/codec ${tsCodecVersion}`);
 }
 if ((tsPackage.scripts ?? {}).prepack !== "npm run build") {
   fail("packages/ts/package.json must rebuild dist in prepack");
@@ -999,7 +1002,7 @@ assertNotContains(
 assertContains("packages/ts/src/aead.ts", "CHACHA20_POLY1305_KEY_LENGTH");
 assertContains("packages/ts/src/aead.ts", "return aeadSuiteWithProvider(algorithm, requireReallyMeWasmProvider())");
 assertContains("packages/ts/src/validateBytes.ts", "ensureByteArray");
-assertContains("packages/ts/src/protoErrors.ts", "invalidInputReasons");
+assertContains("packages/ts/src/protoErrors.ts", "Record<KnownErrorReason, ReallyMeCryptoErrorCode>");
 assertContains("packages/ts/src/cryptoFacade.ts", "createReallyMeCrypto");
 assertContains("packages/ts/src/cryptoFacade.ts", "ReallyMeCryptoProviders");
 assertContains("packages/ts/src/cryptoFacade.ts", "resolveWasmProvider");
@@ -1081,7 +1084,7 @@ if (!kotlinBuild.includes(`version = "${kotlinPackageVersion}"`)) {
   fail(`packages/kotlin/build.gradle.kts is not versioned ${kotlinPackageVersion}`);
 }
 assertContains("Package.swift", 'url: "https://github.com/reallyme/codec"');
-assertContains("Package.swift", `from: "${sdkCodecVersion}"`);
+assertContains("Package.swift", `exact: "${swiftCodecVersion}"`);
 assertContains("Package.swift", 'name: "ReallyMeCryptoFFI"');
 assertContains("Package.swift", "ReallyMeCryptoFFI.xcframework.zip");
 assertContains("Package.swift", 'let ffiArtifactLocalPathOverride = ""');
@@ -1454,7 +1457,7 @@ assertContains(
   "packages/kotlin/src/test/java/me/really/crypto/ReallyMeCryptoJavaTest.java",
   "ReallyMeCrypto.hash",
 );
-assertContains("packages/kotlin/build.gradle.kts", `implementation("me.really:codec:${sdkCodecVersion}")`);
+assertContains("packages/kotlin/build.gradle.kts", `implementation("me.really:codec:${mavenCodecVersion}")`);
 assertNotContains("packages/kotlin/settings.gradle.kts", "includeBuild");
 assertNotContains("packages/kotlin/settings.gradle.kts", "../../../codec");
 assertContains(
@@ -1556,7 +1559,7 @@ assertContains("packages/kotlin-android/settings.gradle.kts", 'rootProject.name 
 assertContains("packages/kotlin-android/build.gradle.kts", 'artifactId = "crypto-android"');
 assertContains(
   "packages/kotlin-android/build.gradle.kts",
-  `implementation("me.really:codec-android:${sdkCodecVersion}")`,
+  `implementation("me.really:codec-android:${mavenCodecVersion}")`,
 );
 assertContains("packages/kotlin-android/build.gradle.kts", "patchAndroidModuleCapabilities");
 assertContains("packages/kotlin-android/build.gradle.kts", '"name" to "crypto-android"');
@@ -1725,7 +1728,7 @@ assertContains(
   "Generic AEAD primitive and dispatch APIs treat `aad` as caller-provided bytes",
 );
 assertContains("RELEASE_NOTES.md", "## 0.3.0");
-assertContains("RELEASE_NOTES.md", "## 0.3.17");
+assertContains("RELEASE_NOTES.md", `## ${rustRootVersion}`);
 assertContains("RELEASE_NOTES.md", "legacy `reallyme.codec.v1` protobuf/package surface was removed");
 assertContains("RELEASE_NOTES.md", "not a `reallyme.crypto.v1` wire break");
 assertContains("RELEASE_NOTES.md", "permanently retired in this repository");
@@ -3241,7 +3244,17 @@ if (swiftReleaseArtifactVerificationCount !== 3) {
 assertContains(".github/workflows/npm-package-preflight.yml", "npm package preflight");
 assertContains(".github/workflows/npm-package-preflight.yml", "npm run pack:check");
 assertContains(".github/workflows/npm-package-release.yml", "npm Package Release");
-assertContains(".github/workflows/npm-package-release.yml", "default: 0.3.17");
+for (const workflow of [
+  "crates-package-preflight",
+  "kotlin-android-package-preflight",
+  "kotlin-android-package-release",
+  "npm-package-preflight",
+  "npm-package-release",
+  "swift-package-preflight",
+  "swift-package-release",
+]) {
+  assertContains(`.github/workflows/${workflow}.yml`, `default: ${rustRootVersion}`);
+}
 assertContains(".github/workflows/npm-package-release.yml", "node scripts/run_pinned_release_readiness.mjs --release-packages");
 assertContains(".github/workflows/npm-package-release.yml", "wasm-pack@0.15.1");
 assertContains(".github/workflows/npm-package-release.yml", "wasm-bindgen-cli@0.2.130");
@@ -3278,30 +3291,9 @@ assertContains(
 );
 if (releasePackagesMode) {
   const swiftPackage = readText("Package.swift");
-  const swiftFfiArtifactVersion = requireMatch(
-    "Package.swift",
-    /let ffiArtifactVersion = "([^"]+)"/,
-    "ffiArtifactVersion",
-  )[1];
-  const expectedReleaseVersions = [
-    ["crates/crypto/Cargo.toml", rustRootVersion],
-    ["reallyme-crypto-proto", cryptoProtoPackageVersion],
-    ["packages/ts/package.json", typescriptPackageVersion],
-    ["packages/kotlin/build.gradle.kts", kotlinPackageVersion],
-    ["packages/kotlin-android/build.gradle.kts", kotlinAndroidPackageVersion],
-  ];
-  for (const [label, expectedVersion] of expectedReleaseVersions) {
-    if (swiftFfiArtifactVersion !== expectedVersion) {
-      fail(
-        `Package.swift ffiArtifactVersion ${swiftFfiArtifactVersion} does not match ${label} ${expectedVersion}`,
-      );
-    }
-  }
-  if (releaseVersionEnv !== undefined && releaseVersionEnv !== swiftFfiArtifactVersion) {
-    fail(
-      `RELEASE_VERSION ${releaseVersionEnv} does not match Package.swift ffiArtifactVersion ${swiftFfiArtifactVersion}`,
-    );
-  }
+  // Swift's preflight and release workflows verify the version and checksum
+  // against the actual archive after binding the candidate manifest. The npm
+  // and Maven jobs use the shared source gate before that binding exists.
   if (swiftPackage.includes('let ffiArtifactChecksum = "0000000000000000000000000000000000000000000000000000000000000000"')) {
     fail("Package.swift still has the Swift binary artifact checksum placeholder");
   }

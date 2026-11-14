@@ -16,7 +16,7 @@ include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 [dependencies]
 buffa = { workspace = true, optional = true }
 hex-literal = { workspace = true, optional = true }
-codec-der = { package = "reallyme-codec", version = "=0.3.4", default-features = false, features = ["der"], optional = true }
+codec-der = { package = "reallyme-codec", version = "=0.4.0", default-features = false, features = ["der"], optional = true }
 crypto-core = { package = "reallyme-crypto-core", version = "=0.4.0", path = "core" }
 crypto-dispatch = { package = "reallyme-crypto-dispatch", version = "=0.4.0", path = "dispatch", optional = true, default-features = false }
 crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.0", path = "../proto", optional = true, default-features = false, features = ["generated"] }

@@ -1264,25 +1264,27 @@ dependencies = [
  "rustversion",
  "serde",
  "serde_json",
+ "smoothutf8",
  "thiserror",
  "zeroize",
 ]
 
 [[package]]
 name = "reallyme-codec"
-version = "0.3.4"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae315c3d9cfddd227fba255b583b73caf6123ffe1e6121b98a9f960faa0ed75a"
+checksum = "bf1587389c38704cd7d2d3e5e541b4ad9380031505314d69b6437a9b3db09ab7"
 dependencies = [
  "der",
+ "reallyme-codec-proto",
  "thiserror",
 ]
 
 [[package]]
 name = "reallyme-codec-base64url"
-version = "0.3.4"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9ca2853922d0f3bc59f38d7deae3e1888e12e22dd568cc8f9ade5bed823daba"
+checksum = "180f351fc814b55d62604b3aafda58ddd077550fb361d2c1f54ceca27b544408"
 dependencies = [
  "base64 0.23.1",
  "thiserror",
@@ -1291,9 +1293,9 @@ dependencies = [
 
 [[package]]
 name = "reallyme-codec-jcs"
-version = "0.3.4"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9fc18c7f332a515b3bb06b5ced6e795fbbc3cbc3c12f43e09dad20a0a7726c9"
+checksum = "77b0de7afcd27187feaaa42d9b3b3c30d472e4e697d98534924f8e20eee6e3ad"
 dependencies = [
  "itoa",
  "ryu-js",
@@ -1305,9 +1307,9 @@ dependencies = [
 
 [[package]]
 name = "reallyme-codec-multibase"
-version = "0.3.4"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9fd15760acac470315db35571be995f6b243ffbb6b819e492f184312ae05c828"
+checksum = "528574f9f9bbdde21d37aad53757b53c3d592e1ac3cf2283c651948ddb8248f0"
 dependencies = [
  "base64 0.23.1",
  "bs58",
@@ -1318,18 +1320,18 @@ dependencies = [
 
 [[package]]
 name = "reallyme-codec-multicodec"
-version = "0.3.4"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3265903196e8a6a92d2d2dc6169e260d6f30b5b7e9a4913658dc32ef485a1317"
+checksum = "5125e4490f9c29d0d9818e12561dded708b5c2d638b48deb2e93231b8dc905aa"
 dependencies = [
  "thiserror",
 ]
 
 [[package]]
 name = "reallyme-codec-multikey"
-version = "0.3.4"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0260b9205d863c180c9b946ca4ac1e15f463fe85fc9c47195efb27fab99d9f82"
+checksum = "2b89ba3c17a4e4c9c182238956429b590dfd5aea0b2fa976e4dc7e29d40e4871"
 dependencies = [
  "reallyme-codec-multibase",
  "reallyme-codec-multicodec",
@@ -1339,11 +1341,25 @@ dependencies = [
 
 [[package]]
 name = "reallyme-codec-pem"
-version = "0.3.4"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8de86a70e85b91b0d5a611a20c0f05c1117c952da36868e0e813be3d93f7104d"
+checksum = "5ffae059159de7a9a392ebf39158cdecec2bf4f5785c0ccce48b172794c2569f"
 dependencies = [
  "base64 0.23.1",
+ "thiserror",
+ "zeroize",
+]
+
+[[package]]
+name = "reallyme-codec-proto"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "80f4cf8372f6ecf73de9a6f0b15f295482579090deacd2c44d6b7da75042ca92"
+dependencies = [
+ "base64 0.23.1",
+ "reallyme-buffa",
+ "serde",
+ "serde_json",
  "thiserror",
  "zeroize",
 ]
@@ -2095,6 +2111,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "simdutf8"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3a9fe34e3e7a50316060351f37187a3f546bce95496156754b601a5fa71b76e"
+
+[[package]]
 name = "slh-dsa"
 version = "0.2.0-rc.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2112,6 +2134,15 @@ dependencies = [
  "typenum",
  "zerocopy",
  "zeroize",
+]
+
+[[package]]
+name = "smoothutf8"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b4ec95892483d6d94284caccfddb9b77111a4dcac33ed25d624248def0fa5f1"
+dependencies = [
+ "simdutf8",
 ]
 
 [[package]]
