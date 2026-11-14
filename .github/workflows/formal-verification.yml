@@ -14,6 +14,7 @@ on:
       - "crates/crypto/core/**"
       - "crates/hpke/**"
       - "crates/proto/**"
+      - "formal/hpke/**"
       - ".github/workflows/formal-verification.yml"
   push:
     branches:
@@ -25,6 +26,7 @@ on:
       - "crates/crypto/core/**"
       - "crates/hpke/**"
       - "crates/proto/**"
+      - "formal/hpke/**"
       - ".github/workflows/formal-verification.yml"
 
 permissions:
@@ -74,6 +76,11 @@ jobs:
         run: >-
           cargo kani -p reallyme-crypto-hpke --no-default-features
           --features base-p256-aes128gcm,aead-export-only --jobs 2 --output-format terse
+
+      - name: Prove the locked HPKE backend nonce and state transitions
+        run: |
+          python3 -B formal/hpke/verify_test.py
+          python3 formal/hpke/verify.py
 
       - name: Verify the resolution still matches the checked-in lockfile
         run: git diff --exit-code -- Cargo.lock

@@ -90,10 +90,21 @@ pub fn open(
         .map_err(|_| P256BaseError::PRIMITIVE_MALFORMED_CIPHERTEXT)?;
     let mut context = hpke::setup_receiver::<Aead, Kdf, Kem>(&OpModeR::Base, &private, &enc, info)
         .map_err(|_| P256BaseError::PRIMITIVE_AUTHENTICATION_FAILED)?;
+    authenticate_record(&ciphertext[..plaintext_length], |output| {
+        context.open_inout_detached(output.into(), &[], &tag)
+    })
+}
+
+fn authenticate_record(
+    ciphertext: &[u8],
+    authenticate: impl FnOnce(&mut [u8]) -> Result<(), hpke::HpkeError>,
+) -> Result<P256BasePlaintext, P256BaseError> {
+    // The backend may overwrite bytes before checking the tag. Install the
+    // clearing owner first and transfer it only after authentication succeeds.
+    let plaintext_length = ciphertext.len();
     let mut plaintext = storage::buffer(plaintext_length)?;
-    plaintext.copy_from_slice(&ciphertext[..plaintext_length]);
-    context
-        .open_inout_detached(plaintext.as_mut_slice().into(), &[], &tag)
+    plaintext.copy_from_slice(ciphertext);
+    authenticate(plaintext.as_mut_slice())
         .map_err(|_| P256BaseError::PRIMITIVE_AUTHENTICATION_FAILED)?;
     Ok(P256BasePlaintext::new(plaintext))
 }
@@ -111,3 +122,6 @@ fn validate_bounds(info: &[u8], plaintext_length: usize) -> Result<(), P256BaseE
     }
     Ok(())
 }
+
+#[cfg(kani)]
+mod proof_tests;
