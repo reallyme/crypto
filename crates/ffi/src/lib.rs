@@ -31,6 +31,8 @@
 // so C, Swift, Kotlin, and Rust consumers read the same pointer/length rules.
 #![allow(clippy::missing_safety_doc)]
 
+// Kani models panics as verification failures and cannot compile with unwinding.
+#[cfg(not(kani))]
 #[cfg(not(panic = "unwind"))]
 compile_error!(
     "crypto-ffi release artifacts require an unwind-capable panic strategy; use --profile release-ffi"

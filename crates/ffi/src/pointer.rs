@@ -7,6 +7,10 @@ use crate::status::{CryptoStatus, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INVALID_ARGUME
 #[path = "pointer_range_registry.rs"]
 mod range_registry;
 
+#[cfg(kani)]
+#[path = "aead_proof_tests.rs"]
+mod aead_proof_tests;
+
 pub(crate) use range_registry::begin_input_range_call;
 use range_registry::{
     register_input_range, register_output_range, validate_registered_inputs_against_output,

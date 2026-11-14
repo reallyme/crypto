@@ -283,6 +283,11 @@ rm_crypto_status_t rm_crypto_aes128_gcm_encrypt(
     size_t* ciphertext_len_out
 );
 
+/*
+ * For AES-GCM, AES-GCM-SIV, ChaCha20-Poly1305, and XChaCha20-Poly1305 decrypt
+ * calls, RM_CRYPTO_AUTHENTICATION_FAILED leaves every byte of plaintext_out
+ * and the value of *plaintext_len_out unchanged.
+ */
 rm_crypto_status_t rm_crypto_aes128_gcm_decrypt(
     const uint8_t* key,
     size_t key_len,
@@ -575,6 +580,7 @@ rm_crypto_status_t rm_crypto_hpke_seal_base(
     size_t* ciphertext_len_out
 );
 
+/* RM_CRYPTO_AUTHENTICATION_FAILED leaves plaintext_out and *plaintext_len_out unchanged. */
 rm_crypto_status_t rm_crypto_hpke_open_base(
     uint32_t suite,
     const uint8_t* encapsulated_key,

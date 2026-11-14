@@ -125,8 +125,14 @@ fn c_abi_aead_routes_match_operation_owner_and_reject_tampering() {
         assert_eq!(ciphertext_len, expected_ciphertext.len());
         assert_eq!(ciphertext, expected_ciphertext);
 
-        let mut decrypted = vec![0u8; plaintext.len()];
-        let mut decrypted_len = 0usize;
+        // Keep spare capacity so both success and failure can detect tail writes.
+        const UNWRITTEN: u8 = 0xa5;
+        let output_capacity = plaintext
+            .len()
+            .checked_add(2)
+            .expect("test plaintext and tail fit");
+        let mut decrypted = vec![UNWRITTEN; output_capacity];
+        let mut decrypted_len = usize::MAX;
         let status = unsafe {
             (case.decrypt)(
                 key.as_ptr(),
@@ -144,33 +150,46 @@ fn c_abi_aead_routes_match_operation_owner_and_reject_tampering() {
         };
         assert_eq!(status, status::CRYPTO_OK);
         assert_eq!(decrypted_len, plaintext.len());
-        assert_eq!(decrypted, plaintext);
+        assert_eq!(&decrypted[..decrypted_len], plaintext);
+        assert_eq!(decrypted[decrypted_len..], [UNWRITTEN; 2]);
 
-        let first = ciphertext
-            .first_mut()
-            .expect("ciphertext with tag is not empty");
-        *first ^= 0x01;
-        const UNWRITTEN: u8 = 0xa5;
-        decrypted.fill(UNWRITTEN);
-        decrypted_len = usize::MAX;
-        let status = unsafe {
-            (case.decrypt)(
-                key.as_ptr(),
-                key.len(),
-                nonce.as_ptr(),
-                nonce.len(),
-                aad.as_ptr(),
-                aad.len(),
-                ciphertext.as_ptr(),
-                ciphertext_len,
-                decrypted.as_mut_ptr(),
-                decrypted.len(),
-                &mut decrypted_len,
-            )
-        };
-        assert_eq!(status, status::CRYPTO_AUTHENTICATION_FAILED);
-        assert!(decrypted.iter().all(|byte| *byte == UNWRITTEN));
-        assert_eq!(decrypted_len, usize::MAX);
+        let tag_byte = ciphertext_len
+            .checked_sub(1)
+            .expect("ciphertext includes its tag");
+        let mut bad_ciphertext = ciphertext.clone();
+        bad_ciphertext[0] ^= 0x01;
+        let mut bad_tag = ciphertext.clone();
+        bad_tag[tag_byte] ^= 0x01;
+
+        for (record, associated_data) in [
+            (bad_ciphertext.as_slice(), aad.as_slice()),
+            (bad_tag.as_slice(), aad.as_slice()),
+            (ciphertext.as_slice(), b"wrong AAD".as_slice()),
+        ] {
+            let original_output = bytes(output_capacity, UNWRITTEN);
+            decrypted.copy_from_slice(&original_output);
+            decrypted_len = usize::MAX;
+            // SAFETY: The inputs are initialized and live throughout the call.
+            // Both outputs are writable, exclusive, and disjoint from the inputs.
+            let status = unsafe {
+                (case.decrypt)(
+                    key.as_ptr(),
+                    key.len(),
+                    nonce.as_ptr(),
+                    nonce.len(),
+                    associated_data.as_ptr(),
+                    associated_data.len(),
+                    record.as_ptr(),
+                    record.len(),
+                    decrypted.as_mut_ptr(),
+                    decrypted.len(),
+                    &mut decrypted_len,
+                )
+            };
+            assert_eq!(status, status::CRYPTO_AUTHENTICATION_FAILED);
+            assert_eq!(decrypted, original_output);
+            assert_eq!(decrypted_len, usize::MAX);
+        }
     }
 }
 

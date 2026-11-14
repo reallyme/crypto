@@ -255,94 +255,114 @@ fn x_wing_ffi_covers_supplied_key_encaps_decaps_and_encoding() {
 }
 
 #[test]
-fn hpke_ffi_seals_opens_and_rejects_tampering() {
-    let private_key: [u8; hpke::HPKE_FFI_P256_PRIVATE_KEY_LEN] = [
-        0x21, 0x4f, 0x8b, 0x6c, 0xa2, 0x9d, 0x33, 0x10, 0x95, 0x47, 0x66, 0x12, 0x72, 0x83, 0xaf,
-        0xee, 0x0d, 0x19, 0x41, 0x5b, 0x7c, 0x22, 0xd4, 0x39, 0x51, 0x8a, 0xb0, 0x65, 0x2f, 0x91,
-        0xc3, 0x44,
-    ];
-    let public_key: [u8; hpke::HPKE_FFI_P256_PUBLIC_KEY_LEN] = [
-        0x04, 0x07, 0xfc, 0xcb, 0x43, 0x45, 0x09, 0x6f, 0x96, 0x21, 0x72, 0x6f, 0xc4, 0xe4, 0x37,
-        0xbe, 0x0c, 0xf8, 0x1c, 0x43, 0x10, 0x81, 0xf3, 0x28, 0xe5, 0x54, 0x96, 0x72, 0x39, 0xac,
-        0x55, 0x22, 0xee, 0x0d, 0x97, 0x14, 0x75, 0x3e, 0xc6, 0xf7, 0x7f, 0x55, 0x7a, 0xa7, 0x37,
-        0x14, 0x26, 0x9d, 0x5a, 0xcf, 0xeb, 0x72, 0x94, 0xbe, 0xbd, 0xcf, 0xfc, 0x67, 0xc1, 0x5a,
-        0x65, 0x11, 0x15, 0x5f, 0x80,
-    ];
-    let info = b"reallyme-hpke-ffi-info";
-    let aad = b"reallyme-hpke-ffi-aad";
-    let plaintext = b"reallyme hpke ffi plaintext";
-
-    let mut enc = [0u8; hpke::HPKE_FFI_ENCAPSULATED_KEY_MAX_LEN];
-    let mut enc_len = 0usize;
-    let mut ciphertext = [0u8; 128];
-    let mut ciphertext_len = 0usize;
-    let seal_status = unsafe {
-        hpke::rm_crypto_hpke_seal_base(
-            hpke::HPKE_SUITE_P256_SHA256_AES256GCM,
-            public_key.as_ptr(),
-            public_key.len(),
-            info.as_ptr(),
-            info.len(),
-            aad.as_ptr(),
-            aad.len(),
-            plaintext.as_ptr(),
-            plaintext.len(),
-            enc.as_mut_ptr(),
-            enc.len(),
-            &mut enc_len,
-            ciphertext.as_mut_ptr(),
-            ciphertext.len(),
-            &mut ciphertext_len,
-        )
+fn hpke_ffi_seals_opens_and_preserves_outputs_on_authentication_failure() {
+    use reallyme_crypto::hpke::{
+        HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM, HPKE_DHKEM_X25519_HKDF_SHA256_CHACHA20POLY1305,
     };
-    assert_eq!(seal_status, status::CRYPTO_OK);
-    assert_eq!(enc_len, hpke::HPKE_FFI_P256_PUBLIC_KEY_LEN);
-    assert_eq!(
-        ciphertext_len,
-        plaintext.len() + hpke::HPKE_FFI_AEAD_TAG_LEN
-    );
 
-    let mut opened = [0u8; 128];
-    let mut opened_len = 0usize;
-    let open_status = unsafe {
-        hpke::rm_crypto_hpke_open_base(
+    for (ffi_suite, suite) in [
+        (
             hpke::HPKE_SUITE_P256_SHA256_AES256GCM,
-            enc.as_ptr(),
-            enc_len,
-            private_key.as_ptr(),
-            private_key.len(),
-            info.as_ptr(),
-            info.len(),
-            aad.as_ptr(),
-            aad.len(),
-            ciphertext.as_ptr(),
-            ciphertext_len,
-            opened.as_mut_ptr(),
-            opened.len(),
-            &mut opened_len,
-        )
-    };
-    assert_eq!(open_status, status::CRYPTO_OK);
-    assert_eq!(&opened[..opened_len], plaintext);
+            HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM,
+        ),
+        (
+            hpke::HPKE_SUITE_X25519_SHA256_CHACHA20_POLY1305,
+            HPKE_DHKEM_X25519_HKDF_SHA256_CHACHA20POLY1305,
+        ),
+    ] {
+        let key_pair = reallyme_crypto::hpke::derive_keypair(suite, &[0x21; 32])
+            .expect("HPKE seed has the supported width");
+        let public_key = &key_pair.public_key;
+        let private_key = key_pair.private_key();
+        let info = b"reallyme-hpke-ffi-info";
+        let aad = b"reallyme-hpke-ffi-aad";
+        let plaintext = b"reallyme hpke ffi plaintext";
 
-    ciphertext[0] ^= 0x80;
-    let tampered_status = unsafe {
-        hpke::rm_crypto_hpke_open_base(
-            hpke::HPKE_SUITE_P256_SHA256_AES256GCM,
-            enc.as_ptr(),
-            enc_len,
-            private_key.as_ptr(),
-            private_key.len(),
-            info.as_ptr(),
-            info.len(),
-            aad.as_ptr(),
-            aad.len(),
-            ciphertext.as_ptr(),
-            ciphertext_len,
-            opened.as_mut_ptr(),
-            opened.len(),
-            &mut opened_len,
-        )
-    };
-    assert_eq!(tampered_status, status::CRYPTO_AUTHENTICATION_FAILED);
+        let mut enc = [0u8; hpke::HPKE_FFI_ENCAPSULATED_KEY_MAX_LEN];
+        let mut enc_len = 0usize;
+        let mut ciphertext = [0u8; 128];
+        let mut ciphertext_len = 0usize;
+        // SAFETY: All inputs and outputs are live and disjoint, with aligned
+        // writable length slots and enough capacity for both seal results.
+        let seal_status = unsafe {
+            hpke::rm_crypto_hpke_seal_base(
+                ffi_suite,
+                public_key.as_ptr(),
+                public_key.len(),
+                info.as_ptr(),
+                info.len(),
+                aad.as_ptr(),
+                aad.len(),
+                plaintext.as_ptr(),
+                plaintext.len(),
+                enc.as_mut_ptr(),
+                enc.len(),
+                &mut enc_len,
+                ciphertext.as_mut_ptr(),
+                ciphertext.len(),
+                &mut ciphertext_len,
+            )
+        };
+        assert_eq!(seal_status, status::CRYPTO_OK);
+        assert_eq!(enc_len, public_key.len());
+        assert_eq!(
+            Some(ciphertext_len),
+            plaintext.len().checked_add(hpke::HPKE_FFI_AEAD_TAG_LEN)
+        );
+
+        let original_output = [0xa5; 128];
+        let mut opened = original_output;
+        let mut opened_len = usize::MAX;
+        // SAFETY: The seal results are initialized up to the reported lengths.
+        // The plaintext buffer and length slot are valid and disjoint from all inputs.
+        let open_status = unsafe {
+            hpke::rm_crypto_hpke_open_base(
+                ffi_suite,
+                enc.as_ptr(),
+                enc_len,
+                private_key.as_ptr(),
+                private_key.len(),
+                info.as_ptr(),
+                info.len(),
+                aad.as_ptr(),
+                aad.len(),
+                ciphertext.as_ptr(),
+                ciphertext_len,
+                opened.as_mut_ptr(),
+                opened.len(),
+                &mut opened_len,
+            )
+        };
+        assert_eq!(open_status, status::CRYPTO_OK);
+        assert_eq!(opened_len, plaintext.len());
+        assert_eq!(&opened[..opened_len], plaintext);
+        assert_eq!(opened[opened_len..], original_output[opened_len..]);
+
+        ciphertext[0] ^= 0x80;
+        opened = original_output;
+        opened_len = usize::MAX;
+        // SAFETY: Tampering changes one byte within the initialized record and
+        // keeps the same valid, disjoint buffers and aligned length slot.
+        let tampered_status = unsafe {
+            hpke::rm_crypto_hpke_open_base(
+                ffi_suite,
+                enc.as_ptr(),
+                enc_len,
+                private_key.as_ptr(),
+                private_key.len(),
+                info.as_ptr(),
+                info.len(),
+                aad.as_ptr(),
+                aad.len(),
+                ciphertext.as_ptr(),
+                ciphertext_len,
+                opened.as_mut_ptr(),
+                opened.len(),
+                &mut opened_len,
+            )
+        };
+        assert_eq!(tampered_status, status::CRYPTO_AUTHENTICATION_FAILED);
+        assert_eq!(opened, original_output);
+        assert_eq!(opened_len, usize::MAX);
+    }
 }

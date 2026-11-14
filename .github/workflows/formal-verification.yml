@@ -17,6 +17,8 @@ on:
       - "crates/crypto/core/**"
       - "crates/crypto/src/operations/aead/**"
       - "crates/crypto/src/operations/aead.rs"
+      - "crates/crypto/src/operations/hpke.rs"
+      - "crates/ffi/**"
       - "crates/hpke/**"
       - "crates/proto/**"
       - "formal/hpke/**"
@@ -34,6 +36,8 @@ on:
       - "crates/crypto/core/**"
       - "crates/crypto/src/operations/aead/**"
       - "crates/crypto/src/operations/aead.rs"
+      - "crates/crypto/src/operations/hpke.rs"
+      - "crates/ffi/**"
       - "crates/hpke/**"
       - "crates/proto/**"
       - "formal/hpke/**"
@@ -91,6 +95,11 @@ jobs:
         env:
           CARGO_NET_OFFLINE: "true"
         run: cargo kani -p reallyme-crypto-core --jobs 2 --output-format terse
+
+      - name: Prove AEAD output preservation at the C ABI
+        env:
+          CARGO_NET_OFFLINE: "true"
+        run: cargo kani -p crypto-ffi --lib -Z stubbing --jobs 2 --output-format terse
 
       - name: Prove the locked HPKE backend nonce and state transitions
         run: |
