@@ -21,6 +21,7 @@ on:
       - "crates/ffi/**"
       - "crates/hpke/**"
       - "crates/proto/**"
+      - "crates/wasm/**"
       - "formal/hpke/**"
       - ".github/workflows/formal-verification.yml"
   push:
@@ -40,6 +41,7 @@ on:
       - "crates/ffi/**"
       - "crates/hpke/**"
       - "crates/proto/**"
+      - "crates/wasm/**"
       - "formal/hpke/**"
       - ".github/workflows/formal-verification.yml"
 
@@ -96,10 +98,15 @@ jobs:
           CARGO_NET_OFFLINE: "true"
         run: cargo kani -p reallyme-crypto-core --jobs 2 --output-format terse
 
-      - name: Prove AEAD output preservation at the C ABI
+      - name: Prove AEAD output preservation at the C ABI and JNI handoff
         env:
           CARGO_NET_OFFLINE: "true"
         run: cargo kani -p crypto-ffi --lib -Z stubbing --jobs 2 --output-format terse
+
+      - name: Prove the WASM plaintext handoff
+        env:
+          CARGO_NET_OFFLINE: "true"
+        run: cargo kani -p reallyme-crypto-wasm --lib --jobs 2 --output-format terse
 
       - name: Prove the locked HPKE backend nonce and state transitions
         run: |

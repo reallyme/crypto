@@ -18,6 +18,8 @@ source revision, dependency lockfile, target, and Cargo features of that run.
 | [HPKE backend nonce and sequence state](hpke/aead_state_proof_tests.rs) | Each supported record AEAD derives the nonce prescribed by [RFC 9180 §5.2](https://www.rfc-editor.org/rfc/rfc9180.html#section-5.2), and distinct sequence numbers produce distinct nonces for the same base nonce. Sender and receiver pass the current nonce to the AEAD, advance once on success, preserve their state on an AEAD error, and reject records once exhausted. | All 64-bit sequence values and all 96-bit base nonces. Nonce proofs instantiate the real AES-128-GCM, AES-256-GCM, and ChaCha20-Poly1305 types. One-step state proofs run the actual detached seal/open methods with a test AEAD that can succeed or fail, plus a second call at sequence exhaustion. They abstract the cipher, key schedule and KEM. |
 | [AEAD plaintext handoff](../crates/crypto/core/src/authenticate_record.rs) | The shared open path splits the tag and gives the backend a mutable slice of a clearing buffer. Authentication failure cannot return that buffer, even if the backend has written candidate plaintext. Records with truncated tags never call the backend. | All four-byte ciphertexts, 16-byte tags, candidate output bytes, and subsets of output bytes written. The harness checks reachability of success and failure after both partial and complete writes. AES-128/192/256-GCM, AES-256-GCM-SIV, ChaCha20-Poly1305, XChaCha20-Poly1305, and HPKE Base and PSK opens use this handoff. The proof assumes the backend reports authentication correctly. It covers Rust ownership and release, while cipher internals and physical erasure require separate evidence. |
 | [C ABI AEAD output handoff](../crates/ffi/src/aead_proof_tests.rs) | The six scalar AEAD decrypt exports and both HPKE Base suites return `RM_CRYPTO_AUTHENTICATION_FAILED` with the caller's entire output buffer and length unchanged, including after a partial or complete backend write. | All four-byte ciphertexts with 16-byte tags, valid disjoint pointers, arbitrary six-byte initial output buffers, and all initial `size_t` values. The harnesses use the exported functions and real status mapping. They model normal return from the panic guard, successful overlap checks, and the error handoff from the separately verified Rust staging helper. Native tests exercise success and authentication failure against real ciphers with the full guard and overlap checks. |
+| [Kotlin JNI AEAD handoff](../crates/ffi/src/kotlin_aead.rs) | An authentication error passes the typed failure status and an empty payload to the JNI result encoder, even when the provider has written bytes and supplied a plausible length. Success requires the expected output length. | All four-byte staging buffers and all produced length values. The harness observes the inputs to the JNI encoder. JVM tests inspect the actual status-only envelope for each JNI-backed AEAD and check that the decoder clears unexpected bytes on failure. |
+| [WASM plaintext handoff](../crates/wasm/src/publish_plaintext.rs) | Authentication failure propagates the typed error without invoking the JavaScript array copy. | All four-byte ciphertexts, 16-byte tags, candidate output bytes, and subsets of backend writes. The harness uses the production Rust staging and release helpers. The scalar WASM AEAD and HPKE Base exports share the release helper. The JS host receives a numeric status on failure. |
 
 [Formal Verification](../.github/workflows/formal-verification.yml) runs these
 proofs for changes to the covered crates, dependencies, and verifier workflow.
@@ -30,6 +32,7 @@ cargo fetch --locked
 CARGO_NET_OFFLINE=true cargo kani -p reallyme-crypto-proto --features generated
 CARGO_NET_OFFLINE=true cargo kani -p reallyme-crypto-core
 CARGO_NET_OFFLINE=true cargo kani -p crypto-ffi --lib -Z stubbing --jobs 2 --output-format terse
+CARGO_NET_OFFLINE=true cargo kani -p reallyme-crypto-wasm --lib --jobs 2 --output-format terse
 CARGO_NET_OFFLINE=true cargo kani -p reallyme-crypto-hpke --no-default-features --features native
 CARGO_NET_OFFLINE=true cargo kani -p reallyme-crypto-hpke --no-default-features --features base-p256-aes128gcm,aead-export-only
 python3 formal/hpke/verify.py
@@ -45,6 +48,20 @@ The package's normal build continues to use Cargo's registry dependency.
 
 The [reference DER encoder proofs](../docs/external-conformance-vectors.md#formal-methods-candidates)
 run separately in the External Vector Audit workflow.
+
+## SDK plaintext release
+
+The supported scalar AEAD and HPKE Base SDK paths expose a typed error when
+authentication fails. The published providers are trusted to report the
+authentication outcome. The checks cover SDK-visible results and errors.
+Provider internals, side channels, and physical memory erasure are outside
+their scope.
+
+| SDK boundary | Executable coverage |
+| --- | --- |
+| [Swift C ABI result handling](../packages/swift/Tests/ReallyMeCryptoTests/AeadPlaintextReleaseTests.swift) | Exhaustively checks all subsets of writes to four candidate plaintext bytes with representative produced lengths, including a valid length, negative lengths, and overflow-sized values. The status check precedes the copy for all Rust-backed AEAD and HPKE Base opens. Runtime tests also exercise real Rust and CryptoKit providers. |
+| [Kotlin SDK and JNI](../packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoSymmetricTest.kt) | Exercises Bouncy Castle and JNI through all six AEAD routes with tampered ciphertext, tag, and AAD. Kotlin HPKE Base vectors exercise both Bouncy Castle suites. |
+| [TypeScript and bundled WASM](../packages/ts/test/wasm-boundary.test.mjs) | Checks that the raw WASM export throws only the numeric failure status for all six scalar AEADs and that the SDK exposes only a typed error. Both HPKE Base suites have the same check in the [SDK vectors](../packages/ts/test/reallyme-crypto.test.mjs). |
 
 ## Symbolic HPKE model
 
@@ -72,5 +89,5 @@ the lemma results.
 | --- | --- |
 | Provider selection and operation dispatch | Extend Kani to Rust operation, algorithm, and key-family gates. Use the provider manifest and executable SDK conformance checks to cover missing-provider behavior in Swift, Kotlin and TypeScript. |
 | HPKE context binding | Extend the symbolic model to cover context binding and use independent conformance vectors for the byte-level key schedule. |
-| AEAD failure and secret ownership | Extend output-preservation coverage to provider-specific SDK paths. Review the zeroization obligations of each additional owner. |
+| Structured operation responses | Prove that a failed open produces only the error branch of the operation response and that the Rust, C/JNI, and WASM serializers cannot emit a plaintext result alongside it. Exercise binary requests and verify ProtoJSON policy rejects open requests before dispatch. |
 | Encoding and primitive equivalence | Start with ML-KEM coefficient encoding and decoding, strict ECDSA low-S handling, and X25519/X448 input and shared-secret checks. Use an independent Cryptol specification and SAW where a small fixed-size implementation can be connected reproducibly to the verified artifact. AES-KW, Keccak, and hybrid KEM composition are candidates after that integration is established. |

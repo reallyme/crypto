@@ -19,8 +19,8 @@ use crate::chacha20_poly1305::{
     XCHACHA20_POLY1305_NONCE_LEN,
 };
 use crate::kotlin_result::{
-    backend_internal_result, error_result, ok_result, status_from_crypto_status,
-    KOTLIN_NATIVE_BACKEND_INTERNAL, KOTLIN_NATIVE_INVALID_INPUT,
+    backend_internal_result, encode_result, error_result, ok_result, status_from_crypto_status,
+    KOTLIN_NATIVE_BACKEND_INTERNAL, KOTLIN_NATIVE_INVALID_INPUT, KOTLIN_NATIVE_OK,
 };
 use crate::status::CRYPTO_OK;
 use jni::objects::{JByteArray, JClass};
@@ -28,6 +28,10 @@ use jni::sys::jbyteArray;
 use jni::{EnvUnowned, Outcome};
 use std::ptr;
 use zeroize::{Zeroize, Zeroizing};
+
+#[cfg(kani)]
+#[path = "kotlin_aead_proof_tests.rs"]
+mod proof_tests;
 
 type EncryptFunction = unsafe extern "C" fn(
     *const u8,
@@ -314,6 +318,23 @@ fn seal_native<'local>(
     }
 }
 
+fn publish_open_result<T>(
+    status: i32,
+    produced_len: usize,
+    output: &[u8],
+    publish: impl FnOnce(i32, &[u8]) -> T,
+) -> T {
+    // JNI uses the same encoder for both branches. The error branch supplies
+    // only the status, even if native code wrote a plausible output length.
+    if status != CRYPTO_OK {
+        return publish(status_from_crypto_status(status), &[]);
+    }
+    if produced_len != output.len() {
+        return publish(KOTLIN_NATIVE_BACKEND_INTERNAL, &[]);
+    }
+    publish(KOTLIN_NATIVE_OK, output)
+}
+
 #[allow(clippy::too_many_arguments)]
 fn open_native<'local>(
     mut env: EnvUnowned<'local>,
@@ -397,18 +418,9 @@ fn open_native<'local>(
                 &mut produced_len,
             )
         };
-        if status != CRYPTO_OK {
-            output.zeroize();
-            return error_result(env, status_from_crypto_status(status));
-        }
-        if produced_len != output.len() {
-            output.zeroize();
-            return error_result(env, KOTLIN_NATIVE_BACKEND_INTERNAL);
-        }
-
-        let result = ok_result(env, &output[..produced_len]);
-        output.zeroize();
-        result
+        publish_open_result(status, produced_len, &output, |status, payload| {
+            encode_result(env, status, payload)
+        })
     });
 
     match outcome.into_outcome() {

@@ -521,14 +521,34 @@ class ReallyMeCryptoTest : ReallyMeCryptoTestSupport() {
         val invalidKey = seal.invoke(null, ByteArray(31), nonce, aad, plaintext) as ByteArray?
         assertEquals(ReallyMeNativeStatus.INVALID_INPUT, decodeRustNativeResult(invalidKey).status)
 
-        val open = nativeAeadMethod("aes256GcmSivOpenNative")
-        val tampered = ciphertext.copyOf()
-        tampered[0] = (tampered[0].toInt() xor 0x01).toByte()
-        val authentication = open.invoke(null, key, nonce, aad, tampered) as ByteArray?
-        assertEquals(
-            ReallyMeNativeStatus.AUTHENTICATION_FAILED,
-            decodeRustNativeResult(authentication).status,
-        )
+        for ((method, nonceBytes) in listOf(
+            "aes256GcmSivOpenNative" to nonce,
+            "chacha20Poly1305OpenNative" to nonce,
+            "xchacha20Poly1305OpenNative" to ByteArray(24),
+        )) {
+            val open = nativeAeadMethod(method)
+            val tampered = ciphertext.copyOf()
+            tampered[0] = (tampered[0].toInt() xor 0x01).toByte()
+            val envelope = assertNotNull(open.invoke(null, key, nonceBytes, aad, tampered) as ByteArray?)
+            // Inspect the raw JNI result before the Kotlin decoder wipes it.
+            assertContentEquals(nativeEnvelope(ReallyMeNativeStatus.AUTHENTICATION_FAILED.code, ByteArray(0)), envelope)
+            val result = decodeRustNativeResult(envelope)
+            assertEquals(ReallyMeNativeStatus.AUTHENTICATION_FAILED, result.status)
+            assertContentEquals(ByteArray(0), result.bytes)
+        }
+    }
+
+    @Test
+    fun nativeAuthenticationFailureDiscardsUnexpectedPlaintextInTheEnvelope() {
+        val candidate = byteArrayOf(0x12, 0x34, 0x56, 0x78)
+        for (mask in 0 until (1 shl candidate.size)) {
+            val bytesWritten = candidate.filterIndexed { index, _ -> mask and (1 shl index) != 0 }.toByteArray()
+            val envelope = nativeEnvelope(ReallyMeNativeStatus.AUTHENTICATION_FAILED.code, bytesWritten)
+            assertFailsWith<ReallyMeCryptoException.AuthenticationFailed> {
+                requireRustNativeBytes(envelope)
+            }
+            assertContentEquals(ByteArray(envelope.size), envelope)
+        }
     }
 
     @Test

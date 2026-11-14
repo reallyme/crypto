@@ -2670,11 +2670,13 @@ test("hpke vectors seal and open through WASM", () => {
       suite: "DHKEM-P256-HKDF-SHA256-HKDF-SHA256-AES-256-GCM",
       caseName: "p256_sha256_aes256gcm",
       publicKeyLength: HPKE_P256_PUBLIC_KEY_LENGTH,
+      wasmSuite: 1,
     },
     {
       suite: "DHKEM-X25519-HKDF-SHA256-HKDF-SHA256-CHACHA20-POLY1305",
       caseName: "x25519_sha256_chacha20poly1305",
       publicKeyLength: HPKE_X25519_PUBLIC_KEY_LENGTH,
+      wasmSuite: 2,
     },
   ];
 
@@ -2700,6 +2702,25 @@ test("hpke vectors seal and open through WASM", () => {
         ciphertext,
       ),
       plaintext,
+    );
+
+    const badTag = ciphertext.slice();
+    badTag[badTag.length - 1] ^= 1;
+    assert.throws(
+      () => bundledWasm.hpkeOpenBase(
+        testCase.wasmSuite, recipientSecretKey, encapsulatedKey, info, aad, badTag,
+      ),
+      (error) => error === 3, // WASM authentication failure status.
+    );
+    assert.throws(
+      () => ReallyMeCrypto.openHpke(
+        testCase.suite, recipientSecretKey, encapsulatedKey, info, aad, badTag,
+      ),
+      (error) => {
+        assert.deepEqual(error, new ReallyMeCryptoError("authentication-failed"));
+        assert.equal(Object.hasOwn(error, "cause"), false);
+        return true;
+      },
     );
 
     const randomized = ReallyMeCrypto.sealHpke(

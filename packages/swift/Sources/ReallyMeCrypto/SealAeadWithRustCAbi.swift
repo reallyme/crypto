@@ -238,14 +238,12 @@ public struct ReallyMeRustCAbiAead: Sendable {
       throw ReallyMeCryptoError.invalidInput
     }
     let outputLength = ciphertextWithTag.count - rustCAbiAeadTagLength
-    var plaintext = [UInt8](repeating: 0, count: outputLength)
-    var producedLength = 0
-    let capacity = plaintext.count
-    let status = key.withUnsafeBufferPointer { keyBuffer in
-      nonce.withUnsafeBufferPointer { nonceBuffer in
-        aad.withUnsafeBufferPointer { aadBuffer in
-          ciphertextWithTag.withUnsafeBufferPointer { ciphertextBuffer in
-            plaintext.withUnsafeMutableBufferPointer { plaintextBuffer in
+    return try ReallyMeRustCAbiStatus.withAuthenticatedPlaintext(capacity: outputLength) {
+      plaintextBuffer, producedLength in
+      key.withUnsafeBufferPointer { keyBuffer in
+        nonce.withUnsafeBufferPointer { nonceBuffer in
+          aad.withUnsafeBufferPointer { aadBuffer in
+            ciphertextWithTag.withUnsafeBufferPointer { ciphertextBuffer in
               function(
                 keyBuffer.baseAddress,
                 key.count,
@@ -256,7 +254,7 @@ public struct ReallyMeRustCAbiAead: Sendable {
                 ciphertextBuffer.baseAddress,
                 ciphertextWithTag.count,
                 plaintextBuffer.baseAddress,
-                capacity,
+                plaintextBuffer.count,
                 &producedLength
               )
             }
@@ -264,19 +262,6 @@ public struct ReallyMeRustCAbiAead: Sendable {
         }
       }
     }
-    do {
-      try ReallyMeRustCAbiStatus.throwIfError(status)
-    } catch {
-      ReallyMeCryptoMemory.bestEffortClear(&plaintext)
-      throw error
-    }
-    guard producedLength <= plaintext.count else {
-      ReallyMeCryptoMemory.bestEffortClear(&plaintext)
-      throw ReallyMeCryptoError.providerFailure
-    }
-    let output = Array(plaintext.prefix(producedLength))
-    ReallyMeCryptoMemory.bestEffortClear(&plaintext)
-    return output
   }
 
   private func validate(

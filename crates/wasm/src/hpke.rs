@@ -16,6 +16,7 @@ use wasm_bindgen::JsValue;
 use zeroize::{Zeroize, Zeroizing};
 
 use crate::map_error::{invalid_input, map_crypto_error};
+use crate::publish_plaintext::publish_plaintext;
 use crate::set_bytes::set_bytes;
 use crate::validate_bytes::{
     copy_bounded, copy_exact, MAX_WASM_CIPHERTEXT_LENGTH, MAX_WASM_INPUT_LENGTH,
@@ -134,7 +135,7 @@ pub fn hpke_open_base(
     let info = Zeroizing::new(copy_bounded(info, MAX_WASM_INPUT_LENGTH)?);
     let aad = Zeroizing::new(copy_bounded(aad, MAX_WASM_INPUT_LENGTH)?);
     let ciphertext = Zeroizing::new(copy_bounded(ciphertext, MAX_WASM_CIPHERTEXT_LENGTH)?);
-    let mut plaintext = open_base(&HpkeOpenRequest {
+    let opened = open_base(&HpkeOpenRequest {
         suite: config.suite,
         encapsulated_key: &encapsulated_key,
         recipient_private_key: &recipient_secret_key,
@@ -142,9 +143,6 @@ pub fn hpke_open_base(
         aad: &aad,
         ciphertext: &ciphertext,
     })
-    .map_err(map_crypto_error)?
-    .plaintext;
-    let output = Uint8Array::from(plaintext.as_slice());
-    plaintext.zeroize();
-    Ok(output)
+    .map(|opened| opened.plaintext);
+    publish_plaintext(opened, |plaintext| Uint8Array::from(plaintext)).map_err(map_crypto_error)
 }

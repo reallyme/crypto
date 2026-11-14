@@ -155,15 +155,15 @@ public struct ReallyMeRustCAbiHpke: Sendable {
     guard plaintextLengthLimit.overflow == false else {
       throw ReallyMeCryptoError.invalidInput
     }
-    var plaintext = [UInt8](repeating: 0, count: plaintextLengthLimit.partialValue)
-    var plaintextLength = 0
-    let plaintextCapacity = plaintext.count
-    let status = encapsulatedKey.withUnsafeBufferPointer { encapsulatedKeyBuffer in
-      recipientSecretKey.withUnsafeBufferPointer { secretKeyBuffer in
-        info.withUnsafeBufferPointer { infoBuffer in
-          aad.withUnsafeBufferPointer { aadBuffer in
-            ciphertext.withUnsafeBufferPointer { ciphertextBuffer in
-              plaintext.withUnsafeMutableBufferPointer { plaintextBuffer in
+    return try ReallyMeRustCAbiStatus.withAuthenticatedPlaintext(
+      capacity: plaintextLengthLimit.partialValue
+    ) {
+      plaintextBuffer, producedLength in
+      encapsulatedKey.withUnsafeBufferPointer { encapsulatedKeyBuffer in
+        recipientSecretKey.withUnsafeBufferPointer { secretKeyBuffer in
+          info.withUnsafeBufferPointer { infoBuffer in
+            aad.withUnsafeBufferPointer { aadBuffer in
+              ciphertext.withUnsafeBufferPointer { ciphertextBuffer in
                 openBaseFunction(
                   suite.ffiId,
                   encapsulatedKeyBuffer.baseAddress,
@@ -177,8 +177,8 @@ public struct ReallyMeRustCAbiHpke: Sendable {
                   ciphertextBuffer.baseAddress,
                   ciphertext.count,
                   plaintextBuffer.baseAddress,
-                  plaintextCapacity,
-                  &plaintextLength
+                  plaintextBuffer.count,
+                  &producedLength
                 )
               }
             }
@@ -186,20 +186,6 @@ public struct ReallyMeRustCAbiHpke: Sendable {
         }
       }
     }
-
-    do {
-      try ReallyMeRustCAbiStatus.throwIfError(status)
-    } catch {
-      ReallyMeCryptoMemory.bestEffortClear(&plaintext)
-      throw error
-    }
-    guard plaintextLength <= plaintext.count else {
-      ReallyMeCryptoMemory.bestEffortClear(&plaintext)
-      throw ReallyMeCryptoError.providerFailure
-    }
-    let output = Array(plaintext.prefix(plaintextLength))
-    ReallyMeCryptoMemory.bestEffortClear(&plaintext)
-    return output
   }
 
   private func rustSuite(for suite: ReallyMeHpkeSuite) throws(ReallyMeCryptoError)

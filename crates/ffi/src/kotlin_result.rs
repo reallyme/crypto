@@ -81,7 +81,7 @@ fn clear_pending_exception(env: &mut Env<'_>) {
     }
 }
 
-fn encode_result<'local>(
+pub(crate) fn encode_result<'local>(
     env: &mut Env<'local>,
     status: i32,
     payload: &[u8],
