@@ -62,7 +62,6 @@ fn encoded(
     };
     let mut output = CryptoPublicKeyFormatResult {
         representation: Some(Representation::Encoded(Box::default())),
-        __buffa_unknown_fields: Default::default(),
     };
     match output.representation.as_mut() {
         Some(Representation::Encoded(value)) => {
@@ -103,10 +102,8 @@ pub(crate) fn p256_public(
     let mut output = CryptoEcdsaPublicKey {
         curve: MessageField::some(CryptoEcdsaCurveIdentifier {
             curve: EcdsaCurve::ECDSA_CURVE_NIST_P256.into(),
-            __buffa_unknown_fields: Default::default(),
         }),
-        sec1: Vec::new(),
-        __buffa_unknown_fields: Default::default(),
+        sec1: Vec::new().into(),
     };
     crate::native_contract_support::copy_bytes(&mut output.sec1, bytes)?;
     Ok(output)

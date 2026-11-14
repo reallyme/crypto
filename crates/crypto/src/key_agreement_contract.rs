@@ -20,12 +20,10 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 pub fn generate_key_pair(
     request: &CryptoKeyAgreementGenerateKeyPairRequest,
 ) -> Result<CryptoKeyPair, CryptoError> {
-    crate::native_contract_support::known_fields(request.__buffa_unknown_fields.is_empty())?;
     let identifier = request
         .algorithm
         .as_option()
         .ok_or(CryptoError::PRIMITIVE_INVALID_PARAMETER)?;
-    crate::native_contract_support::known_fields(identifier.__buffa_unknown_fields.is_empty())?;
     let value = match identifier.algorithm.as_ref() {
         Some(Branch::KeyAgreement(value)) => *value,
         _ => return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER),
@@ -55,14 +53,12 @@ pub fn generate_key_pair(
         let mut result = CryptoKeyPair {
             algorithm: MessageField::some(CryptoAlgorithmIdentifier {
                 algorithm: Some(Branch::KeyAgreement(value)),
-                __buffa_unknown_fields: Default::default(),
             }),
-            public_key: Vec::new(),
-            secret_key: Vec::new(),
-            __buffa_unknown_fields: Default::default(),
+            public_key: Vec::new().into(),
+            secret_key: Default::default(),
         };
         copy_bytes(&mut result.public_key, &public)?;
-        copy_bytes(&mut result.secret_key, &pair.secret_key)?;
+        result.secret_key.extend_from_slice(&pair.secret_key)?;
         Ok(result)
     }
     #[cfg(not(all(

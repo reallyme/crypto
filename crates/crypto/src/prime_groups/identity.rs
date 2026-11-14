@@ -15,9 +15,6 @@ impl TryFrom<&CryptoPrimeGroupIdentifier> for PrimeGroup {
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(identifier: &CryptoPrimeGroupIdentifier) -> Result<Self, Self::Error> {
-        if !identifier.__buffa_unknown_fields.is_empty() {
-            return Err(UnsupportedProtoAlgorithm);
-        }
         let value = identifier
             .group
             .as_known()

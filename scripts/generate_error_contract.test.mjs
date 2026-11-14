@@ -7,7 +7,7 @@ import { mkdtempSync, readFileSync, rmSync, statSync, symlinkSync, utimesSync, w
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
-import { ErrorContractGenerationError, parseErrorDescriptor, renderErrorContract, shareReasonEnum, writeErrorContractOutput } from "./generate_error_contract.mjs";
+import { ErrorContractGenerationError, parseErrorDescriptor, renderErrorContract, writeErrorContractOutput } from "./generate_error_contract.mjs";
 
 const fixture = () => ({ file: [{
   name: "reallyme/crypto/v1/crypto.proto", package: "reallyme.crypto.v1", syntax: "proto3",
@@ -91,40 +91,6 @@ test("input work is bounded before inspecting descriptor structures", () => {
   assert.throws(() => parseErrorDescriptor("{"),
     (error) => error instanceof ErrorContractGenerationError && error.code === "descriptor-json");
   rejects((d) => { d.file[0].enumType[0].value = Array(1_025).fill({}); }, "descriptor-shape");
-});
-
-function binding(contract) {
-  return `#[allow(non_camel_case_types)]\n#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]\n#[repr(i32)]\npub enum CryptoErrorReason {\n` +
-    contract.reasons.map((reason) => `    ${reason.name} = ${reason.number}i32,\n`).join("") +
-    `}\nimpl CryptoErrorReason {\n` + contract.reasons.map((reason) =>
-      `    pub const ${reason.alias}: Self = Self::${reason.name};\n`).join("") +
-    `}\nimpl ::core::default::Default for CryptoErrorReason {\n    fn default() -> Self { Self::CRYPTO_ERROR_REASON_UNSPECIFIED }\n}\n` +
-    `impl ::serde::Serialize for CryptoErrorReason {}\nimpl<'de> ::serde::Deserialize<'de> for CryptoErrorReason {}\n` +
-    `impl ::buffa::Enumeration for CryptoErrorReason {\n    fn from_i32(value: i32) -> ::core::option::Option<Self> {\n        match value {\n` +
-    contract.reasons.map((reason) => `            ${reason.number}i32 => ::core::option::Option::Some(Self::${reason.name}),\n`).join("") +
-    `            _ => ::core::option::Option::None,\n        }\n    }\n}\n`;
-}
-
-test("sharing removes duplicate ownership and retains generated traits idempotently", () => {
-  const contract = parse(fixture());
-  const source = binding(contract);
-  const shared = shareReasonEnum(source, contract);
-  assert.match(shared, /pub use crate::error_types::CryptoErrorReason;/u);
-  assert.doesNotMatch(shared, /pub enum CryptoErrorReason|impl CryptoErrorReason|impl ::core::default::Default/u);
-  assert.match(shared, /impl ::serde::Serialize for CryptoErrorReason/u);
-  assert.match(shared, /impl ::buffa::Enumeration for CryptoErrorReason/u);
-  assert.equal(shareReasonEnum(shared, contract), shared);
-  const stale = shared.replace("203i32 =>", "204i32 =>");
-  assert.throws(() => shareReasonEnum(stale, contract),
-    (error) => error instanceof ErrorContractGenerationError && error.code === "binding-descriptor-mismatch");
-  assert.throws(() => shareReasonEnum(`${source}\n${source}`, contract),
-    (error) => error instanceof ErrorContractGenerationError && error.code === "binding-shape");
-});
-
-test("valid schema declaration ordering does not create a second numeric identity", () => {
-  const contract = parse(fixture());
-  const source = binding({ ...contract, reasons: [...contract.reasons].reverse() });
-  assert.match(shareReasonEnum(source, contract), /pub use crate::error_types::CryptoErrorReason;/u);
 });
 
 test("generation preserves timestamps and does not follow output symlinks", (context) => {

@@ -4,7 +4,7 @@
 
 //! Setup returns the existing opaque native owners, never serialized state.
 
-use super::requests::{copy_bytes, copy_into, require_known};
+use super::requests::{copy_bytes, copy_into};
 use crate::validation::{
     require_sealing_suite, validate_encapsulated_key, validate_key_schedule_inputs,
     validate_private_key, validate_psk, validate_public_key,
@@ -48,7 +48,6 @@ impl HpkePskSenderSetupInputs {
 impl TryFrom<&CryptoHpkePskSenderSetupRequest> for HpkePskSenderSetupInputs {
     type Error = HpkeError;
     fn try_from(value: &CryptoHpkePskSenderSetupRequest) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         let suite = HpkeSuite::try_from(
             value
                 .suite
@@ -71,8 +70,7 @@ impl TryFrom<&CryptoHpkePskSenderSetupRequest> for HpkePskSenderSetupInputs {
 impl From<&HpkePskSenderSetupOutput> for CryptoHpkePskSenderSetupResult {
     fn from(value: &HpkePskSenderSetupOutput) -> Self {
         Self {
-            encapsulated_key: value.encapsulated_key.to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            encapsulated_key: value.encapsulated_key.to_vec().into(),
         }
     }
 }
@@ -108,7 +106,6 @@ impl HpkePskReceiverSetupInputs {
 impl TryFrom<&CryptoHpkePskReceiverSetupRequest> for HpkePskReceiverSetupInputs {
     type Error = HpkeError;
     fn try_from(value: &CryptoHpkePskReceiverSetupRequest) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         let suite = HpkeSuite::try_from(
             value
                 .suite

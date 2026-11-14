@@ -14,16 +14,11 @@ impl TryFrom<&CryptoRsaPssParams> for RsaPssParams {
     type Error = CryptoError;
 
     fn try_from(value: &CryptoRsaPssParams) -> Result<Self, Self::Error> {
-        if !value.__buffa_unknown_fields.is_empty() {
-            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
-        }
         let message_hash = RsaHash::try_from(&CryptoRsaHashIdentifier {
             hash: value.message_hash,
-            __buffa_unknown_fields: Default::default(),
         })?;
         let mgf1_hash = RsaHash::try_from(&CryptoRsaHashIdentifier {
             hash: value.mgf1_hash,
-            __buffa_unknown_fields: Default::default(),
         })?;
         let salt_len = usize::try_from(
             value
@@ -50,7 +45,6 @@ impl TryFrom<&RsaPssParams> for CryptoRsaPssParams {
             message_hash: CryptoRsaHashIdentifier::from(value.message_hash).hash,
             mgf1_hash: CryptoRsaHashIdentifier::from(value.mgf1_hash).hash,
             salt_length: Some(salt_length),
-            __buffa_unknown_fields: Default::default(),
         })
     }
 }

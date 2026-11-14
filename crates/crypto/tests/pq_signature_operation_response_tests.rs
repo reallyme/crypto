@@ -117,11 +117,10 @@ fn generated_response_exposes_all_signature_branches_for_every_pq_algorithm() {
         let generated = result_branch(CryptoOperation::SignatureGenerateKeyPair(Box::new(
             CryptoSignatureGenerateKeyPairRequest {
                 algorithm: MessageField::some(signature_identifier(case.proto_algorithm)),
-                __buffa_unknown_fields: Default::default(),
             },
         )))
         .expect("PQ signature key generation returns a generated result branch");
-        let generated_key_pair = match generated {
+        let generated_key_pair = match &generated {
             CryptoOperationResultBranch::SignatureGenerateKeyPair(key_pair) => Some(key_pair),
             _ => None,
         }
@@ -136,8 +135,7 @@ fn generated_response_exposes_all_signature_branches_for_every_pq_algorithm() {
         let derived = result_branch(CryptoOperation::SignatureDeriveKeyPair(Box::new(
             CryptoSignatureDeriveKeyPairRequest {
                 algorithm: MessageField::some(signature_identifier(case.proto_algorithm)),
-                secret_key: case.derive_input.clone(),
-                __buffa_unknown_fields: Default::default(),
+                secret_key: case.derive_input.clone().into(),
             },
         )))
         .expect("PQ signature derivation returns a generated result branch");
@@ -152,9 +150,8 @@ fn generated_response_exposes_all_signature_branches_for_every_pq_algorithm() {
         let signed = result_branch(CryptoOperation::SignatureSign(Box::new(
             CryptoSignatureSignRequest {
                 algorithm: MessageField::some(signature_identifier(case.proto_algorithm)),
-                secret_key: case.secret_key.clone(),
-                message: case.message.clone(),
-                __buffa_unknown_fields: Default::default(),
+                secret_key: case.secret_key.clone().into(),
+                message: case.message.clone().into(),
             },
         )))
         .expect("PQ signature signing returns a generated result branch");
@@ -191,8 +188,7 @@ fn pq_signature_failures_are_typed_and_invalid_signatures_are_not_errors() {
                 CryptoOperation::SignatureDeriveKeyPair(Box::new(
                     CryptoSignatureDeriveKeyPairRequest {
                         algorithm: MessageField::some(signature_identifier(case.proto_algorithm)),
-                        secret_key: vec![0xA5; invalid_length],
-                        __buffa_unknown_fields: Default::default(),
+                        secret_key: vec![0xA5; invalid_length].into(),
                     },
                 )),
                 CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY,
@@ -208,9 +204,9 @@ fn pq_signature_failures_are_typed_and_invalid_signatures_are_not_errors() {
                         .len()
                         .checked_sub(1)
                         .expect("non-empty secret key")
-                ],
-                message: case.message.clone(),
-                __buffa_unknown_fields: Default::default(),
+                ]
+                .into(),
+                message: case.message.clone().into(),
             })),
             CryptoErrorReason::CRYPTO_ERROR_REASON_PRIMITIVE_INVALID_KEY,
         );
@@ -246,7 +242,6 @@ fn pq_signature_failures_are_typed_and_invalid_signatures_are_not_errors() {
                 algorithm: MessageField::some(signature_identifier(
                     SignatureAlgorithm::SIGNATURE_ALGORITHM_UNSPECIFIED,
                 )),
-                __buffa_unknown_fields: Default::default(),
             },
         )),
         CryptoErrorReason::CRYPTO_ERROR_REASON_PROVIDER_UNSUPPORTED_ALGORITHM,
@@ -375,15 +370,14 @@ fn verification_result(
     let branch = result_branch(CryptoOperation::SignatureVerify(Box::new(
         CryptoSignatureVerifyRequest {
             algorithm: MessageField::some(signature_identifier(case.proto_algorithm)),
-            public_key,
-            message: case.message.clone(),
-            signature,
-            __buffa_unknown_fields: Default::default(),
+            public_key: public_key.into(),
+            message: case.message.clone().into(),
+            signature: signature.into(),
         },
     )))
     .expect("signature verification returns a generated result branch");
-    match branch {
-        CryptoOperationResultBranch::SignatureVerify(result) => result,
+    match &branch {
+        CryptoOperationResultBranch::SignatureVerify(result) => result.clone(),
         _ => panic!("signature verification returned the wrong result branch"),
     }
 }
@@ -404,8 +398,8 @@ fn embedded_error_reason(result: &CryptoVerificationResult) -> Option<CryptoErro
 }
 
 fn result_branch(operation: CryptoOperation) -> Option<CryptoOperationResultBranch> {
-    match process_response(operation).outcome {
-        Some(CryptoOperationOutcome::Result(result)) => result.result,
+    match process_response(operation).outcome.as_ref() {
+        Some(CryptoOperationOutcome::Result(result)) => result.result.clone(),
         _ => None,
     }
 }
@@ -423,8 +417,8 @@ fn result_algorithm(
 }
 
 fn assert_top_level_error(operation: CryptoOperation, expected: CryptoErrorReason) {
-    let reason = match process_response(operation).outcome {
-        Some(CryptoOperationOutcome::Error(error)) => match error.error {
+    let reason = match process_response(operation).outcome.as_ref() {
+        Some(CryptoOperationOutcome::Error(error)) => match error.error.as_ref() {
             Some(CryptoErrorBranch::Primitive(error)) => error.reason.as_known(),
             Some(CryptoErrorBranch::Provider(error)) => error.reason.as_known(),
             Some(CryptoErrorBranch::Backend(error)) => error.reason.as_known(),
@@ -438,7 +432,6 @@ fn assert_top_level_error(operation: CryptoOperation, expected: CryptoErrorReaso
 fn process_response(operation: CryptoOperation) -> CryptoOperationResponse {
     let request = CryptoOperationRequest {
         operation: Some(operation),
-        __buffa_unknown_fields: Default::default(),
     };
     let output = reallyme_crypto::operation_contract::process_operation_response(
         request.encode_to_vec().as_slice(),
@@ -449,7 +442,6 @@ fn process_response(operation: CryptoOperation) -> CryptoOperationResponse {
 fn signature_identifier(algorithm: SignatureAlgorithm) -> CryptoAlgorithmIdentifier {
     CryptoAlgorithmIdentifier {
         algorithm: Some(ProtoAlgorithmBranch::Signature(EnumValue::from(algorithm))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 

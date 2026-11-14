@@ -5,7 +5,6 @@
 //! Deterministic KEM inputs for conformance, distinct from randomized requests.
 //! Existing native/WASM feature and typed-error policies remain authoritative.
 
-use crate::native_contract_support::known_fields;
 use crypto_core::{Algorithm, CryptoError};
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     __buffa::oneof::crypto_algorithm_identifier::Algorithm as Identity, CryptoAlgorithmIdentifier,
@@ -16,7 +15,6 @@ fn algorithm(
     identifier: Option<&CryptoAlgorithmIdentifier>,
 ) -> Result<(Algorithm, KemAlgorithm), CryptoError> {
     let identifier = identifier.ok_or(CryptoError::PRIMITIVE_INVALID_PARAMETER)?;
-    known_fields(identifier.__buffa_unknown_fields.is_empty())?;
     let Some(Identity::Kem(value)) = identifier.algorithm.as_ref() else {
         return Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM);
     };
@@ -32,7 +30,6 @@ fn algorithm(
 pub fn encapsulate(
     request: &CryptoKemConformanceEncapsulateRequest,
 ) -> Result<CryptoKemEncapsulation, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let (native, wire) = algorithm(request.algorithm.as_option())?;
     #[cfg(all(
         feature = "dispatch",
@@ -54,11 +51,9 @@ pub fn encapsulate(
         let mut output = CryptoKemEncapsulation {
             algorithm: buffa::MessageField::some(CryptoAlgorithmIdentifier {
                 algorithm: Some(Identity::Kem(wire.into())),
-                __buffa_unknown_fields: Default::default(),
             }),
-            ciphertext: Vec::new(),
-            shared_secret: Vec::new(),
-            __buffa_unknown_fields: Default::default(),
+            ciphertext: Vec::new().into(),
+            shared_secret: Vec::new().into(),
         };
         crate::native_contract_support::copy_bytes(&mut output.ciphertext, &ciphertext)?;
         crate::native_contract_support::copy_bytes(

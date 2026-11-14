@@ -9,6 +9,5 @@ use crypto_proto::wire::CryptoWireError;
 pub(crate) fn error_response(error: CryptoWireError) -> CryptoOperationResponse {
     CryptoOperationResponse {
         outcome: Some(CryptoOperationOutcome::Error(Box::new(error.to_proto()))),
-        __buffa_unknown_fields: Default::default(),
     }
 }

@@ -22,7 +22,7 @@ use super::operation_error::map_operation_error;
 use super::wire_error::wire_error;
 
 pub(super) fn process_hpke_seal(
-    request: CryptoHpkeSealRequest,
+    request: &CryptoHpkeSealRequest,
 ) -> Result<CryptoHpkeSealedMessage, CryptoWireError> {
     let suite = hpke_suite(&request.algorithm)?;
     let output = crate::operations::hpke::seal_base(&HpkeSealRequest {
@@ -35,18 +35,17 @@ pub(super) fn process_hpke_seal(
     .map_err(map_operation_error)?;
     let result = CryptoHpkeSealedMessage {
         algorithm: request.algorithm.clone(),
-        encapsulated_key: output.encapsulated_key,
-        ciphertext: output.ciphertext,
-        __buffa_unknown_fields: Default::default(),
+        encapsulated_key: output.encapsulated_key.into(),
+        ciphertext: output.ciphertext.into(),
     };
     Ok(result)
 }
 
 pub(super) fn process_hpke_open(
-    request: CryptoHpkeOpenRequest,
+    request: &CryptoHpkeOpenRequest,
 ) -> Result<CryptoHpkeOpenResult, CryptoWireError> {
     let suite = hpke_suite(&request.algorithm)?;
-    let mut output = crate::operations::hpke::open_base(&HpkeOpenRequest {
+    let output = crate::operations::hpke::open_base(&HpkeOpenRequest {
         suite,
         encapsulated_key: &request.encapsulated_key,
         recipient_private_key: &request.recipient_secret_key,
@@ -57,29 +56,27 @@ pub(super) fn process_hpke_open(
     .map_err(map_operation_error)?;
     let result = CryptoHpkeOpenResult {
         algorithm: request.algorithm.clone(),
-        plaintext: core::mem::take(&mut *output.plaintext),
-        __buffa_unknown_fields: Default::default(),
+        plaintext: output.plaintext.into(),
     };
     Ok(result)
 }
 
 pub(super) fn process_hpke_generate_key_pair(
-    request: CryptoHpkeGenerateKeyPairRequest,
+    request: &CryptoHpkeGenerateKeyPairRequest,
 ) -> Result<CryptoKeyPair, CryptoWireError> {
     let suite = hpke_suite(&request.algorithm)?;
     let key_pair = crate::operations::hpke::keygen(suite).map_err(map_operation_error)?;
     let secret_key = key_pair.private_key().to_vec();
     let result = CryptoKeyPair {
-        algorithm: request.algorithm,
-        public_key: key_pair.public_key,
-        secret_key,
-        __buffa_unknown_fields: Default::default(),
+        algorithm: request.algorithm.clone(),
+        public_key: key_pair.public_key.into(),
+        secret_key: secret_key.into(),
     };
     Ok(result)
 }
 
 pub(super) fn process_hpke_derive_key_pair(
-    request: CryptoHpkeDeriveKeyPairRequest,
+    request: &CryptoHpkeDeriveKeyPairRequest,
 ) -> Result<CryptoKeyPair, CryptoWireError> {
     let suite = hpke_suite(&request.algorithm)?;
     let key_pair =
@@ -88,15 +85,14 @@ pub(super) fn process_hpke_derive_key_pair(
     let secret_key = key_pair.private_key().to_vec();
     let result = CryptoKeyPair {
         algorithm: request.algorithm.clone(),
-        public_key: key_pair.public_key,
-        secret_key,
-        __buffa_unknown_fields: Default::default(),
+        public_key: key_pair.public_key.into(),
+        secret_key: secret_key.into(),
     };
     Ok(result)
 }
 
 pub(super) fn process_hpke_sender_export(
-    request: CryptoHpkeSenderExportRequest,
+    request: &CryptoHpkeSenderExportRequest,
 ) -> Result<CryptoHpkeSenderExportResult, CryptoWireError> {
     let suite = hpke_suite(&request.algorithm)?;
     let output = crate::operations::hpke::sender_export(&HpkeSenderExportRequest {
@@ -110,15 +106,14 @@ pub(super) fn process_hpke_sender_export(
     let exporter_secret = output.exporter_secret().to_vec();
     let result = CryptoHpkeSenderExportResult {
         algorithm: request.algorithm.clone(),
-        encapsulated_key: output.encapsulated_key,
-        exporter_secret,
-        __buffa_unknown_fields: Default::default(),
+        encapsulated_key: output.encapsulated_key.into(),
+        exporter_secret: exporter_secret.into(),
     };
     Ok(result)
 }
 
 pub(super) fn process_hpke_receiver_export(
-    request: CryptoHpkeReceiverExportRequest,
+    request: &CryptoHpkeReceiverExportRequest,
 ) -> Result<CryptoHpkeReceiverExportResult, CryptoWireError> {
     let suite = hpke_suite(&request.algorithm)?;
     let output = crate::operations::hpke::receiver_export(&HpkeReceiverExportRequest {
@@ -132,14 +127,13 @@ pub(super) fn process_hpke_receiver_export(
     .map_err(map_operation_error)?;
     let result = CryptoHpkeReceiverExportResult {
         algorithm: request.algorithm.clone(),
-        exporter_secret: output.as_slice().to_vec(),
-        __buffa_unknown_fields: Default::default(),
+        exporter_secret: output.as_slice().to_vec().into(),
     };
     Ok(result)
 }
 
 pub(super) fn process_hpke_psk_seal(
-    request: CryptoHpkePskSealRequest,
+    request: &CryptoHpkePskSealRequest,
 ) -> Result<CryptoHpkeSealedMessage, CryptoWireError> {
     let suite = hpke_suite(&request.algorithm)?;
     let output = crate::operations::hpke::seal_psk(&HpkePskSealRequest {
@@ -154,18 +148,17 @@ pub(super) fn process_hpke_psk_seal(
     .map_err(map_operation_error)?;
     let result = CryptoHpkeSealedMessage {
         algorithm: request.algorithm.clone(),
-        encapsulated_key: output.encapsulated_key,
-        ciphertext: output.ciphertext,
-        __buffa_unknown_fields: Default::default(),
+        encapsulated_key: output.encapsulated_key.into(),
+        ciphertext: output.ciphertext.into(),
     };
     Ok(result)
 }
 
 pub(super) fn process_hpke_psk_open(
-    request: CryptoHpkePskOpenRequest,
+    request: &CryptoHpkePskOpenRequest,
 ) -> Result<CryptoHpkeOpenResult, CryptoWireError> {
     let suite = hpke_suite(&request.algorithm)?;
-    let mut output = crate::operations::hpke::open_psk(&HpkePskOpenRequest {
+    let output = crate::operations::hpke::open_psk(&HpkePskOpenRequest {
         suite,
         encapsulated_key: &request.encapsulated_key,
         recipient_private_key: &request.recipient_secret_key,
@@ -178,8 +171,7 @@ pub(super) fn process_hpke_psk_open(
     .map_err(map_operation_error)?;
     let result = CryptoHpkeOpenResult {
         algorithm: request.algorithm.clone(),
-        plaintext: core::mem::take(&mut *output.plaintext),
-        __buffa_unknown_fields: Default::default(),
+        plaintext: output.plaintext.into(),
     };
     Ok(result)
 }

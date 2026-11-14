@@ -11,4 +11,10 @@ pub const CRYPTO_PROTO_PACKAGE: &str = "reallyme.crypto.v1";
 #[allow(missing_docs)]
 #[cfg(feature = "generated")]
 #[path = "generated/buffa/mod.rs"]
+pub(crate) mod raw;
+
+/// Public message contracts and protected view owners.
+#[allow(missing_docs)]
+#[cfg(feature = "generated")]
+#[path = "generated/public.rs"]
 pub mod proto;

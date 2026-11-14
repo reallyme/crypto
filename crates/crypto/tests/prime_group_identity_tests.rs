@@ -48,9 +48,8 @@ fn metadata_rejects_absent_zero_and_unknown_values() -> Result<(), buffa::Decode
 fn metadata_rejects_unknown_modifiers() -> Result<(), buffa::DecodeError> {
     let modifiers: &[&[u8]] = &[&[0xa0, 0x06, 0x01], &[0xa2, 0x06, 0x03, 0x01, 0x02, 0x03]];
     for modifier in modifiers {
-        let mut value = identifier(ProtoGroup::PRIME_GROUP_NIST_P256.into());
-        value.merge_from_slice(modifier)?;
-        assert_eq!(PrimeGroup::try_from(&value), Err(UnsupportedProtoAlgorithm));
+        let value = identifier(ProtoGroup::PRIME_GROUP_NIST_P256.into());
+        assert_unknown_wire(&value, modifier);
     }
     Ok(())
 }
@@ -90,10 +89,7 @@ fn metadata_clears_retained_unknown_storage_on_drop() {
 }
 
 fn identifier(group: EnumValue<ProtoGroup>) -> CryptoPrimeGroupIdentifier {
-    CryptoPrimeGroupIdentifier {
-        group,
-        __buffa_unknown_fields: Default::default(),
-    }
+    CryptoPrimeGroupIdentifier { group }
 }
 
 #[cfg(not(any(feature = "native", feature = "wasm")))]
@@ -107,4 +103,11 @@ fn group_identity_needs_no_rust_backend_feature() -> Result<(), UnsupportedProto
         }
     }
     Ok(())
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

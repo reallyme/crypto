@@ -16,14 +16,13 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 use zeroize::Zeroizing;
 
 use super::{EcdsaCurve, EcdsaEncoding, EcdsaInput, EcdsaKey};
-use crate::native_contract_support::{copy_bytes, known_fields, verified};
+use crate::native_contract_support::{copy_bytes, verified};
 
 /// Transcode the seven existing explicit curves, retaining high-S values.
 /// Matching representations do not denote an additional normalization policy.
 pub fn transcode_signature(
     request: &CryptoEcdsaSignatureTranscodeRequest,
 ) -> Result<CryptoNativeSignatureResult, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let curve = EcdsaCurve::try_from(
         request
             .curve
@@ -50,7 +49,6 @@ pub fn sign_p256_low_s(
     key: &EcdsaKey,
     request: &CryptoP256LowSSignRequest,
 ) -> Result<CryptoNativeSignatureResult, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let input = EcdsaInput::try_from(
         request
             .input
@@ -66,7 +64,6 @@ pub fn sign_p256_low_s(
 pub fn verify_p256_low_s(
     request: &CryptoP256LowSVerifyRequest,
 ) -> Result<CryptoNativeVerificationResult, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let digest = crypto_p256::P256Sha256Digest::try_from_slice(&request.sha256_digest)?;
     #[cfg(any(feature = "native", feature = "wasm"))]
     {
@@ -88,7 +85,6 @@ pub fn verify_p256_low_s(
 pub fn validate_public_key(
     request: &CryptoEcdsaPublicKeyValidationRequest,
 ) -> Result<CryptoNativeVerificationResult, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let curve = EcdsaCurve::try_from(
         request
             .curve
@@ -114,7 +110,6 @@ fn container_format(
 pub fn import_p256_private(
     request: &CryptoP256PrivateKeyContainerImportRequest,
 ) -> Result<EcdsaKey, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let format = container_format(request.format)?;
     #[cfg(feature = "native")]
     {
@@ -149,7 +144,6 @@ pub fn import_p256_private(
 pub fn import_p256_public(
     request: &CryptoP256PublicKeyContainerImportRequest,
 ) -> Result<CryptoEcdsaPublicKey, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let format = container_format(request.format)?;
     #[cfg(feature = "native")]
     {
@@ -174,9 +168,8 @@ pub fn import_p256_public(
 /// Invoke the existing native-only compressed derivation without scalar export.
 pub fn compressed_p256_public_key(
     key: &EcdsaKey,
-    request: &CryptoP256CompressedPublicKeyRequest,
+    _: &CryptoP256CompressedPublicKeyRequest,
 ) -> Result<CryptoEcdsaPublicKey, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     #[cfg(feature = "native")]
     {
         let public = Zeroizing::new(key.compressed_p256_public_key()?);

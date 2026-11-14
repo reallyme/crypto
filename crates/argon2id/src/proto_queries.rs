@@ -21,7 +21,6 @@ use crate::{
 pub fn resolve_platform(
     request: &CryptoArgon2PlatformResolveRequest,
 ) -> Result<ProtoParams, CryptoError> {
-    require_known(request.__buffa_unknown_fields.is_empty())?;
     let version = version_number(request.profile.as_option())?;
     let platform = Argon2PlatformClass::try_from(request.platform)?;
     Ok(resolve_profile_params_for_platform(version, platform)?.into())
@@ -31,7 +30,6 @@ pub fn resolve_platform(
 /// resource budgets. A successful query does not authorize a provider or
 /// override the fixed derivation profile or platform policy.
 pub fn resolve_budget(request: &CryptoArgon2BudgetFitRequest) -> Result<ProtoParams, CryptoError> {
-    require_known(request.__buffa_unknown_fields.is_empty())?;
     let version = version_number(request.profile.as_option())?;
     let caps = Argon2Caps {
         mem_cap_kib: request
@@ -49,9 +47,8 @@ pub fn resolve_budget(request: &CryptoArgon2BudgetFitRequest) -> Result<ProtoPar
 
 /// Selects the existing modern-mobile unlock profile without caller policy.
 pub fn select_mobile_unlock(
-    request: &CryptoArgon2MobileUnlockRequest,
+    _: &CryptoArgon2MobileUnlockRequest,
 ) -> Result<CryptoArgon2idProfileIdentifier, CryptoError> {
-    require_known(request.__buffa_unknown_fields.is_empty())?;
     Ok(resolve_mobile_profile_for_unlock()?.into())
 }
 
@@ -62,12 +59,4 @@ fn version_number(profile: Option<&CryptoArgon2idProfileIdentifier>) -> Result<u
     let _version = Argon2KdfVersion::try_from(profile)?;
     u32::try_from(profile.kdf_version.to_i32())
         .map_err(|_| CryptoError::PRIMITIVE_INVALID_PARAMETER)
-}
-
-fn require_known(known: bool) -> Result<(), CryptoError> {
-    if known {
-        Ok(())
-    } else {
-        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    }
 }

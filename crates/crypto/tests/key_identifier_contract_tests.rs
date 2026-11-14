@@ -17,7 +17,10 @@ use zeroize::ZeroizeOnDrop;
 
 fn request(bytes: &[u8]) -> CryptoSubjectKeyIdentifierRequest {
     let mut request = CryptoSubjectKeyIdentifierRequest::default();
-    request.subject_public_key_bits.extend_from_slice(bytes);
+    assert!(request
+        .subject_public_key_bits
+        .extend_from_slice(bytes)
+        .is_ok());
     request
 }
 
@@ -60,10 +63,10 @@ fn bounds_unknown_modifiers_and_owner_cleanup_are_explicit() {
     assert!(
         matches!(contract::derive(&request(&vec![1;SUBJECT_PUBLIC_KEY_MAX_LEN+1])),Err(e) if e==CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED)
     );
-    let modified =
-        CryptoSubjectKeyIdentifierRequest::decode_from_slice(&[10, 1, 1, 0xf8, 7, 1]).unwrap();
-    assert!(
-        matches!(contract::derive(&modified),Err(e) if e==CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    use crypto_proto::wire::{decode_protobuf, CryptoWireError};
+    assert_eq!(
+        decode_protobuf::<CryptoSubjectKeyIdentifierRequest>(&[10, 1, 1, 0xf8, 7, 1]),
+        Err(CryptoWireError::malformed_protobuf())
     );
     let mut output = contract::derive(&request(b"identifier input")).unwrap();
     buffa::Message::clear(&mut output);

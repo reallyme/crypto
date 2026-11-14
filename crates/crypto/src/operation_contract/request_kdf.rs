@@ -27,7 +27,7 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 use super::request::process_request;
 
 pub(super) fn process_kmac256_derive_request(
-    request: CryptoKmac256DeriveRequest,
+    request: &CryptoKmac256DeriveRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(feature = "kmac", any(feature = "native", feature = "wasm")))]
     {
@@ -45,7 +45,7 @@ pub(super) fn process_kmac256_derive_request(
 }
 
 pub(super) fn process_hkdf_derive_request(
-    request: CryptoHkdfDeriveRequest,
+    request: &CryptoHkdfDeriveRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(feature = "hkdf", any(feature = "native", feature = "wasm")))]
     {
@@ -63,7 +63,7 @@ pub(super) fn process_hkdf_derive_request(
 }
 
 pub(super) fn process_argon2id_derive_request(
-    request: CryptoArgon2idDeriveRequest,
+    request: &CryptoArgon2idDeriveRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(feature = "argon2id", any(feature = "native", feature = "wasm")))]
     {
@@ -81,7 +81,7 @@ pub(super) fn process_argon2id_derive_request(
 }
 
 pub(super) fn process_kdf_derive_key_request(
-    request: CryptoKdfDeriveKeyRequest,
+    request: &CryptoKdfDeriveKeyRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(feature = "pbkdf2", any(feature = "native", feature = "wasm")))]
     {
@@ -99,7 +99,7 @@ pub(super) fn process_kdf_derive_key_request(
 }
 
 pub(super) fn process_jwa_concat_kdf_sha256_derive_request(
-    request: CryptoJwaConcatKdfSha256DeriveRequest,
+    request: &CryptoJwaConcatKdfSha256DeriveRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(feature = "concat-kdf", any(feature = "native", feature = "wasm")))]
     {

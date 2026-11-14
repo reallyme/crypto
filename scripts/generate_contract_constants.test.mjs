@@ -176,7 +176,7 @@ test("maintenance shares one descriptor invocation and validates before output w
   assert.match(source, /parseContractConstantsDescriptor\(document\)/u);
   assert.match(source, /validateErrorReasonRanges\(contract, constantsContract\)/u);
   assert.ok(source.indexOf("validateErrorReasonRanges(contract, constantsContract)") <
-    source.indexOf("if (shared !== original) writeErrorContractOutput"));
+    source.indexOf("writeErrorContractOutput(resolve(root, OUTPUT), rust)"));
 });
 
 test("scalar aliases resolve across modules and retain reference-only Rust output", () => {

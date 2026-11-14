@@ -159,6 +159,7 @@ where
     feature = "aead-aes128-gcm"
 ))]
 mod runtime {
+    use super::assert_unknown_wire;
     use buffa::{Message, MessageField};
     use crypto_hpke::proto_protocol::{
         HpkePskReceiverSetupInputs, HpkePskSenderSetupInputs, HpkeReceiverOpenInputs,
@@ -185,11 +186,10 @@ mod runtime {
     fn sender(public: &[u8]) -> CryptoHpkePskSenderSetupRequest {
         CryptoHpkePskSenderSetupRequest {
             suite: MessageField::some(HpkeSuiteIdentifier::try_from(suite()).expect("suite")),
-            recipient_public_key: public.to_vec(),
-            info: INFO.to_vec(),
-            psk: vec![0x11; 32],
-            psk_id: PSK_ID.to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            recipient_public_key: public.to_vec().into(),
+            info: INFO.to_vec().into(),
+            psk: vec![0x11; 32].into(),
+            psk_id: PSK_ID.to_vec().into(),
         }
     }
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -219,12 +219,11 @@ mod runtime {
         assert_eq!(public.encapsulated_key, setup.encapsulated_key);
         let receiver_request = CryptoHpkePskReceiverSetupRequest {
             suite: MessageField::some(HpkeSuiteIdentifier::try_from(suite()).expect("suite")),
-            encapsulated_key: setup.encapsulated_key.clone(),
-            recipient_private_key: key.private_key().to_vec(),
-            info: INFO.to_vec(),
-            psk: vec![0x11; 32],
-            psk_id: PSK_ID.to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            encapsulated_key: setup.encapsulated_key.clone().into(),
+            recipient_private_key: key.private_key().to_vec().into(),
+            info: INFO.to_vec().into(),
+            psk: vec![0x11; 32].into(),
+            psk_id: PSK_ID.to_vec().into(),
         };
         let receiver_inputs =
             HpkePskReceiverSetupInputs::try_from(&receiver_request).expect("receiver inputs");
@@ -236,9 +235,8 @@ mod runtime {
         );
         for plaintext in [b"first\0\xff".as_slice(), b"second\0\xfe".as_slice()] {
             let wire = CryptoHpkeSenderSealRequest {
-                aad: AAD.to_vec(),
-                plaintext: plaintext.to_vec(),
-                __buffa_unknown_fields: Default::default(),
+                aad: AAD.to_vec().into(),
+                plaintext: plaintext.to_vec().into(),
             };
             let content = HpkeSenderSealInputs::try_from(&wire).expect("sender content");
             let request = content.as_request(&mut setup.context);
@@ -253,9 +251,8 @@ mod runtime {
                 ciphertext
             );
             let wire = CryptoHpkeReceiverOpenRequest {
-                aad: AAD.to_vec(),
-                ciphertext,
-                __buffa_unknown_fields: Default::default(),
+                aad: AAD.to_vec().into(),
+                ciphertext: ciphertext.into(),
             };
             let content = HpkeReceiverOpenInputs::try_from(&wire).expect("receiver content");
             let opened = content
@@ -282,7 +279,7 @@ mod runtime {
             Some(HpkeError::PRIMITIVE_INVALID_PARAMETER)
         );
         wire = sender(&key.public_key);
-        wire.psk.pop();
+        wire.psk.resize(31, 0).expect("short fixture");
         assert_eq!(
             HpkePskSenderSetupInputs::try_from(&wire).err(),
             Some(HpkeError::PRIMITIVE_INVALID_PARAMETER)
@@ -300,11 +297,7 @@ mod runtime {
             Some(HpkeError::PRIMITIVE_INVALID_PUBLIC_KEY)
         );
         wire = sender(&key.public_key);
-        wire.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-        assert_eq!(
-            HpkePskSenderSetupInputs::try_from(&wire).err(),
-            Some(HpkeError::PRIMITIVE_INVALID_PARAMETER)
-        );
+        assert_unknown_wire(&wire, &[0xa0, 0x06, 0x01]);
         let mut owner =
             HpkePskSenderSetupInputs::try_from(&sender(&key.public_key)).expect("owner");
         owner.zeroize();
@@ -323,27 +316,24 @@ mod runtime {
                 algorithm: Some(Algorithm::HpkeSuite(Box::new(
                     HpkeSuiteIdentifier::try_from(suite()).expect("suite"),
                 ))),
-                __buffa_unknown_fields: Default::default(),
             })
         };
         let wire = CryptoHpkeSealRequest {
             algorithm: algorithm(),
-            recipient_public_key: key.public_key.clone(),
-            info: INFO.to_vec(),
-            aad: AAD.to_vec(),
-            plaintext: vec![0, 0xff],
-            __buffa_unknown_fields: Default::default(),
+            recipient_public_key: key.public_key.clone().into(),
+            info: INFO.to_vec().into(),
+            aad: AAD.to_vec().into(),
+            plaintext: vec![0, 0xff].into(),
         };
         let owner = HpkeSealInputs::try_from(&wire).expect("existing base request");
         let returned = CryptoHpkeSealRequest::try_from(&owner.as_request()).expect("wire parity");
         assert_eq!(returned.encode_to_vec(), wire.encode_to_vec());
         let wire = CryptoHpkeSenderExportRequest {
             algorithm: algorithm(),
-            recipient_public_key: key.public_key.clone(),
-            info: INFO.to_vec(),
-            exporter_context: vec![0, 0xff, 1],
+            recipient_public_key: key.public_key.clone().into(),
+            info: INFO.to_vec().into(),
+            exporter_context: vec![0, 0xff, 1].into(),
             output_length: 32,
-            __buffa_unknown_fields: Default::default(),
         };
         let owner = HpkeSenderExportInputs::try_from(&wire).expect("existing export request");
         let returned =
@@ -354,13 +344,11 @@ mod runtime {
                 algorithm: Some(Algorithm::Hash(
                     HashAlgorithm::HASH_ALGORITHM_SHA2_256.into(),
                 )),
-                __buffa_unknown_fields: Default::default(),
             }),
-            recipient_public_key: key.public_key.clone(),
-            info: Vec::new(),
-            aad: Vec::new(),
-            plaintext: Vec::new(),
-            __buffa_unknown_fields: Default::default(),
+            recipient_public_key: key.public_key.clone().into(),
+            info: Vec::new().into(),
+            aad: Vec::new().into(),
+            plaintext: Vec::new().into(),
         };
         assert_eq!(
             HpkeSealInputs::try_from(&wrong).err(),
@@ -416,11 +404,10 @@ fn mismatched_info_psk_identifier_aad_and_tampering_keep_authentication_failure(
     ] {
         let sender_wire = CryptoHpkePskSenderSetupRequest {
             suite: MessageField::some(HpkeSuiteIdentifier::try_from(suite).expect("suite")),
-            recipient_public_key: key.public_key.clone(),
-            info: b"info\0\xfe".to_vec(),
-            psk: vec![0x11; 32],
-            psk_id: b"psk\0\xff".to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            recipient_public_key: key.public_key.clone().into(),
+            info: b"info\0\xfe".to_vec().into(),
+            psk: vec![0x11; 32].into(),
+            psk_id: b"psk\0\xff".to_vec().into(),
         };
         let mut sender = HpkePskSenderSetupInputs::try_from(&sender_wire)
             .expect("sender inputs")
@@ -428,21 +415,19 @@ fn mismatched_info_psk_identifier_aad_and_tampering_keep_authentication_failure(
             .expect("sender");
         let receiver_wire = CryptoHpkePskReceiverSetupRequest {
             suite: MessageField::some(HpkeSuiteIdentifier::try_from(suite).expect("suite")),
-            encapsulated_key: sender.encapsulated_key.clone(),
-            recipient_private_key: key.private_key().to_vec(),
-            info: receiver_info.to_vec(),
-            psk: vec![0x11; 32],
-            psk_id: receiver_id.to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            encapsulated_key: sender.encapsulated_key.clone().into(),
+            recipient_private_key: key.private_key().to_vec().into(),
+            info: receiver_info.to_vec().into(),
+            psk: vec![0x11; 32].into(),
+            psk_id: receiver_id.to_vec().into(),
         };
         let mut receiver = HpkePskReceiverSetupInputs::try_from(&receiver_wire)
             .expect("receiver inputs")
             .setup()
             .expect("receiver");
         let content = HpkeSenderSealInputs::try_from(&CryptoHpkeSenderSealRequest {
-            aad: b"aad\0\xfd".to_vec(),
-            plaintext: b"secret\0\xfc".to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            aad: b"aad\0\xfd".to_vec().into(),
+            plaintext: b"secret\0\xfc".to_vec().into(),
         })
         .expect("sender content");
         let mut ciphertext = content
@@ -454,9 +439,8 @@ fn mismatched_info_psk_identifier_aad_and_tampering_keep_authentication_failure(
             *byte ^= 1;
         }
         let content = HpkeReceiverOpenInputs::try_from(&CryptoHpkeReceiverOpenRequest {
-            aad: receiver_aad.to_vec(),
-            ciphertext,
-            __buffa_unknown_fields: Default::default(),
+            aad: receiver_aad.to_vec().into(),
+            ciphertext: ciphertext.into(),
         })
         .expect("receiver content");
         assert_eq!(
@@ -492,9 +476,8 @@ mod base {
         );
         let wire = CryptoHpkeP256BaseSealRequest {
             recipient_public_key: public.public_key.clone(),
-            info: vec![0, 0xff, 0xc3, 0xa9],
-            plaintext: vec![0, 0xfe, 1],
-            __buffa_unknown_fields: Default::default(),
+            info: vec![0, 0xff, 0xc3, 0xa9].into(),
+            plaintext: vec![0, 0xfe, 1].into(),
         };
         let sealed = P256BaseSealInputs::try_from(&wire)
             .expect("fixed content")
@@ -505,20 +488,19 @@ mod base {
             encapsulated_key: sealed.encapsulated_key.clone(),
             info: wire.info.clone(),
             ciphertext: sealed.ciphertext.clone(),
-            __buffa_unknown_fields: Default::default(),
         };
         let plaintext = P256BaseOpenInputs::try_from(&open)
             .expect("open content")
             .open(&recipient)
             .expect("borrow native owner");
-        assert_eq!(plaintext.as_slice(), wire.plaintext);
+        assert_eq!(plaintext.as_slice(), wire.plaintext.as_slice());
         assert_eq!(
             CryptoHpkeP256BaseOpenResult::try_from(&plaintext)
                 .expect("clearing result")
                 .plaintext,
             wire.plaintext
         );
-        open.info.push(0);
+        assert!(open.info.push(0).is_ok());
         assert_eq!(
             P256BaseOpenInputs::try_from(&open)
                 .expect("well-formed altered info")
@@ -531,25 +513,23 @@ mod base {
     #[cfg_attr(not(target_arch = "wasm32"), test)]
     fn fixed_profile_rejects_bounds_and_malformed_input_before_copy() {
         let mut seal = CryptoHpkeP256BaseSealRequest {
-            recipient_public_key: vec![0; PUBLIC_KEY_LEN],
-            info: Vec::new(),
-            plaintext: Vec::new(),
-            __buffa_unknown_fields: Default::default(),
+            recipient_public_key: vec![0; PUBLIC_KEY_LEN].into(),
+            info: Vec::new().into(),
+            plaintext: Vec::new().into(),
         };
         assert_eq!(
             P256BaseSealInputs::try_from(&seal).err(),
             Some(HpkeError::PRIMITIVE_INVALID_PUBLIC_KEY)
         );
-        seal.info = vec![0; INFO_MAX_LEN.checked_add(1).expect("bounded info")];
+        seal.info = vec![0; INFO_MAX_LEN.checked_add(1).expect("bounded info")].into();
         assert_eq!(
             P256BaseSealInputs::try_from(&seal).err(),
             Some(HpkeError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED)
         );
         let open = CryptoHpkeP256BaseOpenRequest {
-            encapsulated_key: vec![0; PUBLIC_KEY_LEN],
-            info: Vec::new(),
-            ciphertext: vec![0; 15],
-            __buffa_unknown_fields: Default::default(),
+            encapsulated_key: vec![0; PUBLIC_KEY_LEN].into(),
+            info: Vec::new().into(),
+            ciphertext: vec![0; 15].into(),
         };
         assert_eq!(
             P256BaseOpenInputs::try_from(&open).err(),
@@ -570,7 +550,6 @@ fn remaining_existing_requests_preserve_every_field_and_reject_unknown_modifiers
     use buffa::{Message, MessageField};
     use crypto_hpke::proto_protocol::{
         HpkeOpenInputs, HpkePskOpenInputs, HpkePskSealInputs, HpkeReceiverExportInputs,
-        HpkeSealInputs, HpkeSenderSealInputs,
     };
     use crypto_proto::generated::proto::reallyme::crypto::v1::{
         __buffa::oneof::crypto_algorithm_identifier::Algorithm, CryptoAlgorithmIdentifier,
@@ -584,17 +563,15 @@ fn remaining_existing_requests_preserve_every_field_and_reject_unknown_modifiers
             algorithm: Some(Algorithm::HpkeSuite(Box::new(
                 HpkeSuiteIdentifier::try_from(suite).expect("suite"),
             ))),
-            __buffa_unknown_fields: Default::default(),
         })
     };
     let open = CryptoHpkeOpenRequest {
         algorithm: algorithm(),
-        recipient_secret_key: key.private_key().to_vec(),
-        encapsulated_key: key.public_key.clone(),
-        info: vec![0, 0xff],
-        aad: vec![0, 0xfe],
-        ciphertext: vec![0; 16],
-        __buffa_unknown_fields: Default::default(),
+        recipient_secret_key: key.private_key().to_vec().into(),
+        encapsulated_key: key.public_key.clone().into(),
+        info: vec![0, 0xff].into(),
+        aad: vec![0, 0xfe].into(),
+        ciphertext: vec![0; 16].into(),
     };
     let owner = HpkeOpenInputs::try_from(&open).expect("open inputs");
     assert_eq!(
@@ -605,13 +582,12 @@ fn remaining_existing_requests_preserve_every_field_and_reject_unknown_modifiers
     );
     let psk_seal = CryptoHpkePskSealRequest {
         algorithm: algorithm(),
-        recipient_public_key: key.public_key.clone(),
-        info: vec![0, 0xff],
-        aad: vec![0, 0xfe],
-        plaintext: vec![0, 0xfd],
-        psk: vec![0x11; 32],
-        psk_id: vec![0, 0xfc],
-        __buffa_unknown_fields: Default::default(),
+        recipient_public_key: key.public_key.clone().into(),
+        info: vec![0, 0xff].into(),
+        aad: vec![0, 0xfe].into(),
+        plaintext: vec![0, 0xfd].into(),
+        psk: vec![0x11; 32].into(),
+        psk_id: vec![0, 0xfc].into(),
     };
     let owner = HpkePskSealInputs::try_from(&psk_seal).expect("PSK seal inputs");
     assert_eq!(
@@ -622,14 +598,13 @@ fn remaining_existing_requests_preserve_every_field_and_reject_unknown_modifiers
     );
     let psk_open = CryptoHpkePskOpenRequest {
         algorithm: algorithm(),
-        recipient_secret_key: key.private_key().to_vec(),
-        encapsulated_key: key.public_key.clone(),
-        info: vec![0, 0xff],
-        aad: vec![0, 0xfe],
-        ciphertext: vec![0; 16],
-        psk: vec![0x11; 32],
-        psk_id: vec![0, 0xfc],
-        __buffa_unknown_fields: Default::default(),
+        recipient_secret_key: key.private_key().to_vec().into(),
+        encapsulated_key: key.public_key.clone().into(),
+        info: vec![0, 0xff].into(),
+        aad: vec![0, 0xfe].into(),
+        ciphertext: vec![0; 16].into(),
+        psk: vec![0x11; 32].into(),
+        psk_id: vec![0, 0xfc].into(),
     };
     let owner = HpkePskOpenInputs::try_from(&psk_open).expect("PSK open inputs");
     assert_eq!(
@@ -640,12 +615,11 @@ fn remaining_existing_requests_preserve_every_field_and_reject_unknown_modifiers
     );
     let export = CryptoHpkeReceiverExportRequest {
         algorithm: algorithm(),
-        recipient_secret_key: key.private_key().to_vec(),
-        encapsulated_key: key.public_key.clone(),
-        info: vec![0, 0xff],
-        exporter_context: vec![0, 0xfe],
+        recipient_secret_key: key.private_key().to_vec().into(),
+        encapsulated_key: key.public_key.clone().into(),
+        info: vec![0, 0xff].into(),
+        exporter_context: vec![0, 0xfe].into(),
         output_length: 32,
-        __buffa_unknown_fields: Default::default(),
     };
     let owner = HpkeReceiverExportInputs::try_from(&export).expect("receiver export inputs");
     assert_eq!(
@@ -654,29 +628,19 @@ fn remaining_existing_requests_preserve_every_field_and_reject_unknown_modifiers
             .encode_to_vec(),
         export.encode_to_vec()
     );
-    let mut seal = CryptoHpkeSealRequest {
+    let seal = CryptoHpkeSealRequest {
         algorithm: algorithm(),
-        recipient_public_key: key.public_key.clone(),
-        info: Vec::new(),
-        aad: Vec::new(),
-        plaintext: Vec::new(),
-        __buffa_unknown_fields: Default::default(),
+        recipient_public_key: key.public_key.clone().into(),
+        info: Vec::new().into(),
+        aad: Vec::new().into(),
+        plaintext: Vec::new().into(),
     };
-    seal.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(
-        HpkeSealInputs::try_from(&seal).err(),
-        Some(HpkeError::PRIMITIVE_INVALID_PARAMETER)
-    );
-    let mut content = CryptoHpkeSenderSealRequest {
-        aad: Vec::new(),
-        plaintext: Vec::new(),
-        __buffa_unknown_fields: Default::default(),
+    assert_unknown_wire(&seal, &[0xa0, 0x06, 0x01]);
+    let content = CryptoHpkeSenderSealRequest {
+        aad: Vec::new().into(),
+        plaintext: Vec::new().into(),
     };
-    content.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(
-        HpkeSenderSealInputs::try_from(&content).err(),
-        Some(HpkeError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    assert_unknown_wire(&content, &[0xa0, 0x06, 0x01]);
     Ok(())
 }
 
@@ -705,4 +669,11 @@ fn every_request_adapter_has_clearing_ownership() {
         cleanup::<crypto_hpke::proto_protocol::P256BaseSealInputs>();
         cleanup::<crypto_hpke::proto_protocol::P256BaseOpenInputs>();
     }
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

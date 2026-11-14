@@ -7,7 +7,7 @@
 #![cfg(feature = "generated")]
 #![allow(missing_docs)]
 
-use buffa::{DecodeError, DecodeOptions, ExtensionSet, Message};
+use buffa::{DecodeError, DecodeOptions, Message};
 use reallyme_crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoArgon2FixedDeriveRequest, CryptoHkdfDeriveInputs, CryptoHkdfDomainKey32Request,
     CryptoHkdfDomainTag, CryptoHkdfExpandSha384Request, CryptoHkdfExtractSha384Request,
@@ -95,40 +95,13 @@ fn optional_scalar_zero_has_presence_and_closed_json_fields() -> Result<(), Deco
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
-#[allow(unsafe_code, clippy::expect_used)]
-fn shorter_optional_replacements_wipe_the_initialized_tail() -> Result<(), DecodeError> {
-    let mut request = CryptoHkdfExtractSha384Request::default();
-    request.salt = Some(vec![0xa5; 64]);
-    let allocation = request.salt.as_ref().expect("present salt").as_ptr();
-    request.merge_from_slice(&[0x12, 1, 9])?;
-    let salt = request.salt.as_ref().expect("presence survives merge");
-    assert_eq!(salt, &[9]);
-    assert_eq!(salt.as_ptr(), allocation);
-    // SAFETY: The same live allocation retains all 64 previously initialized
-    // bytes. No reads occur after drop, reallocation, or concurrent mutation.
-    let initialized = unsafe { core::slice::from_raw_parts(salt.as_ptr(), 64) };
-    assert!(initialized[1..].iter().all(|byte| *byte == 0));
-    Ok(())
-}
-
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
-#[cfg_attr(not(target_arch = "wasm32"), test)]
-#[allow(unsafe_code, clippy::expect_used)]
-fn malformed_optional_replacements_clear_the_retained_live_buffer() {
-    let mut request = CryptoHkdfExtractSha384Request::default();
-    request.salt = Some(vec![0xa5; 64]);
-    let allocation = request.salt.as_ref().expect("present salt").as_ptr();
-    assert!(request.merge_from_slice(&[0x12, 2, 9]).is_err());
-    let salt = request
-        .salt
-        .as_ref()
-        .expect("failed merge retains structural presence");
-    assert!(salt.is_empty());
-    assert_eq!(salt.as_ptr(), allocation);
-    // SAFETY: Failed guarded merge retains the same live allocation; all
-    // observed bytes were initialized before merge and no mutation is active.
-    let initialized = unsafe { core::slice::from_raw_parts(salt.as_ptr(), 64) };
-    assert!(initialized.iter().all(|byte| *byte == 0));
+fn malformed_optional_replacement_clears_destination() {
+    let mut request = CryptoHkdfExtractSha384Request::default().with_salt(vec![0xa5; 64]);
+    assert_eq!(
+        reallyme_crypto_proto::wire::merge_protobuf(&mut request, &[0x12, 2, 9]),
+        Err(reallyme_crypto_proto::wire::CryptoWireError::malformed_protobuf())
+    );
+    assert!(request.salt.is_none());
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -195,18 +168,15 @@ fn malformed_unknown_groups_keep_original_typed_errors() {
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
-fn unknown_group_wire_and_budgets_remain_unchanged() -> Result<(), DecodeError> {
+fn unknown_group_wire_is_rejected_without_retaining_bytes() -> Result<(), DecodeError> {
     let encoded = [0xa3, 0x06, 0x0a, 3, b'k', b'e', b'y', 0xa4, 0x06];
-    let document: PublicJwkDocument = DecodeOptions::new()
-        .with_unknown_field_limit(2)
-        .decode_from_slice(&encoded)?;
-    assert_eq!(document.unknown_fields().len(), 1);
-    assert_eq!(document.encode_to_vec(), encoded);
-    let limited: Result<PublicJwkDocument, _> = DecodeOptions::new()
-        .with_unknown_field_limit(1)
+    let discarded: PublicJwkDocument = DecodeOptions::new().decode_from_slice(&encoded)?;
+    assert!(discarded.encode_to_vec().is_empty());
+    let rejected: Result<PublicJwkDocument, _> = DecodeOptions::new()
+        .reject_unknown_fields()
         .decode_from_slice(&encoded);
     assert!(matches!(
-        limited,
+        rejected,
         Err(DecodeError::UnknownFieldLimitExceeded)
     ));
     let no_depth: Result<PublicJwkDocument, _> = DecodeOptions::new()

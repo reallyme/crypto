@@ -16,11 +16,6 @@ impl TryFrom<&CryptoRsaHashIdentifier> for RsaHash {
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(identifier: &CryptoRsaHashIdentifier) -> Result<Self, Self::Error> {
-        // Unknown modifiers must not be silently stripped from a recognized
-        // identity. The decoded clearing owner retains them on this error path.
-        if !identifier.__buffa_unknown_fields.is_empty() {
-            return Err(UnsupportedProtoAlgorithm);
-        }
         match identifier.hash.as_known() {
             Some(RsaHashAlgorithm::RSA_HASH_ALGORITHM_SHA1) => Ok(Self::Sha1),
             Some(RsaHashAlgorithm::RSA_HASH_ALGORITHM_SHA256) => Ok(Self::Sha256),
@@ -43,7 +38,6 @@ impl From<RsaHash> for CryptoRsaHashIdentifier {
         };
         Self {
             hash: identity.into(),
-            __buffa_unknown_fields: Default::default(),
         }
     }
 }
@@ -52,11 +46,6 @@ impl TryFrom<&CryptoRsaPublicKeyDerEncodingIdentifier> for RsaPublicKeyDerEncodi
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(identifier: &CryptoRsaPublicKeyDerEncodingIdentifier) -> Result<Self, Self::Error> {
-        // Unknown modifiers must not be silently stripped from a recognized
-        // identity. The decoded clearing owner retains them on this error path.
-        if !identifier.__buffa_unknown_fields.is_empty() {
-            return Err(UnsupportedProtoAlgorithm);
-        }
         match identifier.encoding.as_known() {
             Some(ProtoRsaEncoding::RSA_PUBLIC_KEY_DER_ENCODING_PKCS1) => Ok(Self::Pkcs1),
             Some(ProtoRsaEncoding::RSA_PUBLIC_KEY_DER_ENCODING_SPKI) => Ok(Self::Spki),
@@ -75,7 +64,6 @@ impl From<RsaPublicKeyDerEncoding> for CryptoRsaPublicKeyDerEncodingIdentifier {
         };
         Self {
             encoding: identity.into(),
-            __buffa_unknown_fields: Default::default(),
         }
     }
 }

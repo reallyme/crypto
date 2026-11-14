@@ -5,14 +5,6 @@
 use crypto_core::CryptoError;
 use zeroize::Zeroizing;
 
-pub(super) fn require_known(known: bool) -> Result<(), CryptoError> {
-    if known {
-        Ok(())
-    } else {
-        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    }
-}
-
 pub(super) fn copy_bytes(bytes: &[u8]) -> Result<Zeroizing<Vec<u8>>, CryptoError> {
     let mut output = Zeroizing::new(Vec::new());
     copy_into(&mut output, bytes)?;

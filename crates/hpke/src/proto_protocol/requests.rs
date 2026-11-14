@@ -47,7 +47,6 @@ impl HpkeSealInputs {
 impl TryFrom<&CryptoHpkeSealRequest> for HpkeSealInputs {
     type Error = HpkeError;
     fn try_from(value: &CryptoHpkeSealRequest) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         let suite = read_algorithm(value.algorithm.as_option())?;
         require_sealing_suite(suite)?;
         validate_public_key(suite, &value.recipient_public_key)?;
@@ -107,7 +106,6 @@ impl HpkeOpenInputs {
 impl TryFrom<&CryptoHpkeOpenRequest> for HpkeOpenInputs {
     type Error = HpkeError;
     fn try_from(value: &CryptoHpkeOpenRequest) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         let suite = read_algorithm(value.algorithm.as_option())?;
         require_sealing_suite(suite)?;
         validate_encapsulated_key(suite, &value.encapsulated_key)?;
@@ -177,7 +175,6 @@ impl HpkePskSealInputs {
 impl TryFrom<&CryptoHpkePskSealRequest> for HpkePskSealInputs {
     type Error = HpkeError;
     fn try_from(value: &CryptoHpkePskSealRequest) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         let suite = read_algorithm(value.algorithm.as_option())?;
         require_sealing_suite(suite)?;
         validate_public_key(suite, &value.recipient_public_key)?;
@@ -248,7 +245,6 @@ impl HpkePskOpenInputs {
 impl TryFrom<&CryptoHpkePskOpenRequest> for HpkePskOpenInputs {
     type Error = HpkeError;
     fn try_from(value: &CryptoHpkePskOpenRequest) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         let suite = read_algorithm(value.algorithm.as_option())?;
         require_sealing_suite(suite)?;
         validate_encapsulated_key(suite, &value.encapsulated_key)?;
@@ -321,7 +317,6 @@ impl HpkeSenderExportInputs {
 impl TryFrom<&CryptoHpkeSenderExportRequest> for HpkeSenderExportInputs {
     type Error = HpkeError;
     fn try_from(value: &CryptoHpkeSenderExportRequest) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         let suite = read_algorithm(value.algorithm.as_option())?;
         require_export_suite(suite)?;
         validate_public_key(suite, &value.recipient_public_key)?;
@@ -385,7 +380,6 @@ impl HpkeReceiverExportInputs {
 impl TryFrom<&CryptoHpkeReceiverExportRequest> for HpkeReceiverExportInputs {
     type Error = HpkeError;
     fn try_from(value: &CryptoHpkeReceiverExportRequest) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         let suite = read_algorithm(value.algorithm.as_option())?;
         require_export_suite(suite)?;
         validate_encapsulated_key(suite, &value.encapsulated_key)?;
@@ -433,7 +427,6 @@ pub(super) fn read_algorithm(
     value: Option<&CryptoAlgorithmIdentifier>,
 ) -> Result<HpkeSuite, HpkeError> {
     let value = value.ok_or(HpkeError::PRIMITIVE_INVALID_PARAMETER)?;
-    require_known(value.__buffa_unknown_fields.is_empty())?;
     match value.algorithm.as_ref() {
         Some(Algorithm::HpkeSuite(suite)) => HpkeSuite::try_from(suite.as_ref()),
         _ => Err(HpkeError::PRIMITIVE_INVALID_PARAMETER),
@@ -444,15 +437,7 @@ pub(super) fn write_algorithm(suite: HpkeSuite) -> Result<CryptoAlgorithmIdentif
         algorithm: Some(Algorithm::HpkeSuite(Box::new(
             HpkeSuiteIdentifier::try_from(suite)?,
         ))),
-        __buffa_unknown_fields: Default::default(),
     })
-}
-pub(super) fn require_known(known: bool) -> Result<(), HpkeError> {
-    if known {
-        Ok(())
-    } else {
-        Err(HpkeError::PRIMITIVE_INVALID_PARAMETER)
-    }
 }
 pub(super) fn check_length(bytes: &[u8]) -> Result<(), HpkeError> {
     u32::try_from(bytes.len())
@@ -470,14 +455,15 @@ pub(super) fn copy_bytes(bytes: &[u8]) -> Result<Zeroizing<Vec<u8>>, HpkeError> 
 }
 
 /// Copies one field through its final clearing owner, with fallible allocation.
-pub(super) fn copy_into(output: &mut Vec<u8>, bytes: &[u8]) -> Result<(), HpkeError> {
+pub(super) fn copy_into(
+    output: &mut crypto_proto::SecretBytes,
+    bytes: &[u8],
+) -> Result<(), HpkeError> {
     check_length(bytes)?;
     if !output.is_empty() {
         return Err(HpkeError::BACKEND_INVALID_STATE);
     }
     output
-        .try_reserve_exact(bytes.len())
-        .map_err(|_| HpkeError::BACKEND_INTERNAL)?;
-    output.extend_from_slice(bytes);
-    Ok(())
+        .extend_from_slice(bytes)
+        .map_err(|_| HpkeError::BACKEND_INTERNAL)
 }

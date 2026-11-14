@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::native_contract_support::known_fields;
 use crypto_core::CryptoError;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoP256SecureEnclaveHandleDecodeRequest, CryptoP256SecureEnclaveHandleDecodeResult,
@@ -14,7 +13,6 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 pub fn encode_p256_handle(
     request: &CryptoP256SecureEnclaveHandleEncodeRequest,
 ) -> Result<CryptoP256SecureEnclaveHandleEncodeResult, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     #[cfg(any(feature = "p256", feature = "ecdsa-explicit"))]
     {
         let encoded = zeroize::Zeroizing::new(crypto_p256::encode_se_handle(&request.tag)?);
@@ -33,12 +31,11 @@ pub fn encode_p256_handle(
 pub fn decode_p256_handle(
     request: &CryptoP256SecureEnclaveHandleDecodeRequest,
 ) -> Result<CryptoP256SecureEnclaveHandleDecodeResult, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     #[cfg(any(feature = "p256", feature = "ecdsa-explicit"))]
     {
         let mut output = CryptoP256SecureEnclaveHandleDecodeResult::default();
         if let Some(tag) = crypto_p256::decode_se_handle(&request.handle) {
-            let storage = output.tag.insert(Vec::new());
+            let storage = output.tag.insert(Vec::new().into());
             crate::native_contract_support::copy_bytes(storage, tag)?;
         }
         Ok(output)

@@ -197,31 +197,31 @@ fn platform_lifecycle_failures_are_fixed_provider_reasons() {
     let reasons = [
         (
             crypto_core::CryptoError::PROVIDER_KEY_EXISTS,
-            "provider operation failure: key exists",
+            "CRYPTO_ERROR_REASON_PROVIDER_KEY_EXISTS",
         ),
         (
             crypto_core::CryptoError::PROVIDER_KEY_NOT_FOUND,
-            "provider operation failure: key not found",
+            "CRYPTO_ERROR_REASON_PROVIDER_KEY_NOT_FOUND",
         ),
         (
             crypto_core::CryptoError::PROVIDER_ACCESS_DENIED,
-            "provider operation failure: access denied",
+            "CRYPTO_ERROR_REASON_PROVIDER_ACCESS_DENIED",
         ),
         (
             crypto_core::CryptoError::PROVIDER_USER_AUTHENTICATION_REQUIRED,
-            "provider operation failure: user authentication required",
+            "CRYPTO_ERROR_REASON_PROVIDER_USER_AUTHENTICATION_REQUIRED",
         ),
         (
             crypto_core::CryptoError::PROVIDER_USER_CANCELED,
-            "provider operation failure: user canceled",
+            "CRYPTO_ERROR_REASON_PROVIDER_USER_CANCELED",
         ),
         (
             crypto_core::CryptoError::PROVIDER_HARDWARE_UNAVAILABLE,
-            "provider operation failure: hardware unavailable",
+            "CRYPTO_ERROR_REASON_PROVIDER_HARDWARE_UNAVAILABLE",
         ),
         (
             crypto_core::CryptoError::PROVIDER_HARDWARE_REJECTED_KEY,
-            "provider operation failure: hardware rejected key",
+            "CRYPTO_ERROR_REASON_PROVIDER_HARDWARE_REJECTED_KEY",
         ),
     ];
 

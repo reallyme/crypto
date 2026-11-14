@@ -79,7 +79,7 @@ use super::signature::{
 };
 
 pub(super) fn process_signature_generate_key_pair_request(
-    request: CryptoSignatureGenerateKeyPairRequest,
+    request: &CryptoSignatureGenerateKeyPairRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(
         any(feature = "native", feature = "wasm"),
@@ -127,7 +127,7 @@ pub(super) fn process_signature_generate_key_pair_request(
 }
 
 pub(super) fn process_signature_derive_key_pair_request(
-    request: CryptoSignatureDeriveKeyPairRequest,
+    request: &CryptoSignatureDeriveKeyPairRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(
         any(feature = "native", feature = "wasm"),
@@ -175,7 +175,7 @@ pub(super) fn process_signature_derive_key_pair_request(
 }
 
 pub(super) fn process_signature_sign_request(
-    request: CryptoSignatureSignRequest,
+    request: &CryptoSignatureSignRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(
         any(feature = "native", feature = "wasm"),
@@ -223,7 +223,7 @@ pub(super) fn process_signature_sign_request(
 }
 
 pub(super) fn process_signature_verify_request(
-    request: CryptoSignatureVerifyRequest,
+    request: &CryptoSignatureVerifyRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(
         any(feature = "native", feature = "wasm"),
@@ -271,7 +271,7 @@ pub(super) fn process_signature_verify_request(
 }
 
 pub(super) fn process_bip340_schnorr_sign_request(
-    request: CryptoBip340SchnorrSignRequest,
+    request: &CryptoBip340SchnorrSignRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(
         any(feature = "native", feature = "wasm"),
@@ -297,7 +297,7 @@ pub(super) fn process_bip340_schnorr_sign_request(
 }
 
 pub(super) fn process_rsa_verify_request(
-    request: CryptoRsaVerifyRequest,
+    request: &CryptoRsaVerifyRequest,
 ) -> CryptoOperationResponse {
     #[cfg(all(
         any(feature = "native", feature = "wasm"),

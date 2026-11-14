@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use super::copy_inputs::{copy_into, read_algorithm, require_known, write_algorithm};
+use super::copy_inputs::{copy_into, read_algorithm, write_algorithm};
 use crate::{AlgorithmError, GeneratedKeypair};
 use buffa::MessageField;
 use crypto_core::Algorithm;
@@ -38,7 +38,6 @@ impl TryFrom<&CryptoGenerateMultikeyKeypairRequest> for GenerateMultikeyKeypairI
     type Error = AlgorithmError;
 
     fn try_from(value: &CryptoGenerateMultikeyKeypairRequest) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         Ok(Self {
             algorithm: read_algorithm(value.algorithm.as_option())?,
         })

@@ -52,9 +52,8 @@ fn metadata_rejects_absent_zero_and_unknown_values() -> Result<(), buffa::Decode
 fn metadata_rejects_unknown_modifiers() -> Result<(), buffa::DecodeError> {
     let modifiers: &[&[u8]] = &[&[0xa0, 0x06, 0x01], &[0xa2, 0x06, 0x03, 0x01, 0x02, 0x03]];
     for modifier in modifiers {
-        let mut value = identifier(ProtoCurve::ECDSA_CURVE_NIST_P256.into());
-        value.merge_from_slice(modifier)?;
-        assert_eq!(EcdsaCurve::try_from(&value), Err(UnsupportedProtoAlgorithm));
+        let value = identifier(ProtoCurve::ECDSA_CURVE_NIST_P256.into());
+        assert_unknown_wire(&value, modifier);
     }
     Ok(())
 }
@@ -88,10 +87,7 @@ fn metadata_clears_retained_unknown_storage_on_drop() {
 }
 
 fn identifier(curve: EnumValue<ProtoCurve>) -> CryptoEcdsaCurveIdentifier {
-    CryptoEcdsaCurveIdentifier {
-        curve,
-        __buffa_unknown_fields: Default::default(),
-    }
+    CryptoEcdsaCurveIdentifier { curve }
 }
 
 #[cfg(not(any(feature = "brainpool", feature = "brainpool-openssl")))]
@@ -148,7 +144,6 @@ fn hash_metadata_rejects_missing_unknown_and_wrong_family() {
     ] {
         let value = CryptoAlgorithmIdentifier {
             algorithm: Some(wrong),
-            __buffa_unknown_fields: Default::default(),
         };
         assert_eq!(EcdsaHash::try_from(&value), Err(UnsupportedProtoAlgorithm));
     }
@@ -159,9 +154,8 @@ fn hash_metadata_rejects_missing_unknown_and_wrong_family() {
 fn hash_metadata_rejects_unknown_modifiers() -> Result<(), buffa::DecodeError> {
     let modifiers: &[&[u8]] = &[&[0xa0, 0x06, 0x01], &[0xa2, 0x06, 0x03, 0x01, 0x02, 0x03]];
     for modifier in modifiers {
-        let mut value = hash_identifier(HashAlgorithm::HASH_ALGORITHM_SHA2_256.into());
-        value.merge_from_slice(modifier)?;
-        assert_eq!(EcdsaHash::try_from(&value), Err(UnsupportedProtoAlgorithm));
+        let value = hash_identifier(HashAlgorithm::HASH_ALGORITHM_SHA2_256.into());
+        assert_unknown_wire(&value, modifier);
     }
     Ok(())
 }
@@ -186,6 +180,12 @@ fn ecdsa_hashes_keep_existing_schema_wire_tags() -> Result<(), buffa::DecodeErro
 fn hash_identifier(hash: EnumValue<HashAlgorithm>) -> CryptoAlgorithmIdentifier {
     CryptoAlgorithmIdentifier {
         algorithm: Some(Identity::Hash(hash)),
-        __buffa_unknown_fields: Default::default(),
     }
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

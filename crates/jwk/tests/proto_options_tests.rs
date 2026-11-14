@@ -31,8 +31,7 @@ fn options_preserve_every_flag_and_exact_optional_utf8_kid() {
                         alg,
                         use_sig,
                         use_enc,
-                        kid,
-                        __buffa_unknown_fields: Default::default(),
+                        kid: kid.map(Into::into),
                     };
                     let owner = ProtectedJwkOptions::try_from(&wire).expect("exact UTF-8 metadata");
                     let returned =
@@ -54,19 +53,14 @@ fn options_reject_invalid_utf8_and_unknown_modifiers() -> Result<(), buffa::Deco
         alg: false,
         use_sig: false,
         use_enc: false,
-        kid: Some(vec![0xff]),
-        __buffa_unknown_fields: Default::default(),
+        kid: Some(vec![0xff].into()),
     };
     assert_eq!(
         ProtectedJwkOptions::try_from(&wire).err(),
         Some(CryptoError::PRIMITIVE_INVALID_ENCODING)
     );
     wire.kid = None;
-    wire.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(
-        ProtectedJwkOptions::try_from(&wire).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    assert_unknown_wire(&wire, &[0xa0, 0x06, 0x01]);
     Ok(())
 }
 #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
@@ -142,11 +136,7 @@ fn typed_key_rejects_missing_variant_unknown_modifiers_and_wrong_shape(
     );
     let native = native_key(KeyAlgorithm::KEY_ALGORITHM_ED25519).expect("fixture");
     let mut wire = PublicJwk::try_from(&native).expect("wire");
-    wire.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(
-        ProtectedJwk::try_from(&wire).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    assert_unknown_wire(&wire, &[0xa0, 0x06, 0x01]);
     wire = PublicJwk::try_from(&native).expect("wire");
     if let Some(Key::Okp(value)) = &mut wire.key {
         value.key_algorithm = KeyAlgorithm::KEY_ALGORITHM_ML_DSA_44.into();
@@ -157,19 +147,16 @@ fn typed_key_rejects_missing_variant_unknown_modifiers_and_wrong_shape(
     );
     wire = PublicJwk::try_from(&native).expect("wire");
     if let Some(Key::Okp(value)) = &mut wire.key {
-        value.kid = Some(vec![0xff]);
+        value.kid = Some(vec![0xff].into());
     }
     assert_eq!(
         ProtectedJwk::try_from(&wire).err(),
         Some(CryptoError::PRIMITIVE_INVALID_ENCODING)
     );
-    wire = PublicJwk::try_from(&native).expect("wire");
-    if let Some(Key::Okp(value)) = &mut wire.key {
-        value.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    }
+    let child = [0x12, 3, 0xa0, 0x06, 0x01];
     assert_eq!(
-        ProtectedJwk::try_from(&wire).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
+        crypto_proto::wire::decode_protobuf::<PublicJwk>(&child),
+        Err(crypto_proto::wire::CryptoWireError::malformed_protobuf())
     );
     Ok(())
 }
@@ -196,7 +183,7 @@ fn typed_keys_reject_unknown_identities_and_malformed_public_members() {
         Some(CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY)
     );
     if let Some(Key::Okp(value)) = &mut wire.key {
-        value.x_base64url = vec![0xff];
+        value.x_base64url = vec![0xff].into();
     }
     assert_eq!(
         ProtectedJwk::try_from(&wire).err(),
@@ -214,8 +201,7 @@ fn copied_option_key_and_set_owners_clear_every_owned_string() {
         alg: false,
         use_sig: false,
         use_enc: false,
-        kid: Some(b"private-correlator".to_vec()),
-        __buffa_unknown_fields: Default::default(),
+        kid: Some(b"private-correlator".to_vec().into()),
     })
     .expect("options");
     options.zeroize();
@@ -247,19 +233,14 @@ fn jwks_partial_failure_and_unknown_modifiers_fail_closed() -> Result<(), buffa:
         value.x_base64url.clear();
     }
     let mut set = PublicJwks {
-        keys: vec![wire, invalid],
-        __buffa_unknown_fields: Default::default(),
+        keys: vec![wire, invalid].into(),
     };
     assert_eq!(
         ProtectedJwks::try_from(&set).err(),
         Some(CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY)
     );
-    set.keys.pop();
-    set.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(
-        ProtectedJwks::try_from(&set).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    set.keys.clear();
+    assert_unknown_wire(&set, &[0xa0, 0x06, 0x01]);
     Ok(())
 }
 fn clone_public(value: &Jwk) -> Jwk {
@@ -447,8 +428,8 @@ fn typed_optional_metadata_retains_actual_bytes_and_rejects_noncanonical_values(
         ),
     ] {
         if let Some(Key::Okp(value)) = &mut wire.key {
-            value.alg = alg;
-            value.usage = usage;
+            value.alg = alg.map(Into::into);
+            value.usage = usage.map(Into::into);
         }
         assert_eq!(ProtectedJwk::try_from(&wire).err(), Some(expected));
     }
@@ -456,16 +437,23 @@ fn typed_optional_metadata_retains_actual_bytes_and_rejects_noncanonical_values(
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
-fn retired_draft_boolean_tags_are_not_reinterpreted_as_metadata() -> Result<(), buffa::DecodeError>
-{
+fn retired_draft_boolean_tags_are_not_reinterpreted_as_metadata() {
     let native = native_key(KeyAlgorithm::KEY_ALGORITHM_ED25519).expect("fixture");
-    let mut wire = PublicJwk::try_from(&native).expect("wire");
-    if let Some(Key::Okp(value)) = &mut wire.key {
-        value.merge_from_slice(&[0x18, 0x01])?;
-    }
-    assert_eq!(
-        ProtectedJwk::try_from(&wire).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
-    Ok(())
+    let wire = PublicJwk::try_from(&native).expect("wire");
+    let value = wire
+        .key
+        .as_ref()
+        .and_then(|key| match key {
+            Key::Okp(value) => Some(value.as_ref()),
+            _ => None,
+        })
+        .expect("OKP fixture");
+    assert_unknown_wire(value, &[0x18, 0x01]);
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

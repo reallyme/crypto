@@ -48,15 +48,13 @@ impl From<DomainKeyPurpose> for ProtoPurpose {
 impl TryFrom<&CryptoHkdfDomainTag> for DomainTag {
     type Error = CryptoError;
     fn try_from(value: &CryptoHkdfDomainTag) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         Self::from_slice(&value.value)
     }
 }
 impl From<&DomainTag> for CryptoHkdfDomainTag {
     fn from(value: &DomainTag) -> Self {
         Self {
-            value: value.as_bytes().to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            value: value.as_bytes().to_vec().into(),
         }
     }
 }
@@ -90,7 +88,6 @@ impl ZeroizeOnDrop for HkdfDeriveInputs {}
 impl TryFrom<&CryptoHkdfDeriveInputs> for HkdfDeriveInputs {
     type Error = CryptoError;
     fn try_from(value: &CryptoHkdfDeriveInputs) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         let suite = HkdfSuite::try_from(
             value
                 .suite
@@ -117,9 +114,12 @@ impl TryFrom<&DeriveRequest<'_>> for CryptoHkdfDeriveInputs {
         }
         let mut output = Self::default();
         output.suite = MessageField::some(CryptoHkdfSuiteIdentifier::from(value.suite));
-        output.input_key_material = value.ikm.as_bytes().to_vec();
-        output.salt = value.salt.map(|salt| salt.as_bytes().to_vec());
-        output.info = value.info.as_bytes().to_vec();
+        output.input_key_material = value.ikm.as_bytes().to_vec().into();
+        output.salt = value
+            .salt
+            .map(|salt| crypto_proto::SecretBytes::try_from_slice(salt.as_bytes()))
+            .transpose()?;
+        output.info = value.info.as_bytes().to_vec().into();
         Ok(output)
     }
 }
@@ -149,7 +149,6 @@ impl ZeroizeOnDrop for HkdfExtractSha384Inputs {}
 impl TryFrom<&CryptoHkdfExtractSha384Request> for HkdfExtractSha384Inputs {
     type Error = CryptoError;
     fn try_from(value: &CryptoHkdfExtractSha384Request) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         Ok(Self {
             ikm: read_ikm(&value.input_key_material)?,
             salt: read_salt(value.salt.as_deref())?,
@@ -159,8 +158,7 @@ impl TryFrom<&CryptoHkdfExtractSha384Request> for HkdfExtractSha384Inputs {
 impl From<&HkdfSha384Prk> for CryptoHkdfExtractSha384Result {
     fn from(value: &HkdfSha384Prk) -> Self {
         Self {
-            pseudorandom_key: value.as_bytes().to_vec(),
-            __buffa_unknown_fields: Default::default(),
+            pseudorandom_key: value.as_bytes().to_vec().into(),
         }
     }
 }
@@ -190,7 +188,6 @@ impl<const N: usize> ZeroizeOnDrop for HkdfExpandSha384Inputs<N> {}
 impl<const N: usize> TryFrom<&CryptoHkdfExpandSha384Request> for HkdfExpandSha384Inputs<N> {
     type Error = CryptoError;
     fn try_from(value: &CryptoHkdfExpandSha384Request) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         let length = usize::try_from(value.output_length)
             .map_err(|_| CryptoError::PRIMITIVE_INVALID_LENGTH)?;
         if length != N || N == 0 || N > HKDF_SHA384_MAX_OUTPUT_LENGTH {
@@ -217,8 +214,8 @@ impl<const N: usize> TryFrom<&HkdfExpandSha384Inputs<N>> for CryptoHkdfExpandSha
         let output_length = u32::try_from(N).map_err(|_| CryptoError::PRIMITIVE_INVALID_LENGTH)?;
         let mut output = Self::default();
         output.output_length = output_length;
-        output.pseudorandom_key = value.prk.as_bytes().to_vec();
-        output.info = value.info.as_bytes().to_vec();
+        output.pseudorandom_key = value.prk.as_bytes().to_vec().into();
+        output.info = value.info.as_bytes().to_vec().into();
         Ok(output)
     }
 }
@@ -259,7 +256,6 @@ impl ZeroizeOnDrop for HkdfDomainKey32Inputs {}
 impl TryFrom<&CryptoHkdfDomainKey32Request> for HkdfDomainKey32Inputs {
     type Error = CryptoError;
     fn try_from(value: &CryptoHkdfDomainKey32Request) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         let purpose = DomainKeyPurpose::try_from(value.purpose)?;
         let domain_tag = DomainTag::try_from(
             value
@@ -273,13 +269,6 @@ impl TryFrom<&CryptoHkdfDomainKey32Request> for HkdfDomainKey32Inputs {
             purpose,
             domain_tag,
         })
-    }
-}
-fn require_known(known: bool) -> Result<(), CryptoError> {
-    if known {
-        Ok(())
-    } else {
-        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
     }
 }
 fn check_length(bytes: &[u8]) -> Result<(), CryptoError> {
@@ -305,8 +294,12 @@ impl TryFrom<&HkdfExtractSha384Inputs> for CryptoHkdfExtractSha384Request {
             check_length(salt.as_bytes())?;
         }
         let mut output = Self::default();
-        output.input_key_material = value.ikm.as_bytes().to_vec();
-        output.salt = value.salt.as_ref().map(|salt| salt.as_bytes().to_vec());
+        output.input_key_material = value.ikm.as_bytes().to_vec().into();
+        output.salt = value
+            .salt
+            .as_ref()
+            .map(|salt| crypto_proto::SecretBytes::try_from_slice(salt.as_bytes()))
+            .transpose()?;
         Ok(output)
     }
 }
@@ -320,8 +313,12 @@ impl TryFrom<&HkdfDomainKey32Inputs> for CryptoHkdfDomainKey32Request {
             check_length(salt.as_bytes())?;
         }
         let mut output = Self::default();
-        output.input_key_material = value.ikm.as_bytes().to_vec();
-        output.salt = value.salt.as_ref().map(|salt| salt.as_bytes().to_vec());
+        output.input_key_material = value.ikm.as_bytes().to_vec().into();
+        output.salt = value
+            .salt
+            .as_ref()
+            .map(|salt| crypto_proto::SecretBytes::try_from_slice(salt.as_bytes()))
+            .transpose()?;
         output.purpose = ProtoPurpose::from(value.purpose).into();
         output.domain_tag = MessageField::some(CryptoHkdfDomainTag::from(&value.domain_tag));
         Ok(output)

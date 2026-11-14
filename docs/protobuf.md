@@ -31,23 +31,36 @@ lanes may execute each algorithm and what output they must produce.
 
 ## Generation
 
-From the repository root, using Buf `1.75.0`, `protoc-gen-buffa` `0.9.2`, and
-`protoc-gen-buffa-packaging` `0.9.2`, matching protobuf CI:
+From the repository root, using Buf `1.75.0` and the published ReallyMe
+Buffa `0.1.0` generators, matching protobuf CI:
 
 ```sh
+cargo install reallyme-protoc-gen-buffa --version '=0.1.0' --locked
+cargo install reallyme-protoc-gen-buffa-packaging --version '=0.1.0' --locked
 buf lint
-buf generate
-node scripts/redact_crypto_proto_debug.mjs
-node scripts/redact_crypto_proto_debug.mjs --check-idempotent
-cargo fmt -p reallyme-crypto-proto
+node scripts/generate_protobuf.mjs
 ```
 
-The post-generation step is required: it applies secret redaction, zeroization,
-and strict decoding to generated bindings. Do not publish raw generator output
-without it. Rust outputs live under `crates/proto/src/generated`, TypeScript
+The driver verifies the exact executable names and versions. Buffa generates
+Rust redaction, cleanup, guarded collection storage, and view export policy
+from `buf.gen.yaml`. The driver does not edit generated field or cleanup code.
+A narrow compatibility step removes the raw `HasMessageView` handle from
+secret message families until Buffa supports protected owned handles.
+Use `--rust-only` when working without the hosted SDK generators. The separate
+SDK step retains Swift and Java diagnostic redaction. Rust outputs live under
+`crates/proto/src/generated`, TypeScript
 package bindings under `packages/ts/src/proto/generated`, and additional
 TypeScript, JavaScript, Swift, Java, and Kotlin outputs under `gen/`.
 Review generated diffs and run the conformance checks before accepting them.
+
+For Rust, pass untrusted bytes through `reallyme_crypto_proto::wire::decode_protobuf`
+or the operation-specific decoder before converting a DTO to a native input.
+These decoders validate the complete tree and reject unknown fields. Buffa's
+default decoder can discard unknowns because cleanup DTOs do not store them.
+Use `wire::merge_protobuf` when an existing owner must accept an update; the
+destination is cleared if the update fails. Borrowed views do not own their
+wire buffer. The secret-owned view facade retains clearing backing bytes and
+does not implement `Clone`.
 
 ## Algorithm Identity
 
@@ -62,14 +75,14 @@ unchanged.
 The total native conversions in `reallyme_crypto_proto::convert` accept a
 borrowed generated identifier, including the generated unknown-value wrapper.
 They reject missing choices, `UNSPECIFIED`, unknown values, wrong families and
-unknown modifier fields. Published closed-enum convenience conversions delegate
+unknown modifier fields at wire admission. Published closed-enum convenience conversions delegate
 to the same path. The optional `hpke-identities` feature adds suite-triple
 conversion using the existing HPKE identity types without enabling a backend;
 operation provider policy still determines whether a registered suite executes.
 
 Curve and prime-group identities are standalone metadata as well:
 `CryptoEcdsaCurveIdentifier` uses the seven-value `EcdsaCurve` enum, and
-`CryptoPrimeGroupIdentifier` uses the ten-value `PrimeGroup` enum. Both assign
+`CryptoPrimeGroupIdentifier` uses the schema-defined `PrimeGroup` enum. Both assign
 100-199 to NIST curves and 200-299 to Brainpool curves; `PrimeGroup` assigns
 300-399 to RFC 5114 finite-field domains. Zero is `UNSPECIFIED`, 1-99 are
 reserved, and assigned values are permanent. Registration of a legacy group
@@ -81,7 +94,7 @@ metadata. They recognize identities without checking provider availability and
 reject omitted, zero, unknown and modified identifiers. `EcdsaHash` uses the
 existing `CryptoAlgorithmIdentifier` hash branch and accepts only SHA-2-256,
 SHA-2-384 and SHA-2-512; no second hash namespace is introduced. Generated
-scalar metadata clears retained unknown byte fields on drop.
+scalar metadata clears its known fields on drop and stores no unknown bytes.
 
 These metadata messages do not add executable operation branches, choose a
 signature encoding or hash implicitly, or supply a group base or mapping policy.

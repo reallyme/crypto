@@ -49,16 +49,21 @@ fn bytes(text: &str) -> Zeroizing<Vec<u8>> {
 
 fn request(case: &Case, params: RsaPssParams) -> CryptoRsaPssVerifyRequest {
     let mut output = CryptoRsaPssVerifyRequest::default();
-    output
+    assert!(output
         .public_key_der
-        .extend_from_slice(&bytes(&case.public_key_der_hex));
+        .extend_from_slice(&bytes(&case.public_key_der_hex))
+        .is_ok());
     output.public_key_encoding = ProtoEncoding::RSA_PUBLIC_KEY_DER_ENCODING_SPKI.into();
     output.params =
         MessageField::some(CryptoRsaPssParams::try_from(&params).expect("fixed params"));
-    output.message.extend_from_slice(&bytes(&case.message_hex));
-    output
+    assert!(output
+        .message
+        .extend_from_slice(&bytes(&case.message_hex))
+        .is_ok());
+    assert!(output
         .signature
-        .extend_from_slice(&bytes(&case.signature_hex));
+        .extend_from_slice(&bytes(&case.signature_hex))
+        .is_ok());
     output
 }
 
@@ -87,9 +92,9 @@ fn all_existing_unequal_hash_pairings_verify_with_zero_and_nonzero_salt() -> Res
         );
         let inputs = RsaPssVerifyInputs::try_from(&request)?;
         assert_eq!(inputs.params(), params);
-        assert_eq!(inputs.message(), request.message);
-        assert_eq!(inputs.signature(), request.signature);
-        assert_eq!(inputs.public_key_der(), request.public_key_der);
+        assert_eq!(inputs.message(), request.message.as_slice());
+        assert_eq!(inputs.signature(), request.signature.as_slice());
+        assert_eq!(inputs.public_key_der(), request.public_key_der.as_slice());
         assert_eq!(
             inputs.verify()?.status.as_known(),
             Some(CryptoVerificationStatus::CRYPTO_VERIFICATION_STATUS_VALID)
@@ -130,7 +135,7 @@ fn collapsing_hashes_changing_salt_or_message_cannot_verify_the_published_signat
             );
         }
         let mut request = request(&case, params);
-        request.message.push(0);
+        assert!(request.message.push(0).is_ok());
         assert_eq!(
             RsaPssVerifyInputs::try_from(&request)?.verify().err(),
             Some(CryptoError::PRIMITIVE_INVALID_SIGNATURE)

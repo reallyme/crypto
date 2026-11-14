@@ -87,7 +87,6 @@ fn every_declared_branch_fails_closed_without_algorithm_features() {
     for operation in operations {
         let request = CryptoOperationRequest {
             operation: Some(operation),
-            __buffa_unknown_fields: Default::default(),
         };
         let encoded = request.encode_to_vec();
         let response = reallyme_crypto::operation_contract::process_operation_response(&encoded);

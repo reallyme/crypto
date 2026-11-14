@@ -17,7 +17,7 @@ use super::request::process_request;
 
 macro_rules! hpke_request_handler {
     ($name:ident, $request:ty, $process:ident, $result:ident) => {
-        pub(super) fn $name(request: $request) -> CryptoOperationResponse {
+        pub(super) fn $name(request: &$request) -> CryptoOperationResponse {
             #[cfg(all(feature = "hpke-api", any(feature = "native", feature = "wasm")))]
             {
                 process_request(

@@ -6,7 +6,7 @@
 #![allow(clippy::field_reassign_with_default)] // Construct clearing owners before populating bytes.
 #![cfg(all(feature = "operation-response", feature = "prime-groups"))]
 
-use buffa::{Enumeration, Message, MessageField};
+use buffa::{Enumeration, MessageField};
 use crypto_core::CryptoError;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoPrimeGroupDomainRequest, CryptoPrimeGroupElement, CryptoPrimeGroupIdentifier,
@@ -25,7 +25,7 @@ fn identifier(group: PrimeGroup) -> CryptoPrimeGroupIdentifier {
 fn scalar(group: PrimeGroup) -> CryptoPrimeGroupScalarImportRequest {
     let mut value = CryptoPrimeGroupScalarImportRequest::default();
     value.group = MessageField::some(identifier(group));
-    value.scalar.resize(group.scalar_len(), 0);
+    assert!(value.scalar.resize(group.scalar_len(), 0).is_ok());
     *value.scalar.last_mut().unwrap() = 1;
     value
 }
@@ -87,7 +87,7 @@ fn multiplication_reduction_and_linear_combination_preserve_native_values(
     );
     let mut combination = CryptoPrimeGroupLinearCombinationRequest::default();
     combination.group = MessageField::some(identifier(group));
-    combination.coefficient.push(0);
+    assert!(combination.coefficient.push(0).is_ok());
     combination.base = MessageField::some(CryptoPrimeGroupElement::try_from(&generator)?);
     combination.offset = MessageField::some(CryptoPrimeGroupElement::try_from(&generator)?);
     assert_eq!(
@@ -96,7 +96,7 @@ fn multiplication_reduction_and_linear_combination_preserve_native_values(
     );
     let mut request = CryptoPrimeGroupReduceToFieldRequest::default();
     request.group = MessageField::some(identifier(group));
-    request.input.extend_from_slice(&[1, 2, 3]);
+    assert!(request.input.extend_from_slice(&[1, 2, 3]).is_ok());
     let native = group.reduce_to_field(&request.input)?;
     let adapted = contract::reduce_to_field(&request)?;
     assert_eq!(adapted.as_bytes(), native.expose_secret());
@@ -120,10 +120,8 @@ fn wrong_domains_missing_fields_oversized_reduction_and_unknown_modifiers_fail_c
         matches!(GroupScalar::try_from(&CryptoPrimeGroupScalarImportRequest::default()),
         Err(error) if error == CryptoError::PRIMITIVE_INVALID_PARAMETER)
     );
-    let mut source = scalar(PrimeGroup::NistP256);
-    source.merge_from_slice(&[0xa0, 0x06, 1]).unwrap();
-    assert!(matches!(GroupScalar::try_from(&source),
-        Err(error) if error == CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM));
+    let source = scalar(PrimeGroup::NistP256);
+    assert_unknown_wire(&source, &[0xa0, 0x06, 1]);
     let scalar = GroupScalar::try_from(&scalar(PrimeGroup::NistP256))?;
     let mut multiply = CryptoPrimeGroupMultiplyRequest::default();
     multiply.base = MessageField::some(CryptoPrimeGroupElement::try_from(
@@ -133,7 +131,7 @@ fn wrong_domains_missing_fields_oversized_reduction_and_unknown_modifiers_fail_c
         Err(error) if error == CryptoError::PRIMITIVE_INVALID_PARAMETER));
     let mut reduction = CryptoPrimeGroupReduceToFieldRequest::default();
     reduction.group = MessageField::some(identifier(PrimeGroup::NistP256));
-    reduction.input.resize(513, 1);
+    assert!(reduction.input.resize(513, 1).is_ok());
     assert!(matches!(contract::reduce_to_field(&reduction),
         Err(error) if error == CryptoError::PRIMITIVE_INVALID_LENGTH));
     Ok(())
@@ -150,4 +148,11 @@ fn private_scalars_elements_and_nested_transport_owners_keep_cleanup() {
     require_cleanup::<CryptoPrimeGroupScalarImportRequest>();
     require_cleanup::<CryptoPrimeGroupLinearCombinationRequest>();
     require_cleanup::<CryptoPrimeGroupDomainRequest>();
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

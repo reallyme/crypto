@@ -4,7 +4,6 @@
 
 #![allow(missing_docs, clippy::expect_used)]
 #![cfg(feature = "proto")]
-use buffa::Message;
 use crypto_constant_time::proto_helpers::ConstantTimeInputs;
 use crypto_core::CryptoError;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
@@ -14,9 +13,8 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 use zeroize::{Zeroize, ZeroizeOnDrop};
 fn request(left: &[u8], right: &[u8]) -> CryptoConstantTimeCompareRequest {
     CryptoConstantTimeCompareRequest {
-        left: left.to_vec(),
-        right: right.to_vec(),
-        __buffa_unknown_fields: Default::default(),
+        left: left.to_vec().into(),
+        right: right.to_vec().into(),
     }
 }
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -63,14 +61,17 @@ fn comparison_unknown_modifiers_fail_closed_and_owners_clear() -> Result<(), buf
     cleanup::<CryptoConstantTimeCompareRequest>();
     cleanup::<CryptoConstantTimeCompareResult>();
     cleanup::<CryptoConstantTimeRequireEqualResult>();
-    let mut wire = request(b"secret", b"secret");
-    wire.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(
-        ConstantTimeInputs::try_from(&wire).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    let wire = request(b"secret", b"secret");
+    assert_unknown_wire(&wire, &[0xa0, 0x06, 0x01]);
     let mut owner = ConstantTimeInputs::try_from(&request(b"secret", b"other!")).expect("inputs");
     owner.zeroize();
     assert_eq!(owner.equal_fixed::<0>(), Ok(true));
     Ok(())
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

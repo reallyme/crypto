@@ -84,7 +84,6 @@ impl PublicKeyToJwkInputs {
         let owner = self.jwk()?;
         Ok(CryptoPublicKeyToJwkResult {
             jwk: MessageField::some(PublicJwk::try_from(owner.as_jwk())?),
-            __buffa_unknown_fields: Default::default(),
         })
     }
     /// Reuses the existing trusted JCS algorithm without parsing or normalizing
@@ -98,16 +97,15 @@ impl PublicKeyToJwkInputs {
             .canonical_jcs
             .try_reserve_exact(canonical.len())
             .map_err(|_| CryptoError::BACKEND_INTERNAL)?;
-        output.canonical_jcs.extend_from_slice(canonical.as_bytes());
+        output
+            .canonical_jcs
+            .extend_from_slice(canonical.as_bytes())?;
         Ok(output)
     }
 }
 impl TryFrom<&CryptoPublicKeyToJwkRequest> for PublicKeyToJwkInputs {
     type Error = CryptoError;
     fn try_from(value: &CryptoPublicKeyToJwkRequest) -> Result<Self, Self::Error> {
-        if !value.__buffa_unknown_fields.is_empty() {
-            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
-        }
         let algorithm = value
             .algorithm
             .as_known()

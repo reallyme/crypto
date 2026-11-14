@@ -17,24 +17,12 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 
 use super::UnsupportedProtoAlgorithm;
 
-fn require_known_fields(
-    identifier: &CryptoAlgorithmIdentifier,
-) -> Result<(), UnsupportedProtoAlgorithm> {
-    if identifier.__buffa_unknown_fields.is_empty() {
-        Ok(())
-    } else {
-        Err(UnsupportedProtoAlgorithm)
-    }
-}
-
 impl TryFrom<&CryptoAlgorithmIdentifier> for CoreKey {
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(identifier: &CryptoAlgorithmIdentifier) -> Result<Self, Self::Error> {
-        require_known_fields(identifier)?;
         Self::try_from(&CryptoKeyAlgorithmIdentifier {
             algorithm: key_identity(identifier)?.into(),
-            __buffa_unknown_fields: Default::default(),
         })
     }
 }
@@ -43,9 +31,6 @@ impl TryFrom<&CryptoKeyAlgorithmIdentifier> for CoreKey {
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(identifier: &CryptoKeyAlgorithmIdentifier) -> Result<Self, Self::Error> {
-        if !identifier.__buffa_unknown_fields.is_empty() {
-            return Err(UnsupportedProtoAlgorithm);
-        }
         let key = identifier
             .algorithm
             .as_known()
@@ -143,7 +128,6 @@ impl TryFrom<&CryptoAlgorithmIdentifier> for CoreAead {
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(identifier: &CryptoAlgorithmIdentifier) -> Result<Self, Self::Error> {
-        require_known_fields(identifier)?;
         let Some(Identity::Aead(value)) = &identifier.algorithm else {
             return Err(UnsupportedProtoAlgorithm);
         };
@@ -165,7 +149,6 @@ impl TryFrom<&CryptoAlgorithmIdentifier> for CoreHash {
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(identifier: &CryptoAlgorithmIdentifier) -> Result<Self, Self::Error> {
-        require_known_fields(identifier)?;
         let Some(Identity::Hash(value)) = &identifier.algorithm else {
             return Err(UnsupportedProtoAlgorithm);
         };
@@ -188,7 +171,6 @@ impl TryFrom<&CryptoAlgorithmIdentifier> for CoreMac {
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(identifier: &CryptoAlgorithmIdentifier) -> Result<Self, Self::Error> {
-        require_known_fields(identifier)?;
         let Some(Identity::Mac(value)) = &identifier.algorithm else {
             return Err(UnsupportedProtoAlgorithm);
         };
@@ -205,7 +187,6 @@ impl TryFrom<&CryptoAlgorithmIdentifier> for CoreKeyWrap {
     type Error = UnsupportedProtoAlgorithm;
 
     fn try_from(identifier: &CryptoAlgorithmIdentifier) -> Result<Self, Self::Error> {
-        require_known_fields(identifier)?;
         let Some(Identity::KeyWrap(value)) = &identifier.algorithm else {
             return Err(UnsupportedProtoAlgorithm);
         };

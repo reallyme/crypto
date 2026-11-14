@@ -29,9 +29,6 @@ impl Poseidon2Inputs {
 impl TryFrom<&CryptoPoseidon2HashRequest> for Poseidon2Inputs {
     type Error = CryptoError;
     fn try_from(value: &CryptoPoseidon2HashRequest) -> Result<Self, Self::Error> {
-        if !value.__buffa_unknown_fields.is_empty() {
-            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
-        }
         if value.input.len() > MAX_INPUT_BYTES {
             return Err(CryptoError::PRIMITIVE_RESOURCE_LIMIT_EXCEEDED);
         }
@@ -51,7 +48,7 @@ impl TryFrom<&Poseidon2Digest> for CryptoPoseidon2HashResult {
             .digest
             .try_reserve_exact(value.as_bytes().len())
             .map_err(|_| CryptoError::BACKEND_INTERNAL)?;
-        output.digest.extend_from_slice(value.as_bytes());
+        output.digest.extend_from_slice(value.as_bytes())?;
         Ok(output)
     }
 }

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::native_contract_support::known_fields;
 use crypto_core::{Algorithm, CryptoError};
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoPublicKeyFormatRequest, CryptoPublicKeyFormatResult, PublicKeyFormatOperation,
@@ -14,7 +13,6 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 pub fn transform_public_key(
     request: &CryptoPublicKeyFormatRequest,
 ) -> Result<CryptoPublicKeyFormatResult, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let identifier = request
         .algorithm
         .as_option()
@@ -353,7 +351,6 @@ fn affine(x: &[u8], y: &[u8]) -> Result<CryptoPublicKeyFormatResult, CryptoError
     use crate::native_contract_support::copy_bytes;
     let mut output = CryptoPublicKeyFormatResult {
         representation: Some(Representation::Affine(Box::default())),
-        __buffa_unknown_fields: Default::default(),
     };
     match output.representation.as_mut() {
         Some(Representation::Affine(value)) => {

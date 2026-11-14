@@ -19,7 +19,6 @@ use zeroize::Zeroize;
 pub fn derive_keypair_from_ikm(
     request: &CryptoHpkeDeriveKeyPairRequest,
 ) -> Result<(HpkeKeyPair, CryptoHpkePublicKeyDescriptor), HpkeError> {
-    known(request.__buffa_unknown_fields.is_empty())?;
     let suite = algorithm(request.algorithm.as_option())?;
     derive(
         suite,
@@ -33,7 +32,6 @@ pub fn derive_keypair_from_ikm(
 pub fn derive_keypair_exact(
     request: &CryptoHpkeExactWidthDeriveKeyPairRequest,
 ) -> Result<(HpkeKeyPair, CryptoHpkePublicKeyDescriptor), HpkeError> {
-    known(request.__buffa_unknown_fields.is_empty())?;
     let suite = HpkeSuite::try_from(
         request
             .suite
@@ -52,8 +50,7 @@ fn derive(
     let mut key = operation(suite, ikm)?;
     let mut output = CryptoHpkePublicKeyDescriptor {
         suite: MessageField::some(suite_identifier),
-        public_key: Vec::new(),
-        __buffa_unknown_fields: Default::default(),
+        public_key: Vec::new().into(),
     };
     if output
         .public_key
@@ -63,20 +60,12 @@ fn derive(
         key.public_key.zeroize();
         return Err(HpkeError::BACKEND_INTERNAL);
     }
-    output.public_key.resize(key.public_key.len(), 0);
+    output.public_key.resize(key.public_key.len(), 0)?;
     output.public_key.copy_from_slice(&key.public_key);
     Ok((key, output))
 }
-fn known(value: bool) -> Result<(), HpkeError> {
-    if value {
-        Ok(())
-    } else {
-        Err(HpkeError::PRIMITIVE_INVALID_PARAMETER)
-    }
-}
 fn algorithm(value: Option<&CryptoAlgorithmIdentifier>) -> Result<HpkeSuite, HpkeError> {
     let value = value.ok_or(HpkeError::PRIMITIVE_INVALID_PARAMETER)?;
-    known(value.__buffa_unknown_fields.is_empty())?;
     match value.algorithm.as_ref() {
         Some(Algorithm::HpkeSuite(suite)) => HpkeSuite::try_from(suite.as_ref()),
         _ => Err(HpkeError::PRIMITIVE_INVALID_PARAMETER),

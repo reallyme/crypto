@@ -4953,6 +4953,9 @@ public nonisolated struct ReallyMeProtoCryptoKeyPair: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  /// Compare secret material before public metadata, preserving constant-time comparison.
+  public var secretKey: Data = Data()
+
   public var algorithm: ReallyMeProtoCryptoAlgorithmIdentifier {
     get {_algorithm ?? ReallyMeProtoCryptoAlgorithmIdentifier()}
     set {_algorithm = newValue}
@@ -4963,9 +4966,6 @@ public nonisolated struct ReallyMeProtoCryptoKeyPair: Sendable {
   public mutating func clearAlgorithm() {self._algorithm = nil}
 
   public var publicKey: Data = Data()
-
-  /// Secret-bearing exportable private key material.
-  public var secretKey: Data = Data()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -5160,6 +5160,8 @@ public nonisolated struct ReallyMeProtoCryptoPlatformPrivateKeyHandle: Sendable 
 /// report the actual security level rather than treating this request as
 /// evidence that hardware residency was obtained.
 public nonisolated struct ReallyMeProtoCryptoPlatformKeyGenerateRequest: @unchecked Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoPlatformKeyGenerateRequest(<redacted>)" }
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -13402,9 +13404,9 @@ nonisolated extension ReallyMeProtoCryptoKeyPair: SwiftProtobuf.Message, SwiftPr
   }
 
   public static func ==(lhs: ReallyMeProtoCryptoKeyPair, rhs: ReallyMeProtoCryptoKeyPair) -> Bool {
+    if lhs.secretKey != rhs.secretKey {return false}
     if lhs._algorithm != rhs._algorithm {return false}
     if lhs.publicKey != rhs.publicKey {return false}
-    if lhs.secretKey != rhs.secretKey {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

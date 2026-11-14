@@ -4,7 +4,7 @@
 
 //! Call content borrows a separately owned live context; no state can be imported.
 
-use super::requests::{check_length, copy_bytes, copy_into, require_known};
+use super::requests::{check_length, copy_bytes, copy_into};
 use crate::{HpkeError, HpkeOpenOutput, HpkeReceiverContext, HpkeSenderContext};
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoHpkeReceiverOpenRequest, CryptoHpkeReceiverOpenResult, CryptoHpkeSenderSealRequest,
@@ -65,7 +65,6 @@ impl HpkeSenderSealInputs {
 impl TryFrom<&CryptoHpkeSenderSealRequest> for HpkeSenderSealInputs {
     type Error = HpkeError;
     fn try_from(value: &CryptoHpkeSenderSealRequest) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         Ok(Self {
             aad: copy_bytes(&value.aad)?,
             plaintext: copy_bytes(&value.plaintext)?,
@@ -101,7 +100,6 @@ impl HpkeReceiverOpenInputs {
 impl TryFrom<&CryptoHpkeReceiverOpenRequest> for HpkeReceiverOpenInputs {
     type Error = HpkeError;
     fn try_from(value: &CryptoHpkeReceiverOpenRequest) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         Ok(Self {
             aad: copy_bytes(&value.aad)?,
             ciphertext: copy_bytes(&value.ciphertext)?,

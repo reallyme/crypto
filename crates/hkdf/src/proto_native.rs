@@ -42,14 +42,13 @@ impl<const N: usize> HkdfNativeDeriveInputs<N> {
         let derived = self.derive()?;
         let mut result = CryptoHkdfNativeDeriveResult {
             suite: MessageField::some(CryptoHkdfSuiteIdentifier::from(self.as_request().suite)),
-            derived_key: Vec::new(),
-            __buffa_unknown_fields: Default::default(),
+            derived_key: Default::default(),
         };
         result
             .derived_key
             .try_reserve_exact(N)
             .map_err(|_| CryptoError::BACKEND_INTERNAL)?;
-        result.derived_key.resize(N, 0);
+        result.derived_key.resize(N, 0)?;
         result.derived_key.copy_from_slice(derived.as_bytes());
         Ok(result)
     }
@@ -59,9 +58,6 @@ impl<const N: usize> TryFrom<&CryptoHkdfNativeDeriveRequest> for HkdfNativeDeriv
     type Error = CryptoError;
 
     fn try_from(request: &CryptoHkdfNativeDeriveRequest) -> Result<Self, Self::Error> {
-        if !request.__buffa_unknown_fields.is_empty() {
-            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
-        }
         let output_length = usize::try_from(request.output_length)
             .map_err(|_| CryptoError::PRIMITIVE_INVALID_LENGTH)?;
         if output_length != N {

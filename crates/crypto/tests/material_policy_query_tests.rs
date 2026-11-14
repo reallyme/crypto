@@ -4,7 +4,7 @@
 
 #![allow(missing_docs, clippy::expect_used)]
 #![cfg(feature = "operation-response")]
-use buffa::{EnumValue, Enumeration, Message};
+use buffa::{EnumValue, Enumeration};
 use crypto_core::{CryptoError, RngOutputKind};
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoMaterialPolicyQueryRequest, CryptoRandomFillPolicyQueryRequest,
@@ -24,7 +24,6 @@ fn operation_query_preserves_every_generated_policy_and_rejects_zero() {
     for operation in ProtoOperation::values() {
         let request = CryptoMaterialPolicyQueryRequest {
             operation: (*operation).into(),
-            __buffa_unknown_fields: Default::default(),
         };
         let expected = SecretMaterialOperation::try_from(request.operation)
             .map(operation_secret_material_policy)
@@ -40,7 +39,6 @@ fn random_fill_query_preserves_every_existing_purpose_policy() {
     for purpose in ProtoPurpose::values() {
         let request = CryptoRandomFillPolicyQueryRequest {
             purpose: (*purpose).into(),
-            __buffa_unknown_fields: Default::default(),
         };
         let expected = RngOutputKind::try_from(request.purpose)
             .map(random_fill_secret_material_policy)
@@ -55,11 +53,9 @@ fn policy_queries_reject_unknown_selectors_and_unknown_modifiers() -> Result<(),
     for unknown in [0, -1, 1, i32::MAX] {
         let operation = CryptoMaterialPolicyQueryRequest {
             operation: EnumValue::from(unknown),
-            __buffa_unknown_fields: Default::default(),
         };
         let random = CryptoRandomFillPolicyQueryRequest {
             purpose: EnumValue::from(unknown),
-            __buffa_unknown_fields: Default::default(),
         };
         assert_eq!(
             operation_policy(&operation),
@@ -70,23 +66,20 @@ fn policy_queries_reject_unknown_selectors_and_unknown_modifiers() -> Result<(),
             Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
         );
     }
-    let mut operation = CryptoMaterialPolicyQueryRequest {
+    let operation = CryptoMaterialPolicyQueryRequest {
         operation: ProtoOperation::from(SecretMaterialOperation::Hash).into(),
-        __buffa_unknown_fields: Default::default(),
     };
-    operation.merge_from_slice(&[0xa0, 0x06, 1])?;
-    assert_eq!(
-        operation_policy(&operation),
-        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
-    let mut random = CryptoRandomFillPolicyQueryRequest {
+    assert_unknown_wire(&operation, &[0xa0, 0x06, 1]);
+    let random = CryptoRandomFillPolicyQueryRequest {
         purpose: ProtoPurpose::from(RngOutputKind::Generic).into(),
-        __buffa_unknown_fields: Default::default(),
     };
-    random.merge_from_slice(&[0xa0, 0x06, 1])?;
-    assert_eq!(
-        random_fill_policy(&random),
-        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    assert_unknown_wire(&random, &[0xa0, 0x06, 1]);
     Ok(())
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

@@ -18,7 +18,24 @@ pub mod error_types;
 pub mod generated;
 
 #[cfg(feature = "generated")]
-mod merge_sensitive;
+mod guarded;
+
+#[cfg(feature = "generated")]
+pub use guarded::{PrivateBytes, SecretBytes, SecretString};
+
+#[cfg(feature = "generated")]
+mod guarded_view;
+
+#[cfg(feature = "generated")]
+pub use guarded_view::GuardedOwnedView;
+
+#[cfg(feature = "generated")]
+mod enum_json;
+
+/// Schema-owned concrete enum authority with fixed boundary diagnostics.
+#[cfg(feature = "generated")]
+#[path = "generated/enum_contracts.rs"]
+pub mod enum_contracts;
 
 #[cfg(feature = "generated")]
 mod deserialize_sensitive;
@@ -39,3 +56,7 @@ pub mod operation_response_wire;
 /// Strict codecs for the generated operation request boundary.
 #[cfg(feature = "generated")]
 pub mod operation_request_wire;
+
+#[cfg(test)]
+#[cfg(feature = "generated")]
+mod guarded_contract_tests;

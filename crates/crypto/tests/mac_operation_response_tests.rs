@@ -41,10 +41,10 @@ fn operation_response_mac_authenticate_uses_operation_owner_for_sha512() {
     );
     let response = decode_operation_response(output.as_slice()).expect("response decodes");
 
-    let Some(CryptoOperationOutcome::Result(result)) = response.outcome else {
+    let Some(CryptoOperationOutcome::Result(result)) = response.outcome.as_ref() else {
         panic!("operation response did not contain a generated result");
     };
-    let Some(CryptoOperationResultBranch::MacAuthenticate(mac)) = result.result else {
+    let Some(CryptoOperationResultBranch::MacAuthenticate(mac)) = result.result.as_ref() else {
         panic!("operation result did not contain the MAC authenticate branch");
     };
 
@@ -74,10 +74,10 @@ fn operation_response_mac_verify_reports_mismatch_as_invalid_result() {
     *first ^= 0x01;
 
     let response = mac_verify_response(MacAlgorithm::MAC_ALGORITHM_HMAC_SHA256, key, message, tag);
-    let Some(CryptoOperationOutcome::Result(result)) = response.outcome else {
+    let Some(CryptoOperationOutcome::Result(result)) = response.outcome.as_ref() else {
         panic!("operation response did not contain a generated result");
     };
-    let Some(CryptoOperationResultBranch::MacVerify(verification)) = result.result else {
+    let Some(CryptoOperationResultBranch::MacVerify(verification)) = result.result.as_ref() else {
         panic!("operation result did not contain the MAC verify branch");
     };
 
@@ -97,10 +97,10 @@ fn operation_response_mac_verify_reports_malformed_tag_as_error_result() {
         b"message".to_vec(),
         vec![0u8; 31],
     );
-    let Some(CryptoOperationOutcome::Result(result)) = response.outcome else {
+    let Some(CryptoOperationOutcome::Result(result)) = response.outcome.as_ref() else {
         panic!("operation response did not contain a generated result");
     };
-    let Some(CryptoOperationResultBranch::MacVerify(verification)) = result.result else {
+    let Some(CryptoOperationResultBranch::MacVerify(verification)) = result.result.as_ref() else {
         panic!("operation result did not contain the MAC verify branch");
     };
 
@@ -164,12 +164,10 @@ fn mac_authenticate_request(
         operation: Some(CryptoOperation::MacAuthenticate(Box::new(
             CryptoMacAuthenticateRequest {
                 algorithm: MessageField::some(mac_identifier(algorithm)),
-                key,
-                message,
-                __buffa_unknown_fields: Default::default(),
+                key: key.into(),
+                message: message.into(),
             },
         ))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -184,28 +182,25 @@ fn mac_verify_request(
         operation: Some(CryptoOperation::MacVerify(Box::new(
             CryptoMacVerifyRequest {
                 algorithm: MessageField::some(mac_identifier(algorithm)),
-                key,
-                message,
-                tag,
-                __buffa_unknown_fields: Default::default(),
+                key: key.into(),
+                message: message.into(),
+                tag: tag.into(),
             },
         ))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
 fn mac_identifier(algorithm: MacAlgorithm) -> CryptoAlgorithmIdentifier {
     CryptoAlgorithmIdentifier {
         algorithm: Some(ProtoAlgorithmBranch::Mac(EnumValue::from(algorithm))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
 fn assert_provider_error(response: CryptoOperationResponse, reason: CryptoErrorReason) {
-    let Some(CryptoOperationOutcome::Error(error)) = response.outcome else {
+    let Some(CryptoOperationOutcome::Error(error)) = response.outcome.as_ref() else {
         panic!("operation response did not contain an error");
     };
-    let Some(CryptoErrorBranch::Provider(error)) = error.error else {
+    let Some(CryptoErrorBranch::Provider(error)) = error.error.as_ref() else {
         panic!("operation error did not contain the provider branch");
     };
     assert_eq!(error.reason.as_known(), Some(reason));

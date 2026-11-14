@@ -23,10 +23,9 @@ fn request(
     let mut result = CryptoPublicKeyFormatRequest::default();
     result.algorithm = MessageField::some(CryptoKeyAlgorithmIdentifier {
         algorithm: algorithm.into(),
-        __buffa_unknown_fields: Default::default(),
     });
     result.operation = operation.into();
-    result.public_key.extend_from_slice(bytes);
+    assert!(result.public_key.extend_from_slice(bytes).is_ok());
     result
 }
 
@@ -56,7 +55,6 @@ fn selectors_presence_unknown_modifiers_and_wire_are_explicit() {
         );
         probe.algorithm = MessageField::some(CryptoKeyAlgorithmIdentifier {
             algorithm: EnumValue::from(unknown),
-            __buffa_unknown_fields: Default::default(),
         });
         assert!(
             matches!(transform_public_key(&probe), Err(e) if e == CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
@@ -71,20 +69,15 @@ fn selectors_presence_unknown_modifiers_and_wire_are_explicit() {
     assert_eq!(probe.encode_to_vec(), wire);
     let mut modified = probe.encode_to_vec();
     modified.extend_from_slice(&[0xf8, 7, 1]);
-    let probe = CryptoPublicKeyFormatRequest::decode_from_slice(&modified).unwrap();
-    assert!(
-        matches!(transform_public_key(&probe), Err(e) if e == CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    use crypto_proto::wire::{decode_protobuf, CryptoWireError};
+    assert_eq!(
+        decode_protobuf::<CryptoPublicKeyFormatRequest>(&modified),
+        Err(CryptoWireError::malformed_protobuf())
     );
-    let nested_unknown =
-        CryptoKeyAlgorithmIdentifier::decode_from_slice(&[8, 0xc8, 1, 0xf8, 7, 1]).unwrap();
-    let mut probe = request(
-        KeyAlgorithm::KEY_ALGORITHM_P256,
-        PublicKeyFormatOperation::PUBLIC_KEY_FORMAT_OPERATION_COMPRESS,
-        &[],
-    );
-    probe.algorithm = MessageField::some(nested_unknown);
-    assert!(
-        matches!(transform_public_key(&probe), Err(e) if e == CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    let nested = [0x0a, 6, 8, 0xc8, 1, 0xf8, 7, 1];
+    assert_eq!(
+        decode_protobuf::<CryptoPublicKeyFormatRequest>(&nested),
+        Err(CryptoWireError::malformed_protobuf())
     );
 }
 
@@ -191,7 +184,10 @@ fn secp256k1_shape_check_and_curve_validation_remain_distinct() -> Result<(), Cr
         return Err(CryptoError::BACKEND_INTERNAL);
     };
     let expected = crypto_secp256k1::decompress_secp256k1_public_key(&generator)?;
-    assert_eq!((&value.x, &value.y), (&expected.0, &expected.1));
+    assert_eq!(
+        (value.x.as_slice(), value.y.as_slice()),
+        (expected.0.as_slice(), expected.1.as_slice())
+    );
     Ok(())
 }
 
@@ -561,7 +557,7 @@ fn secp256k1_transcoding_retains_scalars_without_requiring_a_backend_lane(
     let mut request = CryptoSecp256k1SignatureTranscodeRequest::default();
     request.source_encoding = EcdsaEncoding::ECDSA_ENCODING_FIXED_WIDTH.into();
     request.target_encoding = EcdsaEncoding::ECDSA_ENCODING_DER.into();
-    request.signature.extend_from_slice(&raw);
+    assert!(request.signature.extend_from_slice(&raw).is_ok());
     let der = reallyme_crypto::format_contract::transcode_secp256k1_signature(&request)?;
     assert_eq!(der.signature, [0x30, 6, 2, 1, 1, 2, 1, 1]);
     request.source_encoding = EcdsaEncoding::ECDSA_ENCODING_DER.into();
@@ -571,7 +567,7 @@ fn secp256k1_transcoding_retains_scalars_without_requiring_a_backend_lane(
         reallyme_crypto::format_contract::transcode_secp256k1_signature(&request)?.signature,
         raw
     );
-    request.signature = vec![0x30, 7, 2, 2, 0, 1, 2, 1, 1];
+    request.signature = vec![0x30, 7, 2, 2, 0, 1, 2, 1, 1].into();
     let expected =
         crypto_secp256k1::secp256k1_ecdsa_der_to_jose_signature(&request.signature).unwrap_err();
     assert!(

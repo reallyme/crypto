@@ -11,8 +11,6 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 #[cfg(any(feature = "p256", feature = "ecdsa-explicit", feature = "secp256k1"))]
 use zeroize::Zeroizing;
 
-use crate::native_contract_support::known_fields;
-
 fn encoding(value: EnumValue<EcdsaEncoding>) -> Result<EcdsaEncoding, CryptoError> {
     match value.as_known() {
         Some(
@@ -27,7 +25,6 @@ fn encoding(value: EnumValue<EcdsaEncoding>) -> Result<EcdsaEncoding, CryptoErro
 pub fn normalize_p256_signature(
     request: &CryptoP256SignatureNormalizeRequest,
 ) -> Result<CryptoNativeSignatureResult, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let representation = encoding(request.encoding)?;
     #[cfg(any(feature = "p256", feature = "ecdsa-explicit"))]
     {
@@ -61,7 +58,6 @@ pub fn normalize_p256_signature(
 pub fn transcode_secp256k1_signature(
     request: &CryptoSecp256k1SignatureTranscodeRequest,
 ) -> Result<CryptoNativeSignatureResult, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let source = encoding(request.source_encoding)?;
     let target = encoding(request.target_encoding)?;
     if source == target {

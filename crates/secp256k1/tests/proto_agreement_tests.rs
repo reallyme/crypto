@@ -20,9 +20,8 @@ mod vectors;
 
 fn request(private: &[u8], public: &[u8]) -> CryptoSecp256k1AgreementRequest {
     CryptoSecp256k1AgreementRequest {
-        private_key: private.to_vec(),
-        peer_public_key_sec1: public.to_vec(),
-        __buffa_unknown_fields: Default::default(),
+        private_key: private.to_vec().into(),
+        peer_public_key_sec1: public.to_vec().into(),
     }
 }
 
@@ -91,17 +90,12 @@ fn scalar_and_point_errors_preserve_native_encoding_and_range_policy() {
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
 fn unknown_modifiers_and_wire_bytes_are_explicit() {
-    let mut modified = request(&[], &[]);
-    modified
-        .merge_from_slice(&[0xa2, 6, 4, 0, 255, 1, 0])
-        .unwrap();
     assert_eq!(
-        derive_shared_secret(&modified).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
+        crypto_proto::wire::decode_protobuf::<CryptoSecp256k1AgreementRequest>(&[
+            0xa2, 6, 4, 0, 255, 1, 0
+        ]),
+        Err(crypto_proto::wire::CryptoWireError::malformed_protobuf())
     );
-    assert!(modified.private_key.is_empty());
-    Message::clear(&mut modified);
-    assert!(modified.__buffa_unknown_fields.is_empty());
     let request = request(&[0, 255, 32, 0], &[4, 1, 0]);
     assert_eq!(
         request.encode_to_vec(),

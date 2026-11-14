@@ -7,7 +7,6 @@
 #![cfg(all(feature = "proto", feature = "base-p256-aes128gcm"))]
 #![allow(missing_docs, clippy::expect_used)]
 
-use buffa::Message;
 use crypto_hpke::base_p256::{
     open, seal_with_rng, P256BaseRandomError, P256BaseRng, P256RecipientKey, PRIVATE_KEY_LEN,
 };
@@ -50,7 +49,7 @@ impl P256BaseRng for Fails {
 
 fn import_request(private: &[u8]) -> CryptoHpkeP256BaseRecipientImportRequest {
     let mut output = CryptoHpkeP256BaseRecipientImportRequest::default();
-    output.private_key.extend_from_slice(private);
+    assert!(output.private_key.extend_from_slice(private).is_ok());
     output
 }
 
@@ -171,18 +170,17 @@ fn lifecycle_requests_reject_unknown_modifiers_and_keep_clearing_owners(
     requires_owner::<CryptoHpkeP256BaseRecipientImportRequest>();
     requires_owner::<CryptoHpkeP256BaseRecipientGenerateRequest>();
     requires_owner::<P256BaseRecipientImportInputs>();
-    let mut request = CryptoHpkeP256BaseRecipientGenerateRequest::default();
-    request.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(
-        P256BaseRecipientGenerateInputs::try_from(&request).err(),
-        Some(HpkeError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    let request = CryptoHpkeP256BaseRecipientGenerateRequest::default();
+    assert_unknown_wire(&request, &[0xa0, 0x06, 0x01]);
     let vector = fixture();
-    let mut request = import_request(&bytes(&vector["skRm"]));
-    request.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(
-        P256BaseRecipientImportInputs::try_from(&request).err(),
-        Some(HpkeError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    let request = import_request(&bytes(&vector["skRm"]));
+    assert_unknown_wire(&request, &[0xa0, 0x06, 0x01]);
     Ok(())
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

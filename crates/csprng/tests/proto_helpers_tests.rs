@@ -35,7 +35,6 @@ fn request(length: u64) -> CryptoRandomBytesRequest {
     CryptoRandomBytesRequest {
         purpose: ProtoKind::RNG_OUTPUT_KIND_GENERIC.into(),
         output_length: length,
-        __buffa_unknown_fields: Default::default(),
     }
 }
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -101,11 +100,7 @@ fn random_requests_reject_unknown_purposes_and_modifiers() -> Result<(), buffa::
         );
     }
     wire = request(4);
-    wire.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(
-        RandomBytesRequest::try_from(&wire).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    assert_unknown_wire(&wire, &[0xa0, 0x06, 0x01]);
     Ok(())
 }
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -246,4 +241,11 @@ fn protojson_rejects_negative_and_overflow_lengths() {
             .expect_err("invalid uint64 metadata");
         assert_eq!(error.classify(), serde_json::error::Category::Data);
     }
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use super::copy_inputs::{copy_bytes, require_known};
+use super::copy_inputs::copy_bytes;
 use crate::{RsaPssParams, RsaPublicKeyDerEncoding};
 use crypto_core::CryptoError;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
@@ -59,7 +59,6 @@ impl RsaPssVerifyInputs {
         )?;
         Ok(CryptoNativeVerificationResult {
             status: CryptoVerificationStatus::CRYPTO_VERIFICATION_STATUS_VALID.into(),
-            __buffa_unknown_fields: Default::default(),
         })
     }
 }
@@ -68,11 +67,9 @@ impl TryFrom<&CryptoRsaPssVerifyRequest> for RsaPssVerifyInputs {
     type Error = CryptoError;
 
     fn try_from(value: &CryptoRsaPssVerifyRequest) -> Result<Self, Self::Error> {
-        require_known(value.__buffa_unknown_fields.is_empty())?;
         let encoding =
             RsaPublicKeyDerEncoding::try_from(&CryptoRsaPublicKeyDerEncodingIdentifier {
                 encoding: value.public_key_encoding,
-                __buffa_unknown_fields: Default::default(),
             })?;
         let params = RsaPssParams::try_from(
             value

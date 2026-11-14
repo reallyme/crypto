@@ -4,7 +4,7 @@
 
 #![allow(missing_docs, clippy::expect_used)]
 #![cfg(feature = "proto")]
-use buffa::{Enumeration, Message};
+use buffa::Enumeration;
 use crypto_core::CryptoError;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{CryptoRsaPssParams, RsaHashAlgorithm};
 use crypto_rsa::RsaPssParams;
@@ -25,7 +25,6 @@ fn pss_preserves_independent_hashes_and_explicit_zero_salt() {
                     message_hash: (*message).into(),
                     mgf1_hash: (*mgf).into(),
                     salt_length: Some(salt),
-                    __buffa_unknown_fields: Default::default(),
                 };
                 let native =
                     RsaPssParams::try_from(&wire).expect("existing PSS parameter identities");
@@ -44,7 +43,6 @@ fn pss_rejects_missing_salt_and_unknown_hashes_or_modifiers() -> Result<(), buff
         message_hash: RsaHashAlgorithm::RSA_HASH_ALGORITHM_SHA256.into(),
         mgf1_hash: RsaHashAlgorithm::RSA_HASH_ALGORITHM_SHA384.into(),
         salt_length: None,
-        __buffa_unknown_fields: Default::default(),
     };
     assert_eq!(
         RsaPssParams::try_from(&wire),
@@ -59,11 +57,7 @@ fn pss_rejects_missing_salt_and_unknown_hashes_or_modifiers() -> Result<(), buff
         );
     }
     wire.message_hash = RsaHashAlgorithm::RSA_HASH_ALGORITHM_SHA256.into();
-    wire.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert_eq!(
-        RsaPssParams::try_from(&wire),
-        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-    );
+    assert_unknown_wire(&wire, &[0xa0, 0x06, 0x01]);
     Ok(())
 }
 #[cfg(target_pointer_width = "64")]
@@ -86,4 +80,11 @@ fn pss_rejects_native_salt_length_outside_u32() {
 fn generated_options_owners_clear_retained_storage() {
     fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
     require_cleanup::<crypto_proto::generated::proto::reallyme::crypto::v1::CryptoRsaPssParams>();
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

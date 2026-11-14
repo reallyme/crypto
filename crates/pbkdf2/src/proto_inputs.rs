@@ -32,9 +32,6 @@ impl ZeroizeOnDrop for StandardsDeriveInputs {}
 impl TryFrom<&CryptoPbkdf2StandardsDeriveRequest> for StandardsDeriveInputs {
     type Error = CryptoError;
     fn try_from(request: &CryptoPbkdf2StandardsDeriveRequest) -> Result<Self, Self::Error> {
-        if !request.__buffa_unknown_fields.is_empty() {
-            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
-        }
         let prf = Pbkdf2Prf::try_from(
             request
                 .prf
@@ -80,16 +77,14 @@ impl StandardsDeriveInputs {
                     Pbkdf2Prf::HmacSha256 => KdfAlgorithm::KDF_ALGORITHM_PBKDF2_HMAC_SHA256.into(),
                     Pbkdf2Prf::HmacSha512 => KdfAlgorithm::KDF_ALGORITHM_PBKDF2_HMAC_SHA512.into(),
                 })),
-                __buffa_unknown_fields: Default::default(),
             }),
-            derived_key: Vec::new(),
-            __buffa_unknown_fields: Default::default(),
+            derived_key: Default::default(),
         };
         result
             .derived_key
             .try_reserve_exact(output.len())
             .map_err(|_| CryptoError::BACKEND_INTERNAL)?;
-        result.derived_key.resize(output.len(), 0);
+        result.derived_key.resize(output.len(), 0)?;
         result.derived_key.copy_from_slice(output.as_bytes());
         Ok(result)
     }

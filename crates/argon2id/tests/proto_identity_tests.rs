@@ -20,7 +20,6 @@ fn argon2_profile_parity_covers_every_generated_identity_and_exact_wire_bytes() 
     for &value in Argon2idKdfVersion::values() {
         let identifier = CryptoArgon2idProfileIdentifier {
             kdf_version: value.into(),
-            __buffa_unknown_fields: Default::default(),
         };
         let expected: Option<(Argon2Profile, &[u8])> = match value {
             Argon2idKdfVersion::ARGON2ID_KDF_VERSION_V1 => Some((Argon2Profile::V1, &[0x08, 0x01])),
@@ -32,7 +31,6 @@ fn argon2_profile_parity_covers_every_generated_identity_and_exact_wire_bytes() 
                 assert_eq!(Argon2Profile::try_from(&identifier), Ok(native));
                 let reverse = CryptoArgon2idProfileIdentifier::from(native);
                 assert_eq!(reverse.kdf_version.as_known(), Some(value));
-                assert!(reverse.__buffa_unknown_fields.is_empty());
                 assert_eq!(reverse.encode_to_vec().as_slice(), wire);
             }
             None => {
@@ -56,7 +54,6 @@ fn argon2_profile_rejects_zero_negative_and_unknown_numbers() {
     for number in [i32::MIN, -1, 0, 99_999, i32::MAX] {
         let identifier = CryptoArgon2idProfileIdentifier {
             kdf_version: number.into(),
-            __buffa_unknown_fields: Default::default(),
         };
         assert_eq!(
             Argon2Profile::try_from(&identifier),
@@ -67,16 +64,14 @@ fn argon2_profile_rejects_zero_negative_and_unknown_numbers() {
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
-fn argon2_profile_rejects_retained_unknown_modifiers() -> Result<(), buffa::DecodeError> {
-    let mut identifier = CryptoArgon2idProfileIdentifier::from(Argon2Profile::V1);
-    // Unknown field 100 is public test data, not an accepted policy modifier.
-    identifier.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert!(!identifier.__buffa_unknown_fields.is_empty());
+fn argon2_profile_rejects_unknown_wire_modifiers() {
+    let identifier = CryptoArgon2idProfileIdentifier::from(Argon2Profile::V1);
+    let mut bytes = identifier.encode_to_vec();
+    bytes.extend_from_slice(&[0xa0, 0x06, 0x01]);
     assert_eq!(
-        Argon2Profile::try_from(&identifier),
-        Err(UnsupportedProtoAlgorithm)
+        crypto_proto::wire::decode_protobuf::<CryptoArgon2idProfileIdentifier>(&bytes),
+        Err(crypto_proto::wire::CryptoWireError::malformed_protobuf())
     );
-    Ok(())
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -85,7 +80,6 @@ fn argon2_kdf_version_parity_covers_every_generated_identity_and_exact_wire_byte
     for &value in Argon2idKdfVersion::values() {
         let identifier = CryptoArgon2idProfileIdentifier {
             kdf_version: value.into(),
-            __buffa_unknown_fields: Default::default(),
         };
         let expected: Option<(Argon2KdfVersion, &[u8])> = match value {
             Argon2idKdfVersion::ARGON2ID_KDF_VERSION_V1 => {
@@ -101,7 +95,6 @@ fn argon2_kdf_version_parity_covers_every_generated_identity_and_exact_wire_byte
                 assert_eq!(Argon2KdfVersion::try_from(&identifier), Ok(native));
                 let reverse = CryptoArgon2idProfileIdentifier::from(native);
                 assert_eq!(reverse.kdf_version.as_known(), Some(value));
-                assert!(reverse.__buffa_unknown_fields.is_empty());
                 assert_eq!(reverse.encode_to_vec().as_slice(), wire);
             }
             None => {
@@ -125,7 +118,6 @@ fn argon2_kdf_version_rejects_zero_negative_and_unknown_numbers() {
     for number in [i32::MIN, -1, 0, 99_999, i32::MAX] {
         let identifier = CryptoArgon2idProfileIdentifier {
             kdf_version: number.into(),
-            __buffa_unknown_fields: Default::default(),
         };
         assert_eq!(
             Argon2KdfVersion::try_from(&identifier),
@@ -136,16 +128,14 @@ fn argon2_kdf_version_rejects_zero_negative_and_unknown_numbers() {
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
-fn argon2_kdf_version_rejects_retained_unknown_modifiers() -> Result<(), buffa::DecodeError> {
-    let mut identifier = CryptoArgon2idProfileIdentifier::from(Argon2KdfVersion::V1);
-    // Unknown field 100 is public test data, not an accepted policy modifier.
-    identifier.merge_from_slice(&[0xa0, 0x06, 0x01])?;
-    assert!(!identifier.__buffa_unknown_fields.is_empty());
+fn argon2_kdf_version_rejects_unknown_wire_modifiers() {
+    let identifier = CryptoArgon2idProfileIdentifier::from(Argon2KdfVersion::V1);
+    let mut bytes = identifier.encode_to_vec();
+    bytes.extend_from_slice(&[0xa0, 0x06, 0x01]);
     assert_eq!(
-        Argon2KdfVersion::try_from(&identifier),
-        Err(UnsupportedProtoAlgorithm)
+        crypto_proto::wire::decode_protobuf::<CryptoArgon2idProfileIdentifier>(&bytes),
+        Err(crypto_proto::wire::CryptoWireError::malformed_protobuf())
     );
-    Ok(())
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]

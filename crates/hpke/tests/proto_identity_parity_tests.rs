@@ -8,7 +8,7 @@
 #![allow(missing_docs)]
 #![allow(clippy::expect_used)]
 
-use buffa::{EnumValue, Enumeration, Message};
+use buffa::{EnumValue, Enumeration};
 use crypto_hpke::HpkeError;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     HpkeAeadId, HpkeKdfId, HpkeKemId, HpkeSuiteIdentifier,
@@ -24,7 +24,6 @@ fn every_registered_generated_component_combination_round_trips() {
                     kem: (*kem).into(),
                     kdf: (*kdf).into(),
                     aead: (*aead).into(),
-                    __buffa_unknown_fields: Default::default(),
                 };
                 let converted = crypto_hpke::HpkeSuite::try_from(&value);
                 if kem.to_i32() == 0 || kdf.to_i32() == 0 || aead.to_i32() == 0 {
@@ -64,14 +63,8 @@ fn unknown_negative_and_out_of_range_components_are_rejected() {
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
 fn unknown_suite_fields_do_not_become_ignored_policy() -> Result<(), HpkeError> {
-    let mut suite = base_profile();
-    suite
-        .merge_from_slice(&[0xa0, 0x06, 0x01])
-        .map_err(|_| HpkeError::PRIMITIVE_MALFORMED_PROTOBUF)?;
-    assert_eq!(
-        crypto_hpke::HpkeSuite::try_from(&suite),
-        Err(HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM)
-    );
+    let suite = base_profile();
+    assert_unknown_wire(&suite, &[0xa0, 0x06, 0x01]);
     Ok(())
 }
 
@@ -89,6 +82,12 @@ fn base_profile() -> HpkeSuiteIdentifier {
         kem: HpkeKemId::HPKE_KEM_ID_DHKEM_P256_HKDF_SHA256.into(),
         kdf: HpkeKdfId::HPKE_KDF_ID_HKDF_SHA256.into(),
         aead: HpkeAeadId::HPKE_AEAD_ID_AES_128_GCM.into(),
-        __buffa_unknown_fields: Default::default(),
     }
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

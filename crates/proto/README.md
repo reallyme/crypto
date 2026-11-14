@@ -13,11 +13,23 @@ typed binary protobuf operation response. The executable JSON adapter accepts
 only hash, public-key verification, public-key encapsulation, and key-generation
 requests whose JSON input carries no cryptographic secret.
 
+Use `wire::decode_protobuf` for standalone untrusted binary messages. Unknown
+fields are rejected while decoding the entire tree. Generated DTOs have no
+unknown-field storage, so a typed value obtained from a permissive decoder
+cannot establish the same guarantee. `wire::merge_protobuf` clears an existing
+owner when a merge fails.
+
 Operation requests can contain secrets and plaintext. Owned Rust messages
 redact byte-bearing debug output and zeroize sensitive fields on drop. Callers
 must keep messages short-lived and avoid cloning or logging payloads.
 Secret-bearing executable requests are rejected on the ProtoJSON route before
 value deserialization and must use binary protobuf.
+
+The generated surface uses `SecretBytes` and `SecretString` for clearing field
+storage. `CryptoKeyPair.secret_key` uses `PrivateBytes`, whose JSON policy
+refuses export. Borrow fields by slice, or transfer a byte owner into a
+`Zeroizing<Vec<u8>>`. Secret owned views retain a clearing backing allocation
+and expose lifetime-bound borrows. Use an eager decoder for admission.
 
 The examples describe the **unpublished 0.4.0 development tree**. Use the
 matching local checkout during review; 0.4.0 has not been published to the

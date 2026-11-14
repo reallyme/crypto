@@ -16,6 +16,7 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoHpkeBaseSealConformanceRequest, CryptoHpkePskSenderSetupConformanceRequest,
     CryptoHpkeSenderExportConformanceRequest, HpkeSuiteIdentifier,
 };
+use crypto_proto::wire::{decode_protobuf, CryptoWireError};
 use zeroize::ZeroizeOnDrop;
 
 fn suite() -> HpkeSuite {
@@ -31,25 +32,30 @@ fn seal_request() -> CryptoHpkeBaseSealConformanceRequest {
     let value = fixture();
     let mut request = CryptoHpkeBaseSealConformanceRequest::default();
     request.suite = MessageField::some(HpkeSuiteIdentifier::try_from(suite()).unwrap());
-    request.recipient_public_key = hex_field(&value, "pkRm");
-    request.encapsulation_randomness = hex_field(&value, "ikmE");
-    request.info = hex_field(&value, "info");
-    request.aad = hex_field(&value["encryption"], "aad");
-    request.plaintext = hex_field(&value["encryption"], "pt");
+    request.recipient_public_key = hex_field(&value, "pkRm").into();
+    request.encapsulation_randomness = hex_field(&value, "ikmE").into();
+    request.info = hex_field(&value, "info").into();
+    request.aad = hex_field(&value["encryption"], "aad").into();
+    request.plaintext = hex_field(&value["encryption"], "pt").into();
     request
 }
 fn export_request() -> CryptoHpkeSenderExportConformanceRequest {
     let seal = seal_request();
     let mut output = CryptoHpkeSenderExportConformanceRequest::default();
     output.suite = MessageField::some(HpkeSuiteIdentifier::try_from(suite()).unwrap());
-    output
+    assert!(output
         .recipient_public_key
-        .extend_from_slice(&seal.recipient_public_key);
-    output
+        .extend_from_slice(&seal.recipient_public_key)
+        .is_ok());
+    assert!(output
         .encapsulation_randomness
-        .extend_from_slice(&seal.encapsulation_randomness);
-    output.info.extend_from_slice(&seal.info);
-    output.exporter_context.extend_from_slice(&[0, 255, 32, 0]);
+        .extend_from_slice(&seal.encapsulation_randomness)
+        .is_ok());
+    assert!(output.info.extend_from_slice(&seal.info).is_ok());
+    assert!(output
+        .exporter_context
+        .extend_from_slice(&[0, 255, 32, 0])
+        .is_ok());
     output.output_length = 32;
     output
 }
@@ -57,15 +63,17 @@ fn psk_request() -> CryptoHpkePskSenderSetupConformanceRequest {
     let seal = seal_request();
     let mut output = CryptoHpkePskSenderSetupConformanceRequest::default();
     output.suite = MessageField::some(HpkeSuiteIdentifier::try_from(suite()).unwrap());
-    output
+    assert!(output
         .recipient_public_key
-        .extend_from_slice(&seal.recipient_public_key);
-    output
+        .extend_from_slice(&seal.recipient_public_key)
+        .is_ok());
+    assert!(output
         .encapsulation_randomness
-        .extend_from_slice(&seal.encapsulation_randomness);
-    output.info.extend_from_slice(&[0, 255, 32, 0]);
-    output.psk.extend_from_slice(&[0x2a; 32]);
-    output.psk_id.extend_from_slice(&[0, 255, 32, 0]);
+        .extend_from_slice(&seal.encapsulation_randomness)
+        .is_ok());
+    assert!(output.info.extend_from_slice(&[0, 255, 32, 0]).is_ok());
+    assert!(output.psk.extend_from_slice(&[0x2a; 32]).is_ok());
+    assert!(output.psk_id.extend_from_slice(&[0, 255, 32, 0]).is_ok());
     output
 }
 
@@ -104,12 +112,11 @@ fn borrowed_native_requests_preserve_pointers_presence_and_binary_context() -> R
     );
     let wire = CryptoHpkeBaseSealConformanceRequest {
         suite: MessageField::some(HpkeSuiteIdentifier::try_from(suite())?),
-        recipient_public_key: Vec::new(),
-        encapsulation_randomness: Vec::new(),
-        info: vec![0, 255, 32, 0],
-        aad: Vec::new(),
-        plaintext: Vec::new(),
-        __buffa_unknown_fields: Default::default(),
+        recipient_public_key: Vec::new().into(),
+        encapsulation_randomness: Vec::new().into(),
+        info: vec![0, 255, 32, 0].into(),
+        aad: Vec::new().into(),
+        plaintext: Vec::new().into(),
     };
     assert_eq!(
         wire.encode_to_vec(),
@@ -139,8 +146,8 @@ fn deterministic_base_seal_matches_rfc9180_and_native_boundary() -> Result<(), H
         hex_field(&vector, "empty_aad_ciphertext")
     );
     let mut binary = seal_request();
-    binary.info = vec![0, 255, 32, 0];
-    binary.aad = vec![255, 0];
+    binary.info = vec![0, 255, 32, 0].into();
+    binary.aad = vec![255, 0].into();
     binary.plaintext.clear();
     let expected = crypto_hpke::seal_base_derand(&HpkeDerandSealRequest::try_from(&binary)?)?;
     assert_eq!(
@@ -234,20 +241,20 @@ fn explicit_randomness_psk_suite_and_unknown_modifier_errors_match_native() -> R
 {
     for length in [0, 31, 33] {
         let mut seal = seal_request();
-        seal.encapsulation_randomness = vec![0; length];
+        seal.encapsulation_randomness = vec![0; length].into();
         let expected = crypto_hpke::seal_base_derand(&HpkeDerandSealRequest::try_from(&seal)?)
             .err()
             .unwrap();
         assert!(matches!(proto_conformance::seal_base(&seal),Err(e)if e==expected));
         let mut export = export_request();
-        export.encapsulation_randomness = vec![0; length];
+        export.encapsulation_randomness = vec![0; length].into();
         let expected =
             crypto_hpke::sender_export_derand(&HpkeDerandSenderExportRequest::try_from(&export)?)
                 .err()
                 .unwrap();
         assert!(matches!(proto_conformance::sender_export(&export),Err(e)if e==expected));
         let mut setup = psk_request();
-        setup.encapsulation_randomness = vec![0; length];
+        setup.encapsulation_randomness = vec![0; length].into();
         let expected = crypto_hpke::setup_sender_psk_derand(
             &HpkeDerandPskSenderSetupRequest::try_from(&setup)?,
         )
@@ -304,21 +311,19 @@ fn explicit_randomness_psk_suite_and_unknown_modifier_errors_match_native() -> R
     }
     let mut bytes = seal_request().encode_to_vec();
     bytes.extend_from_slice(&[0xf8, 7, 1]);
-    let modified = CryptoHpkeBaseSealConformanceRequest::decode_from_slice(&bytes).unwrap();
-    assert!(
-        matches!(proto_conformance::seal_base(&modified),Err(e)if e==HpkeError::PRIMITIVE_INVALID_PARAMETER)
+    assert_eq!(
+        decode_protobuf::<CryptoHpkeBaseSealConformanceRequest>(&bytes),
+        Err(CryptoWireError::malformed_protobuf())
     );
-    let mut request = seal_request();
-    let mut bytes = HpkeSuiteIdentifier::try_from(suite())?.encode_to_vec();
-    bytes.extend_from_slice(&[0xf8, 7, 1]);
-    request.suite = MessageField::some(HpkeSuiteIdentifier::decode_from_slice(&bytes).unwrap());
-    assert!(
-        matches!(proto_conformance::seal_base(&request),Err(e)if e==HpkeError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    // Field 1 is the suite; its nested payload contains the same unknown tag.
+    assert_eq!(
+        decode_protobuf::<CryptoHpkeBaseSealConformanceRequest>(&[0x0a, 3, 0xf8, 7, 1]),
+        Err(CryptoWireError::malformed_protobuf())
     );
     let mut setup = psk_request();
     setup.psk.clear();
     assert!(proto_conformance::setup_sender_psk(&setup).is_err());
-    setup.psk.extend_from_slice(&[1; 32]);
+    assert!(setup.psk.extend_from_slice(&[1; 32]).is_ok());
     setup.psk_id.clear();
     assert!(proto_conformance::setup_sender_psk(&setup).is_err());
     Ok(())

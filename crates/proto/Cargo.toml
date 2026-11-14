@@ -11,13 +11,13 @@ license.workspace = true
 repository.workspace = true
 publish = true
 description = "ReallyMe crypto protobuf identifiers generated with Buffa."
-include = ["/proto/**/*.proto", "/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
+include = ["/proto/**/*.proto", "/src/**/*.rs", "/tests/fixtures/guarded/**", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 
 [features]
 default = []
 contract-types = []
 error-types = ["dep:thiserror"]
-generated = ["error-types", "contract-types", "dep:buffa", "buffa/json", "dep:base64", "dep:serde", "dep:serde_json", "dep:subtle", "dep:zeroize"]
+generated = ["error-types", "contract-types", "dep:buffa", "buffa/json", "buffa/zeroize", "dep:base64", "dep:serde", "dep:serde_json", "dep:subtle", "dep:zeroize"]
 
 [dependencies]
 base64 = { workspace = true, optional = true }
@@ -29,6 +29,8 @@ thiserror = { workspace = true, optional = true }
 zeroize = { workspace = true, optional = true }
 
 [dev-dependencies]
+buffa-descriptor = { package = "reallyme-buffa-descriptor", version = "=0.1.0", default-features = false, features = ["reflect", "zeroize"] }
+buffa-types = { package = "reallyme-buffa-types", version = "=0.1.0", default-features = false, features = ["json", "sensitive", "reflect"] }
 wasm-bindgen-test = { workspace = true }
 
 [lints]

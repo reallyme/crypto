@@ -20,7 +20,7 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
 use secrecy::{ExposeSecret, SecretSlice};
 
 use super::{GroupElement, GroupScalar, PrimeGroup};
-use crate::native_contract_support::{capabilities, copy_bytes, known_fields};
+use crate::native_contract_support::{capabilities, copy_bytes};
 
 fn group(value: Option<&CryptoPrimeGroupIdentifier>) -> Result<PrimeGroup, CryptoError> {
     PrimeGroup::try_from(value.ok_or(CryptoError::PRIMITIVE_INVALID_PARAMETER)?)
@@ -28,7 +28,6 @@ fn group(value: Option<&CryptoPrimeGroupIdentifier>) -> Result<PrimeGroup, Crypt
 fn identifier(value: PrimeGroup) -> CryptoPrimeGroupIdentifier {
     CryptoPrimeGroupIdentifier {
         group: ProtoGroup::from(value).into(),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 /// Validate explicit canonical DH parameters using the selected built-in domain.
@@ -36,7 +35,6 @@ fn identifier(value: PrimeGroup) -> CryptoPrimeGroupIdentifier {
 pub fn validate_dh_parameters(
     request: &CryptoPrimeGroupDhParametersValidationRequest,
 ) -> Result<CryptoPrimeGroupDhParametersValidationResult, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let group = group(request.group.as_option())?;
     group.validate_dh_parameters(
         &request.p,
@@ -46,20 +44,17 @@ pub fn validate_dh_parameters(
     )?;
     Ok(CryptoPrimeGroupDhParametersValidationResult {
         group: MessageField::some(identifier(group)),
-        __buffa_unknown_fields: Default::default(),
     })
 }
 impl TryFrom<&CryptoPrimeGroupScalarImportRequest> for GroupScalar {
     type Error = CryptoError;
     fn try_from(request: &CryptoPrimeGroupScalarImportRequest) -> Result<Self, Self::Error> {
-        known_fields(request.__buffa_unknown_fields.is_empty())?;
         group(request.group.as_option())?.scalar(&request.scalar)
     }
 }
 impl TryFrom<&CryptoPrimeGroupElement> for GroupElement {
     type Error = CryptoError;
     fn try_from(value: &CryptoPrimeGroupElement) -> Result<Self, Self::Error> {
-        known_fields(value.__buffa_unknown_fields.is_empty())?;
         group(value.group.as_option())?.element(&value.encoding)
     }
 }
@@ -68,8 +63,7 @@ impl TryFrom<&GroupElement> for CryptoPrimeGroupElement {
     fn try_from(value: &GroupElement) -> Result<Self, Self::Error> {
         let mut output = Self {
             group: MessageField::some(identifier(value.group())),
-            encoding: Vec::new(),
-            __buffa_unknown_fields: Default::default(),
+            encoding: Vec::new().into(),
         };
         copy_bytes(&mut output.encoding, value.encoding())?;
         Ok(output)
@@ -86,7 +80,6 @@ pub fn generate_scalar_with_rng(
     request: &CryptoPrimeGroupScalarGenerateRequest,
     rng: &mut impl crate::key_random::KeyRng,
 ) -> Result<GroupScalar, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     group(request.group.as_option())?.random_scalar(rng)
 }
 /// The descriptor exposes only the standard-generator public element.
@@ -97,7 +90,6 @@ pub fn describe_scalar(
     Ok(CryptoPrimeGroupScalarDescriptor {
         public_element: MessageField::some(CryptoPrimeGroupElement::try_from(&public)?),
         capabilities: MessageField::some(scalar_capabilities()?),
-        __buffa_unknown_fields: Default::default(),
     })
 }
 fn scalar_capabilities() -> Result<CryptoNativeKeyCapabilities, CryptoError> {
@@ -116,7 +108,6 @@ pub fn multiply(
     scalar: &GroupScalar,
     request: &CryptoPrimeGroupMultiplyRequest,
 ) -> Result<GroupElement, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let base = GroupElement::try_from(
         request
             .base
@@ -129,7 +120,6 @@ pub fn multiply(
 pub fn linear_combination(
     request: &CryptoPrimeGroupLinearCombinationRequest,
 ) -> Result<GroupElement, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let base = GroupElement::try_from(
         request
             .base
@@ -166,7 +156,6 @@ impl ReducedField {
 pub fn reduce_to_field(
     request: &CryptoPrimeGroupReduceToFieldRequest,
 ) -> Result<ReducedField, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let group = group(request.group.as_option())?;
     Ok(ReducedField {
         group,
@@ -177,15 +166,13 @@ pub fn reduce_to_field(
 pub fn field_result(value: &ReducedField) -> Result<CryptoPrimeGroupFieldValue, CryptoError> {
     let mut output = CryptoPrimeGroupFieldValue {
         group: MessageField::some(identifier(value.group)),
-        value: Vec::new(),
-        __buffa_unknown_fields: Default::default(),
+        value: Vec::new().into(),
     };
     copy_bytes(&mut output.value, value.as_bytes())?;
     Ok(output)
 }
 /// Existing field encoding owns all canonical/nonzero/domain validation.
 pub fn encode_field(request: &CryptoPrimeGroupFieldValue) -> Result<GroupElement, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     group(request.group.as_option())?.encode_field(&request.value)
 }
 /// Return the existing clearing x-coordinate/DH-value agreement owner.
@@ -204,7 +191,6 @@ pub fn agreement_result(
 pub fn domain(
     request: &CryptoPrimeGroupDomainRequest,
 ) -> Result<CryptoPrimeGroupDomainResult, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let group = group(request.group.as_option())?;
     let mut output = CryptoPrimeGroupDomainResult {
         group: MessageField::some(identifier(group)),
@@ -214,11 +200,10 @@ pub fn domain(
             .map_err(|_| CryptoError::BACKEND_INTERNAL)?,
         element_length: u32::try_from(group.element_len())
             .map_err(|_| CryptoError::BACKEND_INTERNAL)?,
-        modulus: Vec::new(),
-        subgroup_order: Vec::new(),
-        standard_generator: Vec::new(),
+        modulus: Vec::new().into(),
+        subgroup_order: Vec::new().into(),
+        standard_generator: Vec::new().into(),
         curve_coefficients: MessageField::none(),
-        __buffa_unknown_fields: Default::default(),
     };
     copy_bytes(&mut output.modulus, group.modulus())?;
     copy_bytes(&mut output.subgroup_order, group.order())?;
@@ -237,15 +222,13 @@ pub fn domain(
 
 /// Return the existing validated standard generator as a clearing element.
 pub fn generator(request: &CryptoPrimeGroupDomainRequest) -> Result<GroupElement, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     group(request.group.as_option())?.generator()
 }
 /// Borrow a private scalar only to compute its standard-generator public key.
 pub fn public_element(
     scalar: &GroupScalar,
-    request: &CryptoNativePublicKeyRequest,
+    _: &CryptoNativePublicKeyRequest,
 ) -> Result<GroupElement, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     scalar.public_element()
 }
 /// Import/validate an explicit element before extracting its native agreement bytes.

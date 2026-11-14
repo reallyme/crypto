@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use super::{decode_into, deserialize_bytes, deserialize_optional_bytes};
+use super::{decode_into, deserialize_bytes};
 use crate::error_types::CryptoError;
 use base64::{
     engine::general_purpose::{STANDARD, URL_SAFE},
@@ -65,37 +65,8 @@ fn accepted_json_byte_values_match_the_pinned_buffa_helpers() {
 }
 
 #[test]
-#[allow(clippy::panic)]
-fn null_and_optional_empty_presence_match_the_existing_contract() -> Result<(), serde_json::Error> {
-    let required = deserialize_bytes(&mut serde_json::Deserializer::from_str("null"))?;
-    assert!(required.is_empty());
-    let absent = deserialize_optional_bytes(&mut serde_json::Deserializer::from_str("null"))?;
-    assert!(absent.is_none());
-    let present = deserialize_optional_bytes(&mut serde_json::Deserializer::from_str(r#""""#))?;
-    assert!(present.as_ref().is_some_and(|bytes| bytes.is_empty()));
-    for json in [
-        "null",
-        r#""""#,
-        r#""Zg==""#,
-        r#""-_8""#,
-        "true",
-        "[]",
-        "{}",
-        "123",
-    ] {
-        let protected = deserialize_optional_bytes(&mut serde_json::Deserializer::from_str(json));
-        let upstream = buffa::json_helpers::opt_bytes::deserialize::<Vec<u8>, _>(
-            &mut serde_json::Deserializer::from_str(json),
-        );
-        match (protected, upstream) {
-            (Ok(protected), Ok(upstream)) => assert_eq!(
-                protected.as_ref().map(|value| value.as_slice()),
-                upstream.as_deref(),
-            ),
-            (Err(_), Err(_)) => {}
-            _ => panic!("optional protobuf byte acceptance changed"),
-        }
-    }
+fn null_protojson_bytes_decode_as_empty() -> Result<(), serde_json::Error> {
+    assert!(deserialize_bytes(&mut serde_json::Deserializer::from_str("null"))?.is_empty());
     Ok(())
 }
 
@@ -140,10 +111,5 @@ fn owned_string_visitors_preserve_byte_values() -> Result<(), serde::de::value::
     let input = serde::de::value::StringDeserializer::new(String::from("-_8="));
     let output = deserialize_bytes(input)?;
     assert_eq!(output.as_slice(), [0xfb, 0xff]);
-    // This deserializer does not supply the optional visitor's visit_some
-    // envelope. Preserve upstream rejection while guarding its owned string.
-    let input =
-        serde::de::value::StringDeserializer::<serde::de::value::Error>::new(String::from("-_8="));
-    assert!(deserialize_optional_bytes(input).is_err());
     Ok(())
 }

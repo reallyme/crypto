@@ -151,24 +151,18 @@ impl CryptoWireError {
                 error: Some(CryptoErrorBranch::Primitive(Box::new(
                     CryptoPrimitiveError {
                         reason: EnumValue::from(self.reason_code),
-                        __buffa_unknown_fields: Default::default(),
                     },
                 ))),
-                __buffa_unknown_fields: Default::default(),
             },
             CryptoWireErrorBranch::Provider => ProtoCryptoError {
                 error: Some(CryptoErrorBranch::Provider(Box::new(CryptoProviderError {
                     reason: EnumValue::from(self.reason_code),
-                    __buffa_unknown_fields: Default::default(),
                 }))),
-                __buffa_unknown_fields: Default::default(),
             },
             CryptoWireErrorBranch::Backend => ProtoCryptoError {
                 error: Some(CryptoErrorBranch::Backend(Box::new(CryptoBackendError {
                     reason: EnumValue::from(self.reason_code),
-                    __buffa_unknown_fields: Default::default(),
                 }))),
-                __buffa_unknown_fields: Default::default(),
             },
         }
     }
@@ -220,6 +214,7 @@ impl CryptoWireError {
         let error = DecodeOptions::new()
             .with_recursion_limit(CRYPTO_PROTO_RECURSION_LIMIT)
             .with_unknown_field_limit(CRYPTO_PROTO_UNKNOWN_FIELD_LIMIT)
+            .reject_unknown_fields()
             .with_max_message_size(CRYPTO_ERROR_ENVELOPE_PROTOBUF_DECODE_LIMIT)
             .decode_from_slice::<ProtoCryptoError>(bytes)
             .map_err(|_| malformed_error_envelope())?;

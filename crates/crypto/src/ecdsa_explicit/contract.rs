@@ -19,26 +19,21 @@ use secrecy::{ExposeSecret, SecretSlice};
 use zeroize::Zeroizing;
 
 use super::{EcdsaCurve, EcdsaEncoding, EcdsaHash, EcdsaInput, EcdsaKey, OpaqueEcdsaSigner};
-use crate::native_contract_support::{capabilities, copy_bytes, known_fields, verified};
+use crate::native_contract_support::{capabilities, copy_bytes, verified};
 
 impl<'a> TryFrom<&'a CryptoEcdsaInput> for EcdsaInput<'a> {
     type Error = CryptoError;
     fn try_from(value: &'a CryptoEcdsaInput) -> Result<Self, Self::Error> {
-        known_fields(value.__buffa_unknown_fields.is_empty())?;
         match value
             .input
             .as_ref()
             .ok_or(CryptoError::PRIMITIVE_INVALID_PARAMETER)?
         {
-            Input::Message(input) => {
-                known_fields(input.__buffa_unknown_fields.is_empty())?;
-                Ok(Self::Message {
-                    hash: EcdsaHash::try_from(input.hash)?,
-                    bytes: &input.message,
-                })
-            }
+            Input::Message(input) => Ok(Self::Message {
+                hash: EcdsaHash::try_from(input.hash)?,
+                bytes: &input.message,
+            }),
             Input::Prehash(input) => {
-                known_fields(input.__buffa_unknown_fields.is_empty())?;
                 let hash = EcdsaHash::try_from(input.hash)?;
                 let length = match hash {
                     EcdsaHash::Sha256 => crypto_sha2_256::SHA2_256_DIGEST_LENGTH,
@@ -60,7 +55,6 @@ impl<'a> TryFrom<&'a CryptoEcdsaInput> for EcdsaInput<'a> {
 impl TryFrom<&CryptoEcdsaKeyImportRequest> for EcdsaKey {
     type Error = CryptoError;
     fn try_from(value: &CryptoEcdsaKeyImportRequest) -> Result<Self, Self::Error> {
-        known_fields(value.__buffa_unknown_fields.is_empty())?;
         let curve = EcdsaCurve::try_from(
             value
                 .curve
@@ -72,20 +66,17 @@ impl TryFrom<&CryptoEcdsaKeyImportRequest> for EcdsaKey {
 }
 
 fn options(value: &CryptoEcdsaSignOptions) -> Result<EcdsaEncoding, CryptoError> {
-    known_fields(value.__buffa_unknown_fields.is_empty())?;
     EcdsaEncoding::try_from(value.encoding)
 }
 fn identifier(curve: EcdsaCurve) -> CryptoEcdsaCurveIdentifier {
     CryptoEcdsaCurveIdentifier {
         curve: ProtoCurve::from(curve).into(),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 fn public_output(curve: EcdsaCurve, bytes: &[u8]) -> Result<CryptoEcdsaPublicKey, CryptoError> {
     let mut output = CryptoEcdsaPublicKey {
         curve: MessageField::some(identifier(curve)),
-        sec1: Vec::new(),
-        __buffa_unknown_fields: Default::default(),
+        sec1: Vec::new().into(),
     };
     copy_bytes(&mut output.sec1, bytes)?;
     Ok(output)
@@ -93,7 +84,6 @@ fn public_output(curve: EcdsaCurve, bytes: &[u8]) -> Result<CryptoEcdsaPublicKey
 
 /// Generate a native non-exporting owner; only its public descriptor is serializable.
 pub fn generate(request: &CryptoEcdsaKeyGenerateRequest) -> Result<EcdsaKey, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     EcdsaKey::generate(EcdsaCurve::try_from(
         request
             .curve
@@ -106,7 +96,6 @@ pub fn generate_with_rng(
     request: &CryptoEcdsaKeyGenerateRequest,
     rng: &mut impl crate::key_random::KeyRng,
 ) -> Result<EcdsaKey, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     EcdsaKey::generate_with_rng(
         EcdsaCurve::try_from(
             request
@@ -120,9 +109,8 @@ pub fn generate_with_rng(
 /// Borrow public bytes from the explicitly supplied owner without private export.
 pub fn public_key(
     key: &EcdsaKey,
-    request: &CryptoNativePublicKeyRequest,
+    _: &CryptoNativePublicKeyRequest,
 ) -> Result<CryptoEcdsaPublicKey, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     public_output(key.curve(), key.public_key())
 }
 /// Describe signing/agreement method support and private owner cleanup.
@@ -138,7 +126,6 @@ pub fn describe_software(key: &EcdsaKey) -> Result<CryptoEcdsaKeyDescriptor, Cry
             false,
             true,
         )?),
-        __buffa_unknown_fields: Default::default(),
     })
 }
 /// Describe only the injected trait's signing/public-key capabilities.
@@ -159,7 +146,6 @@ pub fn describe_opaque(
             false,
             false,
         )?),
-        __buffa_unknown_fields: Default::default(),
     })
 }
 /// Sign exact input with a borrowed protected software owner.
@@ -167,7 +153,6 @@ pub fn sign(
     key: &EcdsaKey,
     request: &CryptoEcdsaSignRequest,
 ) -> Result<CryptoNativeSignatureResult, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let input = EcdsaInput::try_from(
         request
             .input
@@ -190,7 +175,6 @@ pub fn sign_opaque(
     provider: &impl OpaqueEcdsaSigner,
     request: &CryptoEcdsaSignRequest,
 ) -> Result<CryptoNativeSignatureResult, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let input = EcdsaInput::try_from(
         request
             .input
@@ -212,12 +196,10 @@ pub fn sign_opaque(
 pub fn verify(
     request: &CryptoEcdsaVerifyRequest,
 ) -> Result<CryptoNativeVerificationResult, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     let public = request
         .public_key
         .as_option()
         .ok_or(CryptoError::PRIMITIVE_INVALID_PARAMETER)?;
-    known_fields(public.__buffa_unknown_fields.is_empty())?;
     let curve = EcdsaCurve::try_from(
         public
             .curve
@@ -244,7 +226,6 @@ pub fn agree(
     key: &EcdsaKey,
     request: &CryptoEcdsaAgreementRequest,
 ) -> Result<SecretSlice<u8>, CryptoError> {
-    known_fields(request.__buffa_unknown_fields.is_empty())?;
     key.agree(&request.peer_sec1)
 }
 /// Explicit protected copy for transports that require the native shared secret.

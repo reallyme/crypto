@@ -6,7 +6,7 @@
 #![allow(clippy::field_reassign_with_default)] // Populate clearing generated owners.
 #![cfg(all(feature = "operation-response", feature = "ed448"))]
 
-use buffa::{EnumValue, Enumeration, Message};
+use buffa::{EnumValue, Enumeration};
 use crypto_core::CryptoError;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
     CryptoEd448KeyImportRequest, CryptoEd448OrdinarySignRequest, CryptoEd448OrdinaryVerifyRequest,
@@ -46,21 +46,29 @@ fn all_ordinary_rfc8032_cases_pass_through_protected_adapters() -> Result<(), Cr
             continue;
         }
         let mut source = CryptoEd448KeyImportRequest::default();
-        source.seed = hex::decode(value["seed"].as_str().unwrap()).unwrap();
+        source.seed = hex::decode(value["seed"].as_str().unwrap()).unwrap().into();
         let key = Ed448Key::try_from(&source)?;
         let mut sign = CryptoEd448OrdinarySignRequest::default();
-        sign.message = hex::decode(value["message"].as_str().unwrap()).unwrap();
+        sign.message = hex::decode(value["message"].as_str().unwrap())
+            .unwrap()
+            .into();
         let result = contract::sign(&key, &sign)?;
         assert_eq!(
             result.signature,
             hex::decode(value["signature"].as_str().unwrap()).unwrap()
         );
         let mut verify = CryptoEd448OrdinaryVerifyRequest::default();
-        verify.public_key.extend_from_slice(key.public_key());
-        verify.message.extend_from_slice(&sign.message);
-        verify.signature.extend_from_slice(&result.signature);
+        assert!(verify
+            .public_key
+            .extend_from_slice(key.public_key())
+            .is_ok());
+        assert!(verify.message.extend_from_slice(&sign.message).is_ok());
+        assert!(verify
+            .signature
+            .extend_from_slice(&result.signature)
+            .is_ok());
         contract::verify(&verify)?;
-        verify.message.push(0);
+        assert!(verify.message.push(0).is_ok());
         assert!(matches!(contract::verify(&verify),
             Err(error) if error == CryptoError::PRIMITIVE_INVALID_SIGNATURE));
         executed += 1;
@@ -91,7 +99,7 @@ impl OpaqueEd448Signer for Provider {
 fn empty_message_opaque_signing_unknown_context_and_entropy_failure_are_explicit(
 ) -> Result<(), CryptoError> {
     let mut source = CryptoEd448KeyImportRequest::default();
-    source.seed.resize(57, 0);
+    assert!(source.seed.resize(57, 0).is_ok());
     let key = Ed448Key::try_from(&source)?;
     let provider = Provider(Ed448Key::try_from(&source)?);
     let empty = CryptoEd448OrdinarySignRequest::default();
@@ -99,17 +107,15 @@ fn empty_message_opaque_signing_unknown_context_and_entropy_failure_are_explicit
         contract::sign(&key, &empty)?.signature,
         contract::sign_opaque(&provider, &empty)?.signature
     );
-    let mut context = CryptoEd448OrdinarySignRequest::default();
-    context.merge_from_slice(&[0xa2, 0x06, 1, 1]).unwrap();
-    assert!(matches!(contract::sign(&key, &context),
-        Err(error) if error == CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM));
+    let context = CryptoEd448OrdinarySignRequest::default();
+    assert_unknown_wire(&context, &[0xa2, 0x06, 1, 1]);
     assert!(
         matches!(contract::generate_with_rng(&CryptoNativeKeyGenerateRequest::default(), &mut FailingRng),
         Err(error) if error == CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)
     );
     for length in [0, 56, 58] {
         let mut source = CryptoEd448KeyImportRequest::default();
-        source.seed.resize(length, 1);
+        assert!(source.seed.resize(length, 1).is_ok());
         assert!(matches!(Ed448Key::try_from(&source),
             Err(error) if error == CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY));
     }
@@ -125,4 +131,11 @@ fn native_and_nested_transport_owners_keep_drop_cleanup() {
     require_cleanup::<CryptoEd448OrdinarySignRequest>();
     require_cleanup::<CryptoEd448OrdinaryVerifyRequest>();
     require_cleanup::<CryptoNativeKeyGenerateRequest>();
+}
+
+fn assert_unknown_wire<M: buffa::Message>(message: &M, modifier: &[u8]) {
+    let mut wire = message.encode_to_vec();
+    wire.extend_from_slice(modifier);
+    assert!(matches!(crypto_proto::wire::decode_protobuf::<M>(&wire),
+        Err(error) if error == crypto_proto::wire::CryptoWireError::malformed_protobuf()));
 }

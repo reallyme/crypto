@@ -22,7 +22,14 @@ on:
       - "scripts/crypto_operation_route_readiness.mjs"
       - "scripts/workflow_gate_policy.mjs"
       - "scripts/release-readiness/core.mjs"
-      - "scripts/redact_crypto_proto_debug.mjs"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "scripts/generate_protobuf.mjs"
+      - "scripts/generate_proto_enums.mjs"
+      - "scripts/proto_generation_policy.mjs"
+      - "scripts/redact_sdk_proto_debug.mjs"
+      - "scripts/restrict_buffa_view_handles.mjs"
+      - "scripts/native_buffa_readiness.mjs"
       - "scripts/generate_error_contract.mjs"
       - "scripts/generate_error_contract.test.mjs"
       - "scripts/generate_contract_constants.mjs"
@@ -39,7 +46,7 @@ on:
       - "crates/hpke/src/mlkem1024p384.rs"
       - "crates/hpke/src/secp256k1.rs"
       - "crates/hpke/src/x448.rs"
-      - "scripts/proto_hardening.test.mjs"
+      - "scripts/proto_generation.test.mjs"
       - "scripts/proto_scalar_policy.mjs"
       - "scripts/proto_scalar_policy.test.mjs"
   push:
@@ -59,7 +66,14 @@ on:
       - "scripts/crypto_operation_route_readiness.mjs"
       - "scripts/workflow_gate_policy.mjs"
       - "scripts/release-readiness/core.mjs"
-      - "scripts/redact_crypto_proto_debug.mjs"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "scripts/generate_protobuf.mjs"
+      - "scripts/generate_proto_enums.mjs"
+      - "scripts/proto_generation_policy.mjs"
+      - "scripts/redact_sdk_proto_debug.mjs"
+      - "scripts/restrict_buffa_view_handles.mjs"
+      - "scripts/native_buffa_readiness.mjs"
       - "scripts/generate_error_contract.mjs"
       - "scripts/generate_error_contract.test.mjs"
       - "scripts/generate_contract_constants.mjs"
@@ -76,7 +90,7 @@ on:
       - "crates/hpke/src/mlkem1024p384.rs"
       - "crates/hpke/src/secp256k1.rs"
       - "crates/hpke/src/x448.rs"
-      - "scripts/proto_hardening.test.mjs"
+      - "scripts/proto_generation.test.mjs"
       - "scripts/proto_scalar_policy.mjs"
       - "scripts/proto_scalar_policy.test.mjs"
 
@@ -88,7 +102,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
 
 env:
-  BUFFA_VERSION: 0.9.2
+  BUFFA_VERSION: 0.1.0
   BUF_VERSION: 1.75.0
 
 jobs:
@@ -131,8 +145,8 @@ jobs:
 
       - name: Install pinned Buffa generators
         run: |
-          cargo install protoc-gen-buffa --version "$BUFFA_VERSION" --locked
-          cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked
+          cargo install reallyme-protoc-gen-buffa --version "=$BUFFA_VERSION" --locked
+          cargo install reallyme-protoc-gen-buffa-packaging --version "=$BUFFA_VERSION" --locked
 
       # The reviewed 0.3.17 schema baseline is pinned by commit so moving a tag
       # cannot weaken compatibility validation for existing generated clients.

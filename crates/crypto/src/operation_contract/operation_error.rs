@@ -84,7 +84,6 @@ pub(super) fn verification_result(
             Some(error) => MessageField::some(error.to_proto()),
             None => MessageField::none(),
         },
-        __buffa_unknown_fields: Default::default(),
     }
 }
 

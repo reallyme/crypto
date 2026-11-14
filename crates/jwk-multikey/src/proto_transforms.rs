@@ -31,26 +31,19 @@ impl JwkToMultikeyInputs {
             .multikey
             .try_reserve_exact(encoded.len())
             .map_err(|_| CryptoError::BACKEND_INTERNAL)?;
-        output.multikey.extend_from_slice(encoded.as_bytes());
+        output.multikey.extend_from_slice(encoded.as_bytes())?;
         Ok(output)
     }
 }
 impl TryFrom<&CryptoJwkToMultikeyRequest> for JwkToMultikeyInputs {
     type Error = CryptoError;
     fn try_from(value: &CryptoJwkToMultikeyRequest) -> Result<Self, Self::Error> {
-        if !value.__buffa_unknown_fields.is_empty() {
-            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
-        }
         let jwk = value
             .jwk
             .as_option()
             .ok_or(CryptoError::PRIMITIVE_INVALID_PARAMETER)?;
-        if !jwk.__buffa_unknown_fields.is_empty() {
-            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
-        }
         #[cfg(not(any(feature = "native", all(feature = "wasm", target_arch = "wasm32"))))]
         if let Some(crypto_proto::generated::proto::reallyme::crypto::v1::__buffa::oneof::public_jwk::Key::Ec(ec)) = jwk.key.as_ref() {
-            if !ec.__buffa_unknown_fields.is_empty() { return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER); }
             // Keep this adapter's own native gate even if a sibling enables
             // the JWK dependency's backend through Cargo feature unification.
             return Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM);
@@ -84,16 +77,12 @@ impl MultikeyToJwkInputs {
         let owner = self.jwk()?;
         Ok(CryptoMultikeyToJwkResult {
             jwk: MessageField::some(PublicJwk::try_from(owner.as_jwk())?),
-            __buffa_unknown_fields: Default::default(),
         })
     }
 }
 impl TryFrom<&CryptoMultikeyToJwkRequest> for MultikeyToJwkInputs {
     type Error = CryptoError;
     fn try_from(value: &CryptoMultikeyToJwkRequest) -> Result<Self, Self::Error> {
-        if !value.__buffa_unknown_fields.is_empty() {
-            return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
-        }
         u32::try_from(value.multikey.len()).map_err(|_| CryptoError::PRIMITIVE_INVALID_LENGTH)?;
         let text = core::str::from_utf8(&value.multikey)
             .map_err(|_| CryptoError::PRIMITIVE_INVALID_ENCODING)?;

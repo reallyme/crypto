@@ -32,7 +32,7 @@ use zeroize::ZeroizeOnDrop;
 fn message(bytes: &[u8]) -> CryptoEcdsaInput {
     let mut body = CryptoEcdsaMessageInput::default();
     body.hash = HashAlgorithm::HASH_ALGORITHM_SHA2_256.into();
-    body.message.extend_from_slice(bytes);
+    assert!(body.message.extend_from_slice(bytes).is_ok());
     let mut output = CryptoEcdsaInput::default();
     output.input = Some(Input::Message(Box::new(body)));
     output
@@ -41,13 +41,11 @@ fn message(bytes: &[u8]) -> CryptoEcdsaInput {
 fn sign_request(bytes: &[u8]) -> CryptoP256LowSSignRequest {
     CryptoP256LowSSignRequest {
         input: MessageField::some(message(bytes)),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 fn curve(value: ProtoCurve) -> CryptoEcdsaCurveIdentifier {
     CryptoEcdsaCurveIdentifier {
         curve: value.into(),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 fn transcode(
@@ -60,7 +58,7 @@ fn transcode(
     request.curve = MessageField::some(curve(value));
     request.source_encoding = source.into();
     request.target_encoding = target.into();
-    request.signature.extend_from_slice(bytes);
+    assert!(request.signature.extend_from_slice(bytes).is_ok());
     request
 }
 
@@ -178,7 +176,7 @@ fn low_s_normalization_preserves_encoding_and_rejects_bad_scalars() -> Result<()
         };
         let mut probe = CryptoP256SignatureNormalizeRequest::default();
         probe.encoding = encoding.into();
-        probe.signature = bytes;
+        probe.signature = bytes.into();
         assert_eq!(
             reallyme_crypto::format_contract::normalize_p256_signature(&probe)?.signature,
             expected
@@ -209,23 +207,30 @@ fn low_s_message_digest_strict_verification_and_high_s_compatibility_are_distinc
     let digest = crypto_sha2_256::digest(bytes);
     let mut prehash = CryptoEcdsaPrehashInput::default();
     prehash.hash = HashAlgorithm::HASH_ALGORITHM_SHA2_256.into();
-    prehash.digest.extend_from_slice(digest.as_bytes());
+    assert!(prehash.digest.extend_from_slice(digest.as_bytes()).is_ok());
     let input = CryptoEcdsaInput {
         input: Some(Input::Prehash(Box::new(prehash))),
-        __buffa_unknown_fields: Default::default(),
     };
     let request = CryptoP256LowSSignRequest {
         input: MessageField::some(input),
-        __buffa_unknown_fields: Default::default(),
     };
     assert_eq!(
         contract::sign_p256_low_s(&key, &request)?.signature,
         signature.signature
     );
     let mut verify = CryptoP256LowSVerifyRequest::default();
-    verify.signature_der.extend_from_slice(&signature.signature);
-    verify.sha256_digest.extend_from_slice(digest.as_bytes());
-    verify.public_key_sec1.extend_from_slice(key.public_key());
+    assert!(verify
+        .signature_der
+        .extend_from_slice(&signature.signature)
+        .is_ok());
+    assert!(verify
+        .sha256_digest
+        .extend_from_slice(digest.as_bytes())
+        .is_ok());
+    assert!(verify
+        .public_key_sec1
+        .extend_from_slice(key.public_key())
+        .is_ok());
     contract::verify_p256_low_s(&verify)?;
     let mut raw = crypto_p256::p256_ecdsa_der_to_jose_signature(&signature.signature)?;
     let order =
@@ -242,7 +247,7 @@ fn low_s_message_digest_strict_verification_and_high_s_compatibility_are_distinc
             borrow = 1;
         }
     }
-    verify.signature_der = crypto_p256::p256_ecdsa_jose_signature_to_der(&raw)?;
+    verify.signature_der = crypto_p256::p256_ecdsa_jose_signature_to_der(&raw)?.into();
     assert!(
         matches!(contract::verify_p256_low_s(&verify),Err(e) if e==CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     );
@@ -254,7 +259,10 @@ fn low_s_message_digest_strict_verification_and_high_s_compatibility_are_distinc
     // Restore the valid low-S signature so this failure is caused by the
     // changed digest rather than the independent high-S rejection above.
     verify.signature_der.clear();
-    verify.signature_der.extend_from_slice(&signature.signature);
+    assert!(verify
+        .signature_der
+        .extend_from_slice(&signature.signature)
+        .is_ok());
     contract::verify_p256_low_s(&verify)?;
     verify.sha256_digest[0] ^= 1;
     assert!(
@@ -266,13 +274,11 @@ fn low_s_message_digest_strict_verification_and_high_s_compatibility_are_distinc
     );
     let mut wrong_hash = CryptoEcdsaMessageInput::default();
     wrong_hash.hash = HashAlgorithm::HASH_ALGORITHM_SHA2_384.into();
-    wrong_hash.message.extend_from_slice(bytes);
+    assert!(wrong_hash.message.extend_from_slice(bytes).is_ok());
     let wrong_hash = CryptoP256LowSSignRequest {
         input: MessageField::some(CryptoEcdsaInput {
             input: Some(Input::Message(Box::new(wrong_hash))),
-            __buffa_unknown_fields: Default::default(),
         }),
-        __buffa_unknown_fields: Default::default(),
     };
     assert!(
         matches!(contract::sign_p256_low_s(&key, &wrong_hash), Err(error) if error == CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
@@ -312,8 +318,7 @@ fn import_selectors_and_protected_owners_reject_unrecognized_modifiers() {
         }
         let request = CryptoP256PrivateKeyContainerImportRequest {
             format: (*format).into(),
-            document: Vec::new(),
-            __buffa_unknown_fields: Default::default(),
+            document: Vec::new().into(),
         };
         #[cfg(feature = "native")]
         let expected = match format {
@@ -333,21 +338,19 @@ fn import_selectors_and_protected_owners_reject_unrecognized_modifiers() {
     for value in [0, -1, 1, 99, 999, i32::MAX] {
         let request = CryptoP256PrivateKeyContainerImportRequest {
             format: EnumValue::from(value),
-            document: Vec::new(),
-            __buffa_unknown_fields: Default::default(),
+            document: Vec::new().into(),
         };
         assert!(
             matches!(contract::import_p256_private(&request),Err(e) if e==CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
         );
     }
-    let request =
-        CryptoP256PrivateKeyContainerImportRequest::decode_from_slice(&[8, 100, 0xf8, 7, 1])
-            .unwrap();
-    assert!(
-        matches!(contract::import_p256_private(&request),Err(e) if e==CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    use crypto_proto::wire::{decode_protobuf, CryptoWireError};
+    assert_eq!(
+        decode_protobuf::<CryptoP256PrivateKeyContainerImportRequest>(&[8, 100, 0xf8, 7, 1]),
+        Err(CryptoWireError::malformed_protobuf())
     );
     let mut request = CryptoP256PrivateKeyContainerImportRequest::default();
-    request.document.extend_from_slice(&[1; 32]);
+    assert!(request.document.extend_from_slice(&[1; 32]).is_ok());
     buffa::Message::clear(&mut request);
     assert!(request.document.is_empty() || request.document.iter().all(|b| *b == 0));
 }
@@ -415,7 +418,7 @@ Y6zT6W/3ReUrhwBnrdVhAaQLynIz2jZf7g6BHemY4hFYkmsq8YBCsVPlPU2HBmtp\n\
     ] {
         let mut request = CryptoP256PrivateKeyContainerImportRequest::default();
         request.format = format.into();
-        request.document.extend_from_slice(bytes);
+        assert!(request.document.extend_from_slice(bytes).is_ok());
         let key = contract::import_p256_private(&request)?;
         assert_eq!(
             contract::compressed_p256_public_key(
@@ -440,20 +443,20 @@ Y6zT6W/3ReUrhwBnrdVhAaQLynIz2jZf7g6BHemY4hFYkmsq8YBCsVPlPU2HBmtp\n\
     ] {
         let mut request = CryptoP256PublicKeyContainerImportRequest::default();
         request.format = format.into();
-        request.document.extend_from_slice(bytes);
+        assert!(request.document.extend_from_slice(bytes).is_ok());
         assert_eq!(contract::import_p256_public(&request)?.sec1, expected);
     }
     for bytes in [&[][..], &[255, 255][..], vec![0; 4097].as_slice()] {
         let mut request = CryptoP256PrivateKeyContainerImportRequest::default();
         request.format = P256KeyContainerFormat::P256_KEY_CONTAINER_FORMAT_PKCS8_DER.into();
-        request.document.extend_from_slice(bytes);
+        assert!(request.document.extend_from_slice(bytes).is_ok());
         assert!(
             matches!(contract::import_p256_private(&request), Err(error) if error == CryptoError::PRIMITIVE_INVALID_KEY)
         );
     }
     let mut request = CryptoP256PrivateKeyContainerImportRequest::default();
     request.format = P256KeyContainerFormat::P256_KEY_CONTAINER_FORMAT_PKCS8_PEM.into();
-    request.document.extend_from_slice(&[255]);
+    assert!(request.document.extend_from_slice(&[255]).is_ok());
     assert!(
         matches!(contract::import_p256_private(&request),Err(e) if e==CryptoError::PRIMITIVE_INVALID_KEY)
     );
@@ -467,7 +470,6 @@ fn native_only_container_import_does_not_enable_a_fallback() {
     let request = CryptoP256PrivateKeyContainerImportRequest {
         format: P256KeyContainerFormat::P256_KEY_CONTAINER_FORMAT_PKCS8_DER.into(),
         document: vec![1; 16],
-        __buffa_unknown_fields: Default::default(),
     };
     assert!(
         matches!(contract::import_p256_private(&request),Err(e) if e==CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
@@ -475,7 +477,6 @@ fn native_only_container_import_does_not_enable_a_fallback() {
     let request = CryptoP256PublicKeyContainerImportRequest {
         format: P256KeyContainerFormat::P256_KEY_CONTAINER_FORMAT_SPKI_DER.into(),
         document: vec![1; 16],
-        __buffa_unknown_fields: Default::default(),
     };
     assert!(
         matches!(contract::import_p256_public(&request),Err(e) if e==CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
@@ -501,7 +502,9 @@ fn standalone_explicit_point_validation_matches_every_existing_curve() -> Result
         };
         let mut request = CryptoEcdsaPublicKeyValidationRequest::default();
         request.curve = MessageField::some(curve(native.into()));
-        request.public_key_sec1 = hex::decode(vector["public"].as_str().unwrap()).unwrap();
+        request.public_key_sec1 = hex::decode(vector["public"].as_str().unwrap())
+            .unwrap()
+            .into();
         match reallyme_crypto::ecdsa_explicit::validate_public_key(native, &request.public_key_sec1)
         {
             Ok(()) => {

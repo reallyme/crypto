@@ -132,10 +132,10 @@ fn operation_response_vector_has_an_independent_semantic_oracle() -> Result<(), 
     let response_bytes = b64u_to_bytes(field_string(&vector, "operation_response")?)?;
     let response =
         decode_operation_response(&response_bytes).map_err(|_| VectorTestError::InvalidField)?;
-    let Some(CryptoOperationOutcome::Result(result)) = response.outcome else {
+    let Some(CryptoOperationOutcome::Result(result)) = response.outcome.as_ref() else {
         return Err(VectorTestError::InvalidField);
     };
-    let Some(CryptoOperationResultBranch::Hash(hash_result)) = result.result else {
+    let Some(CryptoOperationResultBranch::Hash(hash_result)) = result.result.as_ref() else {
         return Err(VectorTestError::InvalidField);
     };
     assert_eq!(hash_result.digest, SHA2_256_ABC);
@@ -153,10 +153,10 @@ fn operation_response_vector_has_an_independent_semantic_oracle() -> Result<(), 
         let response_bytes = b64u_to_bytes(field_string(&vector, field)?)?;
         let response = decode_operation_response(&response_bytes)
             .map_err(|_| VectorTestError::InvalidField)?;
-        let Some(CryptoOperationOutcome::Error(error)) = response.outcome else {
+        let Some(CryptoOperationOutcome::Error(error)) = response.outcome.as_ref() else {
             return Err(VectorTestError::InvalidField);
         };
-        let Some(CryptoErrorBranch::Primitive(primitive)) = error.error else {
+        let Some(CryptoErrorBranch::Primitive(primitive)) = error.error.as_ref() else {
             return Err(VectorTestError::InvalidField);
         };
         assert_eq!(primitive.reason.as_known(), Some(expected_reason));

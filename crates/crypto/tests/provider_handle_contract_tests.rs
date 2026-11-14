@@ -25,11 +25,11 @@ fn exact_binary_and_empty_handle_tags_match_existing_prefix_helpers() -> Result<
         b"SE:tag".as_slice(),
     ] {
         let mut request = CryptoP256SecureEnclaveHandleEncodeRequest::default();
-        request.tag.extend_from_slice(tag);
+        assert!(request.tag.extend_from_slice(tag).is_ok());
         let output = encode_p256_handle(&request)?;
         assert_eq!(output.handle, crypto_p256::encode_se_handle(tag)?);
         let mut request = CryptoP256SecureEnclaveHandleDecodeRequest::default();
-        request.handle.extend_from_slice(&output.handle);
+        assert!(request.handle.extend_from_slice(&output.handle).is_ok());
         let decoded = decode_p256_handle(&request)?;
         assert_eq!(decoded.tag.as_deref(), Some(tag));
         assert_eq!(
@@ -38,9 +38,10 @@ fn exact_binary_and_empty_handle_tags_match_existing_prefix_helpers() -> Result<
         );
     }
     let mut request = CryptoP256SecureEnclaveHandleDecodeRequest::default();
-    request
+    assert!(request
         .handle
-        .extend_from_slice(crypto_p256::SE_HANDLE_PREFIX);
+        .extend_from_slice(crypto_p256::SE_HANDLE_PREFIX)
+        .is_ok());
     let empty = decode_p256_handle(&request)?;
     assert_eq!(empty.encode_to_vec(), [10, 0]);
     for non_handle in [
@@ -50,7 +51,7 @@ fn exact_binary_and_empty_handle_tags_match_existing_prefix_helpers() -> Result<
         b" SE:tag".as_slice(),
     ] {
         let mut request = CryptoP256SecureEnclaveHandleDecodeRequest::default();
-        request.handle.extend_from_slice(non_handle);
+        assert!(request.handle.extend_from_slice(non_handle).is_ok());
         let decoded = decode_p256_handle(&request)?;
         assert!(decoded.tag.is_none());
         assert!(decoded.encode_to_vec().is_empty());
@@ -68,18 +69,16 @@ fn unknown_handle_modifiers_and_clearing_storage_are_explicit() {
     clearing::<CryptoP256SecureEnclaveHandleEncodeResult>();
     clearing::<CryptoP256SecureEnclaveHandleDecodeRequest>();
     clearing::<CryptoP256SecureEnclaveHandleDecodeResult>();
-    let encode =
-        CryptoP256SecureEnclaveHandleEncodeRequest::decode_from_slice(&[10, 1, 255, 0xf8, 7, 1])
-            .unwrap();
-    assert!(
-        matches!(encode_p256_handle(&encode),Err(e)if e==CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    use crypto_proto::wire::{decode_protobuf, CryptoWireError};
+    assert_eq!(
+        decode_protobuf::<CryptoP256SecureEnclaveHandleEncodeRequest>(&[10, 1, 255, 0xf8, 7, 1]),
+        Err(CryptoWireError::malformed_protobuf())
     );
-    let decode = CryptoP256SecureEnclaveHandleDecodeRequest::decode_from_slice(&[
-        10, 3, b'S', b'E', b':', 0xf8, 7, 1,
-    ])
-    .unwrap();
-    assert!(
-        matches!(decode_p256_handle(&decode),Err(e)if e==CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    assert_eq!(
+        decode_protobuf::<CryptoP256SecureEnclaveHandleDecodeRequest>(&[
+            10, 3, b'S', b'E', b':', 0xf8, 7, 1
+        ]),
+        Err(CryptoWireError::malformed_protobuf())
     );
     let mut decoded =
         CryptoP256SecureEnclaveHandleDecodeResult::decode_from_slice(&[10, 4, 0, 255, 32, 0])

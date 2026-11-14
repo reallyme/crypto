@@ -157,7 +157,6 @@ fn assert_operation_fields(
         wire.output_material.as_known(),
         Some(ProtoOutputMaterial::from(native.output_material))
     );
-    assert!(wire.__buffa_unknown_fields.is_empty());
 }
 
 fn assert_material_fields(native: MaterialPolicy, wire: &ProtoMaterialPolicy) {
@@ -185,7 +184,6 @@ fn assert_material_fields(native: MaterialPolicy, wire: &ProtoMaterialPolicy) {
         wire.destruction.as_known(),
         Some(ProtoDestructionPolicy::from(native.destruction))
     );
-    assert!(wire.__buffa_unknown_fields.is_empty());
 }
 
 fn assert_enum_parity<P, N>()

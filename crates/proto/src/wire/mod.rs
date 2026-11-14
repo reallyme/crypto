@@ -16,7 +16,8 @@ mod limits;
 mod mapping;
 
 pub(crate) use codec::decode_json;
-pub use codec::{decode_protobuf, encode_protobuf};
+pub(crate) use codec::encode_protobuf_with_limit;
+pub use codec::{decode_protobuf, encode_protobuf, merge_protobuf};
 pub use error::{CryptoWireError, CryptoWireErrorBranch, CryptoWireErrorValidationError};
 pub use limits::{
     CRYPTO_ERROR_ENVELOPE_PROTOBUF_DECODE_LIMIT, MAX_CRYPTO_PROTO_JSON_BYTES,

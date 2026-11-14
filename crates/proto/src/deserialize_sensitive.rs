@@ -157,103 +157,10 @@ impl<'de> Visitor<'de> for BytesVisitor {
     }
 }
 
-struct OptionalBytesVisitor;
-
-impl<'de> Visitor<'de> for OptionalBytesVisitor {
-    type Value = Option<Zeroizing<Vec<u8>>>;
-
-    fn expecting(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        formatter.write_str("a base64-encoded string, or null")
-    }
-
-    fn visit_none<E: SerdeError>(self) -> Result<Self::Value, E> {
-        Ok(None)
-    }
-
-    fn visit_unit<E: SerdeError>(self) -> Result<Self::Value, E> {
-        Ok(None)
-    }
-
-    fn visit_some<D: Deserializer<'de>>(self, value: D) -> Result<Self::Value, D::Error> {
-        deserialize_bytes(value).map(Some)
-    }
-
-    fn visit_bool<E: SerdeError>(self, _value: bool) -> Result<Self::Value, E> {
-        Err(E::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
-    }
-
-    fn visit_i64<E: SerdeError>(self, _value: i64) -> Result<Self::Value, E> {
-        Err(E::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
-    }
-
-    fn visit_u64<E: SerdeError>(self, _value: u64) -> Result<Self::Value, E> {
-        Err(E::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
-    }
-
-    fn visit_i128<E: SerdeError>(self, _value: i128) -> Result<Self::Value, E> {
-        Err(E::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
-    }
-
-    fn visit_u128<E: SerdeError>(self, _value: u128) -> Result<Self::Value, E> {
-        Err(E::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
-    }
-
-    fn visit_f64<E: SerdeError>(self, _value: f64) -> Result<Self::Value, E> {
-        Err(E::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
-    }
-
-    fn visit_char<E: SerdeError>(self, _value: char) -> Result<Self::Value, E> {
-        Err(E::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
-    }
-
-    fn visit_bytes<E: SerdeError>(self, _value: &[u8]) -> Result<Self::Value, E> {
-        Err(E::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
-    }
-
-    fn visit_byte_buf<E: SerdeError>(self, value: Vec<u8>) -> Result<Self::Value, E> {
-        let _value = Zeroizing::new(value);
-        Err(E::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
-    }
-
-    fn visit_newtype_struct<D: Deserializer<'de>>(
-        self,
-        _value: D,
-    ) -> Result<Self::Value, D::Error> {
-        Err(D::Error::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
-    }
-
-    fn visit_seq<A: SeqAccess<'de>>(self, _value: A) -> Result<Self::Value, A::Error> {
-        Err(A::Error::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
-    }
-
-    fn visit_map<A: MapAccess<'de>>(self, _value: A) -> Result<Self::Value, A::Error> {
-        Err(A::Error::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
-    }
-
-    fn visit_enum<A: EnumAccess<'de>>(self, _value: A) -> Result<Self::Value, A::Error> {
-        Err(A::Error::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
-    }
-
-    fn visit_str<E: SerdeError>(self, _value: &str) -> Result<Self::Value, E> {
-        Err(E::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
-    }
-
-    fn visit_string<E: SerdeError>(self, value: String) -> Result<Self::Value, E> {
-        let _value = Zeroizing::new(value);
-        Err(E::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
-    }
-}
-
 pub(crate) fn deserialize_bytes<'de, D: Deserializer<'de>>(
     deserializer: D,
 ) -> Result<Zeroizing<Vec<u8>>, D::Error> {
     deserializer.deserialize_any(BytesVisitor)
-}
-
-pub(crate) fn deserialize_optional_bytes<'de, D: Deserializer<'de>>(
-    deserializer: D,
-) -> Result<Option<Zeroizing<Vec<u8>>>, D::Error> {
-    deserializer.deserialize_option(OptionalBytesVisitor)
 }
 
 #[cfg(test)]

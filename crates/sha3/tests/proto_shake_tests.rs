@@ -18,9 +18,8 @@ mod vectors;
 
 fn request(input: &[u8], length: u64) -> CryptoShake256ExpandRequest {
     CryptoShake256ExpandRequest {
-        input: input.to_vec(),
+        input: input.to_vec().into(),
         output_length: length,
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -37,7 +36,7 @@ fn vendored_nist_answers_match_borrowed_and_generated_destinations() -> Result<(
         // The caller chooses this fixture-bounded allocation before passing
         // the final generated clearing owner as the native destination.
         let mut result = CryptoShake256ExpandResult::default();
-        result.output.resize(expected.len(), 0);
+        assert!(result.output.resize(expected.len(), 0).is_ok());
         expand_into(&request, &mut result.output)?;
         assert_eq!(result.output, expected, "NIST tcId {}", vector.case);
         assert_eq!(request.input, input);
@@ -57,7 +56,7 @@ fn zero_and_arbitrary_widths_preserve_native_xof_and_binary_input() -> Result<()
         expand_into(&request, &mut actual)?;
         assert_eq!(actual.as_slice(), expected.as_slice());
         let mut result = CryptoShake256ExpandResult::default();
-        result.output.resize(length, 0);
+        assert!(result.output.resize(length, 0).is_ok());
         expand_into(&request, &mut result.output)?;
         assert_eq!(result.output, expected.as_slice());
         assert_eq!(request.input, input);
@@ -90,20 +89,13 @@ fn mismatched_or_unrepresentable_lengths_never_mutate_borrowed_output() {
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
 fn unknown_modifiers_fail_before_output_mutation() {
-    let mut request = request(b"exact\0input\xff", u64::MAX);
-    request
-        .merge_from_slice(&[0xa2, 0x06, 4, 0, 255, 1, 0])
-        .unwrap();
-    let mut output = Zeroizing::new([0xa5; 64]);
+    let request = request(b"exact\0input\xff", u64::MAX);
+    let mut wire = request.encode_to_vec();
+    wire.extend_from_slice(&[0xa2, 0x06, 4, 0, 255, 1, 0]);
     assert_eq!(
-        expand_into(&request, output.as_mut_slice()),
-        Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
+        crypto_proto::wire::decode_protobuf::<CryptoShake256ExpandRequest>(&wire),
+        Err(crypto_proto::wire::CryptoWireError::malformed_protobuf())
     );
-    assert_eq!(*output, [0xa5; 64]);
-    assert!(!request.__buffa_unknown_fields.is_empty());
-    Message::clear(&mut request);
-    assert!(request.input.is_empty());
-    assert!(request.__buffa_unknown_fields.is_empty());
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -116,7 +108,7 @@ fn generated_copies_have_independent_clearing_output_storage() -> Result<(), Cry
     clearing::<CryptoShake256ExpandResult>();
     let request = request(b"owned output", 32);
     let mut original = CryptoShake256ExpandResult::default();
-    original.output.resize(32, 0);
+    assert!(original.output.resize(32, 0).is_ok());
     expand_into(&request, &mut original.output)?;
     let expected = Zeroizing::new(original.output.clone());
     let mut retained = original.clone();

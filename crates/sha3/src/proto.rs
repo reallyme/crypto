@@ -30,8 +30,5 @@ pub fn expand_into(
 }
 
 fn output_length(request: &CryptoShake256ExpandRequest) -> Result<usize, CryptoError> {
-    if !request.__buffa_unknown_fields.is_empty() {
-        return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER);
-    }
     usize::try_from(request.output_length).map_err(|_| CryptoError::PRIMITIVE_INVALID_LENGTH)
 }
