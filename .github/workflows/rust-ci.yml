@@ -106,8 +106,17 @@ jobs:
         with:
           shared-key: msrv-1.96
 
+      # The all-feature tests select the OpenSSL Brainpool provider.
+      - name: Build reviewed optional native provider
+        env:
+          NUM_JOBS: '4'
+        run: |
+          cargo +1.96.0 run --locked -p optional-provider-build -- --target x86_64-unknown-linux-gnu --out-dir "$PWD/target/optional-provider"
+          echo "OPENSSL_DIR=$PWD/target/optional-provider/install" >> "$GITHUB_ENV"
+          echo "OPENSSL_STATIC=1" >> "$GITHUB_ENV"
+
       - name: Check workspace at declared minimum Rust version
-        run: cargo check --locked --workspace --all-features
+        run: cargo +1.96.0 check --locked --workspace --all-features
 
       - name: Test reallyme-crypto at its declared MSRV
         run: cargo +1.96.0 test --locked --package reallyme-crypto --all-features
@@ -461,10 +470,13 @@ jobs:
         with:
           tool: wasm-bindgen-cli@0.2.130
 
-      - name: Verify vectors against TypeScript-native noble oracles
+      - name: Install dependencies for TypeScript vector checks
         run: |
           npm ci --prefix crates/conformance
-          npm run --prefix crates/conformance verify:ts-native
+          npm ci --prefix packages/ts
+
+      - name: Verify vectors against TypeScript-native noble oracles
+        run: npm run --prefix crates/conformance verify:ts-native
 
       - name: Verify post-quantum vectors against @noble/post-quantum oracle
         run: npm run --prefix crates/conformance verify:noble-pq

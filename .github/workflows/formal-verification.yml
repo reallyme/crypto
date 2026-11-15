@@ -133,8 +133,9 @@ jobs:
           cargo install --locked kani-verifier@0.68.0
           cargo kani setup
 
+      # Offline metadata in the dependency proof runners resolves all targets.
       - name: Fetch locked workspace dependencies
-        run: cargo fetch --locked --target x86_64-unknown-linux-gnu
+        run: cargo fetch --locked
 
       - name: Verify proof obligations
         shell: bash
