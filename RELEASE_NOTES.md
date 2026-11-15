@@ -9,7 +9,8 @@
   ECDSA signatures, key agreement, AES Key Wrap, and the portable Keccak round.
 - Preserves typed provider failure for missing SDK providers. Restricted Rust builds
   still report typed unsupported algorithm for disabled algorithms.
-- Integrates the formal checks with the release-readiness 0.9.3 CI workflow.
+- Integrates the formal checks with Release Readiness 0.9.4. Package preflight
+  summaries include a publish command with the version and reviewed commit SHA.
 
 ## 0.4.1
 

@@ -54,24 +54,25 @@ for (const [ecosystem, preflight, publish] of [
     const { source, script } = shellStep(preflight, "Show release form inputs");
     assert.ok(source.includes(`run-name: Preflight ${ecosystem} ` +
       "${{ inputs.version }} ${{ inputs.source_sha }}"));
-    assert.ok(source.includes(`PUBLISH_WORKFLOW: ${publish}.yml`));
     assert.ok(source.includes("SOURCE_SHA: ${{ inputs.source_sha }}"));
     const env = {
       GITHUB_EVENT_NAME: "workflow_dispatch", GITHUB_REF: "refs/heads/main", GITHUB_SHA: sha,
+      GITHUB_REPOSITORY: "reallyme/crypto",
       SOURCE_SHA: sha, RELEASE_VERSION: cratesVersion, SHA_PATTERN: "^[0-9a-f]{40}$",
       VERSION_PATTERN: "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
-      GITHUB_STEP_SUMMARY: join(scratch, "summary"), PUBLISH_WORKFLOW: `${publish}.yml`,
+      GITHUB_STEP_SUMMARY: join(scratch, "summary"),
     };
     assert.equal(runShell(script, env).status, 0);
     const summary = readFileSync(env.GITHUB_STEP_SUMMARY, "utf8");
     assert.ok(summary.includes(["**Version**", "```text", cratesVersion, "```"].join("\n")));
     assert.ok(summary.includes(["**Source SHA**", "```text", sha, "```"].join("\n")));
     assert.ok(summary.includes(
-      `gh workflow run ${publish}.yml --repo reallyme/crypto --ref main -f version=${cratesVersion} -f source_sha=${sha}`,
+      `gh workflow run ${publish}.yml --repo github.com/reallyme/crypto --ref main -f version=${cratesVersion} -f source_sha=${sha}`,
     ));
     rmSync(env.GITHUB_STEP_SUMMARY);
     for (const invalid of [{ SOURCE_SHA: "b".repeat(40) }, { RELEASE_VERSION: "0.4.1\nother" },
-      { GITHUB_REF: "refs/heads/other" }, { GITHUB_EVENT_NAME: "push" }]) {
+      { GITHUB_REF: "refs/heads/other" }, { GITHUB_EVENT_NAME: "push" },
+      { GITHUB_REPOSITORY: "reallyme/crypto; echo unexpected" }]) {
       const rejected = runShell(script, { ...env, ...invalid });
       assert.equal(rejected.status, 0, rejected.stderr);
       assert.match(rejected.stderr, /Cannot show release inputs/u);

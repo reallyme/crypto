@@ -175,7 +175,7 @@ const mavenCodecVersion = "0.4.3";
 const rustSemverBaselineCommit = "54de2955ebf73e9fd1c306eba207550b3716d767";
 const cargoSemverChecksVersion = "0.50.0";
 const buffaVersion = "0.1.2";
-const releaseReadinessCommit = "5f30357e5c5e1cf757be793a45149c455730bdca";
+const releaseReadinessCommit = "5a7c5b4785a2c47589dca7f18be11ed99d5dd7b8";
 const releaseReadinessCommand = "node scripts/run_pinned_release_readiness.mjs";
 const gradleWrapperValidationAction =
   "gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c";
@@ -2380,7 +2380,7 @@ const primaryOperationBoundaryPolicy = {
 const repositoryPolicy = {
   generatedFreshnessMode,
   vendoredCore: {
-    version: "0.9.3",
+    version: "0.9.4",
     scriptPath: "scripts/check_release_readiness.mjs",
     corePath: "scripts/release-readiness/core.mjs",
   },
@@ -2682,7 +2682,7 @@ const repositoryPolicy = {
         path: "scripts/run_pinned_release_readiness.mjs",
         required: [
           `const RELEASE_READINESS_COMMIT = "${releaseReadinessCommit}";`,
-          'const RELEASE_READINESS_CORE_SHA256 =\n  "ca0bc8cce08d5b532ee54840a60483942c255cbee5b6e3f2cefd33d27d16e72f";',
+          'const RELEASE_READINESS_CORE_SHA256 =\n  "1e7d2fd25f8452d6d023c9d9c56ddb68232f019ae50846541f6ea0aee44f1793";',
           "const LOCAL_CHECKER_SHA256 =",
           "const LOCAL_CHECKER_DEPENDENCIES =",
           "scripts/crypto_operation_route_readiness.mjs",
