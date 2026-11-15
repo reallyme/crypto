@@ -1,9 +1,8 @@
 # Legacy prime-group domains
 
-The unpublished 0.4.0 source API adds three explicit prime-group identities for
-legacy interoperability. Their parameter bindings extend the existing protected
-supplied-base interface. Deployment strength and protocol acceptance remain
-caller policy.
+These three explicit prime-group identities support legacy interoperability
+through the protected supplied-base interface. Callers set deployment strength
+and protocol acceptance policy.
 
 | Native `PrimeGroup` variant | Protobuf value | Field/scalar bytes | Uncompressed point bytes | Parameter source |
 | --- | --- | --- | --- | --- |
@@ -63,38 +62,6 @@ and adds schema-adapter comparisons against the independent multiplication,
 reduction and Icart answers. The identity and native-contract suites cover all
 thirteen domains and permanent wire encodings.
 
-The earlier public-API inventory retains its recorded compiler checkpoint.
-This extension accounts for the three new native variants and their three
-schema counterparts; the protected owner and operation API shapes are retained.
-Runtime validation of the 0.4.0 schema adapters requires the matching generated
-bindings.
-
-## Validation scope
-
-| Check | Recorded result |
-| --- | --- |
-| Native all-target `prime-groups,operation-response` compilation | Passed with warnings denied |
-| Workspace all-target/all-feature Clippy | Passed with warnings denied |
-| WASM all-target `prime-groups,operation-response` compilation | Passed with warnings denied |
-| Rust 1.96.0 minimum-version all-target compilation | Passed with warnings denied; the development toolchain remains 1.100.0 |
-| Seven iOS/simulator/Android library targets | Passed with warnings denied using `native,prime-groups,operation-response`; no application or device execution |
-| Buf lint and breaking against the pinned published 0.3.17 baseline | Passed |
-| Generated error/constants/HPKE freshness, hardening idempotence and formatting | Passed |
-| TypeScript build, static CI policy, workflow lint and offline Cargo Deny | Passed; dependency registry versions, sources and checksums are unchanged |
-| Local canonical 0.4.0 runtime regression execution | Unexecuted under the requested no-tests constraint |
-| Independent group runtime execution | Ten functions passed on each of native and WASM across thirteen domains at `561b7b0`, using the reviewed repaired-field override; the full schema-adapter suite was not run |
-
-The mobile targets are `aarch64-apple-ios`, `aarch64-apple-ios-sim`,
-`x86_64-apple-ios`, `aarch64-linux-android`, `armv7-linux-androideabi`,
-`i686-linux-android` and `x86_64-linux-android`. Compilation is separate from
-known-answer execution and device integration.
-
-The subsequent [independent runtime evidence](primefield-release-plan.md#independent-runtime-evidence)
-binds those ten group functions and five exact DH validation functions to the
-unchanged source archive and canonical fixtures. It records the repaired field
-source separately from the canonical registry dependency; the latter remains
-unmodified. The original compiler inventory checkpoint is retained.
-
-The aligned Rust source packages remain unpublished 0.4.0. Existing published
-0.3.17 packages and SDK artifact versions are unchanged. Runtime release gates
-and publication retain their separate requirements.
+Ten independent group tests passed in native and WASM execution across all
+thirteen domains at `561b7b0`. That run used the repaired prime-field source
+override recorded in the [patch manifest](../patches/primefield/manifest.json).

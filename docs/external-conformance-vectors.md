@@ -155,15 +155,12 @@ and CCTV where no external suite exists, where a suite is status-only because it
 targets internals, or where a small fixed-size component is easier to specify
 exhaustively than to cover with examples.
 
-**Kani (adopted first).** The reference DER encoder in
-[refenc.rs](../tools/external-vector-audit/src/refenc.rs) carries bounded
-`#[cfg(kani)]` proofs of its length-prefix round-tripping and minimal-integer /
-sign-prefix rules. Kani was adopted first because it is Rust-native (no separate
-specification language), proves the "no panic" and round-trip invariants
-directly, and gates cleanly in the audit workflow. It runs only in the
-[External Vector Audit](../.github/workflows/external-vectors-audit.yml)
-workflow. The [formal verification inventory](../formal/README.md) covers
-production Rust proofs and the symbolic HPKE model.
+The [reference DER encoder](../tools/external-vector-audit/src/refenc.rs) has
+bounded Kani proofs for length-prefix round trips and minimal signed-integer
+encoding. [Formal Verification](../.github/workflows/formal-verification.yml)
+runs the reference encoder in its own job. The
+[formal verification guide](../formal/README.md) describes the production
+Rust proofs and symbolic HPKE model.
 
 **Cryptol + SAW (deferred).** Broader equivalence work could compare a
 fixed-size production function to an independent Cryptol specification
@@ -184,7 +181,8 @@ with the normal code checks; larger exhaustive sweeps run separately:
 | Committed corpus hashes and CCTV markers | Vector integrity checks. |
 | Re-download and byte-for-byte comparison of the upstream corpora, and byte-for-byte regeneration of the derived HPKE PSK corpus | Vector changes and the scheduled integrity check. |
 | Wycheproof / BIP-340 / RFC 8032 / X-Wing / HPKE / PBKDF2 adapters | Normal code checks against the committed corpora. |
-| Exhaustive ACVP/CCTV sweeps and bounded reference DER encoder proofs | Separate scheduled or explicitly requested checks. |
+| Exhaustive ACVP/CCTV sweeps | Separate scheduled or explicitly requested checks. |
+| Bounded reference DER encoder proofs | Formal Verification. |
 
 The pinned SHA-256 provenance check is what turns the manifest from
 documentation into an enforced invariant: it is cheap enough to run on every

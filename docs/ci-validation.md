@@ -13,7 +13,7 @@ reported the candidate SHA.
 | Code Checks, FFI jobs | iOS and Android cross-compilation, native sanitizers, Miri, C ABI and release export isolation |
 | Protobuf Checks | Reproducible generation and committed binding freshness |
 | Fuzz and Scheduled Fuzz | Changed-input builds and weekly time-boxed execution |
-| Formal Verification | Tamarin Base HPKE proofs and Kani reference encoder proofs |
+| Formal Verification | Symbolic HPKE models, bounded Rust and reference encoder proofs, and independent HPKE vector checks |
 | CodeQL and Dependency Security | Static analysis, runtime dependency scanning, and Gradle checksum provenance |
 
 The TypeScript source checks build the WASM SDK, and the tarball check and

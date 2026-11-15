@@ -84,7 +84,7 @@ selects the dependency's portable conditional moves for functional
 verification with Kani.
 
 The [reference DER encoder proofs](../docs/external-conformance-vectors.md#formal-methods-candidates)
-run separately in the External Vector Audit workflow.
+run in a separate job in the Formal Verification workflow.
 
 ## Time limits and incomplete proofs
 
@@ -96,14 +96,6 @@ succeed. A timeout fails the category. The independent vector job has a
 12-minute job and requires a verified verdict for every expected lemma.
 The reference encoder job has a 20-minute limit and a 10-minute limit per
 harness.
-
-In concurrent local runs, the locked X25519 contribution proof took about
-9 minutes 39 seconds and the X448 canonical import harness took about 9
-minutes 27 seconds. The PQ Tamarin model took about 2 minutes 39 seconds.
-These are local observations. The first hosted runs will establish CI
-baselines. To investigate a Kani timeout, run the named harness separately
-with `--harness` and a measured time limit. Record the target, feature set,
-verifier version, and elapsed time with any budget change.
 
 ## SDK plaintext release
 

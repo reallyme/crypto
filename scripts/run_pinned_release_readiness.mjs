@@ -10,11 +10,11 @@ import { fileURLToPath } from "node:url";
 
 // The upstream core and this repository's policy checker are separate inputs.
 // Pinning both makes an unreviewed policy edit fail before the checker runs.
-const RELEASE_READINESS_COMMIT = "45b52cf353b0b85694a96c6addc985221274ff37";
+const RELEASE_READINESS_COMMIT = "5f30357e5c5e1cf757be793a45149c455730bdca";
 const RELEASE_READINESS_CORE_SHA256 =
-  "bd2732ab4af4193ab8f8a2bdde637d7445b1ec93d3b8d5b84b5de7146bdf543a";
+  "ca0bc8cce08d5b532ee54840a60483942c255cbee5b6e3f2cefd33d27d16e72f";
 const LOCAL_CHECKER_SHA256 =
-  "f730cf5314b130ef26aeebea8d21ab8b86685f951376eba827845087e3250061";
+  "1e875a4ad31debbdcbefb7fcf179c7532edd90f062d261fb5b45ce1034b6e2b2";
 // The checker imports local policy modules. Pinning only its entry file
 // would let an unreviewed dependency change the release decision.
 const LOCAL_CHECKER_DEPENDENCIES = [

@@ -5,7 +5,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { delimiter, join } from "node:path";
 import test from "node:test";
@@ -20,15 +20,19 @@ function fixture(t) {
   mkdirSync(join(repo, "scripts"), { recursive: true });
   mkdirSync(tools);
   mkdirSync(output);
+  if (process.platform === "darwin") {
+    // Exercise the system Bash used on macOS runners, even with Homebrew Bash installed.
+    symlinkSync("/bin/bash", join(tools, "bash"));
+  }
   const helper = join(repo, "scripts/maven-central-bundle.local.sh");
   const calls = join(root, "gpg-calls");
   const pom = "<project>sample release</project>\n";
   writeFileSync(helper, readFileSync(new URL("./maven-central-bundle.local.sh", import.meta.url)), { mode: 0o755 });
   const executable = (path, script) => writeFileSync(path, `#!/usr/bin/env bash\nset -euo pipefail\n${script}\n`, { mode: 0o755 });
   executable(join(repo, "scripts/stage-maven-central-bundle.sh"), `
-    [[ -z "\${MAVEN_SIGNING_PASSWORD:-}" && -z "\${signing_passphrase:-}" ]]
+    [[ -z "\${MAVEN_SIGNING_PASSWORD:-}" && -z "\${signing_passphrase:-}" ]] || exit 1
     version="$1"
-    test "$2" = "$(git rev-parse HEAD)"
+    test "$2" = "$(git rev-parse HEAD)" || exit 1
     if [[ "$BUNDLE_SCENARIO" == wrong-version ]]; then version=9.0.0; fi
     publication="$3/me/really/example/$version"
     mkdir -p -- "$publication"
@@ -40,22 +44,22 @@ function fixture(t) {
     fi
   `);
   executable(join(tools, "gpg"), `
-    [[ -z "\${MAVEN_SIGNING_PASSWORD:-}" && -z "\${signing_passphrase:-}" ]]
+    [[ -z "\${MAVEN_SIGNING_PASSWORD:-}" && -z "\${signing_passphrase:-}" ]] || exit 1
     if [[ " $* " == *" --verify "* ]]; then
       printf 'verify\\n' >>"$GPG_CALLS"
-      test -s "\${@: -2:1}"
-      test -f "\${@: -1}"
-      [[ "$BUNDLE_SCENARIO" != bad-signature ]]
-      exit
+      test -s "\${@: -2:1}" || exit 1
+      test -f "\${@: -1}" || exit 1
+      if [[ "$BUNDLE_SCENARIO" == bad-signature ]]; then exit 1; fi
+      exit 0
     fi
     printf 'sign\\n' >>"$GPG_CALLS"
-    IFS= read -r passphrase
-    test "$passphrase" = 'fixture-only'
+    IFS= read -r passphrase || exit 1
+    test "$passphrase" = 'fixture-only' || exit 1
     while [[ "$1" != --output ]]; do shift; done
     printf '%s\\n' 'fixture signature' >"$2"
   `);
   executable(join(tools, "zip"), `
-    [[ "$BUNDLE_SCENARIO" != zip-error ]]
+    if [[ "$BUNDLE_SCENARIO" == zip-error ]]; then exit 1; fi
     exec "$REAL_ZIP" "$@"
   `);
   const zip = spawnSync("sh", ["-c", "command -v zip"], { encoding: "utf8" });
@@ -129,7 +133,7 @@ test("Maven bundle template preserves prior archives when staging, signing, or Z
     ["1.2.3", { BUNDLE_SCENARIO: "zip-error" }, /could not create the Maven Central ZIP/u],
   ]) {
     const result = run(version, env, source);
-    assert.equal(result.status, 1, result.stderr);
+    assert.equal(result.status, 1, env.BUNDLE_SCENARIO ?? "stale source SHA");
     assert.match(result.stderr, diagnostic);
     assert.equal(result.stdout, "");
     assert.deepEqual(readdirSync(output), ["reallyme-maven-central-1.2.3.zip"]);

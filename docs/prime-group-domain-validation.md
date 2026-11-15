@@ -51,7 +51,7 @@ adapter rejects missing selectors, unknown enum values and unknown modifiers
 through the existing checked identity and canonical error contracts; it does
 not introduce a second error vocabulary.
 
-## Regression and delivery scope
+## Regression coverage
 
 `crates/crypto/tests/prime_group_dh_parameters_tests.rs` contains independent
 cofactor inputs calculated from the published RFC parameters. Its five test
@@ -61,33 +61,8 @@ same-width cross-domain confusion, malformed and oversized integers, mismatched
 absent versus present-empty fields, unknown fields and clearing-owner traits.
 Each function registers for both native and WASM execution.
 
-The local schema/source validation pass compiled these checks without executing
-tests under the requested source-only constraint. A subsequent independent
-isolated run executed all five exact test functions on native and WASM at
-commit `561b7b02561b63452844d95221f448b5bbce647f`. All passed, together with ten
-independent group tests per lane across thirteen domains. Its source archive
-matches that commit, and its explicit repaired-field override and dependency
-versions are recorded in the [runtime evidence](primefield-release-plan.md#independent-runtime-evidence).
-This is scoped candidate validation; no new SDK route or device execution is
-claimed. Packages remain unpublished 0.4.0 source; existing published releases
-are unchanged. The separate
-[primefield dependency repair](primefield-release-plan.md) remains a distinct
-delivery requirement and is not closed by this public-parameter validator.
-
-| Validation | Result |
-| --- | --- |
-| Workspace all-target/all-feature Clippy | Passed with warnings denied |
-| Native group/adapter all-target Clippy | Passed with warnings denied |
-| WASM group/adapter all-target compilation | Passed with warnings denied |
-| Rust 1.96.0 minimum-version all-target compilation | Passed with warnings denied; development toolchain remains 1.100.0 |
-| All seven installed iOS/simulator/Android library targets | Passed with warnings denied using `native,prime-groups,operation-response` |
-| Buf lint and breaking against the pinned published 0.3.17 baseline | Passed |
-| Generated-contract freshness, hardening idempotence, formatting, TypeScript build and static CI policy | Passed |
-| Local runtime, SDK and device regression execution | Unexecuted under the retained no-tests constraint |
-| Independent DH runtime execution | All five unchanged canonical functions passed on native and WASM at `561b7b0` with the explicit repaired-field override |
-| Independent group runtime execution | Ten functions passed per native/WASM lane across thirteen domains; no full schema-adapter runtime claim |
-
-The mobile targets are `aarch64-apple-ios`, `aarch64-apple-ios-sim`,
-`x86_64-apple-ios`, `aarch64-linux-android`, `armv7-linux-androideabi`,
-`i686-linux-android` and `x86_64-linux-android`. No package manifest, dependency
-version, feature set, workflow or existing wire-field number changes.
+The five DH validation tests and ten independent group tests passed in native
+and WASM execution at `561b7b02561b63452844d95221f448b5bbce647f`. That run used
+the repaired prime-field source override recorded in the
+[patch manifest](../patches/primefield/manifest.json). The results cover the
+native adapters and group primitives exercised in that run.

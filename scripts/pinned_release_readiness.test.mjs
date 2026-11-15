@@ -132,7 +132,7 @@ test("explicit upstream verification authenticates downloaded bytes and request 
   const source = `
     import { readFileSync } from "node:fs";
     globalThis.fetch = async (url, options) => {
-      if (url !== "https://raw.githubusercontent.com/reallyme/release-readiness/45b52cf353b0b85694a96c6addc985221274ff37/core.mjs" ||
+      if (url !== "https://raw.githubusercontent.com/reallyme/release-readiness/5f30357e5c5e1cf757be793a45149c455730bdca/core.mjs" ||
           options.redirect !== "error" || options.cache !== "no-store" ||
           !(options.signal instanceof AbortSignal)) {
         process.exit(96);
