@@ -163,11 +163,11 @@ for (const path of ["packages/kotlin/build.gradle.kts", "packages/kotlin-android
   assertContains(path, 'name.set("Apache License, Version 2.0")');
 }
 
-const rustRootVersion = "0.4.3";
-const cryptoProtoPackageVersion = "0.4.3";
-const typescriptPackageVersion = "0.4.3";
-const kotlinPackageVersion = "0.4.3";
-const kotlinAndroidPackageVersion = "0.4.3";
+const rustRootVersion = "0.4.2";
+const cryptoProtoPackageVersion = "0.4.2";
+const typescriptPackageVersion = "0.4.2";
+const kotlinPackageVersion = "0.4.2";
+const kotlinAndroidPackageVersion = "0.4.2";
 const rustCodecVersion = "0.4.3";
 const tsCodecVersion = "0.4.3";
 const swiftCodecVersion = "0.4.3";
@@ -3202,9 +3202,13 @@ assertContains(".github/workflows/npm-package-preflight.yml", "npm run pack:chec
 assertContains(".github/workflows/npm-package-release.yml", "npm Package Release");
 for (const workflow of [
   "crates-package-preflight",
+  "crates-release",
   "kotlin-android-package-preflight",
+  "kotlin-android-package-release",
   "npm-package-preflight",
+  "npm-package-release",
   "swift-package-preflight",
+  "swift-package-release",
 ]) {
   assertContains(`.github/workflows/${workflow}.yml`, `default: ${rustRootVersion}`);
 }

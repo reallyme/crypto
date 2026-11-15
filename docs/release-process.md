@@ -19,8 +19,9 @@ made only when independently verified.
 Dispatch each package preflight from the reviewed main commit with its full
 SHA and release version. Each successful preflight retains a CI receipt and
 the package artifacts for seven days. Use the version and SHA from its job
-summary in the matching release workflow. The release workflow verifies the
-receipt and retrieves the recorded artifact IDs. For Rust, the publish job
+summary in the matching release workflow. The same summary gives you a
+GitHub CLI command with both inputs filled in. The release workflow verifies
+the receipt and retrieves the recorded artifact IDs. For Rust, the publish job
 checks each Cargo archive against its preflight archive before uploading it.
 Swift owns the canonical version tag.
 

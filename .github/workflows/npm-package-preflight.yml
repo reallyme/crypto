@@ -18,7 +18,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.4.3
+        default: 0.4.2
 
 permissions:
   contents: read
@@ -180,6 +180,7 @@ jobs:
           SOURCE_SHA: ${{ inputs.source_sha }}
           VERSION_PATTERN: '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'
           SHA_PATTERN: '^[0-9a-f]{40}$'
+          PUBLISH_WORKFLOW: npm-package-release.yml
         run: |
           if [[ "$GITHUB_EVENT_NAME" != workflow_dispatch || "$GITHUB_REF" != refs/heads/main ||
                 "$SOURCE_SHA" != "$GITHUB_SHA" || ! "$SOURCE_SHA" =~ $SHA_PATTERN ||
@@ -194,6 +195,9 @@ jobs:
           if ! printf '%s\n' '## Release form inputs' '' \
               'Copy these values into the release form for this ecosystem once the preflight run succeeds.' '' \
               '**Version**' '```text' "$RELEASE_VERSION" '```' '' \
-              '**Source SHA**' '```text' "$SOURCE_SHA" '```' >>"$GITHUB_STEP_SUMMARY"; then
+              '**Source SHA**' '```text' "$SOURCE_SHA" '```' '' \
+              '**Publish with the GitHub CLI after preflight succeeds**' '```sh' \
+              "gh workflow run $PUBLISH_WORKFLOW --repo reallyme/crypto --ref main -f version=$RELEASE_VERSION -f source_sha=$SOURCE_SHA" \
+              '```' >>"$GITHUB_STEP_SUMMARY"; then
             echo "::warning::Could not write release inputs to the GitHub Actions summary." >&2
           fi

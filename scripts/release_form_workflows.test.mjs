@@ -54,17 +54,21 @@ for (const [ecosystem, preflight, publish] of [
     const { source, script } = shellStep(preflight, "Show release form inputs");
     assert.ok(source.includes(`run-name: Preflight ${ecosystem} ` +
       "${{ inputs.version }} ${{ inputs.source_sha }}"));
+    assert.ok(source.includes(`PUBLISH_WORKFLOW: ${publish}.yml`));
     assert.ok(source.includes("SOURCE_SHA: ${{ inputs.source_sha }}"));
     const env = {
       GITHUB_EVENT_NAME: "workflow_dispatch", GITHUB_REF: "refs/heads/main", GITHUB_SHA: sha,
       SOURCE_SHA: sha, RELEASE_VERSION: cratesVersion, SHA_PATTERN: "^[0-9a-f]{40}$",
       VERSION_PATTERN: "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
-      GITHUB_STEP_SUMMARY: join(scratch, "summary"),
+      GITHUB_STEP_SUMMARY: join(scratch, "summary"), PUBLISH_WORKFLOW: `${publish}.yml`,
     };
     assert.equal(runShell(script, env).status, 0);
     const summary = readFileSync(env.GITHUB_STEP_SUMMARY, "utf8");
     assert.ok(summary.includes(["**Version**", "```text", cratesVersion, "```"].join("\n")));
     assert.ok(summary.includes(["**Source SHA**", "```text", sha, "```"].join("\n")));
+    assert.ok(summary.includes(
+      `gh workflow run ${publish}.yml --repo reallyme/crypto --ref main -f version=${cratesVersion} -f source_sha=${sha}`,
+    ));
     rmSync(env.GITHUB_STEP_SUMMARY);
     for (const invalid of [{ SOURCE_SHA: "b".repeat(40) }, { RELEASE_VERSION: "0.4.1\nother" },
       { GITHUB_REF: "refs/heads/other" }, { GITHUB_EVENT_NAME: "push" }]) {
@@ -77,13 +81,18 @@ for (const [ecosystem, preflight, publish] of [
 
   test(`${ecosystem} publish selects an exact SHA from main history`, () => {
     const { source, script } = shellStep(publish, "Select source from main history");
-    assert.match(source, /\n      version:\n        description: [^\n]+\n        required: true\n        type: string\n      source_sha:/u);
+    assert.match(source, /\n      version:\n        description: [^\n]+\n        required: true\n        type: string\n        default: [^\n]+\n      source_sha:/u);
     assert.match(source, /\n      source_sha:\n        description: [^\n]+\n        required: true\n        type: string/u);
+    assert.ok(source.includes(`        default: ${cratesVersion}\n      source_sha:`));
+    assert.ok(source.includes("RELEASE_VERSION: ${{ inputs.version }}"));
     assert.match(source, /id: candidate/u);
     assert.match(source, /digest-mismatch: error/u);
-    const env = { GITHUB_REF: "refs/heads/main", GITHUB_SHA: sha, SOURCE_SHA: sha };
+    const env = { GITHUB_REF: "refs/heads/main", GITHUB_SHA: sha, SOURCE_SHA: sha, RELEASE_VERSION: cratesVersion };
     const resolved = runShell(resolveGit + script, env);
     assert.equal(resolved.status, 0, resolved.stderr);
+    const swapped = runShell(script, { ...env, RELEASE_VERSION: sha });
+    assert.equal(swapped.status, 1);
+    assert.match(swapped.stdout, /Enter the package version from preflight/u);
     for (const override of [{ SOURCE_SHA: "b".repeat(40) }, { SOURCE_SHA: "" },
       { GITHUB_REF: "refs/heads/other" }]) {
       assert.notEqual(runShell(resolveGit + script, { ...env, ...override }).status, 0);

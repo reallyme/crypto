@@ -1,6 +1,6 @@
 # Release Notes
 
-## 0.4.3
+## 0.4.2
 
 - Adds formal checks for authenticated plaintext release, restricted provider dispatch,
   HPKE context and exporter binding, and record sequencing. Independent vectors
