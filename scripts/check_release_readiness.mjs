@@ -71,6 +71,7 @@ const {
   assertSpdxHeaders,
   assertWorkflowActionsPinned,
   assertCargoFuzzWorkflowPolicy,
+  assertFuzzLockfileWorkflow,
   assertTextPolicy,
   assertWorkflowPermissionsPolicy,
   assertWorkflowPolicy,
@@ -175,7 +176,7 @@ const mavenCodecVersion = "0.4.3";
 const rustSemverBaselineCommit = "54de2955ebf73e9fd1c306eba207550b3716d767";
 const cargoSemverChecksVersion = "0.50.0";
 const buffaVersion = "0.1.2";
-const releaseReadinessCommit = "5a7c5b4785a2c47589dca7f18be11ed99d5dd7b8";
+const releaseReadinessCommit = "55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f";
 const releaseReadinessCommand = "node scripts/run_pinned_release_readiness.mjs";
 const gradleWrapperValidationAction =
   "gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c";
@@ -2380,7 +2381,7 @@ const primaryOperationBoundaryPolicy = {
 const repositoryPolicy = {
   generatedFreshnessMode,
   vendoredCore: {
-    version: "0.9.4",
+    version: "0.9.5",
     scriptPath: "scripts/check_release_readiness.mjs",
     corePath: "scripts/release-readiness/core.mjs",
   },
@@ -2682,7 +2683,7 @@ const repositoryPolicy = {
         path: "scripts/run_pinned_release_readiness.mjs",
         required: [
           `const RELEASE_READINESS_COMMIT = "${releaseReadinessCommit}";`,
-          'const RELEASE_READINESS_CORE_SHA256 =\n  "1e7d2fd25f8452d6d023c9d9c56ddb68232f019ae50846541f6ea0aee44f1793";',
+          'const RELEASE_READINESS_CORE_SHA256 =\n  "3f351bd201ed2f1068cbdd87884fb07759a7ae1f1f0148099df046d9580cecb6";',
           "const LOCAL_CHECKER_SHA256 =",
           "const LOCAL_CHECKER_DEPENDENCIES =",
           "scripts/crypto_operation_route_readiness.mjs",
@@ -2877,6 +2878,7 @@ const assertRepositoryPolicy = () => {
   assertWorkflowActionsPinned(repositoryPolicy.workflowActions);
   assertNodeWorkflowJobsPinNode(repositoryPolicy.nodeWorkflows);
   for (const { workflow, job } of repositoryPolicy.cargoFuzz) {
+    assertFuzzLockfileWorkflow(workflow, job);
     assertCargoFuzzWorkflowPolicy({
       workflow, version: "0.13.2", minimumInstallations: 1,
       requiredInstallSteps: [{ job, name: "Install cargo-fuzz" }],
