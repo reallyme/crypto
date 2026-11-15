@@ -9,6 +9,9 @@ const MASKED_FAILURE = /(?:\|\|\s*(?:true\b|:(?!\S))|\btrue\s*\|\||;\s*true\b)/u
 const STEP_START = /^\s{6}- name:/gmu;
 const RUN_KEY = /^\s{8}run\s*:/mu;
 
+export const LOCKED_DEPENDENCY_AUDIT =
+  "cargo +1.100.0 deny --locked --workspace --all-features --config deny.toml check";
+
 export const REQUIRED_WORKFLOW_GATES = [
   [".github/workflows/rust-ci.yml", [
     'node --test --test-concurrency=4 "scripts/**/*.test.mjs" "packages/ts/scripts/*.test.mjs"',
@@ -16,7 +19,7 @@ export const REQUIRED_WORKFLOW_GATES = [
     "cargo clippy --locked --workspace --all-targets --all-features -- -D warnings",
     "cargo nextest run --locked --workspace --no-default-features --features native",
     "cargo nextest run --locked --workspace --all-features",
-    "cargo deny check",
+    LOCKED_DEPENDENCY_AUDIT,
     "node scripts/run_pinned_release_readiness.mjs --ci-policy",
     "node scripts/run_pinned_release_readiness.mjs --typescript-source",
     "npm --prefix packages/ts run pack:check -- --use-built",

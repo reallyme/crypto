@@ -233,6 +233,8 @@ jobs:
         uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # v2.90.3
         with:
           tool: cargo-deny@0.20.2
+          checksum: true
+          fallback: none
 
       - name: Install cargo-audit
         uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # cargo-audit
@@ -323,7 +325,7 @@ jobs:
         run: node scripts/run_pinned_release_readiness.mjs --ci-policy
 
       - name: Dependency policy
-        run: cargo deny check
+        run: cargo +1.100.0 deny --locked --workspace --all-features --config deny.toml check
 
       - name: Security advisory audit
         run: scripts/audit_committed_lockfiles.sh

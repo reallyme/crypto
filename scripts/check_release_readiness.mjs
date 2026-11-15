@@ -22,7 +22,8 @@ if (policyPins.error !== undefined || policyPins.status !== 0) {
   process.exit(1);
 }
 const { assertCryptoOperationRouteReadiness } = await import("./crypto_operation_route_readiness.mjs");
-const { REQUIRED_WORKFLOW_GATES, workflowGateViolation } = await import("./workflow_gate_policy.mjs");
+const { LOCKED_DEPENDENCY_AUDIT, REQUIRED_WORKFLOW_GATES, workflowGateViolation } =
+  await import("./workflow_gate_policy.mjs");
 const { assertNativeBuffaReadiness } = await import("./native_buffa_readiness.mjs");
 // Environment configuration must not substitute an unreviewed core.
 const { createReleaseReadinessContext } = await import("./release-readiness/core.mjs");
@@ -61,6 +62,8 @@ const {
   assertTypeScriptSourcePolicy,
   assertSwiftSourcePolicy,
   assertKotlinSourcePolicy,
+  extractWorkflowSteps,
+  readWorkflowStepInputs,
 } = readinessContext;
 
 const assertDocumented = (path, phrase) => {
@@ -155,7 +158,7 @@ const mavenCodecVersion = "0.4.2";
 const rustSemverBaselineCommit = "54de2955ebf73e9fd1c306eba207550b3716d767";
 const cargoSemverChecksVersion = "0.50.0";
 const buffaVersion = "0.1.2";
-const releaseReadinessCommit = "01fe1556413f86e6f8fcf3c4d09a6778fa0805da";
+const releaseReadinessCommit = "7dffa0366a43fe9cc7b98a8040d37dd701d7955e";
 const releaseReadinessCommand = "node scripts/run_pinned_release_readiness.mjs";
 const gradleWrapperValidationAction =
   "gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c";
@@ -1749,7 +1752,6 @@ for (const command of [
   "cargo clippy --locked --workspace --all-targets --all-features -- -D warnings",
   "cargo nextest run --locked --workspace --no-default-features --features native",
   "cargo nextest run --locked --workspace --all-features",
-  "cargo deny check",
 ]) {
   assertContains(".github/workflows/rust-ci.yml", command);
 }
@@ -2371,7 +2373,7 @@ const primaryOperationBoundaryPolicy = {
 const repositoryPolicy = {
   generatedFreshnessMode,
   vendoredCore: {
-    version: "0.8.0",
+    version: "0.9.0",
     scriptPath: "scripts/check_release_readiness.mjs",
     corePath: "scripts/release-readiness/core.mjs",
   },
@@ -2678,7 +2680,7 @@ const repositoryPolicy = {
         path: "scripts/run_pinned_release_readiness.mjs",
         required: [
           `const RELEASE_READINESS_COMMIT = "${releaseReadinessCommit}";`,
-          'const RELEASE_READINESS_CORE_SHA256 =\n  "1519b407c89eb2ecc2307f9a402efd8aa3a190dc5911a59b64ecec0e9742d14c";',
+          'const RELEASE_READINESS_CORE_SHA256 =\n  "5ca52b57e61be8d2d944109f15b11f0d9ff7f77642664db6f9169ece0c6df349";',
           "const LOCAL_CHECKER_SHA256 =",
           "const LOCAL_CHECKER_DEPENDENCIES =",
           "scripts/crypto_operation_route_readiness.mjs",
@@ -2694,7 +2696,11 @@ const repositoryPolicy = {
   workflows: [
     {
       path: ".github/workflows/rust-ci.yml",
-      runSteps: [{ name: "Release readiness", run: ciReadinessCommand }],
+      runSteps: [
+        { name: "Release readiness", job: "rust", run: ciReadinessCommand },
+        { name: "Dependency policy", job: "rust", run: LOCKED_DEPENDENCY_AUDIT },
+      ],
+      usesSteps: [{ name: "Install cargo-deny", job: "rust", action: "taiki-e/install-action" }],
     },
     {
       path: ".github/workflows/protobuf-ci.yml",
@@ -3106,7 +3112,20 @@ assertContains("scripts/verify_swift_release_artifact.mjs", '"compute-checksum"'
 assertContains("scripts/verify_swift_release_artifact.mjs", "Package.swift checksum does not match");
 assertContains("scripts/verify_swift_release_artifact.test.mjs", "rejects a forged sidecar");
 assertContains(".github/workflows/rust-ci.yml", "tool: nextest@0.9.140");
-assertContains(".github/workflows/rust-ci.yml", "tool: cargo-deny@0.20.2");
+const rustWorkflow = ".github/workflows/rust-ci.yml";
+const rustSteps = extractWorkflowSteps(rustWorkflow).filter(({ job }) => job === "rust");
+const denyInstaller = rustSteps.find(({ name }) => name === "Install cargo-deny");
+const denyAudit = rustSteps.find(({ name }) => name === "Dependency policy");
+if (denyInstaller === undefined || denyAudit === undefined || denyInstaller.index >= denyAudit.index) {
+  fail(`${rustWorkflow} must install Cargo Deny before the dependency audit`);
+}
+const denyInstallerInputs = readWorkflowStepInputs(
+  `${rustWorkflow} rust/Install cargo-deny`, denyInstaller, readText(rustWorkflow).split(/\r?\n/u),
+);
+if (denyInstallerInputs.size !== 3 || denyInstallerInputs.get("tool") !== "cargo-deny@0.20.2" ||
+    denyInstallerInputs.get("checksum") !== "true" || denyInstallerInputs.get("fallback") !== "none") {
+  fail(`${rustWorkflow} must install the pinned Cargo Deny binary with checksum verification`);
+}
 assertContains(".github/workflows/rust-ci.yml", "tool: cargo-audit@0.22.2");
 for (const path of [
   ".github/workflows/rust-ci.yml",

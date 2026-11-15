@@ -10,18 +10,18 @@ import { fileURLToPath } from "node:url";
 
 // The upstream core and this repository's policy checker are separate inputs.
 // Pinning both makes an unreviewed policy edit fail before the checker runs.
-const RELEASE_READINESS_COMMIT = "01fe1556413f86e6f8fcf3c4d09a6778fa0805da";
+const RELEASE_READINESS_COMMIT = "7dffa0366a43fe9cc7b98a8040d37dd701d7955e";
 const RELEASE_READINESS_CORE_SHA256 =
-  "1519b407c89eb2ecc2307f9a402efd8aa3a190dc5911a59b64ecec0e9742d14c";
+  "5ca52b57e61be8d2d944109f15b11f0d9ff7f77642664db6f9169ece0c6df349";
 const LOCAL_CHECKER_SHA256 =
-  "65cfdb41bfa8543d137f3cb4265aebf9bf073ee6b346b5a1b5508310b906b831";
+  "4ea0ad3c493194009090b9a52b1406a43329bb11d1b51612c0c8891368cedfd0";
 // The checker imports local policy modules. Pinning only its entry file
 // would let an unreviewed dependency change the release decision.
 const LOCAL_CHECKER_DEPENDENCIES = [
   ["scripts/native_buffa_readiness.mjs", "3748304ee9e8ad5c6ebc39b05f0b70669b846c4657a7e39c2a4dab721b0a6625"],
   ["scripts/proto_scalar_policy.mjs", "f7b071722aa93a0f75a7fe57f994ae7a12e030ee0bedb1be7058e48543cac377"],
   ["scripts/crypto_operation_route_readiness.mjs", "2b15c4e6778f18cf10b493fb5644e47baf537185b6e4411909ba875b5bd38db4"],
-  ["scripts/workflow_gate_policy.mjs", "b735975be482999f283b2081ffc9176b97b3c61be921ff6feb7b246333bb4614"],
+  ["scripts/workflow_gate_policy.mjs", "e0f50c6541ead65bf504cbc4ce948107cdb32e364c63501c7a1e3dc2c1e3f62d"],
 ];
 const RELEASE_READINESS_CORE_URL =
   `https://raw.githubusercontent.com/reallyme/release-readiness/${RELEASE_READINESS_COMMIT}/core.mjs`;
