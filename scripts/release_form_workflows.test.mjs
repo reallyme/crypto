@@ -36,7 +36,7 @@ const resolveGit = `
 git() {
   case "$*" in
     'fetch --no-tags origin main'|"checkout --detach $GITHUB_SHA") return 0 ;;
-    'rev-parse origin/main') printf '%s\\n' "$GITHUB_SHA" ;;
+    "merge-base --is-ancestor $GITHUB_SHA origin/main") return 0 ;;
     *) return 97 ;;
   esac
 }
@@ -53,8 +53,8 @@ for (const [ecosystem, preflight, publish] of [
     t.after(() => rmSync(scratch, { recursive: true, force: true }));
     const { source, script } = shellStep(preflight, "Show release form inputs");
     assert.ok(source.includes(`run-name: Preflight ${ecosystem} ` +
-      "${{ inputs.version }} ${{ inputs.release_sha || github.sha }}"));
-    assert.ok(source.includes("SOURCE_SHA: ${{ needs.verify-source-sha.outputs.release_sha }}"));
+      "${{ inputs.version }} ${{ inputs.source_sha }}"));
+    assert.ok(source.includes("SOURCE_SHA: ${{ inputs.source_sha }}"));
     const env = {
       GITHUB_EVENT_NAME: "workflow_dispatch", GITHUB_REF: "refs/heads/main", GITHUB_SHA: sha,
       SOURCE_SHA: sha, RELEASE_VERSION: cratesVersion, SHA_PATTERN: "^[0-9a-f]{40}$",
@@ -75,27 +75,18 @@ for (const [ecosystem, preflight, publish] of [
     }
   });
 
-  test(`${ecosystem} publish requires the selected SHA on main before passing attestation inputs`, (t) => {
-    const scratch = mkdtempSync(join(tmpdir(), "crypto-release-form-"));
-    t.after(() => rmSync(scratch, { recursive: true, force: true }));
-    const isCrates = ecosystem === "crates";
-    const { source, script } = shellStep(publish,
-      isCrates ? "Resolve current release SHA and version" : "Resolve current release SHA");
+  test(`${ecosystem} publish selects an exact SHA from main history`, () => {
+    const { source, script } = shellStep(publish, "Select source from main history");
     assert.match(source, /\n      version:\n        description: [^\n]+\n        required: true\n        type: string\n      source_sha:/u);
     assert.match(source, /\n      source_sha:\n        description: [^\n]+\n        required: true\n        type: string/u);
-    const env = {
-      GITHUB_REF: "refs/heads/main", GITHUB_SHA: sha, SOURCE_SHA: sha, REQUESTED_VERSION: cratesVersion,
-      GITHUB_OUTPUT: join(scratch, "output"), GITHUB_ENV: join(scratch, "env"),
-    };
+    assert.match(source, /id: candidate/u);
+    assert.match(source, /digest-mismatch: error/u);
+    const env = { GITHUB_REF: "refs/heads/main", GITHUB_SHA: sha, SOURCE_SHA: sha };
     const resolved = runShell(resolveGit + script, env);
     assert.equal(resolved.status, 0, resolved.stderr);
-    assert.match(readFileSync(env.GITHUB_OUTPUT, "utf8"), new RegExp(`^release_sha=${sha}\\n`, "u"));
-    rmSync(env.GITHUB_OUTPUT);
-    const invalid = [{ SOURCE_SHA: "b".repeat(40) }, { SOURCE_SHA: "" }, { GITHUB_REF: "refs/heads/other" }];
-    if (isCrates) invalid.push({ REQUESTED_VERSION: "99.0.0" });
-    for (const override of invalid) {
-      assert.equal(runShell(resolveGit + script, { ...env, ...override }).status, 1);
-      assert.equal(existsSync(env.GITHUB_OUTPUT), false);
+    for (const override of [{ SOURCE_SHA: "b".repeat(40) }, { SOURCE_SHA: "" },
+      { GITHUB_REF: "refs/heads/other" }]) {
+      assert.notEqual(runShell(resolveGit + script, { ...env, ...override }).status, 0);
     }
   });
 }

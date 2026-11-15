@@ -31,8 +31,7 @@ export function assertNativeBuffaReadiness(context, policy) {
   assertWorkflowPolicy({
     path: workflow,
     required: [`BUFFA_VERSION: ${policy.buffaVersion}`, "BUF_VERSION: 1.75.0",
-      "shared-key: protobuf-generators-${{ env.BUFFA_VERSION }}",
-      ...policy.paths.map((path) => `- "${path}"`)],
+      "shared-key: protobuf-generators-${{ env.BUFFA_VERSION }}"],
     forbidden: ["cargo test -p", "cargo install protoc-gen-buffa", "redact_crypto_proto_debug.mjs"],
     usesSteps: [{ name: "Install buf", uses: "bufbuild/buf-action@37ac33d8960807670a6e9719080e885197b09cc6" }],
     runSteps: [

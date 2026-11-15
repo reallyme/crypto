@@ -180,6 +180,18 @@ test("dependency security must pass on the release commit", () => {
     "dependency-security.yml",
   );
   assert.equal(latest.headSha, releaseSha);
+  const manual = workflowRun({ databaseId: 125, event: "workflow_dispatch" });
+  assert.equal(
+    requireLatestSuccessfulRun([manual], releaseSha, "dependency-security.yml").databaseId,
+    manual.databaseId,
+  );
+  assert.throws(() => {
+    requireLatestSuccessfulRun(
+      [workflowRun({ ...manual, headBranch: "feature" })],
+      releaseSha,
+      "dependency-security.yml",
+    );
+  }, ReleaseAttestationError);
   assert.throws(() => {
     requireLatestSuccessfulRun(
       [workflowRun({ displayTitle: "Dependency Security", event: "pull_request" })],

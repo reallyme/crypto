@@ -169,7 +169,10 @@ const selectLatestRun = (rawRuns, releaseSha, workflow, releaseVersion) => {
   }
   const runs = rawRuns
     .map((runValue) => validateRun(runValue, releaseSha))
-    .filter((runValue) => runValue.event === expectedEvent && runValue.headBranch === "main")
+    .filter((runValue) => runValue.headBranch === "main" && (
+      runValue.event === expectedEvent ||
+      (workflow === DEPENDENCY_SECURITY_WORKFLOW && runValue.event === "workflow_dispatch")
+    ))
     .sort((left, right) =>
       left.databaseId === right.databaseId
         ? right.attempt - left.attempt
@@ -300,14 +303,14 @@ const requireWorkflowWithOptionalWait = ({
   }
 };
 
-export const verifyReleaseAttestation = ({ cwd = process.cwd(), env = process.env } = {}) => {
+export const verifyReleaseAttestation = ({ cwd = process.cwd(), env = process.env, dependencySecurityOnly = false } = {}) => {
   const releaseSha = env.RELEASE_SHA;
   const releaseVersion = env.RELEASE_VERSION;
   const repository = env.GITHUB_REPOSITORY;
   if (typeof releaseSha !== "string" || !FULL_SHA_PATTERN.test(releaseSha)) {
     fail("invalid-release-sha");
   }
-  if (typeof releaseVersion !== "string" || !VERSION_PATTERN.test(releaseVersion)) {
+  if (!dependencySecurityOnly && (typeof releaseVersion !== "string" || !VERSION_PATTERN.test(releaseVersion))) {
     fail("invalid-release-version");
   }
   if (typeof repository !== "string" || !REPOSITORY_PATTERN.test(repository)) {
@@ -328,7 +331,7 @@ export const verifyReleaseAttestation = ({ cwd = process.cwd(), env = process.en
     "invalid-release-attestation-poll-seconds",
     MAX_POLL_SECONDS,
   );
-  const preflightWorkflow = parsePreflightWorkflow(env.RELEASE_ATTESTATION_PREFLIGHT_WORKFLOW);
+  const preflightWorkflow = dependencySecurityOnly ? null : parsePreflightWorkflow(env.RELEASE_ATTESTATION_PREFLIGHT_WORKFLOW);
 
   const checkedOutSha = run("git", ["rev-parse", "HEAD"], {
     cwd,
@@ -349,12 +352,13 @@ export const verifyReleaseAttestation = ({ cwd = process.cwd(), env = process.en
     env,
     errorCode: "origin-main-unavailable",
   });
-  if (mainSha !== releaseSha) {
+  if (!dependencySecurityOnly && mainSha !== releaseSha) {
     fail("release-sha-is-not-current-main");
   }
 
   let preflightRunId;
-  for (const workflow of requiredWorkflowsForRelease(preflightWorkflow)) {
+  const workflows = dependencySecurityOnly ? [DEPENDENCY_SECURITY_WORKFLOW] : requiredWorkflowsForRelease(preflightWorkflow);
+  for (const workflow of workflows) {
     const successfulRun = requireWorkflowWithOptionalWait({
       cwd,
       env,
@@ -372,6 +376,7 @@ export const verifyReleaseAttestation = ({ cwd = process.cwd(), env = process.en
       preflightRunId = successfulRun.databaseId;
     }
   }
+  if (dependencySecurityOnly) return { preflightRunId: null };
   if (!Number.isSafeInteger(preflightRunId) || preflightRunId < 1) {
     fail("missing-preflight-run-id");
   }
@@ -391,7 +396,14 @@ export const verifyReleaseAttestation = ({ cwd = process.cwd(), env = process.en
 const isMain = process.argv[1] !== undefined && fileURLToPath(import.meta.url) === process.argv[1];
 if (isMain) {
   try {
-    const attestation = verifyReleaseAttestation();
+    const args = process.argv.slice(2);
+    if (args.length > 0 && (args.length !== 1 || args[0] !== "--dependency-security")) fail("invalid-arguments");
+    const dependencySecurityOnly = args.length === 1;
+    const attestation = verifyReleaseAttestation({ dependencySecurityOnly });
+    if (dependencySecurityOnly) {
+      console.log("dependency security verified for the candidate SHA");
+      process.exit(0);
+    }
     if (process.env.RELEASE_ATTESTATION_WRITE_GITHUB_OUTPUT === "1") {
       const outputPath = process.env.GITHUB_OUTPUT;
       if (typeof outputPath !== "string" || outputPath.length === 0) {

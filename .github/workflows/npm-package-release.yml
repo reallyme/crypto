@@ -27,138 +27,67 @@ concurrency:
 jobs:
   verify-release-sha:
     name: Verify reviewed release SHA
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     permissions:
       actions: read
       contents: read
     outputs:
-      release_sha: ${{ steps.resolve-release-sha.outputs.release_sha }}
+      release_sha: ${{ inputs.source_sha }}
+      preflight_run_id: ${{ steps.candidate.outputs.preflight_run_id }}
+      package_artifact_ids: ${{ steps.candidate.outputs.package_artifact_ids }}
     steps:
-      - name: Checkout main for release SHA resolution
+      - name: Checkout main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          persist-credentials: false
-          ref: main
+          ref: ${{ github.sha }}
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: Resolve current release SHA
-        id: resolve-release-sha
+      - name: Select source from main history
+        shell: bash
         env:
           SOURCE_SHA: ${{ inputs.source_sha }}
         run: |
+          test "$GITHUB_REF" = refs/heads/main
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
           git fetch --no-tags origin main
-          release_sha="$(git rev-parse origin/main)"
-          if [ "${GITHUB_SHA}" != "${release_sha}" ]; then
-            echo "::error::resolved release SHA does not match the workflow run head SHA"
-            exit 1
-          fi
-          if [ "${GITHUB_REF}" != refs/heads/main ] || [ "${SOURCE_SHA}" != "${release_sha}" ]; then
-            echo "::error::dispatch from main with the source SHA from the successful package preflight"
-            exit 1
-          fi
-          git checkout --detach "${release_sha}"
-          echo "release_sha=${release_sha}" >> "${GITHUB_OUTPUT}"
+          git merge-base --is-ancestor "$SOURCE_SHA" origin/main
+          git checkout --detach "$SOURCE_SHA"
 
-      - name: Install Node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '26'
-
-      - name: Require current main and successful npm package checks
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          RELEASE_SHA: ${{ steps.resolve-release-sha.outputs.release_sha }}
-          RELEASE_VERSION: ${{ inputs.version }}
-          RELEASE_ATTESTATION_PREFLIGHT_WORKFLOW: npm-package-preflight.yml
-          RELEASE_ATTESTATION_WAIT_SECONDS: "3600"
-          RELEASE_ATTESTATION_POLL_SECONDS: "20"
-        run: node scripts/verify_release_attestation.mjs
-
-  package:
-    name: build and verify npm package
-    needs: verify-release-sha
-    runs-on: ubuntu-latest
-    outputs:
-      tarball_sha256: ${{ steps.tarball-digest.outputs.tarball_sha256 }}
-    steps:
-      - name: Checkout
+      - name: Checkout release-readiness runner
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          repository: reallyme/release-readiness
+          ref: 45b52cf353b0b85694a96c6addc985221274ff37
+          path: .release-readiness
           persist-credentials: false
-          ref: ${{ github.sha }}
 
       - name: Install Node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # Node 26
         with:
           node-version: '26'
-          cache: npm
-          cache-dependency-path: packages/ts/package-lock.json
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: 1.100.0
-          targets: wasm32-unknown-unknown
 
-      - name: Install wasm-pack
-        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # wasm-pack
-        with:
-          tool: wasm-pack@0.15.1
+      - name: Authenticate release-readiness pins
+        run: node scripts/run_pinned_release_readiness.mjs --check-pins
 
-      - name: Install wasm-bindgen-cli
-        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # wasm-bindgen-cli
-        with:
-          tool: wasm-bindgen-cli@0.2.130
-
-      - name: Install TypeScript package dependencies
-        run: npm ci
-        working-directory: packages/ts
-
-      - name: Check release version matches source tree
-        run: node scripts/run_pinned_release_readiness.mjs --release-packages
+      - name: Verify release candidate
+        id: candidate
+        run: node .release-readiness/scripts/run-consumer-check.mjs --check-release npm publish "$RELEASE_VERSION" "$RELEASE_TAG" "$SOURCE_SHA"
         env:
+          GH_TOKEN: ${{ github.token }}
           RELEASE_VERSION: ${{ inputs.version }}
-
-      - name: Test TypeScript package and WASM provider
-        run: npm test
-        working-directory: packages/ts
-
-      - name: Check npm tarball contents and WASM surface
-        run: npm run pack:check -- --use-built
-        working-directory: packages/ts
-
-      - name: Build immutable npm tarball
-        id: tarball-digest
-        run: |
-          mkdir -p ../../build/npm
-          npm pack --ignore-scripts --pack-destination ../../build/npm
-          artifact="../../build/npm/reallyme-crypto-${RELEASE_VERSION}.tgz"
-          if [ ! -f "${artifact}" ]; then
-            echo "::error::npm did not create the expected ${artifact}"
-            exit 1
-          fi
-          cd ../../build/npm
-          sha256sum "reallyme-crypto-${RELEASE_VERSION}.tgz" > "reallyme-crypto-${RELEASE_VERSION}.tgz.sha256"
-          tarball_sha256="$(sha256sum "reallyme-crypto-${RELEASE_VERSION}.tgz" | cut -d ' ' -f 1)"
-          echo "tarball_sha256=${tarball_sha256}" >> "${GITHUB_OUTPUT}"
-        working-directory: packages/ts
-        env:
-          RELEASE_VERSION: ${{ inputs.version }}
-
-      - name: Upload npm tarball
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: reallyme-crypto-npm-${{ inputs.version }}-${{ needs.verify-release-sha.outputs.release_sha }}
-          path: |
-            build/npm/reallyme-crypto-${{ inputs.version }}.tgz
-            build/npm/reallyme-crypto-${{ inputs.version }}.tgz.sha256
-          if-no-files-found: error
-          retention-days: 7
+          RELEASE_TAG: v${{ inputs.version }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
 
   publish:
     name: publish npm package
-    needs: [verify-release-sha, package]
+    needs: verify-release-sha
     runs-on: ubuntu-latest
     environment: npm-release
     permissions:
@@ -170,7 +99,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          ref: ${{ github.sha }}
+          ref: ${{ needs.verify-release-sha.outputs.release_sha }}
 
       - name: Install Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -178,38 +107,30 @@ jobs:
           node-version: '26'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Download verified npm tarball
+      - name: Download verified package
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: reallyme-crypto-npm-${{ inputs.version }}-${{ needs.verify-release-sha.outputs.release_sha }}
+          run-id: ${{ needs.verify-release-sha.outputs.preflight_run_id }}
+          artifact-ids: ${{ needs.verify-release-sha.outputs.package_artifact_ids }}
+          github-token: ${{ github.token }}
+          digest-mismatch: error
           path: build/npm
 
+
+      - name: Verify npm tarball checksum
+        working-directory: build/npm
+        run: sha256sum --check "reallyme-crypto-${RELEASE_VERSION}.tgz.sha256"
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+
       - name: Publish verified npm tarball with provenance
+        working-directory: build/npm
         run: |
-          if [ -z "${NODE_AUTH_TOKEN}" ]; then
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
             echo "::error::NPM_TOKEN is required"
             exit 1
           fi
-          node scripts/verify_release_attestation.mjs
-          cd build/npm
-          if [[ ! "${EXPECTED_TARBALL_SHA256}" =~ ^[0-9a-f]{64}$ ]]; then
-            echo "::error::package job tarball digest is missing or malformed"
-            exit 1
-          fi
-          actual_tarball_sha256="$(sha256sum "reallyme-crypto-${RELEASE_VERSION}.tgz" | cut -d ' ' -f 1)"
-          if [ "${actual_tarball_sha256}" != "${EXPECTED_TARBALL_SHA256}" ]; then
-            echo "::error::downloaded npm tarball does not match the package job output"
-            exit 1
-          fi
-          sha256sum --check "reallyme-crypto-${RELEASE_VERSION}.tgz.sha256"
-          npm publish "reallyme-crypto-${RELEASE_VERSION}.tgz" --provenance --access public
+          npm publish "reallyme-crypto-${RELEASE_VERSION}.tgz" --provenance --access public --ignore-scripts
         env:
-          GH_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          RELEASE_SHA: ${{ needs.verify-release-sha.outputs.release_sha }}
-          RELEASE_VERSION: ${{ inputs.version }}
-          RELEASE_ATTESTATION_PREFLIGHT_WORKFLOW: npm-package-preflight.yml
-          RELEASE_ATTESTATION_WAIT_SECONDS: "3600"
-          RELEASE_ATTESTATION_POLL_SECONDS: "20"
-          EXPECTED_TARBALL_SHA256: ${{ needs.package.outputs.tarball_sha256 }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          RELEASE_VERSION: ${{ inputs.version }}

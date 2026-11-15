@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { constants, copyFileSync, mkdirSync, readFileSync } from "node:fs";
+import { isAbsolute, join } from "node:path";
 
 import {
   PublishFailureCode,
@@ -14,18 +17,20 @@ import {
 const MODE_INSPECT = "inspect";
 const MODE_ORDER = "order";
 const MODE_PUBLISH = "publish";
+const MODE_STAGE = "stage";
 const args = process.argv.slice(2);
 const mode = args[0] ?? MODE_INSPECT;
 const allowDirty = args.includes("--allow-dirty");
 const unknownArgs = args.slice(1).filter((arg) => arg !== "--allow-dirty");
 const releaseVersion = process.env.RELEASE_VERSION ?? "";
+const archiveDirectory = process.env.CRATE_ARCHIVE_DIR ?? "";
 
 if (
-  (mode !== MODE_INSPECT && mode !== MODE_ORDER && mode !== MODE_PUBLISH) ||
+  ![MODE_INSPECT, MODE_ORDER, MODE_STAGE, MODE_PUBLISH].includes(mode) ||
   unknownArgs.length !== 0
 ) {
   console.error(
-    `usage: node scripts/publish_crates_in_order.mjs ${MODE_INSPECT}|${MODE_ORDER}|${MODE_PUBLISH} [--allow-dirty]`,
+    `usage: node scripts/publish_crates_in_order.mjs ${MODE_INSPECT}|${MODE_ORDER}|${MODE_STAGE}|${MODE_PUBLISH} [--allow-dirty]`,
   );
   process.exit(2);
 }
@@ -35,8 +40,8 @@ if (allowDirty && mode !== MODE_INSPECT && mode !== MODE_ORDER) {
   process.exit(2);
 }
 
-if (mode === MODE_PUBLISH && releaseVersion.length === 0) {
-  console.error("RELEASE_VERSION must be set when publishing crates.");
+if ([MODE_STAGE, MODE_PUBLISH].includes(mode) && (releaseVersion.length === 0 || !isAbsolute(archiveDirectory))) {
+  console.error("RELEASE_VERSION and an absolute CRATE_ARCHIVE_DIR are required for crate staging and publication.");
   process.exit(2);
 }
 
@@ -49,6 +54,7 @@ function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
     encoding: "utf8",
     stdio: options.capture ? "pipe" : "inherit",
+    env: options.env ?? process.env,
   });
   if (result.error) {
     throw result.error;
@@ -321,14 +327,41 @@ function inspectPackage(pkg) {
   process.exit(dryRunResult.status ?? 1);
 }
 
+const archiveName = (pkg) => `${pkg.name}-${pkg.version}.crate`;
+const packageOutput = join(metadata.target_directory, "package");
+const packagedArchive = (pkg) => join(packageOutput, archiveName(pkg));
+const preflightArchive = (pkg) => join(archiveDirectory, archiveName(pkg));
+const archiveDigest = (path) => createHash("sha256").update(readFileSync(path)).digest();
+
+function stageArchives() {
+  // Rust 1.100's workspace publish dry run keeps the exact upload archives
+  // in tmp-crate. The single-crate cargo package command uses package/.
+  const verifiedOutput = join(packageOutput, "tmp-crate");
+  mkdirSync(archiveDirectory);
+  for (const pkg of ordered) {
+    copyFileSync(join(verifiedOutput, archiveName(pkg)), preflightArchive(pkg), constants.COPYFILE_EXCL);
+  }
+}
+
 function publishPackage(pkg) {
   // The exact release SHA has already passed the tokenless workspace publish
   // dry run. Do not rerun dependency build scripts or proc macros with a
   // registry credential in this process.
   const args = ["publish", "-p", pkg.name, "--locked", "--no-verify"];
+  const packagingEnv = { ...process.env };
+  delete packagingEnv.CARGO_REGISTRY_TOKEN;
   try {
     publishWithRetries({
-      attemptPublish: () => run("cargo", args, { capture: true }),
+      attemptPublish: () => {
+        const repacked = run("cargo", ["package", "-p", pkg.name, "--locked", "--no-verify"],
+          { capture: true, env: packagingEnv });
+        if (repacked.status !== 0) return repacked;
+        if (!archiveDigest(packagedArchive(pkg)).equals(archiveDigest(preflightArchive(pkg)))) {
+          console.error(`${pkg.name} packaged bytes differ from the reviewed preflight archive.`);
+          process.exit(1);
+        }
+        return run("cargo", args, { capture: true });
+      },
       sleep: sleepMs,
       onRetry(kind, delayMs) {
         if (kind === PublishRetryKind.RateLimit) {
@@ -358,6 +391,11 @@ function publishPackage(pkg) {
     console.error(`${pkg.name} ${pkg.version} publish failed: internal-runner-failure.`);
     process.exit(1);
   }
+}
+
+if (mode === MODE_STAGE) {
+  stageArchives();
+  process.exit(0);
 }
 
 for (const pkg of ordered) {

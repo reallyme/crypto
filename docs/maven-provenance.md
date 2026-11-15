@@ -12,8 +12,8 @@ the corresponding Gradle verification metadata.
 | `me.really:codec-android:0.3.1` | `https://repo.maven.apache.org/maven2/me/really/codec-android/0.3.1/codec-android-0.3.1.aar` | `25d3d6e964acd323e12cdaee1680cfe5534fec77671fddf62776e4bfc8520190` | `reallyme/codec` tag `v0.3.1`, commit `a3d61910e69398a199ca11305ca555a28f4fa09b` |
 | `me.really:codec:0.4.1` | `https://repo.maven.apache.org/maven2/me/really/codec/0.4.1/codec-0.4.1.jar` | `aab5e5ddb778c2ac00e66bf530f55bfffa616afd7c64f2aea7b3ff00ea9dc77c` | `reallyme/codec` 0.4.1, reviewed 0.4.1 source `43fab3a269c65b7e0c72ebec4ab31c1b893f3fad` |
 | `me.really:codec-android:0.4.1` | `https://repo.maven.apache.org/maven2/me/really/codec-android/0.4.1/codec-android-0.4.1.aar` | `eab0a81f6cf4ae340f702a82f296a9c057121cf8f73bf6caf41f89406f64f00c` | `reallyme/codec` 0.4.1, reviewed 0.4.1 source `43fab3a269c65b7e0c72ebec4ab31c1b893f3fad` |
-| `me.really:codec:0.4.2` | `https://repo.maven.apache.org/maven2/me/really/codec/0.4.2/codec-0.4.2.jar` | `c8b3cc32534b292a2a19ca8b61a28821eaf7242197177a13f5fabb194c022a5b` | `reallyme/codec` 0.4.2, reviewed source `1b85ae19bf449022338cc627c85325b4d6748f1f` |
-| `me.really:codec-android:0.4.2` | `https://repo.maven.apache.org/maven2/me/really/codec-android/0.4.2/codec-android-0.4.2.aar` | `894e0ac9222deb329d471f5f63878d6275e14819fa37a8c8caffb1cf9d4dc582` | `reallyme/codec` 0.4.2, reviewed source `1b85ae19bf449022338cc627c85325b4d6748f1f` |
+| `me.really:codec:0.4.3` | `https://repo.maven.apache.org/maven2/me/really/codec/0.4.3/codec-0.4.3.jar` | `8230e722d93adaa90a9ed904fbd656fce7aee161bb76403dfdd1accb2d4fbe61` | `reallyme/codec` 0.4.3, release source `2f93ffdbfaa71a556b0d736e29936aee14ed634d` |
+| `me.really:codec-android:0.4.3` | `https://repo.maven.apache.org/maven2/me/really/codec-android/0.4.3/codec-android-0.4.3.aar` | `58dc49b31e621a17996caecbba6e2eceaec572623d29dac3f4c25589d775b5e7` | `reallyme/codec` 0.4.3, release source `2f93ffdbfaa71a556b0d736e29936aee14ed634d` |
 
 The published POMs identify ReallyMe Technologies Limited as the developer and
 `https://github.com/reallyme/codec.git` as the SCM repository. The artifact hashes

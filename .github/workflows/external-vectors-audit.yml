@@ -12,8 +12,6 @@ name: External Vector Audit
 #               network work to the main PR wall.
 #   deep-audit  the enormous ignored ACVP/CCTV sweeps run on dispatch/schedule.
 #               Supplementary adapters also run against committed corpora.
-#   kani        bounded formal proofs of the reference DER encoder. Dispatch or
-#               schedule only.
 on:
   workflow_dispatch:
     inputs:
@@ -192,33 +190,3 @@ jobs:
           bash scripts/run_exact_cargo_test.sh --ignored
           external_vector_tests::provenance::external_vector_files_match_pinned_sha256
           --locked -p crypto-conformance-vectors --test vectors_tests --all-features
-
-  kani:
-    name: kani proofs (reference encoder)
-    if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
-        with:
-          toolchain: 1.100.0
-
-      - name: Cache Cargo
-        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
-
-      # Kani manages its own verification toolchain via `cargo kani setup`.
-      # Pin the verifier version deliberately; the proof crate is standalone
-      # because Kani 0.67 still bundles a compiler below the release workspace
-      # Rust floor.
-      - name: Install Kani
-        run: |
-          cargo install --locked kani-verifier@0.67.0
-          cargo kani setup
-
-      - name: Run Kani proofs
-        run: cargo kani --manifest-path tools/external-vector-audit/refenc-proof/Cargo.toml

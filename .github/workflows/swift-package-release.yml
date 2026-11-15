@@ -27,56 +27,63 @@ concurrency:
 jobs:
   verify-release-sha:
     name: Verify reviewed release SHA
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     permissions:
       actions: read
       contents: read
     outputs:
-      release_sha: ${{ steps.resolve-release-sha.outputs.release_sha }}
-      preflight_run_id: ${{ steps.verify-attestation.outputs.preflight_run_id }}
+      release_sha: ${{ inputs.source_sha }}
+      preflight_run_id: ${{ steps.candidate.outputs.preflight_run_id }}
+      package_artifact_ids: ${{ steps.candidate.outputs.package_artifact_ids }}
     steps:
-      - name: Checkout main for release SHA resolution
+      - name: Checkout main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          persist-credentials: false
-          ref: main
+          ref: ${{ github.sha }}
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: Resolve current release SHA
-        id: resolve-release-sha
+      - name: Select source from main history
+        shell: bash
         env:
           SOURCE_SHA: ${{ inputs.source_sha }}
         run: |
+          test "$GITHUB_REF" = refs/heads/main
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
           git fetch --no-tags origin main
-          release_sha="$(git rev-parse origin/main)"
-          if [ "${GITHUB_SHA}" != "${release_sha}" ]; then
-            echo "::error::resolved release SHA does not match the workflow run head SHA"
-            exit 1
-          fi
-          if [ "${GITHUB_REF}" != refs/heads/main ] || [ "${SOURCE_SHA}" != "${release_sha}" ]; then
-            echo "::error::dispatch from main with the source SHA from the successful package preflight"
-            exit 1
-          fi
-          git checkout --detach "${release_sha}"
-          echo "release_sha=${release_sha}" >> "${GITHUB_OUTPUT}"
+          git merge-base --is-ancestor "$SOURCE_SHA" origin/main
+          git checkout --detach "$SOURCE_SHA"
+
+      - name: Checkout release-readiness runner
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: reallyme/release-readiness
+          ref: 45b52cf353b0b85694a96c6addc985221274ff37
+          path: .release-readiness
+          persist-credentials: false
 
       - name: Install Node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # Node 26
         with:
           node-version: '26'
 
-      - name: Require current main and successful Swift package checks
-        id: verify-attestation
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: 1.100.0
+
+      - name: Authenticate release-readiness pins
+        run: node scripts/run_pinned_release_readiness.mjs --check-pins
+
+      - name: Verify release candidate
+        id: candidate
+        run: node .release-readiness/scripts/run-consumer-check.mjs --check-release swift publish "$RELEASE_VERSION" "$RELEASE_TAG" "$SOURCE_SHA"
         env:
           GH_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          RELEASE_SHA: ${{ steps.resolve-release-sha.outputs.release_sha }}
           RELEASE_VERSION: ${{ inputs.version }}
-          RELEASE_ATTESTATION_PREFLIGHT_WORKFLOW: swift-package-preflight.yml
-          RELEASE_ATTESTATION_WAIT_SECONDS: "3600"
-          RELEASE_ATTESTATION_POLL_SECONDS: "20"
-          RELEASE_ATTESTATION_WRITE_GITHUB_OUTPUT: "1"
-        run: node scripts/verify_release_attestation.mjs
+          RELEASE_TAG: v${{ inputs.version }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
 
   swift-verify:
     name: SwiftPM artifact verification
@@ -90,15 +97,16 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          ref: ${{ github.sha }}
+          ref: ${{ needs.verify-release-sha.outputs.release_sha }}
 
-      - name: Download attested Swift artifact
+      - name: Download verified package
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: swift-xcframework-${{ inputs.version }}-${{ needs.verify-release-sha.outputs.release_sha }}
-          path: build/swift
-          github-token: ${{ github.token }}
           run-id: ${{ needs.verify-release-sha.outputs.preflight_run_id }}
+          artifact-ids: ${{ needs.verify-release-sha.outputs.package_artifact_ids }}
+          github-token: ${{ github.token }}
+          digest-mismatch: error
+          path: build/swift
 
       - name: Install Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -136,16 +144,17 @@ jobs:
         with:
           # This job alone pushes the checksum-bound release tag.
           persist-credentials: true
-          ref: ${{ github.sha }}
+          ref: ${{ needs.verify-release-sha.outputs.release_sha }}
           fetch-depth: 0
 
       - name: Download verified Swift artifact
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: swift-xcframework-${{ inputs.version }}-${{ needs.verify-release-sha.outputs.release_sha }}
-          path: build/swift
-          github-token: ${{ github.token }}
           run-id: ${{ needs.verify-release-sha.outputs.preflight_run_id }}
+          artifact-ids: ${{ needs.verify-release-sha.outputs.package_artifact_ids }}
+          github-token: ${{ github.token }}
+          digest-mismatch: error
+          path: build/swift
 
       - name: Install Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -167,7 +176,6 @@ jobs:
       - name: Create immutable GitHub release with Swift artifact
         run: |
           node scripts/verify_swift_release_artifact.mjs build/swift/ReallyMeCryptoFFI.xcframework.zip build/swift/ReallyMeCryptoFFI.xcframework.checksum Package.swift "${RELEASE_VERSION}"
-          node scripts/verify_release_attestation.mjs
           node scripts/extract_release_notes.mjs "${RELEASE_VERSION}" > "${RUNNER_TEMP}/release-notes.md"
           if gh release view "v${RELEASE_VERSION}" >/dev/null 2>&1; then
             echo "::error::GitHub release v${RELEASE_VERSION} already exists"
@@ -212,7 +220,3 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           RELEASE_SHA: ${{ needs.verify-release-sha.outputs.release_sha }}
           RELEASE_VERSION: ${{ inputs.version }}
-          RELEASE_ATTESTATION_PREFLIGHT_WORKFLOW: swift-package-preflight.yml
-          RELEASE_ATTESTATION_PREFLIGHT_RUN_ID: ${{ needs.verify-release-sha.outputs.preflight_run_id }}
-          RELEASE_ATTESTATION_WAIT_SECONDS: "3600"
-          RELEASE_ATTESTATION_POLL_SECONDS: "20"

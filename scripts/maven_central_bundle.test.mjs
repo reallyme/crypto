@@ -4,247 +4,177 @@
 
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { delimiter, join } from "node:path";
 import test from "node:test";
-
-const source = readFileSync(new URL("maven-central-bundle.local.sh", import.meta.url), "utf8");
-const mainStart = source.indexOf("\nrequire_tool awk\n");
-assert.ok(mainStart > 0);
+import { publicationLayout, stageMavenPublication, stageMavenPublications } from "./stage_maven_publications.mjs";
 
 function fixture(t) {
-  const root = mkdtempSync(join(tmpdir(), "crypto-maven-bundle-"));
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "reallyme-maven-bundle-")));
   t.after(() => rmSync(root, { recursive: true, force: true }));
-  const sdk = join(root, "Android SDK");
-  const home = join(root, "home");
-  const bin = join(root, "bin");
-  const scripts = join(root, "repository with spaces/scripts");
-  for (const directory of [scripts, sdk, home, bin]) {
-    mkdirSync(directory, { recursive: true });
-  }
-  const harness = join(scripts, "prepare-ndk.sh");
-  // Exercise the real functions before signing, attestation, or compilation.
-  // No release credentials, network access, or native toolchains are needed.
-  writeFileSync(harness, source.slice(0, mainStart) + [
-    "",
-    "prepare_android_ndk_home",
-    "node -e 'console.log(JSON.stringify({ndk: process.env.ANDROID_NDK_HOME,",
-    "sdk: process.env.ANDROID_HOME, legacySdk: process.env.ANDROID_SDK_ROOT}))'",
-    "",
-  ].join("\n"));
-  const manager = join(sdk, "cmdline-tools/latest/bin/sdkmanager");
-  mkdirSync(join(sdk, "cmdline-tools/latest/bin"), { recursive: true });
-  writeFileSync(manager, [
-    "#!/usr/bin/env node",
-    'const fs = require("node:fs");',
-    'const path = require("node:path");',
-    "const args = process.argv.slice(2);",
-    'fs.appendFileSync(process.env.SDK_CALLS, JSON.stringify(args) + "\\n");',
-    'if (args.includes("--list")) {',
-    "  process.stdout.write(fs.readFileSync(process.env.SDK_PACKAGES));",
-    "  process.exit(Number(process.env.SDK_LIST_STATUS || 0));",
-    "}",
-    'if (args.includes("--install")) {',
-    "  if (process.env.SDK_INSTALL_STATUS) process.exit(Number(process.env.SDK_INSTALL_STATUS));",
-    '  const sdk = args.find(arg => arg.startsWith("--sdk_root=")).slice("--sdk_root=".length);',
-    '  const revision = args[args.indexOf("--install") + 1].slice("ndk;".length);',
-    "  if (!process.env.SDK_INSTALL_INCOMPLETE) {",
-    '    fs.mkdirSync(path.join(sdk, "ndk", revision, "toolchains/llvm/prebuilt"), { recursive: true });',
-    "  }",
-    '  console.log("installation progress");',
-    "  process.exit(0);",
-    "}",
-    "process.exit(79);",
-    "",
-  ].join("\n"), { mode: 0o755 });
-  const packages = join(root, "packages");
-  writeFileSync(packages, [
-    "Installed packages:",
-    "  Path | Version | Description | Location",
-    "  ndk;99.0.999 | 99.0.999 rc1 | NDK preview | ndk/99.0.999",
-    "Available Packages:",
-    "  Path | Version | Description",
-    "  ndk;9.0.999 | 9.0.999 | NDK",
-    "  ndk;30.2.9 | 30.2.9 | NDK",
-    "  ndk;30.10.8 | 30.10.8 | NDK",
-    "  ndk;30.10.10 | 30.10.10 | NDK",
-    "  ndk;29.0.14206865 | 29.0.14206865 | NDK",
-    "  ndk;31.0.123-beta1 | 31.0.123-beta1 | NDK preview",
-    "  ndk;../../outside | ../../outside | invalid",
-    "  ndk;31x0x123 | 31x0x123 | invalid",
-    "  platforms;android-99 | 99 | Platform",
-    "",
-  ].join("\n"));
-  const calls = join(root, "calls");
-  const env = { ...process.env, HOME: home, PATH: bin + ":" + process.env.PATH,
-    ANDROID_HOME: sdk, SDK_CALLS: calls, SDK_PACKAGES: packages };
-  for (const variable of ["ANDROID_SDK_ROOT", "ANDROID_NDK_HOME", "ANDROID_NDK_VERSION",
-    "SDK_LIST_STATUS", "SDK_INSTALL_STATUS", "SDK_INSTALL_INCOMPLETE", "MAVEN_CENTRAL_WORK_DIR"]) {
-    delete env[variable];
-  }
-  return {
-    root, sdk, home, bin, manager, packages, env,
-    installed(revision) {
-      const ndk = join(sdk, "ndk", revision);
-      mkdirSync(join(ndk, "toolchains/llvm/prebuilt"), { recursive: true });
-      return ndk;
-    },
-    calls() {
-      return existsSync(calls) ? readFileSync(calls, "utf8").trim().split("\n").map(line => JSON.parse(line)) : [];
-    },
-    run() {
-      return spawnSync("bash", [harness], { cwd: root, env, encoding: "utf8", timeout: 10_000 });
-    },
+  const repo = join(root, "repo");
+  const tools = join(root, "tools");
+  const output = join(root, "kept bundles");
+  mkdirSync(join(repo, "scripts"), { recursive: true });
+  mkdirSync(tools);
+  mkdirSync(output);
+  const helper = join(repo, "scripts/maven-central-bundle.local.sh");
+  const calls = join(root, "gpg-calls");
+  const pom = "<project>sample release</project>\n";
+  writeFileSync(helper, readFileSync(new URL("./maven-central-bundle.local.sh", import.meta.url)), { mode: 0o755 });
+  const executable = (path, script) => writeFileSync(path, `#!/usr/bin/env bash\nset -euo pipefail\n${script}\n`, { mode: 0o755 });
+  executable(join(repo, "scripts/stage-maven-central-bundle.sh"), `
+    [[ -z "\${MAVEN_SIGNING_PASSWORD:-}" && -z "\${signing_passphrase:-}" ]]
+    version="$1"
+    test "$2" = "$(git rev-parse HEAD)"
+    if [[ "$BUNDLE_SCENARIO" == wrong-version ]]; then version=9.0.0; fi
+    publication="$3/me/really/example/$version"
+    mkdir -p -- "$publication"
+    printf '%s\\n' '<project>sample release</project>' >"$publication/example-$version.pom"
+    if [[ "$BUNDLE_SCENARIO" == symlink ]]; then
+      ln -s /dev/null "$publication/example-$version.jar"
+    else
+      printf '%s\\n' 'example payload' >"$publication/example-$version.jar"
+    fi
+  `);
+  executable(join(tools, "gpg"), `
+    [[ -z "\${MAVEN_SIGNING_PASSWORD:-}" && -z "\${signing_passphrase:-}" ]]
+    if [[ " $* " == *" --verify "* ]]; then
+      printf 'verify\\n' >>"$GPG_CALLS"
+      test -s "\${@: -2:1}"
+      test -f "\${@: -1}"
+      [[ "$BUNDLE_SCENARIO" != bad-signature ]]
+      exit
+    fi
+    printf 'sign\\n' >>"$GPG_CALLS"
+    IFS= read -r passphrase
+    test "$passphrase" = 'fixture-only'
+    while [[ "$1" != --output ]]; do shift; done
+    printf '%s\\n' 'fixture signature' >"$2"
+  `);
+  executable(join(tools, "zip"), `
+    [[ "$BUNDLE_SCENARIO" != zip-error ]]
+    exec "$REAL_ZIP" "$@"
+  `);
+  const zip = spawnSync("sh", ["-c", "command -v zip"], { encoding: "utf8" });
+  assert.equal(zip.status, 0, zip.stderr);
+  const git = (...args) => {
+    const result = spawnSync("git", ["-c", "user.name=ReallyMe Test", "-c", "user.email=test@really.me", ...args], {
+      cwd: repo, encoding: "utf8",
+    });
+    assert.equal(result.status, 0, result.stderr);
+    return result.stdout.trim();
   };
+  const manifestPath = join(repo, "packages/kotlin/build.gradle.kts");
+  mkdirSync(join(repo, "packages/kotlin"), { recursive: true });
+  writeFileSync(manifestPath, 'version = "1.2.3"\n');
+  git("init", "--quiet");
+  git("add", "scripts", "packages");
+  git("commit", "--quiet", "-m", "Maven bundle fixture");
+  const sha = git("rev-parse", "HEAD");
+  writeFileSync(calls, "");
+  const run = (version, overrides = {}, source = sha) => spawnSync(helper, version === undefined ? [] : [version, source], {
+    cwd: root,
+    encoding: "utf8",
+    env: {
+      ...process.env, PATH: `${tools}${delimiter}${process.env.PATH}`,
+      GPG_CALLS: calls, REAL_ZIP: zip.stdout.trim(), BUNDLE_SCENARIO: "",
+      MAVEN_SIGNING_KEY_ID: "1234567890ABCDEF", MAVEN_SIGNING_PASSWORD: "fixture-only",
+      MAVEN_CENTRAL_OUTPUT_DIR: output, ...overrides,
+    },
+  });
+  return { run, output, calls, pom };
 }
 
-test("installs the latest stable NDK with numeric revision ordering", t => {
-  const f = fixture(t);
-  const result = f.run();
-  assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(JSON.parse(result.stdout), {
-    ndk: join(f.sdk, "ndk/30.10.10"), sdk: f.sdk, legacySdk: f.sdk,
-  });
-  assert.deepEqual(f.calls(), [
-    ["--sdk_root=" + f.sdk, "--list", "--channel=0"],
-    ["--sdk_root=" + f.sdk, "--install", "ndk;30.10.10", "--channel=0"],
+test("Maven bundle template verifies each signature and retains every completed ZIP", { skip: process.platform === "win32" }, (t) => {
+  const { run, output, calls, pom } = fixture(t);
+  const bundle = (version, suffix = "") => {
+    const result = run(version);
+    assert.equal(result.status, 0, result.stderr);
+    const path = join(output, `reallyme-maven-central-${version}${suffix}.zip`);
+    assert.equal(result.stdout.trim(), path);
+    return path;
+  };
+  const first = bundle("1.2.3");
+  const original = readFileSync(first);
+  bundle("1.2.3", "-2");
+  bundle("1.2.4");
+  assert.deepEqual(readFileSync(first), original);
+  assert.deepEqual(readdirSync(output).sort(), [
+    "reallyme-maven-central-1.2.3-2.zip", "reallyme-maven-central-1.2.3.zip", "reallyme-maven-central-1.2.4.zip",
   ]);
-});
-
-for (const installed of [false, true]) {
-  test("reads Android CLI slash paths and aligned columns, installed=" + installed, t => {
-    const f = fixture(t);
-    const revision = "30.0.16248370";
-    const separator = installed ? "       " : "\t";
-    writeFileSync(f.packages, [
-      "Installed packages:",
-      "  ndk/29.0.14206865       29.0.14206865       NDK (Side by side) 29.0.14206865",
-      "Available packages:",
-      "  ndk/30.0.16138531       30.0.16138531-rc.3  NDK (Side by side) 30.0.16138531",
-      "  ndk/31.0.999            31.0.999 rc1        NDK preview",
-      "\tndk/32.0.999\t32.0.999 beta1\tNDK preview",
-      "  ndk/33.0.123            33.0.124            Mismatched revision",
-      `  ndk/${revision}${separator}${revision}${separator}NDK (Side by side) ${revision}`,
-      "",
-    ].join("\n"));
-    if (installed) f.installed(revision);
-
-    const result = f.run();
+  assert.equal(readFileSync(calls, "utf8"), "sign\nsign\nverify\nverify\n".repeat(3));
+  const entry = "me/really/example/1.2.3/example-1.2.3.pom";
+  const extract = (path) => {
+    const result = spawnSync("unzip", ["-p", first, path], { encoding: "utf8" });
     assert.equal(result.status, 0, result.stderr);
-    assert.equal(JSON.parse(result.stdout).ndk, join(f.sdk, "ndk", revision));
-    assert.deepEqual(f.calls(), [
-      ["--sdk_root=" + f.sdk, "--list", "--channel=0"],
-      ...(installed ? [] : [["--sdk_root=" + f.sdk, "--install", "ndk;" + revision, "--channel=0"]]),
-    ]);
-  });
-}
-
-test("checks for updates on every run without reinstalling the current NDK", t => {
-  const f = fixture(t);
-  f.installed("30.10.10");
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    const result = f.run();
-    assert.equal(result.status, 0, result.stderr);
-  }
-  assert.equal(f.calls().length, 2);
-  assert.ok(f.calls().every(args => args.includes("--list")));
+    return result.stdout;
+  };
+  assert.equal(extract(entry), pom);
+  assert.equal(extract(`${entry}.asc`), "fixture signature\n");
+  assert.equal(extract(`${entry}.sha256`), `${createHash("sha256").update(pom).digest("hex")}\n`);
 });
 
-test("installs a newer NDK even when an older NDK is installed", t => {
-  const f = fixture(t);
-  f.installed("29.0.14206865");
-  const result = f.run();
-  assert.equal(result.status, 0, result.stderr);
-  assert.equal(JSON.parse(result.stdout).ndk, join(f.sdk, "ndk/30.10.10"));
-  assert.equal(f.calls().length, 2);
-});
-
-test("honors an explicit NDK home without invoking sdkmanager", t => {
-  const f = fixture(t);
-  f.env.ANDROID_NDK_HOME = f.installed("29.0.14206865");
-  const result = f.run();
-  assert.equal(result.status, 0, result.stderr);
-  assert.equal(JSON.parse(result.stdout).ndk, f.env.ANDROID_NDK_HOME);
-  assert.deepEqual(f.calls(), []);
-});
-
-for (const installed of [false, true]) {
-  test("honors an explicit NDK revision, installed=" + installed, t => {
-    const f = fixture(t);
-    f.env.ANDROID_NDK_VERSION = "29.0.14206865";
-    if (installed) f.installed(f.env.ANDROID_NDK_VERSION);
-    const result = f.run();
-    assert.equal(result.status, 0, result.stderr);
-    assert.equal(JSON.parse(result.stdout).ndk, join(f.sdk, "ndk/29.0.14206865"));
-    assert.ok(f.calls().every(args => args.includes("--install")));
-    assert.equal(f.calls().length, installed ? 0 : 1);
-  });
-}
-
-test("discovers the SDK through ANDROID_SDK_ROOT", t => {
-  const f = fixture(t);
-  delete f.env.ANDROID_HOME;
-  f.env.ANDROID_SDK_ROOT = f.sdk;
-  const result = f.run();
-  assert.equal(result.status, 0, result.stderr);
-  assert.equal(JSON.parse(result.stdout).sdk, f.sdk);
-});
-
-for (const [host, relativeSdk] of [["Darwin", "Library/Android/sdk"], ["Linux", "Android/Sdk"]]) {
-  test("discovers the conventional SDK on " + host, t => {
-    const f = fixture(t);
-    delete f.env.ANDROID_HOME;
-    const sdk = join(f.home, relativeSdk);
-    mkdirSync(join(sdk, ".."), { recursive: true });
-    renameSync(f.sdk, sdk);
-    writeFileSync(join(f.bin, "uname"), "#!/usr/bin/env bash\nprintf '%s\\n' '" + host + "'\n", { mode: 0o755 });
-    const result = f.run();
-    assert.equal(result.status, 0, result.stderr);
-    assert.equal(JSON.parse(result.stdout).sdk, sdk);
-  });
-}
-
-test("uses sdkmanager on PATH when the SDK has no latest command-line tools", t => {
-  const f = fixture(t);
-  renameSync(f.manager, join(f.bin, "sdkmanager"));
-  const result = f.run();
-  assert.equal(result.status, 0, result.stderr);
-  assert.equal(f.calls().length, 2);
-});
-
-test("reports missing command-line tools without using another installed SDK", t => {
-  const f = fixture(t);
-  rmSync(f.manager);
-  symlinkSync("/bin/bash", join(f.bin, "bash"));
-  f.env.PATH = f.bin;
-  const result = f.run();
-  assert.equal(result.status, 1, result.stderr);
-  assert.match(result.stderr, /install Android SDK Command-line Tools/);
-  assert.deepEqual(f.calls(), []);
-});
-
-for (const [name, configure, message] of [
-  ["query failure", f => { f.env.SDK_LIST_STATUS = "1"; }, /could not query Android NDK packages/],
-  ["installation failure", f => { f.env.SDK_INSTALL_STATUS = "1"; }, /Android NDK installation failed/],
-  ["incomplete installation", f => { f.env.SDK_INSTALL_INCOMPLETE = "1"; }, /missing required directory/],
-  ["no stable NDK", f => { writeFileSync(f.packages, "ndk;31.0.123 | 31.0.123 beta1 | Preview\n"); },
-    /contains no stable NDK revision/],
-  ["invalid revision override", f => { f.env.ANDROID_NDK_VERSION = "../../outside"; },
-    /must be a numeric major.minor.build revision/],
-  ["invalid NDK home", f => { f.env.ANDROID_NDK_HOME = join(f.root, "missing"); },
-    /missing required directory/],
-  ["invalid SDK root", f => { f.env.ANDROID_HOME = join(f.root, "missing"); },
-    /missing required directory/],
-]) {
-  test("fails closed on " + name, t => {
-    const f = fixture(t);
-    configure(f);
-    const result = f.run();
+test("Maven bundle template preserves prior archives when staging, signing, or ZIP creation fails", { skip: process.platform === "win32" }, (t) => {
+  const { run, output } = fixture(t);
+  const original = join(output, "reallyme-maven-central-1.2.3.zip");
+  writeFileSync(original, "previous archive");
+  for (const [version, env, diagnostic, source] of [
+    ["1.2.3", {}, /unchanged tracked files/u, "0".repeat(40)],
+    ["1.2.3", { BUNDLE_SCENARIO: "wrong-version" }, /selected version/u],
+    ["1.2.3", { BUNDLE_SCENARIO: "symlink" }, /regular files and directories/u],
+    ["1.2.3", { BUNDLE_SCENARIO: "bad-signature" }, /signature failed verification/u],
+    ["1.2.3", { BUNDLE_SCENARIO: "zip-error" }, /could not create the Maven Central ZIP/u],
+  ]) {
+    const result = run(version, env, source);
     assert.equal(result.status, 1, result.stderr);
-    assert.match(result.stderr, message);
+    assert.match(result.stderr, diagnostic);
     assert.equal(result.stdout, "");
-    if (name === "query failure" || name === "no stable NDK") assert.equal(f.calls().length, 1);
-    if (name.startsWith("invalid")) assert.deepEqual(f.calls(), []);
-  });
-}
+    assert.deepEqual(readdirSync(output), ["reallyme-maven-central-1.2.3.zip"]);
+    assert.equal(readFileSync(original, "utf8"), "previous archive");
+  }
+});
+
+test("Maven bundle without arguments selects the tracked package version and checkout", { skip: process.platform === "win32" }, (t) => {
+  const { run, output } = fixture(t);
+  const result = run();
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(readdirSync(output), ["reallyme-maven-central-1.2.3.zip"]);
+});
+
+test("Maven staging retains only the reviewed JVM and Android coordinate files", (t) => {
+  const root = mkdtempSync(join(tmpdir(), "crypto-maven-staging-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const repository = join(root, "repository");
+  const packages = join(root, "artifacts");
+  const destination = join(root, "bundle");
+  const version = "1.2.3";
+  const sha = "a".repeat(40);
+  const layout = publicationLayout(version, sha);
+  for (const { files } of layout) {
+    for (const { source } of files) {
+      mkdirSync(join(repository, source, ".."), { recursive: true });
+      writeFileSync(join(repository, source), source);
+    }
+  }
+  writeFileSync(join(repository, "me/really/crypto/maven-metadata.xml"), "local metadata");
+  mkdirSync(packages);
+  mkdirSync(destination);
+  for (const [index, kind] of ["jvm", "android"].entries()) {
+    stageMavenPublication(repository, join(packages, layout[index].name), kind, version);
+  }
+  stageMavenPublications(packages, version, sha, destination);
+  assert.deepEqual(readdirSync(join(destination, "me/really/crypto")), [version]);
+  for (const { files } of layout) {
+    for (const { source, target } of files) {
+      assert.equal(readFileSync(join(destination, target), "utf8"), source);
+    }
+  }
+  const android = layout[1];
+  rmSync(join(packages, android.name, android.files[0].source));
+  const incomplete = join(root, "incomplete");
+  mkdirSync(incomplete);
+  assert.throws(() => stageMavenPublications(packages, version, sha, incomplete));
+});

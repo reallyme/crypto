@@ -10,7 +10,7 @@ const STEP_START = /^\s{6}- name:/gmu;
 const RUN_KEY = /^\s{8}run\s*:/mu;
 
 export const LOCKED_DEPENDENCY_AUDIT =
-  "cargo +1.100.0 deny --locked --workspace --all-features --config deny.toml check";
+  "cargo +1.100.0 deny --locked --workspace --all-features --config deny.toml check advisories licenses sources";
 
 export const REQUIRED_WORKFLOW_GATES = [
   [".github/workflows/rust-ci.yml", [
@@ -18,13 +18,12 @@ export const REQUIRED_WORKFLOW_GATES = [
     "actionlint -color",
     "cargo clippy --locked --workspace --all-targets --all-features -- -D warnings",
     "cargo nextest run --locked --workspace --no-default-features --features native",
-    "cargo nextest run --locked --workspace --all-features",
+    "cargo +1.100.0 test --locked --workspace --all-features",
     LOCKED_DEPENDENCY_AUDIT,
-    "node scripts/run_pinned_release_readiness.mjs --ci-policy",
-    "node scripts/run_pinned_release_readiness.mjs --typescript-source",
+  ]],
+  [".github/workflows/release-readiness.yml", [
+    "node .release-readiness/scripts/run-consumer-check.mjs",
     "npm --prefix packages/ts run pack:check -- --use-built",
-    "node scripts/run_pinned_release_readiness.mjs --swift-source",
-    "node scripts/run_pinned_release_readiness.mjs --kotlin-source",
     "node packages/ts/scripts/browser-wasm-test.mjs",
   ]],
   [".github/workflows/dependency-security.yml", [
@@ -51,22 +50,18 @@ export const REQUIRED_WORKFLOW_GATES = [
     "node scripts/run_pinned_release_readiness.mjs --release-packages",
   ]],
   [".github/workflows/crates-release.yml", [
-    "node scripts/verify_release_attestation.mjs",
     "node scripts/publish_crates_in_order.mjs publish",
   ]],
   [".github/workflows/npm-package-release.yml", [
-    "node scripts/run_pinned_release_readiness.mjs --release-packages",
-    "npm run pack:check -- --use-built",
+    "sha256sum --check",
     "npm publish \"reallyme-crypto-${RELEASE_VERSION}.tgz\" --provenance --access public",
   ]],
   [".github/workflows/swift-package-release.yml", [
     "node scripts/verify_swift_release_artifact.mjs",
-    "node scripts/verify_release_attestation.mjs",
     "gh release create \"v${RELEASE_VERSION}\"",
   ]],
   [".github/workflows/kotlin-android-package-release.yml", [
-    "./gradlew --dependency-verification strict publish",
-    "packages/kotlin-android/gradlew --dependency-verification strict -p packages/kotlin-android publish",
+    "bash scripts/promote_maven_publications.sh",
   ]],
 ];
 

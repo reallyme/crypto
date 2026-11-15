@@ -6,44 +6,13 @@
 name: Code Checks
 
 on:
-  workflow_dispatch:
-  pull_request:
-    paths-ignore:
-      - "**/*.md"
-      - "docs/**"
-      - "formal/**"
-      - "!CONTRACT.md"
-      - "!PROVIDER_POLICY.md"
-      - "!SECURITY_MEMORY_MODEL.md"
-      - "!docs/conformance.md"
-      - "!docs/protobuf.md"
-      - "!docs/rust-publishing.md"
-      - "LICENSE"
-      - "NOTICE"
-      - ".github/renovate.json"
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - "**/*.md"
-      - "docs/**"
-      - "formal/**"
-      - "!CONTRACT.md"
-      - "!PROVIDER_POLICY.md"
-      - "!SECURITY_MEMORY_MODEL.md"
-      - "!docs/conformance.md"
-      - "!docs/protobuf.md"
-      - "!docs/rust-publishing.md"
-      - "LICENSE"
-      - "NOTICE"
-      - ".github/renovate.json"
+  workflow_call:
+    outputs:
+      verified_sha:
+        value: ${{ jobs.verified.outputs.verified_sha }}
 
 permissions:
   contents: read
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || (github.event_name == 'push' && github.ref) || github.sha }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
 
 jobs:
   tooling:
@@ -139,6 +108,129 @@ jobs:
 
       - name: Check workspace at declared minimum Rust version
         run: cargo check --locked --workspace --all-features
+
+      - name: Test reallyme-crypto at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto --all-features
+
+      - name: Test reallyme-crypto-aes-kw at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-aes-kw --all-features
+
+      - name: Test reallyme-crypto-aes256-gcm at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-aes256-gcm --all-features
+
+      - name: Test reallyme-crypto-aes256-gcm-siv at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-aes256-gcm-siv --all-features
+
+      - name: Test reallyme-crypto-argon2id at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-argon2id --all-features
+
+      - name: Test reallyme-crypto-chacha20-poly1305 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-chacha20-poly1305 --all-features
+
+      - name: Test reallyme-crypto-concat-kdf at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-concat-kdf --all-features
+
+      - name: Test reallyme-crypto-constant-time at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-constant-time --all-features
+
+      - name: Test reallyme-crypto-core at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-core --all-features
+
+      - name: Test reallyme-crypto-csprng at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-csprng --all-features
+
+      - name: Test reallyme-crypto-dispatch at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-dispatch --all-features
+
+      - name: Test reallyme-crypto-ed25519 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-ed25519 --all-features
+
+      - name: Test reallyme-crypto-hkdf at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-hkdf --all-features
+
+      - name: Test reallyme-crypto-hmac at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-hmac --all-features
+
+      - name: Test reallyme-crypto-hpke at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-hpke --all-features
+
+      - name: Test reallyme-crypto-jwk at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-jwk --all-features
+
+      - name: Test reallyme-crypto-jwk-multikey at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-jwk-multikey --all-features
+
+      - name: Test reallyme-crypto-kmac at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-kmac --all-features
+
+      - name: Test reallyme-crypto-ml-dsa-44 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-ml-dsa-44 --all-features
+
+      - name: Test reallyme-crypto-ml-dsa-65 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-ml-dsa-65 --all-features
+
+      - name: Test reallyme-crypto-ml-dsa-87 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-ml-dsa-87 --all-features
+
+      - name: Test reallyme-crypto-ml-kem-1024 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-ml-kem-1024 --all-features
+
+      - name: Test reallyme-crypto-ml-kem-512 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-ml-kem-512 --all-features
+
+      - name: Test reallyme-crypto-ml-kem-768 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-ml-kem-768 --all-features
+
+      - name: Test reallyme-crypto-p256 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-p256 --all-features
+
+      - name: Test reallyme-crypto-p384 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-p384 --all-features
+
+      - name: Test reallyme-crypto-p521 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-p521 --all-features
+
+      - name: Test reallyme-crypto-pbkdf2 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-pbkdf2 --all-features
+
+      - name: Test reallyme-crypto-poseidon2 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-poseidon2 --all-features
+
+      - name: Test reallyme-crypto-proto at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-proto --all-features
+
+      - name: Test reallyme-crypto-rsa at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-rsa --all-features
+
+      - name: Test reallyme-crypto-secp256k1 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-secp256k1 --all-features
+
+      - name: Test reallyme-crypto-sha2 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-sha2 --all-features
+
+      - name: Test reallyme-crypto-sha2-256 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-sha2-256 --all-features
+
+      - name: Test reallyme-crypto-sha3 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-sha3 --all-features
+
+      - name: Test reallyme-crypto-sha3-256 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-sha3-256 --all-features
+
+      - name: Test reallyme-crypto-signer at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-signer --all-features
+
+      - name: Test reallyme-crypto-slh-dsa at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-slh-dsa --all-features
+
+      - name: Test reallyme-crypto-x-wing at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-x-wing --all-features
+
+      - name: Test reallyme-crypto-x25519 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-x25519 --all-features
+
+      - name: Test reallyme-crypto-x448 at its declared MSRV
+        run: cargo +1.96.0 test --locked --package reallyme-crypto-x448 --all-features
 
   rust-semver:
     name: Rust public API semver
@@ -304,16 +396,13 @@ jobs:
       - name: Test
         run: cargo nextest run --locked --workspace --no-default-features --features native --test-threads 4
 
-      - name: Test (all features — runs feature-gated tests incl. the proto bridge)
-        run: cargo nextest run --locked --workspace --all-features --test-threads 4
+      - name: Test on the release toolchain
+        run: cargo +1.100.0 test --locked --workspace --all-features
 
       - name: Doc build (enforces missing_docs)
         run: cargo doc --locked --workspace --no-deps --all-features
         env:
           RUSTDOCFLAGS: -D warnings
-
-      - name: Doctests
-        run: cargo test --locked --workspace --all-features --doc
 
       - name: Verify committed external vectors against public APIs
         run: bash scripts/check_external_vector_adapters.sh
@@ -321,11 +410,11 @@ jobs:
       - name: Check generated provider matrix
         run: node scripts/generate_provider_matrix.mjs --check
 
-      - name: Release readiness
-        run: node scripts/run_pinned_release_readiness.mjs --ci-policy
-
       - name: Dependency policy
-        run: cargo +1.100.0 deny --locked --workspace --all-features --config deny.toml check
+        run: cargo +1.100.0 deny --locked --workspace --all-features --config deny.toml check advisories licenses sources
+
+      - name: Dependency bans
+        run: cargo +1.100.0 deny --locked --workspace --all-features --config deny.toml check bans
 
       - name: Security advisory audit
         run: scripts/audit_committed_lockfiles.sh
@@ -372,9 +461,6 @@ jobs:
         with:
           tool: wasm-bindgen-cli@0.2.130
 
-      - name: Install TypeScript package dependencies
-        run: npm ci --prefix packages/ts
-
       - name: Verify vectors against TypeScript-native noble oracles
         run: |
           npm ci --prefix crates/conformance
@@ -382,15 +468,6 @@ jobs:
 
       - name: Verify post-quantum vectors against @noble/post-quantum oracle
         run: npm run --prefix crates/conformance verify:noble-pq
-
-      - name: Test TypeScript source policy
-        run: node scripts/run_pinned_release_readiness.mjs --typescript-source
-
-      - name: Check npm tarball contents and WASM surface
-        run: npm --prefix packages/ts run pack:check -- --use-built
-
-      - name: Test TypeScript package in Chromium
-        run: node packages/ts/scripts/browser-wasm-test.mjs
 
       - name: Test primitive WASM backends in Chromium
         run: bash scripts/check_wasm_browser_backends.sh
@@ -479,109 +556,13 @@ jobs:
           cargo +nightly-2026-07-01 miri test --locked -p crypto-ffi --lib pointer::tests
           cargo +nightly-2026-07-01 miri test --locked -p crypto-ffi --lib guard::tests
 
-  swift:
-    name: swift package + vector conformance
-    runs-on: macos-26
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Install Node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '26'
-
-      - name: Verify release readiness pins
-        run: node scripts/run_pinned_release_readiness.mjs --check-pins
-
-      # The package manifests require Swift tools 6.3. Select the reviewed Xcode
-      # before restoring or compiling SwiftPM artifacts.
-      - name: Select Xcode 26.6
-        run: |
-          sudo xcode-select -s /Applications/Xcode_26.6.app
-          swift --version
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
-        with:
-          toolchain: 1.100.0
-
-      - name: Cache Rust swift
-        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
-        with:
-          shared-key: swift-native
-          key: swift-xcode26.6-${{ hashFiles('Package.resolved', 'crates/conformance/platform/swift/Package.resolved') }}
-          cache-directories: |
-            .build
-            crates/conformance/platform/swift/.build
-
-      # The shipped Rust-C-ABI wrapper KATs (ML-KEM/ML-DSA/SLH-DSA/RSA/…) load
-      # this dylib at runtime and skip without it. Build it and hand the path
-      # to `swift test` so those wrappers are actually exercised against the
-      # shared vectors in CI, not silently skipped.
-      - name: Build crypto-ffi dylib
-        run: cargo build --locked -p crypto-ffi
-
-      - name: Enable source-tree Swift runtime FFI
-        run: touch .reallyme-crypto-runtime-ffi
-
-      - name: Check Swift source policy
-        run: node scripts/run_pinned_release_readiness.mjs --swift-source
-        env:
-          REALLYME_CRYPTO_FFI_LIBRARY_PATH: ${{ github.workspace }}/target/debug/libcrypto_ffi.dylib
-          REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI: "1"
-
-  kotlin:
-    name: kotlin package + vector conformance
+  verified:
+    name: Record verified candidate
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    needs: [tooling, mobile-targets, rust-msrv, rust-semver, rust, typescript, native-sanitizers, ffi-abi-artifact, ffi-miri]
+    outputs:
+      verified_sha: ${{ github.sha }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Install Node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '26'
-
-      - name: Verify release readiness pins
-        run: node scripts/run_pinned_release_readiness.mjs --check-pins
-
-      - name: Validate Gradle wrappers
-        uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
-
-      - name: Install Java
-        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
-        with:
-          distribution: temurin
-          java-version: '21'
-          cache: gradle
-          cache-dependency-path: |
-            packages/kotlin/gradle.lockfile
-            packages/kotlin-android/gradle.lockfile
-            crates/conformance/platform/kotlin/gradle.lockfile
-            packages/kotlin/gradle/verification-metadata.xml
-            packages/kotlin-android/gradle/verification-metadata.xml
-            crates/conformance/platform/kotlin/gradle/verification-metadata.xml
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
-        with:
-          toolchain: 1.100.0
-
-      - name: Cache Rust kotlin
-        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
-        with:
-          shared-key: kotlin-native
-
-      - name: Install pinned Android SDK packages
-        run: |
-          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
-            "platforms;android-37.0" "ndk;29.0.14206865" <<< "$(printf 'y\n%.0s' {1..32})"
-          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/29.0.14206865" >> "${GITHUB_ENV}"
-
-      - name: Test Kotlin source policy
-        run: node scripts/run_pinned_release_readiness.mjs --kotlin-source
+      - name: Record successful lane
+        run: echo "All required jobs verified this candidate"

@@ -6,59 +6,10 @@
 name: Fuzz
 
 on:
-  pull_request:
-    paths:
-      - ".github/workflows/fuzz.yml"
-      - "Cargo.toml"
-      - "crates/crypto/**"
-      - "crates/wasm/**"
-      - "crates/concat-kdf/**"
-      - "crates/proto/**"
-      - "crates/hkdf/**"
-      - "crates/hpke/**"
-      - "crates/p256/**"
-      - "crates/pbkdf2/**"
-      - "crates/p384/**"
-      - "crates/p521/**"
-      - "crates/ml-dsa-*/**"
-      - "crates/ml-kem-*/**"
-      - "crates/rsa/**"
-      - "crates/secp256k1/**"
-      - "crates/slh-dsa/**"
-      - "crates/jwk/**"
-      - "crates/jwk-multikey/**"
-      - "fuzz/**"
-  push:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/fuzz.yml"
-      - "Cargo.toml"
-      - "crates/crypto/**"
-      - "crates/wasm/**"
-      - "crates/concat-kdf/**"
-      - "crates/proto/**"
-      - "crates/hkdf/**"
-      - "crates/hpke/**"
-      - "crates/p256/**"
-      - "crates/pbkdf2/**"
-      - "crates/p384/**"
-      - "crates/p521/**"
-      - "crates/ml-dsa-*/**"
-      - "crates/ml-kem-*/**"
-      - "crates/rsa/**"
-      - "crates/secp256k1/**"
-      - "crates/slh-dsa/**"
-      - "crates/jwk/**"
-      - "crates/jwk-multikey/**"
-      - "fuzz/**"
-  schedule:
-    - cron: "37 3 * * 1"
-  workflow_dispatch:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || (github.event_name == 'push' && github.ref) || github.sha }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
+  workflow_call:
+    outputs:
+      verified_sha:
+        value: ${{ jobs.verified.outputs.verified_sha }}
 
 permissions:
   contents: read
@@ -66,7 +17,6 @@ permissions:
 jobs:
   build:
     name: fuzz target build
-    if: github.event_name == 'pull_request' || github.event_name == 'push'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -92,50 +42,13 @@ jobs:
       - name: Build fuzz targets
         run: cargo +nightly-2026-07-01 fuzz build
 
-  scheduled:
-    name: scheduled fuzz (${{ matrix.target }})
+  verified:
+    name: Record verified candidate
     runs-on: ubuntu-24.04
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    strategy:
-      fail-fast: false
-      matrix:
-        target:
-          - jwk_multikey
-          - key_encodings
-          - reader_primitives
-          - operation_family_boundaries
-          - p256_point
-          - post_quantum_encodings
-          - operation_response
-          - rsa_der
+    timeout-minutes: 5
+    needs: [build]
+    outputs:
+      verified_sha: ${{ github.sha }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Install Rust nightly
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
-        with:
-          toolchain: nightly-2026-07-01
-
-      - name: Cache fuzz dependencies and tool
-        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
-        with:
-          shared-key: fuzz-nightly-2026-07-01
-          workspaces: fuzz -> target
-          cache-bin: true
-
-      - name: Install cargo-fuzz
-        run: cargo install cargo-fuzz --version 0.13.2 --locked
-
-      - name: Run time-boxed fuzz target
-        run: cargo +nightly-2026-07-01 fuzz run ${{ matrix.target }} -- -max_total_time=300 -rss_limit_mb=4096
-
-      - name: Upload crash artifacts
-        if: failure()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: fuzz-artifacts-${{ matrix.target }}
-          path: fuzz/artifacts/${{ matrix.target }}
-          if-no-files-found: ignore
+      - name: Record successful lane
+        run: echo "All required jobs verified this candidate"

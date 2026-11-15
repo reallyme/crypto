@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/reallyme/codec",
       "state" : {
-        "revision" : "cb414d14676d33362e2b8a3fa0d7fd52f08ce162",
-        "version" : "0.4.2"
+        "revision" : "2f93ffdbfaa71a556b0d736e29936aee14ed634d",
+        "version" : "0.4.3"
       }
     },
     {

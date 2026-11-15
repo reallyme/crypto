@@ -1,0 +1,131 @@
+# SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+name: Release Readiness
+
+on:
+  workflow_call:
+    outputs:
+      verified_sha:
+        value: ${{ jobs.policy.outputs.verified_sha }}
+
+permissions:
+  contents: read
+
+jobs:
+  policy:
+    name: Release policy and SDK verification
+    runs-on: macos-26
+    timeout-minutes: 55
+    outputs:
+      verified_sha: ${{ steps.verified.outputs.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Checkout release-readiness runner
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: reallyme/release-readiness
+          ref: 45b52cf353b0b85694a96c6addc985221274ff37
+          path: .release-readiness
+          persist-credentials: false
+
+      - name: Install Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '26'
+
+      - name: Verify release readiness pins
+        run: node scripts/run_pinned_release_readiness.mjs --check-pins
+
+      # The package manifests require Swift tools 6.3. Select the reviewed Xcode
+      # before restoring or compiling SwiftPM artifacts.
+      - name: Select Xcode 26.6
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.6.app
+          swift --version
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: 1.100.0
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Rust swift
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: swift-native
+          key: swift-xcode26.6-${{ hashFiles('Package.resolved', 'crates/conformance/platform/swift/Package.resolved') }}
+          cache-directories: |
+            .build
+            crates/conformance/platform/swift/.build
+
+      # The shipped Rust-C-ABI wrapper KATs (ML-KEM/ML-DSA/SLH-DSA/RSA/…) load
+      # this dylib at runtime and skip without it. Build it and hand the path
+      # to `swift test` so those wrappers are actually exercised against the
+      # shared vectors in CI, not silently skipped.
+      - name: Build crypto-ffi dylib
+        run: cargo build --locked -p crypto-ffi
+
+      - name: Enable source-tree Swift runtime FFI
+        run: touch .reallyme-crypto-runtime-ffi
+
+      - name: Validate Gradle wrappers
+        uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+
+      - name: Install Java
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+          cache-dependency-path: |
+            packages/kotlin/gradle.lockfile
+            packages/kotlin-android/gradle.lockfile
+            crates/conformance/platform/kotlin/gradle.lockfile
+            packages/kotlin/gradle/verification-metadata.xml
+            packages/kotlin-android/gradle/verification-metadata.xml
+            crates/conformance/platform/kotlin/gradle/verification-metadata.xml
+
+      - name: Install pinned Android SDK packages
+        run: |
+          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-37.0" "ndk;29.0.14206865" <<< "$(printf 'y\n%.0s' {1..32})"
+          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/29.0.14206865" >> "${GITHUB_ENV}"
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # wasm-pack
+        with:
+          tool: wasm-pack@0.15.1
+
+      - name: Install wasm-bindgen-cli
+        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # wasm-bindgen-cli
+        with:
+          tool: wasm-bindgen-cli@0.2.130
+
+      - name: Install TypeScript package dependencies
+        run: npm ci --prefix packages/ts
+
+      - name: Run release readiness checks
+        run: node .release-readiness/scripts/run-consumer-check.mjs
+        env:
+          REALLYME_CRYPTO_FFI_LIBRARY_PATH: ${{ github.workspace }}/target/debug/libcrypto_ffi.dylib
+          REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI: "1"
+
+      - name: Check npm tarball contents and WASM surface
+        run: npm --prefix packages/ts run pack:check -- --use-built
+
+      - name: Test TypeScript package in Chromium
+        run: node packages/ts/scripts/browser-wasm-test.mjs
+
+      - name: Record verified source
+        id: verified
+        shell: bash
+        run: |
+          sha=$(git rev-parse --verify HEAD)
+          test "$sha" = "$GITHUB_SHA"
+          printf 'sha=%s\n' "$sha" >>"$GITHUB_OUTPUT"

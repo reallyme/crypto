@@ -1,47 +1,41 @@
 # CI validation ownership
 
-Ordinary pushes and pull requests validate the reviewed source and locked
-dependencies. Independent jobs run in parallel; each expensive suite has one
-owner within Code Checks.
+The `CI` workflow plans checks from the candidate's changed paths. The policy
+lane always runs. Code, protobuf, fuzz-build, and formal verification run when
+their inputs change. Workflow and shared build changes trigger all four.
+`CI / Required CI` verifies the plan and checks that every successful lane
+reported the candidate SHA.
 
-| Owner | Required coverage |
+| Owner | Coverage |
 | --- | --- |
-| Repository tooling, Linux and macOS | Node/Python tooling tests, actionlint and policy-pin integrity |
-| Native Rust | Strict compilation/lints, native and all-feature tests, narrow/backendless features, documentation, doctests, package contents and committed external vectors |
-| TypeScript and WASM | SDK source policy, Node tests and typecheck, browser SDK tests, independent vector oracles, primitive browser tests, reader WASM execution and workspace WASM compilation |
-| Swift | Source policy, strict formatting/compilation, package and vector tests with the Rust FFI library loaded |
-| Kotlin | Source policy, JVM tests, Android checks/packaging and vector conformance through the full Gradle check script |
-| FFI release artifact | Abort-profile rejection, production export isolation, C ASan/UBSan against the inspected library, and conformance-only feature compilation |
-| Native sanitizers and Miri | Rust ASan, checked UB, pointer validation and panic-boundary checks |
-| Mobile, MSRV and public API jobs | Cross-target compilation, Rust 1.96 compatibility and public API compatibility |
+| Release Readiness | Shared policy, Swift and Kotlin source checks, TypeScript package and browser tests |
+| Code Checks | Repository tooling, Rust tests and lints, MSRV, public API checks, WASM backend checks and external vectors |
+| Code Checks, FFI jobs | iOS and Android cross-compilation, native sanitizers, Miri, C ABI and release export isolation |
+| Protobuf Checks | Reproducible generation and committed binding freshness |
+| Fuzz and Scheduled Fuzz | Changed-input builds and weekly time-boxed execution |
+| Formal Verification | Tamarin Base HPKE proofs and Kani reference encoder proofs |
+| CodeQL and Dependency Security | Static analysis, runtime dependency scanning, and Gradle checksum provenance |
 
-The all-feature Rust suite owns immutable protobuf selector and wire-golden
-tests. Protobuf Checks owns reproducible generation, hardening and committed
-byte freshness. Both obligations remain required when protobuf changes.
+The TypeScript source checks build the WASM SDK, and the tarball check and
+browser runner use that build. Code Checks separately exercises the browser
+primitive backends and vector oracles. The Kotlin source checks build native
+artifacts for their Gradle tests. CodeQL traces the Kotlin and Java compiles
+with `--no-build-cache` and `--rerun-tasks`.
 
-The TypeScript source-policy invocation builds the SDK before its Node tests.
-The npm tarball check and browser runner consume those same built files.
-The tarball check verifies WASM imports on ordinary pushes. Android native
-artifacts are built and checked by the Kotlin lane;
-CodeQL compiles the Java/Kotlin source sets for extraction without rebuilding
-unrelated JNI artifacts. Its traced compiles retain `--no-build-cache` and
-`--rerun-tasks`.
+The shared Rust release policy checks the locked workspace, each public crate
+at its declared MSRV, and dependency advisories, licenses, and sources.
+The protobuf lane checks generated bindings. The Rust suite tests the
+selectors and wire data those bindings expose.
 
-## Full local and release validation
+## Local and release validation
 
-The default command continues to execute the complete suite:
+Run the repository gate locally with the pinned checker.
 
 ```sh
 node scripts/run_pinned_release_readiness.mjs
 ```
 
-It runs repository tooling and all SDK source tests. `--release-packages`
-checks the shared release policy and versions. Each preflight then tests its
-own artifact. The release attestation requires a successful Code Checks run
-on the same commit, which covers the full set of SDK source tests.
-
-An unreleased macOS source checkout uses the same explicit runtime-FFI setup as
-the Swift CI job, rather than downloading a binary from a different release:
+A macOS source checkout can use its freshly built FFI dylib for Swift tests.
 
 ```sh
 cargo build --locked -p crypto-ffi
@@ -49,30 +43,11 @@ touch .reallyme-crypto-runtime-ffi
 REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI=1 REALLYME_CRYPTO_FFI_LIBRARY_PATH="$PWD/target/debug/libcrypto_ffi.dylib" node scripts/run_pinned_release_readiness.mjs
 ```
 
-Published binary checksums and linked-artifact release checks are unchanged.
+Package preflights require successful Required CI for the source SHA and a
+matching Dependency Security run. When path filtering skips Dependency
+Security on a documentation-only main push, dispatch that workflow from the
+same main commit before starting preflight. The scheduled scans continue to
+check the current locks for newly reported advisories.
 
-CI uses `--ci-policy` for repository checks and the separate
-`--typescript-source`, `--swift-source` and `--kotlin-source` modes in their
-owning jobs. These modes are mutually exclusive. SDK modes run the same source
-policy definitions and real verification commands as the full gate. Required
-workflow commands and release attestations reject missing or skipped owners.
-
-Routine CI validates exact reviewed manifests and registry checksums. Checking
-whether a newer package has been published belongs to full local/release
-validation. Dependency advisory, license and provenance gates remain active;
-a package publication alone does not invalidate an unchanged reviewed graph.
-
-## Cancellation and caches
-
-A newer push supersedes older push checks for the same branch. Pull requests
-are grouped by pull number. Manual/preflight/release work retains its separate
-concurrency policy. A cancelled run cannot provide successful release evidence;
-release attestation also requires the current main commit.
-
-Cargo caches are partitioned by job/toolchain/target purpose, and Gradle caches
-reuse dependency downloads. Validation commands still run after restoration.
-Idempotent protobuf hardening preserves the timestamps of byte-identical files
-so restored compiler artifacts remain useful.
-
-Native/all-feature configurations, browser/Node runtimes and the different
-sanitizers remain separate: each exercises behavior the others do not cover.
+The [release process](release-process.md) describes how preflight evidence
+and retained artifacts are used for publication.

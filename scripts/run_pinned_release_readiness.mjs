@@ -14,14 +14,14 @@ const RELEASE_READINESS_COMMIT = "45b52cf353b0b85694a96c6addc985221274ff37";
 const RELEASE_READINESS_CORE_SHA256 =
   "bd2732ab4af4193ab8f8a2bdde637d7445b1ec93d3b8d5b84b5de7146bdf543a";
 const LOCAL_CHECKER_SHA256 =
-  "44ec72a69bf74d93d3870f1d6db8be27eed815241692e5e7c9a5b160f04aaa3e";
+  "266f8816719ad839eccda7241375eb77bb32e52565714705bbe5cd19ed80e2c4";
 // The checker imports local policy modules. Pinning only its entry file
 // would let an unreviewed dependency change the release decision.
 const LOCAL_CHECKER_DEPENDENCIES = [
-  ["scripts/native_buffa_readiness.mjs", "3748304ee9e8ad5c6ebc39b05f0b70669b846c4657a7e39c2a4dab721b0a6625"],
+  ["scripts/native_buffa_readiness.mjs", "bdc838ba6bb5a07a36bb060a4cc1524baeaf70205b10f09e7ee8630f8ff128ca"],
   ["scripts/proto_scalar_policy.mjs", "f7b071722aa93a0f75a7fe57f994ae7a12e030ee0bedb1be7058e48543cac377"],
   ["scripts/crypto_operation_route_readiness.mjs", "2b15c4e6778f18cf10b493fb5644e47baf537185b6e4411909ba875b5bd38db4"],
-  ["scripts/workflow_gate_policy.mjs", "e0f50c6541ead65bf504cbc4ce948107cdb32e364c63501c7a1e3dc2c1e3f62d"],
+  ["scripts/workflow_gate_policy.mjs", "00b9ae3c0341ee6aa89f74ad4624951c75a70fd5ec891689a19513699191a0f5"],
 ];
 const RELEASE_READINESS_CORE_URL =
   `https://raw.githubusercontent.com/reallyme/release-readiness/${RELEASE_READINESS_COMMIT}/core.mjs`;
@@ -39,7 +39,7 @@ const fail = (message) => {
 };
 
 const supportedArguments = new Set([
-  "--check-pins", "--refresh-checker-pin", "--verify-upstream",
+  "--check-pins", "--refresh-checker-pin", "--verify-upstream", "--print-commit",
   "--generated-freshness", "--release-packages", "--ci-policy",
   "--typescript-source", "--swift-source", "--kotlin-source",
 ]);
@@ -51,6 +51,11 @@ for (const argument of process.argv.slice(2)) {
   suppliedArguments.add(argument);
 }
 const refreshCheckerPin = suppliedArguments.has("--refresh-checker-pin");
+if (suppliedArguments.has("--print-commit")) {
+  if (suppliedArguments.size !== 1) fail("commit lookup must be used on its own");
+  console.log(RELEASE_READINESS_COMMIT);
+  process.exit(0);
+}
 if (refreshCheckerPin && suppliedArguments.size !== 1) {
   fail("checker pin refresh cannot be combined with checks");
 }

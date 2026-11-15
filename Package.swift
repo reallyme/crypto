@@ -127,7 +127,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/reallyme/codec",
-      exact: "0.4.2"
+      exact: "0.4.3"
     ),
     .package(
       url: "https://github.com/reallyme/CSecp256k1",

@@ -3429,15 +3429,15 @@ SPDX-License-Identifier: MIT OR Apache-2.0
             <sha256 value="f18b86453fbf05b8ef778541c0434b3ed58a1ae76ca54eee4f008556ed9a60bd" origin="Maven Central"/>
          </artifact>
       </component>
-      <component group="me.really" name="codec-android" version="0.4.2">
-         <artifact name="codec-android-0.4.2.aar">
-            <sha256 value="894e0ac9222deb329d471f5f63878d6275e14819fa37a8c8caffb1cf9d4dc582" origin="Maven Central"/>
+      <component group="me.really" name="codec-android" version="0.4.3">
+         <artifact name="codec-android-0.4.3.aar">
+            <sha256 value="58dc49b31e621a17996caecbba6e2eceaec572623d29dac3f4c25589d775b5e7" origin="Maven Central"/>
          </artifact>
-         <artifact name="codec-android-0.4.2.module">
-            <sha256 value="b21e9bb9d6d621690b4bbeda621cedc6c91576c3014ecf7bf6610070e254ea51" origin="Maven Central"/>
+         <artifact name="codec-android-0.4.3.module">
+            <sha256 value="b63b153499e8ba2f14e9f3386d369f6ccd99d4693945697f4b8145843395fb74" origin="Maven Central"/>
          </artifact>
-         <artifact name="codec-android-0.4.2.pom">
-            <sha256 value="260a666e0ddf55c327af7e40e2452730b7ffbbaf6c449b9e6f347d88bec9379f" origin="Maven Central"/>
+         <artifact name="codec-android-0.4.3.pom">
+            <sha256 value="377b3876016069d9fde392f15ff3171f5ed3347ffd44f4b84a294dcb93e17aa0" origin="Maven Central"/>
          </artifact>
       </component>
       <component group="net.java" name="jvnet-parent" version="1">

@@ -17,6 +17,7 @@ on:
       - "**/*.md"
       - "docs/**"
       - "!docs/maven-provenance.md"
+  workflow_dispatch:
   schedule:
     - cron: '30 12 * * 1'
 

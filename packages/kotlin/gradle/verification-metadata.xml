@@ -316,15 +316,15 @@ SPDX-License-Identifier: MIT OR Apache-2.0
             <sha256 value="841aa66b26affe554ed7cd2b2750df7221d313987e80731d5537c0c715c25ab5" origin="Maven Central"/>
          </artifact>
       </component>
-      <component group="me.really" name="codec" version="0.4.2">
-         <artifact name="codec-0.4.2.jar">
-            <sha256 value="c8b3cc32534b292a2a19ca8b61a28821eaf7242197177a13f5fabb194c022a5b" origin="Maven Central"/>
+      <component group="me.really" name="codec" version="0.4.3">
+         <artifact name="codec-0.4.3.jar">
+            <sha256 value="8230e722d93adaa90a9ed904fbd656fce7aee161bb76403dfdd1accb2d4fbe61" origin="Maven Central"/>
          </artifact>
-         <artifact name="codec-0.4.2.module">
-            <sha256 value="cbd84c2de3cb98f196fabe43b132a846c4bc158056ca1c9a45a17fea32c04247" origin="Maven Central"/>
+         <artifact name="codec-0.4.3.module">
+            <sha256 value="233d36589a9fdd8f6181c5824fa05681b47dbb82e9c1c7978d190983793a5b45" origin="Maven Central"/>
          </artifact>
-         <artifact name="codec-0.4.2.pom">
-            <sha256 value="27891335f220afb3a16a9a21a7f83bbe1e183e1dc6f6cad919da9718124b740c" origin="Maven Central"/>
+         <artifact name="codec-0.4.3.pom">
+            <sha256 value="509f3b8ad535f9df5d734757dfc70de6e4d7099cf97e64f0db0f345eddf701e3" origin="Maven Central"/>
          </artifact>
       </component>
       <component group="org.apiguardian" name="apiguardian-api" version="1.1.2">

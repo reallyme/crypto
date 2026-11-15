@@ -6,96 +6,13 @@
 name: Protobuf Checks
 
 on:
-  workflow_dispatch:
-  pull_request:
-    paths:
-      - "crates/proto/proto/**"
-      - "buf.yaml"
-      - "buf.gen.yaml"
-      - "crates/proto/**"
-      - "gen/**"
-      - "packages/ts/src/proto/generated/**"
-      - ".github/workflows/protobuf-ci.yml"
-      - "scripts/check_release_readiness.mjs"
-      - "scripts/run_pinned_release_readiness.mjs"
-      - "scripts/pinned_release_readiness.test.mjs"
-      - "scripts/crypto_operation_route_readiness.mjs"
-      - "scripts/workflow_gate_policy.mjs"
-      - "scripts/release-readiness/core.mjs"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "scripts/generate_protobuf.mjs"
-      - "scripts/proto_generation_policy.mjs"
-      - "scripts/redact_sdk_proto_debug.mjs"
-      - "scripts/native_buffa_readiness.mjs"
-      - "scripts/generate_error_contract.mjs"
-      - "scripts/generate_error_contract.test.mjs"
-      - "scripts/generate_contract_constants.mjs"
-      - "scripts/generate_contract_constants.test.mjs"
-      - "scripts/generate_hpke_constants.mjs"
-      - "scripts/generate_hpke_constants.test.mjs"
-      - "scripts/rust_source_tokens.mjs"
-      - "scripts/rust_source_tokens.test.mjs"
-      - "crates/hpke/src/constants.rs"
-      - "crates/hpke/src/identifiers.rs"
-      - "crates/hpke/src/base_p256.rs"
-      - "crates/hpke/src/generated/**"
-      - "crates/hpke/src/mlkem512.rs"
-      - "crates/hpke/src/mlkem1024p384.rs"
-      - "crates/hpke/src/secp256k1.rs"
-      - "crates/hpke/src/x448.rs"
-      - "scripts/proto_generation.test.mjs"
-      - "scripts/proto_scalar_policy.mjs"
-      - "scripts/proto_scalar_policy.test.mjs"
-  push:
-    branches:
-      - main
-    paths:
-      - "crates/proto/proto/**"
-      - "buf.yaml"
-      - "buf.gen.yaml"
-      - "crates/proto/**"
-      - "gen/**"
-      - "packages/ts/src/proto/generated/**"
-      - ".github/workflows/protobuf-ci.yml"
-      - "scripts/check_release_readiness.mjs"
-      - "scripts/run_pinned_release_readiness.mjs"
-      - "scripts/pinned_release_readiness.test.mjs"
-      - "scripts/crypto_operation_route_readiness.mjs"
-      - "scripts/workflow_gate_policy.mjs"
-      - "scripts/release-readiness/core.mjs"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "scripts/generate_protobuf.mjs"
-      - "scripts/proto_generation_policy.mjs"
-      - "scripts/redact_sdk_proto_debug.mjs"
-      - "scripts/native_buffa_readiness.mjs"
-      - "scripts/generate_error_contract.mjs"
-      - "scripts/generate_error_contract.test.mjs"
-      - "scripts/generate_contract_constants.mjs"
-      - "scripts/generate_contract_constants.test.mjs"
-      - "scripts/generate_hpke_constants.mjs"
-      - "scripts/generate_hpke_constants.test.mjs"
-      - "scripts/rust_source_tokens.mjs"
-      - "scripts/rust_source_tokens.test.mjs"
-      - "crates/hpke/src/constants.rs"
-      - "crates/hpke/src/identifiers.rs"
-      - "crates/hpke/src/base_p256.rs"
-      - "crates/hpke/src/generated/**"
-      - "crates/hpke/src/mlkem512.rs"
-      - "crates/hpke/src/mlkem1024p384.rs"
-      - "crates/hpke/src/secp256k1.rs"
-      - "crates/hpke/src/x448.rs"
-      - "scripts/proto_generation.test.mjs"
-      - "scripts/proto_scalar_policy.mjs"
-      - "scripts/proto_scalar_policy.test.mjs"
+  workflow_call:
+    outputs:
+      verified_sha:
+        value: ${{ jobs.verified.outputs.verified_sha }}
 
 permissions:
   contents: read
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || (github.event_name == 'push' && github.ref) || github.sha }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
 
 env:
   BUFFA_VERSION: 0.1.2
@@ -154,3 +71,14 @@ jobs:
       # committed-byte freshness through one maintenance pipeline.
       - name: Check release readiness generated freshness
         run: node scripts/run_pinned_release_readiness.mjs --generated-freshness
+
+  verified:
+    name: Record verified candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    needs: [protobuf]
+    outputs:
+      verified_sha: ${{ github.sha }}
+    steps:
+      - name: Record successful lane
+        run: echo "All required jobs verified this candidate"

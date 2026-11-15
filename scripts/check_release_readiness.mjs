@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import { readdirSync } from "node:fs";
+import { lstatSync, readdirSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
@@ -25,8 +25,23 @@ const { assertCryptoOperationRouteReadiness } = await import("./crypto_operation
 const { LOCKED_DEPENDENCY_AUDIT, REQUIRED_WORKFLOW_GATES, workflowGateViolation } =
   await import("./workflow_gate_policy.mjs");
 const { assertNativeBuffaReadiness } = await import("./native_buffa_readiness.mjs");
-// Environment configuration must not substitute an unreviewed core.
-const { createReleaseReadinessContext } = await import("./release-readiness/core.mjs");
+const localCore = new URL("./release-readiness/core.mjs", import.meta.url);
+const managedCoreUrl = process.env.RELEASE_READINESS_CORE_URL;
+if (managedCoreUrl !== undefined) {
+  try {
+    const corePath = new URL(managedCoreUrl);
+    const reviewedCore = readFileSync(localCore);
+    const status = lstatSync(corePath);
+    if (!status.isFile() || status.size !== reviewedCore.length ||
+        !reviewedCore.equals(readFileSync(corePath))) {
+      throw new Error("unreviewed shared runner core");
+    }
+  } catch {
+    console.error("release readiness check failed: shared runner core does not match the reviewed bytes");
+    process.exit(1);
+  }
+}
+const { createReleaseReadinessContext } = await import(managedCoreUrl ?? localCore.href);
 
 // The checker parses Cargo's registry output. Rust setup actions export
 // CARGO_TERM_COLOR=always, which otherwise inserts ANSI escapes into crate names
@@ -62,6 +77,8 @@ const {
   assertTypeScriptSourcePolicy,
   assertSwiftSourcePolicy,
   assertKotlinSourcePolicy,
+  assertRustReleasePolicy,
+  run,
   extractWorkflowSteps,
   readWorkflowStepInputs,
 } = readinessContext;
@@ -151,10 +168,10 @@ const cryptoProtoPackageVersion = "0.4.1";
 const typescriptPackageVersion = "0.4.1";
 const kotlinPackageVersion = "0.4.1";
 const kotlinAndroidPackageVersion = "0.4.1";
-const rustCodecVersion = "0.4.2";
-const tsCodecVersion = "0.4.2";
-const swiftCodecVersion = "0.4.2";
-const mavenCodecVersion = "0.4.2";
+const rustCodecVersion = "0.4.3";
+const tsCodecVersion = "0.4.3";
+const swiftCodecVersion = "0.4.3";
+const mavenCodecVersion = "0.4.3";
 const rustSemverBaselineCommit = "54de2955ebf73e9fd1c306eba207550b3716d767";
 const cargoSemverChecksVersion = "0.50.0";
 const buffaVersion = "0.1.2";
@@ -173,9 +190,10 @@ if (checkerArguments.length > 1 || checkerArguments.some((mode) => !checkerModes
 const checkerMode = checkerArguments[0];
 const releasePackagesMode = checkerMode === "--release-packages";
 const generatedFreshnessMode = checkerMode === "--generated-freshness";
-const ciPolicyMode = checkerMode === "--ci-policy";
+const managedPolicy = managedCoreUrl !== undefined && checkerMode === undefined;
+const ciPolicyMode = checkerMode === "--ci-policy" || managedPolicy;
 const sdkSourceMode = checkerMode?.endsWith("-source") === true ? checkerMode : undefined;
-const ciReadinessCommand = `${releaseReadinessCommand} --ci-policy`;
+
 const requiredLanes = ["swift", "kotlin_jvm", "kotlin_android", "typescript_wasm"];
 const allowedStatuses = new Set(["supported", "provider_aware", "partial", "unsupported"]);
 const allowedFallbacks = new Set([
@@ -432,14 +450,14 @@ const assertCodecDependencyProvenance = () => {
   }
 
   const registryCodecChecksums = new Map([
-    ["reallyme-codec", "04d9adee15be559d90a4c8a51182af4dab230bc73ce752096cb1cb88b909ce7d"],
-    ["reallyme-codec-base64url", "aff2949e3ac2498af4747c3a7d82d80b788a464035f668153c4d237b9a582a95"],
-    ["reallyme-codec-jcs", "d658fc4c8bed542073d483e8543de6703154ba33ef7907d2ef54bce087fd210c"],
-    ["reallyme-codec-multibase", "22796124c9f786dcc8bc669c3b408e5018f48995c51bdff46234eb1f5e60c328"],
-    ["reallyme-codec-multicodec", "a1df902e2f8cad07b0b4f528dbf1408e56a466c36e45b38e0b6aae51cd45dcad"],
-    ["reallyme-codec-multikey", "9918db7b11bb8d5ad1914f3ae70e4a6991c200d4a256fec76108f41b6d1adeda"],
-    ["reallyme-codec-pem", "9c3f9abacd6daf0ab6b7f5e85d08a4c0f9bb00d23b8e60d241fe1507397722c6"],
-    ["reallyme-codec-proto", "f2ef69a50f005eee4540d76dbbd5c3db8a33a4c12082563d323b3681f2d708e3"],
+    ["reallyme-codec", "e53a0c5596946d755bd97a0d6fe330fe57d2c34fc69df7a02297630dd9cd409e"],
+    ["reallyme-codec-base64url", "6fe9960da38e6a14c3bf3eec4f0c7905bf7b314eee0531c0347138c4a25bf5ff"],
+    ["reallyme-codec-jcs", "0b72760f71b7060022ad75c0e6125b887677a5d69d8f765b6628ce5fd8d33767"],
+    ["reallyme-codec-multibase", "1aa31e131dce09d12676fee371344d292d32cfd69e69c02493cb9eecf98e02ff"],
+    ["reallyme-codec-multicodec", "0c04438bbb69d9ed74e7ba26d327058d41bc01956d2da23a77c3d7eb965d8081"],
+    ["reallyme-codec-multikey", "59b548f9d8140a04eb4ae9006f5e2d03004ed652e7a652c40c060427bad4db36"],
+    ["reallyme-codec-pem", "b71b6140fd37c924e308d342baa38f36be47330d3032f1ece2c8ff51a3ec04c1"],
+    ["reallyme-codec-proto", "6672a3b72134b10877d33da2763ff4caf90881d6820dd0868e81f6d525678cfd"],
   ]);
   for (const lockPath of ["Cargo.lock", "fuzz/Cargo.lock"]) {
     for (const [packageName, checksum] of registryCodecChecksums) {
@@ -1102,7 +1120,7 @@ assertContains("Package.swift", "if !useRuntimeFfiProvider");
 assertContains("Package.swift", 'cryptoTargetDependencies.append("ReallyMeCryptoFFI")');
 assertContains("Package.swift", 'cryptoSwiftSettings.append(.define("REALLYME_CRYPTO_LINKED_FFI"))');
 assertNotContains("Package.swift", "build/swift/ReallyMeCryptoFFI.xcframework");
-assertContains(".github/workflows/rust-ci.yml", "touch .reallyme-crypto-runtime-ffi");
+assertContains(".github/workflows/release-readiness.yml", "touch .reallyme-crypto-runtime-ffi");
 assertContains(".github/workflows/swift-package-preflight.yml", "touch .reallyme-crypto-runtime-ffi");
 assertContains(".github/workflows/swift-package-preflight.yml", "rm .reallyme-crypto-runtime-ffi");
 assertContains(
@@ -1712,7 +1730,7 @@ assertContains(
   "sha256Hex(bytes)",
 );
 
-assertContains("README.md", "actions/workflows/rust-ci.yml/badge.svg");
+assertContains("README.md", "actions/workflows/ci.yml/badge.svg");
 assertContains("README.md", "PROVIDER_POLICY.md");
 assertContains("README.md", "CONTRACT.md");
 assertContains("README.md", "The protobuf schema is the source of truth");
@@ -1740,9 +1758,6 @@ assertContains("RELEASE_CHECKLIST.md", "its exact\n  checksum");
 assertContains("RELEASE_CHECKLIST.md", "`me.really:crypto-android`");
 assertContains("RELEASE_CHECKLIST.md", "`@reallyme/crypto`");
 assertContains("RELEASE_CHECKLIST.md", "artifact bytes");
-assertContains(".github/workflows/rust-ci.yml", "workflow_dispatch:");
-assertContains(".github/workflows/rust-ci.yml", "!PROVIDER_POLICY.md");
-assertContains(".github/workflows/rust-ci.yml", "!CONTRACT.md");
 assertContains(".github/workflows/rust-ci.yml", "cargo package --locked -p reallyme-crypto --list");
 assertContains(".github/workflows/rust-ci.yml", "Verify OpenMLS HPKE dependency isolation");
 for (const [path, requiredCommands] of REQUIRED_WORKFLOW_GATES) {
@@ -1751,7 +1766,7 @@ for (const [path, requiredCommands] of REQUIRED_WORKFLOW_GATES) {
 for (const command of [
   "cargo clippy --locked --workspace --all-targets --all-features -- -D warnings",
   "cargo nextest run --locked --workspace --no-default-features --features native",
-  "cargo nextest run --locked --workspace --all-features",
+  "cargo +1.100.0 test --locked --workspace --all-features",
 ]) {
   assertContains(".github/workflows/rust-ci.yml", command);
 }
@@ -1764,9 +1779,8 @@ assertContains(
   "p256|p521|k256|x448|reallyme-crypto-secp256k1|reallyme-crypto-x448",
 );
 assertContains(".github/workflows/rust-ci.yml", "node scripts/generate_provider_matrix.mjs --check");
-assertContains(".github/workflows/rust-ci.yml", ciReadinessCommand);
-assertContains(".github/workflows/rust-ci.yml", "REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI");
-assertContains(".github/workflows/rust-ci.yml", "node packages/ts/scripts/browser-wasm-test.mjs");
+assertContains(".github/workflows/release-readiness.yml", "REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI");
+assertContains(".github/workflows/release-readiness.yml", "node packages/ts/scripts/browser-wasm-test.mjs");
 assertContains(".github/workflows/rust-ci.yml", "bash scripts/check_wasm_browser_backends.sh");
 assertContains(".github/workflows/rust-ci.yml", "toolchain: 1.96.0");
 assertContains(".github/workflows/rust-ci.yml", "--target aarch64-linux-android");
@@ -1790,27 +1804,15 @@ for (const workflow of [
   assertNotContains(workflow, "tool: wasm-bindgen-cli@");
   assertNotContains(workflow, "npm ci --prefix packages/ts");
 }
-assertContains("scripts/maven-central-bundle.local.sh", "verify_release_preflight");
-assertContains("scripts/maven-central-bundle.local.sh", "NATIVE_RESOURCE_RUN_ID");
-assertContains("scripts/maven-central-bundle.local.sh", "RELEASE_ATTESTATION_WRITE_GITHUB_OUTPUT=1");
-assertContains("scripts/maven-central-bundle.local.sh", "gh run download \"$run_id\" --repo reallyme/crypto");
-assertContains(".github/workflows/fuzz.yml", "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9");
+assertContains("scripts/maven-central-bundle.local.sh", "scripts/stage-maven-central-bundle.sh");
 assertContains(".github/workflows/fuzz.yml", "cargo install cargo-fuzz --version 0.13.2 --locked");
-assertContains(".github/workflows/fuzz.yml", "crates/crypto/**");
-assertContains(".github/workflows/fuzz.yml", "crates/wasm/**");
-assertNotContains(".github/workflows/fuzz.yml", "crates/crypto/src/operation_response.rs");
-assertContains(".github/workflows/fuzz.yml", "crates/proto/**");
-assertContains(".github/workflows/fuzz.yml", "crates/p384/**");
-assertContains(".github/workflows/fuzz.yml", "crates/p521/**");
-assertContains(".github/workflows/fuzz.yml", "crates/secp256k1/**");
-assertContains(".github/workflows/fuzz.yml", "crates/jwk/**");
-assertContains(".github/workflows/fuzz.yml", "crates/jwk-multikey/**");
-assertContains(".github/workflows/fuzz.yml", "operation_response");
-assertContains(".github/workflows/fuzz.yml", "jwk_multikey");
-assertContains(".github/workflows/fuzz.yml", "key_encodings");
-assertNotContains(".github/workflows/fuzz.yml", "proto_result_envelope");
-assertContains(".github/workflows/fuzz.yml", "post_quantum_encodings");
-assertContains(".github/workflows/fuzz.yml", "operation_family_boundaries");
+assertContains(".github/workflows/fuzz.yml", "cargo +nightly-2026-07-01 fuzz build");
+assertContains(".github/workflows/fuzz-scheduled.yml", "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9");
+assertContains(".github/workflows/fuzz-scheduled.yml", "cargo +nightly-2026-07-01 fuzz run");
+for (const target of ["operation_response", "jwk_multikey", "key_encodings", "post_quantum_encodings", "operation_family_boundaries"]) {
+  assertContains(".github/workflows/fuzz-scheduled.yml", target);
+}
+assertNotContains(".github/workflows/fuzz-scheduled.yml", "proto_result_envelope");
 assertContains("fuzz/Cargo.toml", 'name = "operation_response"');
 assertContains("fuzz/Cargo.toml", 'name = "jwk_multikey"');
 assertContains("fuzz/Cargo.toml", 'name = "key_encodings"');
@@ -2320,13 +2322,12 @@ assertContains("buf.yaml", "- path: crates/proto/proto");
 assertContains(".github/workflows/protobuf-ci.yml", `BUFFA_VERSION: ${buffaVersion}`);
 assertContains(".github/workflows/protobuf-ci.yml", "BUF_VERSION: 1.75.0");
 assertContains(".github/workflows/protobuf-ci.yml", "setup_only: true");
-assertContains(".github/workflows/protobuf-ci.yml", "scripts/release-readiness/core.mjs");
 assertContains(".github/workflows/protobuf-ci.yml", "scripts/run_pinned_release_readiness.mjs");
 assertContains(".github/workflows/protobuf-ci.yml", "buf breaking --against '.git#ref=e57caf7a035c1ffe33aad0038d603b793a69b28a,subdir=crates/proto/proto'");
 // The full Rust suite executes immutable-selector and wire-golden tests once.
 // Protobuf CI independently verifies generation against committed bytes.
 assertNotContains(".github/workflows/protobuf-ci.yml", "cargo test -p");
-assertContains(".github/workflows/rust-ci.yml", "cargo nextest run --locked --workspace --all-features");
+assertContains(".github/workflows/rust-ci.yml", "cargo +1.100.0 test --locked --workspace --all-features");
 assertContains("scripts/release-readiness/core.mjs", "assertReallyMeProtobufReleasePolicy");
 const primaryOperationBoundaryPolicy = {
   protoPath: "crates/proto/proto/reallyme/crypto/v1/crypto.proto",
@@ -2381,15 +2382,10 @@ const repositoryPolicy = {
   nodeWorkflows: {
     nodeVersion: "26",
   },
-  cargoFuzz: {
-    workflow: ".github/workflows/fuzz.yml",
-    version: "0.13.2",
-    minimumInstallations: 2,
-    requiredInstallSteps: [
-      { job: "build", name: "Install cargo-fuzz" },
-      { job: "scheduled", name: "Install cargo-fuzz" },
-    ],
-  },
+  cargoFuzz: [
+    { workflow: ".github/workflows/fuzz.yml", job: "build" },
+    { workflow: ".github/workflows/fuzz-scheduled.yml", job: "scheduled" },
+  ],
   cargoWorkspace: {
     requireWorkspaceLints: true,
     requirePublishInclude: true,
@@ -2465,11 +2461,11 @@ const repositoryPolicy = {
           ],
         },
         {
-          path: ".github/workflows/rust-ci.yml",
+          path: ".github/workflows/release-readiness.yml",
           required: [
-            "name: swift package + vector conformance",
             "runs-on: macos-26",
-            "run: node scripts/run_pinned_release_readiness.mjs --swift-source",
+            "run: node .release-readiness/scripts/run-consumer-check.mjs",
+            "REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI",
           ],
         },
       ],
@@ -2697,7 +2693,6 @@ const repositoryPolicy = {
     {
       path: ".github/workflows/rust-ci.yml",
       runSteps: [
-        { name: "Release readiness", job: "rust", run: ciReadinessCommand },
         { name: "Dependency policy", job: "rust", run: LOCKED_DEPENDENCY_AUDIT },
       ],
       usesSteps: [{ name: "Install cargo-deny", job: "rust", action: "taiki-e/install-action" }],
@@ -2735,102 +2730,43 @@ if (sdkSourceMode !== undefined) {
 }
 
 const assertReleaseWorkflowCredentialGates = () => {
-  const releaseWorkflows = [
-    ".github/workflows/crates-release.yml",
-    ".github/workflows/npm-package-release.yml",
-    ".github/workflows/swift-package-release.yml",
-    ".github/workflows/kotlin-android-package-release.yml",
+  const lanes = [
+    ["crates", "crates-package-preflight", "crates-release"],
+    ["npm", "npm-package-preflight", "npm-package-release"],
+    ["swift", "swift-package-preflight", "swift-package-release"],
+    ["maven", "kotlin-android-package-preflight", "kotlin-android-package-release"],
   ];
-  for (const path of releaseWorkflows) {
-    assertContains(path, "Verify reviewed release SHA");
-    assertContains(path, '[ "${GITHUB_SHA}" != "${release_sha}" ]');
-    assertContains(path, 'SOURCE_SHA: ${{ inputs.source_sha }}');
-    assertContains(path, '[ "${GITHUB_REF}" != refs/heads/main ] || [ "${SOURCE_SHA}" != "${release_sha}" ]');
-    assertContains(path, "resolved release SHA does not match the workflow run head SHA");
-    assertContains(path, "node scripts/verify_release_attestation.mjs");
-    assertContains(path, "actions: read");
-    assertContains(path, "GH_TOKEN: ${{ github.token }}");
-    assertContains(path, "ref: ${{ github.sha }}");
-    assertNotContains(path, "ref: ${{ needs.verify-release-sha.outputs.release_sha }}");
-    assertNotContains(path, "if: inputs.publish");
+  for (const [ecosystem, preflight, publish] of lanes) {
+    const preflightPath = `.github/workflows/${preflight}.yml`;
+    const publishPath = `.github/workflows/${publish}.yml`;
+    assertContains(preflightPath, `run-name: Preflight ${ecosystem} ` + "${{ inputs.version }} ${{ inputs.source_sha }}");
+    assertContains(preflightPath, "Show release form inputs");
+    assertContains(preflightPath, "Verify dependency security for the candidate");
+    assertContains(preflightPath, "Record verified CI");
+    assertContains(publishPath, "git merge-base --is-ancestor");
+    assertContains(publishPath, "Download verified package");
+    assertContains(publishPath, "digest-mismatch: error");
+    assertNotContains(publishPath, "if: inputs.publish");
   }
-
-  for (const path of [
-    ".github/workflows/crates-package-preflight.yml",
-    ".github/workflows/npm-package-preflight.yml",
-    ".github/workflows/swift-package-preflight.yml",
-    ".github/workflows/kotlin-android-package-preflight.yml",
-  ]) {
-    assertContains(path, "release_sha:");
-    assertContains(path, "resolved release SHA is not the current origin/main tip");
-    assertContains(path, '[ "${GITHUB_SHA}" != "${release_sha}" ]');
-    assertContains(path, "resolved release SHA does not match the workflow run head SHA");
-    assertContains(path, "Show release form inputs");
-    assertContains(path, 'SOURCE_SHA: ${{ needs.verify-source-sha.outputs.release_sha }}');
-    assertContains(path, "ref: ${{ github.sha }}");
-    assertNotContains(path, "ref: ${{ needs.verify-source-sha.outputs.release_sha }}");
-  }
-
-  assertContains("scripts/verify_release_attestation.mjs", 'const CODE_CHECK_WORKFLOW = "rust-ci.yml"');
-  assertContains("scripts/verify_release_attestation.mjs", '"dependency-security.yml"');
-  assertContains("scripts/verify_release_attestation.mjs", '"crates-package-preflight.yml"');
-  assertContains("scripts/verify_release_attestation.mjs", '"swift-package-preflight.yml"');
-  assertContains("scripts/verify_release_attestation.mjs", '"kotlin-android-package-preflight.yml"');
-  assertContains("scripts/verify_release_attestation.mjs", '"npm-package-preflight.yml"');
-  assertContains("scripts/verify_release_attestation.mjs", 'latest.status !== "completed"');
-  assertContains("scripts/verify_release_attestation.mjs", 'latest.conclusion !== "success"');
-  assertContains("scripts/verify_release_attestation.mjs", "requireSuccessfulJobs(");
-  assertContains(
-    ".github/workflows/crates-package-preflight.yml",
-    "ref: v0.3.11",
-  );
-  assertContains(
-    "scripts/prepare_semver_baseline.mjs",
-    `RUST_SEMVER_BASELINE_COMMIT = "${rustSemverBaselineCommit}"`,
-  );
 
   assertContains(".github/workflows/crates-release.yml", "environment: crates-io-release");
-  assertContains(".github/workflows/crates-release.yml", "CARGO_REGISTRY_TOKEN is required");
   assertContains(".github/workflows/crates-release.yml", "CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}");
-  assertContains("scripts/publish_crates_in_order.mjs", '"--no-verify"');
-  assertContains(".github/workflows/crates-release.yml", "Reverify release attestation without registry credentials");
-  const cratesRelease = readText(".github/workflows/crates-release.yml");
-  const attestationStep = cratesRelease.indexOf("- name: Reverify release attestation without registry credentials");
-  const publishStep = cratesRelease.indexOf("- name: Publish crates in dependency order", attestationStep);
-  if (attestationStep < 0 || publishStep < 0 ||
-      cratesRelease.slice(attestationStep, publishStep).includes("CARGO_REGISTRY_TOKEN")) {
-    fail("the crates release attestation must run before the credentialed publish step without a registry token");
-  }
+  assertContains(".github/workflows/crates-release.yml", "CRATE_ARCHIVE_DIR:");
+  assertContains("scripts/publish_crates_in_order.mjs", "packaged bytes differ from the reviewed preflight archive");
 
   assertContains(".github/workflows/npm-package-release.yml", "environment: npm-release");
-  assertContains(".github/workflows/npm-package-release.yml", "NPM_TOKEN is required");
   assertContains(".github/workflows/npm-package-release.yml", "NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}");
-  assertContains(".github/workflows/npm-package-release.yml", "--provenance --access public");
+  assertContains(".github/workflows/npm-package-release.yml", "--provenance --access public --ignore-scripts");
   assertContains(".github/workflows/npm-package-release.yml", "sha256sum --check");
-  assertContains(
-    ".github/workflows/npm-package-release.yml",
-    "EXPECTED_TARBALL_SHA256: ${{ needs.package.outputs.tarball_sha256 }}",
-  );
-  assertContains(
-    ".github/workflows/npm-package-release.yml",
-    'actual_tarball_sha256="$(sha256sum',
-  );
-  assertContains(".github/workflows/npm-package-release.yml", "actions/upload-artifact@");
-  assertContains(".github/workflows/npm-package-release.yml", "actions/download-artifact@");
+  assertNotContains(".github/workflows/npm-package-release.yml", "npm ci");
 
   assertContains(".github/workflows/kotlin-android-package-release.yml", "environment: maven-release");
-  assertContains(".github/workflows/kotlin-android-package-release.yml", "remote Maven publishing credentials are incomplete");
-  assertContains(".github/workflows/kotlin-android-package-release.yml", "-Preallyme.maven.requireRemote=true");
-  assertNotContains(".github/workflows/kotlin-android-package-release.yml", "remote publish is skipped");
+  assertContains(".github/workflows/kotlin-android-package-release.yml", "promote_maven_publications.sh");
+  assertNotContains(".github/workflows/kotlin-android-package-release.yml", "gradlew");
 
   assertContains(".github/workflows/swift-package-release.yml", "environment: github-release");
-  assertContains(".github/workflows/swift-package-release.yml", "verify_swift_release_artifact.mjs");
-  assertContains(".github/workflows/swift-package-release.yml", "Download verified Swift artifact");
   assertContains(".github/workflows/swift-package-release.yml", "GitHub release v${RELEASE_VERSION} already exists");
-  assertContains(
-    ".github/workflows/swift-package-release.yml",
-    "Git tag v${RELEASE_VERSION} already targets a different commit",
-  );
+  assertContains(".github/workflows/swift-package-release.yml", "Git tag v${RELEASE_VERSION} already targets a different commit");
   assertNotContains(".github/workflows/swift-package-release.yml", "--clobber");
   assertNotContains(".github/workflows/swift-package-release.yml", "gh release edit");
 };
@@ -2842,12 +2778,15 @@ const assertReleaseWorkflowPermissions = () => {
     ".github/workflows/fuzz.yml",
     ".github/workflows/protobuf-ci.yml",
     ".github/workflows/jvm-native-resources.yml",
-    ".github/workflows/crates-package-preflight.yml",
-    ".github/workflows/npm-package-preflight.yml",
-    ".github/workflows/swift-package-preflight.yml",
-    ".github/workflows/kotlin-android-package-preflight.yml",
   ]) {
     assertWorkflowPermissionsPolicy({ path, workflow: readOnlyWorkflow, jobs: {} });
+  }
+  for (const name of ["crates", "npm", "swift", "kotlin-android"]) {
+    assertWorkflowPermissionsPolicy({
+      path: `.github/workflows/${name}-package-preflight.yml`,
+      workflow: readOnlyWorkflow,
+      jobs: { "verify-source-sha": { actions: "read", contents: "read" } },
+    });
   }
   assertWorkflowPermissionsPolicy({
     path: ".github/workflows/crates-release.yml",
@@ -2879,8 +2818,7 @@ const assertReleaseWorkflowPermissions = () => {
     workflow: readOnlyWorkflow,
     jobs: {
       "verify-release-sha": { actions: "read", contents: "read" },
-      "maven-package": { actions: "read", contents: "read" },
-      "android-aar": { actions: "read", contents: "read" },
+      publish: { actions: "read", contents: "read" },
     },
   });
 };
@@ -2932,9 +2870,25 @@ const assertRepositoryPolicy = () => {
   assertReallyMeVendoredCorePolicy(repositoryPolicy.vendoredCore);
   assertWorkflowActionsPinned(repositoryPolicy.workflowActions);
   assertNodeWorkflowJobsPinNode(repositoryPolicy.nodeWorkflows);
-  assertCargoFuzzWorkflowPolicy(repositoryPolicy.cargoFuzz);
+  for (const { workflow, job } of repositoryPolicy.cargoFuzz) {
+    assertCargoFuzzWorkflowPolicy({
+      workflow, version: "0.13.2", minimumInstallations: 1,
+      requiredInstallSteps: [{ job, name: "Install cargo-fuzz" }],
+    });
+  }
   assertCargoWorkspacePolicy(repositoryPolicy.cargoWorkspace);
   assertRustSourcePolicy(repositoryPolicy.rustSource);
+  if (managedPolicy) {
+    const workspace = JSON.parse(run("cargo", ["metadata", "--locked", "--no-deps", "--format-version", "1"], { capture: true }).stdout);
+    const workflow = ".github/workflows/rust-ci.yml";
+    assertRustReleasePolicy({
+      release: { workflow, job: "rust", step: "Test on the release toolchain" },
+      msrv: workspace.packages.filter(({ publish }) => publish?.length !== 0)
+        .map(({ name }) => ({ package: name, workflow, job: "rust-msrv", step: `Test ${name} at its declared MSRV` })),
+      artifacts: [],
+      dependencyReview: { workflow, job: "rust", step: "Dependency policy" },
+    });
+  }
   if (repositoryPolicy.typescriptSource !== undefined) assertTypeScriptSourcePolicy(repositoryPolicy.typescriptSource);
   if (repositoryPolicy.swiftSource !== undefined) assertSwiftSourcePolicy(repositoryPolicy.swiftSource);
   if (repositoryPolicy.kotlinSource !== undefined) assertKotlinSourcePolicy(repositoryPolicy.kotlinSource);
@@ -2946,9 +2900,6 @@ const assertRepositoryPolicy = () => {
     generatedFreshnessMode,
     buffaVersion,
     protoPath: primaryOperationBoundaryPolicy.protoPath,
-    paths: ["scripts/generate_protobuf.mjs",
-      "scripts/proto_generation_policy.mjs", "scripts/redact_sdk_proto_debug.mjs",
-      "scripts/native_buffa_readiness.mjs", "scripts/proto_scalar_policy.mjs"],
   });
   assertCargoMetadataPolicy(repositoryPolicy.cargoMetadata);
   assertTextPolicy(repositoryPolicy.text);
@@ -3031,10 +2982,7 @@ assertContains(
   "scripts/vendor_external_vectors.mjs",
   "await checkCommittedCorpus(provenance, requested.map((name) => SOURCES[name].source_id))",
 );
-assertContains(
-  ".github/workflows/kotlin-android-package-release.yml",
-  "write_native_manifest.mjs build/kotlin-native-resources/me/really/crypto/native build/kotlin-native-resources/me/really/crypto/native/native-manifest.json",
-);
+assertNotContains(".github/workflows/kotlin-android-package-release.yml", "write_native_manifest.mjs");
 assertContains(
   ".github/workflows/kotlin-android-package-preflight.yml",
   "write_native_manifest.mjs build/kotlin-native-resources/me/really/crypto/native build/kotlin-native-resources/me/really/crypto/native/native-manifest.json",
@@ -3132,9 +3080,6 @@ if (denyInstallerInputs.size !== 3 || denyInstallerInputs.get("tool") !== "cargo
 }
 assertContains(".github/workflows/rust-ci.yml", "tool: cargo-audit@0.22.2");
 for (const path of [
-  ".github/workflows/rust-ci.yml",
-  ".github/workflows/protobuf-ci.yml",
-  ".github/workflows/fuzz.yml",
   ".github/workflows/dependency-security.yml",
   ".github/workflows/codeql.yml",
 ]) {
@@ -3187,7 +3132,7 @@ assertContains(
 );
 assertContains(kotlinPreflightWorkflow, "verifyReleaseAarContainsJniLibs");
 assertContains(kotlinPreflightWorkflow, "verifyAndroidJniLibs");
-assertContains(kotlinPreflightWorkflow, "publishToMavenLocal");
+assertContains(kotlinPreflightWorkflow, "publishAndroidReleasePublicationToLocalReleaseRepository");
 assertContains(kotlinPreflightWorkflow, "packages/kotlin-android/gradlew");
 assertContains(kotlinPreflightWorkflow, gradleWrapperValidationAction);
 assertContains(kotlinPreflightWorkflow, "--dependency-verification strict");
@@ -3195,23 +3140,7 @@ assertNotContains(kotlinPreflightWorkflow, "--no-dependency-verification");
 assertNotContains(kotlinPreflightWorkflow, "--dependency-verification off");
 
 const kotlinReleaseWorkflow = ".github/workflows/kotlin-android-package-release.yml";
-assertContains(kotlinReleaseWorkflow, "Maven package with bundled JNI");
-assertContains(kotlinReleaseWorkflow, "Android AAR with bundled JNI");
-assertContains(kotlinReleaseWorkflow, "verifyAndroidJniLibs");
-assertContains(kotlinReleaseWorkflow, gradleWrapperValidationAction);
-assertContains(kotlinReleaseWorkflow, "--dependency-verification strict");
-assertContains(kotlinReleaseWorkflow, "verify_release_attestation.mjs");
-assertContains(kotlinReleaseWorkflow, "linux_x86_64_sha256:");
-assertContains(
-  kotlinReleaseWorkflow,
-  "verify_native_artifact_handoff.mjs verify build/kotlin-native-resources",
-);
-assertContains(
-  kotlinReleaseWorkflow,
-  "NATIVE_SHA256_WINDOWS_X86_64: ${{ needs.jvm-native.outputs.windows_x86_64_sha256 }}",
-);
-assertNotContains(kotlinReleaseWorkflow, "--no-dependency-verification");
-assertNotContains(kotlinReleaseWorkflow, "--dependency-verification off");
+assertContains(kotlinReleaseWorkflow, "Sign and publish verified Maven packages");
 
 const swiftPreflightWorkflow = ".github/workflows/swift-package-preflight.yml";
 assertContains(swiftPreflightWorkflow, "REALLYME_CRYPTO_FFI_LIBRARY_PATH");
@@ -3232,10 +3161,9 @@ assertSubstringsInOrder(swiftPreflightWorkflow, [
 
 const swiftReleaseWorkflow = ".github/workflows/swift-package-release.yml";
 assertContains(swiftReleaseWorkflow, "ReallyMeCryptoFFI.xcframework.zip");
-assertContains(swiftReleaseWorkflow, "Download attested Swift artifact");
+assertContains(swiftReleaseWorkflow, "Download verified package");
 assertContains(swiftReleaseWorkflow, "preflight_run_id");
 assertContains(swiftReleaseWorkflow, "run-id: ${{ needs.verify-release-sha.outputs.preflight_run_id }}");
-assertContains(swiftReleaseWorkflow, "RELEASE_ATTESTATION_PREFLIGHT_RUN_ID");
 assertContains(swiftReleaseWorkflow, "Bind release manifest to verified Swift artifact");
 assertContains(swiftReleaseWorkflow, "Verify SwiftPM manifest and downloaded artifact");
 assertNotContains(swiftReleaseWorkflow, "run_pinned_release_readiness.mjs --release-packages");
@@ -3245,12 +3173,11 @@ assertContains(swiftReleaseWorkflow, 'git show "${tag_target}:Package.swift"');
 assertContains(swiftReleaseWorkflow, '"${RUNNER_TEMP}/tagged-Package.swift"');
 assertContains(swiftReleaseWorkflow, 'node scripts/extract_release_notes.mjs "${RELEASE_VERSION}"');
 assertContains(swiftReleaseWorkflow, '--notes-file "${RUNNER_TEMP}/release-notes.md"');
-assertContains(swiftReleaseWorkflow, "verify_release_attestation.mjs");
 assertContains(swiftReleaseWorkflow, "gh release create");
 assertContains(swiftReleaseWorkflow, "--verify-tag");
 assertNotContains(swiftReleaseWorkflow, "scripts/build_swift_xcframework.sh");
 assertSubstringsInOrder(swiftReleaseWorkflow, [
-  "Download attested Swift artifact",
+  "Download verified package",
   "Bind manifest to attested Swift artifact",
   "Verify SwiftPM manifest and downloaded artifact",
   "Download verified Swift artifact",
@@ -3275,28 +3202,20 @@ for (const workflow of [
 ]) {
   assertContains(`.github/workflows/${workflow}.yml`, `default: ${rustRootVersion}`);
 }
-assertContains(".github/workflows/npm-package-release.yml", "node scripts/run_pinned_release_readiness.mjs --release-packages");
-assertContains(".github/workflows/npm-package-release.yml", "wasm-pack@0.15.1");
-assertContains(".github/workflows/npm-package-release.yml", "wasm-bindgen-cli@0.2.130");
-assertContains(".github/workflows/npm-package-release.yml", "npm test");
-assertContains(".github/workflows/npm-package-release.yml", "npm run pack:check");
-assertContains(".github/workflows/npm-package-release.yml", "npm pack --ignore-scripts");
+assertContains(".github/workflows/npm-package-preflight.yml", "node scripts/run_pinned_release_readiness.mjs --release-packages");
+assertContains(".github/workflows/npm-package-preflight.yml", "wasm-pack@0.15.1");
+assertContains(".github/workflows/npm-package-preflight.yml", "wasm-bindgen-cli@0.2.130");
+assertContains(".github/workflows/npm-package-preflight.yml", "npm test");
+assertContains(".github/workflows/npm-package-preflight.yml", "npm run pack:check");
+assertContains(".github/workflows/npm-package-preflight.yml", "npm pack --ignore-scripts");
 assertContains(".github/workflows/npm-package-release.yml", "reallyme-crypto-${RELEASE_VERSION}.tgz");
 
 assertContains(".github/workflows/crates-package-preflight.yml", "node scripts/check_rust_semver.mjs");
-assertContains(".github/workflows/crates-package-preflight.yml", "node scripts/publish_crates_in_order.mjs order");
 assertContains(".github/workflows/crates-package-preflight.yml", "cargo publish --workspace --dry-run --locked");
 assertNotContains(".github/workflows/crates-package-preflight.yml", "node scripts/publish_crates_in_order.mjs inspect");
-assertNotContains(".github/workflows/crates-package-preflight.yml", "run_pinned_release_readiness.mjs");
 assertContains("deny.toml", 'yanked = "deny"');
-assertContains(".github/workflows/crates-release.yml", "verify_release_attestation.mjs");
 assertNotContains(".github/workflows/crates-release.yml", "node scripts/publish_crates_in_order.mjs inspect");
-assertContains(
-  ".github/workflows/crates-release.yml",
-  "RELEASE_VERSION: ${{ needs.verify-release-sha.outputs.release_version }}",
-);
 assertNotContains("scripts/publish_crates_in_order.mjs", "REALLYME_CRATES_ALLOW_ALREADY_PUBLISHED");
-assertContains("scripts/publish_crates_in_order.mjs", "RELEASE_VERSION must be set when publishing crates");
 assertContains("scripts/publish_crates_in_order.mjs", "publishWithRetries");
 assertContains(
   "scripts/publish_crates_in_order.mjs",
