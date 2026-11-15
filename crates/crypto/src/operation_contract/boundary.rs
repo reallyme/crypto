@@ -18,6 +18,23 @@ use zeroize::Zeroizing;
 use super::error::error_response;
 use super::request::process_operation_request;
 
+#[cfg(all(kani, feature = "native", feature = "aes", feature = "hpke-api"))]
+#[path = "boundary/proof_tests.rs"]
+mod proof_tests;
+
+#[cfg(all(
+    kani,
+    feature = "native",
+    feature = "ed25519",
+    not(any(
+        feature = "aes",
+        feature = "aes-gcm-siv",
+        feature = "chacha20-poly1305"
+    ))
+))]
+#[path = "boundary/restricted_dispatch_proof_tests.rs"]
+mod restricted_dispatch_proofs;
+
 /// Execute a binary generated-protobuf crypto operation request and return the
 /// generated operation response contract.
 #[must_use]

@@ -83,3 +83,7 @@ fn subtract_scalar(
     }
     Ok(difference)
 }
+
+#[cfg(kani)]
+#[path = "normalize_signature/proof_tests.rs"]
+mod proof_tests;

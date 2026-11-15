@@ -139,3 +139,6 @@ macro_rules! dispatch_export_aead {
         }
     }};
 }
+
+#[cfg(kani)]
+mod proof_tests;

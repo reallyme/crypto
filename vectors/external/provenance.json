@@ -97,6 +97,18 @@
         "declared": "MIT",
         "note": "RFC 6070-derived PBKDF2-HMAC-SHA2 vectors; MIT-licensed, pinned by commit with a per-file hash."
       }
+    },
+    {
+      "source_id": "hpke-pq",
+      "name": "Post-Quantum HPKE draft-05 test vectors (IETF HPKE working group)",
+      "website_url": "https://github.com/hpkewg/hpke-pq",
+      "source_tree_url": "https://github.com/hpkewg/hpke-pq/tree/6433c8fce0b8b749dfc86c1095081a88698ccfab",
+      "commit": "6433c8fce0b8b749dfc86c1095081a88698ccfab",
+      "retrieved_at": "2026-11-14",
+      "license": {
+        "declared": "IETF Trust Legal Provisions (BCP 78/79)",
+        "note": "Published Appendix A test vectors; upstream LICENSE.md refers to CONTRIBUTING.md for IETF contribution terms."
+      }
     }
   ],
   "coverage": [
@@ -271,6 +283,12 @@
     {
       "reallyme_algorithm": "HPKE",
       "source_id": "hpke-rfc9180",
+      "status": "vendored_sample",
+      "upstream_path": "test-vectors.json"
+    },
+    {
+      "reallyme_algorithm": "Post-Quantum HPKE",
+      "source_id": "hpke-pq",
       "status": "vendored_sample",
       "upstream_path": "test-vectors.json"
     }
@@ -464,6 +482,13 @@
       "upstream_url": "https://raw.githubusercontent.com/C2SP/CCTV/1e3d2860d46e94e777e1b17c7a6f2436387e3ecc/RFC6979/README.md",
       "sha256": "2c9d720028e74767c1cd8346a818a23b3733f97bdd0ead1bf51e5c73bae6ab4d",
       "format": "markdown"
+    },
+    {
+      "source_id": "hpke-pq",
+      "local_path": "hpke/hpke_pq_draft05_test_vectors.json",
+      "upstream_url": "https://raw.githubusercontent.com/hpkewg/hpke-pq/6433c8fce0b8b749dfc86c1095081a88698ccfab/test-vectors.json",
+      "sha256": "35c59f4a0132e5631e50ac039d8ca3a72e99f5e92dfd94d45338d6ae243f613c",
+      "format": "json"
     },
     {
       "source_id": "hpke-rfc9180",
@@ -778,6 +803,18 @@
       "local_path": "xwing/test-vectors.json",
       "upstream_url": "https://raw.githubusercontent.com/dconnolly/draft-connolly-cfrg-xwing-kem/9b6ce9e614811dba8d46841052f3883cbc4c1a65/spec/test-vectors.json",
       "sha256": "409efe197550b22985b4a0419418a0c5f2c2b193426c55bd998399ec8d3e614d",
+      "format": "json"
+    }
+  ],
+  "derived_files": [
+    {
+      "source_id": "hpke-pq",
+      "local_path": "hpke/hpke_pq_draft05_psk_test_vectors.json",
+      "input_path": "hpke/hpke_pq_draft05_test_vectors.json",
+      "reference_archive_url": "https://codeload.github.com/hpkewg/hpke-pq/tar.gz/6433c8fce0b8b749dfc86c1095081a88698ccfab",
+      "reference_archive_sha256": "e085859f84865310206fb52bb547eb7c8993a6134bbd2a4cd8f6fda6ee9ef29d",
+      "generator": "formal/hpke/generate_psk_vectors.py",
+      "sha256": "64706f99e1a73bc9453edbe3203325b45a253d0c73dff130abc2dc97acabde2a",
       "format": "json"
     }
   ]

@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-// Vendors additional third-party conformance corpora (Wycheproof, BIP-340,
-// RFC 8032) into vectors/external, records per-file SHA-256 provenance, and
+// Vendors additional third-party conformance corpora into vectors/external,
+// records per-file SHA-256 provenance, and
 // flips the corresponding coverage rows to a vendored source.
 //
 // Vendoring is a deliberate, reviewed act: each source's upstream commit must
@@ -16,8 +16,8 @@
 //   WYCHEPROOF_REF=<commit> BIP340_REF=<commit> RFC8032_REF=<commit> \
 //     node scripts/vendor_external_vectors.mjs [source ...]
 //
-// With no positional args every source is vendored; otherwise only the named
-// sources (wycheproof, bip340, rfc8032).
+// With no positional args every source is vendored. Positional arguments
+// select individual sources.
 
 import { createHash } from "node:crypto";
 import { gunzipSync } from "node:zlib";
@@ -119,6 +119,25 @@ const SOURCES = {
         local: "hpke/rfc9180_test_vectors.json",
         format: "json",
         coverage: "HPKE",
+      },
+    ],
+  },
+  hpke_pq: {
+    source_id: "hpke-pq",
+    name: "Post-Quantum HPKE draft-05 test vectors (IETF HPKE working group)",
+    website_url: "https://github.com/hpkewg/hpke-pq",
+    repo: "hpkewg/hpke-pq",
+    ref: process.env.HPKE_PQ_REF,
+    license: {
+      declared: "IETF Trust Legal Provisions (BCP 78/79)",
+      note: "Published Appendix A test vectors; upstream LICENSE.md refers to CONTRIBUTING.md for IETF contribution terms.",
+    },
+    files: [
+      {
+        upstream: "test-vectors.json",
+        local: "hpke/hpke_pq_draft05_test_vectors.json",
+        format: "json",
+        coverage: "Post-Quantum HPKE",
       },
     ],
   },

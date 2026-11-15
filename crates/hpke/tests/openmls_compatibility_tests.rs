@@ -235,7 +235,7 @@ fn split_psk_receiver_rejects_malformed_setup_and_tampered_ciphertext() {
         psk_id: HpkePskIdRef::new(PSK_ID).expect("PSK identifier is valid"),
     })
     .expect("receiver setup succeeds");
-    let mut tampered_ciphertext = ciphertext;
+    let mut tampered_ciphertext = ciphertext.clone();
     if let Some(first) = tampered_ciphertext.first_mut() {
         *first ^= 0x80;
     }
@@ -243,6 +243,10 @@ fn split_psk_receiver_rejects_malformed_setup_and_tampered_ciphertext() {
         receiver.open(AAD, &tampered_ciphertext).err(),
         Some(HpkeError::PRIMITIVE_AUTHENTICATION_FAILED)
     );
+    let plaintext = receiver
+        .open(AAD, &ciphertext)
+        .expect("a failed open must preserve the sequence for the authentic record");
+    assert_eq!(plaintext.plaintext.as_slice(), PLAINTEXT);
 }
 
 fn mls_profiles() -> [HpkeSuite; 5] {

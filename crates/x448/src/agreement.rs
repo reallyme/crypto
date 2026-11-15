@@ -17,12 +17,18 @@ pub fn derive_x448_shared_secret(
 ) -> Result<X448SharedSecret, CryptoError> {
     let backend_public_key = public_key.backend()?;
     let shared_secret = private_key.backend().diffie_hellman(&backend_public_key);
-    if bool::from(
-        shared_secret
-            .as_bytes()
-            .ct_eq(&[0_u8; X448_SHARED_SECRET_LEN]),
-    ) {
-        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SHARED_SECRET);
-    }
-    Ok(X448SharedSecret::from_array(*shared_secret.as_bytes()))
+    release_shared_secret(shared_secret.as_bytes())
 }
+
+fn release_shared_secret(
+    bytes: &[u8; X448_SHARED_SECRET_LEN],
+) -> Result<X448SharedSecret, CryptoError> {
+    if bool::from(bytes.ct_eq(&[0_u8; X448_SHARED_SECRET_LEN])) {
+        return Err(CryptoError::PRIMITIVE_INVALID_SHARED_SECRET);
+    }
+    Ok(X448SharedSecret::from_array(*bytes))
+}
+
+#[cfg(kani)]
+#[path = "agreement/proof_tests.rs"]
+mod proof_tests;

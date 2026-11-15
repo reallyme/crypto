@@ -480,6 +480,7 @@ jobs:
           cargo test --locked --release -p reallyme-crypto-hpke --target wasm32-unknown-unknown --no-default-features --features base-p256-aes128gcm --lib
           cargo test --locked --release -p reallyme-crypto-rsa --target wasm32-unknown-unknown --no-default-features --features wasm --lib --test representatives --test feature_lane_tests
           cargo test --locked --release -p reallyme-crypto-p256 --target wasm32-unknown-unknown --no-default-features --features wasm --test jose_signature_tests
+          cargo test --locked --release -p reallyme-crypto-dispatch --target wasm32-unknown-unknown --no-default-features --features proto,wasm,secp256k1,ml-kem-768 --test feature_lane_tests
 
       - name: Check wasm32 lane
         run: cargo check --locked --workspace --no-default-features --features wasm --target wasm32-unknown-unknown

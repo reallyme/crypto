@@ -5,4 +5,5 @@
 
 set -euo pipefail
 
-cargo kani --manifest-path tools/external-vector-audit/refenc-proof/Cargo.toml
+cargo kani --manifest-path tools/external-vector-audit/refenc-proof/Cargo.toml \
+  -Z unstable-options --harness-timeout 10m

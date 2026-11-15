@@ -29,6 +29,36 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 
 class ReallyMeCryptoSymmetricTest : ReallyMeCryptoTestSupport() {
     @Test
+    fun aeadFacadeNeverReturnsPlaintextForTamperedRecords() {
+        loadCryptoProviderForTest()
+        val plaintext = byteArrayOf(0x12, 0x34, 0x56, 0x78)
+        val aad = byteArrayOf(0x63)
+
+        for (algorithm in ReallyMeAeadAlgorithm.entries) {
+            val keyLength = when (algorithm) {
+                ReallyMeAeadAlgorithm.AES_128_GCM -> 16
+                ReallyMeAeadAlgorithm.AES_192_GCM -> 24
+                else -> 32
+            }
+            val nonceLength = if (algorithm == ReallyMeAeadAlgorithm.XCHACHA20_POLY1305) 24 else 12
+            val key = ByteArray(keyLength) { 0x21 }
+            val nonce = ByteArray(nonceLength) { 0x42 }
+            val record = ReallyMeCrypto.seal(algorithm, key, nonce, aad, plaintext)
+            assertContentEquals(plaintext, ReallyMeCrypto.open(algorithm, key, nonce, aad, record))
+
+            val badCiphertext = record.copyOf()
+            badCiphertext[0] = (badCiphertext[0].toInt() xor 1).toByte()
+            val badTag = record.copyOf()
+            badTag[badTag.lastIndex] = (badTag.last().toInt() xor 1).toByte()
+            for ((input, context) in listOf(badCiphertext to aad, badTag to aad, record to byteArrayOf(0x64))) {
+                assertFailsWith<ReallyMeCryptoException.AuthenticationFailed>(algorithm.algorithmName) {
+                    ReallyMeCrypto.open(algorithm, key, nonce, context, input)
+                }
+            }
+        }
+    }
+
+    @Test
     fun sha256KnownAnswer() {
         val digest = ReallyMeDigest.sha256("abc".toByteArray())
         assertEquals(
@@ -497,7 +527,7 @@ class ReallyMeCryptoSymmetricTest : ReallyMeCryptoTestSupport() {
                     "somesaltvalue1234".toByteArray(),
                 ),
             )
-        } catch (_: ReallyMeCryptoException.ProviderFailure) {
+        } catch (_: ReallyMeCryptoException.UnsupportedAlgorithm) {
             // The default test lane intentionally leaves the explicit Rust
             // provider unloaded. Provider-enabled matrix jobs execute and
             // assert the same known answer instead.

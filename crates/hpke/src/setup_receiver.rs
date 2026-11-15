@@ -43,7 +43,7 @@ pub struct HpkePskReceiverSetupRequest<'a> {
 }
 
 trait ReceiverContextBackend: Send {
-    fn open(&mut self, aad: &[u8], ciphertext: &[u8]) -> Result<Vec<u8>, hpke::HpkeError>;
+    fn open(&mut self, aad: &[u8], ciphertext: &[u8]) -> Result<Zeroizing<Vec<u8>>, HpkeError>;
 }
 
 #[cfg(any(
@@ -72,8 +72,8 @@ where
     Kem: HpkeKem,
     AeadCtxR<Aead, Kdf, Kem>: Send,
 {
-    fn open(&mut self, aad: &[u8], ciphertext: &[u8]) -> Result<Vec<u8>, hpke::HpkeError> {
-        self.inner.open(ciphertext, aad)
+    fn open(&mut self, aad: &[u8], ciphertext: &[u8]) -> Result<Zeroizing<Vec<u8>>, HpkeError> {
+        crate::open_record::open_record(&mut self.inner, aad, ciphertext)
     }
 }
 
@@ -108,11 +108,7 @@ impl HpkeReceiverContext {
             .len()
             .checked_sub(self.authentication_tag_len)
             .ok_or(HpkeError::PRIMITIVE_MALFORMED_CIPHERTEXT)?;
-        let plaintext = Zeroizing::new(
-            self.backend
-                .open(aad, ciphertext)
-                .map_err(map_context_open_error)?,
-        );
+        let plaintext = self.backend.open(aad, ciphertext)?;
         if plaintext.len() != expected_plaintext_length {
             return Err(HpkeError::PRIMITIVE_AUTHENTICATION_FAILED);
         }
@@ -211,20 +207,15 @@ fn map_setup_error(error: hpke::HpkeError) -> HpkeError {
     }
 }
 
-fn map_context_open_error(error: hpke::HpkeError) -> HpkeError {
-    match error {
-        hpke::HpkeError::InvalidPskBundle
-        | hpke::HpkeError::ValidationError
-        | hpke::HpkeError::IncorrectInputLength(_, _)
-        | hpke::HpkeError::EncapError
-        | hpke::HpkeError::DecapError
-        | hpke::HpkeError::KdfOutputTooLong
-        | hpke::HpkeError::MessageLimitReached
-        | hpke::HpkeError::OpenError
-        | hpke::HpkeError::SealError => HpkeError::PRIMITIVE_AUTHENTICATION_FAILED,
-    }
-}
-
 #[cfg(test)]
 #[path = "setup_receiver_tests.rs"]
 mod tests;
+
+#[cfg(all(
+    kani,
+    feature = "aead-aes128-gcm",
+    feature = "kdf-hkdf-sha256",
+    feature = "kem-x25519"
+))]
+#[path = "setup_receiver_proof_tests.rs"]
+mod proof_tests;

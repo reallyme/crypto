@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use hpke::{aead::AeadTag, Deserializable, Kem as KemTrait, OpModeR, OpModeS, Serializable};
+use hpke::{Deserializable, Kem as KemTrait, OpModeR, OpModeS, Serializable};
 use zeroize::Zeroizing;
 
 use super::{
@@ -86,16 +86,9 @@ pub fn open(
         .map_err(|_| P256BaseError::PRIMITIVE_MALFORMED_CIPHERTEXT)?;
     let private = <Kem as KemTrait>::PrivateKey::from_bytes(recipient.private_key())
         .map_err(|_| P256BaseError::PRIMITIVE_INVALID_PRIVATE_KEY)?;
-    let tag = AeadTag::<Aead>::from_bytes(&ciphertext[plaintext_length..])
-        .map_err(|_| P256BaseError::PRIMITIVE_MALFORMED_CIPHERTEXT)?;
     let mut context = hpke::setup_receiver::<Aead, Kdf, Kem>(&OpModeR::Base, &private, &enc, info)
         .map_err(|_| P256BaseError::PRIMITIVE_AUTHENTICATION_FAILED)?;
-    let mut plaintext = storage::buffer(plaintext_length)?;
-    plaintext.copy_from_slice(&ciphertext[..plaintext_length]);
-    context
-        .open_inout_detached(plaintext.as_mut_slice().into(), &[], &tag)
-        .map_err(|_| P256BaseError::PRIMITIVE_AUTHENTICATION_FAILED)?;
-    Ok(P256BasePlaintext::new(plaintext))
+    crate::open_record::open_record(&mut context, &[], ciphertext).map(P256BasePlaintext::new)
 }
 
 fn validate_point_encoding(point: &[u8], invalid: P256BaseError) -> Result<(), P256BaseError> {

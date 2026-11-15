@@ -1,0 +1,191 @@
+/*
+SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+
+SPDX-License-Identifier: MIT OR Apache-2.0
+
+Symbolic HPKE Base and PSK modes for a single record, following RFC 9180
+sections 4.1 and 5. The model uses Tamarin's Diffie-Hellman theory,
+distinct suite identities, a free function for labeled derivation, and ideal
+authenticated encryption. It abstracts byte encodings, concrete cipher
+behavior, and record sequence state. Base mode allows any sender to seal to
+a recipient public key. The agreement property concerns the same sealed
+record. A provisioned PSK has two public identifiers so the model can test
+identifier binding while keeping the underlying PSK bytes fixed.
+*/
+
+theory HPKE
+begin
+
+builtins: diffie-hellman
+
+functions: kdf/1, aead/3, adec/3
+equations: adec(aead(m, k, ad), k, ad) = m
+
+/* The two-stage schedule shares the same context across separate key and
+   exporter labels. Export binds its own context and requested length. */
+macros:
+    dhkem(kem, enc, pkR, dh) = kdf(<'dhkem', kem, enc, pkR, dh>),
+    schedule(suite, mode, ss, info, pskId, psk) =
+      <kdf(<'secret', suite, ss, psk>), mode,
+       kdf(<'psk_id_hash', suite, pskId>), kdf(<'info_hash', suite, info>)>,
+    export_value(suite, sched, context, length) =
+      kdf(<'sec', suite, kdf(<'exp', suite, sched>), context, length>)
+
+rule Register_Recipient:
+    let pkR = 'g'^~skR
+    in
+    [ Fr(~skR) ]
+  --[ RegisterR(pkR) ]->
+    [ !RecipientSecret(pkR, ~skR), !RecipientPublic(pkR), Out(pkR)
+    , !Mode(pkR, 'base', 'empty_id', 'empty_psk')
+    ]
+
+rule Provision_Psk:
+    [ !RecipientPublic(pkR), Fr(~pskId), Fr(~alternateId), Fr(~psk) ]
+  --[ PskAliases(pkR, ~pskId, ~alternateId) ]->
+    [ !Mode(pkR, 'psk', ~pskId, ~psk), !Mode(pkR, 'psk', ~alternateId, ~psk)
+    , Out(<~pskId, ~alternateId>)
+    ]
+
+rule Reveal_Psk:
+    [ !Mode(pkR, 'psk', pskId, psk) ]
+  -->
+    [ Out(psk) ]
+
+rule Reveal_Recipient:
+    [ !RecipientSecret(pkR, skR) ]
+  --[ RevealR(pkR) ]->
+    [ Out(skR) ]
+
+/* The KEM context includes both public keys. The labeled HPKE record key binds
+   the complete suite (KEM/KDF/AEAD), mode, info, and PSK inputs. The ideal AEAD
+   ciphertext then binds the record key and AAD. The public suite, info and AAD
+   travel alongside the record so the adversary may replace any of them. */
+rule Seal:
+    let suite = <$kem, $kdf, $aeadId>
+        enc = 'g'^~skE
+        dh  = pkR^~skE
+        ss  = dhkem($kem, enc, pkR, dh)
+        key = kdf(<'key', suite, schedule(suite, $mode, ss, $info, pskId, psk)>)
+        ct  = aead(~pt, key, $aad)
+    in
+    [ Fr(~skE), Fr(~pt), !Mode(pkR, $mode, pskId, psk) ]
+  --[ Seal(enc, ct, pkR, $mode, suite, $info, $aad, pskId, ~pt) ]->
+    [ Out(<'record', enc, ct, $mode, suite, $info, $aad, pskId>) ]
+
+/* In the symbolic algebra, re-encrypting the destructor's result equals the
+   input ciphertext exactly when decryption succeeds. This is a model of the
+   AEAD success condition. The recorded recipient identity is the public key
+   for the actual decapsulating secret. */
+rule Open:
+    let suite = <$kem, $kdf, $aeadId>
+        dh  = enc^skR
+        ss  = dhkem($kem, enc, pkR, dh)
+        key = kdf(<'key', suite, schedule(suite, $mode, ss, $info, pskId, psk)>)
+        pt  = adec(ct, key, $aad)
+    in
+    [ !RecipientSecret(pkR, skR), !Mode(pkR, $mode, pskId, psk)
+    , In(<'record', enc, ct, $mode, suite, $info, $aad, pskId>)
+    ]
+  --[ Eq(ct, aead(pt, key, $aad)), Open(enc, ct, pkR, $mode, suite, $info, $aad, pskId, pt) ]->
+    [ ]
+
+/* Export is available immediately after setup. It requires no record or
+   successful AEAD open, and only public transport inputs are sent. */
+rule Export_Sender:
+    let suite = <$kem, $kdf, $aeadId>
+        enc = 'g'^~skE
+        ss = dhkem($kem, enc, pkR, pkR^~skE)
+        sched = schedule(suite, $mode, ss, $info, pskId, psk)
+        output = export_value(suite, sched, $context, $length)
+    in
+    [ Fr(~skE), !Mode(pkR, $mode, pskId, psk) ]
+  --[ ExportS(enc, pkR, $mode, suite, $info, pskId, $context, $length, output) ]->
+    [ Out(<'export', enc, $mode, suite, $info, pskId, $context, $length>) ]
+
+rule Export_Receiver:
+    let suite = <$kem, $kdf, $aeadId>
+        ss = dhkem($kem, enc, pkR, enc^skR)
+        sched = schedule(suite, $mode, ss, $info, pskId, psk)
+        output = export_value(suite, sched, $context, $length)
+    in
+    [ !RecipientSecret(pkR, skR), !Mode(pkR, $mode, pskId, psk)
+    , In(<'export', enc, $mode, suite, $info, pskId, $context, $length>)
+    ]
+  --[ ExportR(enc, pkR, $mode, suite, $info, pskId, $context, $length, output) ]->
+    [ ]
+
+restriction Successful_Authentication:
+  "All actual expected #i. Eq(actual, expected) @ i ==> actual = expected"
+
+lemma base_roundtrip_exists:
+  exists-trace
+  "Ex enc ct pkR suite info aad id pt #i #j.
+     Seal(enc, ct, pkR, 'base', suite, info, aad, id, pt) @ i
+     & Open(enc, ct, pkR, 'base', suite, info, aad, id, pt) @ j
+     & i < j"
+
+lemma psk_roundtrip_exists:
+  exists-trace
+  "Ex enc ct pkR suite info aad id pt #i #j.
+     Seal(enc, ct, pkR, 'psk', suite, info, aad, id, pt) @ i
+     & Open(enc, ct, pkR, 'psk', suite, info, aad, id, pt) @ j
+     & i < j"
+
+/* Compare events for the exact ciphertext so a separately sealed record
+   cannot satisfy the antecedent. Binding does not require key secrecy. */
+lemma successful_open_binds_context:
+  all-traces
+  "All enc ct pkR mode suite info aad id pt enc2 pkR2 mode2 suite2 info2 aad2 id2 pt2 #i #j.
+     Seal(enc, ct, pkR, mode, suite, info, aad, id, pt) @ i
+     & Open(enc2, ct, pkR2, mode2, suite2, info2, aad2, id2, pt2) @ j
+       ==> enc = enc2 & pkR = pkR2 & mode = mode2 & suite = suite2
+         & info = info2 & aad = aad2 & pt = pt2"
+
+lemma successful_open_binds_psk_identifier:
+  all-traces
+  "All enc ct pkR suite info aad id pt enc2 pkR2 suite2 info2 aad2 id2 pt2 #i #j.
+     Seal(enc, ct, pkR, 'psk', suite, info, aad, id, pt) @ i
+     & Open(enc2, ct, pkR2, 'psk', suite2, info2, aad2, id2, pt2) @ j
+       ==> id = id2"
+
+lemma base_export_agreement_exists:
+  exists-trace
+  "Ex enc pkR suite info id context length output #i #j.
+     ExportS(enc, pkR, 'base', suite, info, id, context, length, output) @ i
+     & ExportR(enc, pkR, 'base', suite, info, id, context, length, output) @ j
+     & i < j"
+
+lemma psk_export_agreement_exists:
+  exists-trace
+  "Ex enc pkR suite info id context length output #i #j.
+     ExportS(enc, pkR, 'psk', suite, info, id, context, length, output) @ i
+     & ExportR(enc, pkR, 'psk', suite, info, id, context, length, output) @ j
+     & i < j"
+
+lemma alternate_psk_identifier_can_be_selected:
+  exists-trace
+  "Ex enc pkR suite info id otherId context length output otherOutput #a #i #j.
+     PskAliases(pkR, id, otherId) @ a
+     & ExportS(enc, pkR, 'psk', suite, info, id, context, length, output) @ i
+     & ExportR(enc, pkR, 'psk', suite, info, otherId, context, length, otherOutput) @ j
+     & not (id = otherId) & a < i & i < j"
+
+/* Equality means the same symbolic exported value, under the ideal KDF
+   assumption. It does not authenticate the sender in Base mode. */
+lemma matching_exports_bind_context:
+  all-traces
+  "All enc pkR mode suite info id context length output
+       enc2 pkR2 mode2 suite2 info2 id2 context2 length2 #i #j.
+     ExportS(enc, pkR, mode, suite, info, id, context, length, output) @ i
+     & ExportR(enc2, pkR2, mode2, suite2, info2, id2, context2, length2, output) @ j
+       ==> enc = enc2 & pkR = pkR2 & mode = mode2 & suite = suite2
+         & info = info2 & id = id2 & context = context2 & length = length2"
+
+lemma plaintext_secrecy:
+  all-traces
+  "All enc ct pkR mode suite info aad id pt #i.
+     Seal(enc, ct, pkR, mode, suite, info, aad, id, pt) @ i & (Ex #k. K(pt) @ k)
+       ==> (Ex #r. RevealR(pkR) @ r)"
+
+end

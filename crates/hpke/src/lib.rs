@@ -23,6 +23,12 @@ mod keypair;
 mod mlkem1024p384;
 #[cfg(feature = "kem-ml-kem-512")]
 mod mlkem512;
+#[cfg(any(
+    feature = "aead-aes128-gcm",
+    feature = "aead-aes256-gcm",
+    feature = "aead-chacha20-poly1305"
+))]
+mod open_record;
 #[cfg(feature = "proto")]
 mod proto;
 #[cfg(all(feature = "proto", feature = "test-vectors"))]

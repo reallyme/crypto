@@ -829,7 +829,7 @@ for (const algorithm of resolvedAlgorithms) {
       fail(`${algorithm.id}/swift Rust routes must require an explicit provider`);
     }
     assertContains(`${algorithm.id} Swift route`, swiftSource, "rustCAbiLibrary");
-    assertContains(`${algorithm.id} Swift missing-provider tests`, routingTestSource, "providerFailure");
+    assertContains(`${algorithm.id} Swift missing-provider tests`, routingTestSource, "testExplicitProviderContextFailsClosedWithoutRustProvider");
   }
 
   for (const laneName of ["kotlin_jvm", "kotlin_android"]) {
@@ -840,7 +840,7 @@ for (const algorithm of resolvedAlgorithms) {
       }
       assertContains(`${algorithm.id} ${laneName} route`, kotlinSource, "ReallyMeRustNativeProvider");
       assertContains(`${algorithm.id} ${laneName} JNI bridge`, rustRouteSource, "Java_me_really_crypto_");
-      assertContains(`${algorithm.id} ${laneName} missing-provider tests`, routingTestSource, "PROVIDER_UNAVAILABLE");
+      assertContains(`${algorithm.id} ${laneName} missing-provider tests`, routingTestSource, "unconfiguredRustRoutesReturnProviderFailure");
     }
   }
 

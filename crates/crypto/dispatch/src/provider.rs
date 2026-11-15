@@ -8,6 +8,22 @@ use crypto_core::Algorithm;
 
 use crate::AlgorithmError;
 
+#[cfg(all(kani, feature = "proto", feature = "native", feature = "ed25519"))]
+#[path = "provider/proof_tests.rs"]
+mod proof_tests;
+
+#[cfg(all(
+    kani,
+    feature = "proto",
+    feature = "ml-kem-768",
+    any(
+        all(feature = "native", feature = "ml-dsa-65"),
+        all(feature = "wasm", feature = "secp256k1", not(feature = "native"))
+    )
+))]
+#[path = "provider/profile_proof_tests.rs"]
+mod profile_proof_tests;
+
 /// Operation requested from the dispatch provider.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
@@ -143,8 +159,16 @@ impl ProviderDecision {
 /// Resolve one provider decision without executing cryptographic work.
 #[must_use]
 pub fn provider_decision(operation: ProviderOperation, algorithm: Algorithm) -> ProviderDecision {
+    provider_decision_for_lane(operation, algorithm, compiled_lane())
+}
+
+fn provider_decision_for_lane(
+    operation: ProviderOperation,
+    algorithm: Algorithm,
+    lane: ProviderLane,
+) -> ProviderDecision {
     let operation_supported = operation_supports_algorithm(operation, algorithm);
-    let implementation_compiled = implementation_is_compiled(operation, algorithm);
+    let implementation_compiled = implementation_is_compiled(operation, algorithm, lane);
     let (disposition, reason) = if !operation_supported {
         (
             ProviderDisposition::Rejected,
@@ -166,7 +190,7 @@ pub fn provider_decision(operation: ProviderOperation, algorithm: Algorithm) -> 
         operation,
         algorithm,
         provider_kind: ProviderKind::PackageOwnedRust,
-        lane: compiled_lane(),
+        lane,
         disposition,
         reason,
         key_residency: KeyResidency::ProcessMemory,
@@ -250,9 +274,13 @@ const fn operation_supports_algorithm(operation: ProviderOperation, algorithm: A
     }
 }
 
-const fn implementation_is_compiled(operation: ProviderOperation, algorithm: Algorithm) -> bool {
+const fn implementation_is_compiled(
+    operation: ProviderOperation,
+    algorithm: Algorithm,
+    lane: ProviderLane,
+) -> bool {
     let lane_compiled =
-        cfg!(feature = "native") || cfg!(all(feature = "wasm", target_arch = "wasm32"));
+        cfg!(feature = "native") || (cfg!(feature = "wasm") && matches!(lane, ProviderLane::Wasm));
     if !lane_compiled {
         return false;
     }

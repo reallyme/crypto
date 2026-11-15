@@ -163,11 +163,11 @@ for (const path of ["packages/kotlin/build.gradle.kts", "packages/kotlin-android
   assertContains(path, 'name.set("Apache License, Version 2.0")');
 }
 
-const rustRootVersion = "0.4.1";
-const cryptoProtoPackageVersion = "0.4.1";
-const typescriptPackageVersion = "0.4.1";
-const kotlinPackageVersion = "0.4.1";
-const kotlinAndroidPackageVersion = "0.4.1";
+const rustRootVersion = "0.4.3";
+const cryptoProtoPackageVersion = "0.4.3";
+const typescriptPackageVersion = "0.4.3";
+const kotlinPackageVersion = "0.4.3";
+const kotlinAndroidPackageVersion = "0.4.3";
 const rustCodecVersion = "0.4.3";
 const tsCodecVersion = "0.4.3";
 const swiftCodecVersion = "0.4.3";
@@ -1270,7 +1270,8 @@ assertContains(
   "packages/swift/Tests/ReallyMeCryptoTests/Pbkdf2SecurityTests.swift",
   "testMalformedProviderBlockFailsClosedAndIsCleared",
 );
-assertContains("packages/swift/Sources/ReallyMeCrypto/SealAeadWithRustCAbi.swift", "bestEffortClear(&plaintext)");
+assertContains("packages/swift/Sources/ReallyMeCrypto/SealAeadWithRustCAbi.swift", "withAuthenticatedPlaintext");
+assertContains("packages/swift/Sources/ReallyMeCrypto/MapRustCAbiStatus.swift", "bestEffortClear(&plaintext)");
 assertContains(
   "packages/swift/Sources/ReallyMeCrypto/SealAeadWithRustCAbi.swift",
   "return try ReallyMeAesGcm.sealAes192Gcm",
@@ -1279,7 +1280,7 @@ assertContains(
   "packages/swift/Sources/ReallyMeCrypto/SealAeadWithRustCAbi.swift",
   "return try ReallyMeAesGcm.openAes192Gcm",
 );
-assertContains("packages/swift/Sources/ReallyMeCrypto/SealHpkeWithRustCAbi.swift", "bestEffortClear(&plaintext)");
+assertContains("packages/swift/Sources/ReallyMeCrypto/SealHpkeWithRustCAbi.swift", "withAuthenticatedPlaintext");
 assertContains("packages/swift/Sources/ReallyMeCrypto/WrapAesKwWithRustCAbi.swift", "bestEffortClear(&output)");
 assertContains("packages/swift/Sources/ReallyMeCrypto/DeriveArgon2idWithRustCAbi.swift", "bestEffortClear(&derivedKey)");
 assertContains("packages/swift/Sources/ReallyMeCrypto/SignEd25519WithRustCAbi.swift", "bestEffortClear(&secretKey)");
@@ -1473,7 +1474,12 @@ assertContains(
 assertNotContains("crates/wasm/src/aead.rs", "plaintext.to_vec()");
 assertNotContains("crates/wasm/src/hpke.rs", "plaintext.to_vec()");
 assertNotContains("crates/wasm/src/argon2id.rs", "secret.to_vec()");
-assertContains("crates/wasm/src/aead.rs", "let plaintext = Zeroizing::new(");
+assertContains("crates/wasm/src/aead.rs", "publish_plaintext(opened,");
+assertContains("crates/wasm/src/hpke.rs", "publish_plaintext(opened,");
+assertContains(
+  "crates/wasm/src/publish_plaintext.rs",
+  "opened: Result<Zeroizing<Vec<u8>>, CryptoError>",
+);
 assertContains(
   "packages/kotlin/src/test/java/me/really/crypto/ReallyMeCryptoJavaTest.java",
   "ReallyMeCrypto.hash",

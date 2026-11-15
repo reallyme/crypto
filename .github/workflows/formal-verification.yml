@@ -43,6 +43,10 @@ jobs:
           printf '%s\n' "$PWD" >> "$GITHUB_PATH"
 
       - name: Verify proof obligations
+        timeout-minutes: 8
+        env:
+          LC_ALL: C.UTF-8
+          GHCRTS: "-N2"
         shell: bash
         working-directory: .
         run: |
@@ -52,10 +56,10 @@ jobs:
           test "$(git rev-parse --verify HEAD)" = "$GITHUB_SHA"
           git diff --no-ext-diff --exit-code "$GITHUB_SHA" --
 
-  kani:
+  kani-reference:
     name: kani proofs (reference encoder)
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -89,11 +93,66 @@ jobs:
           test "$(git rev-parse --verify HEAD)" = "$GITHUB_SHA"
           git diff --no-ext-diff --exit-code "$GITHUB_SHA" --
 
+  kani-verification:
+    name: Kani ${{ matrix.scope }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        scope:
+          - operation-wire
+          - restricted-dispatch
+          - plaintext-release
+          - hpke-dispatch
+          - hpke-state
+          - hpke-vectors
+          - provider-profiles
+          - ml-kem-encoding
+          - ml-kem-key-admission
+          - x-wing-combiner
+          - ecdsa
+          - key-agreement
+          - x25519-backend
+          - aes-key-wrap
+          - keccak
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: 1.100.0
+
+      - name: Install Kani and its verification toolchain
+        if: matrix.scope != 'hpke-vectors'
+        run: |
+          cargo install --locked kani-verifier@0.68.0
+          cargo kani setup
+
+      - name: Fetch locked workspace dependencies
+        run: cargo fetch --locked --target x86_64-unknown-linux-gnu
+
+      - name: Verify proof obligations
+        shell: bash
+        working-directory: .
+        env:
+          FORMAL_SCOPE: ${{ matrix.scope }}
+        run: |
+          test "$(git rev-parse --verify HEAD)" = "$GITHUB_SHA"
+          git diff --no-ext-diff --exit-code "$GITHUB_SHA" --
+          bash -e -o pipefail scripts/verify_formal_scope.sh
+          test "$(git rev-parse --verify HEAD)" = "$GITHUB_SHA"
+          git diff --no-ext-diff --exit-code "$GITHUB_SHA" --
+
   verified:
     name: Record verified candidate
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    needs: [tamarin, kani]
+    needs: [tamarin, kani-reference, kani-verification]
     outputs:
       verified_sha: ${{ github.sha }}
     steps:

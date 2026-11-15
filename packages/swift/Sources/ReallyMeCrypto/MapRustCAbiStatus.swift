@@ -38,4 +38,26 @@ public enum ReallyMeRustCAbiStatus {
       throw ReallyMeCryptoError.providerFailure
     }
   }
+
+  static func withAuthenticatedPlaintext(
+    capacity: Int,
+    open: (UnsafeMutableBufferPointer<UInt8>, inout Int) -> Int32
+  ) throws(ReallyMeCryptoError) -> [UInt8] {
+    guard capacity >= 0 else {
+      throw ReallyMeCryptoError.invalidInput
+    }
+    var plaintext = [UInt8](repeating: 0, count: capacity)
+    defer { ReallyMeCryptoMemory.bestEffortClear(&plaintext) }
+    var producedLength = 0
+    let status = plaintext.withUnsafeMutableBufferPointer { buffer in
+      open(buffer, &producedLength)
+    }
+    // Failure takes precedence over both fields written by the provider. Only
+    // authenticated bytes may be copied into a caller-visible array.
+    try throwIfError(status)
+    guard (0...plaintext.count).contains(producedLength) else {
+      throw ReallyMeCryptoError.providerFailure
+    }
+    return Array(plaintext.prefix(producedLength))
+  }
 }

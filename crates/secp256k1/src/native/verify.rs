@@ -5,6 +5,7 @@
 // verify.rs
 
 use crypto_core::CryptoError;
+use ecdsa::elliptic_curve::scalar::IsHigh;
 use ecdsa::signature::hazmat::PrehashVerifier;
 use k256::ecdsa::{Signature, VerifyingKey};
 use k256::PublicKey;
@@ -35,17 +36,7 @@ pub fn verify_secp256k1(
 
     let vk = VerifyingKey::from(pk);
 
-    let sig = Signature::try_from(signature)
-        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
-
-    // Enforce low-S (BIP 0062): reject the malleated high-S twin so a
-    // signature has a single canonical encoding. Signing already
-    // normalizes to low-S, so signatures produced by this crate pass; this only
-    // rejects the second, equally valid (r, n-s) form that would otherwise
-    // let one message carry two distinct verifying signatures.
-    if sig.normalize_s() != sig {
-        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE);
-    }
+    let sig = parse_low_s(signature)?;
 
     if vk
         .verify_prehash(Sha256::digest(message).as_ref(), &sig)
@@ -56,3 +47,22 @@ pub fn verify_secp256k1(
         Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)
     }
 }
+
+fn parse_low_s(signature: &[u8]) -> Result<Signature, CryptoError> {
+    let sig =
+        Signature::try_from(signature).map_err(|_| CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
+    // Enforce low-S (BIP 0062): reject the malleated high-S twin so a
+    // signature has a single canonical encoding. Signing already
+    // normalizes to low-S, so signatures produced by this crate pass; this only
+    // rejects the second, equally valid (r, n-s) form that would otherwise
+    // let one message carry two distinct verifying signatures.
+    if bool::from(sig.s().is_high()) {
+        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE);
+    }
+
+    Ok(sig)
+}
+
+#[cfg(kani)]
+#[path = "verify/proof_tests.rs"]
+mod proof_tests;

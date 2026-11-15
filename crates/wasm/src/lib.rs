@@ -15,6 +15,7 @@ mod map_error;
 mod ml_dsa;
 mod ml_kem;
 mod operation_response;
+mod publish_plaintext;
 mod rsa;
 mod set_bytes;
 mod slh_dsa;

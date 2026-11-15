@@ -65,16 +65,35 @@ extension ReallyMeCryptoTests {
     } else {
       XCTAssertNil(providers.rustCAbiLibrary)
       XCTAssertEqual(providers.rustCAbiDiagnostic, .bundledProviderNotLinked)
+      XCTAssertThrowsError(try ReallyMeRustCAbiLibrary.bundledProvider()) { error in
+        XCTAssertEqual(error as? ReallyMeCryptoError, .providerFailure)
+      }
     }
   }
 
   func testExplicitProviderContextFailsClosedWithoutRustProvider() {
     let crypto = ReallyMeCrypto(providers: ReallyMeCryptoProviders())
     let empty = [UInt8]()
+    let key = [UInt8](repeating: 0, count: 32)
+    let nonce = [UInt8](repeating: 0, count: 12)
 
     XCTAssertThrowsError(
-      try crypto.seal(.aes256GcmSiv, key: empty, nonce: empty, aad: empty, plaintext: empty)
+      try crypto.seal(.aes256GcmSiv, key: key, nonce: nonce, aad: empty, plaintext: empty)
     ) { error in
+      XCTAssertEqual(error as? ReallyMeCryptoError, .providerFailure)
+    }
+    XCTAssertThrowsError(
+      try crypto.open(
+        .aes256GcmSiv, key: key, nonce: nonce, aad: empty,
+        ciphertextWithTag: [UInt8](repeating: 0, count: 16)
+      )
+    ) { error in
+      XCTAssertEqual(error as? ReallyMeCryptoError, .providerFailure)
+    }
+    XCTAssertThrowsError(try crypto.processOperationResponse(empty)) { error in
+      XCTAssertEqual(error as? ReallyMeCryptoError, .providerFailure)
+    }
+    XCTAssertThrowsError(try crypto.processOperationResponseJson(Array("{}".utf8))) { error in
       XCTAssertEqual(error as? ReallyMeCryptoError, .providerFailure)
     }
     XCTAssertThrowsError(
@@ -125,6 +144,14 @@ extension ReallyMeCryptoTests {
     }
     XCTAssertThrowsError(
       try crypto.deriveXWingKeyPair(.xWing768, secretKey: empty)
+    ) { error in
+      XCTAssertEqual(error as? ReallyMeCryptoError, .providerFailure)
+    }
+
+    let brokenProvider = ReallyMeCrypto(
+      providers: ReallyMeCryptoProviders(rustCAbiDiagnostic: .bundledProviderLoadFailed))
+    XCTAssertThrowsError(
+      try brokenProvider.seal(.aes256GcmSiv, key: key, nonce: nonce, aad: empty, plaintext: empty)
     ) { error in
       XCTAssertEqual(error as? ReallyMeCryptoError, .providerFailure)
     }

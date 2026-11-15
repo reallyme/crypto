@@ -51,7 +51,7 @@ pub(super) fn open_aes256_gcm_siv(
         aad,
         ciphertext: &ciphertext,
     };
-    crypto_aes256_gcm_siv::decrypt(&request).map(Zeroizing::new)
+    crypto_aes256_gcm_siv::decrypt_zeroizing(&request)
 }
 
 #[cfg(not(all(feature = "aes-gcm-siv", any(feature = "native", feature = "wasm"))))]

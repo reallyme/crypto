@@ -36,3 +36,40 @@ fn disabled_signature_algorithm_fails_closed() {
         _ => panic!("disabled Ed25519 returned an unexpected error variant"),
     }
 }
+
+#[cfg(all(
+    target_arch = "wasm32",
+    feature = "wasm",
+    feature = "secp256k1",
+    feature = "ml-kem-768",
+    not(feature = "native")
+))]
+#[wasm_bindgen_test::wasm_bindgen_test]
+fn reduced_wasm_registry_respects_lane_and_key_family() {
+    use crypto_core::{Algorithm, CryptoError};
+    use crypto_dispatch::{provider_decision, ProviderLane, ProviderOperation};
+
+    const UNSUPPORTED: CryptoError = CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM;
+    let signing = provider_decision(ProviderOperation::Sign, Algorithm::Secp256k1);
+    let decapsulation = provider_decision(ProviderOperation::KemDecapsulate, Algorithm::MlKem768);
+    assert!(signing.is_selected() && decapsulation.is_selected());
+    assert_eq!(signing.lane, ProviderLane::Wasm);
+    assert_eq!(decapsulation.lane, ProviderLane::Wasm);
+
+    assert_eq!(
+        crypto_dispatch::derive_keypair(Algorithm::Secp256k1, &[]).err(),
+        Some(UNSUPPORTED)
+    );
+    assert_eq!(
+        crypto_dispatch::sign(Algorithm::MlKem768, &[], &[]).err(),
+        Some(UNSUPPORTED)
+    );
+    assert_eq!(
+        crypto_dispatch::kem_decapsulate(Algorithm::Secp256k1, &[], &[]).err(),
+        Some(UNSUPPORTED)
+    );
+    assert_eq!(
+        crypto_dispatch::kem_decapsulate(Algorithm::MlKem768, &[], &[]).err(),
+        Some(CryptoError::PRIMITIVE_INVALID_KEY),
+    );
+}

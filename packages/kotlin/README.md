@@ -17,7 +17,7 @@ identical output.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.3.17")
+    implementation("me.really:crypto:0.4.3")
 }
 ```
 

@@ -1,5 +1,16 @@
 # Release Notes
 
+## 0.4.3
+
+- Adds formal checks for authenticated plaintext release, restricted provider dispatch,
+  HPKE context and exporter binding, and record sequencing. Independent vectors
+  cover classical and post-quantum HPKE, including implicit rejection.
+- Adds verification for ML-KEM key admission, the X-Wing combiner, canonical
+  ECDSA signatures, key agreement, AES Key Wrap, and the portable Keccak round.
+- Preserves typed provider failure for missing SDK providers. Restricted Rust builds
+  still report typed unsupported algorithm for disabled algorithms.
+- Integrates the formal checks with the release-readiness 0.9.2 CI workflow.
+
 ## 0.4.1
 
 - Updates ReallyMe Buffa to `0.1.2` and ReallyMe Codec to `0.4.2` across all SDKs.

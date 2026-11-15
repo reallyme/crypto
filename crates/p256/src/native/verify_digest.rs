@@ -4,6 +4,7 @@
 
 use crate::P256Sha256Digest;
 use crypto_core::CryptoError;
+use ecdsa::elliptic_curve::scalar::IsHigh;
 use ecdsa::signature::hazmat::PrehashVerifier;
 use p256::ecdsa::{Signature, VerifyingKey};
 use p256::PublicKey;
@@ -24,17 +25,26 @@ pub fn verify_p256_sha256_digest_low_s_der(
     let verifying_key = VerifyingKey::from(public_key);
     let fixed = crate::p256_ecdsa_der_to_jose_signature(signature_der)
         .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
-    let signature = Signature::from_slice(&fixed)
-        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
-
-    if signature.normalize_s() != signature {
-        return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE);
-    }
+    let signature = parse_low_s(&fixed)?;
 
     verifying_key
         .verify_prehash(digest.as_bytes(), &signature)
         .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)
 }
+
+fn parse_low_s(fixed: &[u8]) -> Result<Signature, CryptoError> {
+    let signature =
+        Signature::from_slice(fixed).map_err(|_| CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;
+    // Verification only needs the canonical range check.
+    if bool::from(signature.s().is_high()) {
+        return Err(CryptoError::PRIMITIVE_INVALID_SIGNATURE);
+    }
+    Ok(signature)
+}
+
+#[cfg(kani)]
+#[path = "verify_digest/proof_tests.rs"]
+mod proof_tests;
 
 /// Compatibility boundary for verifying against an untyped digest byte slice.
 #[deprecated(

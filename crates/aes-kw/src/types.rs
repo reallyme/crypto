@@ -199,3 +199,7 @@ pub(crate) fn validate_wrapped_len(len: usize) -> Result<(), CryptoError> {
     }
     Ok(())
 }
+
+#[cfg(all(kani, any(feature = "native", feature = "wasm")))]
+#[path = "types/proof_tests.rs"]
+mod proof_tests;

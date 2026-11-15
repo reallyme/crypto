@@ -7,6 +7,14 @@ use crate::status::{CryptoStatus, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INVALID_ARGUME
 #[path = "pointer_range_registry.rs"]
 mod range_registry;
 
+#[cfg(kani)]
+#[path = "aead_proof_tests.rs"]
+mod aead_proof_tests;
+
+#[cfg(kani)]
+#[path = "pointer_range_proof_tests.rs"]
+mod pointer_range_proof_tests;
+
 pub(crate) use range_registry::begin_input_range_call;
 use range_registry::{
     register_input_range, register_output_range, validate_registered_inputs_against_output,
@@ -24,16 +32,17 @@ fn validate_write_pair(ptr: *mut u8, len: usize) -> Result<(), CryptoStatus> {
 }
 
 fn validate_nonzero_len<T>(ptr: *const T, len: usize) -> Result<(), CryptoStatus> {
+    checked_range_end(ptr.addr(), len).map(|_| ())
+}
+
+fn checked_range_end(start: usize, len: usize) -> Result<usize, CryptoStatus> {
     if len == 0 {
-        return Ok(());
+        return Ok(start);
     }
-    if ptr.is_null() {
+    if start == 0 || len > MAX_FFI_SLICE_LEN {
         return Err(CRYPTO_INVALID_ARGUMENT);
     }
-    if len > MAX_FFI_SLICE_LEN || ptr.addr().checked_add(len).is_none() {
-        return Err(CRYPTO_INVALID_ARGUMENT);
-    }
-    Ok(())
+    start.checked_add(len).ok_or(CRYPTO_INVALID_ARGUMENT)
 }
 
 fn validate_output_ptr<T>(ptr: *mut T) -> Result<(), CryptoStatus> {
@@ -52,20 +61,20 @@ fn validate_disjoint_ranges(
     write_ptr: *mut u8,
     write_len: usize,
 ) -> Result<(), CryptoStatus> {
-    validate_read_pair(read_ptr, read_len)?;
-    validate_write_pair(write_ptr, write_len)?;
+    validate_disjoint_addresses(read_ptr.addr(), read_len, write_ptr.addr(), write_len)
+}
+
+fn validate_disjoint_addresses(
+    read_start: usize,
+    read_len: usize,
+    write_start: usize,
+    write_len: usize,
+) -> Result<(), CryptoStatus> {
+    let read_end = checked_range_end(read_start, read_len)?;
+    let write_end = checked_range_end(write_start, write_len)?;
     if read_len == 0 || write_len == 0 {
         return Ok(());
     }
-
-    let read_start = read_ptr.addr();
-    let write_start = write_ptr.addr();
-    let read_end = read_start
-        .checked_add(read_len)
-        .ok_or(CRYPTO_INVALID_ARGUMENT)?;
-    let write_end = write_start
-        .checked_add(write_len)
-        .ok_or(CRYPTO_INVALID_ARGUMENT)?;
 
     if read_start < write_end && write_start < read_end {
         return Err(CRYPTO_INVALID_ARGUMENT);

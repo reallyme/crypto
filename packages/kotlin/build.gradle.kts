@@ -18,7 +18,7 @@ plugins {
 }
 
 group = "me.really"
-version = "0.4.1"
+version = "0.4.3"
 
 dependencyLocking {
     lockAllConfigurations()
@@ -241,7 +241,21 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.1.3")
 }
 
+// JNI activation is process-wide. Run the unconfigured-provider contract in a
+// separate test worker so another test cannot activate its provider first.
+val unconfiguredProviderTests = "**/UnconfiguredRustProviderTest.class"
+val testUnconfiguredRustProvider = tasks.register<Test>("testUnconfiguredRustProvider") {
+    description = "Checks Rust-backed routes before native provider activation."
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    include(unconfiguredProviderTests)
+    useJUnitPlatform()
+}
+
 tasks.test {
+    dependsOn(testUnconfiguredRustProvider)
+    exclude(unconfiguredProviderTests)
     useJUnitPlatform()
     val ffiLibraryPath = providers.environmentVariable("REALLYME_CRYPTO_FFI_LIBRARY_PATH")
     if (ffiLibraryPath.isPresent) {

@@ -21,6 +21,7 @@ use crypto_proto::generated::proto::reallyme::crypto::v1::{
     HpkeKdfId, HpkeKemId, HpkeSuiteIdentifier,
 };
 use crypto_proto::operation_response_wire::decode_operation_response;
+use zeroize::Zeroizing;
 
 const INFO: &[u8] = b"operation-contract-hpke-v0.3";
 const AAD: &[u8] = b"operation-contract-aad";
@@ -80,6 +81,20 @@ fn primary_operation_contract_executes_all_hpke_branches() {
         panic!("HPKE open returned the wrong operation-result branch");
     };
     assert_eq!(opened.plaintext, PLAINTEXT);
+    let mut tampered_base = sealed.ciphertext.clone();
+    if let Some(tag_byte) = tampered_base.last_mut() {
+        *tag_byte ^= 1;
+    }
+    assert_authentication_failure_wire(CryptoOperation::HpkeOpen(Box::new(
+        CryptoHpkeOpenRequest {
+            algorithm: MessageField::some(algorithm.clone()),
+            recipient_secret_key: key_pair.secret_key.clone().into_zeroizing().into(),
+            encapsulated_key: sealed.encapsulated_key.clone(),
+            info: INFO.to_vec().into(),
+            aad: AAD.to_vec().into(),
+            ciphertext: tampered_base,
+        },
+    )));
 
     let CryptoOperationResultBranch::HpkeSenderExport(sender) = &execute(
         CryptoOperation::HpkeSenderExport(Box::new(CryptoHpkeSenderExportRequest {
@@ -121,7 +136,7 @@ fn primary_operation_contract_executes_all_hpke_branches() {
     };
     let CryptoOperationResultBranch::HpkePskOpen(psk_opened) = &execute(
         CryptoOperation::HpkePskOpen(Box::new(CryptoHpkePskOpenRequest {
-            algorithm: MessageField::some(algorithm),
+            algorithm: MessageField::some(algorithm.clone()),
             recipient_secret_key: key_pair.secret_key.clone().into_zeroizing().into(),
             encapsulated_key: psk_sealed.encapsulated_key.clone(),
             info: INFO.to_vec().into(),
@@ -134,6 +149,22 @@ fn primary_operation_contract_executes_all_hpke_branches() {
         panic!("HPKE PSK open returned the wrong operation-result branch");
     };
     assert_eq!(psk_opened.plaintext, PLAINTEXT);
+    let mut tampered_psk = psk_sealed.ciphertext.clone();
+    if let Some(tag_byte) = tampered_psk.last_mut() {
+        *tag_byte ^= 1;
+    }
+    assert_authentication_failure_wire(CryptoOperation::HpkePskOpen(Box::new(
+        CryptoHpkePskOpenRequest {
+            algorithm: MessageField::some(algorithm),
+            recipient_secret_key: key_pair.secret_key.clone().into_zeroizing().into(),
+            encapsulated_key: psk_sealed.encapsulated_key.clone(),
+            info: INFO.to_vec().into(),
+            aad: AAD.to_vec().into(),
+            ciphertext: tampered_psk,
+            psk: PSK.to_vec().into(),
+            psk_id: PSK_ID.to_vec().into(),
+        },
+    )));
 }
 
 #[test]
@@ -261,16 +292,25 @@ fn execute(operation: CryptoOperation) -> CryptoOperationResultBranch {
 }
 
 fn process_response(operation: CryptoOperation) -> CryptoOperationResponse {
-    let request = CryptoOperationRequest {
-        operation: Some(operation),
-    };
-    let response_bytes = reallyme_crypto::operation_contract::process_operation_response(
-        request.encode_to_vec().as_slice(),
-    );
+    let response_bytes = process_response_bytes(operation);
     let Ok(response) = decode_operation_response(response_bytes.as_slice()) else {
         panic!("HPKE operation response did not decode");
     };
     response
+}
+
+fn process_response_bytes(operation: CryptoOperation) -> Zeroizing<Vec<u8>> {
+    let request = CryptoOperationRequest {
+        operation: Some(operation),
+    };
+    let request_bytes = Zeroizing::new(request.encode_to_vec());
+    reallyme_crypto::operation_contract::process_operation_response(&request_bytes)
+}
+
+fn assert_authentication_failure_wire(operation: CryptoOperation) {
+    // Check all bytes so oneof decoding cannot mask an extra result field.
+    let encoded = process_response_bytes(operation);
+    assert_eq!(encoded.as_slice(), &[0x12, 0x04, 0x0a, 0x02, 0x08, 122]);
 }
 
 fn assert_error_reason(operation: CryptoOperation, expected: CryptoErrorReason) {

@@ -36,6 +36,8 @@ import {
 } from "./wasm-provider-module.mjs";
 
 const WASM_INVALID_INPUT = 1;
+const WASM_AUTHENTICATION_FAILED = 3;
+const WASM_UNSUPPORTED_ALGORITHM = 5;
 const ML_KEM_512_PUBLIC_KEY_LENGTH = 800;
 const ML_KEM_SEED_LENGTH = 64;
 
@@ -52,6 +54,88 @@ const assertReallyMeError = (operation, code) => {
     (error) => error instanceof ReallyMeCryptoError && error.code === code,
   );
 };
+
+test("package-global AEAD requires an installed WASM provider", () => {
+  assertReallyMeError(
+    () => ReallyMeAead.seal(
+      "AES-256-GCM-SIV",
+      new Uint8Array(32),
+      new Uint8Array(12),
+      new Uint8Array(),
+      new Uint8Array(),
+    ),
+    "provider-failure",
+  );
+});
+
+test("configured WASM provider preserves a disabled algorithm's typed status", () => {
+  const restrictedProvider = createWasmProviderFromModule({
+    ...wasmProviderModule,
+    aes256GcmSivOpen: () => {
+      throw WASM_UNSUPPORTED_ALGORITHM;
+    },
+  });
+  assertReallyMeError(
+    () => ReallyMeAead.openWithProvider(
+      restrictedProvider,
+      "AES-256-GCM-SIV",
+      new Uint8Array(32),
+      new Uint8Array(12),
+      new Uint8Array(),
+      new Uint8Array(16),
+    ),
+    "unsupported-algorithm",
+  );
+});
+
+test("raw WASM and TypeScript AEAD opens expose only a typed error for unauthenticated records", () => {
+  const cases = [
+    ["AES-128-GCM", "aes128Gcm", 16, 12],
+    ["AES-192-GCM", "aes192Gcm", 24, 12],
+    ["AES-256-GCM", "aes256Gcm", 32, 12],
+    ["AES-256-GCM-SIV", "aes256GcmSiv", 32, 12],
+    ["ChaCha20-Poly1305", "chacha20Poly1305", 32, 12],
+    ["XChaCha20-Poly1305", "xchacha20Poly1305", 32, 24],
+  ];
+  const aad = Uint8Array.of(0x63);
+  const plaintext = Uint8Array.of(0x12, 0x34, 0x56, 0x78);
+  for (const [algorithm, symbol, keyLength, nonceLength] of cases) {
+    const key = new Uint8Array(keyLength).fill(0x21);
+    const nonce = new Uint8Array(nonceLength).fill(0x42);
+    const record = wasmProviderModule[`${symbol}Seal`](key, nonce, aad, plaintext);
+    const rawOpen = wasmProviderModule[`${symbol}Open`];
+    assert.deepEqual(rawOpen(key, nonce, aad, record), plaintext);
+    assert.deepEqual(
+      ReallyMeAead.openWithProvider(packageProvider, algorithm, key, nonce, aad, record),
+      plaintext,
+    );
+
+    const badCiphertext = record.slice();
+    badCiphertext[0] ^= 1;
+    const badTag = record.slice();
+    badTag[badTag.length - 1] ^= 1;
+    for (const [input, context] of [
+      [badCiphertext, aad], [badTag, aad], [record, Uint8Array.of(0x64)],
+    ]) {
+      const original = input.slice();
+      assert.throws(
+        () => rawOpen(key, nonce, context, input),
+        (error) => error === WASM_AUTHENTICATION_FAILED,
+        algorithm,
+      );
+      assert.throws(
+        () => ReallyMeAead.openWithProvider(packageProvider, algorithm, key, nonce, context, input),
+        (error) => {
+          assert.deepEqual(error, new ReallyMeCryptoError("authentication-failed"));
+          assert.equal(Object.hasOwn(error, "cause"), false);
+          return true;
+        },
+        algorithm,
+      );
+      assert.deepEqual(input, original);
+    }
+  }
+});
 
 const processOperation = (operation, expectedResultCase) => {
   const request = create(CryptoOperationRequestSchema, { operation });
