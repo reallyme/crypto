@@ -9,10 +9,13 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Release version without leading v
+        description: Release version from the successful package preflight
         required: true
         type: string
-        default: 0.4.1
+      source_sha:
+        description: Copy the full source SHA from this ecosystem's successful package preflight summary
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -40,11 +43,17 @@ jobs:
 
       - name: Resolve current release SHA
         id: resolve-release-sha
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
         run: |
           git fetch --no-tags origin main
           release_sha="$(git rev-parse origin/main)"
           if [ "${GITHUB_SHA}" != "${release_sha}" ]; then
             echo "::error::resolved release SHA does not match the workflow run head SHA"
+            exit 1
+          fi
+          if [ "${GITHUB_REF}" != refs/heads/main ] || [ "${SOURCE_SHA}" != "${release_sha}" ]; then
+            echo "::error::dispatch from main with the source SHA from the successful package preflight"
             exit 1
           fi
           git checkout --detach "${release_sha}"

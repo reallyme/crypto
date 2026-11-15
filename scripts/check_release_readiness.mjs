@@ -158,7 +158,7 @@ const mavenCodecVersion = "0.4.2";
 const rustSemverBaselineCommit = "54de2955ebf73e9fd1c306eba207550b3716d767";
 const cargoSemverChecksVersion = "0.50.0";
 const buffaVersion = "0.1.2";
-const releaseReadinessCommit = "7dffa0366a43fe9cc7b98a8040d37dd701d7955e";
+const releaseReadinessCommit = "45b52cf353b0b85694a96c6addc985221274ff37";
 const releaseReadinessCommand = "node scripts/run_pinned_release_readiness.mjs";
 const gradleWrapperValidationAction =
   "gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c";
@@ -2373,7 +2373,7 @@ const primaryOperationBoundaryPolicy = {
 const repositoryPolicy = {
   generatedFreshnessMode,
   vendoredCore: {
-    version: "0.9.0",
+    version: "0.9.2",
     scriptPath: "scripts/check_release_readiness.mjs",
     corePath: "scripts/release-readiness/core.mjs",
   },
@@ -2680,7 +2680,7 @@ const repositoryPolicy = {
         path: "scripts/run_pinned_release_readiness.mjs",
         required: [
           `const RELEASE_READINESS_COMMIT = "${releaseReadinessCommit}";`,
-          'const RELEASE_READINESS_CORE_SHA256 =\n  "5ca52b57e61be8d2d944109f15b11f0d9ff7f77642664db6f9169ece0c6df349";',
+          'const RELEASE_READINESS_CORE_SHA256 =\n  "bd2732ab4af4193ab8f8a2bdde637d7445b1ec93d3b8d5b84b5de7146bdf543a";',
           "const LOCAL_CHECKER_SHA256 =",
           "const LOCAL_CHECKER_DEPENDENCIES =",
           "scripts/crypto_operation_route_readiness.mjs",
@@ -2744,6 +2744,8 @@ const assertReleaseWorkflowCredentialGates = () => {
   for (const path of releaseWorkflows) {
     assertContains(path, "Verify reviewed release SHA");
     assertContains(path, '[ "${GITHUB_SHA}" != "${release_sha}" ]');
+    assertContains(path, 'SOURCE_SHA: ${{ inputs.source_sha }}');
+    assertContains(path, '[ "${GITHUB_REF}" != refs/heads/main ] || [ "${SOURCE_SHA}" != "${release_sha}" ]');
     assertContains(path, "resolved release SHA does not match the workflow run head SHA");
     assertContains(path, "node scripts/verify_release_attestation.mjs");
     assertContains(path, "actions: read");
@@ -2763,6 +2765,8 @@ const assertReleaseWorkflowCredentialGates = () => {
     assertContains(path, "resolved release SHA is not the current origin/main tip");
     assertContains(path, '[ "${GITHUB_SHA}" != "${release_sha}" ]');
     assertContains(path, "resolved release SHA does not match the workflow run head SHA");
+    assertContains(path, "Show release form inputs");
+    assertContains(path, 'SOURCE_SHA: ${{ needs.verify-source-sha.outputs.release_sha }}');
     assertContains(path, "ref: ${{ github.sha }}");
     assertNotContains(path, "ref: ${{ needs.verify-source-sha.outputs.release_sha }}");
   }
@@ -3266,11 +3270,8 @@ assertContains(".github/workflows/npm-package-release.yml", "npm Package Release
 for (const workflow of [
   "crates-package-preflight",
   "kotlin-android-package-preflight",
-  "kotlin-android-package-release",
   "npm-package-preflight",
-  "npm-package-release",
   "swift-package-preflight",
-  "swift-package-release",
 ]) {
   assertContains(`.github/workflows/${workflow}.yml`, `default: ${rustRootVersion}`);
 }

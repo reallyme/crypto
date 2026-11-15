@@ -12,11 +12,11 @@ const REPOSITORY_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u;
 const VERSION_PATTERN = /^(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)$/u;
 const CODE_CHECK_WORKFLOW = "rust-ci.yml";
 const DEPENDENCY_SECURITY_WORKFLOW = "dependency-security.yml";
-const PREFLIGHT_WORKFLOW_TITLES = Object.freeze({
-  "crates-package-preflight.yml": "Crates package preflight",
-  "swift-package-preflight.yml": "Swift package preflight",
-  "kotlin-android-package-preflight.yml": "Kotlin Android package preflight",
-  "npm-package-preflight.yml": "npm package preflight",
+const PREFLIGHT_WORKFLOWS = Object.freeze({
+  "crates-package-preflight.yml": { ecosystem: "crates", legacyTitle: "Crates package preflight" },
+  "swift-package-preflight.yml": { ecosystem: "swift", legacyTitle: "Swift package preflight" },
+  "kotlin-android-package-preflight.yml": { ecosystem: "maven", legacyTitle: "Kotlin Android package preflight" },
+  "npm-package-preflight.yml": { ecosystem: "npm", legacyTitle: "npm package preflight" },
 });
 const REQUIRED_EVENTS = Object.freeze({
   [CODE_CHECK_WORKFLOW]: "push",
@@ -104,7 +104,7 @@ const parsePreflightWorkflow = (value) => {
   if (typeof value !== "string" || value.length === 0) {
     fail("missing-release-attestation-preflight-workflow");
   }
-  if (!Object.hasOwn(PREFLIGHT_WORKFLOW_TITLES, value)) {
+  if (!Object.hasOwn(PREFLIGHT_WORKFLOWS, value)) {
     fail("unsupported-release-attestation-preflight-workflow");
   }
   return value;
@@ -115,11 +115,6 @@ export const requiredWorkflowsForRelease = (preflightWorkflow) => [
   DEPENDENCY_SECURITY_WORKFLOW,
   parsePreflightWorkflow(preflightWorkflow),
 ];
-
-const expectedDisplayTitle = (workflow, releaseVersion) => {
-  const preflightTitle = PREFLIGHT_WORKFLOW_TITLES[workflow];
-  return preflightTitle === undefined ? null : `${preflightTitle} ${releaseVersion}`;
-};
 
 export const run = (command, arguments_, options = {}) => {
   const capturesStdout = options.capture !== false;
@@ -184,9 +179,14 @@ const selectLatestRun = (rawRuns, releaseSha, workflow, releaseVersion) => {
   if (latest === undefined) {
     fail(`missing-${workflow}-run`);
   }
-  const expectedTitle = expectedDisplayTitle(workflow, releaseVersion);
-  if (expectedTitle !== null && latest.displayTitle !== expectedTitle) {
-    fail("preflight-version-mismatch");
+  const preflight = PREFLIGHT_WORKFLOWS[workflow];
+  if (preflight !== undefined) {
+    const title = `Preflight ${preflight.ecosystem} ${releaseVersion} ${releaseSha}`;
+    // Earlier runs can still be used while their exact source SHA matches.
+    const legacyTitle = `${preflight.legacyTitle} ${releaseVersion}`;
+    if (latest.displayTitle !== title && latest.displayTitle !== legacyTitle) {
+      fail("preflight-version-mismatch");
+    }
   }
   return latest;
 };

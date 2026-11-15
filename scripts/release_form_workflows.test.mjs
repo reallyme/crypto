@@ -1,0 +1,101 @@
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import test from "node:test";
+
+const root = new URL("../", import.meta.url);
+const sha = "a".repeat(40);
+const cratesVersion = /^version = "([^"]+)"$/mu.exec(
+  readFileSync(new URL("crates/crypto/Cargo.toml", root), "utf8"),
+)[1];
+
+const shellStep = (filename, name) => {
+  const source = readFileSync(new URL(`.github/workflows/${filename}.yml`, root), "utf8");
+  const lines = source.split("\n");
+  const start = lines.indexOf(`      - name: ${name}`);
+  assert.notEqual(start, -1, filename);
+  const end = lines.findIndex((line, index) => index > start && /^ {0,6}\S/u.test(line));
+  const step = lines.slice(start, end === -1 ? lines.length : end);
+  const run = step.indexOf("        run: |");
+  assert.notEqual(run, -1, filename);
+  return { source, script: step.slice(run + 1).map((line) => line.slice(10)).join("\n") };
+};
+
+const runShell = (script, env) => spawnSync(
+  "bash", ["--noprofile", "--norc", "-e", "-o", "pipefail", "-c", script],
+  { cwd: root, env: { PATH: process.env.PATH, ...env }, encoding: "utf8", timeout: 10_000 },
+);
+
+const resolveGit = `
+git() {
+  case "$*" in
+    'fetch --no-tags origin main'|"checkout --detach $GITHUB_SHA") return 0 ;;
+    'rev-parse origin/main') printf '%s\\n' "$GITHUB_SHA" ;;
+    *) return 97 ;;
+  esac
+}
+`;
+
+for (const [ecosystem, preflight, publish] of [
+  ["crates", "crates-package-preflight", "crates-release"],
+  ["npm", "npm-package-preflight", "npm-package-release"],
+  ["swift", "swift-package-preflight", "swift-package-release"],
+  ["maven", "kotlin-android-package-preflight", "kotlin-android-package-release"],
+]) {
+  test(`${ecosystem} preflight reports only validated release inputs`, (t) => {
+    const scratch = mkdtempSync(join(tmpdir(), "crypto-release-form-"));
+    t.after(() => rmSync(scratch, { recursive: true, force: true }));
+    const { source, script } = shellStep(preflight, "Show release form inputs");
+    assert.ok(source.includes(`run-name: Preflight ${ecosystem} ` +
+      "${{ inputs.version }} ${{ inputs.release_sha || github.sha }}"));
+    assert.ok(source.includes("SOURCE_SHA: ${{ needs.verify-source-sha.outputs.release_sha }}"));
+    const env = {
+      GITHUB_EVENT_NAME: "workflow_dispatch", GITHUB_REF: "refs/heads/main", GITHUB_SHA: sha,
+      SOURCE_SHA: sha, RELEASE_VERSION: cratesVersion, SHA_PATTERN: "^[0-9a-f]{40}$",
+      VERSION_PATTERN: "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+      GITHUB_STEP_SUMMARY: join(scratch, "summary"),
+    };
+    assert.equal(runShell(script, env).status, 0);
+    const summary = readFileSync(env.GITHUB_STEP_SUMMARY, "utf8");
+    assert.ok(summary.includes(["**Version**", "```text", cratesVersion, "```"].join("\n")));
+    assert.ok(summary.includes(["**Source SHA**", "```text", sha, "```"].join("\n")));
+    rmSync(env.GITHUB_STEP_SUMMARY);
+    for (const invalid of [{ SOURCE_SHA: "b".repeat(40) }, { RELEASE_VERSION: "0.4.1\nother" },
+      { GITHUB_REF: "refs/heads/other" }, { GITHUB_EVENT_NAME: "push" }]) {
+      const rejected = runShell(script, { ...env, ...invalid });
+      assert.equal(rejected.status, 0, rejected.stderr);
+      assert.match(rejected.stderr, /Cannot show release inputs/u);
+      assert.equal(existsSync(env.GITHUB_STEP_SUMMARY), false);
+    }
+  });
+
+  test(`${ecosystem} publish requires the selected SHA on main before passing attestation inputs`, (t) => {
+    const scratch = mkdtempSync(join(tmpdir(), "crypto-release-form-"));
+    t.after(() => rmSync(scratch, { recursive: true, force: true }));
+    const isCrates = ecosystem === "crates";
+    const { source, script } = shellStep(publish,
+      isCrates ? "Resolve current release SHA and version" : "Resolve current release SHA");
+    assert.match(source, /\n      version:\n        description: [^\n]+\n        required: true\n        type: string\n      source_sha:/u);
+    assert.match(source, /\n      source_sha:\n        description: [^\n]+\n        required: true\n        type: string/u);
+    const env = {
+      GITHUB_REF: "refs/heads/main", GITHUB_SHA: sha, SOURCE_SHA: sha, REQUESTED_VERSION: cratesVersion,
+      GITHUB_OUTPUT: join(scratch, "output"), GITHUB_ENV: join(scratch, "env"),
+    };
+    const resolved = runShell(resolveGit + script, env);
+    assert.equal(resolved.status, 0, resolved.stderr);
+    assert.match(readFileSync(env.GITHUB_OUTPUT, "utf8"), new RegExp(`^release_sha=${sha}\\n`, "u"));
+    rmSync(env.GITHUB_OUTPUT);
+    const invalid = [{ SOURCE_SHA: "b".repeat(40) }, { SOURCE_SHA: "" }, { GITHUB_REF: "refs/heads/other" }];
+    if (isCrates) invalid.push({ REQUESTED_VERSION: "99.0.0" });
+    for (const override of invalid) {
+      assert.equal(runShell(resolveGit + script, { ...env, ...override }).status, 1);
+      assert.equal(existsSync(env.GITHUB_OUTPUT), false);
+    }
+  });
+}

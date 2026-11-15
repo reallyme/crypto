@@ -26,5 +26,9 @@ artifact bytes. A checksum or signature is meaningful only for the bytes that
 are published. A failed or unavailable verification is recorded as a release
 risk rather than treated as a passing check.
 
+After each package preflight succeeds, copy its version and full source SHA
+from the Actions summary to that ecosystem's release form. Use the same
+version and SHA for every ecosystem in the release.
+
 Hardware-dependent behavior requires device evidence. A skipped Secure Enclave
 or Android hardware test does not establish that the hardware route passed.

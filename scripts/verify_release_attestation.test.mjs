@@ -65,6 +65,29 @@ test("package preflight attestation is bound to the requested version", () => {
   );
 });
 
+test("standard preflight titles bind the ecosystem, version and full SHA", () => {
+  for (const [workflow, ecosystem] of [
+    ["crates-package-preflight.yml", "crates"],
+    ["swift-package-preflight.yml", "swift"],
+    ["kotlin-android-package-preflight.yml", "maven"],
+    ["npm-package-preflight.yml", "npm"],
+  ]) {
+    const attest = (displayTitle) => requireLatestSuccessfulRun(
+      [workflowRun({ displayTitle, event: "workflow_dispatch" })],
+      releaseSha, workflow, "0.4.1",
+    );
+    const title = `Preflight ${ecosystem} 0.4.1 ${releaseSha}`;
+    assert.equal(attest(title).displayTitle, title);
+    for (const wrongTitle of [
+      `Preflight ${ecosystem} 0.4.1 ${"b".repeat(40)}`,
+      `Preflight ${ecosystem} 0.4.2 ${releaseSha}`,
+      `Preflight other 0.4.1 ${releaseSha}`,
+    ]) {
+      assert.throws(() => attest(wrongTitle), { code: "preflight-version-mismatch" });
+    }
+  }
+});
+
 test("latest successful workflow attempt authorizes release", () => {
   const latest = requireLatestSuccessfulRun(
     [workflowRun({ attempt: 1 }), workflowRun({ attempt: 2 })],

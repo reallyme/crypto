@@ -7,6 +7,15 @@ name: Crates.io Release
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: Release version from the successful package preflight
+        required: true
+        type: string
+      source_sha:
+        description: Copy the full source SHA from this ecosystem's successful package preflight summary
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -35,6 +44,9 @@ jobs:
 
       - name: Resolve current release SHA and version
         id: resolve-release-sha
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          REQUESTED_VERSION: ${{ inputs.version }}
         run: |
           git fetch --no-tags origin main
           release_sha="$(git rev-parse origin/main)"
@@ -42,10 +54,14 @@ jobs:
             echo "::error::resolved release SHA does not match the workflow run head SHA"
             exit 1
           fi
+          if [ "${GITHUB_REF}" != refs/heads/main ] || [ "${SOURCE_SHA}" != "${release_sha}" ]; then
+            echo "::error::dispatch from main with the source SHA from the successful package preflight"
+            exit 1
+          fi
           git checkout --detach "${release_sha}"
           release_version="$(sed -n 's/^version = "\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)"$/\1/p' crates/crypto/Cargo.toml | head -n 1)"
-          if [ -z "${release_version}" ]; then
-            echo "::error::could not derive release version from crates/crypto/Cargo.toml"
+          if [ -z "${release_version}" ] || [ "${REQUESTED_VERSION}" != "${release_version}" ]; then
+            echo "::error::release version must match crates/crypto/Cargo.toml"
             exit 1
           fi
           echo "release_sha=${release_sha}" >> "${GITHUB_OUTPUT}"
