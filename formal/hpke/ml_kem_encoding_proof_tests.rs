@@ -19,10 +19,10 @@ fn spec_encode([low, high]: [u16; COEFFICIENTS_PER_CHUNK]) -> [u8; BYTES_PER_CHU
     [lo, lo_high | (hi << 4), (hi >> 4) | (hi_high << 4)]
 }
 
-fn spec_decode([first, middle, last]: [u8; BYTES_PER_CHUNK]) -> [u16; COEFFICIENTS_PER_CHUNK] {
+fn unpack([first, middle, last]: [u8; BYTES_PER_CHUNK]) -> [u16; COEFFICIENTS_PER_CHUNK] {
     let low = u16::from_le_bytes([first, middle & 0x0f]);
     let high = u16::from(middle >> 4) | (u16::from(last) << 4);
-    [low % MlKemField::Q, high % MlKemField::Q]
+    [low, high]
 }
 
 #[kani::proof]
@@ -47,6 +47,35 @@ fn ml_kem_12_bit_decoding_reduces_as_fips_203() {
     let decoded: Array<Elem<MlKemField>, _> = byte_decode::<MlKemField, U12>(&encoded);
     assert_eq!(
         decoded[..COEFFICIENTS_PER_CHUNK],
-        spec_decode(triplet).map(Elem::new)
+        unpack(triplet).map(|value| Elem::new(value % MlKemField::Q))
+    );
+}
+
+#[kani::proof]
+#[kani::unwind(385)]
+fn ml_kem_modulus_check_recognizes_exactly_canonical_chunks() {
+    const Q: u16 = 3329;
+    let triplet: [u8; BYTES_PER_CHUNK] = kani::any();
+    let mut encoded = EncodedPolynomial::<U12>::default();
+    encoded[..BYTES_PER_CHUNK].copy_from_slice(&triplet);
+
+    // FIPS 203 compares the original coefficient bytes with their round trip.
+    // Encoding and decoding each polynomial process independent 3-byte chunks.
+    let decoded = byte_decode::<MlKemField, U12>(&encoded);
+    let round_trip = byte_encode::<MlKemField, U12>(&decoded);
+    let accepted = round_trip[..BYTES_PER_CHUNK] == triplet;
+    let [low, high] = unpack(triplet);
+    assert_eq!(accepted, low < Q && high < Q);
+    kani::cover!(
+        low == Q - 1 && high == Q - 1 && accepted,
+        "maximum canonical pair"
+    );
+    kani::cover!(
+        low == Q && high < Q && !accepted,
+        "reject the low coefficient"
+    );
+    kani::cover!(
+        low < Q && high == Q && !accepted,
+        "reject the high coefficient"
     );
 }

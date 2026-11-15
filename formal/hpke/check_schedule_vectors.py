@@ -12,7 +12,7 @@ import tarfile
 import tempfile
 from pathlib import Path
 
-from rejection_vectors import ACVP_CORPUS, cases_for_row, check_acvp
+from rejection_vectors import ACVP_CORPUS, X_WING, cases_for_row, check_acvp, x_wing_classical_cases
 from verify import (
     ROOT,
     VerificationError,
@@ -181,6 +181,20 @@ def write_acvp_vectors(destination):
     destination.write_text("\n".join(rows), encoding="utf-8")
 
 
+def write_x_wing_classical_vectors(destination):
+    pq = select_vectors(json.loads(read_corpus(PQ_CORPUS)), PQ_SUITES, (0,), 1)
+    x_wing = [row for row in pq if row["kem_id"] == X_WING]
+    rows = ["&["]
+    for private, enc, expected, alternate_enc, alternate in x_wing_classical_cases(
+        x_wing, destination.parent,
+    ):
+        rows.append(f"XWingClassicalVector {{ private: {rust_bytes(private)},")
+        rows.append(f"enc: {rust_bytes(enc)}, expected: {rust_bytes(expected)},")
+        rows.append(f"alternate_enc: {rust_bytes(alternate_enc)}, alternate: {rust_bytes(alternate)} }},")
+    rows.append("]\n")
+    destination.write_text("\n".join(rows), encoding="utf-8")
+
+
 def instrument_schedule(package):
     src = package / "src"
     (src / "schedule_observer.rs").write_bytes((HERE / "schedule_observer_tests.rs").read_bytes())
@@ -247,6 +261,7 @@ def main():
         write_vectors(tests / "hpke_schedule_vectors.inc")
         write_rejection_vectors(package / "hpke_rejection_vectors.inc")
         write_acvp_vectors(package / "ml_kem_acvp_decapsulation.inc")
+        write_x_wing_classical_vectors(package / "x_wing_classical_vectors.inc")
         resolve_backend_package(manifest, FEATURES, packages, backend)
         subprocess.run(
             ["cargo", "test", "--locked", "--offline", "--manifest-path", manifest,

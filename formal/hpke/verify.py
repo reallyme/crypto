@@ -230,6 +230,31 @@ def restrict_ml_kem_to_one_chunk(source):
     encoding.write_text(text, encoding="utf-8")
 
 
+def observe_x_wing_combiner(library):
+    text = library.read_text(encoding="utf-8")
+    start = "\nfn combiner(\n"
+    end = "\nfn read_from"
+    if text.count(start) != 1 or text.count(end) != 1:
+        raise VerificationError("X-Wing combiner layout changed")
+    prefix, body = text.split(start)
+    body, suffix = body.split(end)
+
+    # Substitute only the digest implementation and the shared-secret type
+    # accepted by update(). This preserves the actual combiner's input calls.
+    for original, observed in (
+        ("ss_x: &x25519_dalek::SharedSecret,", "ss_x: &impl AsRef<[u8]>,"),
+        ("    use sha3::Digest;\n\n", ""),
+        ("Sha3_256::new()", "x_wing_combiner_proof_tests::Transcript::new()"),
+    ):
+        if body.count(original) != 1:
+            raise VerificationError("X-Wing combiner input boundary changed")
+        body = body.replace(original, observed)
+    if prefix.count("use sha3::Sha3_256;\n") != 1:
+        raise VerificationError("X-Wing combiner digest import changed")
+    prefix = prefix.replace("use sha3::Sha3_256;\n", "")
+    library.write_text(prefix + start + body + end + suffix, encoding="utf-8")
+
+
 def verify_harness(name, harness_name, source_name, module, features):
     root_lock, packages, backend = locked_backend(name)
 
@@ -238,6 +263,8 @@ def verify_harness(name, harness_name, source_name, module, features):
         source = manifest.parent / "src"
         if name == "module-lattice":
             restrict_ml_kem_to_one_chunk(source)
+        elif name == "x-wing":
+            observe_x_wing_combiner(source / "lib.rs")
         harness = Path(__file__).with_name(harness_name)
         module_path = source / source_name
         (module_path.parent / harness.name).write_bytes(harness.read_bytes())
@@ -273,7 +300,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "package",
-        choices=("hpke", "module-lattice", "x25519-dalek", "aes-kw", "keccak"),
+        choices=("hpke", "module-lattice", "x25519-dalek", "aes-kw", "keccak", "x-wing"),
         default="hpke",
         nargs="?",
     )
@@ -292,6 +319,10 @@ def main():
     elif args.package == "aes-kw":
         verify_harness("aes-kw", "aes_kw_schedule_proof_tests.rs", "lib.rs",
                        "\n#[cfg(kani)]\nmod aes_kw_schedule_proof_tests;\n",
+                       ("--no-default-features", "--features", "zeroize"))
+    elif args.package == "x-wing":
+        verify_harness("x-wing", "x_wing_combiner_proof_tests.rs", "lib.rs",
+                       "\n#[cfg(kani)]\nmod x_wing_combiner_proof_tests;\n",
                        ("--no-default-features", "--features", "zeroize"))
     else:
         verify_harness("keccak", "keccak_round_proof_tests.rs", "backends/soft.rs",

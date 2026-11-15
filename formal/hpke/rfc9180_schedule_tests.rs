@@ -67,6 +67,46 @@ struct RejectionVector {
 
 static REJECTION_VECTORS: &[RejectionVector] = include!("../hpke_rejection_vectors.inc");
 
+struct XWingClassicalVector {
+    private: &'static [u8],
+    enc: &'static [u8],
+    expected: &'static [u8],
+    alternate_enc: &'static [u8],
+    alternate: &'static [u8],
+}
+
+static X_WING_CLASSICAL_VECTORS: &[XWingClassicalVector] =
+    include!("../x_wing_classical_vectors.inc");
+
+#[test]
+fn x_wing_decapsulation_matches_independent_classical_substitutions() -> Result<(), HpkeError> {
+    const ML_KEM_768_CIPHERTEXT_BYTES: usize = 1088;
+    assert_eq!(X_WING_CLASSICAL_VECTORS.len(), 2);
+    for vector in X_WING_CLASSICAL_VECTORS {
+        assert_eq!(
+            vector.enc[..ML_KEM_768_CIPHERTEXT_BYTES],
+            vector.alternate_enc[..ML_KEM_768_CIPHERTEXT_BYTES]
+        );
+        assert_ne!(
+            vector.enc[ML_KEM_768_CIPHERTEXT_BYTES..],
+            vector.alternate_enc[ML_KEM_768_CIPHERTEXT_BYTES..]
+        );
+        let private = <XWing as Kem>::PrivateKey::from_bytes(vector.private)?;
+        for (enc, expected) in [
+            (vector.enc, vector.expected),
+            (vector.alternate_enc, vector.alternate),
+        ] {
+            let encapsulation = <XWing as Kem>::EncappedKey::from_bytes(enc)?;
+            let combined = XWing::decap(&private, None, &encapsulation)?;
+            assert!(
+                combined.0.as_slice() == expected,
+                "combined secret after X25519 substitution"
+            );
+        }
+    }
+    Ok(())
+}
+
 struct AcvpDecapsulation {
     kem: u16,
     private: &'static [u8],

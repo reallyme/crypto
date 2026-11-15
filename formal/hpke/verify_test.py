@@ -15,6 +15,7 @@ from verify import (
     CRATES_IO,
     VerificationError,
     locked_dependency,
+    observe_x_wing_combiner,
     prepare_archive,
     restrict_ml_kem_to_one_chunk,
     verify_resolution,
@@ -143,6 +144,46 @@ checksum = "{dep["checksum"]}"
         for unresolved in ([], ["keccak"], ["keccak 0.2.2"], ["keccak 0.3.0"]):
             with self.subTest(reference=unresolved), self.assertRaises(VerificationError):
                 locked_dependency(packages, {**owner, "dependencies": unresolved}, "keccak")
+
+    def test_x_wing_observer_preserves_digest_input_calls_and_return(self):
+        library = self.root / "lib.rs"
+        calls = (
+            "    hasher.update(ss_m);\n"
+            "    hasher.update(ss_x);\n"
+            "    hasher.update(ct_x);\n"
+            "    hasher.update(pk_x.as_bytes());\n"
+            "    hasher.update(X_WING_LABEL);\n"
+            "    hasher.finalize()\n"
+        )
+        original = (
+            "use sha3::Sha3_256;\n"
+            "\nfn combiner(\n"
+            "    ss_x: &x25519_dalek::SharedSecret,\n"
+            ") -> SharedKey {\n"
+            "    use sha3::Digest;\n\n"
+            "    let mut hasher = Sha3_256::new();\n"
+            f"{calls}"
+            "}\n\nfn read_from() {}\n"
+        )
+        library.write_text(original, encoding="utf-8")
+
+        observe_x_wing_combiner(library)
+
+        observed = library.read_text(encoding="utf-8")
+        self.assertIn(calls, observed)
+        self.assertIn("ss_x: &impl AsRef<[u8]>", observed)
+        self.assertIn("x_wing_combiner_proof_tests::Transcript::new()", observed)
+        self.assertNotIn("Sha3_256", observed)
+
+    def test_x_wing_observer_rejects_an_unknown_layout(self):
+        library = self.root / "lib.rs"
+        original = "use sha3::Sha3_256;\nfn combiner() {}\n"
+        library.write_text(original, encoding="utf-8")
+
+        with self.assertRaisesRegex(VerificationError, "combiner layout changed"):
+            observe_x_wing_combiner(library)
+
+        self.assertEqual(library.read_text(encoding="utf-8"), original)
 
 
 if __name__ == "__main__":

@@ -22,6 +22,8 @@ on:
       - "crates/crypto/tests/restricted_operation_dispatch_tests.rs"
       - "crates/ffi/**"
       - "crates/hpke/**"
+      - "crates/ml-kem-*/**"
+      - "crates/crypto/tests/ml_kem_public_key_validation_tests.rs"
       - "crates/p256/**"
       - "crates/proto/**"
       - "crates/secp256k1/**"
@@ -54,6 +56,8 @@ on:
       - "crates/crypto/tests/restricted_operation_dispatch_tests.rs"
       - "crates/ffi/**"
       - "crates/hpke/**"
+      - "crates/ml-kem-*/**"
+      - "crates/crypto/tests/ml_kem_public_key_validation_tests.rs"
       - "crates/p256/**"
       - "crates/proto/**"
       - "crates/secp256k1/**"
@@ -128,6 +132,8 @@ jobs:
           - hpke-vectors
           - provider-profiles
           - ml-kem-encoding
+          - ml-kem-key-admission
+          - x-wing-combiner
           - ecdsa
           - key-agreement
           - x25519-backend
@@ -228,13 +234,36 @@ jobs:
           cargo kani -p reallyme-crypto-dispatch --no-default-features --features proto,wasm,secp256k1,ml-kem-768 --lib -Z unstable-options --harness-timeout 15m --jobs 2 --output-format terse
           cargo kani -p reallyme-crypto-dispatch --no-default-features --features proto,native,ml-dsa-65,ml-kem-768 --lib -Z stubbing -Z unstable-options --harness-timeout 15m --jobs 2 --output-format terse
 
-      - name: Prove 12-bit ML-KEM encoding
+      - name: Prove 12-bit ML-KEM encoding and coefficient admission
         if: matrix.scope == 'ml-kem-encoding'
         env:
           CARGO_NET_OFFLINE: "true"
           # Select cmov's portable implementation so Kani can verify its behavior.
           RUSTFLAGS: "--cfg miri"
         run: python3 -B formal/hpke/verify.py module-lattice
+
+      - name: Prove ML-KEM public-key admission in each parameter set
+        if: matrix.scope == 'ml-kem-key-admission'
+        env:
+          CARGO_NET_OFFLINE: "true"
+        run: >-
+          cargo kani -p reallyme-crypto-ml-kem-512 -p reallyme-crypto-ml-kem-768
+          -p reallyme-crypto-ml-kem-1024 --no-default-features --features native --lib
+          --harness key_import_and_encapsulation_share_the_fail_closed_gate
+          -Z stubbing -Z unstable-options --harness-timeout 15m --jobs 2 --output-format terse
+
+      - name: Verify ML-KEM key validation at every packed coefficient position
+        if: matrix.scope == 'ml-kem-key-admission'
+        env:
+          CARGO_NET_OFFLINE: "true"
+        run: >-
+          cargo test --locked -p reallyme-crypto --no-default-features
+          --features native,ml-kem-512,ml-kem-768,ml-kem-1024
+          --test ml_kem_public_key_validation_tests
+
+      - name: Prove the locked X-Wing combiner transcript
+        if: matrix.scope == 'x-wing-combiner'
+        run: python3 -B formal/hpke/verify.py x-wing
 
       - name: Prove ECDSA low-S admission and normalization
         if: matrix.scope == 'ecdsa'

@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use super::encoding::parse_public_key;
 use crypto_core::CryptoError;
 use ml_kem::{
     kem::Decapsulate,
-    ml_kem_1024::{Ciphertext, DecapsulationKey, EncapsulationKey},
+    ml_kem_1024::{Ciphertext, DecapsulationKey},
     Seed, B32,
 };
 use zeroize::{Zeroize, Zeroizing};
@@ -24,9 +25,7 @@ fn encapsulate_with_rng(
     public_key: &[u8],
     rng: &mut impl getrandom::rand_core::TryCryptoRng,
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
-    let public_key = ml_kem::Key::<EncapsulationKey>::try_from(public_key)
-        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
-    let pk = EncapsulationKey::new(&public_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    let pk = parse_public_key(public_key)?;
 
     // The provider's convenience encapsulate() unwraps OS entropy failures.
     // Own and wipe the randomness even if the OS only partially fills it.
@@ -52,9 +51,7 @@ pub fn ml_kem_1024_encapsulate_derand(
     public_key: &[u8],
     randomness: &[u8],
 ) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError> {
-    let public_key = ml_kem::Key::<EncapsulationKey>::try_from(public_key)
-        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
-    let pk = EncapsulationKey::new(&public_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    let pk = parse_public_key(public_key)?;
     let m =
         Zeroizing::new(B32::try_from(randomness).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?);
 

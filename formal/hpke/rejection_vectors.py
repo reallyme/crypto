@@ -19,6 +19,7 @@ SEED_BYTES = 32
 SHARED_SECRET_BYTES = 32
 X25519_BYTES = 32
 X_WING_PUBLIC_KEY_BYTES = 1216
+X_WING_PQ_CT_BYTES = ML_KEM_CT_LENGTH["ML-KEM-768"]
 X_WING_LABEL = bytes.fromhex("5c2e2f2f5e5c")
 # RFC 8410 DER prefix for a bare X25519 private key and public key.
 X25519_PKCS8 = bytes.fromhex("302e020100300506032b656e04220420")
@@ -78,6 +79,52 @@ def classical_contribution(scratch, private_scalar, peer, expected_public):
     return secret
 
 
+def x_wing_key_parts(private, public, enc):
+    if (
+        len(private) != SEED_BYTES
+        or len(enc) != X_WING_PQ_CT_BYTES + X25519_BYTES
+        or len(public) != X_WING_PUBLIC_KEY_BYTES
+    ):
+        raise VerificationError("unexpected X-Wing fixture length")
+    expanded = hashlib.shake_256(private).digest(3 * SEED_BYTES)
+    z = expanded[SEED_BYTES:2 * SEED_BYTES]
+    return z, expanded[2 * SEED_BYTES:], public[-X25519_BYTES:]
+
+
+def x_wing_classical_cases(rows, scratch):
+    if len(rows) != 2 or any(row["kem_id"] != X_WING for row in rows):
+        raise VerificationError("expected both published X-Wing fixture rows")
+
+    first, second = rows
+    for row, other in ((first, second), (second, first)):
+        enc, private, public = (bytes.fromhex(row[name]) for name in ("enc", "skRm", "pkRm"))
+        z, sk_x, pk_x = x_wing_key_parts(private, public, enc)
+        alternate_enc = bytes.fromhex(other["enc"])
+        if len(alternate_enc) != len(enc):
+            raise VerificationError("unexpected alternate X-Wing encapsulation length")
+
+        # Hold a known rejected ML-KEM ciphertext fixed across both cases.
+        # Its fallback secret can be calculated directly from FIPS 203.
+        pq = bytearray(enc[:X_WING_PQ_CT_BYTES])
+        pq[0] ^= 1
+        ss_m = rejection_secret(z, pq)
+        peer = enc[X_WING_PQ_CT_BYTES:]
+        alternate_peer = alternate_enc[X_WING_PQ_CT_BYTES:]
+        ss_x = classical_contribution(scratch, sk_x, peer, pk_x)
+        alternate_ss_x = classical_contribution(scratch, sk_x, alternate_peer, pk_x)
+        if peer == alternate_peer or ss_x == alternate_ss_x:
+            raise VerificationError("alternate X25519 input must change the classical contribution")
+
+        expected = hashlib.sha3_256(ss_m + ss_x + peer + pk_x + X_WING_LABEL).digest()
+        alternate = hashlib.sha3_256(
+            ss_m + alternate_ss_x + alternate_peer + pk_x + X_WING_LABEL,
+        ).digest()
+        if expected == alternate:
+            raise VerificationError("alternate X25519 input must change the combined secret")
+        prefix = bytes(pq)
+        yield private, prefix + peer, expected, prefix + alternate_peer, alternate
+
+
 def cases_for_row(row, scratch):
     kem = row["kem_id"]
     enc, private, public, original = (
@@ -86,18 +133,10 @@ def cases_for_row(row, scratch):
     suffix = b""
     combine_input = None
     if kem == X_WING:
-        ct_length = ML_KEM_CT_LENGTH["ML-KEM-768"]
-        if (
-            len(private) != SEED_BYTES
-            or len(enc) != ct_length + X25519_BYTES
-            or len(public) != X_WING_PUBLIC_KEY_BYTES
-        ):
-            raise VerificationError("unexpected X-Wing fixture length")
-        expanded = hashlib.shake_256(private).digest(3 * SEED_BYTES)
-        z = expanded[SEED_BYTES:2 * SEED_BYTES]
+        ct_length = X_WING_PQ_CT_BYTES
+        z, sk_x, pk_x = x_wing_key_parts(private, public, enc)
         suffix = enc[ct_length:]
-        pk_x = public[-X25519_BYTES:]
-        ss_x = classical_contribution(scratch, expanded[2 * SEED_BYTES:], suffix, pk_x)
+        ss_x = classical_contribution(scratch, sk_x, suffix, pk_x)
         combine_input = ss_x + suffix + pk_x + X_WING_LABEL
     else:
         ct_length = ML_KEM_CT_LENGTH[ML_KEM_PARAMETERS[kem]]
