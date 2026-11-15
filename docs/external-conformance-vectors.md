@@ -90,8 +90,8 @@ protocol, or internal-math API.
 
 The Google/C2SP [Wycheproof](https://github.com/C2SP/wycheproof) project is the
 highest-value adversarial source for the primitives ACVP compliance vectors
-under-exercise (malleability, non-canonical encodings, low-order points). It and
-two other public corpora are vendored through
+under-exercise (malleability, non-canonical encodings, low-order points). The
+following public corpora are vendored through
 [scripts/vendor_external_vectors.mjs](../scripts/vendor_external_vectors.mjs)
 (see [Vendoring supplementary corpora](#vendoring-supplementary-corpora)) and
 executed by dedicated adapters. These adapters are `#[ignore]` and fail closed
@@ -108,6 +108,8 @@ when their corpus has not been vendored, so they never pass vacuously.
 | RFC 8032 `sign.input` | `sign_ed25519` deterministic **signature generation** | [rfc8032_ed25519_siggen.rs](../tools/external-vector-audit/tests/rfc8032_ed25519_siggen.rs) |
 | X-Wing CFRG draft `spec/test-vectors.json` | `generate_x_wing_768_keypair_derand` / `x_wing_768_encapsulate_derand` / `x_wing_768_decapsulate` full KAT | [xwing768_kat.rs](../tools/external-vector-audit/tests/xwing768_kat.rs) |
 | HPKE RFC 9180 `test-vectors.json` | Base seal and export, Base and PSK opens, and typed rejection of suite, recipient key, `info`, AAD, and PSK identifier substitutions. The [backend schedule audit](../formal/hpke/check_schedule_vectors.py) also compares intermediate and exporter bytes | [rfc9180_hpke.rs](../tools/external-vector-audit/tests/rfc9180_hpke.rs) |
+| [IETF PQ HPKE draft-05](https://www.ietf.org/archive/id/draft-ietf-hpke-pq-05.html#appendix-A) | ML-KEM-512/768/1024 and X-Wing Base seal, open, sender and receiver exports, and typed rejection of truncated and same-length substituted encapsulations. The backend audit compares the published intermediate schedule bytes | [hpke_pq.rs](../tools/external-vector-audit/tests/hpke_pq.rs) |
+| [PQ HPKE PSK reference fixtures](../vectors/external/hpke/hpke_pq_draft05_psk_test_vectors.json) | Paired ML-KEM-512/768/1024 and X-Wing PSK contexts reproduce both ciphertext streams, reject records from the other context, and open their own records at the same sequence. All ten rows reject one-input substitutions of the PSK identifier or `info`. The backend audit checks schedule and exporter bytes | [hpke_pq.rs](../tools/external-vector-audit/tests/hpke_pq.rs) |
 | PBKDF2 RFC 6070-derived (brycx corpus) | `derive_key` for both public PRFs (SHA-256, SHA-512) | [pbkdf2_rfc6070.rs](../tools/external-vector-audit/tests/pbkdf2_rfc6070.rs) |
 
 **Argon2id** has no executable external route: the public boundary derives only
@@ -137,11 +139,13 @@ but Ed25519 signing is deterministic, so a broken nonce/hash path can still
 verify while producing a wrong signature. Asserting the produced signature bytes
 against a known answer catches that class of bug.
 
-The HPKE adapter covers the supported base-mode suites (P-256, P-521, X25519) at
-sequence number 0; PSK and auth modes and the evolving-nonce sequence are out of
-scope for the single-shot public API. Argon2id is the one primitive with no
-executable external route (fixed profiles, above), which closes the vendorable
-lanes for the current public boundary.
+The single-shot HPKE adapters exercise sequence-zero open and seal, Base-mode
+export, and RFC 9180 PSK open. The RFC adapter also runs later records through
+the public PSK contexts and checks retry after a bad tag, duplicate delivery,
+early delivery, or a record from a second context with the same PSK. The locked
+backend audit uses evolving sender and receiver contexts to compare every published
+record nonce through sequence 256 for the selected RFC rows and sequence 9
+for the selected draft-05 rows. See the [record sequence checks](../formal/README.md#hpke-record-sequences).
 
 ## Formal Methods Candidates
 
@@ -161,14 +165,12 @@ directly, and gates cleanly in the audit workflow. It runs only in the
 workflow. The [formal verification inventory](../formal/README.md) covers
 production Rust proofs and the symbolic HPKE model.
 
-**Cryptol + SAW (deferred).** A small Cryptol specification checked with SAW
-against a pure, fixed-size function remains the right tool where a golden
-mathematical specification adds assurance a Rust-level proof cannot — the
-strongest first targets being AES-KW wrapping block logic, the SHA-3/Keccak
-permutation, and ML-KEM encode/decode helpers. It is deferred behind Kani
-because the LLVM/MIR integration for Rust is a larger lift; the narrow candidates
-above are recorded so the work can start from them without creating new public
-API boundaries or exposing secret material solely for tests.
+**Cryptol + SAW (deferred).** Broader equivalence work could compare a
+fixed-size production function to an independent Cryptol specification
+after validating release artifact export for the pinned Rust toolchain.
+The [formal verification inventory](../formal/README.md) records the
+existing Kani equivalence scopes for AES-KW block scheduling, a portable
+Keccak round, and 12-bit ML-KEM coefficient packing.
 
 ## CI Gating
 
@@ -180,7 +182,7 @@ with the normal code checks; larger exhaustive sweeps run separately:
 | Executable default adapters (`acvp_*`, `cctv_*` non-ignored) | Every PR, via `cargo nextest run --workspace` in [rust-ci.yml](../.github/workflows/rust-ci.yml). |
 | Provenance structure, completeness, and commit-pinning (`external_vector_provenance_declares_sources`, `every_external_corpus_file_has_provenance`, `external_vector_urls_are_pinned_to_commits`, `external_vector_coverage_tracks_supported_families`) | Every PR, via the workspace test run. The completeness check also runs in the vector-specific integrity job. |
 | Committed corpus hashes and CCTV markers | Vector integrity checks. |
-| Re-download and byte-for-byte comparison of every committed file with its pinned upstream commit | Vector changes and the scheduled integrity check. |
+| Re-download and byte-for-byte comparison of the upstream corpora, and byte-for-byte regeneration of the derived HPKE PSK corpus | Vector changes and the scheduled integrity check. |
 | Wycheproof / BIP-340 / RFC 8032 / X-Wing / HPKE / PBKDF2 adapters | Normal code checks against the committed corpora. |
 | Exhaustive ACVP/CCTV sweeps and bounded reference DER encoder proofs | Separate scheduled or explicitly requested checks. |
 
@@ -191,18 +193,14 @@ without waiting for a manual audit.
 
 ### Vendoring supplementary corpora
 
-The Wycheproof, BIP-340, and RFC 8032 corpora are committed with reviewed,
-pinned upstream commits in `provenance.json`. To refresh them, [vendor_external_vectors.mjs](../scripts/vendor_external_vectors.mjs)
-fetches the pinned bytes, records their SHA-256 and source in
-`provenance.json`, and flips the matching coverage rows to a vendored source.
-It refuses to run against an unpinned or non-commit ref, so vendoring is always
-a deliberate, reviewed act:
+The supplementary corpora are committed with reviewed upstream commit IDs.
+The [vendoring script](../scripts/vendor_external_vectors.mjs) requires a full
+commit SHA and records the fetched bytes and SHA-256 in `provenance.json`.
+For example, to reproduce the PQ HPKE draft-05 corpus from its pinned commit:
 
 ```sh
-WYCHEPROOF_REF=<reviewed-commit> \
-BIP340_REF=<reviewed-commit> \
-RFC8032_REF=<reviewed-commit> \
-  node scripts/vendor_external_vectors.mjs
+HPKE_PQ_REF=6433c8fce0b8b749dfc86c1095081a88698ccfab \
+  node scripts/vendor_external_vectors.mjs hpke_pq
 ```
 
 The adapters consume committed corpora and do not require a source-ref input.
@@ -214,6 +212,24 @@ bytes without rewriting either file:
 ```sh
 node scripts/vendor_external_vectors.mjs --check
 ```
+
+### Reproducing the PQ HPKE PSK fixtures
+
+The PSK corpus uses the independent draft-05 reference implementation and its
+locked dependencies. Its source archive and output checksums are recorded
+under `derived_files` in [provenance.json](../vectors/external/provenance.json).
+Run the generator with the pinned archive to check the recorded output.
+
+```sh
+curl -fsSL https://codeload.github.com/hpkewg/hpke-pq/tar.gz/6433c8fce0b8b749dfc86c1095081a88698ccfab \
+  -o /tmp/hpke-pq-draft05.tar.gz
+python3 -B formal/hpke/generate_psk_vectors.py --check /tmp/hpke-pq-draft05.tar.gz
+```
+
+The generator verifies the archive checksum before extraction and uses Cargo
+with the reference lockfile. Add `--offline` when the dependencies are cached.
+The regular backend audit verifies the recorded fixture digest and runs the
+vector tests from the local corpora.
 
 ## Running The External Tests
 

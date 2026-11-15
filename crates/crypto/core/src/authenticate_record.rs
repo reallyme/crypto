@@ -27,8 +27,18 @@ pub fn authenticate_record<const TAG_LEN: usize>(
         .map_err(|_| CryptoError::BACKEND_INTERNAL)?;
     plaintext.extend_from_slice(ciphertext);
 
-    authenticate(plaintext.as_mut_slice(), tag)?;
-    Ok(plaintext)
+    match authenticate(plaintext.as_mut_slice(), tag) {
+        Ok(()) => Ok(plaintext),
+        Err(error) => {
+            discard_unauthenticated_plaintext(plaintext);
+            Err(error)
+        }
+    }
+}
+
+fn discard_unauthenticated_plaintext(plaintext: Zeroizing<Vec<u8>>) {
+    // Run the zeroizing owner's destructor before returning the backend error.
+    drop(plaintext);
 }
 
 #[cfg(test)]

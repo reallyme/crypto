@@ -1,0 +1,290 @@
+/*
+SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+
+SPDX-License-Identifier: MIT OR Apache-2.0
+
+Base- and PSK-mode sequence-zero HPKE with ML-KEM or X-Wing. Asymmetric
+encryption represents ideal ML-KEM encapsulation. A tagged input represents
+a correctly sized ML-KEM ciphertext that selects the implicit-rejection
+secret. Structural decoding is a separate case. The free functions model
+domain separation and an ideal X-Wing combiner and key schedule. The PSK may
+be disclosed. There are no recipient compromise rules.
+The X25519 contribution is conservatively public for every input. This
+covers the case where it is public zero for non-contributory inputs. The
+locked backend accepts those inputs. Byte encodings, collision probabilities
+and side channels are outside the model.
+*/
+
+theory HPKE_PQ
+begin
+
+builtins: asymmetric-encryption
+
+functions: fallback/2, combine/4, classical/2, kdf/1, aead/3, open_aead/3
+equations: open_aead(aead(m, k, ad), k, ad) = m
+
+macros:
+    schedule(suite, mode, ss, info, id, psk) =
+      kdf(<'schedule', suite, mode, ss, info, id, psk>),
+    record_key(family, sched) =
+      kdf(<'key', 'seq0', family, sched>),
+    export_value(family, sched, context, length) =
+      kdf(<'sec', kdf(<'exp', family, sched>), context, length>)
+
+rule Register_Recipient:
+    let pq = pk(~pqSk)
+    in
+    [ Fr(~pqSk), Fr(~xPublic), Fr(~rejectSeed) ]
+  -->
+    [ !Recipient(pq, ~xPublic, ~pqSk, ~rejectSeed)
+    , !Public(pq, ~xPublic), !Mode(pq, 'base', 'empty_id', 'empty_psk')
+    , Out(<pq, ~xPublic>)
+    ]
+
+/* Both identifiers select the same PSK so a changed identifier can reach
+   decapsulation and AEAD authentication without changing the secret. */
+rule Provision_Psk:
+    [ !Public(pq, x), Fr(~id), Fr(~alternateId), Fr(~psk) ]
+  --[ PskAliases(pq, ~id, ~alternateId) ]->
+    [ !Mode(pq, 'psk', ~id, ~psk), !Mode(pq, 'psk', ~alternateId, ~psk)
+    , Out(<~id, ~alternateId>)
+    ]
+
+rule Reveal_Psk:
+    [ !Mode(pq, 'psk', id, psk) ]
+  --[ PskRevealed(pq, id) ]->
+    [ Out(psk) ]
+
+rule Seal_ML_KEM:
+    let enc = <'pq', aenc(~ss, pq)>
+        sched = schedule($suite, mode, ~ss, $info, id, psk)
+        key = record_key('mlkem', sched)
+        ct = aead(~pt, key, $aad)
+    in
+    [ !Mode(pq, mode, id, psk), Fr(~ss), Fr(~pt) ]
+  --[ Seal('mlkem', pq, enc, mode, $suite, $info, id, $aad, ct, ~pt) ]->
+    [ Out(<'record', enc, mode, $suite, $info, id, $aad, ct>) ]
+
+rule Seal_X_Wing:
+    let pqCt = aenc(~pqSs, pq)
+        enc = <'xwing', pqCt, ~xCt>
+        ss = combine(~pqSs, classical(~xCt, x), ~xCt, x)
+        sched = schedule($suite, mode, ss, $info, id, psk)
+        key = record_key('xwing', sched)
+        ct = aead(~pt, key, $aad)
+    in
+    [ !Public(pq, x), !Mode(pq, mode, id, psk), Fr(~pqSs), Fr(~xCt), Fr(~pt) ]
+  --[ Seal('xwing', <pq, x>, enc, mode, $suite, $info, id, $aad, ct, ~pt) ]->
+    [ Out(<'record', enc, mode, $suite, $info, id, $aad, ct>) ]
+
+/* Re-encapsulation checks are a symbolic validity predicate. A tagged
+   invalid ML-KEM input reaches the same receiver context as a valid one. */
+rule Decap_ML_KEM:
+    let enc = <'pq', pqCt>
+        ss = adec(pqCt, pqSk)
+        sched = schedule($suite, mode, ss, $info, id, psk)
+    in
+    [ !Recipient(pq, x, pqSk, seed), !Mode(pq, mode, id, psk)
+    , In(<'setup', enc, mode, $suite, $info, id>), Fr(~attempt) ]
+  --[ Eq(pqCt, aenc(ss, pq)), Decap(~attempt, 'mlkem', 'valid') ]->
+    [ Candidate(~attempt, 'mlkem', pq, enc, mode, $suite, $info, id, record_key('mlkem', sched))
+    , ExportReady(~attempt, 'mlkem', sched) ]
+
+/* The fallback key is recorded in the trace for comparison. Only the
+   receiver context can use it. No rule sends it to the network. */
+rule Implicit_Reject_ML_KEM:
+    let pqCt = <'invalid_pq', bytes>
+        enc = <'pq', pqCt>
+        ss = fallback(seed, pqCt)
+        sched = schedule($suite, mode, ss, $info, id, psk)
+        key = record_key('mlkem', sched)
+    in
+    [ !Recipient(pq, x, pqSk, seed), !Mode(pq, mode, id, psk)
+    , In(<'setup', enc, mode, $suite, $info, id>), Fr(~attempt) ]
+  --[ Decap(~attempt, 'mlkem', 'fallback')
+    , FallbackInput(~attempt, pq, enc, mode, $suite, $info, id, key) ]->
+    [ Candidate(~attempt, 'mlkem', pq, enc, mode, $suite, $info, id, key)
+    , ExportReady(~attempt, 'mlkem', sched) ]
+
+rule Decap_X_Wing:
+    let enc = <'xwing', pqCt, xCt>
+        pqSs = adec(pqCt, pqSk)
+        ss = combine(pqSs, classical(xCt, x), xCt, x)
+        sched = schedule($suite, mode, ss, $info, id, psk)
+    in
+    [ !Recipient(pq, x, pqSk, seed), !Mode(pq, mode, id, psk)
+    , In(<'setup', enc, mode, $suite, $info, id>), Fr(~attempt) ]
+  --[ Eq(pqCt, aenc(pqSs, pq))
+    , Decap(~attempt, 'xwing', 'valid') ]->
+    [ Candidate(~attempt, 'xwing', <pq, x>, enc, mode, $suite, $info, id, record_key('xwing', sched))
+    , ExportReady(~attempt, 'xwing', sched) ]
+
+rule Implicit_Reject_X_Wing:
+    let pqCt = <'invalid_pq', bytes>
+        enc = <'xwing', pqCt, xCt>
+        ss = combine(fallback(seed, pqCt), classical(xCt, x), xCt, x)
+        sched = schedule($suite, mode, ss, $info, id, psk)
+        key = record_key('xwing', sched)
+    in
+    [ !Recipient(pq, x, pqSk, seed), !Mode(pq, mode, id, psk)
+    , In(<'setup', enc, mode, $suite, $info, id>), Fr(~attempt) ]
+  --[ Decap(~attempt, 'xwing', 'fallback')
+    , FallbackInput(~attempt, <pq, x>, enc, mode, $suite, $info, id, key) ]->
+    [ Candidate(~attempt, 'xwing', <pq, x>, enc, mode, $suite, $info, id, key)
+    , ExportReady(~attempt, 'xwing', sched) ]
+
+rule Reject_Malformed:
+    [ !Public(pq, x), In(<'malformed', $family, bytes>), Fr(~attempt) ]
+  --[ Malformed(~attempt, $family) ]->
+    [ ]
+
+/* Export and authentication are separate uses of the candidate secret.
+   Export event bytes are local to the receiver and stay off the network. */
+rule Export_Receiver:
+    let output = export_value(family, sched, context, length)
+    in
+    [ ExportReady(attempt, family, sched), In(<context, length>) ]
+  --[ Exported(attempt, family, output) ]->
+    [ ]
+
+rule Authenticate:
+    let pt = open_aead(ct, key, $aad)
+    in
+    [ Candidate(attempt, family, recipient, enc, mode, suite, info, id, key)
+    , In(<'record', enc, mode, suite, info, id, $aad, ct>)
+    ]
+  --[ Eq(ct, aead(pt, key, $aad)), Authenticated(attempt, family, ct)
+    , Open(attempt, family, recipient, enc, mode, suite, info, id, $aad, ct, pt)
+    ]->
+    [ ]
+
+rule Reject_Record:
+    let pt = open_aead(ct, key, $aad)
+    in
+    [ Candidate(attempt, family, recipient, enc, mode, suite, info, id, key)
+    , In(<'record', enc, mode, suite, info, id, $aad, ct>)
+    ]
+  --[ Neq(ct, aead(pt, key, $aad)), RecordRejected(attempt, family, $aad, ct) ]->
+    [ ]
+
+restriction Equal:
+  "All x y #i. Eq(x, y) @ i ==> x = y"
+
+restriction Different:
+  "All x y #i. Neq(x, y) @ i ==> not (x = y)"
+
+lemma mlkem_roundtrip_exists:
+  exists-trace
+  "Ex attempt recipient enc suite info aad ct pt #i #j.
+     Seal('mlkem', recipient, enc, 'base', suite, info, 'empty_id', aad, ct, pt) @ i
+     & Open(attempt, 'mlkem', recipient, enc, 'base', suite, info, 'empty_id', aad, ct, pt) @ j
+     & i < j"
+
+lemma xwing_roundtrip_exists:
+  exists-trace
+  "Ex attempt recipient enc suite info aad ct pt #i #j.
+     Seal('xwing', recipient, enc, 'base', suite, info, 'empty_id', aad, ct, pt) @ i
+     & Open(attempt, 'xwing', recipient, enc, 'base', suite, info, 'empty_id', aad, ct, pt) @ j
+     & i < j"
+
+lemma mlkem_fallback_exports_and_rejects_exists:
+  exists-trace
+  "Ex attempt output ct recipient pqCt changed suite info aad pt key #s #i #j #k.
+     Seal('mlkem', recipient, <'pq', pqCt>, 'base', suite, info, 'empty_id', aad, ct, pt) @ s
+     & FallbackInput(attempt, recipient, <'pq', <'invalid_pq', changed>>, 'base', suite, info, 'empty_id', key) @ i
+     & Exported(attempt, 'mlkem', output) @ j
+     & RecordRejected(attempt, 'mlkem', aad, ct) @ k
+     & s < i & i < j & j < k"
+
+lemma xwing_fallback_exports_and_rejects_exists:
+  exists-trace
+  "Ex attempt output ct recipient pqCt xCt changed suite info aad pt key #s #i #j #k.
+     Seal('xwing', recipient, <'xwing', pqCt, xCt>, 'base', suite, info, 'empty_id', aad, ct, pt) @ s
+     & FallbackInput(attempt, recipient, <'xwing', <'invalid_pq', changed>, xCt>, 'base', suite, info, 'empty_id', key) @ i
+     & Exported(attempt, 'xwing', output) @ j
+     & RecordRejected(attempt, 'xwing', aad, ct) @ k
+     & s < i & i < j & j < k"
+
+lemma malformed_rejects_exists:
+  exists-trace
+  "Ex attempt #i. Malformed(attempt, 'mlkem') @ i"
+
+lemma malformed_cannot_export_or_open:
+  all-traces
+  "All attempt family #i. Malformed(attempt, family) @ i ==>
+     not (Ex f output #j. Exported(attempt, f, output) @ j)
+     & not (Ex f ct #j. Authenticated(attempt, f, ct) @ j)"
+
+lemma implicit_rejection_cannot_authenticate:
+  all-traces
+  "All attempt family #i. Decap(attempt, family, 'fallback') @ i ==>
+     not (Ex f ct #j. Authenticated(attempt, f, ct) @ j)"
+
+lemma plaintext_release_requires_authentication:
+  all-traces
+  "All attempt family recipient enc mode suite info id aad ct pt #i.
+     Open(attempt, family, recipient, enc, mode, suite, info, id, aad, ct, pt) @ i ==>
+     Authenticated(attempt, family, ct) @ i
+     & (Ex #j. Decap(attempt, family, 'valid') @ j & j < i)"
+
+lemma xwing_record_authentication_binds_encapsulation:
+  all-traces
+  "All attempt recipient enc mode suite info id aad ct pt enc2 mode2 suite2 info2 id2 aad2 pt2 #i #j.
+     Seal('xwing', recipient, enc, mode, suite, info, id, aad, ct, pt) @ i
+     & Open(attempt, 'xwing', recipient, enc2, mode2, suite2, info2, id2, aad2, ct, pt2) @ j
+     ==> enc = enc2 & mode = mode2 & suite = suite2 & info = info2 & id = id2
+       & aad = aad2 & pt = pt2"
+
+lemma mlkem_psk_roundtrip_exists:
+  exists-trace
+  "Ex attempt recipient enc suite info id aad ct pt #i #j.
+     Seal('mlkem', recipient, enc, 'psk', suite, info, id, aad, ct, pt) @ i
+     & Open(attempt, 'mlkem', recipient, enc, 'psk', suite, info, id, aad, ct, pt) @ j
+     & i < j"
+
+lemma xwing_psk_roundtrip_exists:
+  exists-trace
+  "Ex attempt recipient enc suite info id aad ct pt #i #j.
+     Seal('xwing', recipient, enc, 'psk', suite, info, id, aad, ct, pt) @ i
+     & Open(attempt, 'xwing', recipient, enc, 'psk', suite, info, id, aad, ct, pt) @ j
+     & i < j"
+
+lemma psk_open_binds_identifier_and_info:
+  all-traces
+  "All attempt family recipient enc suite info id aad ct pt otherInfo otherId pt2 #i #j.
+     Seal(family, recipient, enc, 'psk', suite, info, id, aad, ct, pt) @ i
+     & Open(attempt, family, recipient, enc, 'psk', suite, otherInfo, otherId, aad, ct, pt2) @ j
+     ==> info = otherInfo & id = otherId"
+
+/* Both attempts use the same rejected KEM input for the same recipient.
+   The candidate key depends on the PSK transcript even on this path. */
+lemma matching_psk_fallback_keys_bind_identifier_and_info:
+  all-traces
+  "All a b recipient enc suite info id otherInfo otherId key #i #j.
+     FallbackInput(a, recipient, enc, 'psk', suite, info, id, key) @ i
+     & FallbackInput(b, recipient, enc, 'psk', suite, otherInfo, otherId, key) @ j
+     ==> info = otherInfo & id = otherId"
+
+lemma alternate_psk_identifier_after_fallback_exists:
+  exists-trace
+  "Ex a b pq valid rejected suite info id otherId aad ct pt key otherKey #p #s #r #i #j #k.
+     PskAliases(pq, id, otherId) @ p
+     & Seal('mlkem', pq, <'pq', valid>, 'psk', suite, info, id, aad, ct, pt) @ s
+     & PskRevealed(pq, id) @ r
+     & FallbackInput(a, pq, <'pq', <'invalid_pq', rejected>>, 'psk', suite, info, id, key) @ i
+     & FallbackInput(b, pq, <'pq', <'invalid_pq', rejected>>, 'psk', suite, info, otherId, otherKey) @ j
+     & RecordRejected(b, 'mlkem', aad, ct) @ k
+     & not (id = otherId) & not (key = otherKey)
+     & p < s & p < r & r < i & s < i & i < j & j < k"
+
+lemma alternate_info_after_psk_fallback_exists:
+  exists-trace
+  "Ex a b recipient valid xCt rejected suite info otherInfo id aad ct pt key otherKey #s #i #j #k.
+     Seal('xwing', recipient, <'xwing', valid, xCt>, 'psk', suite, info, id, aad, ct, pt) @ s
+     & FallbackInput(a, recipient, <'xwing', <'invalid_pq', rejected>, xCt>, 'psk', suite, info, id, key) @ i
+     & FallbackInput(b, recipient, <'xwing', <'invalid_pq', rejected>, xCt>, 'psk', suite, otherInfo, id, otherKey) @ j
+     & RecordRejected(b, 'xwing', aad, ct) @ k
+     & not (info = otherInfo) & not (key = otherKey)
+     & s < i & i < j & j < k"
+
+end

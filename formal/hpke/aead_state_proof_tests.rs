@@ -134,15 +134,27 @@ impl AeadInOut for ObservedAead {
         nonce: &Nonce<Self>,
         _aad: &[u8],
         mut buffer: InOutBuf<'_, '_, u8>,
-        _tag: &Tag<Self>,
+        tag: &Tag<Self>,
     ) -> aead::Result<()> {
         assert_eq!(nonce.as_slice(), &self.expected_nonce);
         buffer.get_out().fill(AEAD_CALLED);
-        if self.accepts { Ok(()) } else { Err(Error) }
+        // An ideal record for a different nonce is authentic only at that
+        // nonce. Write first to keep the error path realistic.
+        if self.accepts && nonce.as_slice() == &tag[..NONCE_LEN] {
+            Ok(())
+        } else {
+            Err(Error)
+        }
     }
 }
 
 type ObservedContext = AeadCtx<ObservedAlgorithm, HkdfSha256, X25519HkdfSha256>;
+
+fn tag_for_nonce(nonce: [u8; NONCE_LEN]) -> AeadTag<ObservedAlgorithm> {
+    let mut tag = AeadTag::default();
+    tag.0[..NONCE_LEN].copy_from_slice(&nonce);
+    tag
+}
 
 fn context(seq: u64, exhausted: bool, accepts: bool) -> ObservedContext {
     let base_nonce: [u8; NONCE_LEN] = kani::any();
@@ -217,8 +229,61 @@ fn sender_advances_only_on_success_and_exhaustion_is_terminal() {
 fn receiver_advances_only_on_success_and_exhaustion_is_terminal() {
     let context = context(kani::any(), kani::any(), kani::any());
     check_transition(context, HpkeError::OpenError, |context, buffer| {
+        let tag = tag_for_nonce(context.encryptor.expected_nonce);
         let mut receiver = AeadCtxR::from(context);
-        let result = receiver.open_inout_detached(buffer.into(), &[], &AeadTag::default());
+        let result = receiver.open_inout_detached(buffer.into(), &[], &tag);
         (receiver.0, result)
     });
+}
+
+#[kani::proof]
+#[kani::unwind(65)]
+fn receiver_rejects_a_different_sequence_and_accepts_the_expected_record() {
+    let seq: u64 = kani::any();
+    let offered_seq: u64 = kani::any();
+    kani::assume(offered_seq != seq);
+    let mut receiver = AeadCtxR::from(context(seq, false, true));
+    let mut base_nonce = [0_u8; NONCE_LEN];
+    base_nonce.copy_from_slice(receiver.0.base_nonce.0.as_slice());
+    let valid_tag = tag_for_nonce(specified_nonce(base_nonce, seq));
+    let invalid_tag = tag_for_nonce(specified_nonce(base_nonce, offered_seq));
+
+    // The AEAD checks the same independently specified nonce on both
+    // calls. Only the offered record changes between attempts. Use fresh
+    // scratch space because the backend can write on either outcome.
+    let mut rejected = [UNTOUCHED];
+    let first = receiver.open_inout_detached(rejected.as_mut_slice().into(), &[], &invalid_tag);
+    assert_eq!(first, Err(HpkeError::OpenError));
+    assert_eq!(rejected, [AEAD_CALLED]);
+    assert_eq!(receiver.0.seq.0, seq);
+    assert!(!receiver.0.overflowed);
+    kani::cover!(offered_seq < seq, "a duplicate or stale record is rejected");
+    kani::cover!(
+        offered_seq > seq,
+        "a skipped or reordered record is rejected"
+    );
+
+    let mut retried = [UNTOUCHED];
+    let retry = receiver.open_inout_detached(retried.as_mut_slice().into(), &[], &valid_tag);
+    assert_eq!(retry, Ok(()));
+    assert_eq!(retried, [AEAD_CALLED]);
+    if let Some(next) = seq.checked_add(1) {
+        assert_eq!(receiver.0.seq.0, next);
+        assert!(!receiver.0.overflowed);
+        kani::cover!(true, "retry succeeds before the last nonce");
+    } else {
+        assert_eq!(receiver.0.seq.0, seq);
+        assert!(receiver.0.overflowed);
+        kani::cover!(true, "retry succeeds on the last nonce");
+
+        // The record that just authenticated is still valid at this
+        // nonce. Exhaustion must reject it without entering the AEAD.
+        let mut after_exhaustion = [UNTOUCHED];
+        let result =
+            receiver.open_inout_detached(after_exhaustion.as_mut_slice().into(), &[], &valid_tag);
+        assert_eq!(result, Err(HpkeError::MessageLimitReached));
+        assert_eq!(after_exhaustion, [UNTOUCHED]);
+        assert_eq!(receiver.0.seq.0, seq);
+        assert!(receiver.0.overflowed);
+    }
 }

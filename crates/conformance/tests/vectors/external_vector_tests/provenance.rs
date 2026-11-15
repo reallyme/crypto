@@ -24,6 +24,12 @@ pub(crate) fn file_entries(value: &Value) -> Result<&Vec<Value>, VectorTestError
     field_array(value, "files")
 }
 
+fn corpus_entries(value: &Value) -> Result<impl Iterator<Item = &Value>, VectorTestError> {
+    Ok(file_entries(value)?
+        .iter()
+        .chain(field_array(value, "derived_files")?))
+}
+
 #[test]
 fn external_vector_provenance_declares_sources() -> Result<(), VectorTestError> {
     let value = provenance()?;
@@ -115,6 +121,25 @@ fn external_vector_urls_are_pinned_to_commits() -> Result<(), VectorTestError> {
             "{source_id} upstream url is not pinned to its source commit"
         );
     }
+    for entry in field_array(&value, "derived_files")? {
+        let source_id = field_string(entry, "source_id")?;
+        let source = source_by_id(sources, source_id)?;
+        let commit = field_string(source, "commit")?;
+        let archive = field_string(entry, "reference_archive_url")?;
+        let archive_digest = field_string(entry, "reference_archive_sha256")?;
+        let input = field_string(entry, "input_path")?;
+        assert!(
+            archive.ends_with(commit),
+            "reference archive must be pinned"
+        );
+        assert_eq!(archive_digest.len(), 64);
+        assert!(archive_digest.bytes().all(|byte| byte.is_ascii_hexdigit()));
+        assert!(!field_string(entry, "generator")?.is_empty());
+        assert!(file_entries(&value)?.iter().any(|file| {
+            file.get("local_path").and_then(Value::as_str) == Some(input)
+                && file.get("source_id").and_then(Value::as_str) == Some(source_id)
+        }));
+    }
 
     Ok(())
 }
@@ -123,7 +148,7 @@ fn external_vector_urls_are_pinned_to_commits() -> Result<(), VectorTestError> {
 fn every_external_corpus_file_has_provenance() -> Result<(), VectorTestError> {
     let value = provenance()?;
     let mut declared_paths = BTreeSet::new();
-    for entry in file_entries(&value)? {
+    for entry in corpus_entries(&value)? {
         let local_path = field_string(entry, "local_path")?;
         assert!(
             declared_paths.insert(local_path.to_owned()),
@@ -149,7 +174,7 @@ fn every_external_corpus_file_has_provenance() -> Result<(), VectorTestError> {
 fn external_vector_files_match_pinned_sha256() -> Result<(), VectorTestError> {
     let value = provenance()?;
 
-    for entry in file_entries(&value)? {
+    for entry in corpus_entries(&value)? {
         let local_path = field_string(entry, "local_path")?;
         let expected_sha256 = field_string(entry, "sha256")?;
         let bytes = read_external_bytes(local_path)?;

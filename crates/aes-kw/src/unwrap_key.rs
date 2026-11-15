@@ -68,3 +68,7 @@ fn unwrap_with(
         Err(_) => Err(crypto_core::CryptoError::BACKEND_INTERNAL),
     }
 }
+
+#[cfg(kani)]
+#[path = "unwrap_key/proof_tests.rs"]
+mod proof_tests;

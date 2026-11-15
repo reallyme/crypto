@@ -11,6 +11,7 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
       - "rust-toolchain.toml"
+      - "crates/aes-kw/**"
       - "crates/aes256-gcm/**"
       - "crates/aes256-gcm-siv/**"
       - "crates/chacha20-poly1305/**"
@@ -21,10 +22,17 @@ on:
       - "crates/crypto/tests/restricted_operation_dispatch_tests.rs"
       - "crates/ffi/**"
       - "crates/hpke/**"
+      - "crates/p256/**"
       - "crates/proto/**"
+      - "crates/secp256k1/**"
+      - "crates/sha3/**"
+      - "crates/sha3-256/**"
       - "crates/wasm/**"
+      - "crates/x25519/**"
+      - "crates/x448/**"
       - "formal/hpke/**"
-      - "vectors/external/hpke/rfc9180_test_vectors.json"
+      - "vectors/external/hpke/**"
+      - "vectors/external/nist-acvp/ml-kem/encap-decap/internalProjection.json"
       - "vectors/external/provenance.json"
       - "formal/tamarin/**"
       - ".github/workflows/formal-verification.yml"
@@ -35,6 +43,7 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
       - "rust-toolchain.toml"
+      - "crates/aes-kw/**"
       - "crates/aes256-gcm/**"
       - "crates/aes256-gcm-siv/**"
       - "crates/chacha20-poly1305/**"
@@ -45,10 +54,17 @@ on:
       - "crates/crypto/tests/restricted_operation_dispatch_tests.rs"
       - "crates/ffi/**"
       - "crates/hpke/**"
+      - "crates/p256/**"
       - "crates/proto/**"
+      - "crates/secp256k1/**"
+      - "crates/sha3/**"
+      - "crates/sha3-256/**"
       - "crates/wasm/**"
+      - "crates/x25519/**"
+      - "crates/x448/**"
       - "formal/hpke/**"
-      - "vectors/external/hpke/rfc9180_test_vectors.json"
+      - "vectors/external/hpke/**"
+      - "vectors/external/nist-acvp/ml-kem/encap-decap/internalProjection.json"
       - "vectors/external/provenance.json"
       - "formal/tamarin/**"
       - ".github/workflows/formal-verification.yml"
@@ -64,7 +80,7 @@ jobs:
   tamarin:
     name: Tamarin HPKE protocol proofs
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 12
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -89,15 +105,34 @@ jobs:
           unzip -q maude.zip
           printf '%s\n' "$PWD" >> "$GITHUB_PATH"
 
-      - name: Verify secrecy and context binding
+      - name: Verify HPKE secrecy, binding, and implicit rejection
+        timeout-minutes: 8
         env:
           LC_ALL: C.UTF-8
+          GHCRTS: "-N2"
         run: bash formal/tamarin/verify.sh
 
-  kani:
-    name: Kani production boundary proofs
+  kani-verification:
+    name: Kani ${{ matrix.scope }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        scope:
+          - operation-wire
+          - restricted-dispatch
+          - plaintext-release
+          - hpke-dispatch
+          - hpke-state
+          - hpke-vectors
+          - provider-profiles
+          - ml-kem-encoding
+          - ecdsa
+          - key-agreement
+          - x25519-backend
+          - aes-key-wrap
+          - keccak
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -110,6 +145,7 @@ jobs:
           toolchain: 1.100.0
 
       - name: Install Kani and its verification toolchain
+        if: matrix.scope != 'hpke-vectors'
         run: |
           cargo install --locked kani-verifier@0.68.0
           cargo kani setup
@@ -118,59 +154,135 @@ jobs:
         run: cargo fetch --locked --target x86_64-unknown-linux-gnu
 
       - name: Prove the ProtoJSON request policy
+        if: matrix.scope == 'operation-wire'
         env:
           CARGO_NET_OFFLINE: "true"
-        run: cargo kani -p reallyme-crypto-proto --features generated --jobs 2 --output-format terse
+        run: cargo kani -p reallyme-crypto-proto --features generated -Z unstable-options --harness-timeout 15m --jobs 2 --output-format terse
 
       - name: Prove open failures serialize only a protobuf error
+        if: matrix.scope == 'operation-wire'
         env:
           CARGO_PROFILE_DEV_DEBUG_ASSERTIONS: "false"
           CARGO_NET_OFFLINE: "true"
-        run: cargo kani -p reallyme-crypto --features operation-response --lib -Z stubbing --jobs 2 --output-format terse
+        run: cargo kani -p reallyme-crypto --features operation-response --lib -Z stubbing -Z unstable-options --harness-timeout 15m --jobs 2 --output-format terse
 
       - name: Verify restricted operation and provider dispatch
+        if: matrix.scope == 'restricted-dispatch'
         env:
           CARGO_PROFILE_DEV_DEBUG_ASSERTIONS: "false"
           CARGO_NET_OFFLINE: "true"
         run: |
-          cargo kani -p reallyme-crypto-dispatch --no-default-features --features proto,native,ed25519 --lib -Z stubbing --jobs 2 --output-format terse
-          cargo kani -p reallyme-crypto --no-default-features --features operation-response,native,ed25519 --lib -Z stubbing --jobs 2 --output-format terse
+          cargo kani -p reallyme-crypto-dispatch --no-default-features --features proto,native,ed25519 --lib -Z stubbing -Z unstable-options --harness-timeout 15m --jobs 2 --output-format terse
+          cargo kani -p reallyme-crypto --no-default-features --features operation-response,native,ed25519 --lib -Z stubbing -Z unstable-options --harness-timeout 15m --jobs 2 --output-format terse
           cargo test --locked -p reallyme-crypto --no-default-features --features operation-response,native,ed25519 --test restricted_operation_dispatch_tests
 
-      - name: Prove HPKE dispatch with the full native profile
+      - name: Prove HPKE dispatch and receiver handoff with the full native profile
+        if: matrix.scope == 'hpke-dispatch'
         env:
           CARGO_NET_OFFLINE: "true"
-        run: cargo kani -p reallyme-crypto-hpke --no-default-features --features native --jobs 2 --output-format terse
+        run: cargo kani -p reallyme-crypto-hpke --no-default-features --features native -Z unstable-options --harness-timeout 15m --jobs 2 --output-format terse
 
       - name: Prove HPKE dispatch with a restricted profile
+        if: matrix.scope == 'hpke-dispatch'
         env:
           CARGO_NET_OFFLINE: "true"
         run: >-
           cargo kani -p reallyme-crypto-hpke --no-default-features
-          --features base-p256-aes128gcm,aead-export-only --jobs 2 --output-format terse
+          --features base-p256-aes128gcm,aead-export-only -Z unstable-options --harness-timeout 15m --jobs 2 --output-format terse
 
       - name: Prove the shared AEAD plaintext handoff
+        if: matrix.scope == 'plaintext-release'
         env:
           CARGO_NET_OFFLINE: "true"
-        run: cargo kani -p reallyme-crypto-core --jobs 2 --output-format terse
+        run: cargo kani -p reallyme-crypto-core -Z stubbing -Z unstable-options --harness-timeout 15m --jobs 2 --output-format terse
 
       - name: Prove AEAD output preservation at the C ABI and JNI handoff
+        if: matrix.scope == 'plaintext-release'
         env:
           CARGO_NET_OFFLINE: "true"
-        run: cargo kani -p crypto-ffi --lib -Z stubbing --jobs 2 --output-format terse
+        run: cargo kani -p crypto-ffi --lib -Z stubbing -Z unstable-options --harness-timeout 15m --jobs 2 --output-format terse
 
       - name: Prove the WASM plaintext handoff
+        if: matrix.scope == 'plaintext-release'
         env:
           CARGO_NET_OFFLINE: "true"
-        run: cargo kani -p reallyme-crypto-wasm --lib --jobs 2 --output-format terse
+        run: cargo kani -p reallyme-crypto-wasm --lib -Z unstable-options --harness-timeout 15m --jobs 2 --output-format terse
 
       - name: Prove the locked HPKE backend nonce and state transitions
+        if: matrix.scope == 'hpke-state'
         run: |
           python3 -B formal/hpke/verify_test.py
           python3 formal/hpke/verify.py
 
-      - name: Verify the locked HPKE key schedule and exporter against RFC 9180 vectors
+      - name: Verify locked HPKE schedules, records, and rejection secrets against independent vectors
+        if: matrix.scope == 'hpke-vectors'
+        timeout-minutes: 10
         run: python3 -B formal/hpke/check_schedule_vectors.py
+
+      - name: Prove reduced WASM and mixed native provider policy
+        if: matrix.scope == 'provider-profiles'
+        env:
+          CARGO_NET_OFFLINE: "true"
+          CARGO_PROFILE_DEV_DEBUG_ASSERTIONS: "false"
+        run: |
+          cargo kani -p reallyme-crypto-dispatch --no-default-features --features proto,wasm,secp256k1,ml-kem-768 --lib -Z unstable-options --harness-timeout 15m --jobs 2 --output-format terse
+          cargo kani -p reallyme-crypto-dispatch --no-default-features --features proto,native,ml-dsa-65,ml-kem-768 --lib -Z stubbing -Z unstable-options --harness-timeout 15m --jobs 2 --output-format terse
+
+      - name: Prove 12-bit ML-KEM encoding
+        if: matrix.scope == 'ml-kem-encoding'
+        env:
+          CARGO_NET_OFFLINE: "true"
+          # Select cmov's portable implementation so Kani can verify its behavior.
+          RUSTFLAGS: "--cfg miri"
+        run: python3 -B formal/hpke/verify.py module-lattice
+
+      - name: Prove ECDSA low-S admission and normalization
+        if: matrix.scope == 'ecdsa'
+        env:
+          CARGO_NET_OFFLINE: "true"
+          CARGO_PROFILE_DEV_DEBUG_ASSERTIONS: "false"
+          CARGO_PROFILE_DEV_OPT_LEVEL: "1"
+          RUSTFLAGS: "--cfg miri"
+        run: >-
+          cargo kani -p reallyme-crypto-p256 -p reallyme-crypto-secp256k1
+          --no-default-features --features native --lib -Z unstable-options --harness-timeout 15m --jobs 2 --output-format terse
+
+      - name: Prove X25519 and X448 key and shared-secret admission
+        if: matrix.scope == 'key-agreement'
+        env:
+          CARGO_NET_OFFLINE: "true"
+        run: >-
+          cargo kani -p reallyme-crypto-x25519 -p reallyme-crypto-x448
+          --no-default-features --features native --lib -Z stubbing
+          -Z unstable-options --harness-timeout 15m --jobs 2 --output-format terse
+
+      - name: Prove the locked X25519 contribution flag
+        if: matrix.scope == 'x25519-backend'
+        run: python3 -B formal/hpke/verify.py x25519-dalek
+
+      - name: Prove AES-KW admission, release, and the locked block schedule
+        if: matrix.scope == 'aes-key-wrap'
+        env:
+          CARGO_NET_OFFLINE: "true"
+        run: |
+          cargo kani -p reallyme-crypto-aes-kw --no-default-features --features native --lib -Z unstable-options --harness-timeout 15m --jobs 2 --output-format terse
+          python3 -B formal/hpke/verify.py aes-kw
+
+      - name: Prove the portable Keccak round and round constants
+        if: matrix.scope == 'keccak'
+        run: python3 -B formal/hpke/verify.py keccak
 
       - name: Verify the resolution still matches the checked-in lockfile
         run: git diff --exit-code -- Cargo.lock
+
+  kani:
+    name: Kani production boundary proofs
+    needs: kani-verification
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Require every verification job to succeed
+        env:
+          VERIFICATION_RESULT: ${{ needs.kani-verification.result }}
+        run: test "$VERIFICATION_RESULT" = success

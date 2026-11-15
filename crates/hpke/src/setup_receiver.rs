@@ -210,3 +210,12 @@ fn map_setup_error(error: hpke::HpkeError) -> HpkeError {
 #[cfg(test)]
 #[path = "setup_receiver_tests.rs"]
 mod tests;
+
+#[cfg(all(
+    kani,
+    feature = "aead-aes128-gcm",
+    feature = "kdf-hkdf-sha256",
+    feature = "kem-x25519"
+))]
+#[path = "setup_receiver_proof_tests.rs"]
+mod proof_tests;

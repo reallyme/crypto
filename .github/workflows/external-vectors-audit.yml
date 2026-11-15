@@ -37,6 +37,10 @@ on:
         description: "Reviewed CFRG HPKE draft commit SHA for RFC 9180 vectors (blank to skip)"
         required: false
         default: ""
+      hpke_pq_ref:
+        description: "Reviewed IETF PQ HPKE draft-05 commit SHA (blank to skip)"
+        required: false
+        default: ""
       brycx_ref:
         description: "Reviewed brycx Test-Vector-Generation commit SHA for PBKDF2 vectors (blank to skip)"
         required: false
@@ -130,6 +134,7 @@ jobs:
           RFC8032_REF: ${{ github.event.inputs.rfc8032_ref }}
           XWING_REF: ${{ github.event.inputs.xwing_ref }}
           HPKE_REF: ${{ github.event.inputs.hpke_ref }}
+          HPKE_PQ_REF: ${{ github.event.inputs.hpke_pq_ref }}
           BRYCX_REF: ${{ github.event.inputs.brycx_ref }}
         run: |
           sources=()
@@ -138,6 +143,7 @@ jobs:
           [ -n "${RFC8032_REF}" ] && sources+=(rfc8032)
           [ -n "${XWING_REF}" ] && sources+=(xwing)
           [ -n "${HPKE_REF}" ] && sources+=(hpke)
+          [ -n "${HPKE_PQ_REF}" ] && sources+=(hpke_pq)
           [ -n "${BRYCX_REF}" ] && sources+=(brycx)
           if [ "${#sources[@]}" -eq 0 ]; then
             echo "No supplementary refs supplied; skipping vendoring."
@@ -146,7 +152,7 @@ jobs:
           fi
 
       - name: Require reviewed supplementary corpus bytes
-        if: ${{ github.event.inputs.wycheproof_ref != '' || github.event.inputs.bip340_ref != '' || github.event.inputs.rfc8032_ref != '' || github.event.inputs.xwing_ref != '' || github.event.inputs.hpke_ref != '' || github.event.inputs.brycx_ref != '' }}
+        if: ${{ github.event.inputs.wycheproof_ref != '' || github.event.inputs.bip340_ref != '' || github.event.inputs.rfc8032_ref != '' || github.event.inputs.xwing_ref != '' || github.event.inputs.hpke_ref != '' || github.event.inputs.hpke_pq_ref != '' || github.event.inputs.brycx_ref != '' }}
         run: git diff --exit-code -- vectors/external
 
       - name: Run existing deep CCTV/ACVP audit
@@ -187,7 +193,7 @@ jobs:
           --test pbkdf2_rfc6070 -- --ignored
 
       - name: Re-verify provenance hashes after vendoring
-        if: ${{ github.event.inputs.wycheproof_ref != '' || github.event.inputs.bip340_ref != '' || github.event.inputs.rfc8032_ref != '' || github.event.inputs.xwing_ref != '' || github.event.inputs.hpke_ref != '' || github.event.inputs.brycx_ref != '' }}
+        if: ${{ github.event.inputs.wycheproof_ref != '' || github.event.inputs.bip340_ref != '' || github.event.inputs.rfc8032_ref != '' || github.event.inputs.xwing_ref != '' || github.event.inputs.hpke_ref != '' || github.event.inputs.hpke_pq_ref != '' || github.event.inputs.brycx_ref != '' }}
         run: >-
           bash scripts/run_exact_cargo_test.sh --ignored
           external_vector_tests::provenance::external_vector_files_match_pinned_sha256
@@ -197,6 +203,7 @@ jobs:
     name: kani proofs (reference encoder)
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -221,4 +228,6 @@ jobs:
           cargo kani setup
 
       - name: Run Kani proofs
-        run: cargo kani --manifest-path tools/external-vector-audit/refenc-proof/Cargo.toml
+        run: >-
+          cargo kani --manifest-path tools/external-vector-audit/refenc-proof/Cargo.toml
+          -Z unstable-options --harness-timeout 10m

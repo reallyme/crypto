@@ -96,6 +96,10 @@ impl From<&X448PrivateKey> for X448PublicKey {
     }
 }
 
+#[cfg(kani)]
+#[path = "material/proof_tests.rs"]
+mod proof_tests;
+
 /// A raw X448 shared secret with zeroize-on-drop ownership.
 pub struct X448SharedSecret([u8; X448_SHARED_SECRET_LEN]);
 

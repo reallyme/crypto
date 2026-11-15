@@ -9,14 +9,19 @@
 //! ReallyMe exposes: derandomized seal (seeded with the vector's `ikmE`) must
 //! reproduce the encapsulated key and first ciphertext, and open must recover
 //! the plaintext. The context-binding test uses independent Base and PSK
-//! records from the same corpus and substitutes one input at a time. Vendored
-//! via `scripts/vendor_external_vectors.mjs`; ignored by default.
+//! records from the same corpus and substitutes one input at a time. The
+//! stateful PSK test stays on one context per direction through all 257
+//! published records per suite while checking retries and record ordering.
+//! A second stateful test checks isolation between two encapsulations with
+//! the same PSK and record inputs.
 
 use crypto_hpke::{
-    open_base, open_psk, receiver_export, seal_base_derand, sender_export_derand, HpkeAeadId,
+    open_base, open_psk, receiver_export, seal_base_derand, sender_export_derand,
+    setup_receiver_psk, setup_sender_psk_derand, HpkeAeadId, HpkeDerandPskSenderSetupRequest,
     HpkeDerandSealRequest, HpkeDerandSenderExportRequest, HpkeError, HpkeKdfId, HpkeKemId,
-    HpkeOpenOutput, HpkeOpenRequest, HpkePskOpenRequest, HpkeReceiverExportRequest, HpkeSuite,
-    HPKE_DHKEM_P256_HKDF_SHA256_AES128GCM, HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM,
+    HpkeOpenOutput, HpkeOpenRequest, HpkePskIdRef, HpkePskOpenRequest, HpkePskReceiverSetupRequest,
+    HpkePskRef, HpkePskSenderSetupOutput, HpkeReceiverContext, HpkeReceiverExportRequest,
+    HpkeSuite, HPKE_DHKEM_P256_HKDF_SHA256_AES128GCM, HPKE_DHKEM_P256_HKDF_SHA256_AES256GCM,
     HPKE_DHKEM_P521_HKDF_SHA512_AES256GCM, HPKE_DHKEM_X25519_HKDF_SHA256_AES128GCM,
     HPKE_DHKEM_X25519_HKDF_SHA256_CHACHA20POLY1305,
 };
@@ -26,6 +31,7 @@ use zeroize::Zeroizing;
 
 const BASE_MODE: u32 = 0;
 const PSK_MODE: u32 = 1;
+const RFC_RECORD_COUNT: usize = 257;
 const CORPUS: &str = "hpke/rfc9180_test_vectors.json";
 const AUDITED_SUITES: [HpkeSuite; 5] = [
     HPKE_DHKEM_P256_HKDF_SHA256_AES128GCM,
@@ -143,6 +149,154 @@ fn matches_suite(vector: &HpkeVector, suite: HpkeSuite) -> bool {
     vector.kem_id == u32::from(suite.kem_id())
         && vector.kdf_id == u32::from(suite.kdf_id())
         && vector.aead_id == u32::from(suite.aead_id())
+}
+
+#[test]
+#[ignore = "vendored RFC 9180 corpus; run via the external-vectors audit workflow after vendoring"]
+fn rfc9180_hpke_public_psk_contexts_retry_each_record() -> Result<(), AuditError> {
+    let vectors: Vec<HpkeVector> = load_json(CORPUS)?;
+    for suite in AUDITED_SUITES {
+        let vector = find_vector(&vectors, PSK_MODE, suite)?;
+        assert_eq!(vector.encryptions.len(), RFC_RECORD_COUNT);
+        let randomness = Zeroizing::new(hex_bytes(&vector.ikm_e)?);
+        let (mut sender, mut receiver) = setup_public_psk_contexts(vector, suite, &randomness)?;
+        assert_bytes_eq(&sender.encapsulated_key, &hex_bytes(&vector.enc)?)?;
+
+        for (seq, record) in vector.encryptions.iter().enumerate() {
+            let aad = hex_bytes(&record.aad)?;
+            let ct = hex_bytes(&record.ct)?;
+            let pt = Zeroizing::new(hex_bytes(&record.pt)?);
+            let sealed = sender
+                .context
+                .seal(&aad, &pt)
+                .map_err(|_| AuditError::Mismatch)?;
+            assert_bytes_eq(&sealed, &ct)?;
+
+            // Keep each misplaced record's published AAD and ciphertext
+            // intact. Replay the previous record and deliver the next two
+            // records early. All three records authenticate in their
+            // proper positions on this same receiver.
+            let misplaced = [seq.checked_sub(1), seq.checked_add(2), seq.checked_add(1)];
+            for offered in misplaced.into_iter().flatten() {
+                let Some(other) = vector.encryptions.get(offered) else {
+                    continue;
+                };
+                let other_aad = hex_bytes(&other.aad)?;
+                let other_ct = hex_bytes(&other.ct)?;
+                assert_eq!(
+                    receiver.open(&other_aad, &other_ct).err(),
+                    Some(HpkeError::PRIMITIVE_AUTHENTICATION_FAILED),
+                    "suite {suite:?}, sequence {seq}, offered sequence {offered}"
+                );
+            }
+
+            let mut bad_tag = ct.clone();
+            *bad_tag.last_mut().ok_or(AuditError::Shape)? ^= 1;
+            // A rejected record must let the caller retry the same sequence
+            // through the public context, including the nonce carry at 256.
+            assert_eq!(
+                receiver.open(&aad, &bad_tag).err(),
+                Some(HpkeError::PRIMITIVE_AUTHENTICATION_FAILED),
+                "suite {suite:?}, sequence {seq}"
+            );
+            let opened = receiver.open(&aad, &ct).map_err(|_| AuditError::Mismatch)?;
+            assert_bytes_eq(opened.plaintext.as_slice(), &pt)?;
+        }
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "vendored RFC 9180 corpus; run via the external-vectors audit workflow after vendoring"]
+fn rfc9180_hpke_public_psk_contexts_reject_each_others_records() -> Result<(), AuditError> {
+    let vectors: Vec<HpkeVector> = load_json(CORPUS)?;
+    for suite in AUDITED_SUITES {
+        let vector = find_vector(&vectors, PSK_MODE, suite)?;
+        let alternate = find_vector(&vectors, BASE_MODE, suite)?;
+        assert_eq!(vector.encryptions.len(), RFC_RECORD_COUNT);
+        let randomness = Zeroizing::new(hex_bytes(&vector.ikm_e)?);
+        let alternate_randomness = Zeroizing::new(hex_bytes(&alternate.ikm_e)?);
+        if *randomness == *alternate_randomness {
+            return Err(AuditError::Shape);
+        }
+        // Borrow only the alternate row's encapsulation randomness. Both
+        // setups use the same PSK row for the recipient, PSK, ID, and info.
+        let (mut sender, mut receiver) = setup_public_psk_contexts(vector, suite, &randomness)?;
+        let (mut alternate_sender, mut alternate_receiver) =
+            setup_public_psk_contexts(vector, suite, &alternate_randomness)?;
+        assert_bytes_eq(&sender.encapsulated_key, &hex_bytes(&vector.enc)?)?;
+        // These DHKEM encapsulations encode the ephemeral public key.
+        assert_bytes_eq(
+            &alternate_sender.encapsulated_key,
+            &hex_bytes(&alternate.enc)?,
+        )?;
+        assert!(
+            sender.encapsulated_key != alternate_sender.encapsulated_key,
+            "distinct encapsulations for suite {suite:?}"
+        );
+
+        for (seq, record) in vector.encryptions.iter().enumerate() {
+            let aad = hex_bytes(&record.aad)?;
+            let plaintext = Zeroizing::new(hex_bytes(&record.pt)?);
+            let ciphertext = sender
+                .context
+                .seal(&aad, &plaintext)
+                .map_err(|_| AuditError::Mismatch)?;
+            let alternate_ciphertext = alternate_sender
+                .context
+                .seal(&aad, &plaintext)
+                .map_err(|_| AuditError::Mismatch)?;
+            assert_bytes_eq(&ciphertext, &hex_bytes(&record.ct)?)?;
+
+            // Send each intact record to the other receiver first. An
+            // authentic open on each receiver then checks that rejection
+            // left both contexts at the same sequence.
+            for (receiver, foreign, own) in [
+                (&mut receiver, &alternate_ciphertext, &ciphertext),
+                (&mut alternate_receiver, &ciphertext, &alternate_ciphertext),
+            ] {
+                assert_eq!(
+                    receiver.open(&aad, foreign).err(),
+                    Some(HpkeError::PRIMITIVE_AUTHENTICATION_FAILED),
+                    "cross-context open for suite {suite:?}, sequence {seq}"
+                );
+                let opened = receiver.open(&aad, own).map_err(|_| AuditError::Mismatch)?;
+                assert_bytes_eq(opened.plaintext.as_slice(), &plaintext)?;
+            }
+        }
+    }
+    Ok(())
+}
+
+fn setup_public_psk_contexts(
+    vector: &HpkeVector,
+    suite: HpkeSuite,
+    randomness: &[u8],
+) -> Result<(HpkePskSenderSetupOutput, HpkeReceiverContext), AuditError> {
+    let public_key = hex_bytes(&vector.pk_rm)?;
+    let private_key = Zeroizing::new(hex_bytes(&vector.sk_rm)?);
+    let info = hex_bytes(&vector.info)?;
+    let psk_bytes = Zeroizing::new(hex_bytes(vector.psk.as_deref().ok_or(AuditError::Shape)?)?);
+    let psk_id_bytes = hex_bytes(vector.psk_id.as_deref().ok_or(AuditError::Shape)?)?;
+    let sender = setup_sender_psk_derand(&HpkeDerandPskSenderSetupRequest {
+        suite,
+        recipient_public_key: &public_key,
+        encapsulation_randomness: randomness,
+        info: &info,
+        psk: HpkePskRef::new(&psk_bytes).map_err(|_| AuditError::Shape)?,
+        psk_id: HpkePskIdRef::new(&psk_id_bytes).map_err(|_| AuditError::Shape)?,
+    })
+    .map_err(|_| AuditError::Mismatch)?;
+    let receiver = setup_receiver_psk(&HpkePskReceiverSetupRequest {
+        suite,
+        encapsulated_key: &sender.encapsulated_key,
+        recipient_private_key: &private_key,
+        info: &info,
+        psk: HpkePskRef::new(&psk_bytes).map_err(|_| AuditError::Shape)?,
+        psk_id: HpkePskIdRef::new(&psk_id_bytes).map_err(|_| AuditError::Shape)?,
+    })
+    .map_err(|_| AuditError::Mismatch)?;
+    Ok((sender, receiver))
 }
 
 #[test]

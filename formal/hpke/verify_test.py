@@ -11,7 +11,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from verify import CRATES_IO, VerificationError, prepare_archive, verify_resolution
+from verify import (
+    CRATES_IO,
+    VerificationError,
+    locked_dependency,
+    prepare_archive,
+    restrict_ml_kem_to_one_chunk,
+    verify_resolution,
+)
 
 
 class VerificationInputTests(unittest.TestCase):
@@ -93,6 +100,49 @@ checksum = "{dep["checksum"]}"
                 [backend, dep],
                 backend,
             )
+
+    def test_chunk_projection_keeps_the_loop_bodies(self):
+        encoding = self.root / "encoding.rs"
+        loop_body = "for (v, b) in vc.zip(bc) { encode_chunk(v, b); }\n"
+        original = (
+            "let vc = vals.chunks(val_step);\n"
+            "let bc = bytes.chunks_mut(byte_step);\n"
+            f"{loop_body}"
+            "let vc = vals.chunks_mut(val_step);\n"
+            "let bc = bytes.chunks(byte_step);\n"
+            "for (v, b) in vc.zip(bc) { decode_chunk(v, b); }\n"
+        )
+        encoding.write_text(original, encoding="utf-8")
+
+        restrict_ml_kem_to_one_chunk(self.root)
+
+        projected = encoding.read_text(encoding="utf-8")
+        self.assertEqual(projected.count("vals[..val_step].chunks"), 2)
+        self.assertEqual(projected.count("bytes[..byte_step].chunks"), 2)
+        self.assertIn(loop_body, projected)
+        self.assertIn("for (v, b) in vc.zip(bc) { decode_chunk(v, b); }", projected)
+
+    def test_chunk_projection_rejects_an_unknown_layout(self):
+        encoding = self.root / "encoding.rs"
+        original = "let vc = vals.chunks(val_step);\n"
+        encoding.write_text(original, encoding="utf-8")
+
+        with self.assertRaisesRegex(VerificationError, "chunk layout changed"):
+            restrict_ml_kem_to_one_chunk(self.root)
+
+        self.assertEqual(encoding.read_text(encoding="utf-8"), original)
+
+    def test_locked_dependency_picks_version_and_source_from_the_parent_edge(self):
+        old = {"name": "keccak", "version": "0.1.6", "source": CRATES_IO}
+        current = {"name": "keccak", "version": "0.2.2", "source": CRATES_IO}
+        fork = {"name": "keccak", "version": "0.2.2", "source": "git+https://example.com/fork"}
+        packages = [old, current, fork]
+        owner = {"name": "sha3", "dependencies": [f"keccak 0.2.2 ({CRATES_IO})"]}
+
+        self.assertIs(locked_dependency(packages, owner, "keccak"), current)
+        for unresolved in ([], ["keccak"], ["keccak 0.2.2"], ["keccak 0.3.0"]):
+            with self.subTest(reference=unresolved), self.assertRaises(VerificationError):
+                locked_dependency(packages, {**owner, "dependencies": unresolved}, "keccak")
 
 
 if __name__ == "__main__":

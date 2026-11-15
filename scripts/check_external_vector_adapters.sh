@@ -21,6 +21,11 @@ adapters=(
   'rfc9180_hpke:rfc9180_hpke_base_vectors_execute_against_public_api'
   'rfc9180_hpke:rfc9180_hpke_open_binds_context_in_base_and_psk_modes'
   'rfc9180_hpke:rfc9180_hpke_public_base_exporters_match'
+  'rfc9180_hpke:rfc9180_hpke_public_psk_contexts_retry_each_record'
+  'rfc9180_hpke:rfc9180_hpke_public_psk_contexts_reject_each_others_records'
+  'hpke_pq:hpke_pq_vectors_match_and_reject_substituted_encapsulations'
+  'hpke_pq:hpke_pq_psk_contexts_reject_each_others_records'
+  'hpke_pq:hpke_pq_psk_open_binds_identifier_and_info'
   'pbkdf2_rfc6070:pbkdf2_rfc6070_derived_vectors_match_public_api'
 )
 
