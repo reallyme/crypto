@@ -473,3 +473,25 @@ fn copy_optional_string(
     }
     Ok(())
 }
+
+// Serde may reject trailing input after a value's Deserialize implementation
+// returns. Establish the protected return owner inside Deserialize so that
+// rejection also clears the otherwise completed native key or key set.
+impl<'de> serde::Deserialize<'de> for ProtectedJwk {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let key = <Jwk as serde::Deserialize>::deserialize(deserializer)?;
+        Self::try_from(key).map_err(serde::de::Error::custom)
+    }
+}
+impl<'de> serde::Deserialize<'de> for ProtectedJwks {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let owner = Self {
+            jwks: <Jwks as serde::Deserialize>::deserialize(deserializer)?,
+        };
+        for key in &owner.jwks.keys {
+            let _public_key =
+                Zeroizing::new(key.public_key_bytes().map_err(serde::de::Error::custom)?);
+        }
+        Ok(owner)
+    }
+}

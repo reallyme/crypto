@@ -772,6 +772,12 @@ pub mod public_jwk_document {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::Typed(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+                Self::JsonFields(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JsonSet(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
             }
         }
     }
@@ -791,6 +797,16 @@ pub mod public_jwk_document {
         Typed(
             ::buffa::alloc::boxed::Box<
                 super::super::super::super::__buffa::view::PublicJwkView<'a>,
+            >,
+        ),
+        JsonFields(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::PublicJwkJsonFieldsView<'a>,
+            >,
+        ),
+        JsonSet(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::PublicJwksJsonFieldsView<'a>,
             >,
         ),
     }

@@ -8,7 +8,7 @@ libraries required by Rust-backed routes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto-android:0.4.2")
+    implementation("me.really:crypto-android:0.4.4")
 }
 ```
 

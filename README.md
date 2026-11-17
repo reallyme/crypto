@@ -144,7 +144,7 @@ When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.4.2", default-features = false, features = [
+reallyme-crypto = { version = "0.4.4", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -157,7 +157,7 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.4.2", default-features = false, features = [
+reallyme-crypto = { version = "0.4.4", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }
@@ -172,7 +172,7 @@ OpenMLS adapters can select the narrow HPKE profile without enabling the full
 HPKE compatibility surface:
 
 ```toml
-reallyme-crypto = { version = "0.4.2", default-features = false, features = [
+reallyme-crypto = { version = "0.4.4", default-features = false, features = [
   "native",
   "hpke-openmls",
 ] }
@@ -260,7 +260,7 @@ separate from raw private-key bytes.
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.4.2"
+    from: "0.4.4"
 )
 ```
 
@@ -272,7 +272,7 @@ separate from raw private-key bytes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.4.2")
+    implementation("me.really:crypto:0.4.4")
 }
 ```
 
@@ -405,6 +405,10 @@ policy.
 - [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) — public artifact integrity requirements.
 - [SECURITY.md](SECURITY.md), [SECURITY_MEMORY_MODEL.md](SECURITY_MEMORY_MODEL.md)
   — reporting security issues and how secret material is handled.
+
+Formal verification runs only through the [manual GitHub workflow](.github/workflows/formal-verification.yml)
+for the selected revision. Automatic Required CI retains build, SDK, conformance,
+and dependency-security checks.
 
 ## Security Rules
 

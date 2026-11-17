@@ -8,7 +8,7 @@ pub use crypto_sha3::{
     Sha3_224Digest, Sha3_384Digest, Sha3_512Digest, SHA3_224_DIGEST_LENGTH, SHA3_384_DIGEST_LENGTH,
     SHA3_512_DIGEST_LENGTH,
 };
-pub use crypto_sha3_256::{Sha3_256Digest, SHA3_256_DIGEST_LENGTH};
+pub use crypto_sha3_256::{Sha3_256Digest, Sha3_256Hasher, SHA3_256_DIGEST_LENGTH};
 
 /// Compute a SHA3-224 digest through the operation layer.
 #[must_use]

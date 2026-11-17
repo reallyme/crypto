@@ -199,6 +199,8 @@ plugins:
       - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeSenderSealRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoHpkeSenderSealResult
       - borrowed_views_only_in=.reallyme.crypto.v1.CryptoHpkeSenderSealResult
+      - deny_view_json=.reallyme.crypto.v1.CryptoIncrementalHashUpdateRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoIncrementalHashUpdateRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoJwaConcatKdfSha256DeriveRequest
       - borrowed_views_only_in=.reallyme.crypto.v1.CryptoJwaConcatKdfSha256DeriveRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoJwaConcatKdfSha256DeriveResult
@@ -465,34 +467,38 @@ plugins:
       - borrowed_views_only_in=.reallyme.crypto.v1.PublicJwk
       - deny_view_json=.reallyme.crypto.v1.PublicJwkDocument
       - borrowed_views_only_in=.reallyme.crypto.v1.PublicJwkDocument
+      - deny_view_json=.reallyme.crypto.v1.PublicJwkJsonFields
+      - borrowed_views_only_in=.reallyme.crypto.v1.PublicJwkJsonFields
       - deny_view_json=.reallyme.crypto.v1.PublicJwks
       - borrowed_views_only_in=.reallyme.crypto.v1.PublicJwks
+      - deny_view_json=.reallyme.crypto.v1.PublicJwksJsonFields
+      - borrowed_views_only_in=.reallyme.crypto.v1.PublicJwksJsonFields
       - deny_view_json=.reallyme.crypto.v1.PublicOkpJwk
       - borrowed_views_only_in=.reallyme.crypto.v1.PublicOkpJwk
   - local: protoc-gen-reallyme-buffa-packaging
     out: crates/proto/src/generated/buffa
     strategy: all
   # TypeScript
-  - remote: buf.build/bufbuild/es:v2.14.1
+  - remote: buf.build/bufbuild/es:v2.17.0
     out: gen/es
     opt:
       - target=ts
       - import_extension=js
-  - remote: buf.build/bufbuild/es:v2.14.1
+  - remote: buf.build/bufbuild/es:v2.17.0
     out: packages/ts/src/proto/generated
     opt:
       - target=ts
       - import_extension=js
 
   # JavaScript runtime
-  - remote: buf.build/bufbuild/es:v2.14.1
+  - remote: buf.build/bufbuild/es:v2.17.0
     out: gen/es
     opt:
       - target=js
       - import_extension=js
 
   # Swift
-  - remote: buf.build/apple/swift:v1.38.1
+  - remote: buf.build/apple/swift:v1.39.0
     out: gen/swift
     opt:
       - Visibility=Public

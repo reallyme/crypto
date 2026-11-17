@@ -64,9 +64,13 @@ function fixture(t) {
   `);
   const zip = spawnSync("sh", ["-c", "command -v zip"], { encoding: "utf8" });
   assert.equal(zip.status, 0, zip.stderr);
+  // Fixture commits must use their own index, including when the caller
+  // validates unstaged source through an alternate repository index.
+  const fixtureEnvironment = { ...process.env };
+  for (const name of ["GIT_INDEX_FILE", "GIT_DIR", "GIT_WORK_TREE"]) delete fixtureEnvironment[name];
   const git = (...args) => {
     const result = spawnSync("git", ["-c", "user.name=ReallyMe Test", "-c", "user.email=test@really.me", ...args], {
-      cwd: repo, encoding: "utf8",
+      cwd: repo, encoding: "utf8", env: fixtureEnvironment,
     });
     assert.equal(result.status, 0, result.stderr);
     return result.stdout.trim();
@@ -83,7 +87,7 @@ function fixture(t) {
     cwd: root,
     encoding: "utf8",
     env: {
-      ...process.env, PATH: `${tools}${delimiter}${process.env.PATH}`,
+      ...fixtureEnvironment, PATH: `${tools}${delimiter}${process.env.PATH}`,
       GPG_CALLS: calls, REAL_ZIP: zip.stdout.trim(), BUNDLE_SCENARIO: "",
       MAVEN_SIGNING_KEY_ID: "1234567890ABCDEF", MAVEN_SIGNING_PASSWORD: "fixture-only",
       MAVEN_CENTRAL_OUTPUT_DIR: output, ...overrides,

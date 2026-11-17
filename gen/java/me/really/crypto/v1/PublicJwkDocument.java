@@ -33,6 +33,8 @@ public  final class PublicJwkDocument extends
       implements com.google.protobuf.AbstractMessageLite.InternalOneOfEnum {
     CANONICAL(1),
     TYPED(2),
+    JSON_FIELDS(3),
+    JSON_SET(4),
     REPRESENTATION_NOT_SET(0);
     private final int value;
     private RepresentationCase(int value) {
@@ -50,6 +52,8 @@ public  final class PublicJwkDocument extends
       switch (value) {
         case 1: return CANONICAL;
         case 2: return TYPED;
+        case 3: return JSON_FIELDS;
+        case 4: return JSON_SET;
         case 0: return REPRESENTATION_NOT_SET;
         default: return null;
       }
@@ -166,6 +170,106 @@ public  final class PublicJwkDocument extends
    */
   private void clearTyped() {
     if (representationCase_ == 2) {
+      representationCase_ = 0;
+      representation_ = null;
+    }
+  }
+
+  public static final int JSON_FIELDS_FIELD_NUMBER = 3;
+  /**
+   * <code>.reallyme.crypto.v1.PublicJwkJsonFields json_fields = 3 [json_name = "jsonFields"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJsonFields() {
+    return representationCase_ == 3;
+  }
+  /**
+   * <code>.reallyme.crypto.v1.PublicJwkJsonFields json_fields = 3 [json_name = "jsonFields"];</code>
+   */
+  @java.lang.Override
+  public me.really.crypto.v1.PublicJwkJsonFields getJsonFields() {
+    if (representationCase_ == 3) {
+       return (me.really.crypto.v1.PublicJwkJsonFields) representation_;
+    }
+    return me.really.crypto.v1.PublicJwkJsonFields.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.crypto.v1.PublicJwkJsonFields json_fields = 3 [json_name = "jsonFields"];</code>
+   */
+  private void setJsonFields(me.really.crypto.v1.PublicJwkJsonFields value) {
+    java.util.Objects.requireNonNull(value);
+    representation_ = value;
+    representationCase_ = 3;
+  }
+  /**
+   * <code>.reallyme.crypto.v1.PublicJwkJsonFields json_fields = 3 [json_name = "jsonFields"];</code>
+   */
+  private void mergeJsonFields(me.really.crypto.v1.PublicJwkJsonFields value) {
+    java.util.Objects.requireNonNull(value);
+    if (representationCase_ == 3 &&
+        representation_ != me.really.crypto.v1.PublicJwkJsonFields.getDefaultInstance()) {
+      representation_ = me.really.crypto.v1.PublicJwkJsonFields.newBuilder((me.really.crypto.v1.PublicJwkJsonFields) representation_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      representation_ = value;
+    }
+    representationCase_ = 3;
+  }
+  /**
+   * <code>.reallyme.crypto.v1.PublicJwkJsonFields json_fields = 3 [json_name = "jsonFields"];</code>
+   */
+  private void clearJsonFields() {
+    if (representationCase_ == 3) {
+      representationCase_ = 0;
+      representation_ = null;
+    }
+  }
+
+  public static final int JSON_SET_FIELD_NUMBER = 4;
+  /**
+   * <code>.reallyme.crypto.v1.PublicJwksJsonFields json_set = 4 [json_name = "jsonSet"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJsonSet() {
+    return representationCase_ == 4;
+  }
+  /**
+   * <code>.reallyme.crypto.v1.PublicJwksJsonFields json_set = 4 [json_name = "jsonSet"];</code>
+   */
+  @java.lang.Override
+  public me.really.crypto.v1.PublicJwksJsonFields getJsonSet() {
+    if (representationCase_ == 4) {
+       return (me.really.crypto.v1.PublicJwksJsonFields) representation_;
+    }
+    return me.really.crypto.v1.PublicJwksJsonFields.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.crypto.v1.PublicJwksJsonFields json_set = 4 [json_name = "jsonSet"];</code>
+   */
+  private void setJsonSet(me.really.crypto.v1.PublicJwksJsonFields value) {
+    java.util.Objects.requireNonNull(value);
+    representation_ = value;
+    representationCase_ = 4;
+  }
+  /**
+   * <code>.reallyme.crypto.v1.PublicJwksJsonFields json_set = 4 [json_name = "jsonSet"];</code>
+   */
+  private void mergeJsonSet(me.really.crypto.v1.PublicJwksJsonFields value) {
+    java.util.Objects.requireNonNull(value);
+    if (representationCase_ == 4 &&
+        representation_ != me.really.crypto.v1.PublicJwksJsonFields.getDefaultInstance()) {
+      representation_ = me.really.crypto.v1.PublicJwksJsonFields.newBuilder((me.really.crypto.v1.PublicJwksJsonFields) representation_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      representation_ = value;
+    }
+    representationCase_ = 4;
+  }
+  /**
+   * <code>.reallyme.crypto.v1.PublicJwksJsonFields json_set = 4 [json_name = "jsonSet"];</code>
+   */
+  private void clearJsonSet() {
+    if (representationCase_ == 4) {
       representationCase_ = 0;
       representation_ = null;
     }
@@ -381,6 +485,102 @@ public  final class PublicJwkDocument extends
       return this;
     }
 
+    /**
+     * <code>.reallyme.crypto.v1.PublicJwkJsonFields json_fields = 3 [json_name = "jsonFields"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJsonFields() {
+      return instance.hasJsonFields();
+    }
+    /**
+     * <code>.reallyme.crypto.v1.PublicJwkJsonFields json_fields = 3 [json_name = "jsonFields"];</code>
+     */
+    @java.lang.Override
+    public me.really.crypto.v1.PublicJwkJsonFields getJsonFields() {
+      return instance.getJsonFields();
+    }
+    /**
+     * <code>.reallyme.crypto.v1.PublicJwkJsonFields json_fields = 3 [json_name = "jsonFields"];</code>
+     */
+    public Builder setJsonFields(me.really.crypto.v1.PublicJwkJsonFields value) {
+      copyOnWrite();
+      instance.setJsonFields(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.crypto.v1.PublicJwkJsonFields json_fields = 3 [json_name = "jsonFields"];</code>
+     */
+    public Builder setJsonFields(
+        me.really.crypto.v1.PublicJwkJsonFields.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJsonFields(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.crypto.v1.PublicJwkJsonFields json_fields = 3 [json_name = "jsonFields"];</code>
+     */
+    public Builder mergeJsonFields(me.really.crypto.v1.PublicJwkJsonFields value) {
+      copyOnWrite();
+      instance.mergeJsonFields(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.crypto.v1.PublicJwkJsonFields json_fields = 3 [json_name = "jsonFields"];</code>
+     */
+    public Builder clearJsonFields() {
+      copyOnWrite();
+      instance.clearJsonFields();
+      return this;
+    }
+
+    /**
+     * <code>.reallyme.crypto.v1.PublicJwksJsonFields json_set = 4 [json_name = "jsonSet"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJsonSet() {
+      return instance.hasJsonSet();
+    }
+    /**
+     * <code>.reallyme.crypto.v1.PublicJwksJsonFields json_set = 4 [json_name = "jsonSet"];</code>
+     */
+    @java.lang.Override
+    public me.really.crypto.v1.PublicJwksJsonFields getJsonSet() {
+      return instance.getJsonSet();
+    }
+    /**
+     * <code>.reallyme.crypto.v1.PublicJwksJsonFields json_set = 4 [json_name = "jsonSet"];</code>
+     */
+    public Builder setJsonSet(me.really.crypto.v1.PublicJwksJsonFields value) {
+      copyOnWrite();
+      instance.setJsonSet(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.crypto.v1.PublicJwksJsonFields json_set = 4 [json_name = "jsonSet"];</code>
+     */
+    public Builder setJsonSet(
+        me.really.crypto.v1.PublicJwksJsonFields.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJsonSet(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.crypto.v1.PublicJwksJsonFields json_set = 4 [json_name = "jsonSet"];</code>
+     */
+    public Builder mergeJsonSet(me.really.crypto.v1.PublicJwksJsonFields value) {
+      copyOnWrite();
+      instance.mergeJsonSet(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.crypto.v1.PublicJwksJsonFields json_set = 4 [json_name = "jsonSet"];</code>
+     */
+    public Builder clearJsonSet() {
+      copyOnWrite();
+      instance.clearJsonSet();
+      return this;
+    }
+
     // @@protoc_insertion_point(builder_scope:reallyme.crypto.v1.PublicJwkDocument)
   }
   @java.lang.Override
@@ -401,10 +601,12 @@ public  final class PublicJwkDocument extends
             "representationCase_",
             me.really.crypto.v1.JsonWebKey.class,
             me.really.crypto.v1.PublicJwk.class,
+            me.really.crypto.v1.PublicJwkJsonFields.class,
+            me.really.crypto.v1.PublicJwksJsonFields.class,
           };
           java.lang.String info =
-              "\u0000\u0002\u0001\u0000\u0001\u0002\u0002\u0000\u0000\u0000\u0001<\u0000\u0002<" +
-              "\u0000";
+              "\u0000\u0004\u0001\u0000\u0001\u0004\u0004\u0000\u0000\u0000\u0001<\u0000\u0002<" +
+              "\u0000\u0003<\u0000\u0004<\u0000";
           return newMessageInfo(DEFAULT_INSTANCE, info, objects);
       }
       case GET_DEFAULT_INSTANCE: {

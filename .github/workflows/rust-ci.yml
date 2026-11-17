@@ -51,7 +51,7 @@ jobs:
         run: python3 -B -m unittest discover -s scripts -p '*_test.py'
 
       - name: Install ShellCheck
-        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # v2.90.3
+        uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
         with:
           tool: shellcheck@0.11.0
 
@@ -71,7 +71,7 @@ jobs:
           persist-credentials: false
 
       - name: Install Rust toolchain and mobile targets
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
           targets: aarch64-apple-ios,aarch64-linux-android
@@ -97,7 +97,7 @@ jobs:
           persist-credentials: false
 
       - name: Install minimum Rust toolchain
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.96.0
 
@@ -258,16 +258,16 @@ jobs:
           path: .semver-baseline
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
 
-      # Version 0.50.0 has no prebuilt Linux artifact. Cache the audited source
+      # Cache the source-built compatibility checker across repeated policy jobs.
       # build and its dependencies so later runs do not rebuild the tool.
       - name: Cache Rust semver tooling and dependencies
         uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
-          shared-key: semver-0.50.0-baseline-0.3.11
+          shared-key: semver-0.51.0-baseline-0.3.11
           cache-bin: true
 
       - name: Install Node
@@ -280,10 +280,10 @@ jobs:
 
       - name: Install cargo-semver-checks
         run: |
-          if cargo semver-checks --version 2>/dev/null | grep -Fq 'cargo-semver-checks 0.50.0'; then
+          if cargo semver-checks --version 2>/dev/null | grep -Fq 'cargo-semver-checks 0.51.0'; then
             exit 0
           fi
-          cargo install cargo-semver-checks --version 0.50.0 --locked
+          cargo install cargo-semver-checks --version 0.51.0 --locked
 
       - name: Check public Rust API semver
         run: node scripts/check_rust_semver.mjs
@@ -306,7 +306,7 @@ jobs:
         run: node scripts/run_pinned_release_readiness.mjs --check-pins
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
           components: rustfmt, clippy
@@ -326,21 +326,21 @@ jobs:
           echo "OPENSSL_STATIC=1" >> "$GITHUB_ENV"
 
       - name: Install nextest
-        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # nextest
+        uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
         with:
-          tool: nextest@0.9.140
+          tool: nextest@0.9.152
 
       - name: Install cargo-deny
-        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # v2.90.3
+        uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
         with:
           tool: cargo-deny@0.20.2
           checksum: true
           fallback: none
 
       - name: Install cargo-audit
-        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # cargo-audit
+        uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
         with:
-          tool: cargo-audit@0.22.2
+          tool: cargo-audit@0.23.0
 
       - name: Verify locked dependency graph
         run: cargo metadata --locked --format-version 1 --no-deps
@@ -450,7 +450,7 @@ jobs:
         run: node scripts/run_pinned_release_readiness.mjs --check-pins
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
           targets: wasm32-unknown-unknown
@@ -461,12 +461,12 @@ jobs:
           shared-key: typescript-wasm
 
       - name: Install wasm-pack
-        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # wasm-pack
+        uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
         with:
           tool: wasm-pack@0.15.1
 
       - name: Install wasm-bindgen-cli
-        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # wasm-bindgen-cli
+        uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
         with:
           tool: wasm-bindgen-cli@0.2.130
 
@@ -507,7 +507,7 @@ jobs:
           persist-credentials: false
 
       - name: Install pinned Rust nightly
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: nightly-2026-07-01
 
@@ -529,7 +529,7 @@ jobs:
           persist-credentials: false
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
 
@@ -554,7 +554,7 @@ jobs:
           persist-credentials: false
 
       - name: Install pinned Miri toolchain
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: nightly-2026-07-01
           components: miri

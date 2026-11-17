@@ -11,7 +11,7 @@ pub const SHA2_256_DIGEST_LENGTH: usize =
 /// SHA-256 digest bytes.
 #[derive(Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
 pub struct Sha2_256Digest {
-    bytes: [u8; SHA2_256_DIGEST_LENGTH],
+    pub(crate) bytes: [u8; SHA2_256_DIGEST_LENGTH],
 }
 
 impl Sha2_256Digest {

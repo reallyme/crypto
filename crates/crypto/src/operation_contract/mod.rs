@@ -241,3 +241,7 @@ pub use self::boundary::{
 };
 pub use crypto_proto::operation_response_wire::MAX_CRYPTO_OPERATION_RESPONSE_BYTES;
 pub use crypto_proto::wire::{MAX_CRYPTO_PROTO_JSON_BYTES, MAX_CRYPTO_PROTO_MESSAGE_BYTES};
+
+/// Protobuf-defined caller-owned incremental hashing lifecycle.
+#[cfg(any(feature = "sha2", feature = "sha3"))]
+pub mod incremental_hash;

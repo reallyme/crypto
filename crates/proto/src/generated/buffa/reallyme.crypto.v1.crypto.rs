@@ -21601,6 +21601,8 @@ const _: fn() = || {
     >() {}
     __requires_wipe_owner::<JsonWebKey>();
     __requires_wipe_owner::<PublicJwk>();
+    __requires_wipe_owner::<PublicJwkJsonFields>();
+    __requires_wipe_owner::<PublicJwksJsonFields>();
 };
 impl ::buffa::sensitive::Zeroize for PublicJwkDocument {
     fn zeroize(&mut self) {
@@ -21651,6 +21653,22 @@ impl ::buffa::Message for PublicJwkDocument {
                         += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
                             + inner as u64;
                 }
+                __buffa::oneof::public_jwk_document::Representation::JsonFields(x) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                __buffa::oneof::public_jwk_document::Representation::JsonSet(x) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
             }
         }
         ::buffa::saturate_size(size)
@@ -21675,6 +21693,22 @@ impl ::buffa::Message for PublicJwkDocument {
                 __buffa::oneof::public_jwk_document::Representation::Typed(x) => {
                     ::buffa::types::put_len_delimited_header(
                         2u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                __buffa::oneof::public_jwk_document::Representation::JsonFields(x) => {
+                    ::buffa::types::put_len_delimited_header(
+                        3u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                __buffa::oneof::public_jwk_document::Representation::JsonSet(x) => {
+                    ::buffa::types::put_len_delimited_header(
+                        4u32,
                         u64::from(__cache.consume_next()),
                         buf,
                     );
@@ -21733,6 +21767,50 @@ impl ::buffa::Message for PublicJwkDocument {
                     ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
                     self.representation = ::core::option::Option::Some(
                         __buffa::oneof::public_jwk_document::Representation::Typed(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::public_jwk_document::Representation::JsonFields(
+                        ref mut existing,
+                    ),
+                ) = self.representation
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.representation = ::core::option::Option::Some(
+                        __buffa::oneof::public_jwk_document::Representation::JsonFields(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::public_jwk_document::Representation::JsonSet(
+                        ref mut existing,
+                    ),
+                ) = self.representation
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.representation = ::core::option::Option::Some(
+                        __buffa::oneof::public_jwk_document::Representation::JsonSet(
                             ::buffa::alloc::boxed::Box::new(val),
                         ),
                     );
@@ -21817,6 +21895,52 @@ impl<'de> ::serde::Deserialize<'de> for PublicJwkDocument {
                                 __r.representation = Some(__variant);
                             }
                         }
+                        "jsonFields" | "json_fields" => {
+                            let v: ::core::option::Option<PublicJwkJsonFields> = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            PublicJwkJsonFields,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::public_jwk_document::Representation::JsonFields(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.representation.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'representation'",
+                                        ),
+                                    );
+                                }
+                                __r.representation = Some(__variant);
+                            }
+                        }
+                        "jsonSet" | "json_set" => {
+                            let v: ::core::option::Option<PublicJwksJsonFields> = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            PublicJwksJsonFields,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::public_jwk_document::Representation::JsonSet(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.representation.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'representation'",
+                                        ),
+                                    );
+                                }
+                                __r.representation = Some(__variant);
+                            }
+                        }
                         __unknown => {
                             return ::core::result::Result::Err(
                                 <__A::Error as ::serde::de::Error>::custom(
@@ -21860,6 +21984,901 @@ pub mod public_jwk_document {
     #[doc(inline)]
     pub use super::__buffa::view::oneof::public_jwk_document::Representation as RepresentationView;
 }
+/// Guarded staging for RFC 7517 public-key JSON. Shape-dependent required
+/// members are checked before constructing the established native public JWK.
+/// Optional presence retains absent versus present-empty metadata; JSON null
+/// remains equivalent to absence for alg/use/kid as in the legacy adapter.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct PublicJwkJsonFields {
+    /// Field 1: `kty`
+    #[serde(
+        rename = "kty",
+        with = "::buffa::json_helpers::opt_string_policy",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    #[serde(default)]
+    pub kty: ::core::option::Option<crate::SecretString>,
+    /// Field 2: `crv`
+    #[serde(
+        rename = "crv",
+        with = "::buffa::json_helpers::opt_string_policy",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    #[serde(default)]
+    pub crv: ::core::option::Option<crate::SecretString>,
+    /// Field 3: `x`
+    #[serde(
+        rename = "x",
+        with = "::buffa::json_helpers::opt_string_policy",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    #[serde(default)]
+    pub x: ::core::option::Option<crate::SecretString>,
+    /// Field 4: `y`
+    #[serde(
+        rename = "y",
+        with = "::buffa::json_helpers::opt_string_policy",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    #[serde(default)]
+    pub y: ::core::option::Option<crate::SecretString>,
+    /// Field 5: `alg`
+    #[serde(
+        rename = "alg",
+        with = "::buffa::json_helpers::opt_string_policy",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    #[serde(default)]
+    pub alg: ::core::option::Option<crate::SecretString>,
+    /// Field 6: `usage`
+    #[serde(
+        rename = "use",
+        alias = "usage",
+        with = "::buffa::json_helpers::opt_string_policy",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    #[serde(default)]
+    pub usage: ::core::option::Option<crate::SecretString>,
+    /// Field 7: `kid`
+    #[serde(
+        rename = "kid",
+        with = "::buffa::json_helpers::opt_string_policy",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    #[serde(default)]
+    pub kid: ::core::option::Option<crate::SecretString>,
+    /// Field 8: `public_key`
+    #[serde(
+        rename = "pub",
+        alias = "public_key",
+        with = "::buffa::json_helpers::opt_string_policy",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    #[serde(default)]
+    pub public_key: ::core::option::Option<crate::SecretString>,
+}
+impl ::core::fmt::Debug for PublicJwkJsonFields {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("PublicJwkJsonFields")
+            .field("kty", &::core::format_args!("[REDACTED]"))
+            .field("crv", &::core::format_args!("[REDACTED]"))
+            .field("x", &::core::format_args!("[REDACTED]"))
+            .field("y", &::core::format_args!("[REDACTED]"))
+            .field("alg", &::core::format_args!("[REDACTED]"))
+            .field("usage", &::core::format_args!("[REDACTED]"))
+            .field("kid", &::core::format_args!("[REDACTED]"))
+            .field("public_key", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl PublicJwkJsonFields {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.PublicJwkJsonFields";
+}
+impl PublicJwkJsonFields {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::kty`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_kty(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.kty);
+        self.kty = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::crv`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_crv(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.crv);
+        self.crv = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::x`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_x(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.x);
+        self.x = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::y`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_y(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.y);
+        self.y = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::alg`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_alg(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.alg);
+        self.alg = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::usage`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_usage(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.usage);
+        self.usage = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::kid`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_kid(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.kid);
+        self.kid = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::public_key`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_public_key(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.public_key);
+        self.public_key = Some(value.into());
+        self
+    }
+}
+const _: fn() = || {
+    fn __requires_wipe_owner<
+        T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+    >() {}
+    __requires_wipe_owner::<crate::SecretString>();
+    __requires_wipe_owner::<crate::SecretString>();
+    __requires_wipe_owner::<crate::SecretString>();
+    __requires_wipe_owner::<crate::SecretString>();
+    __requires_wipe_owner::<crate::SecretString>();
+    __requires_wipe_owner::<crate::SecretString>();
+    __requires_wipe_owner::<crate::SecretString>();
+    __requires_wipe_owner::<crate::SecretString>();
+};
+impl ::buffa::sensitive::Zeroize for PublicJwkJsonFields {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.kty);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.crv);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.x);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.y);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.alg);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.usage);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.kid);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.public_key);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for PublicJwkJsonFields {}
+impl ::core::ops::Drop for PublicJwkJsonFields {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(PublicJwkJsonFields);
+impl ::buffa::MessageName for PublicJwkJsonFields {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "PublicJwkJsonFields";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.PublicJwkJsonFields";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.PublicJwkJsonFields";
+}
+impl ::buffa::Message for PublicJwkJsonFields {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let Some(ref v) = self.kty {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.crv {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.x {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.y {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.alg {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.usage {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.kid {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let Some(ref v) = self.public_key {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let Some(ref v) = self.kty {
+            ::buffa::types::put_string_field(1u32, v, buf);
+        }
+        if let Some(ref v) = self.crv {
+            ::buffa::types::put_string_field(2u32, v, buf);
+        }
+        if let Some(ref v) = self.x {
+            ::buffa::types::put_string_field(3u32, v, buf);
+        }
+        if let Some(ref v) = self.y {
+            ::buffa::types::put_string_field(4u32, v, buf);
+        }
+        if let Some(ref v) = self.alg {
+            ::buffa::types::put_string_field(5u32, v, buf);
+        }
+        if let Some(ref v) = self.usage {
+            ::buffa::types::put_string_field(6u32, v, buf);
+        }
+        if let Some(ref v) = self.kid {
+            ::buffa::types::put_string_field(7u32, v, buf);
+        }
+        if let Some(ref v) = self.public_key {
+            ::buffa::types::put_string_field(8u32, v, buf);
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.kty = ::core::option::Option::Some(
+                    ::buffa::types::decode_string_to(buf)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.crv = ::core::option::Option::Some(
+                    ::buffa::types::decode_string_to(buf)?,
+                );
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.x = ::core::option::Option::Some(
+                    ::buffa::types::decode_string_to(buf)?,
+                );
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.y = ::core::option::Option::Some(
+                    ::buffa::types::decode_string_to(buf)?,
+                );
+            }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.alg = ::core::option::Option::Some(
+                    ::buffa::types::decode_string_to(buf)?,
+                );
+            }
+            6u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.usage = ::core::option::Option::Some(
+                    ::buffa::types::decode_string_to(buf)?,
+                );
+            }
+            7u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.kid = ::core::option::Option::Some(
+                    ::buffa::types::decode_string_to(buf)?,
+                );
+            }
+            8u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.public_key = ::core::option::Option::Some(
+                    ::buffa::types::decode_string_to(buf)?,
+                );
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.kty = ::core::option::Option::None;
+        self.crv = ::core::option::Option::None;
+        self.x = ::core::option::Option::None;
+        self.y = ::core::option::Option::None;
+        self.alg = ::core::option::Option::None;
+        self.usage = ::core::option::Option::None;
+        self.kid = ::core::option::Option::None;
+        self.public_key = ::core::option::Option::None;
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PublicJwkJsonFields {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = PublicJwkJsonFields;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct PublicJwkJsonFields")
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<PublicJwkJsonFields, __A::Error> {
+                let mut __r = <PublicJwkJsonFields as ::core::default::Default>::default();
+                let mut __f_kty = false;
+                let mut __f_crv = false;
+                let mut __f_x = false;
+                let mut __f_y = false;
+                let mut __f_alg = false;
+                let mut __f_usage = false;
+                let mut __f_kid = false;
+                let mut __f_public_key = false;
+                while let Some(key) = map.next_key::<::buffa::alloc::string::String>()? {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    match key.as_str() {
+                        "kty" => {
+                            if __f_kty {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field("kty"),
+                                );
+                            }
+                            __f_kty = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::core::option::Option<crate::SecretString>;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::core::option::Option<crate::SecretString>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::opt_string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.kty);
+                            __r.kty = value;
+                        }
+                        "crv" => {
+                            if __f_crv {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field("crv"),
+                                );
+                            }
+                            __f_crv = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::core::option::Option<crate::SecretString>;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::core::option::Option<crate::SecretString>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::opt_string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.crv);
+                            __r.crv = value;
+                        }
+                        "x" => {
+                            if __f_x {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field("x"),
+                                );
+                            }
+                            __f_x = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::core::option::Option<crate::SecretString>;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::core::option::Option<crate::SecretString>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::opt_string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.x);
+                            __r.x = value;
+                        }
+                        "y" => {
+                            if __f_y {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field("y"),
+                                );
+                            }
+                            __f_y = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::core::option::Option<crate::SecretString>;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::core::option::Option<crate::SecretString>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::opt_string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.y);
+                            __r.y = value;
+                        }
+                        "alg" => {
+                            if __f_alg {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field("alg"),
+                                );
+                            }
+                            __f_alg = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::core::option::Option<crate::SecretString>;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::core::option::Option<crate::SecretString>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::opt_string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.alg);
+                            __r.alg = value;
+                        }
+                        "use" | "usage" => {
+                            if __f_usage {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field("usage"),
+                                );
+                            }
+                            __f_usage = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::core::option::Option<crate::SecretString>;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::core::option::Option<crate::SecretString>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::opt_string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.usage);
+                            __r.usage = value;
+                        }
+                        "kid" => {
+                            if __f_kid {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field("kid"),
+                                );
+                            }
+                            __f_kid = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::core::option::Option<crate::SecretString>;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::core::option::Option<crate::SecretString>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::opt_string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.kid);
+                            __r.kid = value;
+                        }
+                        "pub" | "public_key" => {
+                            if __f_public_key {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "public_key",
+                                    ),
+                                );
+                            }
+                            __f_public_key = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::core::option::Option<crate::SecretString>;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::core::option::Option<crate::SecretString>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::opt_string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.public_key);
+                            __r.public_key = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                Ok(__r)
+            }
+        }
+        d.deserialize_map(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for PublicJwkJsonFields {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __PUBLIC_JWK_JSON_FIELDS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.PublicJwkJsonFields",
+    to_json: ::buffa::type_registry::any_to_json::<PublicJwkJsonFields>,
+    from_json: ::buffa::type_registry::any_from_json::<PublicJwkJsonFields>,
+    is_wkt: false,
+};
+/// A key set is staged entirely in generated guards before any legacy JWK
+/// return values are allocated, including when a later key fails admission.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct PublicJwksJsonFields {
+    /// Field 1: `keys`
+    #[serde(
+        rename = "keys",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
+        deserialize_with = "::buffa::json_helpers::null_as_default"
+    )]
+    #[serde(default)]
+    pub keys: ::buffa::sensitive::List<PublicJwkJsonFields>,
+}
+impl ::core::fmt::Debug for PublicJwksJsonFields {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("PublicJwksJsonFields")
+            .field("keys", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl PublicJwksJsonFields {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.PublicJwksJsonFields";
+}
+impl PublicJwksJsonFields {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::keys`] to `value`, consuming and returning `self`.
+    pub fn with_keys(
+        mut self,
+        value: impl ::core::convert::Into<::buffa::sensitive::List<PublicJwkJsonFields>>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.keys);
+        self.keys = value.into();
+        self
+    }
+}
+const _: fn() = || {
+    fn __requires_wipe_owner<
+        T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+    >() {}
+    __requires_wipe_owner::<PublicJwkJsonFields>();
+    __requires_wipe_owner::<::buffa::sensitive::List<PublicJwkJsonFields>>();
+};
+impl ::buffa::sensitive::Zeroize for PublicJwksJsonFields {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.keys);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for PublicJwksJsonFields {}
+impl ::core::ops::Drop for PublicJwksJsonFields {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(PublicJwksJsonFields);
+impl ::buffa::MessageName for PublicJwksJsonFields {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "PublicJwksJsonFields";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.PublicJwksJsonFields";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.PublicJwksJsonFields";
+}
+impl ::buffa::Message for PublicJwksJsonFields {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        for v in self.keys.iter() {
+            let __slot = __cache.reserve();
+            let inner_size = v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        for v in self.keys.iter() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            v.write_to(__cache, buf);
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                #[allow(unused_imports)]
+                use ::buffa::ProtoList as _;
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let mut elem = ::core::default::Default::default();
+                ctx.register_element_memory(
+                    ::buffa::__private::element_footprint(&elem),
+                )?;
+                ::buffa::Message::merge_length_delimited(&mut elem, buf, ctx)?;
+                self.keys.push(elem);
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        ::buffa::ProtoList::clear(&mut self.keys);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PublicJwksJsonFields {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = PublicJwksJsonFields;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct PublicJwksJsonFields")
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<PublicJwksJsonFields, __A::Error> {
+                let mut __r = <PublicJwksJsonFields as ::core::default::Default>::default();
+                let mut __f_keys = false;
+                while let Some(key) = map.next_key::<::buffa::alloc::string::String>()? {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    match key.as_str() {
+                        "keys" => {
+                            if __f_keys {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field("keys"),
+                                );
+                            }
+                            __f_keys = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::buffa::sensitive::List<PublicJwkJsonFields>;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::buffa::sensitive::List<PublicJwkJsonFields>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::null_as_default(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.keys);
+                            __r.keys = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                Ok(__r)
+            }
+        }
+        d.deserialize_map(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for PublicJwksJsonFields {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __PUBLIC_JWKS_JSON_FIELDS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.PublicJwksJsonFields",
+    to_json: ::buffa::type_registry::any_to_json::<PublicJwksJsonFields>,
+    from_json: ::buffa::type_registry::any_from_json::<PublicJwksJsonFields>,
+    is_wkt: false,
+};
 /// CryptoAlgorithmIdentifier is a oneof wrapper for protocol messages that need
 /// to carry a typed algorithm choice without using free-form strings.
 #[derive(Clone, PartialEq, Default)]
@@ -23098,6 +24117,777 @@ pub const __CRYPTO_HASH_RESULT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = 
     type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoHashResult",
     to_json: ::buffa::type_registry::any_to_json::<CryptoHashResult>,
     from_json: ::buffa::type_registry::any_from_json::<CryptoHashResult>,
+    is_wkt: false,
+};
+/// Incremental hashing is a local, exclusively owned SDK lifecycle. A successful
+/// start creates a fresh context; updates append exact bytes in order, including
+/// empty chunks; finalize consumes the context and returns CryptoHashResult.
+/// Supported algorithms are SHA2_256 and SHA3_256. UNSPECIFIED/unknown selectors
+/// fail with PRIMITIVE_INVALID_PARAMETER; other algorithms fail with
+/// PROVIDER_UNSUPPORTED_ALGORITHM. Context state is never serialized, imported,
+/// cloned, or addressed through a process-global handle. These standalone
+/// contracts deliberately do not enter the stateless CryptoOperationRequest.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct CryptoIncrementalHashStartRequest {
+    /// Field 1: `algorithm`
+    #[serde(
+        rename = "algorithm",
+        with = "::buffa::json_helpers::guarded_enum::open",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    #[serde(default)]
+    pub algorithm: ::buffa::EnumValue<HashAlgorithm>,
+}
+impl ::core::fmt::Debug for CryptoIncrementalHashStartRequest {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoIncrementalHashStartRequest")
+            .field("algorithm", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl CryptoIncrementalHashStartRequest {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoIncrementalHashStartRequest";
+}
+impl CryptoIncrementalHashStartRequest {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::algorithm`] to `value`, consuming and returning `self`.
+    pub fn with_algorithm(
+        mut self,
+        value: impl ::core::convert::Into<::buffa::EnumValue<HashAlgorithm>>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.algorithm);
+        self.algorithm = value.into();
+        self
+    }
+}
+impl ::buffa::sensitive::Zeroize for CryptoIncrementalHashStartRequest {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.algorithm);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for CryptoIncrementalHashStartRequest {}
+impl ::core::ops::Drop for CryptoIncrementalHashStartRequest {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(CryptoIncrementalHashStartRequest);
+impl ::buffa::MessageName for CryptoIncrementalHashStartRequest {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoIncrementalHashStartRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoIncrementalHashStartRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoIncrementalHashStartRequest";
+}
+impl ::buffa::Message for CryptoIncrementalHashStartRequest {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.algorithm.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.algorithm.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.algorithm = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.algorithm = ::buffa::EnumValue::from(0);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoIncrementalHashStartRequest {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = CryptoIncrementalHashStartRequest;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct CryptoIncrementalHashStartRequest")
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<CryptoIncrementalHashStartRequest, __A::Error> {
+                let mut __r = <CryptoIncrementalHashStartRequest as ::core::default::Default>::default();
+                let mut __f_algorithm = false;
+                while let Some(key) = map.next_key::<::buffa::alloc::string::String>()? {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    match key.as_str() {
+                        "algorithm" => {
+                            if __f_algorithm {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "algorithm",
+                                    ),
+                                );
+                            }
+                            __f_algorithm = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::buffa::EnumValue<HashAlgorithm>;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::buffa::EnumValue<HashAlgorithm>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::guarded_enum::open::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.algorithm);
+                            __r.algorithm = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                Ok(__r)
+            }
+        }
+        d.deserialize_map(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoIncrementalHashStartRequest {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_INCREMENTAL_HASH_START_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoIncrementalHashStartRequest",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoIncrementalHashStartRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<
+        CryptoIncrementalHashStartRequest,
+    >,
+    is_wkt: false,
+};
+/// Input may contain PII or secret material. Generated owners and native
+/// contexts must erase their retained buffers on destruction. The caller owns
+/// cleanup of its original input. Length rejection is atomic: no bytes from a
+/// rejected chunk are absorbed. SHA2_256 accepts at most 2^61-1 total bytes;
+/// SHA3_256 accepts at most 2^64-1. The immutable native constants registry owns
+/// these limits. Overflow fails with PRIMITIVE_INVALID_LENGTH.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct CryptoIncrementalHashUpdateRequest {
+    /// Field 1: `input`
+    #[serde(
+        rename = "input",
+        with = "::buffa::json_helpers::bytes_policy",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_bytes"
+    )]
+    #[serde(default)]
+    pub input: crate::SecretBytes,
+}
+impl ::core::fmt::Debug for CryptoIncrementalHashUpdateRequest {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoIncrementalHashUpdateRequest")
+            .field("input", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl CryptoIncrementalHashUpdateRequest {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoIncrementalHashUpdateRequest";
+}
+impl CryptoIncrementalHashUpdateRequest {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::input`] to `value`, consuming and returning `self`.
+    pub fn with_input(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretBytes>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.input);
+        self.input = value.into();
+        self
+    }
+}
+const _: fn() = || {
+    fn __requires_wipe_owner<
+        T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+    >() {}
+    __requires_wipe_owner::<crate::SecretBytes>();
+};
+impl ::buffa::sensitive::Zeroize for CryptoIncrementalHashUpdateRequest {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.input);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for CryptoIncrementalHashUpdateRequest {}
+impl ::core::ops::Drop for CryptoIncrementalHashUpdateRequest {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(CryptoIncrementalHashUpdateRequest);
+impl ::buffa::MessageName for CryptoIncrementalHashUpdateRequest {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoIncrementalHashUpdateRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoIncrementalHashUpdateRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoIncrementalHashUpdateRequest";
+}
+impl ::buffa::Message for CryptoIncrementalHashUpdateRequest {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.input.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.input) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.input.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.input, buf);
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.input = ::buffa::types::decode_bytes_to(buf)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.input = ::core::default::Default::default();
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoIncrementalHashUpdateRequest {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = CryptoIncrementalHashUpdateRequest;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct CryptoIncrementalHashUpdateRequest")
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<CryptoIncrementalHashUpdateRequest, __A::Error> {
+                let mut __r = <CryptoIncrementalHashUpdateRequest as ::core::default::Default>::default();
+                let mut __f_input = false;
+                while let Some(key) = map.next_key::<::buffa::alloc::string::String>()? {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    match key.as_str() {
+                        "input" => {
+                            if __f_input {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field("input"),
+                                );
+                            }
+                            __f_input = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = crate::SecretBytes;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        crate::SecretBytes,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::bytes_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.input);
+                            __r.input = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                Ok(__r)
+            }
+        }
+        d.deserialize_map(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoIncrementalHashUpdateRequest {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_INCREMENTAL_HASH_UPDATE_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoIncrementalHashUpdateRequest",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoIncrementalHashUpdateRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<
+        CryptoIncrementalHashUpdateRequest,
+    >,
+    is_wkt: false,
+};
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct CryptoIncrementalHashUpdateResult {
+    /// Field 1: `processed_bytes`
+    #[serde(
+        rename = "processedBytes",
+        alias = "processed_bytes",
+        with = "::buffa::json_helpers::uint64",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_zero_u64"
+    )]
+    #[serde(default)]
+    pub processed_bytes: u64,
+}
+impl ::core::fmt::Debug for CryptoIncrementalHashUpdateResult {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoIncrementalHashUpdateResult")
+            .field("processed_bytes", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl CryptoIncrementalHashUpdateResult {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoIncrementalHashUpdateResult";
+}
+impl CryptoIncrementalHashUpdateResult {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::processed_bytes`] to `value`, consuming and returning `self`.
+    pub fn with_processed_bytes(mut self, value: u64) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.processed_bytes);
+        self.processed_bytes = value;
+        self
+    }
+}
+impl ::buffa::sensitive::Zeroize for CryptoIncrementalHashUpdateResult {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.processed_bytes);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for CryptoIncrementalHashUpdateResult {}
+impl ::core::ops::Drop for CryptoIncrementalHashUpdateResult {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(CryptoIncrementalHashUpdateResult);
+impl ::buffa::MessageName for CryptoIncrementalHashUpdateResult {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoIncrementalHashUpdateResult";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoIncrementalHashUpdateResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoIncrementalHashUpdateResult";
+}
+impl ::buffa::Message for CryptoIncrementalHashUpdateResult {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.processed_bytes != 0u64 {
+            size
+                += 1u64
+                    + ::buffa::types::uint64_encoded_len(self.processed_bytes) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.processed_bytes != 0u64 {
+            ::buffa::types::put_uint64_field(1u32, self.processed_bytes, buf);
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.processed_bytes = ::buffa::types::decode_uint64(buf)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.processed_bytes = 0u64;
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoIncrementalHashUpdateResult {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = CryptoIncrementalHashUpdateResult;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct CryptoIncrementalHashUpdateResult")
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<CryptoIncrementalHashUpdateResult, __A::Error> {
+                let mut __r = <CryptoIncrementalHashUpdateResult as ::core::default::Default>::default();
+                let mut __f_processed_bytes = false;
+                while let Some(key) = map.next_key::<::buffa::alloc::string::String>()? {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    match key.as_str() {
+                        "processedBytes" | "processed_bytes" => {
+                            if __f_processed_bytes {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "processed_bytes",
+                                    ),
+                                );
+                            }
+                            __f_processed_bytes = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = u64;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<u64, __D::Error> {
+                                        ::buffa::json_helpers::uint64::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(
+                                &mut __r.processed_bytes,
+                            );
+                            __r.processed_bytes = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                Ok(__r)
+            }
+        }
+        d.deserialize_map(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoIncrementalHashUpdateResult {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_INCREMENTAL_HASH_UPDATE_RESULT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoIncrementalHashUpdateResult",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoIncrementalHashUpdateResult>,
+    from_json: ::buffa::type_registry::any_from_json::<
+        CryptoIncrementalHashUpdateResult,
+    >,
+    is_wkt: false,
+};
+/// Finalizing an empty context hashes the empty message. Native consuming APIs
+/// prevent reuse after finalize. Explicitly zeroizing a context invalidates it;
+/// subsequent update/finalize fails with BACKEND_INVALID_STATE. Dropping an
+/// unfinished context also erases its retained state and buffered input.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct CryptoIncrementalHashFinalizeRequest {}
+impl ::core::fmt::Debug for CryptoIncrementalHashFinalizeRequest {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoIncrementalHashFinalizeRequest").finish()
+    }
+}
+impl CryptoIncrementalHashFinalizeRequest {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoIncrementalHashFinalizeRequest";
+}
+impl ::buffa::sensitive::Zeroize for CryptoIncrementalHashFinalizeRequest {
+    fn zeroize(&mut self) {}
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for CryptoIncrementalHashFinalizeRequest {}
+impl ::core::ops::Drop for CryptoIncrementalHashFinalizeRequest {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(CryptoIncrementalHashFinalizeRequest);
+impl ::buffa::MessageName for CryptoIncrementalHashFinalizeRequest {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoIncrementalHashFinalizeRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoIncrementalHashFinalizeRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoIncrementalHashFinalizeRequest";
+}
+impl ::buffa::Message for CryptoIncrementalHashFinalizeRequest {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let size = 0u64;
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        _buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for CryptoIncrementalHashFinalizeRequest {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = CryptoIncrementalHashFinalizeRequest;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct CryptoIncrementalHashFinalizeRequest")
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<
+                CryptoIncrementalHashFinalizeRequest,
+                __A::Error,
+            > {
+                let __r = <CryptoIncrementalHashFinalizeRequest as ::core::default::Default>::default();
+                if let Some(key) = map.next_key::<::buffa::alloc::string::String>()? {
+                    let _key = ::buffa::sensitive::Zeroizing::new(key);
+                    return Err(
+                        <__A::Error as ::serde::de::Error>::custom(
+                            ::buffa::sensitive::JsonErrorReason::UnknownField,
+                        ),
+                    );
+                }
+                Ok(__r)
+            }
+        }
+        d.deserialize_map(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CryptoIncrementalHashFinalizeRequest {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __CRYPTO_INCREMENTAL_HASH_FINALIZE_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.crypto.v1.CryptoIncrementalHashFinalizeRequest",
+    to_json: ::buffa::type_registry::any_to_json::<CryptoIncrementalHashFinalizeRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<
+        CryptoIncrementalHashFinalizeRequest,
+    >,
     is_wkt: false,
 };
 #[derive(Clone, PartialEq, Default)]

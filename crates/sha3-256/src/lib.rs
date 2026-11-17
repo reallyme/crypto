@@ -7,3 +7,9 @@
 mod digest;
 
 pub use digest::{digest, Sha3_256Digest, SHA3_256_DIGEST_LENGTH};
+
+mod incremental;
+
+/// Canonical schema-defined failure for incremental hash operations.
+pub use crypto_proto::error_types::CryptoError;
+pub use incremental::Sha3_256Hasher;

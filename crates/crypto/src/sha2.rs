@@ -7,7 +7,7 @@
 pub use crypto_sha2::{
     Sha2_384Digest, Sha2_512Digest, SHA2_384_DIGEST_LENGTH, SHA2_512_DIGEST_LENGTH,
 };
-pub use crypto_sha2_256::{Sha2_256Digest, SHA2_256_DIGEST_LENGTH};
+pub use crypto_sha2_256::{Sha2_256Digest, Sha2_256Hasher, SHA2_256_DIGEST_LENGTH};
 
 /// Compute a SHA-256 digest through the operation layer.
 #[must_use]

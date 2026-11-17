@@ -32,5 +32,27 @@ public interface PublicJwkDocumentOrBuilder extends
    */
   me.really.crypto.v1.PublicJwk getTyped();
 
+  /**
+   * <code>.reallyme.crypto.v1.PublicJwkJsonFields json_fields = 3 [json_name = "jsonFields"];</code>
+   * @return Whether the jsonFields field is set.
+   */
+  boolean hasJsonFields();
+  /**
+   * <code>.reallyme.crypto.v1.PublicJwkJsonFields json_fields = 3 [json_name = "jsonFields"];</code>
+   * @return The jsonFields.
+   */
+  me.really.crypto.v1.PublicJwkJsonFields getJsonFields();
+
+  /**
+   * <code>.reallyme.crypto.v1.PublicJwksJsonFields json_set = 4 [json_name = "jsonSet"];</code>
+   * @return Whether the jsonSet field is set.
+   */
+  boolean hasJsonSet();
+  /**
+   * <code>.reallyme.crypto.v1.PublicJwksJsonFields json_set = 4 [json_name = "jsonSet"];</code>
+   * @return The jsonSet.
+   */
+  me.really.crypto.v1.PublicJwksJsonFields getJsonSet();
+
   public me.really.crypto.v1.PublicJwkDocument.RepresentationCase getRepresentationCase();
 }

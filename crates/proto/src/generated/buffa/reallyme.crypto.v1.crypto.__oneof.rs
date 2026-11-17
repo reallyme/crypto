@@ -1467,6 +1467,8 @@ pub mod public_jwk_document {
     pub enum Representation {
         Canonical(::buffa::alloc::boxed::Box<super::super::super::JsonWebKey>),
         Typed(::buffa::alloc::boxed::Box<super::super::super::PublicJwk>),
+        JsonFields(::buffa::alloc::boxed::Box<super::super::super::PublicJwkJsonFields>),
+        JsonSet(::buffa::alloc::boxed::Box<super::super::super::PublicJwksJsonFields>),
     }
     impl ::core::fmt::Debug for Representation {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
@@ -1480,6 +1482,12 @@ pub mod public_jwk_document {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::Typed(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+                Self::JsonFields(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JsonSet(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
             }
         }
     }
@@ -1512,6 +1520,30 @@ pub mod public_jwk_document {
             Self::Some(Representation::from(v))
         }
     }
+    impl ::core::convert::From<super::super::super::PublicJwkJsonFields>
+    for Representation {
+        fn from(v: super::super::super::PublicJwkJsonFields) -> Self {
+            Self::JsonFields(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::PublicJwkJsonFields>
+    for ::core::option::Option<Representation> {
+        fn from(v: super::super::super::PublicJwkJsonFields) -> Self {
+            Self::Some(Representation::from(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::PublicJwksJsonFields>
+    for Representation {
+        fn from(v: super::super::super::PublicJwksJsonFields) -> Self {
+            Self::JsonSet(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::PublicJwksJsonFields>
+    for ::core::option::Option<Representation> {
+        fn from(v: super::super::super::PublicJwksJsonFields) -> Self {
+            Self::Some(Representation::from(v))
+        }
+    }
     impl ::serde::Serialize for Representation {
         fn serialize<__S: ::serde::Serializer>(
             &self,
@@ -1525,6 +1557,12 @@ pub mod public_jwk_document {
                 }
                 Self::Typed(v) => {
                     map.serialize_entry("typed", &**v)?;
+                }
+                Self::JsonFields(v) => {
+                    map.serialize_entry("jsonFields", &**v)?;
+                }
+                Self::JsonSet(v) => {
+                    map.serialize_entry("jsonSet", &**v)?;
                 }
             }
             map.end()

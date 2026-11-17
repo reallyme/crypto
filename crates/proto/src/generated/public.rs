@@ -104,6 +104,10 @@ pub mod reallyme {
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoHpkeSenderExportResult;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoHpkeSenderSealRequest;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoHpkeSenderSealResult;
+            pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashFinalizeRequest;
+            pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashStartRequest;
+            pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashUpdateRequest;
+            pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashUpdateResult;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoJwaConcatKdfSha256DeriveRequest;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoJwaConcatKdfSha256DeriveResult;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoJwkOptions;
@@ -279,7 +283,9 @@ pub mod reallyme {
             pub use crate::generated::raw::reallyme::crypto::v1::PublicEcJwk;
             pub use crate::generated::raw::reallyme::crypto::v1::PublicJwk;
             pub use crate::generated::raw::reallyme::crypto::v1::PublicJwkDocument;
+            pub use crate::generated::raw::reallyme::crypto::v1::PublicJwkJsonFields;
             pub use crate::generated::raw::reallyme::crypto::v1::PublicJwks;
+            pub use crate::generated::raw::reallyme::crypto::v1::PublicJwksJsonFields;
             pub use crate::generated::raw::reallyme::crypto::v1::PublicKeyFormatOperation;
             pub use crate::generated::raw::reallyme::crypto::v1::PublicOkpJwk;
             pub use crate::generated::raw::reallyme::crypto::v1::RetentionPolicy;
@@ -448,6 +454,12 @@ pub mod reallyme {
                     pub use crate::generated::raw::reallyme::crypto::v1::PublicJwkDocumentView;
                     pub type PublicJwkDocumentOwnedView =
                         crate::GuardedOwnedView<PublicJwkDocumentView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::PublicJwkJsonFieldsView;
+                    pub type PublicJwkJsonFieldsOwnedView =
+                        crate::GuardedOwnedView<PublicJwkJsonFieldsView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::PublicJwksJsonFieldsView;
+                    pub type PublicJwksJsonFieldsOwnedView =
+                        crate::GuardedOwnedView<PublicJwksJsonFieldsView<'static>>;
                     pub use crate::generated::raw::reallyme::crypto::v1::CryptoAlgorithmIdentifierView;
                     pub type CryptoAlgorithmIdentifierOwnedView =
                         crate::GuardedOwnedView<CryptoAlgorithmIdentifierView<'static>>;
@@ -457,7 +469,16 @@ pub mod reallyme {
                     pub use crate::generated::raw::reallyme::crypto::v1::CryptoHashResultView;
                     pub type CryptoHashResultOwnedView =
                         crate::GuardedOwnedView<CryptoHashResultView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashStartRequestOwnedView;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashStartRequestView;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashUpdateRequestView;
+                    pub type CryptoIncrementalHashUpdateRequestOwnedView =
+                        crate::GuardedOwnedView<CryptoIncrementalHashUpdateRequestView<'static>>;
                     pub use crate::generated::raw::reallyme::crypto::v1::CryptoAeadSealRequestView;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashFinalizeRequestOwnedView;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashFinalizeRequestView;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashUpdateResultOwnedView;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashUpdateResultView;
                     pub type CryptoAeadSealRequestOwnedView =
                         crate::GuardedOwnedView<CryptoAeadSealRequestView<'static>>;
                     pub use crate::generated::raw::reallyme::crypto::v1::CryptoAeadSealResultView;
@@ -1316,6 +1337,19 @@ pub mod reallyme {
                 CryptoHpkeSenderSealResultOwnedView, CryptoHpkeSenderSealResultView,
             };
             pub use self::__buffa::view::{
+                CryptoIncrementalHashFinalizeRequestOwnedView,
+                CryptoIncrementalHashFinalizeRequestView,
+            };
+            pub use self::__buffa::view::{
+                CryptoIncrementalHashStartRequestOwnedView, CryptoIncrementalHashStartRequestView,
+            };
+            pub use self::__buffa::view::{
+                CryptoIncrementalHashUpdateRequestOwnedView, CryptoIncrementalHashUpdateRequestView,
+            };
+            pub use self::__buffa::view::{
+                CryptoIncrementalHashUpdateResultOwnedView, CryptoIncrementalHashUpdateResultView,
+            };
+            pub use self::__buffa::view::{
                 CryptoJwaConcatKdfSha256DeriveRequestOwnedView,
                 CryptoJwaConcatKdfSha256DeriveRequestView,
             };
@@ -1731,7 +1765,11 @@ pub mod reallyme {
             pub use self::__buffa::view::{PublicAkpJwkOwnedView, PublicAkpJwkView};
             pub use self::__buffa::view::{PublicEcJwkOwnedView, PublicEcJwkView};
             pub use self::__buffa::view::{PublicJwkDocumentOwnedView, PublicJwkDocumentView};
+            pub use self::__buffa::view::{PublicJwkJsonFieldsOwnedView, PublicJwkJsonFieldsView};
             pub use self::__buffa::view::{PublicJwkOwnedView, PublicJwkView};
+            pub use self::__buffa::view::{
+                PublicJwksJsonFieldsOwnedView, PublicJwksJsonFieldsView,
+            };
             pub use self::__buffa::view::{PublicJwksOwnedView, PublicJwksView};
             pub use self::__buffa::view::{PublicOkpJwkOwnedView, PublicOkpJwkView};
         }

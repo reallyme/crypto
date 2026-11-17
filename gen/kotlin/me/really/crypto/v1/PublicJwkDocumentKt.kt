@@ -81,6 +81,54 @@ public object PublicJwkDocumentKt {
     public fun hasTyped(): kotlin.Boolean {
       return _builder.hasTyped()
     }
+
+    /**
+     * `.reallyme.crypto.v1.PublicJwkJsonFields json_fields = 3 [json_name = "jsonFields"];`
+     */
+    public var jsonFields: me.really.crypto.v1.PublicJwkJsonFields
+      @kotlin.jvm.JvmName("getJsonFields")
+        get() = _builder.jsonFields
+      @kotlin.jvm.JvmName("setJsonFields")
+        set(value) {
+        _builder.jsonFields = value
+      }
+    /**
+     * `.reallyme.crypto.v1.PublicJwkJsonFields json_fields = 3 [json_name = "jsonFields"];`
+     */
+    public fun clearJsonFields() {
+      _builder.clearJsonFields()
+    }
+    /**
+     * `.reallyme.crypto.v1.PublicJwkJsonFields json_fields = 3 [json_name = "jsonFields"];`
+     * @return Whether the jsonFields field is set.
+     */
+    public fun hasJsonFields(): kotlin.Boolean {
+      return _builder.hasJsonFields()
+    }
+
+    /**
+     * `.reallyme.crypto.v1.PublicJwksJsonFields json_set = 4 [json_name = "jsonSet"];`
+     */
+    public var jsonSet: me.really.crypto.v1.PublicJwksJsonFields
+      @kotlin.jvm.JvmName("getJsonSet")
+        get() = _builder.jsonSet
+      @kotlin.jvm.JvmName("setJsonSet")
+        set(value) {
+        _builder.jsonSet = value
+      }
+    /**
+     * `.reallyme.crypto.v1.PublicJwksJsonFields json_set = 4 [json_name = "jsonSet"];`
+     */
+    public fun clearJsonSet() {
+      _builder.clearJsonSet()
+    }
+    /**
+     * `.reallyme.crypto.v1.PublicJwksJsonFields json_set = 4 [json_name = "jsonSet"];`
+     * @return Whether the jsonSet field is set.
+     */
+    public fun hasJsonSet(): kotlin.Boolean {
+      return _builder.hasJsonSet()
+    }
     public val representationCase: me.really.crypto.v1.PublicJwkDocument.RepresentationCase
     @kotlin.jvm.JvmName("getRepresentationCase")
       get() = _builder.representationCase
@@ -98,3 +146,9 @@ public val me.really.crypto.v1.PublicJwkDocumentOrBuilder.canonicalOrNull: me.re
 
 public val me.really.crypto.v1.PublicJwkDocumentOrBuilder.typedOrNull: me.really.crypto.v1.PublicJwk?
   get() = if (hasTyped()) getTyped() else null
+
+public val me.really.crypto.v1.PublicJwkDocumentOrBuilder.jsonFieldsOrNull: me.really.crypto.v1.PublicJwkJsonFields?
+  get() = if (hasJsonFields()) getJsonFields() else null
+
+public val me.really.crypto.v1.PublicJwkDocumentOrBuilder.jsonSetOrNull: me.really.crypto.v1.PublicJwksJsonFields?
+  get() = if (hasJsonSet()) getJsonSet() else null

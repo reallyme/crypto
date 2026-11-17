@@ -4,7 +4,7 @@
 
 //! Shared JWK data structures.
 
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Serialize, Serializer};
 
 use crate::JwtError;
 
@@ -102,7 +102,7 @@ pub enum Jwk {
 }
 
 /// JSON Web Key Set wrapper.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Jwks {
     /// Public keys in the set.
     pub keys: Vec<Jwk>,

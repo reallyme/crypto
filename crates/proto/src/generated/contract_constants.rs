@@ -383,6 +383,14 @@ pub mod hpke_internal {
     pub const UNCOMPRESSED_POINT_PREFIX: u8 = 4;
 }
 
+/// Immutable `incremental_hash` contract constants.
+pub mod incremental_hash {
+    /// Exact bytes value declared by the schema.
+    pub const SHA2_256_MAX_INPUT_BYTES: u64 = 2305843009213693951;
+    /// Exact bytes value declared by the schema.
+    pub const SHA3_256_MAX_INPUT_BYTES: u64 = 18446744073709551615;
+}
+
 /// Immutable `key_identifier` contract constants.
 pub mod key_identifier {
     /// Exact bytes value declared by the schema.

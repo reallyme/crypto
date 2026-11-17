@@ -31,12 +31,12 @@ refuses export. Borrow fields by slice, or transfer a byte owner into a
 `Zeroizing<Vec<u8>>`. Secret owned views retain a clearing backing allocation
 and expose lifetime-bound borrows. Use an eager decoder for admission.
 
-The examples target the 0.4.2 source release. Use a matching local
+The examples target the 0.4.4 source release. Use a matching local
 checkout until that version is available on crates.io.
 
 ```toml
 [dependencies]
-reallyme-crypto-proto = { version = "0.4.2", features = ["generated"] }
+reallyme-crypto-proto = { version = "0.4.4", features = ["generated"] }
 ```
 
 The `generated` feature includes Buffa protobuf bytes and strict ProtoJSON
@@ -49,7 +49,7 @@ For native error types without message codecs, select the minimal feature:
 
 ```toml
 [dependencies]
-reallyme-crypto-proto = { version = "0.4.2", default-features = false, features = ["error-types"] }
+reallyme-crypto-proto = { version = "0.4.4", default-features = false, features = ["error-types"] }
 ```
 
 `error-types` depends only on `thiserror`. It exposes the schema-generated

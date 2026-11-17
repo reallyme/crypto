@@ -71,7 +71,8 @@
         "vectors/external/hpke/",
         "vectors/external/nist-acvp/ml-kem/encap-decap/internalProjection.json",
         "vectors/external/provenance.json"
-      ]
+      ],
+      "mode": "manual"
     }
   },
   "release": {

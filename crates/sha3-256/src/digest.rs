@@ -12,7 +12,7 @@ pub const SHA3_256_DIGEST_LENGTH: usize =
 /// SHA3-256 digest bytes.
 #[derive(Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
 pub struct Sha3_256Digest {
-    bytes: [u8; SHA3_256_DIGEST_LENGTH],
+    pub(crate) bytes: [u8; SHA3_256_DIGEST_LENGTH],
 }
 
 impl Sha3_256Digest {

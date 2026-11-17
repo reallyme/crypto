@@ -803,7 +803,30 @@ message PublicJwkDocument {
   oneof representation {
     JsonWebKey canonical = 1;
     PublicJwk typed = 2;
+    PublicJwkJsonFields json_fields = 3;
+    PublicJwksJsonFields json_set = 4;
   }
+}
+
+// Guarded staging for RFC 7517 public-key JSON. Shape-dependent required
+// members are checked before constructing the established native public JWK.
+// Optional presence retains absent versus present-empty metadata; JSON null
+// remains equivalent to absence for alg/use/kid as in the legacy adapter.
+message PublicJwkJsonFields {
+  optional string kty = 1;
+  optional string crv = 2;
+  optional string x = 3;
+  optional string y = 4;
+  optional string alg = 5;
+  optional string usage = 6 [json_name = "use"];
+  optional string kid = 7;
+  optional string public_key = 8 [json_name = "pub"];
+}
+
+// A key set is staged entirely in generated guards before any legacy JWK
+// return values are allocated, including when a later key fails admission.
+message PublicJwksJsonFields {
+  repeated PublicJwkJsonFields keys = 1;
 }
 
 // CryptoAlgorithmIdentifier is a oneof wrapper for protocol messages that need
@@ -842,6 +865,38 @@ message CryptoHashResult {
   CryptoAlgorithmIdentifier algorithm = 1;
   bytes digest = 2;
 }
+
+// Incremental hashing is a local, exclusively owned SDK lifecycle. A successful
+// start creates a fresh context; updates append exact bytes in order, including
+// empty chunks; finalize consumes the context and returns CryptoHashResult.
+// Supported algorithms are SHA2_256 and SHA3_256. UNSPECIFIED/unknown selectors
+// fail with PRIMITIVE_INVALID_PARAMETER; other algorithms fail with
+// PROVIDER_UNSUPPORTED_ALGORITHM. Context state is never serialized, imported,
+// cloned, or addressed through a process-global handle. These standalone
+// contracts deliberately do not enter the stateless CryptoOperationRequest.
+message CryptoIncrementalHashStartRequest {
+  HashAlgorithm algorithm = 1;
+}
+
+// Input may contain PII or secret material. Generated owners and native
+// contexts must erase their retained buffers on destruction. The caller owns
+// cleanup of its original input. Length rejection is atomic: no bytes from a
+// rejected chunk are absorbed. SHA2_256 accepts at most 2^61-1 total bytes;
+// SHA3_256 accepts at most 2^64-1. The immutable native constants registry owns
+// these limits. Overflow fails with PRIMITIVE_INVALID_LENGTH.
+message CryptoIncrementalHashUpdateRequest {
+  bytes input = 1;
+}
+
+message CryptoIncrementalHashUpdateResult {
+  uint64 processed_bytes = 1;
+}
+
+// Finalizing an empty context hashes the empty message. Native consuming APIs
+// prevent reuse after finalize. Explicitly zeroizing a context invalidates it;
+// subsequent update/finalize fails with BACKEND_INVALID_STATE. Dropping an
+// unfinished context also erases its retained state and buffered input.
+message CryptoIncrementalHashFinalizeRequest {}
 
 message CryptoAeadSealRequest {
   CryptoAlgorithmIdentifier algorithm = 1;

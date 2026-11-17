@@ -164,19 +164,19 @@ for (const path of ["packages/kotlin/build.gradle.kts", "packages/kotlin-android
   assertContains(path, 'name.set("Apache License, Version 2.0")');
 }
 
-const rustRootVersion = "0.4.2";
-const cryptoProtoPackageVersion = "0.4.2";
-const typescriptPackageVersion = "0.4.2";
-const kotlinPackageVersion = "0.4.2";
-const kotlinAndroidPackageVersion = "0.4.2";
+const rustRootVersion = "0.4.4";
+const cryptoProtoPackageVersion = "0.4.4";
+const typescriptPackageVersion = "0.4.4";
+const kotlinPackageVersion = "0.4.4";
+const kotlinAndroidPackageVersion = "0.4.4";
 const rustCodecVersion = "0.4.3";
 const tsCodecVersion = "0.4.3";
 const swiftCodecVersion = "0.4.3";
 const mavenCodecVersion = "0.4.3";
 const rustSemverBaselineCommit = "54de2955ebf73e9fd1c306eba207550b3716d767";
-const cargoSemverChecksVersion = "0.50.0";
+const cargoSemverChecksVersion = "0.51.0";
 const buffaVersion = "0.1.2";
-const releaseReadinessCommit = "55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f";
+const releaseReadinessCommit = "a89da82a662e02ecb3b7cfc6756c450aff64417a";
 const releaseReadinessCommand = "node scripts/run_pinned_release_readiness.mjs";
 const gradleWrapperValidationAction =
   "gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c";
@@ -742,8 +742,8 @@ if (/^[ \t]*types:/mu.test(generationConfig) || metadataExclusions.length !== 1 
     metadataExclusions[0][1].trim() !== "- reallyme.crypto.contract.v1.**") {
   fail("buf.gen.yaml must generate every runtime type and exclude only immutable contract metadata");
 }
-assertContains("buf.gen.yaml", "buf.build/bufbuild/es:v2.14.1");
-assertContains("buf.gen.yaml", "buf.build/apple/swift:v1.38.1");
+assertContains("buf.gen.yaml", "buf.build/bufbuild/es:v2.17.0");
+assertContains("buf.gen.yaml", "buf.build/apple/swift:v1.39.0");
 assertContains("buf.gen.yaml", "buf.build/protocolbuffers/java:v36.2");
 assertContains("buf.gen.yaml", "buf.build/protocolbuffers/kotlin:v36.2");
 assertContains("crates/proto/src/generated/buffa/mod.rs", "pub mod crypto");
@@ -2381,7 +2381,7 @@ const primaryOperationBoundaryPolicy = {
 const repositoryPolicy = {
   generatedFreshnessMode,
   vendoredCore: {
-    version: "0.9.5",
+    version: "0.9.6",
     scriptPath: "scripts/check_release_readiness.mjs",
     corePath: "scripts/release-readiness/core.mjs",
   },
@@ -2683,7 +2683,7 @@ const repositoryPolicy = {
         path: "scripts/run_pinned_release_readiness.mjs",
         required: [
           `const RELEASE_READINESS_COMMIT = "${releaseReadinessCommit}";`,
-          'const RELEASE_READINESS_CORE_SHA256 =\n  "3f351bd201ed2f1068cbdd87884fb07759a7ae1f1f0148099df046d9580cecb6";',
+          'const RELEASE_READINESS_CORE_SHA256 =\n  "edabd3b86b812ff821517d0adf4d383f066d95a65bb9b4b364809eacdb6ec639";',
           "const LOCAL_CHECKER_SHA256 =",
           "const LOCAL_CHECKER_DEPENDENCIES =",
           "scripts/crypto_operation_route_readiness.mjs",
@@ -3071,7 +3071,7 @@ assertContains("scripts/prepare_swift_binary_manifest.mjs", "--local-artifact-pa
 assertContains("scripts/verify_swift_release_artifact.mjs", '"compute-checksum"');
 assertContains("scripts/verify_swift_release_artifact.mjs", "Package.swift checksum does not match");
 assertContains("scripts/verify_swift_release_artifact.test.mjs", "rejects a forged sidecar");
-assertContains(".github/workflows/rust-ci.yml", "tool: nextest@0.9.140");
+assertContains(".github/workflows/rust-ci.yml", "tool: nextest@0.9.152");
 const rustWorkflow = ".github/workflows/rust-ci.yml";
 const rustSteps = extractWorkflowSteps(rustWorkflow).filter(({ job }) => job === "rust");
 const denyInstaller = rustSteps.find(({ name }) => name === "Install cargo-deny");
@@ -3086,7 +3086,7 @@ if (denyInstallerInputs.size !== 3 || denyInstallerInputs.get("tool") !== "cargo
     denyInstallerInputs.get("checksum") !== "true" || denyInstallerInputs.get("fallback") !== "none") {
   fail(`${rustWorkflow} must install the pinned Cargo Deny binary with checksum verification`);
 }
-assertContains(".github/workflows/rust-ci.yml", "tool: cargo-audit@0.22.2");
+assertContains(".github/workflows/rust-ci.yml", "tool: cargo-audit@0.23.0");
 for (const path of [
   ".github/workflows/dependency-security.yml",
   ".github/workflows/codeql.yml",

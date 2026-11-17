@@ -5,10 +5,7 @@
 name: Formal Verification
 
 on:
-  workflow_call:
-    outputs:
-      verified_sha:
-        value: ${{ jobs.verified.outputs.verified_sha }}
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -22,6 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Install verified Tamarin and Maude releases
@@ -64,10 +62,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
 
@@ -76,11 +75,11 @@ jobs:
 
       # Kani manages its own verification toolchain via `cargo kani setup`.
       # Pin the verifier version deliberately; the proof crate is standalone
-      # because Kani 0.67 still bundles a compiler below the release workspace
-      # Rust floor.
+      # to keep its dependency-free encoder proof boundary separate from the
+      # release workspace and its runtime dependencies.
       - name: Install Kani
         run: |
-          cargo install --locked kani-verifier@0.67.0
+          cargo install --locked kani-verifier@0.68.0
           cargo kani setup
 
       - name: Verify proof obligations
@@ -120,10 +119,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
 
@@ -148,14 +148,3 @@ jobs:
           bash -e -o pipefail scripts/verify_formal_scope.sh
           test "$(git rev-parse --verify HEAD)" = "$GITHUB_SHA"
           git diff --no-ext-diff --exit-code "$GITHUB_SHA" --
-
-  verified:
-    name: Record verified candidate
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    needs: [tamarin, kani-reference, kani-verification]
-    outputs:
-      verified_sha: ${{ github.sha }}
-    steps:
-      - name: Record successful proofs
-        run: echo "All proof obligations passed"

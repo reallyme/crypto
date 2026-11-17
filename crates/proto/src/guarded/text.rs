@@ -118,7 +118,7 @@ impl buffa::json_helpers::ProtoStringJson for SecretString {
         deserializer: D,
     ) -> Result<Self, D::Error> {
         struct TextVisitor;
-        impl Visitor<'_> for TextVisitor {
+        impl<'de> Visitor<'de> for TextVisitor {
             type Value = SecretString;
             fn expecting(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 f.write_str("a UTF-8 string")
@@ -129,11 +129,49 @@ impl buffa::json_helpers::ProtoStringJson for SecretString {
             fn visit_string<E: Error>(self, value: String) -> Result<Self::Value, E> {
                 Ok(value.into())
             }
+            fn visit_bool<E: Error>(self, value: bool) -> Result<Self::Value, E> {
+                let _value = zeroize::Zeroizing::new(value);
+                Err(E::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
+            }
+            fn visit_i64<E: Error>(self, value: i64) -> Result<Self::Value, E> {
+                let _value = zeroize::Zeroizing::new(value);
+                Err(E::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
+            }
+            fn visit_u64<E: Error>(self, value: u64) -> Result<Self::Value, E> {
+                let _value = zeroize::Zeroizing::new(value);
+                Err(E::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
+            }
+            fn visit_f64<E: Error>(self, value: f64) -> Result<Self::Value, E> {
+                let _value = zeroize::Zeroizing::new(value);
+                Err(E::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
+            }
+            fn visit_unit<E: Error>(self) -> Result<Self::Value, E> {
+                Err(E::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
+            }
+            fn visit_seq<A: serde::de::SeqAccess<'de>>(
+                self,
+                _: A,
+            ) -> Result<Self::Value, A::Error> {
+                Err(serde::de::Error::custom(
+                    CryptoError::PRIMITIVE_INVALID_PARAMETER,
+                ))
+            }
+            fn visit_map<M: serde::de::MapAccess<'de>>(
+                self,
+                _: M,
+            ) -> Result<Self::Value, M::Error> {
+                Err(serde::de::Error::custom(
+                    CryptoError::PRIMITIVE_INVALID_PARAMETER,
+                ))
+            }
             fn visit_byte_buf<E: Error>(self, value: Vec<u8>) -> Result<Self::Value, E> {
                 let _value = Zeroizing::new(value);
                 Err(E::custom(CryptoError::PRIMITIVE_INVALID_PARAMETER))
             }
         }
-        deserializer.deserialize_string(TextVisitor)
+        // deserialize_string can format received numeric values into Serde's
+        // owned invalid-type diagnostics before our visitor runs. Dispatch all
+        // JSON types here and reject them with fixed, non-identifying reasons.
+        deserializer.deserialize_any(TextVisitor)
     }
 }

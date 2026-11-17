@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-jwk"
-version = "0.4.2"
+version = "0.4.4"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -18,7 +18,7 @@ name = "envelopes_jwk"
 
 [features]
 default = ["native"]
-proto = ["dep:buffa", "dep:crypto-proto", "zeroize/derive"]
+proto = ["zeroize/derive"]
 
 native = [
     "crypto-p256/native",
@@ -31,18 +31,19 @@ wasm = [
 ]
 
 [dependencies]
-buffa = { workspace = true, optional = true }
-crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.2", path = "../proto", default-features = false, features = ["generated"], optional = true }
+buffa = { workspace = true }
+buffa-types = { package = "reallyme-buffa-types", version = "=0.1.2", default-features = false, features = ["json", "sensitive"] }
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.4", path = "../proto", default-features = false, features = ["generated"] }
 zeroize = { workspace = true }
-crypto-core = { package = "reallyme-crypto-core", version = "=0.4.2", path = "../crypto/core", default-features = false }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.4.4", path = "../crypto/core", default-features = false }
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 
 codec-base64url = { package = "reallyme-codec-base64url", version = "0.4.3" }
 codec-jcs = { package = "reallyme-codec-jcs", version = "0.4.3" }
-crypto-p256 = { package = "reallyme-crypto-p256", version = "=0.4.2", path = "../p256", default-features = false }
-crypto-ed25519 = { package = "reallyme-crypto-ed25519", version = "=0.4.2", path = "../ed25519", default-features = false }
-crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "=0.4.2", path = "../secp256k1", default-features = false }
+crypto-p256 = { package = "reallyme-crypto-p256", version = "=0.4.4", path = "../p256", default-features = false }
+crypto-ed25519 = { package = "reallyme-crypto-ed25519", version = "=0.4.4", path = "../ed25519", default-features = false }
+crypto-secp256k1 = { package = "reallyme-crypto-secp256k1", version = "=0.4.4", path = "../secp256k1", default-features = false }
 
 
 [dev-dependencies]

@@ -9,6 +9,7 @@ use codec_base64url::base64url_to_bytes;
 use crypto_p256::decompress_public_key as decompress_p256_public_key;
 #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
 use crypto_secp256k1::decompress_public_key as decompress_secp256k1_public_key;
+use zeroize::Zeroizing;
 
 use super::{AkpJwk, EcJwk, Jwk, OkpJwk};
 use crate::JwtError;
@@ -54,7 +55,12 @@ fn okp_public_key_bytes(okp: &OkpJwk) -> Result<Vec<u8>, JwtError> {
     {
         return Err(JwtError::PRIMITIVE_INVALID_PARAMETER);
     }
-    let public_key = decode_fixed_public_key(&okp.x, BASE64URL_LEN_32_BYTES, 32, invalid_error)?;
+    let mut public_key = Zeroizing::new(decode_fixed_public_key(
+        &okp.x,
+        BASE64URL_LEN_32_BYTES,
+        32,
+        invalid_error,
+    )?);
     if okp.crv == "Ed25519" {
         crypto_ed25519::validate_public_key_identity(&public_key)
             .map_err(crate::error::public_key_error)?;
@@ -62,7 +68,7 @@ fn okp_public_key_bytes(okp: &OkpJwk) -> Result<Vec<u8>, JwtError> {
     if okp.crv == "X25519" && !crate::x25519::is_canonical_identity(&public_key) {
         return Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY);
     }
-    Ok(public_key)
+    Ok(core::mem::take(&mut *public_key))
 }
 
 fn ec_public_key_bytes(ec: &EcJwk) -> Result<Vec<u8>, JwtError> {
@@ -80,11 +86,21 @@ fn ec_public_key_bytes(ec: &EcJwk) -> Result<Vec<u8>, JwtError> {
     if ec.use_.as_deref().is_some_and(|value| value != "sig") {
         return Err(JwtError::PRIMITIVE_INVALID_PARAMETER);
     }
-    let x = decode_fixed_public_key(&ec.x, BASE64URL_LEN_32_BYTES, 32, invalid_error)?;
-    let y = decode_fixed_public_key(&ec.y, BASE64URL_LEN_32_BYTES, 32, invalid_error)?;
+    let x = Zeroizing::new(decode_fixed_public_key(
+        &ec.x,
+        BASE64URL_LEN_32_BYTES,
+        32,
+        invalid_error,
+    )?);
+    let y = Zeroizing::new(decode_fixed_public_key(
+        &ec.y,
+        BASE64URL_LEN_32_BYTES,
+        32,
+        invalid_error,
+    )?);
     let last_y = y.last().copied().ok_or(invalid_error)?;
     let prefix = if last_y & 1 == 0 { 0x02 } else { 0x03 };
-    let mut compressed = Vec::with_capacity(33);
+    let mut compressed = Zeroizing::new(Vec::with_capacity(33));
     compressed.push(prefix);
     compressed.extend_from_slice(&x);
 
@@ -98,8 +114,10 @@ fn ec_public_key_bytes(ec: &EcJwk) -> Result<Vec<u8>, JwtError> {
     {
         match ec.crv.as_str() {
             "P-256" => {
-                let validated_sec1 = decompress_p256_public_key(&compressed)
-                    .map_err(crate::error::public_key_error)?;
+                let validated_sec1 = Zeroizing::new(
+                    decompress_p256_public_key(&compressed)
+                        .map_err(crate::error::public_key_error)?,
+                );
                 if validated_sec1.len() != 65
                     || validated_sec1.first().copied() != Some(0x04)
                     || validated_sec1.get(1..33) != Some(x.as_slice())
@@ -111,13 +129,16 @@ fn ec_public_key_bytes(ec: &EcJwk) -> Result<Vec<u8>, JwtError> {
             "secp256k1" => {
                 let (validated_x, validated_y) = decompress_secp256k1_public_key(&compressed)
                     .map_err(crate::error::public_key_error)?;
-                if validated_x != x || validated_y != y {
+                let validated_x = Zeroizing::new(validated_x);
+                let validated_y = Zeroizing::new(validated_y);
+                if validated_x.as_slice() != x.as_slice() || validated_y.as_slice() != y.as_slice()
+                {
                     return Err(invalid_error);
                 }
             }
             _ => return Err(JwtError::PROVIDER_UNSUPPORTED_ALGORITHM),
         };
-        Ok(compressed)
+        Ok(core::mem::take(&mut *compressed))
     }
 }
 
@@ -202,9 +223,9 @@ fn decode_fixed_public_key(
     if encoded.len() != expected_encoded_len {
         return Err(invalid_error);
     }
-    let public_key = base64url_to_bytes(encoded).map_err(|_| invalid_error)?;
+    let mut public_key = Zeroizing::new(base64url_to_bytes(encoded).map_err(|_| invalid_error)?);
     if public_key.len() != expected_decoded_len {
         return Err(invalid_error);
     }
-    Ok(public_key)
+    Ok(core::mem::take(&mut *public_key))
 }

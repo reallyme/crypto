@@ -88,9 +88,17 @@ pub mod __buffa {
         reg.register_json_any(super::__PUBLIC_JWK_JSON_ANY);
         reg.register_json_any(super::__PUBLIC_JWKS_JSON_ANY);
         reg.register_json_any(super::__PUBLIC_JWK_DOCUMENT_JSON_ANY);
+        reg.register_json_any(super::__PUBLIC_JWK_JSON_FIELDS_JSON_ANY);
+        reg.register_json_any(super::__PUBLIC_JWKS_JSON_FIELDS_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_ALGORITHM_IDENTIFIER_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_HASH_REQUEST_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_HASH_RESULT_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_INCREMENTAL_HASH_START_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_INCREMENTAL_HASH_UPDATE_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_INCREMENTAL_HASH_UPDATE_RESULT_JSON_ANY);
+        reg.register_json_any(
+            super::__CRYPTO_INCREMENTAL_HASH_FINALIZE_REQUEST_JSON_ANY,
+        );
         reg.register_json_any(super::__CRYPTO_AEAD_SEAL_REQUEST_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_AEAD_SEAL_RESULT_JSON_ANY);
         reg.register_json_any(super::__CRYPTO_AEAD_OPEN_REQUEST_JSON_ANY);
@@ -485,11 +493,29 @@ pub use self::__buffa::view::PublicJwksView;
 #[doc(inline)]
 pub use self::__buffa::view::PublicJwkDocumentView;
 #[doc(inline)]
+pub use self::__buffa::view::PublicJwkJsonFieldsView;
+#[doc(inline)]
+pub use self::__buffa::view::PublicJwksJsonFieldsView;
+#[doc(inline)]
 pub use self::__buffa::view::CryptoAlgorithmIdentifierView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoHashRequestView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoHashResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoIncrementalHashStartRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoIncrementalHashStartRequestOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoIncrementalHashUpdateRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoIncrementalHashUpdateResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoIncrementalHashUpdateResultOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoIncrementalHashFinalizeRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoIncrementalHashFinalizeRequestOwnedView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoAeadSealRequestView;
 #[doc(inline)]

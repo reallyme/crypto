@@ -12,6 +12,21 @@ import "reallyme/crypto/contract/v1/constants.proto";
 // descriptor metadata; executable requests cannot supply replacements.
 option (constant_registry) = {
   modules: {
+    native_module: "incremental_hash"
+    constants: {
+      native_name: "SHA2_256_MAX_INPUT_BYTES"
+      native_type: NATIVE_TYPE_U64
+      unit: UNIT_BYTES
+      unsigned_value: 2305843009213693951
+    }
+    constants: {
+      native_name: "SHA3_256_MAX_INPUT_BYTES"
+      native_type: NATIVE_TYPE_U64
+      unit: UNIT_BYTES
+      unsigned_value: 18446744073709551615
+    }
+  }
+  modules: {
     native_module: "pbkdf2"
     constants: {
       native_name: "PBKDF2_MIN_PASSWORD_LENGTH"

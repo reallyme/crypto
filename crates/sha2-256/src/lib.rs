@@ -8,3 +8,9 @@ mod digest;
 mod hash_message;
 
 pub use digest::{digest, Sha2_256Digest, SHA2_256_DIGEST_LENGTH};
+
+mod incremental;
+
+/// Canonical schema-defined failure for incremental hash operations.
+pub use crypto_proto::error_types::CryptoError;
+pub use incremental::Sha2_256Hasher;
