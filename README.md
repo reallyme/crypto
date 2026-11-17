@@ -95,8 +95,8 @@ The cross-platform SDK facade exposes two RFC 9180 Base-mode profiles:
 
 | Profile | KEM | KDF | AEAD | Swift | Kotlin/JVM and Android | TypeScript |
 |---|---|---|---|---|---|---|
-| `DHKEM-P256-HKDF-SHA256-HKDF-SHA256-AES-256-GCM` | DHKEM(P-256, HKDF-SHA256) | HKDF-SHA256 | AES-256-GCM | Rust C ABI provider | BouncyCastle | Rust WASM provider |
-| `DHKEM-X25519-HKDF-SHA256-HKDF-SHA256-CHACHA20-POLY1305` | DHKEM(X25519, HKDF-SHA256) | HKDF-SHA256 | ChaCha20-Poly1305 | Rust C ABI provider | BouncyCastle | Rust WASM provider |
+| `DHKEM-P256-HKDF-SHA256-HKDF-SHA256-AES-256-GCM` | DHKEM(P-256, HKDF-SHA256) | HKDF-SHA256 | AES-256-GCM | Rust C ABI provider | Rust JNI provider | Rust WASM provider |
+| `DHKEM-X25519-HKDF-SHA256-HKDF-SHA256-CHACHA20-POLY1305` | DHKEM(X25519, HKDF-SHA256) | HKDF-SHA256 | ChaCha20-Poly1305 | Rust C ABI provider | Rust JNI provider | Rust WASM provider |
 
 Swift requires an explicit Rust C ABI provider for these profiles. Missing or
 unavailable providers fail closed. The Rust native operation contract also
@@ -144,7 +144,7 @@ When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.4.4", default-features = false, features = [
+reallyme-crypto = { version = "0.4.3", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -157,7 +157,7 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.4.4", default-features = false, features = [
+reallyme-crypto = { version = "0.4.3", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }
@@ -172,7 +172,7 @@ OpenMLS adapters can select the narrow HPKE profile without enabling the full
 HPKE compatibility surface:
 
 ```toml
-reallyme-crypto = { version = "0.4.4", default-features = false, features = [
+reallyme-crypto = { version = "0.4.3", default-features = false, features = [
   "native",
   "hpke-openmls",
 ] }
@@ -260,7 +260,7 @@ separate from raw private-key bytes.
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.4.4"
+    from: "0.4.3"
 )
 ```
 
@@ -272,7 +272,7 @@ separate from raw private-key bytes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.4.4")
+    implementation("me.really:crypto:0.4.3")
 }
 ```
 

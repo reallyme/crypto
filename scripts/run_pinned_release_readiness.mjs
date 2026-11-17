@@ -14,14 +14,17 @@ const RELEASE_READINESS_COMMIT = "a89da82a662e02ecb3b7cfc6756c450aff64417a";
 const RELEASE_READINESS_CORE_SHA256 =
   "edabd3b86b812ff821517d0adf4d383f066d95a65bb9b4b364809eacdb6ec639";
 const LOCAL_CHECKER_SHA256 =
-  "f94a537edde262a708a1fb09642e06940201fc44ab55d43eea0571cb699306f1";
+  "0e96e53c4a05431c911dba699f3b404c72630196f9dcd9e493a9b717c4ad0f34";
 // The checker imports local policy modules. Pinning only its entry file
 // would let an unreviewed dependency change the release decision.
 const LOCAL_CHECKER_DEPENDENCIES = [
+  ["scripts/generate_protobuf.mjs", "63870985d67667e2b4f5b71d5517ded059624b546dcee63d4109e21c14994e49"],
+  ["scripts/check_local_proto_tools.mjs", "d3c542bacd20f41e3cfbff48cd751d07f7af8ae65f7d903d4d57642a71a2db82"],
+  ["scripts/install_local_proto_tools.sh", "b7fe4e8b2402599b0b494c7ec178d1b76dfb55f88e8bfc2cfc65e46b542d7288"],
   ["scripts/native_buffa_readiness.mjs", "bdc838ba6bb5a07a36bb060a4cc1524baeaf70205b10f09e7ee8630f8ff128ca"],
   ["scripts/proto_scalar_policy.mjs", "f7b071722aa93a0f75a7fe57f994ae7a12e030ee0bedb1be7058e48543cac377"],
   ["scripts/crypto_operation_route_readiness.mjs", "2b15c4e6778f18cf10b493fb5644e47baf537185b6e4411909ba875b5bd38db4"],
-  ["scripts/workflow_gate_policy.mjs", "00b9ae3c0341ee6aa89f74ad4624951c75a70fd5ec891689a19513699191a0f5"],
+  ["scripts/workflow_gate_policy.mjs", "e3a26acfda8b8dddf9f3b40a0c247f3e14d343be263f5a3c047d2fead0163a37"],
 ];
 const RELEASE_READINESS_CORE_URL =
   `https://raw.githubusercontent.com/reallyme/release-readiness/${RELEASE_READINESS_COMMIT}/core.mjs`;

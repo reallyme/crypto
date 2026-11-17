@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-aes256-gcm-siv"
-version = "0.4.4"
+version = "0.4.3"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -17,6 +17,8 @@ repository.workspace = true
 ignored = [
     # Enables AES round-key zeroization for standalone consumers of this crate.
     "aes",
+    # Enables wiping of the per-message POLYVAL authentication state.
+    "polyval",
     # Enables getrandom's wasm entropy backend for the transitive RustCrypto stack.
     "getrandom",
 ]
@@ -26,14 +28,15 @@ name = "crypto_aes256_gcm_siv"
 
 [features]
 default = []
-native = ["dep:aes", "dep:aes-gcm-siv"]
-wasm = ["dep:aes", "dep:aes-gcm-siv", "dep:getrandom"]
+native = ["dep:aes", "dep:aes-gcm-siv", "dep:polyval"]
+wasm = ["dep:aes", "dep:aes-gcm-siv", "dep:polyval", "dep:getrandom"]
 
 [dependencies]
-crypto-core = { package = "reallyme-crypto-core", version = "=0.4.4", path = "../crypto/core" }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.4.3", path = "../crypto/core" }
 zeroize = { workspace = true, features = ["derive"] }
 aes = { workspace = true, features = ["zeroize"], optional = true }
 aes-gcm-siv = { workspace = true, optional = true }
+polyval = { workspace = true, optional = true }
 getrandom = { workspace = true, features = ["wasm_js"], optional = true }
 
 [lints]

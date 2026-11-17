@@ -60,12 +60,17 @@ if grep -Eq '(^|[[:space:]])_?rm_crypto_(ml_kem_(512|768|1024)|x_wing_768)_encap
   echo "conformance-only encapsulation symbols leaked into the production FFI artifact" >&2
   exit 1
 fi
+if grep -Eq '(^|[[:space:]])_?Java_me_really_crypto_(ReallyMeProtocolConformance_[[:alnum:]_]+|ReallyMeRustProtocols_(encapsulateDeterministicNative|hpkeSealDeterministicNative))$' <<< "$symbols"; then
+  echo "conformance-only JNI symbols leaked into the production FFI artifact" >&2
+  exit 1
+fi
 
 if ! command -v clang >/dev/null 2>&1; then
   echo "clang is required for the C ABI sanitizer test" >&2
   exit 1
 fi
-clang -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -fno-omit-frame-pointer \
+clang -std=c11 -Wall -Wextra -Werror -Wcast-align \
+  -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer \
   -I"${ROOT_DIR}/crates/ffi/abi" "${ROOT_DIR}/scripts/ffi_abi_sanitizer.c" \
   -L"${LIBRARY_DIR}" -lcrypto_ffi \
   -Wl,-rpath,"${LIBRARY_DIR}" \

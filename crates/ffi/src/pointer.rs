@@ -89,12 +89,14 @@ fn validate_disjoint_addresses(
 /// `isize::MAX` are rejected before calling `from_raw_parts` because Rust slice
 /// values must describe one allocation whose total size does not exceed that
 /// bound.
+/// Non-empty inputs require an active [`crate::guard::ffi_guard`] scope.
 ///
 /// # Safety
 ///
 /// When `len != 0`, `ptr` must point to `len` initialized bytes that remain
 /// valid and unmutated for the lifetime `'a` of the returned slice.
-pub unsafe fn read_slice<'a>(ptr: *const u8, len: usize) -> Result<&'a [u8], CryptoStatus> {
+/// The reference must not outlive the active pointer-range scope.
+pub(crate) unsafe fn read_slice<'a>(ptr: *const u8, len: usize) -> Result<&'a [u8], CryptoStatus> {
     validate_read_pair(ptr, len)?;
     if len == 0 {
         return Ok(&[]);
@@ -113,13 +115,18 @@ pub unsafe fn read_slice<'a>(ptr: *const u8, len: usize) -> Result<&'a [u8], Cry
 /// `isize::MAX` are rejected before calling `from_raw_parts_mut` because Rust
 /// slice values must describe one allocation whose total size does not exceed
 /// that bound.
+/// Non-empty outputs require an active [`crate::guard::ffi_guard`] scope.
 ///
 /// # Safety
 ///
 /// When `len != 0`, `ptr` must point to `len` bytes of writable, properly
 /// aligned memory that stays valid and exclusively borrowed for the lifetime
 /// `'a` of the returned slice.
-pub unsafe fn write_slice<'a>(ptr: *mut u8, len: usize) -> Result<&'a mut [u8], CryptoStatus> {
+/// The reference must not outlive the active pointer-range scope.
+pub(crate) unsafe fn write_slice<'a>(
+    ptr: *mut u8,
+    len: usize,
+) -> Result<&'a mut [u8], CryptoStatus> {
     validate_write_pair(ptr, len)?;
     if len == 0 {
         return Ok(&mut []);
@@ -139,7 +146,9 @@ pub unsafe fn write_slice<'a>(ptr: *mut u8, len: usize) -> Result<&'a mut [u8], 
 ///
 /// When `len != 0`, `ptr` must point to at least `len` bytes of writable,
 /// properly aligned memory valid for the duration of the call.
-pub unsafe fn write_fixed(ptr: *mut u8, len: usize, value: &[u8]) -> CryptoStatus {
+/// Foreign-memory access must run in a pointer-range scope. The destination
+/// must be exclusively writable and disjoint from every live input reference.
+pub(crate) unsafe fn write_fixed(ptr: *mut u8, len: usize, value: &[u8]) -> CryptoStatus {
     if validate_write_pair(ptr, len).is_err() {
         return CRYPTO_INVALID_ARGUMENT;
     }
@@ -158,11 +167,70 @@ pub unsafe fn write_fixed(ptr: *mut u8, len: usize, value: &[u8]) -> CryptoStatu
     crate::status::CRYPTO_OK
 }
 
+/// Copy two results only after validating both output buffers completely.
+///
+/// Size, range, and aliasing failures leave both outputs unchanged. The active
+/// pointer-range scope also checks inputs copied into owned backend storage,
+/// which would otherwise no longer be visible through the result slices.
+///
+/// # Safety
+///
+/// Each non-empty output must name one live, writable allocation of its stated
+/// length for this call. Both outputs must be exclusively owned and disjoint
+/// from all input slices. Their storage and the source slices remain owned by
+/// the caller; no reference escapes the active pointer-range scope.
+pub(crate) unsafe fn write_fixed_pair(
+    first_ptr: *mut u8,
+    first_len: usize,
+    first_value: &[u8],
+    second_ptr: *mut u8,
+    second_len: usize,
+    second_value: &[u8],
+) -> CryptoStatus {
+    if validate_write_pair(first_ptr, first_len).is_err()
+        || validate_write_pair(second_ptr, second_len).is_err()
+    {
+        return CRYPTO_INVALID_ARGUMENT;
+    }
+    if first_len < first_value.len() || second_len < second_value.len() {
+        return CRYPTO_BUFFER_TOO_SMALL;
+    }
+    let status = validate_disjoint_output_pair(first_ptr, first_len, second_ptr, second_len);
+    if status != crate::status::CRYPTO_OK {
+        return status;
+    }
+    // Check both sources against both destinations before making a mutable
+    // reference: an earlier copy must never overwrite the later copy's source.
+    for value in [first_value, second_value] {
+        for (ptr, len) in [(first_ptr, first_len), (second_ptr, second_len)] {
+            if validate_disjoint_ranges(value.as_ptr(), value.len(), ptr, len).is_err() {
+                return CRYPTO_INVALID_ARGUMENT;
+            }
+        }
+    }
+    // SAFETY: The caller keeps both allocations writable for this call. The
+    // checks above prove bounds and disjointness from sources and each other;
+    // write_slice additionally rejects every tracked foreign input range.
+    let first = match unsafe { write_slice(first_ptr, first_len) } {
+        Ok(value) => value,
+        Err(status) => return status,
+    };
+    // SAFETY: The same preflight establishes exclusive access to this second,
+    // disjoint allocation. Both slices stay local and ownership is unchanged.
+    let second = match unsafe { write_slice(second_ptr, second_len) } {
+        Ok(value) => value,
+        Err(status) => return status,
+    };
+    first[..first_value.len()].copy_from_slice(first_value);
+    second[..second_value.len()].copy_from_slice(second_value);
+    crate::status::CRYPTO_OK
+}
+
 /// Validates a `*mut usize` output pointer without writing to it.
 ///
 /// Variable-length FFI operations call this before mutating byte outputs so a
 /// bad produced-length pointer cannot produce a partial success value.
-pub fn validate_len_output(ptr: *mut usize) -> CryptoStatus {
+pub(crate) fn validate_len_output(ptr: *mut usize) -> CryptoStatus {
     if validate_output_ptr(ptr).is_err() {
         return CRYPTO_INVALID_ARGUMENT;
     }
@@ -171,7 +239,7 @@ pub fn validate_len_output(ptr: *mut usize) -> CryptoStatus {
 
 /// Validates that a byte output buffer and its produced-length pointer are
 /// individually valid and do not overlap.
-pub fn validate_output_len_pair(
+pub(crate) fn validate_output_len_pair(
     output_ptr: *mut u8,
     output_len: usize,
     len_out: *mut usize,
@@ -205,7 +273,7 @@ pub fn validate_output_len_pair(
 }
 
 /// Validates that two byte output buffers are individually valid and disjoint.
-pub fn validate_disjoint_output_pair(
+pub(crate) fn validate_disjoint_output_pair(
     first_ptr: *mut u8,
     first_len: usize,
     second_ptr: *mut u8,
@@ -231,7 +299,7 @@ pub fn validate_disjoint_output_pair(
 /// Call this before constructing either Rust slice. Performing the check at
 /// the raw-pointer boundary avoids creating references whose aliasing contract
 /// the caller has already violated.
-pub fn validate_disjoint_input_output_pair(
+pub(crate) fn validate_disjoint_input_output_pair(
     input_ptr: *const u8,
     input_len: usize,
     output_ptr: *mut u8,
@@ -245,7 +313,7 @@ pub fn validate_disjoint_input_output_pair(
 
 /// Validates that a caller-owned byte input does not overlap a produced-length
 /// pointer.
-pub fn validate_disjoint_input_len_pair(
+pub(crate) fn validate_disjoint_input_len_pair(
     input_ptr: *const u8,
     input_len: usize,
     len_out: *mut usize,
@@ -269,7 +337,7 @@ pub fn validate_disjoint_input_len_pair(
 /// Multi-output calls validate each buffer/length pair separately. This
 /// cross-pair check prevents an output buffer from aliasing the other pair's
 /// length pointer, including when both ranges have the same start and size.
-pub fn validate_disjoint_output_len_cross_pair(
+pub(crate) fn validate_disjoint_output_len_cross_pair(
     output_ptr: *mut u8,
     output_len: usize,
     len_out: *mut usize,
@@ -289,7 +357,7 @@ pub fn validate_disjoint_output_len_cross_pair(
 }
 
 /// Validates that two produced-length output pointers are valid and disjoint.
-pub fn validate_disjoint_len_outputs(first: *mut usize, second: *mut usize) -> CryptoStatus {
+pub(crate) fn validate_disjoint_len_outputs(first: *mut usize, second: *mut usize) -> CryptoStatus {
     let first_status = validate_len_output(first);
     if first_status != crate::status::CRYPTO_OK {
         return first_status;
@@ -331,7 +399,9 @@ pub fn validate_disjoint_len_outputs(first: *mut usize, second: *mut usize) -> C
 ///
 /// `ptr`, when non-null, must point to a writable, properly aligned `usize`
 /// valid for the duration of the call.
-pub unsafe fn write_len(ptr: *mut usize, value: usize) -> CryptoStatus {
+/// A pointer-range scope must be active, and no live reference may alias the
+/// slot. The caller retains ownership of the storage.
+pub(crate) unsafe fn write_len(ptr: *mut usize, value: usize) -> CryptoStatus {
     if validate_output_ptr(ptr).is_err() {
         return CRYPTO_INVALID_ARGUMENT;
     }
@@ -355,7 +425,9 @@ pub unsafe fn write_len(ptr: *mut usize, value: usize) -> CryptoStatus {
 ///
 /// `ptr`, when non-null, must point to a writable, properly aligned `i32`
 /// valid for the duration of the call.
-pub unsafe fn write_i32(ptr: *mut i32, value: i32) -> CryptoStatus {
+/// A pointer-range scope must be active, and no live reference may alias the
+/// slot. The caller retains ownership of the storage.
+pub(crate) unsafe fn write_i32(ptr: *mut i32, value: i32) -> CryptoStatus {
     if validate_output_ptr(ptr).is_err() {
         return CRYPTO_INVALID_ARGUMENT;
     }

@@ -34,6 +34,7 @@ fn write_key_vectors(dir: &Path, keys: &GeneratedKeys) -> Result<(), VectorGenEr
             public_key_uncompressed: b64u(&p256_uncompressed),
             ecdsa_message: b64u(SIGNATURE_MESSAGE),
             ecdsa_signature_der: b64u(&p256_signature),
+            invalid_encodings: ecdsa_invalid_encodings(&p256_signature, &p256_uncompressed)?,
             peer_secret_key: b64u(&keys.p256_peer_secret),
             peer_public_key_compressed: b64u(&keys.p256_peer_public),
             peer_public_key_uncompressed: b64u(&p256_peer_uncompressed),
@@ -65,6 +66,7 @@ fn write_key_vectors(dir: &Path, keys: &GeneratedKeys) -> Result<(), VectorGenEr
             public_key_uncompressed: b64u(&p384_uncompressed),
             message: b64u(SIGNATURE_MESSAGE),
             signature_der: b64u(&p384_signature),
+            invalid_encodings: ecdsa_invalid_encodings(&p384_signature, &p384_uncompressed)?,
             peer_secret_key: b64u(&keys.p384_peer_secret),
             peer_public_key_compressed: b64u(&keys.p384_peer_public),
             peer_public_key_uncompressed: b64u(&p384_peer_uncompressed),
@@ -96,6 +98,7 @@ fn write_key_vectors(dir: &Path, keys: &GeneratedKeys) -> Result<(), VectorGenEr
             public_key_uncompressed: b64u(&p521_uncompressed),
             message: b64u(SIGNATURE_MESSAGE),
             signature_der: b64u(&p521_signature),
+            invalid_encodings: ecdsa_invalid_encodings(&p521_signature, &p521_uncompressed)?,
             peer_secret_key: b64u(&keys.p521_peer_secret),
             peer_public_key_compressed: b64u(&keys.p521_peer_public),
             peer_public_key_uncompressed: b64u(&p521_peer_uncompressed),
@@ -167,6 +170,8 @@ fn write_key_vectors(dir: &Path, keys: &GeneratedKeys) -> Result<(), VectorGenEr
             message: b64u(&BIP340_SCHNORR_MESSAGE),
             aux_rand: b64u(&BIP340_SCHNORR_AUX_RAND),
             signature: b64u(&bip340_signature),
+            invalid_off_curve_public_key_xonly: b64u(&[0; 32]),
+            invalid_out_of_range_public_key_xonly: b64u(&[0xff; 32]),
         },
     )?;
 

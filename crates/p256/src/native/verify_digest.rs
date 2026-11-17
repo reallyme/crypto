@@ -7,7 +7,6 @@ use crypto_core::CryptoError;
 use ecdsa::elliptic_curve::scalar::IsHigh;
 use ecdsa::signature::hazmat::PrehashVerifier;
 use p256::ecdsa::{Signature, VerifyingKey};
-use p256::PublicKey;
 
 /// Verify a canonical low-S DER P-256 ECDSA signature over a SHA-256 digest.
 ///
@@ -20,7 +19,7 @@ pub fn verify_p256_sha256_digest_low_s_der(
     digest: &P256Sha256Digest,
     public_key_sec1: &[u8],
 ) -> Result<(), CryptoError> {
-    let public_key = PublicKey::from_sec1_bytes(public_key_sec1)
+    let public_key = super::encoding::parse_public_key(public_key_sec1)
         .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY)?;
     let verifying_key = VerifyingKey::from(public_key);
     let fixed = crate::p256_ecdsa_der_to_jose_signature(signature_der)

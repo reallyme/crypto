@@ -8,6 +8,12 @@
 //! Output: EC JWK (secp256k1)
 
 use crate::{EcJwk, JwkOptions, JwtError};
+use crypto_core::has_standard_sec1_encoding;
+
+const SECP256K1_PUBLIC_KEY_COMPRESSED_LEN: usize =
+    crypto_core::contract_constants::secp256k1::SECP256K1_PUBLIC_KEY_COMPRESSED_LEN;
+const SECP256K1_UNCOMPRESSED_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::secp256k1::SECP256K1_UNCOMPRESSED_PUBLIC_KEY_LEN;
 
 use crate::canonicalize_jwk::canonicalize_jwk;
 #[cfg(any(feature = "native", all(feature = "wasm", target_arch = "wasm32")))]
@@ -24,7 +30,15 @@ pub fn secp256k1_public_key_to_jwk(
     compressed_sec1: &[u8],
     options: JwkOptions,
 ) -> Result<EcJwk, JwtError> {
-    if compressed_sec1.len() != 33 {
+    // Length alone also admits the backend's compact (0x05) extension, which
+    // would assign the same public key a second accepted byte representation.
+    if compressed_sec1.len() != SECP256K1_PUBLIC_KEY_COMPRESSED_LEN
+        || !has_standard_sec1_encoding(
+            compressed_sec1,
+            SECP256K1_PUBLIC_KEY_COMPRESSED_LEN,
+            SECP256K1_UNCOMPRESSED_PUBLIC_KEY_LEN,
+        )
+    {
         return Err(JwtError::PRIMITIVE_INVALID_PUBLIC_KEY);
     }
 

@@ -4,14 +4,14 @@
 
 [package]
 name = "reallyme-crypto-rsa"
-version = "0.4.4"
-include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
+version = "0.4.3"
+include = ["/src/**/*.rs", "/src/testdata/*.pk8", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 publish = true
-description = "RSA signature verification primitive for ReallyMe Crypto."
+description = "RSA signature primitives for ReallyMe Crypto."
 
 [lib]
 name = "crypto_rsa"
@@ -24,17 +24,21 @@ native = []
 wasm = []
 
 [dependencies]
-crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.4", path = "../proto", optional = true, default-features = false, features = ["generated"] }
-crypto-core = { package = "reallyme-crypto-core", version = "=0.4.4", path = "../crypto/core" }
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.3", path = "../proto", optional = true, default-features = false, features = ["generated"] }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.4.3", path = "../crypto/core" }
 sha1 = { workspace = true }
-sha2 = { workspace = true }
+sha2 = { workspace = true, features = ["oid"] }
 crypto-bigint = { workspace = true, features = ["zeroize"] }
 secrecy = { workspace = true }
 thiserror = { workspace = true }
 const-oid = { workspace = true }
 spki = { workspace = true }
 subtle = { workspace = true }
-zeroize = { workspace = true }
+zeroize = { workspace = true, features = ["derive"] }
+
+# 0.10 replaces the variable-time private arithmetic affected by Marvin.
+rsa-backend = { package = "rsa", version = "=0.10.0", default-features = false, features = ["std", "encoding", "pkcs1v15"] }
+getrandom = { workspace = true, features = ["wasm_js", "sys_rng"] }
 
 [dev-dependencies]
 buffa = { workspace = true }

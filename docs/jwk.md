@@ -29,6 +29,11 @@ EC `alg` and `use` are also optional on import; when supplied, P-256 requires
 Public `kid` and `x-*` extension members are accepted but do not change the
 extracted key bytes. JWKS may carry additional set-level metadata. The shared
 metadata policy is pinned in [../vectors/jwk_policy.json](../vectors/jwk_policy.json).
+Explicit JSON `null` has the same meaning as absence for optional `alg`, `use`,
+and `kid` metadata. AKP still requires a string `alg`, and required key fields
+never accept null. Duplicate members remain invalid even when one value is null.
+The secp256k1 encoder requires compressed SEC1 (`0x02` or `0x03` plus the
+x-coordinate); the backend's compact-point extension (`0x05`) is rejected.
 X25519 public-key identities require canonical field-element encodings below
 2²⁵⁵ − 19. RFC 7748 agreement accepts non-canonical inputs, but those inputs
 would give the same key multiple JWK or multikey identifiers.

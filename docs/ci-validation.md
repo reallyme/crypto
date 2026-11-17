@@ -1,10 +1,16 @@
 # CI validation ownership
 
 The `CI` workflow plans checks from the candidate's changed paths. The policy
-lane always runs. Code, protobuf, fuzz-build, and formal verification run when
-their inputs change. Workflow and shared build changes trigger all four.
+lane always runs. Code, protobuf, and fuzz-build checks run when their inputs
+change. Workflow and shared build changes trigger all automatic lanes.
 `CI / Required CI` verifies the plan and checks that every successful lane
 reported the candidate SHA.
+
+Formal Verification runs only on explicit `workflow_dispatch`. Its
+`"mode": "manual"` setting excludes it from automatic Required CI and automated
+release attestation. The [release checklist](../RELEASE_CHECKLIST.md#formal-verification-before-publication)
+requires separate review of a successful formal run for the exact release SHA
+before publication.
 
 | Owner | Coverage |
 | --- | --- |
@@ -13,7 +19,7 @@ reported the candidate SHA.
 | Code Checks, FFI jobs | iOS and Android cross-compilation, native sanitizers, Miri, C ABI and release export isolation |
 | Protobuf Checks | Reproducible generation and committed binding freshness |
 | Fuzz and Scheduled Fuzz | Changed-input builds and weekly time-boxed execution |
-| Formal Verification | Symbolic HPKE models, bounded Rust and reference encoder proofs, and independent HPKE vector checks |
+| Formal Verification (manual dispatch) | Symbolic HPKE models, bounded Rust and reference encoder proofs, and independent HPKE vector checks |
 | CodeQL and Dependency Security | Static analysis, runtime dependency scanning, and Gradle checksum provenance |
 
 The TypeScript source checks build the WASM SDK, and the tarball check and
@@ -25,7 +31,11 @@ with `--no-build-cache` and `--rerun-tasks`.
 The shared Rust release policy checks the locked workspace, each public crate
 at its declared MSRV, and dependency advisories, licenses, and sources.
 The protobuf lane checks generated bindings. The Rust suite tests the
-selectors and wire data those bindings expose.
+selectors and wire data those bindings expose. RFC 9180 and PQ HPKE Base/PSK
+corpus adapters run as ordinary native workspace tests. The external-vector
+integrity job also runs these adapters on changes to `crates/hpke`, the locked
+dependencies, and the vector corpora or harnesses; no weekly audit is required
+to exercise them.
 
 ## Local and release validation
 
@@ -48,6 +58,11 @@ matching Dependency Security run. When path filtering skips Dependency
 Security on a documentation-only main push, dispatch that workflow from the
 same main commit before starting preflight. The scheduled scans continue to
 check the current locks for newly reported advisories.
+
+The automated preflight receipt does not attest to formal verification. Record
+and review the separately dispatched formal run, including every proof job's
+result and its exact source SHA, as required by the release checklist. A green
+Required CI result or package preflight alone does not establish proof success.
 
 The [release process](release-process.md) describes how preflight evidence
 and retained artifacts are used for publication.

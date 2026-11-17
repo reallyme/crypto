@@ -47,6 +47,6 @@ pub fn expand_sha384<const N: usize>(
     // Expansion writes through the clearing owner on both success and error.
     let mut output = HkdfOutput::from_array([0u8; N]);
     hkdf.expand(info.as_bytes(), output.as_mut_bytes())
-        .map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
+        .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)?;
     Ok(output)
 }

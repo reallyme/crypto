@@ -19,8 +19,8 @@ package me.really.crypto.v1;
  * 1000-1099: post-quantum signatures
  * 1100-1199: hash-based post-quantum signatures
  *
- * RSA values identify verification suites; RSA signing is intentionally not
- * exposed by this package today.
+ * RSA values identify verification suites in generic dispatch. RS256 signing
+ * uses the separate bounded PKCS#8 standalone contract below.
  * </pre>
  *
  * Protobuf enum {@code reallyme.crypto.v1.SignatureAlgorithm}

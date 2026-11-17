@@ -23,6 +23,8 @@ mod keypair;
 mod mlkem1024p384;
 #[cfg(feature = "kem-ml-kem-512")]
 mod mlkem512;
+#[cfg(feature = "kem-ml-kem-768-p256")]
+mod mlkem768p256;
 #[cfg(any(
     feature = "aead-aes128-gcm",
     feature = "aead-aes256-gcm",
@@ -49,6 +51,8 @@ mod setup_receiver;
 #[cfg(feature = "backend-native")]
 mod setup_sender;
 mod types;
+#[cfg(any(feature = "kem-x25519", feature = "kem-x448"))]
+mod validate_dh_public_key;
 mod validation;
 #[cfg(feature = "kem-x448")]
 mod x448;

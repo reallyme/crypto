@@ -40,7 +40,14 @@ struct Pbkdf2FfiRequest {
     output_len: usize,
 }
 
-fn derive_pbkdf2(request: Pbkdf2FfiRequest) -> CryptoStatus {
+/// # Safety
+///
+/// Non-empty raw inputs must remain initialized, readable, and immutable
+/// for their declared lengths throughout this call. Raw outputs must name
+/// live, exclusively writable allocations of their declared lengths and
+/// must not alias inputs. Typed length outputs must also be aligned. The
+/// caller retains ownership; an active pointer-range scope is required.
+unsafe fn derive_pbkdf2(request: Pbkdf2FfiRequest) -> CryptoStatus {
     if !(PBKDF2_MIN_OUTPUT_LENGTH..=PBKDF2_MAX_OUTPUT_LENGTH).contains(&request.output_len) {
         return CRYPTO_INVALID_ARGUMENT;
     }
@@ -102,16 +109,21 @@ pub unsafe extern "C" fn rm_crypto_pbkdf2_hmac_sha256_derive_key(
     output_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
-        derive_pbkdf2(Pbkdf2FfiRequest {
-            prf: Pbkdf2Prf::HmacSha256,
-            password,
-            password_len,
-            salt,
-            salt_len,
-            iterations,
-            output,
-            output_len,
-        })
+        // SAFETY: The caller keeps all declared input ranges live and immutable
+        // and outputs exclusively writable through this call. Scoped helpers
+        // check bounds and aliases; the caller retains their ownership.
+        unsafe {
+            derive_pbkdf2(Pbkdf2FfiRequest {
+                prf: Pbkdf2Prf::HmacSha256,
+                password,
+                password_len,
+                salt,
+                salt_len,
+                iterations,
+                output,
+                output_len,
+            })
+        }
     })
 }
 
@@ -133,15 +145,20 @@ pub unsafe extern "C" fn rm_crypto_pbkdf2_hmac_sha512_derive_key(
     output_len: usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
-        derive_pbkdf2(Pbkdf2FfiRequest {
-            prf: Pbkdf2Prf::HmacSha512,
-            password,
-            password_len,
-            salt,
-            salt_len,
-            iterations,
-            output,
-            output_len,
-        })
+        // SAFETY: The caller keeps all declared input ranges live and immutable
+        // and outputs exclusively writable through this call. Scoped helpers
+        // check bounds and aliases; the caller retains their ownership.
+        unsafe {
+            derive_pbkdf2(Pbkdf2FfiRequest {
+                prf: Pbkdf2Prf::HmacSha512,
+                password,
+                password_len,
+                salt,
+                salt_len,
+                iterations,
+                output,
+                output_len,
+            })
+        }
     })
 }

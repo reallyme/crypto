@@ -26,9 +26,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
 
 permissions:
-  actions: read
   contents: read
-  security-events: write
 
 jobs:
   verify-runtime-lockfiles:
@@ -64,9 +62,9 @@ jobs:
   scan:
     name: Gate published runtime dependencies
     needs: verify-runtime-lockfiles
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@32d3cd482bdadfb38b186c0ad1b031902d55d932 # v2.7.1
+    uses: ./.github/workflows/osv-lockfile-scan.yml
     with:
-      upload-sarif: false
+      report-name: runtime-OSV-report
       fail-on-vuln: true
       scan-args: |-
         --lockfile=./Cargo.lock
@@ -76,9 +74,9 @@ jobs:
 
   scan-build-tooling:
     name: Report Gradle build tooling advisories
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@32d3cd482bdadfb38b186c0ad1b031902d55d932 # v2.7.1
+    uses: ./.github/workflows/osv-lockfile-scan.yml
     with:
-      upload-sarif: false
+      report-name: build-tooling-OSV-report
       # AGP's lint and test tools resolve versions that are not shipped in the
       # Maven artifacts. Keep their advisories visible without blocking a
       # release whose published runtime dependencies scan cleanly.

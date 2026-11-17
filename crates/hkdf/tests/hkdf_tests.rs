@@ -308,7 +308,7 @@ fn reject_output_length_above_hkdf_limit() {
         info: &info,
     });
 
-    assert!(matches!(result, Err(CryptoError::BACKEND_INTERNAL)));
+    assert!(matches!(result, Err(CryptoError::PRIMITIVE_INVALID_LENGTH)));
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]

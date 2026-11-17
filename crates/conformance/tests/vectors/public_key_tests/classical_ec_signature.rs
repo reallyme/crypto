@@ -52,8 +52,8 @@ fn p256_vector_invariants() -> Result<(), VectorTestError> {
     );
     let canonical = sign_p256_sha256_message_low_s_der(&sk, &message)
         .map_err(|_| VectorTestError::EcdsaSign)?;
-    let normalized = normalize_p256_ecdsa_der_low_s(&signature)
-        .map_err(|_| VectorTestError::EcdsaSign)?;
+    let normalized =
+        normalize_p256_ecdsa_der_low_s(&signature).map_err(|_| VectorTestError::EcdsaSign)?;
     assert_eq!(
         canonical, normalized,
         "the explicit message signer must canonicalize the legacy high-S vector"
@@ -76,6 +76,60 @@ fn p256_vector_invariants() -> Result<(), VectorTestError> {
 
 type SharedSecretDeriver =
     fn(&[u8], &[u8]) -> Result<zeroize::Zeroizing<Vec<u8>>, crypto_core::CryptoError>;
+
+type EcdsaVerifier = fn(&[u8], &[u8], &[u8]) -> Result<(), crypto_core::CryptoError>;
+
+#[test]
+fn shared_ecdsa_encoding_vectors_reject_ber_and_hybrid_keys() -> Result<(), VectorTestError> {
+    let cases: [(&str, &str, &str, EcdsaVerifier); 3] = [
+        (
+            "p256.json",
+            "ecdsa_message",
+            "ecdsa_signature_der",
+            verify_p256_sha256_message_der_interoperable,
+        ),
+        (
+            "p384.json",
+            "message",
+            "signature_der",
+            verify_p384_der_prehash,
+        ),
+        (
+            "p521.json",
+            "message",
+            "signature_der",
+            verify_p521_der_prehash,
+        ),
+    ];
+    for (name, message_field, signature_field, verify) in cases {
+        let vector = load(name)?;
+        let message = b64u_to_bytes(field_string(&vector, message_field)?)?;
+        let signature = b64u_to_bytes(field_string(&vector, signature_field)?)?;
+        let public_key = b64u_to_bytes(field_string(&vector, "public_key_compressed")?)?;
+        verify(&signature, &message, &public_key).map_err(|_| VectorTestError::EcdsaVerify)?;
+        for field in [
+            "signature_der_nonminimal_sequence_length",
+            "signature_der_indefinite_sequence_length",
+            "signature_der_nonminimal_integer_length",
+        ] {
+            let malformed = b64u_to_bytes(field_string(&vector, field)?)?;
+            assert_eq!(
+                verify(&malformed, &message, &public_key),
+                Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE),
+                "{name}: {field}"
+            );
+        }
+        for field in ["public_key_hybrid_even", "public_key_hybrid_odd"] {
+            let malformed = b64u_to_bytes(field_string(&vector, field)?)?;
+            assert_eq!(
+                verify(&signature, &message, &malformed),
+                Err(crypto_core::CryptoError::PRIMITIVE_INVALID_KEY),
+                "{name}: {field}"
+            );
+        }
+    }
+    Ok(())
+}
 
 struct Sec1EcdsaVectorCase<Decompress, Verify> {
     vector_name: &'static str,
@@ -249,6 +303,17 @@ fn bip340_schnorr_vector_known_answer() -> Result<(), VectorTestError> {
 
     verify_bip340_schnorr(&expected_signature, &message, &public_key)
         .map_err(|_| VectorTestError::Bip340SchnorrOperation)?;
+
+    for field in [
+        "invalid_off_curve_public_key_xonly",
+        "invalid_out_of_range_public_key_xonly",
+    ] {
+        let invalid_key = b64u_to_bytes(field_string(&v, field)?)?;
+        assert_eq!(
+            verify_bip340_schnorr(&expected_signature, &message, &invalid_key),
+            Err(crypto_core::CryptoError::PRIMITIVE_INVALID_KEY),
+        );
+    }
 
     let mut tampered = expected_signature;
     tampered[0] ^= 0x01;

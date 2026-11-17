@@ -94,8 +94,9 @@ under-exercise (malleability, non-canonical encodings, low-order points). The
 following public corpora are vendored through
 [scripts/vendor_external_vectors.mjs](../scripts/vendor_external_vectors.mjs)
 (see [Vendoring supplementary corpora](#vendoring-supplementary-corpora)) and
-executed by dedicated adapters. These adapters are `#[ignore]` and fail closed
-when their corpus has not been vendored, so they never pass vacuously.
+executed by dedicated adapters. The HPKE adapters run normally with the native
+workspace tests; other supplementary adapters use `#[ignore]` and run in the
+external audit. All adapters fail closed when their corpus is missing.
 
 | Corpus | ReallyMe boundary | Adapter |
 |---|---|---|
@@ -180,7 +181,8 @@ with the normal code checks; larger exhaustive sweeps run separately:
 | Provenance structure, completeness, and commit-pinning (`external_vector_provenance_declares_sources`, `every_external_corpus_file_has_provenance`, `external_vector_urls_are_pinned_to_commits`, `external_vector_coverage_tracks_supported_families`) | Every PR, via the workspace test run. The completeness check also runs in the vector-specific integrity job. |
 | Committed corpus hashes and CCTV markers | Vector integrity checks. |
 | Re-download and byte-for-byte comparison of the upstream corpora, and byte-for-byte regeneration of the derived HPKE PSK corpus | Vector changes and the scheduled integrity check. |
-| Wycheproof / BIP-340 / RFC 8032 / X-Wing / HPKE / PBKDF2 adapters | Normal code checks against the committed corpora. |
+| RFC 9180 and PQ HPKE Base/PSK corpus adapters | Required native workspace tests, plus the vector integrity job on HPKE source, dependency, vector, and harness changes. |
+| Wycheproof / BIP-340 / RFC 8032 / X-Wing / PBKDF2 supplementary adapters | Scheduled or explicitly requested external-vector audits against committed corpora. |
 | Exhaustive ACVP/CCTV sweeps | Separate scheduled or explicitly requested checks. |
 | Bounded reference DER encoder proofs | Formal Verification. |
 

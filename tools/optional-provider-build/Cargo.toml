@@ -4,7 +4,7 @@
 
 [package]
 name = "optional-provider-build"
-version = "0.0.0"
+version = "0.4.3"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true

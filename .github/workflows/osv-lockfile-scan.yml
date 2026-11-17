@@ -1,0 +1,86 @@
+# SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+name: Read-only OSV lockfile scan
+
+on:
+  workflow_call:
+    inputs:
+      scan-args:
+        description: Lockfiles to scan
+        required: true
+        type: string
+      fail-on-vuln:
+        description: Fail when a completed scan finds vulnerabilities
+        required: true
+        type: boolean
+      report-name:
+        description: Unique artifact name for this scan lane
+        required: true
+        type: string
+
+# The upstream reusable workflow requests security write access even when
+# SARIF uploads are disabled. Use its pinned scanner and reporter directly
+# so lockfile scans have no repository mutation permissions.
+permissions:
+  contents: read
+
+jobs:
+  osv-scan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Prepare scan outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          # A checked-in report must never stand in for a failed scan's output.
+          rm -f -- results.json results.sarif
+
+      - name: Scan lockfiles
+        id: scan
+        uses: google/osv-scanner-action/osv-scanner-action@0e457b42d0120153c352875e9b758b1e5c58c7e5 # v2.7.1
+        with:
+          scan-args: |-
+            --output=results.json
+            --format=json
+            ${{ inputs.scan-args }}
+        # A vulnerability finding exits nonzero too. The reporter decides
+        # whether findings block this lane, after confirming the scan completed.
+        continue-on-error: true
+
+      - name: Require completed scan results
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -s results.json ]]; then
+            echo "::error::OSV scan did not produce results"
+            exit 1
+          fi
+          jq -e 'type == "object"' results.json >/dev/null
+
+      - name: Report vulnerabilities
+        uses: google/osv-scanner-action/osv-reporter-action@0e457b42d0120153c352875e9b758b1e5c58c7e5 # v2.7.1
+        with:
+          scan-args: |-
+            --output=results.sarif
+            --new=results.json
+            --gh-annotations=false
+            --fail-on-vuln=${{ inputs.fail-on-vuln }}
+
+      - name: Preserve scan report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ inputs.report-name }}
+          path: |
+            results.json
+            results.sarif
+          if-no-files-found: error
+          retention-days: 5

@@ -161,7 +161,7 @@ fn check_answer<const N: usize>(source: &CryptoHkdfNativeDeriveRequest, expected
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
-fn native_expansion_bounds_keep_the_existing_backend_error() {
+fn native_expansion_bounds_preserve_the_invalid_length_reason() {
     check_limit::<8160, 8161>(HkdfSuite::Sha2_256);
     check_limit::<12240, 12241>(HkdfSuite::Sha2_384);
     check_limit::<8160, 8161>(HkdfSuite::Sha3_256);
@@ -185,7 +185,7 @@ fn check_limit<const MAX: usize, const OVER: usize>(suite: HkdfSuite) {
                 .len(),
             MAX
         );
-        CryptoError::BACKEND_INTERNAL
+        CryptoError::PRIMITIVE_INVALID_LENGTH
     };
     let oversized = request::<OVER>(suite, &[0x42], None, &[]);
     let inputs =

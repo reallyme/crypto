@@ -17,6 +17,27 @@ The policy is simple:
   `sha3` implementation require a focused checksum, API, zeroization, and
   conformance-vector review.
 
+The `sha3-kmac-state` alias in `crates/kmac/Cargo.toml` must resolve to the same
+SHA-3 release as `sha3-kmac` so its `zeroize` feature reaches the keyed sponge.
+Upgrade them together; enabling zeroization on the workspace's newer SHA-3
+release does not protect KMAC's separate dependency. The KMAC backend cleanup
+regression test checks the backend itself rather than the alias.
+
+AEAD updates must retain `zeroize` on `aes-gcm-siv`, `polyval`, and `poly1305`.
+The standalone AES-GCM-SIV, ChaCha20-Poly1305, and HPKE dependency graphs need
+their own feature activation; workspace-wide feature unification is insufficient
+evidence. `scripts/check_aead_zeroization.mjs` checks isolated native and WASM
+graphs in CI, and backend cleanup tests require drop-based state wiping.
+
+The Codec `0.4.4` dependency declarations await the corresponding published
+artifacts. On 2026-11-17, that version was unavailable from crates.io, npm,
+Maven Central, and the Swift Git tag. Existing verified lockfiles and artifact
+provenance therefore remain unchanged. Dependency resolution, full Rust and SDK
+tests, generated-binding freshness, and release readiness cannot pass in this
+state. After publication, refresh the Cargo, npm, Gradle, and Swift lockfiles,
+the reviewed artifact checksums, and the Codec version policy in the release
+checker, then repeat complete validation before release.
+
 Use [conformance.md](conformance.md) as the release gate. If an update changes
 cryptographic bytes, provider behavior, error behavior, or supported algorithms,
 update the vectors, policy, package facades, and documentation in the same

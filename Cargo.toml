@@ -98,7 +98,9 @@ hpke = { version = "0.15.1", default-features = false }
 # AEAD
 aes = "0.9.4"
 aes-gcm = { version = "0.11.1", features = ["zeroize"] }
-aes-gcm-siv = "0.12.1"
+aes-gcm-siv = { version = "0.12.1", features = ["zeroize"] }
+polyval = { version = "0.7.3", features = ["zeroize"] }
+poly1305 = { version = "0.9.1", features = ["zeroize"] }
 aes-kw = { version = "0.3.1", default-features = false }
 chacha20poly1305 = "0.11"
 # Signatures / key agreement
@@ -133,7 +135,7 @@ spki = "0.8.1"
 ml-dsa = { version = "0.1.2", default-features = false }
 ml-kem = "0.3.4"
 # No stable 0.2 release is published yet; retain the existing release candidate.
-slh-dsa = "0.2.0-rc.5"
+slh-dsa = "=0.2.0-rc.5"
 # Encoding / serialization
 buffa = { package = "reallyme-buffa", version = "=0.1.2", default-features = false }
 base64 = "0.23.1"

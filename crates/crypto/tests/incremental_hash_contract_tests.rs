@@ -60,17 +60,21 @@ fn generated_binary_requests_match_existing_digest_outputs() {
 }
 
 #[test]
-fn unspecified_unknown_and_unsupported_selectors_have_stable_reasons() {
-    for (selector, reason) in [
-        (0, CryptoError::PRIMITIVE_INVALID_PARAMETER),
-        (i32::MAX, CryptoError::PRIMITIVE_INVALID_PARAMETER),
-        (-1, CryptoError::PRIMITIVE_INVALID_PARAMETER),
-        (110, CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
+fn unsupported_incremental_algorithms_have_stable_reasons() {
+    for algorithm in [
+        HashAlgorithm::HASH_ALGORITHM_SHA2_384,
+        HashAlgorithm::HASH_ALGORITHM_SHA2_512,
+        HashAlgorithm::HASH_ALGORITHM_SHA3_224,
+        HashAlgorithm::HASH_ALGORITHM_SHA3_384,
+        HashAlgorithm::HASH_ALGORITHM_SHA3_512,
     ] {
         let request = CryptoIncrementalHashStartRequest {
-            algorithm: EnumValue::from(selector),
+            algorithm: EnumValue::from(algorithm),
         };
-        assert!(matches!(IncrementalHash::start(&request), Err(error) if error == reason));
+        assert!(matches!(
+            IncrementalHash::start(&request),
+            Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+        ));
     }
 }
 

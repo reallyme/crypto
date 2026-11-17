@@ -5,11 +5,11 @@
 
 name: External Vector Audit
 
-# Optional, mostly-manual audit of the vendored third-party conformance corpora.
+# Integrity checks and public HPKE corpus tests for pinned conformance corpora.
 #
 #   integrity   re-downloads every pinned corpus and verifies committed bytes.
-#               Runs on dispatch, weekly, and vector/harness PRs without adding
-#               network work to the main PR wall.
+#               Runs on dispatch, weekly, and vector/harness/HPKE PRs.
+#               HPKE corpus tests also run in the required workspace checks.
 #   deep-audit  the enormous ignored ACVP/CCTV sweeps run on dispatch/schedule.
 #               Supplementary adapters also run against committed corpora.
 on:
@@ -47,6 +47,9 @@ on:
     - cron: "23 4 * * 1"
   pull_request:
     paths:
+      - "crates/hpke/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
       - "vectors/external/**"
       - "tools/external-vector-audit/**"
       - "scripts/vendor_external_vectors.mjs"
@@ -101,6 +104,11 @@ jobs:
           bash scripts/run_exact_cargo_test.sh --ignored
           external_vector_tests::cctv::all_vendored_cctv_files_have_expected_markers
           --locked -p crypto-conformance-vectors --test vectors_tests --all-features
+
+      - name: Execute HPKE RFC 9180 and PQ draft corpora
+        run: >-
+          cargo test --locked -p external-vector-audit --no-default-features --features native
+          --test rfc9180_hpke --test hpke_pq
 
   deep-audit:
     name: deep external-vector audit
@@ -179,11 +187,6 @@ jobs:
         run: >-
           cargo test --locked -p external-vector-audit --no-default-features --features native
           --test xwing768_kat -- --ignored
-
-      - name: Execute HPKE RFC 9180 adapter
-        run: >-
-          cargo test --locked -p external-vector-audit --no-default-features --features native
-          --test rfc9180_hpke -- --ignored
 
       - name: Execute PBKDF2 adapter
         run: >-

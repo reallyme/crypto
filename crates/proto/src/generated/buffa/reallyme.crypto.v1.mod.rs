@@ -366,6 +366,14 @@ pub mod __buffa {
         reg.register_json_any(
             super::__CRYPTO_KEY_AGREEMENT_GENERATE_KEY_PAIR_REQUEST_JSON_ANY,
         );
+        reg.register_json_any(super::__CRYPTO_RSA_SIGNING_KEY_IMPORT_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_RSA_SIGNING_KEY_IMPORT_RESULT_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_RSA_PKCS1V15SHA256SIGN_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_RSA_PKCS1V15SHA256SIGN_RESULT_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_LEGACY_AES256SIV_OPEN_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_LEGACY_AES256SIV_OPEN_RESULT_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_ECDSA_DIGEST_VERIFY_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__CRYPTO_RSA_PSS_PARAMS_DER_REQUEST_JSON_ANY);
     }
     impl ::buffa::json_helpers::ProtoElemJson for crate::SecretString {
         fn serialize_proto_json<__S: ::serde::Serializer>(
@@ -882,5 +890,21 @@ pub use self::__buffa::view::CryptoShake256ExpandResultView;
 pub use self::__buffa::view::CryptoSecp256k1AgreementRequestView;
 #[doc(inline)]
 pub use self::__buffa::view::CryptoKeyAgreementGenerateKeyPairRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRsaSigningKeyImportRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRsaSigningKeyImportResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRsaPkcs1v15Sha256SignRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRsaPkcs1v15Sha256SignResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoLegacyAes256SivOpenRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoLegacyAes256SivOpenResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoEcdsaDigestVerifyRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::CryptoRsaPssParamsDerRequestView;
 #[doc(inline)]
 pub use self::__buffa::register_types;

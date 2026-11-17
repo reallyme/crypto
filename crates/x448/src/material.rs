@@ -6,6 +6,7 @@ use crypto_core::CryptoError;
 use x448::{PublicKey, StaticSecret};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
+use crate::constants::{FIELD_PRIME_LE, FIELD_PRIME_PLUS_ONE_LE};
 use crate::{X448_PRIVATE_KEY_LEN, X448_PUBLIC_KEY_LEN, X448_SHARED_SECRET_LEN};
 
 /// An X448 private scalar with zeroize-on-drop ownership.
@@ -69,6 +70,12 @@ impl X448PublicKey {
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, CryptoError> {
         let encoded = <[u8; X448_PUBLIC_KEY_LEN]>::try_from(bytes)
             .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+        // The backend compares low-order encodings before field reduction.
+        // Reject their noncanonical aliases as well, preserving RFC 7748
+        // acceptance of noncanonical coordinates that remain contributory.
+        if encoded == FIELD_PRIME_LE || encoded == FIELD_PRIME_PLUS_ONE_LE {
+            return Err(CryptoError::PRIMITIVE_INVALID_KEY);
+        }
         PublicKey::from_bytes(&encoded).ok_or(CryptoError::PRIMITIVE_INVALID_KEY)?;
         Ok(Self(encoded))
     }

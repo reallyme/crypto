@@ -356,8 +356,8 @@ message CryptoPrimeGroupIdentifier {
 //   1000-1099: post-quantum signatures
 //   1100-1199: hash-based post-quantum signatures
 //
-// RSA values identify verification suites; RSA signing is intentionally not
-// exposed by this package today.
+// RSA values identify verification suites in generic dispatch. RS256 signing
+// uses the separate bounded PKCS#8 standalone contract below.
 enum SignatureAlgorithm {
   SIGNATURE_ALGORITHM_UNSPECIFIED = 0;
   reserved 1 to 18;
@@ -869,9 +869,9 @@ message CryptoHashResult {
 // Incremental hashing is a local, exclusively owned SDK lifecycle. A successful
 // start creates a fresh context; updates append exact bytes in order, including
 // empty chunks; finalize consumes the context and returns CryptoHashResult.
-// Supported algorithms are SHA2_256 and SHA3_256. UNSPECIFIED/unknown selectors
-// fail with PRIMITIVE_INVALID_PARAMETER; other algorithms fail with
-// PROVIDER_UNSUPPORTED_ALGORITHM. Context state is never serialized, imported,
+// Supported algorithms are SHA2_256 and SHA3_256. UNSPECIFIED, unknown, and
+// unavailable selectors fail with PROVIDER_UNSUPPORTED_ALGORITHM, matching
+// one-shot hashing. Context state is never serialized, imported,
 // cloned, or addressed through a process-global handle. These standalone
 // contracts deliberately do not enter the stateless CryptoOperationRequest.
 message CryptoIncrementalHashStartRequest {
@@ -2149,4 +2149,55 @@ message CryptoSecp256k1AgreementRequest {
 // opaque keys and new executable root operation selectors are not introduced.
 message CryptoKeyAgreementGenerateKeyPairRequest {
   CryptoAlgorithmIdentifier algorithm = 1;
+}
+
+// RS256 signing is intentionally separate from historical RSA verification:
+// only SHA-256 and keys of 2048..8192 bits are accepted. Private DER is PKCS#8.
+message CryptoRsaSigningKeyImportRequest {
+  bytes secret_key = 1;
+}
+
+// Public components use minimal unsigned big-endian integers (JWK n and e).
+message CryptoRsaSigningKeyImportResult {
+  bytes public_key_spki_der = 1;
+  bytes modulus = 2;
+  bytes exponent = 3;
+}
+
+message CryptoRsaPkcs1v15Sha256SignRequest {
+  bytes secret_key = 1;
+  bytes message = 2;
+}
+
+message CryptoRsaPkcs1v15Sha256SignResult {
+  bytes signature = 1;
+}
+
+// Decrypt-only compatibility for retained AES-256-SIV records. New encryption
+// must use an existing approved AEAD seal operation, never this legacy profile.
+message CryptoLegacyAes256SivOpenRequest {
+  bytes secret_key = 1;
+  bytes nonce = 2;
+  bytes associated_data = 3;
+  bytes ciphertext = 4;
+}
+
+message CryptoLegacyAes256SivOpenResult {
+  bytes plaintext = 1;
+}
+
+// PKI interoperability uses externally selected SHA-256/384/512 digests and
+// accepts both valid ECDSA S representatives. Only P-256 and P-384 are supported.
+// This operation must not replace the existing low-S device-signature profile.
+message CryptoEcdsaDigestVerifyRequest {
+  CryptoAlgorithmIdentifier algorithm = 1;
+  bytes public_key = 2;
+  bytes digest = 3;
+  bytes signature = 4;
+}
+
+// Strict DER import for PKI SHA-2 RSASSA-PSS parameters. Result is the existing
+// CryptoRsaPssParams model; SHA-1 defaults and unknown mask functions fail closed.
+message CryptoRsaPssParamsDerRequest {
+  bytes parameters_der = 1;
 }

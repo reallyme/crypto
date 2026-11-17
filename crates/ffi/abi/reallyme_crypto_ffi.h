@@ -51,8 +51,9 @@ typedef int32_t rm_crypto_status_t;
  * - Overlap checks include produced-length/status pointers and are enforced
  *   centrally for every input range registered by an exported operation.
  * - Callers must discard every output from a call that returns a status other
- *   than RM_CRYPTO_OK. Multi-output operations may have written an earlier
- *   output before a later write or unexpected internal failure is reported.
+ *   than RM_CRYPTO_OK. Keypair and KEM encapsulation calls validate both output
+ *   capacities before copying either result. An unexpected internal failure
+ *   can still occur after an output write; callers must discard all outputs.
  *
  * Only rm_crypto_process_operation_response and
  * rm_crypto_process_operation_response_json define probe/fill sizing:

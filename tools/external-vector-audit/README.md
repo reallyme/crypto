@@ -1,8 +1,10 @@
 # External Vector Audit
 
 This package tests public primitive APIs against raw upstream vectors in
-`vectors/external`. Its practical subset runs with the workspace tests; heavy
-and supplementary adapters are explicitly ignored and run in separate CI jobs.
+`vectors/external`. Its practical subset and the RFC 9180 and PQ HPKE corpus
+adapters run with the native workspace tests. The vector integrity job also
+runs the HPKE adapters on HPKE source, dependency, vector, and harness changes.
+Heavy sweeps and other supplementary adapters run in separate audit jobs.
 
 The coverage tables, CI gating, and public-boundary notes are documented in
 [`docs/external-conformance-vectors.md`](../../docs/external-conformance-vectors.md).

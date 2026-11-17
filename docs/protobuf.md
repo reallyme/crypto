@@ -32,21 +32,27 @@ lanes may execute each algorithm and what output they must produce.
 ## Generation
 
 From the repository root, using Buf `1.75.0` and the published ReallyMe
-Buffa `0.1.2` generators, matching protobuf CI:
+Buffa `0.1.2` generators, matching protobuf CI. All schema builds and
+generators run locally:
 
 ```sh
 cargo install reallyme-protoc-gen-buffa --version '=0.1.2' --locked
 cargo install reallyme-protoc-gen-buffa-packaging --version '=0.1.2' --locked
+npm ci --prefix packages/ts
+bash scripts/install_local_proto_tools.sh
+export PATH="$PWD/.build/crypto-proto-tools/bin:$PATH"
 buf lint
 node scripts/generate_protobuf.mjs
 ```
 
-The driver verifies the exact executable names and versions. Buffa generates
+The driver verifies the exact executable names and versions, builds the
+descriptor with local `buf build`, and invokes only local plugins. SDK generation
+requires protoc `36.2`, protoc-gen-swift `1.39.0`, and protoc-gen-es `2.17.0`. Buffa generates
 Rust redaction, cleanup, guarded collection storage, and view export policy
 from `buf.gen.yaml`. The `borrowed_views_only_in` selectors omit standard
 owned handles for private message families. The driver leaves generated
 Buffa code intact.
-Use `--rust-only` when working without the hosted SDK generators. The separate
+Use `--rust-only` when working without the local SDK generators. The separate
 SDK step retains Swift and Java diagnostic redaction. Rust outputs live under
 `crates/proto/src/generated`, TypeScript
 package bindings under `packages/ts/src/proto/generated`, and additional
@@ -291,8 +297,8 @@ profiles:
 
 | Profile | Swift | Kotlin/JVM and Android | TypeScript |
 |---|---|---|---|
-| `DHKEM-P256-HKDF-SHA256-HKDF-SHA256-AES-256-GCM` | Rust C ABI provider | BouncyCastle | Rust WASM provider |
-| `DHKEM-X25519-HKDF-SHA256-HKDF-SHA256-CHACHA20-POLY1305` | Rust C ABI provider | BouncyCastle | Rust WASM provider |
+| `DHKEM-P256-HKDF-SHA256-HKDF-SHA256-AES-256-GCM` | Rust C ABI provider | Rust JNI provider | Rust WASM provider |
+| `DHKEM-X25519-HKDF-SHA256-HKDF-SHA256-CHACHA20-POLY1305` | Rust C ABI provider | Rust JNI provider | Rust WASM provider |
 
 Swift requires the Rust C ABI provider explicitly. No SDK retries through a
 different provider when its declared route is unavailable.

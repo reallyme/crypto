@@ -16,6 +16,14 @@ hardware routes require device evidence; a hardware skip does not count as a
 successful device test. Public provenance and repository protection claims are
 made only when independently verified.
 
+Formal Verification is a separate manual release requirement. Before publishing,
+dispatch its workflow for the reviewed source revision and confirm every proof
+job succeeds with the same full source SHA as the package preflights. Record
+the run URL, attempt, and results with the release evidence. Required CI and
+the automated preflight receipt do not check this workflow; follow the
+[formal verification checklist](../RELEASE_CHECKLIST.md#formal-verification-before-publication)
+before authorizing publication.
+
 Dispatch each package preflight from the reviewed main commit with its full
 SHA and release version. Each successful preflight retains a CI receipt and
 the package artifacts for seven days. Use the version and SHA from its job

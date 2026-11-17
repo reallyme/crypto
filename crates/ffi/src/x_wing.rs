@@ -10,7 +10,7 @@ use crate::guard::ffi_guard;
 use crate::kem_status::{
     kem_decapsulation_status, kem_encapsulation_status, kem_key_management_status,
 };
-use crate::pointer::{read_slice, validate_disjoint_output_pair, write_fixed};
+use crate::pointer::{read_slice, validate_disjoint_output_pair, write_fixed, write_fixed_pair};
 use crate::status::{CryptoStatus, CRYPTO_OK};
 
 /// Length in bytes of an X-Wing-768 public key.
@@ -44,14 +44,17 @@ pub unsafe extern "C" fn rm_crypto_x_wing_768_generate_keypair(
                 Err(error) => return kem_key_management_status(error),
             };
         // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
-        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
-        let status = unsafe { write_fixed(public_out, public_out_len, &key_pair.public_key) };
-        if status != CRYPTO_OK {
-            return status;
+        // Both capacities and all input/output ranges are checked before either copy; ownership stays with the caller.
+        unsafe {
+            write_fixed_pair(
+                public_out,
+                public_out_len,
+                &key_pair.public_key,
+                secret_out,
+                secret_out_len,
+                &key_pair.secret_key,
+            )
         }
-        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
-        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
-        unsafe { write_fixed(secret_out, secret_out_len, &key_pair.secret_key) }
     })
 }
 
@@ -114,13 +117,18 @@ pub unsafe extern "C" fn rm_crypto_x_wing_768_encapsulate(
                 Ok(value) => value,
                 Err(error) => return kem_encapsulation_status(error),
             };
-        write_encapsulation(
-            encapsulation,
-            ciphertext_out,
-            ciphertext_out_len,
-            shared_secret_out,
-            shared_secret_out_len,
-        )
+        // SAFETY: The caller keeps all declared input ranges live and immutable
+        // and outputs exclusively writable through this call. Scoped helpers
+        // check bounds and aliases; the caller retains their ownership.
+        unsafe {
+            write_encapsulation(
+                encapsulation,
+                ciphertext_out,
+                ciphertext_out_len,
+                shared_secret_out,
+                shared_secret_out_len,
+            )
+        }
     })
 }
 
@@ -167,13 +175,18 @@ pub unsafe extern "C" fn rm_crypto_x_wing_768_encapsulate_derand(
             Ok(value) => value,
             Err(error) => return kem_encapsulation_status(error),
         };
-        write_encapsulation(
-            encapsulation,
-            ciphertext_out,
-            ciphertext_out_len,
-            shared_secret_out,
-            shared_secret_out_len,
-        )
+        // SAFETY: The caller keeps all declared input ranges live and immutable
+        // and outputs exclusively writable through this call. Scoped helpers
+        // check bounds and aliases; the caller retains their ownership.
+        unsafe {
+            write_encapsulation(
+                encapsulation,
+                ciphertext_out,
+                ciphertext_out_len,
+                shared_secret_out,
+                shared_secret_out_len,
+            )
+        }
     })
 }
 
@@ -240,7 +253,14 @@ pub unsafe extern "C" fn rm_crypto_x_wing_768_decode_public_key(
     ffi_guard(|| unsafe { copy_x_wing_768_public_key(public_key, public_key_len, out, out_len) })
 }
 
-fn write_encapsulation(
+/// # Safety
+///
+/// Non-empty raw inputs must remain initialized, readable, and immutable
+/// for their declared lengths throughout this call. Raw outputs must name
+/// live, exclusively writable allocations of their declared lengths and
+/// must not alias inputs. Typed length outputs must also be aligned. The
+/// caller retains ownership; an active pointer-range scope is required.
+unsafe fn write_encapsulation(
     encapsulation: reallyme_crypto::operations::kem::KemEncapsulation,
     ciphertext_out: *mut u8,
     ciphertext_out_len: usize,
@@ -248,21 +268,12 @@ fn write_encapsulation(
     shared_secret_out_len: usize,
 ) -> CryptoStatus {
     // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
-    // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
-    let status = unsafe {
-        write_fixed(
+    // The pair writer checks both capacities and all aliases before either copy.
+    unsafe {
+        write_fixed_pair(
             ciphertext_out,
             ciphertext_out_len,
             &encapsulation.ciphertext,
-        )
-    };
-    if status != CRYPTO_OK {
-        return status;
-    }
-    // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
-    // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
-    unsafe {
-        write_fixed(
             shared_secret_out,
             shared_secret_out_len,
             &encapsulation.shared_secret,

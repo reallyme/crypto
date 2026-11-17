@@ -4,313 +4,45 @@
 
 package me.really.crypto
 
-import java.security.SecureRandom
-import org.bouncycastle.crypto.digests.SHA3Digest
-import org.bouncycastle.crypto.digests.SHAKEDigest
-import org.bouncycastle.crypto.kems.MLKEMExtractor
-import org.bouncycastle.crypto.kems.MLKEMGenerator
-import org.bouncycastle.crypto.params.MLKEMParameters
-import org.bouncycastle.crypto.params.MLKEMPrivateKeyParameters
-import org.bouncycastle.crypto.params.MLKEMPublicKeyParameters
-import org.bouncycastle.crypto.params.X25519PrivateKeyParameters
-import org.bouncycastle.crypto.params.X25519PublicKeyParameters
-import org.bouncycastle.math.ec.rfc7748.X25519
-
-private data class XWingSuiteConfig(
-    val parameters: MLKEMParameters,
-    val publicKeyLength: Int,
-    val ciphertextLength: Int,
-    val mlKemPublicKeyLength: Int,
-    val mlKemCiphertextLength: Int,
-)
-
-/**
- * X-Wing hybrid KEM over X25519 and ML-KEM.
- *
- * BouncyCastle's convenience X-Wing classes currently model the draft
- * ML-KEM-768 suite. The package keeps the standard combiner explicit so its
- * seed expansion and label contract remain byte-identical to Rust.
- */
+/** X-Wing-768. Seed expansion, component KEMs, and the combiner all execute in Rust. */
 public object ReallyMeXWing {
     public const val SECRET_KEY_LENGTH: Int = 32
     public const val ENCAPSULATION_SEED_LENGTH: Int = 64
     public const val SHARED_SECRET_LENGTH: Int = 32
-
-    private const val X25519_KEY_LENGTH: Int = 32
-    private const val ML_KEM_SECRET_SEED_LENGTH: Int = 64
-    private const val ML_KEM_SHARED_SECRET_LENGTH: Int = 32
-    private const val EXPANDED_SECRET_LENGTH: Int = ML_KEM_SECRET_SEED_LENGTH + X25519_KEY_LENGTH
-    private val xWingLabel = "\\.//^\\".toByteArray(Charsets.US_ASCII)
-    private val secureRandom = SecureRandom()
+    private const val PUBLIC_KEY_LENGTH: Int = 1_216
+    private const val CIPHERTEXT_LENGTH: Int = 1_120
 
     public fun generateKeyPair(algorithm: ReallyMeKemAlgorithm): Pair<ByteArray, ByteArray> {
-        val secretKey = ByteArray(SECRET_KEY_LENGTH)
-        secureRandom.nextBytes(secretKey)
-        return Pair(derivePublicKey(algorithm, secretKey), secretKey)
+        requireAlgorithm(algorithm)
+        return ReallyMeRustProtocols.kemKeyPair(algorithm, null, PUBLIC_KEY_LENGTH, SECRET_KEY_LENGTH)
     }
 
     public fun derivePublicKey(algorithm: ReallyMeKemAlgorithm, secretKey: ByteArray): ByteArray {
-        val config = config(algorithm)
-        val expanded = expandSecretKey(secretKey)
-        val mlKemSeed = expanded.copyOfRange(0, ML_KEM_SECRET_SEED_LENGTH)
-        val x25519Secret = expanded.copyOfRange(ML_KEM_SECRET_SEED_LENGTH, EXPANDED_SECRET_LENGTH)
-        expanded.fill(0)
-
-        return try {
-            val mlKemPublicKey = MLKEMPrivateKeyParameters(config.parameters, mlKemSeed).publicKey
-            val x25519PublicKey = X25519PrivateKeyParameters(x25519Secret, 0).generatePublicKey().encoded
-            mlKemSeed.fill(0)
-            x25519Secret.fill(0)
-            composePublicKey(config, mlKemPublicKey, x25519PublicKey)
-        } catch (_: IllegalArgumentException) {
-            mlKemSeed.fill(0)
-            x25519Secret.fill(0)
-            throw ReallyMeCryptoException.InvalidInput()
-        }
+        requireAlgorithm(algorithm)
+        requireLength(secretKey, SECRET_KEY_LENGTH)
+        val (publicKey, ownedSecret) = ReallyMeRustProtocols.kemKeyPair(algorithm, secretKey, PUBLIC_KEY_LENGTH, SECRET_KEY_LENGTH)
+        ownedSecret.fill(0)
+        return publicKey
     }
 
     public fun encapsulate(algorithm: ReallyMeKemAlgorithm, publicKey: ByteArray): ReallyMeKemEncapsulation {
-        val seed = ByteArray(ENCAPSULATION_SEED_LENGTH)
-        secureRandom.nextBytes(seed)
-        return try {
-            encapsulateDeterministicForTest(algorithm, publicKey, seed)
-        } finally {
-            seed.fill(0)
-        }
+        requireAlgorithm(algorithm)
+        requireLength(publicKey, PUBLIC_KEY_LENGTH)
+        return ReallyMeRustProtocols.encapsulate(algorithm, publicKey, CIPHERTEXT_LENGTH)
     }
 
-    public fun decapsulate(
-        algorithm: ReallyMeKemAlgorithm,
-        ciphertext: ByteArray,
-        secretKey: ByteArray,
-    ): ByteArray {
-        val config = config(algorithm)
-        if (ciphertext.size != config.ciphertextLength) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        val (mlKemCiphertext, x25519Ciphertext) = splitCiphertext(config, ciphertext)
-        val expanded = expandSecretKey(secretKey)
-        val mlKemSeed = expanded.copyOfRange(0, ML_KEM_SECRET_SEED_LENGTH)
-        val x25519Secret = expanded.copyOfRange(ML_KEM_SECRET_SEED_LENGTH, EXPANDED_SECRET_LENGTH)
-        expanded.fill(0)
-
-        return try {
-            val privateKey = MLKEMPrivateKeyParameters(config.parameters, mlKemSeed)
-            val mlKemSharedSecret = MLKEMExtractor(privateKey).extractSecret(mlKemCiphertext)
-            try {
-                val x25519SharedSecret = x25519DecapsulationSharedSecret(x25519Secret, x25519Ciphertext)
-                try {
-                    val x25519PublicKey = X25519PrivateKeyParameters(x25519Secret, 0).generatePublicKey().encoded
-                    combineSharedSecret(
-                        mlKemSharedSecret,
-                        x25519SharedSecret,
-                        x25519Ciphertext,
-                        x25519PublicKey,
-                    )
-                } finally {
-                    x25519SharedSecret.fill(0)
-                }
-            } finally {
-                mlKemSharedSecret.fill(0)
-            }
-        } catch (_: IllegalArgumentException) {
-            throw ReallyMeCryptoException.InvalidInput()
-        } catch (_: IllegalStateException) {
-            throw ReallyMeCryptoException.ProviderFailure()
-        } finally {
-            mlKemSeed.fill(0)
-            x25519Secret.fill(0)
-        }
+    public fun decapsulate(algorithm: ReallyMeKemAlgorithm, ciphertext: ByteArray, secretKey: ByteArray): ByteArray {
+        requireAlgorithm(algorithm)
+        requireLength(ciphertext, CIPHERTEXT_LENGTH)
+        requireLength(secretKey, SECRET_KEY_LENGTH)
+        return ReallyMeRustProtocols.decapsulate(algorithm, ciphertext, secretKey)
     }
 
-    internal fun encapsulateDeterministicForTest(
-        algorithm: ReallyMeKemAlgorithm,
-        publicKey: ByteArray,
-        seed: ByteArray,
-    ): ReallyMeKemEncapsulation {
-        val config = config(algorithm)
-        if (seed.size != ENCAPSULATION_SEED_LENGTH) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        val (mlKemPublicKey, x25519PublicKey) = splitPublicKey(config, publicKey)
-        val mlKemRandomness = seed.copyOfRange(0, ML_KEM_SHARED_SECRET_LENGTH)
-        val x25519EphemeralSecret = seed.copyOfRange(ML_KEM_SHARED_SECRET_LENGTH, ENCAPSULATION_SEED_LENGTH)
-
-        return try {
-            val mlKemEncapsulated = MLKEMGenerator(FixedSecureRandom(mlKemRandomness)).generateEncapsulated(
-                MLKEMPublicKeyParameters(config.parameters, mlKemPublicKey),
-            )
-            val mlKemCiphertext = mlKemEncapsulated.encapsulation.copyOf()
-            val mlKemSharedSecret = mlKemEncapsulated.secret.copyOf()
-            mlKemEncapsulated.destroy()
-            try {
-                val x25519Ciphertext = X25519PrivateKeyParameters(x25519EphemeralSecret, 0).generatePublicKey().encoded
-                val x25519SharedSecret = x25519EncapsulationSharedSecret(
-                    x25519EphemeralSecret,
-                    x25519PublicKey,
-                )
-                try {
-                    val sharedSecret = combineSharedSecret(
-                        mlKemSharedSecret,
-                        x25519SharedSecret,
-                        x25519Ciphertext,
-                        x25519PublicKey,
-                    )
-                    val ciphertext = composeCiphertext(config, mlKemCiphertext, x25519Ciphertext)
-                    ReallyMeKemEncapsulation(sharedSecret = sharedSecret, ciphertext = ciphertext)
-                } finally {
-                    x25519SharedSecret.fill(0)
-                }
-            } finally {
-                mlKemSharedSecret.fill(0)
-            }
-        } catch (_: IllegalArgumentException) {
-            throw ReallyMeCryptoException.InvalidInput()
-        } catch (_: XWingDeterministicRandomExhaustedException) {
-            throw ReallyMeCryptoException.ProviderFailure()
-        } finally {
-            mlKemRandomness.fill(0)
-            x25519EphemeralSecret.fill(0)
-        }
+    private fun requireAlgorithm(algorithm: ReallyMeKemAlgorithm) {
+        if (algorithm != ReallyMeKemAlgorithm.X_WING_768) throw ReallyMeCryptoException.UnsupportedAlgorithm()
     }
 
-    private fun config(algorithm: ReallyMeKemAlgorithm): XWingSuiteConfig =
-        when (algorithm) {
-            ReallyMeKemAlgorithm.X_WING_768 ->
-                XWingSuiteConfig(MLKEMParameters.ml_kem_768, 1_216, 1_120, 1_184, 1_088)
-            ReallyMeKemAlgorithm.ML_KEM_512,
-            ReallyMeKemAlgorithm.ML_KEM_768,
-            ReallyMeKemAlgorithm.ML_KEM_1024,
-            -> throw ReallyMeCryptoException.UnsupportedAlgorithm()
-        }
-
-    private fun expandSecretKey(secretKey: ByteArray): ByteArray {
-        if (secretKey.size != SECRET_KEY_LENGTH) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        val expanded = ByteArray(EXPANDED_SECRET_LENGTH)
-        val shake = SHAKEDigest(256)
-        shake.update(secretKey, 0, secretKey.size)
-        shake.doFinal(expanded, 0, expanded.size)
-        return expanded
-    }
-
-    private fun splitPublicKey(config: XWingSuiteConfig, publicKey: ByteArray): Pair<ByteArray, ByteArray> {
-        if (publicKey.size != config.publicKeyLength) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        return Pair(
-            publicKey.copyOfRange(0, config.mlKemPublicKeyLength),
-            publicKey.copyOfRange(config.mlKemPublicKeyLength, config.publicKeyLength),
-        )
-    }
-
-    private fun splitCiphertext(config: XWingSuiteConfig, ciphertext: ByteArray): Pair<ByteArray, ByteArray> =
-        Pair(
-            ciphertext.copyOfRange(0, config.mlKemCiphertextLength),
-            ciphertext.copyOfRange(config.mlKemCiphertextLength, config.ciphertextLength),
-        )
-
-    private fun composePublicKey(config: XWingSuiteConfig, mlKemPublicKey: ByteArray, x25519PublicKey: ByteArray): ByteArray {
-        if (mlKemPublicKey.size != config.mlKemPublicKeyLength || x25519PublicKey.size != X25519_KEY_LENGTH) {
-            throw ReallyMeCryptoException.ProviderFailure()
-        }
-        return mlKemPublicKey + x25519PublicKey
-    }
-
-    private fun composeCiphertext(
-        config: XWingSuiteConfig,
-        mlKemCiphertext: ByteArray,
-        x25519Ciphertext: ByteArray,
-    ): ByteArray {
-        if (mlKemCiphertext.size != config.mlKemCiphertextLength || x25519Ciphertext.size != X25519_KEY_LENGTH) {
-            throw ReallyMeCryptoException.ProviderFailure()
-        }
-        return mlKemCiphertext + x25519Ciphertext
-    }
-
-    private fun x25519EncapsulationSharedSecret(secretKey: ByteArray, publicKey: ByteArray): ByteArray {
-        if (secretKey.size != X25519_KEY_LENGTH || publicKey.size != X25519_KEY_LENGTH) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        val sharedSecret = ByteArray(X25519_KEY_LENGTH)
-        try {
-            X25519PrivateKeyParameters(secretKey, 0).generateSecret(
-                X25519PublicKeyParameters(publicKey, 0),
-                sharedSecret,
-                0,
-            )
-        } catch (_: IllegalArgumentException) {
-            throw ReallyMeCryptoException.InvalidInput()
-        } catch (_: IllegalStateException) {
-            // Bouncy Castle signals a non-contributory X25519 result with an
-            // IllegalStateException. Such recipient keys remain invalid for
-            // encapsulation, but the provider exception must not cross the SDK.
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        if (sharedSecret.all { byte -> byte == 0.toByte() }) {
-            sharedSecret.fill(0)
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        return sharedSecret
-    }
-
-    private fun x25519DecapsulationSharedSecret(secretKey: ByteArray, publicKey: ByteArray): ByteArray {
-        if (secretKey.size != X25519_KEY_LENGTH || publicKey.size != X25519_KEY_LENGTH) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        val sharedSecret = ByteArray(X25519_KEY_LENGTH)
-        // X-Wing deliberately folds an all-zero X25519 result into its SHA3
-        // combiner during decapsulation. Using the raw primitive preserves
-        // that CCA-safe, no-oracle behavior instead of BC's convenience API,
-        // which rejects low-order points before the combiner can run.
-        X25519.scalarMult(secretKey, 0, publicKey, 0, sharedSecret, 0)
-        return sharedSecret
-    }
-
-    private fun combineSharedSecret(
-        mlKemSharedSecret: ByteArray,
-        x25519SharedSecret: ByteArray,
-        x25519Ciphertext: ByteArray,
-        x25519PublicKey: ByteArray,
-    ): ByteArray {
-        if (
-            mlKemSharedSecret.size != ML_KEM_SHARED_SECRET_LENGTH ||
-            x25519SharedSecret.size != X25519_KEY_LENGTH ||
-            x25519Ciphertext.size != X25519_KEY_LENGTH ||
-            x25519PublicKey.size != X25519_KEY_LENGTH
-        ) {
-            throw ReallyMeCryptoException.ProviderFailure()
-        }
-        val digest = SHA3Digest(256)
-        digest.update(mlKemSharedSecret, 0, mlKemSharedSecret.size)
-        digest.update(x25519SharedSecret, 0, x25519SharedSecret.size)
-        digest.update(x25519Ciphertext, 0, x25519Ciphertext.size)
-        digest.update(x25519PublicKey, 0, x25519PublicKey.size)
-        digest.update(xWingLabel, 0, xWingLabel.size)
-        val sharedSecret = ByteArray(SHARED_SECRET_LENGTH)
-        digest.doFinal(sharedSecret, 0)
-        return sharedSecret
+    private fun requireLength(bytes: ByteArray, length: Int) {
+        if (bytes.size != length) throw ReallyMeCryptoException.InvalidInput()
     }
 }
-
-private class FixedSecureRandom(private val seed: ByteArray) : SecureRandom() {
-    private var offset: Int = 0
-
-    override fun nextBytes(bytes: ByteArray) {
-        val nextOffset = if (offset > Int.MAX_VALUE - bytes.size) {
-            throw XWingDeterministicRandomExhaustedException()
-        } else {
-            offset + bytes.size
-        }
-        if (nextOffset > seed.size) {
-            throw XWingDeterministicRandomExhaustedException()
-        }
-        System.arraycopy(seed, offset, bytes, 0, bytes.size)
-        offset = nextOffset
-    }
-}
-
-private typealias XWingDeterministicRandomExceptionBase = RuntimeException
-
-private class XWingDeterministicRandomExhaustedException : XWingDeterministicRandomExceptionBase()

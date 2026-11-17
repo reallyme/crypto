@@ -34,9 +34,9 @@ use crate::status::{CryptoStatus, CRYPTO_INTERNAL_ERROR};
 ///   state; there is no shared `&mut`/interior-mutable state that could be
 ///   observed in a torn, half-updated form after a caught panic.
 /// - Each individual output write is prevalidated and performed by one
-///   `copy_from_slice`. Multi-output operations can complete an earlier write
-///   before a later unexpected panic, so callers must discard every output
-///   whenever the returned status is not success; no unwinding state is reused
+///   `copy_from_slice`. Paired results validate both capacities before copying.
+///   An unexpected panic can still follow an earlier write, so callers discard
+///   every output whenever the returned status is not success; no unwinding state is reused
 ///   by a later call.
 /// - Secret-bearing temporaries are held in `Zeroizing`/`ZeroizeOnDrop`
 ///   wrappers whose destructors run during the unwind, before this function

@@ -2,12 +2,45 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crypto_core::has_standard_sec1_encoding;
 use ecdsa::signature::hazmat::PrehashVerifier;
 
 use super::{digest::with_digest, CryptoError, EcdsaCurve, EcdsaEncoding, EcdsaInput};
 
-/// Validate an encoded SEC1 public point for the specified curve.
+// The backend also accepts compact (0x05) points. All explicit NIST entry
+// points must enforce the same wire shapes as their primitive counterparts,
+// including fixed-width verification and the private owner's ECDH method.
+pub(super) fn validate_public_key_encoding(
+    curve: EcdsaCurve,
+    public: &[u8],
+) -> Result<(), CryptoError> {
+    use crypto_core::contract_constants::{p256, p384, p521};
+
+    let (compressed_len, uncompressed_len) = match curve {
+        EcdsaCurve::P256 => (
+            p256::P256_PUBLIC_KEY_COMPRESSED_LEN,
+            p256::P256_PUBLIC_KEY_UNCOMPRESSED_LEN,
+        ),
+        EcdsaCurve::P384 => (
+            p384::P384_PUBLIC_KEY_COMPRESSED_LEN,
+            p384::P384_PUBLIC_KEY_UNCOMPRESSED_LEN,
+        ),
+        EcdsaCurve::P521 => (
+            p521::P521_PUBLIC_KEY_COMPRESSED_LEN,
+            p521::P521_PUBLIC_KEY_UNCOMPRESSED_LEN,
+        ),
+        _ => return Ok(()),
+    };
+    if has_standard_sec1_encoding(public, compressed_len, uncompressed_len) {
+        Ok(())
+    } else {
+        Err(CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY)
+    }
+}
+
+/// Validate a compressed or uncompressed SEC1 public point for the specified curve.
 pub fn validate_public_key(curve: EcdsaCurve, public: &[u8]) -> Result<(), CryptoError> {
+    validate_public_key_encoding(curve, public)?;
     match curve {
         EcdsaCurve::P256 => p256::PublicKey::from_sec1_bytes(public)
             .map(|_| ())
@@ -59,6 +92,7 @@ pub fn verify(
         };
         macro_rules! verify_curve {
             ($backend:ident) => {{
+                validate_public_key_encoding(curve, public)?;
                 let public = $backend::ecdsa::VerifyingKey::from_sec1_bytes(public)
                     .map_err(|_| CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY)?;
                 let signature = $backend::ecdsa::Signature::from_slice(signature)

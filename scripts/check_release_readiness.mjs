@@ -22,7 +22,7 @@ if (policyPins.error !== undefined || policyPins.status !== 0) {
   process.exit(1);
 }
 const { assertCryptoOperationRouteReadiness } = await import("./crypto_operation_route_readiness.mjs");
-const { LOCKED_DEPENDENCY_AUDIT, REQUIRED_WORKFLOW_GATES, workflowGateViolation } =
+const { LOCKED_DEPENDENCY_AUDIT, REQUIRED_WORKFLOW_GATES, trustedPublishingViolation, workflowGateViolation } =
   await import("./workflow_gate_policy.mjs");
 const { assertNativeBuffaReadiness } = await import("./native_buffa_readiness.mjs");
 const localCore = new URL("./release-readiness/core.mjs", import.meta.url);
@@ -164,11 +164,11 @@ for (const path of ["packages/kotlin/build.gradle.kts", "packages/kotlin-android
   assertContains(path, 'name.set("Apache License, Version 2.0")');
 }
 
-const rustRootVersion = "0.4.4";
-const cryptoProtoPackageVersion = "0.4.4";
-const typescriptPackageVersion = "0.4.4";
-const kotlinPackageVersion = "0.4.4";
-const kotlinAndroidPackageVersion = "0.4.4";
+const rustRootVersion = "0.4.3";
+const cryptoProtoPackageVersion = "0.4.3";
+const typescriptPackageVersion = "0.4.3";
+const kotlinPackageVersion = "0.4.3";
+const kotlinAndroidPackageVersion = "0.4.3";
 const rustCodecVersion = "0.4.3";
 const tsCodecVersion = "0.4.3";
 const swiftCodecVersion = "0.4.3";
@@ -742,10 +742,14 @@ if (/^[ \t]*types:/mu.test(generationConfig) || metadataExclusions.length !== 1 
     metadataExclusions[0][1].trim() !== "- reallyme.crypto.contract.v1.**") {
   fail("buf.gen.yaml must generate every runtime type and exclude only immutable contract metadata");
 }
-assertContains("buf.gen.yaml", "buf.build/bufbuild/es:v2.17.0");
-assertContains("buf.gen.yaml", "buf.build/apple/swift:v1.39.0");
-assertContains("buf.gen.yaml", "buf.build/protocolbuffers/java:v36.2");
-assertContains("buf.gen.yaml", "buf.build/protocolbuffers/kotlin:v36.2");
+assertNotContains("buf.gen.yaml", "remote:");
+assertContains("buf.gen.yaml", "local: [node, packages/ts/node_modules/@bufbuild/protoc-gen-es/bin/protoc-gen-es]");
+assertContains("buf.gen.yaml", "local: protoc-gen-swift");
+assertContains("buf.gen.yaml", "protoc_builtin: java");
+assertContains("buf.gen.yaml", "protoc_builtin: kotlin");
+assertContains("packages/ts/package.json", '"@bufbuild/protoc-gen-es": "2.17.0"');
+assertContains("scripts/generate_protobuf.mjs", 'run(process.execPath, ["scripts/check_local_proto_tools.mjs"])');
+assertContains(".github/workflows/protobuf-ci.yml", "bash scripts/install_local_proto_tools.sh");
 assertContains("crates/proto/src/generated/buffa/mod.rs", "pub mod crypto");
 assertProtoContract("crates/proto/proto/reallyme/crypto/v1/crypto.proto");
 if (readdirSync("crates/crypto/src").includes("proto_process.rs")) {
@@ -837,7 +841,15 @@ assertContains(
 );
 assertContains(
   "packages/ts/src/operationResponse.ts",
-  "value.length > MAX_CRYPTO_OPERATION_RESPONSE_BYTES",
+  "readIndependentProviderBytesInRange(",
+);
+assertContains(
+  "packages/ts/src/operationResponse.ts",
+  "    1,\n    MAX_CRYPTO_OPERATION_RESPONSE_BYTES,\n    [request],",
+);
+assertContains(
+  "packages/ts/src/validateBytes.ts",
+  "value.length < minimumLength || value.length > maximumLength",
 );
 assertContains(
   "packages/ts/src/validateBytes.ts",
@@ -869,15 +881,15 @@ assertNotContains(
 );
 assertContains(
   "packages/ts/test/reallyme-crypto.test.mjs",
-  "generic operation response lanes reject aliased and invalid provider outputs",
+  "generic operation response readers reject aliases and clear malformed outputs",
 );
 assertContains(
   "packages/ts/test/reallyme-crypto.test.mjs",
   "ambient globals cannot satisfy explicit WASM provider functions",
 );
 assertContains(
-  "packages/ts/test/reallyme-crypto.test.mjs",
-  "KEM providers wipe wrong-length decapsulation shared secrets",
+  "packages/ts/test/provider-trust.test.mjs",
+  "provider byte readers accept owned outputs and wipe malformed independent outputs",
 );
 
 const tsPackage = readJson("packages/ts/package.json");
@@ -1064,9 +1076,11 @@ assertContains(
   "protobuf JWK boundaries reject oversized bytes and canonical JCS with typed errors",
 );
 assertContains(
-  "packages/ts/test/reallyme-crypto.test.mjs",
-  "signature providers map wrong-length outputs to provider failure",
+  "packages/ts/test/provider-trust.test.mjs",
+  "all explicit provider routes reject fabricated identities before reading hooks",
 );
+assertContains("packages/ts/src/mlDsa.ts", "value.length !== suite.signatureLength");
+assertContains("packages/ts/src/slhDsa.ts", "value.length !== SLH_DSA_SHA2_128S_SIGNATURE_LENGTH");
 assertContains(
   "packages/ts/test/reallyme-crypto.test.mjs",
   "explicit crypto provider instances fail closed without WASM provider",
@@ -1090,7 +1104,7 @@ assertContains("packages/ts/README.md", "Direct raw WASM calls are unsupported f
 assertContains("packages/ts/README.md", "Explicit facades reject");
 assertContains(
   "packages/ts/test/wasm-boundary.test.mjs",
-  "custom seed-derived providers have an explicit correspondence trust boundary",
+  "custom seed-derived providers cannot bypass package ownership",
 );
 assertContains(
   "packages/ts/src/validateBytes.ts",
@@ -1406,9 +1420,11 @@ assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/Digest.kt", "ca
 assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/Hmac.kt", "catch (_: GeneralSecurityException)");
 assertNotContains("packages/kotlin/src/main/kotlin/me/really/crypto/JceProviders.kt", "cipherProviderName");
 assertNotContains("packages/kotlin/src/main/kotlin/me/really/crypto/JceProviders.kt", "signatureProviderName");
-assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/P256Ecdsa.kt", "catch (_: RuntimeException)");
-assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/P384Ecdsa.kt", "catch (_: RuntimeException)");
-assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/P521Ecdsa.kt", "catch (_: RuntimeException)");
+for (const curve of ["P256", "P384", "P521"]) {
+  assertContains(`packages/kotlin/src/main/kotlin/me/really/crypto/${curve}Ecdsa.kt`, "decodeCanonicalEcdsaDer(signature, domain.n, DER_SIGNATURE_MAX_LENGTH)");
+  assertContains(`packages/kotlin/src/main/kotlin/me/really/crypto/${curve}Ecdsa.kt`, "requireStandardSec1PublicKey(publicKey,");
+}
+assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/CanonicalEcdsaDer.kt", "catch (_: RuntimeException)");
 assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/AesKw.kt", "val cipher = try");
 assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/AesKw.kt", "throw ReallyMeCryptoException.ProviderFailure()");
 assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/AesKw.kt", "throw ReallyMeCryptoException.AuthenticationFailed()");
@@ -1422,12 +1438,17 @@ assertContains(
   "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoSymmetricTest.kt",
   "pbkdf2IterationConversionEnforcesPublicWorkBounds",
 );
-assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/MlKem.kt", "sharedSecret.fill(0)");
-assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/Hpke.kt", "plaintext.fill(0)");
-assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/XWing.kt", "x25519SharedSecret.fill(0)");
-assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/P256Ecdh.kt", "bytes.fill(0)");
-assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/P384Ecdh.kt", "bytes.fill(0)");
-assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/P521Ecdh.kt", "bytes.fill(0)");
+for (const name of ["MlKem", "MlDsa", "SlhDsa", "Hpke", "XWing"]) {
+  assertContains(`packages/kotlin/src/main/kotlin/me/really/crypto/${name}.kt`, "ReallyMeRustProtocols");
+  assertNotContains(`packages/kotlin/src/main/kotlin/me/really/crypto/${name}.kt`, "org.bouncycastle");
+}
+assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/RustProtocols.kt", "bytes.fill(0)");
+assertContains("crates/ffi/src/kotlin_protocol_support.rs", "Zeroizing");
+assertContains("crates/ffi/src/kotlin_key_agreement.rs", "key_agreement::derive_shared_secret");
+assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/RustKeyAgreement.kt", "bytes.fill(0)");
+assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/P256Ecdh.kt", "ReallyMeRustKeyAgreement");
+assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/P384Ecdh.kt", "ReallyMeRustKeyAgreement");
+assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/P521Ecdh.kt", "ReallyMeRustKeyAgreement");
 assertContains(
   "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoTest.kt",
   "bestEffortMemoryCleanupOverwritesCallerOwnedKotlinBytes",
@@ -1545,9 +1566,9 @@ const systemLoad = extractedLoad.indexOf("System.load(loadedPath.toString())");
 if (finalValidation < 0 || systemLoad <= finalValidation) {
   fail("Kotlin classpath native loader must revalidate the extracted library immediately before load");
 }
-assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/P256Ecdh.kt", "FixedPointCombMultiplier");
-assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/P384Ecdh.kt", "FixedPointCombMultiplier");
-assertContains("packages/kotlin/src/main/kotlin/me/really/crypto/P521Ecdh.kt", "FixedPointCombMultiplier");
+assertNotContains("packages/kotlin/src/main/kotlin/me/really/crypto/P256Ecdh.kt", "org.bouncycastle");
+assertNotContains("packages/kotlin/src/main/kotlin/me/really/crypto/P384Ecdh.kt", "org.bouncycastle");
+assertNotContains("packages/kotlin/src/main/kotlin/me/really/crypto/P521Ecdh.kt", "org.bouncycastle");
 assertNotContains(
   "packages/kotlin/src/test/kotlin/me/really/crypto/ReallyMeCryptoTest.kt",
   "loadCodecProviderForTest",
@@ -2218,8 +2239,10 @@ assertNotContains(
   "RM_CRYPTO_ED25519_EXPANDED_SECRET_KEY_LEN",
 );
 assertContains("crates/ffi/src/pointer_range_registry.rs", "if ranges.active");
+assertContains("crates/ffi/src/lib.rs", "pub(crate) mod pointer;");
+assertNotContains("crates/ffi/src/lib.rs", "pub mod pointer;");
 assertContains(
-  "crates/ffi/tests/pointer_tests.rs",
+  "crates/ffi/src/pointer_tests.rs",
   "nested_ffi_guard_fails_without_clearing_outer_input_ranges",
 );
 assertContains(
@@ -2757,12 +2780,18 @@ const assertReleaseWorkflowCredentialGates = () => {
   }
 
   assertContains(".github/workflows/crates-release.yml", "environment: crates-io-release");
-  assertContains(".github/workflows/crates-release.yml", "CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}");
+  for (const [ecosystem, path] of [
+    ["crates", ".github/workflows/crates-release.yml"],
+    ["npm", ".github/workflows/npm-package-release.yml"],
+  ]) {
+    const violation = trustedPublishingViolation(readText(path), ecosystem);
+    if (violation !== null) fail(`${path} violates trusted publishing policy: ${violation}`);
+  }
   assertContains(".github/workflows/crates-release.yml", "CRATE_ARCHIVE_DIR:");
   assertContains("scripts/publish_crates_in_order.mjs", "packaged bytes differ from the reviewed preflight archive");
 
   assertContains(".github/workflows/npm-package-release.yml", "environment: npm-release");
-  assertContains(".github/workflows/npm-package-release.yml", "NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}");
+  assertNotContains(".github/workflows/npm-package-release.yml", "secrets.NPM_TOKEN");
   assertContains(".github/workflows/npm-package-release.yml", "--provenance --access public --ignore-scripts");
   assertContains(".github/workflows/npm-package-release.yml", "sha256sum --check");
   assertNotContains(".github/workflows/npm-package-release.yml", "npm ci");
@@ -2780,6 +2809,21 @@ const assertReleaseWorkflowCredentialGates = () => {
 
 const assertReleaseWorkflowPermissions = () => {
   const readOnlyWorkflow = { contents: "read" };
+  for (const path of [
+    ".github/workflows/dependency-security.yml",
+    ".github/workflows/osv-lockfile-scan.yml",
+  ]) {
+    assertWorkflowPermissionsPolicy({ path, workflow: readOnlyWorkflow, jobs: {} });
+  }
+  assertWorkflowPermissionsPolicy({
+    path: ".github/workflows/cla.yaml",
+    workflow: readOnlyWorkflow,
+    jobs: {
+      "cla-signatures": { actions: "write", contents: "write", "pull-requests": "write" },
+      "cla-merge-queue": { actions: "read", contents: "read", "pull-requests": "read" },
+      CLAAssistant: { contents: "none" },
+    },
+  });
   for (const path of [
     ".github/workflows/rust-ci.yml",
     ".github/workflows/fuzz.yml",
@@ -2800,7 +2844,7 @@ const assertReleaseWorkflowPermissions = () => {
     workflow: readOnlyWorkflow,
     jobs: {
       "verify-release-sha": { actions: "read", contents: "read" },
-      publish: { actions: "read", contents: "read" },
+      publish: { actions: "read", contents: "read", "id-token": "write" },
     },
   });
   assertWorkflowPermissionsPolicy({
@@ -2943,9 +2987,9 @@ assertDocumented(
 );
 assertContains(
   "packages/ts/src/aesKw.ts",
-  "value.length !== expectedLength",
+  "readIndependentProviderBytes(value, expectedLength, inputs)",
 );
-assertContains("packages/ts/src/kmac.ts", "value.fill(0);");
+assertContains("packages/ts/src/kmac.ts", "readIndependentProviderBytes(value, outputLength, inputs)");
 assertContains(
   "packages/swift/Sources/ReallyMeCrypto/WrapAesKwWithRustCAbi.swift",
   "guard producedLength == output.count else",
@@ -2986,6 +3030,21 @@ assertContains(
   ".github/workflows/external-vectors-audit.yml",
   "node scripts/vendor_external_vectors.mjs --check",
 );
+const externalVectorWorkflow = ".github/workflows/external-vectors-audit.yml";
+assertContains(externalVectorWorkflow, '- "crates/hpke/**"');
+const hpkeCorpusStep = extractWorkflowSteps(externalVectorWorkflow).filter(
+  ({ name }) => name === "Execute HPKE RFC 9180 and PQ draft corpora",
+);
+if (hpkeCorpusStep.length !== 1 || hpkeCorpusStep[0].job !== "integrity" ||
+    hpkeCorpusStep[0].condition !== null || hpkeCorpusStep[0].continueOnError !== null ||
+    hpkeCorpusStep[0].run !== "cargo test --locked -p external-vector-audit --no-default-features --features native --test rfc9180_hpke --test hpke_pq") {
+  fail(`${externalVectorWorkflow} must execute both HPKE corpora in its unconditional integrity job`);
+}
+for (const adapter of ["rfc9180_hpke", "hpke_pq"]) {
+  const path = `tools/external-vector-audit/tests/${adapter}.rs`;
+  assertContains(path, '#![cfg(feature = "native")]');
+  assertNotContains(path, "#[ignore");
+}
 assertContains(
   "scripts/vendor_external_vectors.mjs",
   "await checkCommittedCorpus(provenance, requested.map((name) => SOURCES[name].source_id))",
@@ -3098,14 +3157,29 @@ for (const path of [
   ".github/workflows/rust-ci.yml",
   ".github/workflows/crates-package-preflight.yml",
 ]) {
-  assertContains(path, "Cache Rust semver tooling and dependencies");
-  assertContains(path, `shared-key: semver-${cargoSemverChecksVersion}-baseline-0.3.11`);
-  assertContains(path, "cache-bin: true");
   assertContains(
     path,
     `cargo install cargo-semver-checks --version ${cargoSemverChecksVersion} --locked`,
   );
   assertNotContains(path, `tool: cargo-semver-checks@${cargoSemverChecksVersion}`);
+}
+assertContains(rustWorkflow, "Cache Rust semver tooling and dependencies");
+assertContains(rustWorkflow, `shared-key: semver-${cargoSemverChecksVersion}-baseline-0.3.11`);
+assertContains(rustWorkflow, "cache-bin: true");
+for (const cacheAction of ["Swatinem/rust-cache@", "actions/cache@", "actions/cache/restore@"]) {
+  assertNotContains(".github/workflows/crates-package-preflight.yml", cacheAction);
+}
+for (const path of trackedFiles) {
+  if (!/^\.github\/workflows\/[^/]+\.ya?ml$/u.test(path)) continue;
+  const source = readText(path);
+  const installers = extractWorkflowSteps(path).filter(({ uses }) => uses?.startsWith("taiki-e/install-action@"));
+  for (const step of installers) {
+    const inputs = readWorkflowStepInputs(`${path} ${step.job}/${step.name}`, step, source.split(/\r?\n/u));
+    if (inputs.get("fallback") !== "none") fail(`${path} ${step.name} must disable installer fallbacks`);
+  }
+  if (path !== ".github/workflows/codeql.yml" && /^\s*security-events:\s*write\b/mu.test(source)) {
+    fail(`${path} must not request unused security event write access`);
+  }
 }
 assertContains(".github/workflows/rust-ci.yml", "scripts/audit_committed_lockfiles.sh");
 assertContains(".github/workflows/rust-ci.yml", "cargo metadata --locked --format-version 1 --no-deps");

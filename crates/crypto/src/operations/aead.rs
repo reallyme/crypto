@@ -5,6 +5,8 @@
 //! Semantic owner for AEAD seal and open operations.
 
 mod aes_gcm;
+mod legacy_aes_siv;
+pub use legacy_aes_siv::open_legacy_aes256_siv;
 mod aes_gcm_siv;
 mod chacha20_poly1305;
 use crypto_core::AeadAlgorithm;

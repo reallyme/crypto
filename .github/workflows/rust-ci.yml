@@ -54,6 +54,7 @@ jobs:
         uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
         with:
           tool: shellcheck@0.11.0
+          fallback: none
 
       - name: Install actionlint
         run: bash scripts/install_actionlint.sh
@@ -329,6 +330,7 @@ jobs:
         uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
         with:
           tool: nextest@0.9.152
+          fallback: none
 
       - name: Install cargo-deny
         uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
@@ -341,9 +343,16 @@ jobs:
         uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
         with:
           tool: cargo-audit@0.23.0
+          fallback: none
 
       - name: Verify locked dependency graph
         run: cargo metadata --locked --format-version 1 --no-deps
+
+      - name: Verify KMAC keyed-state zeroization
+        run: node scripts/check_kmac_zeroization.mjs
+
+      - name: Verify AEAD one-time key zeroization
+        run: node scripts/check_aead_zeroization.mjs
 
       - name: Verify optional native provider isolation
         run: |
@@ -464,11 +473,13 @@ jobs:
         uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
         with:
           tool: wasm-pack@0.15.1
+          fallback: none
 
       - name: Install wasm-bindgen-cli
         uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
         with:
           tool: wasm-bindgen-cli@0.2.130
+          fallback: none
 
       - name: Install dependencies for TypeScript vector checks
         run: |

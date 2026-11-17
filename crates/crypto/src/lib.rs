@@ -4,26 +4,20 @@
 
 //! # reallyme-crypto
 //!
-//! ReallyMe cryptographic primitives, dispatch and signing abstractions behind
-//! one dependency and a consistent feature set.
+//! ReallyMe cryptographic primitives, dispatch, and signing behind one
+//! dependency and a consistent feature set.
 //!
-//! ## Platform lanes
+//! Rust selects `native` or `wasm` through Cargo features and the target. Swift
+//! and Kotlin select providers in their facades, using FFI/JNI where policy
+//! specifies Rust. Providers fail closed without fallback.
 //!
-//! Rust selects `native` (portable Rust) or `wasm` (WebAssembly with appropriate
-//! entropy support) through Cargo features and target. Swift and Kotlin select
-//! providers in their facades and use FFI/JNI only where policy specifies Rust.
-//! A lane never silently falls back to another backend.
+//! Protobuf operations and enums, package identifiers, typed errors, the provider
+//! manifest, and conformance vectors define the shared contract. Platform routes
+//! are interchangeable where vectors and typed-error tests prove matching inputs,
+//! outputs, failures, and edge cases.
 //!
-//! The canonical contract is not the Rust API by itself.
-//! Protobuf/enums, package identifiers, typed errors, the provider manifest and
-//! conformance vectors define the shared contract. Platform routes are
-//! interchangeable only where vectors and typed-error tests prove identical
-//! input, output, failure and edge-case behavior.
-//!
-//! ## Security posture
-//!
-//! Unsafe code is forbidden; secret owners zeroize and verification fails closed.
-//! See `SECURITY.md`, `SECURITY_MEMORY_MODEL.md` and the compile-checked examples
+//! Unsafe code is forbidden, secret owners zeroize, and verification fails closed.
+//! See `SECURITY.md`, `SECURITY_MEMORY_MODEL.md`, and the compile-checked examples
 //! in the crate README.
 
 #![doc = include_str!("../README.md")]
@@ -245,3 +239,11 @@ pub mod sha3;
 /// BN254 Poseidon2 byte hashing compatible with ReallyMe ZK circuits.
 #[cfg(feature = "poseidon2")]
 pub mod poseidon2;
+
+/// Protected standalone retained-record compatibility operation.
+#[cfg(feature = "operation-response")]
+pub mod legacy_aead_contract;
+
+/// Protected standalone PKI ECDSA digest verification operation.
+#[cfg(feature = "operation-response")]
+pub mod ecdsa_digest_contract;

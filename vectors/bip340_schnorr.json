@@ -7,5 +7,7 @@
   "public_key_xonly": "-TCKAZJYwxBJNE-F-J1SKbUxyEWDb5mwhgHxE7zgNvk",
   "message": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
   "aux_rand": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-  "signature": "6QeDH4CEjRBppTcbQCQQNkvfHF-DB7AITFXxzi3KghUl9mpKheqLceSCp084LSzl6-7o_bIXL0d99JANMQU2wA"
+  "signature": "6QeDH4CEjRBppTcbQCQQNkvfHF-DB7AITFXxzi3KghUl9mpKheqLceSCp084LSzl6-7o_bIXL0d99JANMQU2wA",
+  "invalid_off_curve_public_key_xonly": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  "invalid_out_of_range_public_key_xonly": "__________________________________________8"
 }

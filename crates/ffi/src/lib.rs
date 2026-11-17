@@ -87,12 +87,22 @@ pub mod kotlin_aead;
 /// JNI bridge used by the Kotlin package for Rust-only primitives.
 #[allow(unsafe_code)]
 pub mod kotlin_argon2id;
+/// JNI adapters for Rust-owned HPKE operations.
+#[allow(unsafe_code)]
+mod kotlin_hpke;
+/// JNI adapters for Rust-owned software P-curve key agreement.
+#[allow(unsafe_code)]
+mod kotlin_key_agreement;
 /// JNI bridge used by the Kotlin package for Rust-only KMAC derivation.
 #[allow(unsafe_code)]
 pub mod kotlin_kmac;
+/// JNI adapters for Rust-owned post-quantum operations.
+#[allow(unsafe_code)]
+mod kotlin_post_quantum;
 /// JNI bridge for the Kotlin protobuf process lane.
 #[allow(unsafe_code)]
 pub mod kotlin_proto;
+mod kotlin_protocol_support;
 /// Shared typed JNI result envelope for Kotlin native providers.
 pub mod kotlin_result;
 /// C ABI surface for ML-DSA-44 (post-quantum) signing and verification.
@@ -130,7 +140,7 @@ pub mod p521;
 pub mod pbkdf2;
 /// Internal raw-pointer/length validation and buffer-write helpers.
 #[allow(unsafe_code)]
-pub mod pointer;
+pub(crate) mod pointer;
 /// C ABI surface for RSA signature verification.
 #[allow(unsafe_code)]
 pub mod rsa;

@@ -397,20 +397,6 @@ public object ReallyMeCrypto {
         }
 
     @JvmStatic
-    public fun encapsulateDeterministicForTest(
-        algorithm: ReallyMeKemAlgorithm,
-        publicKey: ByteArray,
-        seed: ByteArray,
-    ): ReallyMeKemEncapsulation =
-        when (algorithm) {
-            ReallyMeKemAlgorithm.ML_KEM_512,
-            ReallyMeKemAlgorithm.ML_KEM_768,
-            ReallyMeKemAlgorithm.ML_KEM_1024,
-            -> ReallyMeMlKem.encapsulateDeterministicForTest(algorithm, publicKey, seed)
-            ReallyMeKemAlgorithm.X_WING_768 -> ReallyMeXWing.encapsulateDeterministicForTest(algorithm, publicKey, seed)
-        }
-
-    @JvmStatic
     public fun decapsulate(
         algorithm: ReallyMeKemAlgorithm,
         ciphertext: ByteArray,

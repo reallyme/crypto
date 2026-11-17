@@ -247,7 +247,7 @@ public enum ReallyMeJwk {
       Set(object.keys).allSatisfy({
         allowedMemberNames.contains($0) || $0 == "kid" || $0.hasPrefix("x-")
       }),
-      object["kid"] == nil || object["kid"] is String
+      object["kid"] == nil || object["kid"] is NSNull || object["kid"] is String
     else {
       throw ReallyMeCryptoError.invalidInput
     }
@@ -323,7 +323,8 @@ public enum ReallyMeJwk {
     guard let value = object[name] else {
       return true
     }
-    return value as? String == expected
+    // Rust's optional metadata contract treats explicit null as absence.
+    return value is NSNull || value as? String == expected
   }
 
   private static func spec(for algorithmName: String) throws(ReallyMeCryptoError) -> ReallyMeJwkSpec

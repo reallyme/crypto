@@ -11,6 +11,8 @@ export const BIP340_SCHNORR_PUBLIC_KEY_LENGTH = 32;
 export const BIP340_SCHNORR_MESSAGE_LENGTH = 32;
 export const BIP340_SCHNORR_AUX_RAND_LENGTH = 32;
 export const BIP340_SCHNORR_SIGNATURE_LENGTH = 64;
+const SEC1_COMPRESSED_PUBLIC_KEY_LENGTH = 33;
+const SEC1_EVEN_Y_PREFIX = 0x02;
 
 /**
  * BIP-340 Schnorr over secp256k1 backed by @noble/curves.
@@ -84,6 +86,17 @@ export const ReallyMeBip340Schnorr = {
       message32.length !== BIP340_SCHNORR_MESSAGE_LENGTH ||
       publicKey.length !== BIP340_SCHNORR_PUBLIC_KEY_LENGTH
     ) {
+      throw new ReallyMeCryptoError("invalid-input");
+    }
+    // An unliftable x-coordinate is an invalid public key, independently of
+    // the signature. Noble's verify deliberately folds it into false, so
+    // validate it separately to preserve the Rust error classification.
+    const compressedKey = new Uint8Array(SEC1_COMPRESSED_PUBLIC_KEY_LENGTH);
+    compressedKey[0] = SEC1_EVEN_Y_PREFIX;
+    compressedKey.set(publicKey, 1);
+    try {
+      secp256k1.Point.fromBytes(compressedKey);
+    } catch {
       throw new ReallyMeCryptoError("invalid-input");
     }
     try {

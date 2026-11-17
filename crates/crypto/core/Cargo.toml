@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-core"
-version = "0.4.4"
+version = "0.4.3"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -22,7 +22,7 @@ default = []
 protobuf = ["crypto-proto/generated", "dep:buffa"]
 
 [dependencies]
-crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.4", path = "../../proto", default-features = false, features = ["contract-types", "error-types"] }
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.3", path = "../../proto", default-features = false, features = ["contract-types", "error-types"] }
 buffa = { workspace = true, optional = true }
 zeroize = { workspace = true }
 

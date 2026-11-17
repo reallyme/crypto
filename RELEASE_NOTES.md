@@ -1,13 +1,13 @@
 # Release Notes
 
-## 0.4.4
+## 0.4.3
 
-- Adds cleanup-owned incremental SHA-256 and SHA3-256 contexts with checked
-  input lengths and consuming finalization. Existing one-shot APIs and digest
-  bytes remain compatible.
-- Defines the incremental lifecycle in protobuf and regenerates its language
-  bindings. Native adapters use the shared algorithms and error reasons.
-- Aligns the Rust package family and SDK package metadata at `0.4.4` for the
+- Adds Rust-only cleanup-owned incremental SHA-256 and SHA3-256 contexts with
+  checked input lengths and consuming finalization. Existing one-shot APIs and
+  digest bytes remain compatible.
+- Defines the incremental lifecycle in protobuf. Swift, Kotlin, TypeScript,
+  FFI, and WASM entry points and cross-language tests are not included.
+- Aligns the Rust package family and SDK package metadata at `0.4.3` for the
   protobuf-defined JWK contract updates.
 - Refreshes dependency lockfiles and build tooling, and adopts Release Readiness
   `0.9.6`. Formal verification runs on explicit GitHub workflow dispatch;

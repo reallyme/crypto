@@ -51,8 +51,10 @@ package-level `ReallyMeCrypto` convenience API, or build isolated facade
 instances with `createReallyMeWasmProvider` and the same package-owned module.
 Both paths reject replacement verification functions. Explicit facades reject
 structural provider objects; missing or untrusted providers fail with
-`provider-failure`. JWK/JWKS helpers delegate base64url and JCS canonicalization
-to the published `@reallyme/codec` package, so applications that use those
+`provider-failure`. Algorithm-specific `*WithProvider` operations enforce the
+same identity check before reading provider hooks; copied objects and proxies
+cannot substitute verification functions. JWK/JWKS helpers delegate base64url
+and JCS canonicalization to the published `@reallyme/codec` package, so applications that use those
 helpers should also install the Codec WASM provider.
 
 JSON and protobuf JWKS ingress routes accept at most 1,024 keys. Encoded JWK
@@ -106,6 +108,11 @@ must come from this package's initialized WASM module.
 
 The package-owned WASM provider derives ML-DSA, ML-KEM, and X-Wing seed-based
 keypairs inside Rust and returns the public key produced by that implementation.
+
+P-256, P-384, and P-521 ECDSA verification accepts standard compressed SEC1
+keys (`0x02` or `0x03`) and uncompressed SEC1 keys (`0x04`) at the curve's exact
+width. Key generation and public-key derivation continue to emit compressed
+keys. Compact (`0x05`) and hybrid (`0x06` or `0x07`) encodings are rejected.
 
 ## Raw WASM Module Contract
 

@@ -38,7 +38,13 @@ source revision, dependency lockfile, target, and Cargo features of that run.
 | [Portable Keccak round](hpke/keccak_round_proof_tests.rs) | The locked software backend's Keccak-p[1600, 1] matches the FIPS 202 coordinate specification. Its entire 24-constant table matches the FIPS LFSR. | Every 1600-bit input state for the final round. The lockfile selects the dependency used by the SHA3-256 wrapper. Existing digest and XOF vectors exercise the full permutation and sponge. |
 
 [Formal Verification](../.github/workflows/formal-verification.yml) runs these
-proofs for changes to the covered crates, dependencies, and verifier workflow.
+proofs only on explicit `workflow_dispatch` for the selected revision. Changes
+to covered crates, dependencies, or the verifier workflow do not automatically
+start a proof run. Required CI and automated release attestation exclude this
+manual workflow. The [release checklist](../RELEASE_CHECKLIST.md#formal-verification-before-publication)
+requires a successful run, including every proof job, for the exact publication
+commit and records that evidence separately.
+
 Kani 0.68.0 supplies the compiler used for verification. From the repository root:
 
 ```sh

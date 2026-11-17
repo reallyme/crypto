@@ -48,7 +48,7 @@ macro_rules! dispatch_kem {
             }
             #[cfg(feature = "kem-ml-kem-768-p256")]
             $crate::identifiers::HpkeKemId::MlKem768P256 => {
-                $callback::<hpke::kem::MlKem768P256>($($argument),*)
+                $callback::<$crate::mlkem768p256::MlKem768P256>($($argument),*)
             }
             #[cfg(feature = "kem-ml-kem-1024-p384")]
             $crate::identifiers::HpkeKemId::MlKem1024P384 => {

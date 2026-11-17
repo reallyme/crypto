@@ -40,20 +40,25 @@ pub unsafe extern "C" fn rm_crypto_chacha20_poly1305_encrypt(
     ciphertext_len_out: *mut usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
-        encrypt_chacha20_poly1305(
-            NonceKind::Rfc8439,
-            key,
-            key_len,
-            nonce,
-            nonce_len,
-            aad,
-            aad_len,
-            plaintext,
-            plaintext_len,
-            ciphertext_out,
-            ciphertext_out_len,
-            ciphertext_len_out,
-        )
+        // SAFETY: The caller keeps all declared input ranges live and immutable
+        // and outputs exclusively writable through this call. Scoped helpers
+        // check bounds and aliases; the caller retains their ownership.
+        unsafe {
+            encrypt_chacha20_poly1305(
+                NonceKind::Rfc8439,
+                key,
+                key_len,
+                nonce,
+                nonce_len,
+                aad,
+                aad_len,
+                plaintext,
+                plaintext_len,
+                ciphertext_out,
+                ciphertext_out_len,
+                ciphertext_len_out,
+            )
+        }
     })
 }
 
@@ -73,20 +78,25 @@ pub unsafe extern "C" fn rm_crypto_chacha20_poly1305_decrypt(
     plaintext_len_out: *mut usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
-        decrypt_chacha20_poly1305(
-            NonceKind::Rfc8439,
-            key,
-            key_len,
-            nonce,
-            nonce_len,
-            aad,
-            aad_len,
-            ciphertext,
-            ciphertext_len,
-            plaintext_out,
-            plaintext_out_len,
-            plaintext_len_out,
-        )
+        // SAFETY: The caller keeps all declared input ranges live and immutable
+        // and outputs exclusively writable through this call. Scoped helpers
+        // check bounds and aliases; the caller retains their ownership.
+        unsafe {
+            decrypt_chacha20_poly1305(
+                NonceKind::Rfc8439,
+                key,
+                key_len,
+                nonce,
+                nonce_len,
+                aad,
+                aad_len,
+                ciphertext,
+                ciphertext_len,
+                plaintext_out,
+                plaintext_out_len,
+                plaintext_len_out,
+            )
+        }
     })
 }
 
@@ -106,20 +116,25 @@ pub unsafe extern "C" fn rm_crypto_xchacha20_poly1305_encrypt(
     ciphertext_len_out: *mut usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
-        encrypt_chacha20_poly1305(
-            NonceKind::XChaCha,
-            key,
-            key_len,
-            nonce,
-            nonce_len,
-            aad,
-            aad_len,
-            plaintext,
-            plaintext_len,
-            ciphertext_out,
-            ciphertext_out_len,
-            ciphertext_len_out,
-        )
+        // SAFETY: The caller keeps all declared input ranges live and immutable
+        // and outputs exclusively writable through this call. Scoped helpers
+        // check bounds and aliases; the caller retains their ownership.
+        unsafe {
+            encrypt_chacha20_poly1305(
+                NonceKind::XChaCha,
+                key,
+                key_len,
+                nonce,
+                nonce_len,
+                aad,
+                aad_len,
+                plaintext,
+                plaintext_len,
+                ciphertext_out,
+                ciphertext_out_len,
+                ciphertext_len_out,
+            )
+        }
     })
 }
 
@@ -139,20 +154,25 @@ pub unsafe extern "C" fn rm_crypto_xchacha20_poly1305_decrypt(
     plaintext_len_out: *mut usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
-        decrypt_chacha20_poly1305(
-            NonceKind::XChaCha,
-            key,
-            key_len,
-            nonce,
-            nonce_len,
-            aad,
-            aad_len,
-            ciphertext,
-            ciphertext_len,
-            plaintext_out,
-            plaintext_out_len,
-            plaintext_len_out,
-        )
+        // SAFETY: The caller keeps all declared input ranges live and immutable
+        // and outputs exclusively writable through this call. Scoped helpers
+        // check bounds and aliases; the caller retains their ownership.
+        unsafe {
+            decrypt_chacha20_poly1305(
+                NonceKind::XChaCha,
+                key,
+                key_len,
+                nonce,
+                nonce_len,
+                aad,
+                aad_len,
+                ciphertext,
+                ciphertext_len,
+                plaintext_out,
+                plaintext_out_len,
+                plaintext_len_out,
+            )
+        }
     })
 }
 
@@ -162,7 +182,14 @@ enum NonceKind {
 }
 
 #[allow(clippy::too_many_arguments)]
-fn encrypt_chacha20_poly1305(
+/// # Safety
+///
+/// Non-empty raw inputs must remain initialized, readable, and immutable
+/// for their declared lengths throughout this call. Raw outputs must name
+/// live, exclusively writable allocations of their declared lengths and
+/// must not alias inputs. Typed length outputs must also be aligned. The
+/// caller retains ownership; an active pointer-range scope is required.
+unsafe fn encrypt_chacha20_poly1305(
     nonce_kind: NonceKind,
     key: *const u8,
     key_len: usize,
@@ -181,7 +208,9 @@ fn encrypt_chacha20_poly1305(
     if len_status != CRYPTO_OK {
         return len_status;
     }
-    let key = match read_key(key, key_len) {
+    // SAFETY: The key pair stays initialized and immutable for its stated
+    // length through this call; the scoped reader checks bounds and aliases.
+    let key = match unsafe { read_key(key, key_len) } {
         Ok(value) => value,
         Err(status) => return status,
     };
@@ -207,7 +236,9 @@ fn encrypt_chacha20_poly1305(
 
     let ciphertext = match nonce_kind {
         NonceKind::Rfc8439 => {
-            let nonce = match read_chacha_nonce(nonce, nonce_len) {
+            // SAFETY: The nonce pair stays initialized and immutable for its stated
+            // length through this call; the scoped reader checks bounds and aliases.
+            let nonce = match unsafe { read_chacha_nonce(nonce, nonce_len) } {
                 Ok(value) => value,
                 Err(status) => return status,
             };
@@ -220,7 +251,9 @@ fn encrypt_chacha20_poly1305(
             )
         }
         NonceKind::XChaCha => {
-            let nonce = match read_xchacha_nonce(nonce, nonce_len) {
+            // SAFETY: The nonce pair stays initialized and immutable for its stated
+            // length through this call; the scoped reader checks bounds and aliases.
+            let nonce = match unsafe { read_xchacha_nonce(nonce, nonce_len) } {
                 Ok(value) => value,
                 Err(status) => return status,
             };
@@ -249,7 +282,14 @@ fn encrypt_chacha20_poly1305(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn decrypt_chacha20_poly1305(
+/// # Safety
+///
+/// Non-empty raw inputs must remain initialized, readable, and immutable
+/// for their declared lengths throughout this call. Raw outputs must name
+/// live, exclusively writable allocations of their declared lengths and
+/// must not alias inputs. Typed length outputs must also be aligned. The
+/// caller retains ownership; an active pointer-range scope is required.
+unsafe fn decrypt_chacha20_poly1305(
     nonce_kind: NonceKind,
     key: *const u8,
     key_len: usize,
@@ -267,7 +307,9 @@ fn decrypt_chacha20_poly1305(
     if len_status != CRYPTO_OK {
         return len_status;
     }
-    let key = match read_key(key, key_len) {
+    // SAFETY: The key pair stays initialized and immutable for its stated
+    // length through this call; the scoped reader checks bounds and aliases.
+    let key = match unsafe { read_key(key, key_len) } {
         Ok(value) => value,
         Err(status) => return status,
     };
@@ -298,7 +340,9 @@ fn decrypt_chacha20_poly1305(
     }
     let plaintext = match nonce_kind {
         NonceKind::Rfc8439 => {
-            let nonce = match read_chacha_nonce(nonce, nonce_len) {
+            // SAFETY: The nonce pair stays initialized and immutable for its stated
+            // length through this call; the scoped reader checks bounds and aliases.
+            let nonce = match unsafe { read_chacha_nonce(nonce, nonce_len) } {
                 Ok(value) => value,
                 Err(status) => return status,
             };
@@ -311,7 +355,9 @@ fn decrypt_chacha20_poly1305(
             )
         }
         NonceKind::XChaCha => {
-            let nonce = match read_xchacha_nonce(nonce, nonce_len) {
+            // SAFETY: The nonce pair stays initialized and immutable for its stated
+            // length through this call; the scoped reader checks bounds and aliases.
+            let nonce = match unsafe { read_xchacha_nonce(nonce, nonce_len) } {
                 Ok(value) => value,
                 Err(status) => return status,
             };
@@ -339,7 +385,14 @@ fn decrypt_chacha20_poly1305(
     unsafe { write_len(plaintext_len_out, plaintext.len()) }
 }
 
-fn read_key(ptr: *const u8, len: usize) -> Result<ChaCha20Poly1305Key, CryptoStatus> {
+/// # Safety
+///
+/// Non-empty raw inputs must remain initialized, readable, and immutable
+/// for their declared lengths throughout this call. Raw outputs must name
+/// live, exclusively writable allocations of their declared lengths and
+/// must not alias inputs. Typed length outputs must also be aligned. The
+/// caller retains ownership; an active pointer-range scope is required.
+unsafe fn read_key(ptr: *const u8, len: usize) -> Result<ChaCha20Poly1305Key, CryptoStatus> {
     // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
     // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
     match unsafe { read_slice(ptr, len) } {
@@ -349,7 +402,17 @@ fn read_key(ptr: *const u8, len: usize) -> Result<ChaCha20Poly1305Key, CryptoSta
     }
 }
 
-fn read_chacha_nonce(ptr: *const u8, len: usize) -> Result<ChaCha20Poly1305Nonce, CryptoStatus> {
+/// # Safety
+///
+/// Non-empty raw inputs must remain initialized, readable, and immutable
+/// for their declared lengths throughout this call. Raw outputs must name
+/// live, exclusively writable allocations of their declared lengths and
+/// must not alias inputs. Typed length outputs must also be aligned. The
+/// caller retains ownership; an active pointer-range scope is required.
+unsafe fn read_chacha_nonce(
+    ptr: *const u8,
+    len: usize,
+) -> Result<ChaCha20Poly1305Nonce, CryptoStatus> {
     // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
     // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
     match unsafe { read_slice(ptr, len) } {
@@ -360,7 +423,17 @@ fn read_chacha_nonce(ptr: *const u8, len: usize) -> Result<ChaCha20Poly1305Nonce
     }
 }
 
-fn read_xchacha_nonce(ptr: *const u8, len: usize) -> Result<XChaCha20Poly1305Nonce, CryptoStatus> {
+/// # Safety
+///
+/// Non-empty raw inputs must remain initialized, readable, and immutable
+/// for their declared lengths throughout this call. Raw outputs must name
+/// live, exclusively writable allocations of their declared lengths and
+/// must not alias inputs. Typed length outputs must also be aligned. The
+/// caller retains ownership; an active pointer-range scope is required.
+unsafe fn read_xchacha_nonce(
+    ptr: *const u8,
+    len: usize,
+) -> Result<XChaCha20Poly1305Nonce, CryptoStatus> {
     // SAFETY: The C caller keeps this input readable and initialized for the stated length until the call
     // returns. read_slice bounds and registers the borrowed range; ownership stays with the caller.
     match unsafe { read_slice(ptr, len) } {

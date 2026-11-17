@@ -51,6 +51,8 @@ struct P256Vector {
     // native lanes may verify this vector without claiming deterministic emit.
     ecdsa_message: String,
     ecdsa_signature_der: String,
+    #[serde(flatten)]
+    invalid_encodings: EcdsaInvalidEncodings,
     peer_secret_key: String,
     peer_public_key_compressed: String,
     peer_public_key_uncompressed: String,
@@ -66,10 +68,21 @@ struct Sec1EcdsaVector {
     public_key_uncompressed: String,
     message: String,
     signature_der: String,
+    #[serde(flatten)]
+    invalid_encodings: EcdsaInvalidEncodings,
     peer_secret_key: String,
     peer_public_key_compressed: String,
     peer_public_key_uncompressed: String,
     shared_secret: String,
+}
+
+#[derive(Serialize)]
+struct EcdsaInvalidEncodings {
+    signature_der_nonminimal_sequence_length: String,
+    signature_der_indefinite_sequence_length: String,
+    signature_der_nonminimal_integer_length: String,
+    public_key_hybrid_even: String,
+    public_key_hybrid_odd: String,
 }
 
 #[derive(Serialize)]
@@ -106,6 +119,8 @@ struct Bip340SchnorrVector {
     message: String,
     aux_rand: String,
     signature: String,
+    invalid_off_curve_public_key_xonly: String,
+    invalid_out_of_range_public_key_xonly: String,
 }
 
 #[derive(Serialize)]

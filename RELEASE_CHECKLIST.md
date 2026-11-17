@@ -4,6 +4,10 @@ ReallyMe Crypto releases are identified by a version and a reviewed source
 commit. The public artifacts for that version must have the same source and
 cryptographic behavior across supported Rust and SDK lanes.
 
+Verify [trusted publisher identities and release-environment protections](docs/trusted-publishing.md)
+for npm and every published crate. Complete the workflow cutover and revoke
+legacy publishing tokens in repository and organization secret stores.
+
 ## Artifact Requirements
 
 - Published Rust crates use the same release version for all workspace
@@ -32,3 +36,23 @@ version and SHA for every ecosystem in the release.
 
 Hardware-dependent behavior requires device evidence. A skipped Secure Enclave
 or Android hardware test does not establish that the hardware route passed.
+
+## Formal Verification Before Publication
+
+Formal Verification is manually dispatched. It is not part of Required CI or
+the automated package preflight attestation. Before publishing any ecosystem's
+artifacts, complete these checks separately:
+
+- [ ] Dispatch [Formal Verification](.github/workflows/formal-verification.yml)
+  from a branch or tag that resolves to the reviewed release commit. Confirm
+  the run's full `head_sha` equals the source SHA used by every package preflight.
+- [ ] Confirm the run completed successfully and every Tamarin, reference
+  encoder, and Kani matrix job passed. Missing, skipped, queued, cancelled,
+  timed-out, or failed jobs do not satisfy this requirement; do not publish
+  until the complete run passes.
+- [ ] Record the run URL, run ID and attempt, full source SHA, and job results
+  with the release evidence. Review the [proof scopes and assumptions](formal/README.md)
+  so the evidence is not presented as proving properties outside those scopes.
+- [ ] Repeat formal verification if the release source SHA changes. A passing
+  run for another commit, including an earlier commit on the same branch, is
+  insufficient.

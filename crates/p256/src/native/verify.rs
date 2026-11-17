@@ -7,7 +7,6 @@
 use crypto_core::CryptoError;
 use ecdsa::signature::hazmat::PrehashVerifier;
 use p256::ecdsa::{Signature, VerifyingKey};
-use p256::PublicKey;
 use sha2::{Digest, Sha256};
 
 /// Verify a DER-encoded P-256 (ES256) ECDSA signature over the SHA-256 hash
@@ -21,8 +20,7 @@ pub fn verify_p256_sha256_message_der_interoperable(
     message: &[u8],
     public_key_sec1: &[u8],
 ) -> Result<(), CryptoError> {
-    let pk = PublicKey::from_sec1_bytes(public_key_sec1)
-        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    let pk = super::encoding::parse_public_key(public_key_sec1)?;
 
     let vk = VerifyingKey::from(pk);
 

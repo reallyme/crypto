@@ -37,6 +37,18 @@ new KEM randomness from the operating system. Deterministic KEM randomness is
 available only through the `test-vectors` feature and is intended exclusively
 for reproducible conformance vectors.
 
+MLKEM768-P256 encapsulation reserves exactly 160 bytes of randomness: 32 bytes
+for ML-KEM and a 128-byte P-256 seed containing four scalar candidates. The
+complete seed is consumed even when an earlier candidate succeeds. Exhausting
+all four candidates fails the encapsulation without producing a sender context.
+
+Low-order X25519 and X448 inputs are rejected consistently across Base mode,
+PSK mode, context setup, and exporters. An invalid recipient public key returns
+`PRIMITIVE_INVALID_PUBLIC_KEY`; an invalid encapsulated key returns
+`PRIMITIVE_MALFORMED_CIPHERTEXT`. This includes RFC 7748 aliases of low-order
+coordinates. Authentication failures with otherwise valid keys continue to
+return `PRIMITIVE_AUTHENTICATION_FAILED`.
+
 ```rust
 #[cfg(feature = "native")]
 fn main() -> Result<(), crypto_hpke::HpkeError> {

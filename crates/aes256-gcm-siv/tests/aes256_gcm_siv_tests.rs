@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #![allow(missing_docs)]
+// Encryption entry points are intentionally absent in a backendless build.
+#![cfg(any(feature = "native", feature = "wasm"))]
 use crypto_aes256_gcm_siv::{
     decrypt, encrypt, Aes256GcmSivKey, Aes256GcmSivNonce, CiphertextWithTag, DecryptRequest,
     EncryptRequest, AES_256_GCM_SIV_TAG_LENGTH,

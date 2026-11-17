@@ -10,11 +10,13 @@ import {
 } from "./encodeEcdsaDer.js";
 import { ReallyMeCryptoError } from "./errors.js";
 import { ensureByteArray } from "./validateBytes.js";
+import { ensureStandardSec1PublicKey } from "./validateSec1PublicKey.js";
 
 export const P256_ECDSA_SECRET_KEY_LENGTH = 32;
 export const P256_ECDSA_COMPRESSED_PUBLIC_KEY_LENGTH = 33;
 export const P256_ECDSA_COMPACT_SIGNATURE_LENGTH = 64;
 export const P256_ECDSA_DER_SIGNATURE_MAX_LENGTH = 72;
+const P256_ECDSA_UNCOMPRESSED_PUBLIC_KEY_LENGTH = 65;
 
 const P256_CURVE_ORDER = Uint8Array.from([
   0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
@@ -189,10 +191,11 @@ export const ReallyMeP256Ecdsa = {
   ): void {
     ensureByteArray(signature);
     ensureByteArray(message);
-    ensureByteArray(publicKey);
-    if (publicKey.length !== P256_ECDSA_COMPRESSED_PUBLIC_KEY_LENGTH) {
-      throw new ReallyMeCryptoError("invalid-input");
-    }
+    ensureStandardSec1PublicKey(
+      publicKey,
+      P256_ECDSA_COMPRESSED_PUBLIC_KEY_LENGTH,
+      P256_ECDSA_UNCOMPRESSED_PUBLIC_KEY_LENGTH,
+    );
 
     let compactSignature: Uint8Array;
     try {

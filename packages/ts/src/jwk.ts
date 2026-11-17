@@ -166,7 +166,7 @@ const optionalString = (value: unknown, name: string): void => {
   }
   const descriptor = Object.getOwnPropertyDescriptor(value, name);
   if (descriptor !== undefined &&
-    (!("value" in descriptor) || typeof descriptor.value !== "string")) {
+    (!("value" in descriptor) || (descriptor.value !== null && typeof descriptor.value !== "string"))) {
     throw new ReallyMeCryptoError("invalid-input");
   }
 };
@@ -207,7 +207,7 @@ const optionalStringMatches = (
   const descriptor = Object.getOwnPropertyDescriptor(value, name);
   if (
     descriptor !== undefined &&
-    (!("value" in descriptor) || descriptor.value !== expected)
+    (!("value" in descriptor) || (descriptor.value !== null && descriptor.value !== expected))
   ) {
     throw new ReallyMeCryptoError("invalid-input");
   }

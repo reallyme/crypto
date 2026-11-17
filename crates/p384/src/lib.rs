@@ -36,3 +36,8 @@ pub use keypair::{generate_p384_keypair, generate_p384_keypair_from_secret_key};
 pub use sign::sign_p384_der_prehash;
 #[cfg(feature = "native")]
 pub use verify::verify_p384_der_prehash;
+
+#[cfg(feature = "native")]
+mod verify_digest_interoperable;
+#[cfg(feature = "native")]
+pub use verify_digest_interoperable::verify_p384_digest_der_interoperable;

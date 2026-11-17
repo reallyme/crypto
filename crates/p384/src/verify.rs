@@ -5,7 +5,6 @@
 use crypto_core::CryptoError;
 use ecdsa::signature::hazmat::PrehashVerifier;
 use p384::ecdsa::{Signature, VerifyingKey};
-use p384::PublicKey;
 use sha2::{Digest, Sha384};
 
 /// Verify a DER-encoded P-384 ECDSA signature over `message`.
@@ -19,8 +18,7 @@ pub fn verify_p384_der_prehash(
     message: &[u8],
     public_key_sec1: &[u8],
 ) -> Result<(), CryptoError> {
-    let public_key = PublicKey::from_sec1_bytes(public_key_sec1)
-        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    let public_key = crate::encoding::parse_public_key(public_key_sec1)?;
     let verifying_key = VerifyingKey::from(public_key);
     let signature = Signature::from_der(signature_der)
         .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE)?;

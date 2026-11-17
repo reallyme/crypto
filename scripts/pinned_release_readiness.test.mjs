@@ -19,6 +19,9 @@ const runnerPath = "scripts/run_pinned_release_readiness.mjs";
 const checkerPath = "scripts/check_release_readiness.mjs";
 const corePath = "scripts/release-readiness/core.mjs";
 const pinnedInputs = [
+  { path: "scripts/generate_protobuf.mjs", maximumBytes: 524_288 },
+  { path: "scripts/check_local_proto_tools.mjs", maximumBytes: 524_288 },
+  { path: "scripts/install_local_proto_tools.sh", maximumBytes: 524_288 },
   { path: "scripts/proto_scalar_policy.mjs", maximumBytes: 524_288 },
   { path: "scripts/check_release_readiness.mjs", maximumBytes: 524_288 },
   { path: "scripts/release-readiness/core.mjs", maximumBytes: 262_144 },

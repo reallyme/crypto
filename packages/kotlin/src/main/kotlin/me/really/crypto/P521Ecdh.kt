@@ -4,90 +4,41 @@
 
 package me.really.crypto
 
-import java.math.BigInteger
-import java.security.SecureRandom
-import org.bouncycastle.asn1.sec.SECNamedCurves
-import org.bouncycastle.crypto.params.ECDomainParameters
-import org.bouncycastle.math.ec.FixedPointCombMultiplier
-
 /**
- * P-521 ECDH backed by BouncyCastle.
+ * Raw P-521 ECDH through the Rust operation owner.
  *
- * Public keys at the SDK boundary are compressed SEC1. The primitive returns
- * the raw 66-byte ECDH x-coordinate; protocols must apply a labelled KDF that
- * binds algorithm and party context before using it as key material.
+ * The boundary accepts compressed SEC1 peer keys and returns the fixed-width
+ * x-coordinate. Protocols must bind their own context through a labelled KDF.
+ * Missing Rust providers fail closed; scalar arithmetic never runs in the JVM.
  */
 public object ReallyMeP521Ecdh {
     public const val SECRET_KEY_LENGTH: Int = 66
     public const val COMPRESSED_PUBLIC_KEY_LENGTH: Int = 67
     public const val SHARED_SECRET_LENGTH: Int = 66
+    private val ALGORITHM: ReallyMeKeyAgreementAlgorithm = ReallyMeKeyAgreementAlgorithm.P521_ECDH
+
     private const val SCALAR_HIGH_BYTE_MASK: Int = 0x01
 
-    private val domain: ECDomainParameters =
-        ECDomainParameters(SECNamedCurves.getByName("secp521r1"))
-
-    public fun generateKeyPair(): Pair<ByteArray, ByteArray> =
-        generateKeyPair(SecureRandom())
-
-    internal fun generateKeyPair(random: SecureRandom): Pair<ByteArray, ByteArray> =
+    internal fun generateKeyPair(random: java.security.SecureRandom): Pair<ByteArray, ByteArray> =
         withRandomSecretCandidate(
             length = SECRET_KEY_LENGTH,
             random = random,
             prepareCandidate = { secretKey ->
-                // Seven bits in the 66-byte representation are unused. Masking
-                // them gives uniform 521-bit candidates before range rejection.
+                // Mask representation bits before rejection, without reduction.
                 secretKey[0] = (secretKey[0].toInt() and SCALAR_HIGH_BYTE_MASK).toByte()
             },
-            isValid = { secretKey ->
-                val scalar = BigInteger(1, secretKey)
-                scalar.signum() > 0 && scalar < domain.n
-            },
-        ) { secretKey ->
-            Pair(derivePublicKey(secretKey), secretKey.copyOf())
-        }
+            isValid = { ReallyMeRustKeyAgreement.isValidSecret(ALGORITHM, it) },
+        ) { secretKey -> deriveKeyPair(secretKey) }
+
+    public fun generateKeyPair(): Pair<ByteArray, ByteArray> =
+        ReallyMeRustKeyAgreement.generateKeyPair(ALGORITHM)
 
     public fun deriveKeyPair(secretKey: ByteArray): Pair<ByteArray, ByteArray> =
         Pair(derivePublicKey(secretKey), secretKey.copyOf())
 
-    public fun derivePublicKey(secretKey: ByteArray): ByteArray {
-        val scalar = validatedScalar(secretKey)
-        return FixedPointCombMultiplier().multiply(domain.g, scalar).normalize().getEncoded(true)
-    }
+    public fun derivePublicKey(secretKey: ByteArray): ByteArray =
+        ReallyMeRustKeyAgreement.derivePublicKey(ALGORITHM, secretKey)
 
-    public fun deriveSharedSecret(publicKey: ByteArray, secretKey: ByteArray): ByteArray {
-        if (publicKey.size != COMPRESSED_PUBLIC_KEY_LENGTH) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        val scalar = validatedScalar(secretKey)
-        val point = try {
-            domain.curve.decodePoint(publicKey).multiply(scalar).normalize()
-        } catch (_: IllegalArgumentException) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        if (point.isInfinity) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        return encodeFixed(point.affineXCoord.toBigInteger())
-    }
-
-    private fun validatedScalar(secretKey: ByteArray): BigInteger {
-        if (secretKey.size != SECRET_KEY_LENGTH) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        val scalar = BigInteger(1, secretKey)
-        if (scalar.signum() <= 0 || scalar >= domain.n) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        return scalar
-    }
-
-    private fun encodeFixed(value: BigInteger): ByteArray {
-        val bytes = value.toByteArray()
-        val out = ByteArray(SHARED_SECRET_LENGTH)
-        val start = if (bytes.size > SHARED_SECRET_LENGTH) bytes.size - SHARED_SECRET_LENGTH else 0
-        val length = bytes.size - start
-        System.arraycopy(bytes, start, out, SHARED_SECRET_LENGTH - length, length)
-        bytes.fill(0)
-        return out
-    }
+    public fun deriveSharedSecret(publicKey: ByteArray, secretKey: ByteArray): ByteArray =
+        ReallyMeRustKeyAgreement.deriveSharedSecret(ALGORITHM, publicKey, secretKey)
 }

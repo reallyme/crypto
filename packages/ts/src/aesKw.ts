@@ -6,9 +6,9 @@ import { ReallyMeCryptoError } from "./errors.js";
 import {
   ensureByteArray,
   ensureBytes,
-  ensureIndependentByteArray,
+  readIndependentProviderBytes,
 } from "./validateBytes.js";
-import { requireReallyMeWasmProvider } from "./wasmProvider.js";
+import { requireReallyMeWasmProvider, requireTrustedReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeKeyWrapAlgorithm } from "./algorithms.js";
 
@@ -48,17 +48,7 @@ const requireBytesOutput = (
   expectedLength: number,
   inputs: ReadonlyArray<Uint8Array>,
 ): Uint8Array => {
-  if (!(value instanceof Uint8Array)) {
-    throw new ReallyMeCryptoError("provider-failure");
-  }
-  // Reject aliases before wiping malformed output. Otherwise a provider could
-  // return a caller-owned key/input view and make validation erase that input.
-  ensureIndependentByteArray(value, inputs);
-  if (value.length !== expectedLength) {
-    value.fill(0);
-    throw new ReallyMeCryptoError("provider-failure");
-  }
-  return value;
+  return readIndependentProviderBytes(value, expectedLength, inputs);
 };
 
 const kekLengthForAlgorithm = (algorithm: ReallyMeKeyWrapAlgorithm): number => {
@@ -124,6 +114,7 @@ const wrapKeyWithProvider = (
   wrappingKey: Uint8Array,
   keyToWrap: Uint8Array,
 ): Uint8Array => {
+  requireTrustedReallyMeWasmProvider(provider);
   ensureBytes(wrappingKey, kekLengthForAlgorithm(algorithm));
   ensureByteArray(keyToWrap);
   validateKeyDataLength(keyToWrap.length);
@@ -158,6 +149,7 @@ const unwrapKeyWithProvider = (
   wrappingKey: Uint8Array,
   wrappedKey: Uint8Array,
 ): Uint8Array => {
+  requireTrustedReallyMeWasmProvider(provider);
   ensureBytes(wrappingKey, kekLengthForAlgorithm(algorithm));
   ensureByteArray(wrappedKey);
   validateWrappedKeyLength(wrappedKey.length);

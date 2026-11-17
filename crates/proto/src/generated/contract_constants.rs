@@ -433,6 +433,8 @@ pub mod kotlin_native_status {
     pub const KOTLIN_NATIVE_INVALID_SIGNATURE: i32 = 6;
     /// Exact identifier value declared by the schema.
     pub const KOTLIN_NATIVE_OK: i32 = 0;
+    /// Exact identifier value declared by the schema.
+    pub const KOTLIN_NATIVE_UNSUPPORTED_ALGORITHM: i32 = 3;
 }
 
 /// Immutable `ml_dsa_44` contract constants.

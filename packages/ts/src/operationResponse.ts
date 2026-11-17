@@ -2,12 +2,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import { ReallyMeCryptoError } from "./errors.js";
 import {
   ensureByteArray,
-  ensureIndependentByteArray,
+  readIndependentProviderBytesInRange,
 } from "./validateBytes.js";
-import { requireReallyMeWasmProvider } from "./wasmProvider.js";
+import { requireReallyMeWasmProvider, requireTrustedReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 
 const MAX_CRYPTO_OPERATION_RESPONSE_BYTES = 1_048_608;
@@ -16,18 +15,12 @@ const readOperationResponse = (
   value: unknown,
   request: Uint8Array,
 ): Uint8Array => {
-  if (!(value instanceof Uint8Array)) {
-    throw new ReallyMeCryptoError("provider-failure");
-  }
-  ensureIndependentByteArray(value, [request]);
-  if (
-    value.length === 0 ||
-    value.length > MAX_CRYPTO_OPERATION_RESPONSE_BYTES
-  ) {
-    value.fill(0);
-    throw new ReallyMeCryptoError("provider-failure");
-  }
-  return value;
+  return readIndependentProviderBytesInRange(
+    value,
+    1,
+    MAX_CRYPTO_OPERATION_RESPONSE_BYTES,
+    [request],
+  );
 };
 
 /**
@@ -50,6 +43,7 @@ export const processOperationResponseWithProvider = (
   provider: ReallyMeWasmProvider,
   requestBytes: Uint8Array,
 ): Uint8Array => {
+  requireTrustedReallyMeWasmProvider(provider);
   ensureByteArray(requestBytes);
   return readOperationResponse(
     provider.processOperationResponse(requestBytes),
@@ -76,6 +70,7 @@ export const processOperationResponseJsonWithProvider = (
   provider: ReallyMeWasmProvider,
   requestJson: Uint8Array,
 ): Uint8Array => {
+  requireTrustedReallyMeWasmProvider(provider);
   ensureByteArray(requestJson);
   return readOperationResponse(
     provider.processOperationResponseJson(requestJson),

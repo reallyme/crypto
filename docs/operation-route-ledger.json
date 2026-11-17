@@ -309,7 +309,18 @@
         "operation.proto.process": ["Java_me_really_crypto_ReallyMeCryptoOperationResponseNative_processOperationResponseNative", "Java_me_really_crypto_ReallyMeCryptoOperationResponseNative_processOperationResponseJsonNative"],
         "operation.aead.seal": ["Java_me_really_crypto_ReallyMeRustAead_aes256GcmSivSealNative", "Java_me_really_crypto_ReallyMeRustAead_chacha20Poly1305SealNative", "Java_me_really_crypto_ReallyMeRustAead_xchacha20Poly1305SealNative"],
         "operation.aead.open": ["Java_me_really_crypto_ReallyMeRustAead_aes256GcmSivOpenNative", "Java_me_really_crypto_ReallyMeRustAead_chacha20Poly1305OpenNative", "Java_me_really_crypto_ReallyMeRustAead_xchacha20Poly1305OpenNative"],
-        "operation.kdf.derive": ["Java_me_really_crypto_ReallyMeArgon2id_deriveKeyNative", "Java_me_really_crypto_ReallyMeKmac_deriveKmac256Native"]
+        "operation.kdf.derive": ["Java_me_really_crypto_ReallyMeArgon2id_deriveKeyNative", "Java_me_really_crypto_ReallyMeKmac_deriveKmac256Native"],
+        "operation.algorithm_dispatch.key_pair": ["Java_me_really_crypto_ReallyMeRustProtocols_kemKeyPairNative", "Java_me_really_crypto_ReallyMeRustProtocols_signatureKeyPairNative"],
+        "operation.signature.sign": ["Java_me_really_crypto_ReallyMeRustProtocols_signNative"],
+        "operation.signature.verify": ["Java_me_really_crypto_ReallyMeRustProtocols_verifyNative"],
+        "operation.key_agreement.generate_key_pair": ["Java_me_really_crypto_ReallyMeRustKeyAgreement_generateKeyPairNative"],
+        "operation.key_agreement.derive_public_key": ["Java_me_really_crypto_ReallyMeRustKeyAgreement_derivePublicKeyNative"],
+        "operation.key_agreement.derive_shared_secret": ["Java_me_really_crypto_ReallyMeRustKeyAgreement_deriveSharedSecretNative"],
+        "operation.kem.encapsulate": ["Java_me_really_crypto_ReallyMeRustProtocols_encapsulateNative"],
+        "operation.kem.decapsulate": ["Java_me_really_crypto_ReallyMeRustProtocols_decapsulateNative"],
+        "operation.kem.encapsulate_derand": ["Java_me_really_crypto_ReallyMeProtocolConformance_encapsulateNative"],
+        "operation.hpke.seal": ["Java_me_really_crypto_ReallyMeRustProtocols_hpkeSealNative", "Java_me_really_crypto_ReallyMeProtocolConformance_hpkeSealNative"],
+        "operation.hpke.open": ["Java_me_really_crypto_ReallyMeRustProtocols_hpkeOpenNative"]
       },
       "current_status": "validated_jni_exports"
     },
@@ -727,7 +738,6 @@
         "operation.kem.generate_key_pair": ["ReallyMeCrypto.generateKemKeyPair"],
         "operation.kem.derive_key_pair": ["ReallyMeCrypto.deriveKemKeyPair"],
         "operation.kem.encapsulate": ["ReallyMeCrypto.encapsulate"],
-        "operation.kem.encapsulate_derand": ["ReallyMeCrypto.encapsulateDeterministicForTest"],
         "operation.kem.decapsulate": ["ReallyMeCrypto.decapsulate"],
         "operation.hpke.seal": ["ReallyMeCrypto.sealHpke"],
         "operation.hpke.open": ["ReallyMeCrypto.openHpke"]
@@ -764,9 +774,8 @@
         "operation.kem.derive_key_pair": ["ReallyMeMlKem.deriveKeyPair"],
         "operation.kem.derive_public_key": ["ReallyMeMlKem.derivePublicKey", "ReallyMeXWing.derivePublicKey"],
         "operation.kem.encapsulate": ["ReallyMeMlKem.encapsulate", "ReallyMeXWing.encapsulate"],
-        "operation.kem.encapsulate_derand": ["ReallyMeMlKem.encapsulateDeterministicForTest", "ReallyMeXWing.encapsulateDeterministicForTest"],
         "operation.kem.decapsulate": ["ReallyMeMlKem.decapsulate", "ReallyMeXWing.decapsulate"],
-        "operation.hpke.seal": ["ReallyMeHpke.seal", "ReallyMeHpke.sealDeterministicForTest"],
+        "operation.hpke.seal": ["ReallyMeHpke.seal"],
         "operation.hpke.open": ["ReallyMeHpke.open"],
         "operation.key_encoding.public_key": ["ReallyMeMulticodecKeyAlgorithm.prefix", "ReallyMeMulticodec.codecName", "ReallyMeMulticodec.algorithmName", "ReallyMeMulticodec.prefix", "ReallyMeMulticodec.expectedPublicKeyLength", "ReallyMeMulticodec.algorithmForCodecName", "ReallyMeMultikey.encode", "ReallyMeMultikey.parse", "ReallyMeJwk.toJwk", "ReallyMeJwk.toJcs", "ReallyMeJwk.fromJwkJson", "ReallyMeJwk.toJwks", "ReallyMeJwk.fromJwksJson", "ReallyMeJwk.publicKeyBytes", "ReallyMeCryptoProtoAdapters.fromProto(JsonWebKey)", "ReallyMeCryptoProtoAdapters.fromProtoJsonWebKeyBytes", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeJwkKey)", "ReallyMeCryptoProtoAdapters.toProtoBytes(ReallyMeJwkKey)", "ReallyMeCryptoProtoAdapters.fromProto(JsonWebKeySet)", "ReallyMeCryptoProtoAdapters.fromProtoJsonWebKeySetBytes", "ReallyMeCryptoProtoAdapters.toProtoJsonWebKeySet", "ReallyMeCryptoProtoAdapters.toProtoJsonWebKeySetBytes", "ReallyMeCryptoProtoAdapters.fromProto(MulticodecKeyAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeMulticodecKeyAlgorithm)"],
         "support.protobuf_adapter": ["ReallyMeCryptoProtoAdapters.fromProto(SignatureAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeSignatureAlgorithm)", "ReallyMeCryptoProtoAdapters.fromProto(HashAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeHashAlgorithm)", "ReallyMeCryptoProtoAdapters.fromProto(AeadAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeAeadAlgorithm)", "ReallyMeCryptoProtoAdapters.fromProto(KemAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeKemAlgorithm)", "ReallyMeCryptoProtoAdapters.fromProto(KeyAgreementAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeKeyAgreementAlgorithm)", "ReallyMeCryptoProtoAdapters.fromProto(MacAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeMacAlgorithm)", "ReallyMeCryptoProtoAdapters.fromProto(KdfAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeKdfAlgorithm)", "ReallyMeCryptoProtoAdapters.fromProto(KeyWrapAlgorithm)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeKeyWrapAlgorithm)", "ReallyMeCryptoProtoAdapters.fromProto(HpkeSuite)", "ReallyMeCryptoProtoAdapters.toProto(ReallyMeHpkeSuite)", "ReallyMeCryptoProtoAdapters.signatureKeyPairToProto", "ReallyMeCryptoProtoAdapters.signatureKeyPairToProtoBytes", "ReallyMeCryptoProtoAdapters.signatureKeyPairFromProto", "ReallyMeCryptoProtoAdapters.signatureKeyPairFromProtoBytes", "ReallyMeCryptoProtoAdapters.keyAgreementKeyPairToProto", "ReallyMeCryptoProtoAdapters.keyAgreementKeyPairToProtoBytes", "ReallyMeCryptoProtoAdapters.keyAgreementKeyPairFromProto", "ReallyMeCryptoProtoAdapters.keyAgreementKeyPairFromProtoBytes", "ReallyMeCryptoProtoAdapters.kemKeyPairToProto", "ReallyMeCryptoProtoAdapters.kemKeyPairToProtoBytes", "ReallyMeCryptoProtoAdapters.kemKeyPairFromProto", "ReallyMeCryptoProtoAdapters.kemKeyPairFromProtoBytes", "ReallyMeCryptoProtoAdapters.kemEncapsulationToProto", "ReallyMeCryptoProtoAdapters.kemEncapsulationToProtoBytes", "ReallyMeCryptoProtoAdapters.kemEncapsulationFromProto", "ReallyMeCryptoProtoAdapters.kemEncapsulationFromProtoBytes", "ReallyMeCryptoProtoAdapters.hpkeSealedMessageToProto", "ReallyMeCryptoProtoAdapters.hpkeSealedMessageToProtoBytes", "ReallyMeCryptoProtoAdapters.hpkeSealedMessageFromProto", "ReallyMeCryptoProtoAdapters.hpkeSealedMessageFromProtoBytes", "ReallyMeCryptoProtoAdapters.providerCapabilityToProto", "ReallyMeCryptoProtoAdapters.providerCapabilityFromProto", "ReallyMeCryptoProtoAdapters.providerCapabilitySetToProto", "ReallyMeCryptoProtoAdapters.providerCapabilitySetToProtoBytes", "ReallyMeCryptoProtoAdapters.providerCapabilitySetFromProto", "ReallyMeCryptoProtoAdapters.providerCapabilitySetFromProtoBytes"],

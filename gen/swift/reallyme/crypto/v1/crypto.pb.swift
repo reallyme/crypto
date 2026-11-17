@@ -532,8 +532,8 @@ public nonisolated enum ReallyMeProtoPrimeGroup: SwiftProtobuf.Enum, Swift.CaseI
 ///   1000-1099: post-quantum signatures
 ///   1100-1199: hash-based post-quantum signatures
 ///
-/// RSA values identify verification suites; RSA signing is intentionally not
-/// exposed by this package today.
+/// RSA values identify verification suites in generic dispatch. RS256 signing
+/// uses the separate bounded PKCS#8 standalone contract below.
 public nonisolated enum ReallyMeProtoSignatureAlgorithm: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case unspecified // = 0
@@ -3763,9 +3763,9 @@ public nonisolated struct ReallyMeProtoCryptoHashResult: Sendable {
 /// Incremental hashing is a local, exclusively owned SDK lifecycle. A successful
 /// start creates a fresh context; updates append exact bytes in order, including
 /// empty chunks; finalize consumes the context and returns CryptoHashResult.
-/// Supported algorithms are SHA2_256 and SHA3_256. UNSPECIFIED/unknown selectors
-/// fail with PRIMITIVE_INVALID_PARAMETER; other algorithms fail with
-/// PROVIDER_UNSUPPORTED_ALGORITHM. Context state is never serialized, imported,
+/// Supported algorithms are SHA2_256 and SHA3_256. UNSPECIFIED, unknown, and
+/// unavailable selectors fail with PROVIDER_UNSUPPORTED_ALGORITHM, matching
+/// one-shot hashing. Context state is never serialized, imported,
 /// cloned, or addressed through a process-global handle. These standalone
 /// contracts deliberately do not enter the stateless CryptoOperationRequest.
 public nonisolated struct ReallyMeProtoCryptoIncrementalHashStartRequest: Sendable {
@@ -8300,6 +8300,155 @@ public nonisolated struct ReallyMeProtoCryptoKeyAgreementGenerateKeyPairRequest:
   public init() {}
 
   fileprivate var _algorithm: ReallyMeProtoCryptoAlgorithmIdentifier? = nil
+}
+
+/// RS256 signing is intentionally separate from historical RSA verification:
+/// only SHA-256 and keys of 2048..8192 bits are accepted. Private DER is PKCS#8.
+public nonisolated struct ReallyMeProtoCryptoRsaSigningKeyImportRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoRsaSigningKeyImportRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var secretKey: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Public components use minimal unsigned big-endian integers (JWK n and e).
+public nonisolated struct ReallyMeProtoCryptoRsaSigningKeyImportResult: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoRsaSigningKeyImportResult(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var publicKeySpkiDer: Data = Data()
+
+  public var modulus: Data = Data()
+
+  public var exponent: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public nonisolated struct ReallyMeProtoCryptoRsaPkcs1v15Sha256SignRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoRsaPkcs1v15Sha256SignRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var secretKey: Data = Data()
+
+  public var message: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public nonisolated struct ReallyMeProtoCryptoRsaPkcs1v15Sha256SignResult: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoRsaPkcs1v15Sha256SignResult(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var signature: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Decrypt-only compatibility for retained AES-256-SIV records. New encryption
+/// must use an existing approved AEAD seal operation, never this legacy profile.
+public nonisolated struct ReallyMeProtoCryptoLegacyAes256SivOpenRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoLegacyAes256SivOpenRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var secretKey: Data = Data()
+
+  public var nonce: Data = Data()
+
+  public var associatedData: Data = Data()
+
+  public var ciphertext: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public nonisolated struct ReallyMeProtoCryptoLegacyAes256SivOpenResult: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoLegacyAes256SivOpenResult(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var plaintext: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// PKI interoperability uses externally selected SHA-256/384/512 digests and
+/// accepts both valid ECDSA S representatives. Only P-256 and P-384 are supported.
+/// This operation must not replace the existing low-S device-signature profile.
+public nonisolated struct ReallyMeProtoCryptoEcdsaDigestVerifyRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoEcdsaDigestVerifyRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var algorithm: ReallyMeProtoCryptoAlgorithmIdentifier {
+    get {_algorithm ?? ReallyMeProtoCryptoAlgorithmIdentifier()}
+    set {_algorithm = newValue}
+  }
+  /// Returns true if `algorithm` has been explicitly set.
+  public var hasAlgorithm: Bool {self._algorithm != nil}
+  /// Clears the value of `algorithm`. Subsequent reads from it will return its default value.
+  public mutating func clearAlgorithm() {self._algorithm = nil}
+
+  public var publicKey: Data = Data()
+
+  public var digest: Data = Data()
+
+  public var signature: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _algorithm: ReallyMeProtoCryptoAlgorithmIdentifier? = nil
+}
+
+/// Strict DER import for PKI SHA-2 RSASSA-PSS parameters. Result is the existing
+/// CryptoRsaPssParams model; SHA-1 defaults and unknown mask functions fail closed.
+public nonisolated struct ReallyMeProtoCryptoRsaPssParamsDerRequest: Sendable {
+  // Security post-processing: protobuf bytes can contain secrets or PII.
+  public var debugDescription: String { "ReallyMeProtoCryptoRsaPssParamsDerRequest(<redacted>)" }
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var parametersDer: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -19028,6 +19177,295 @@ nonisolated extension ReallyMeProtoCryptoKeyAgreementGenerateKeyPairRequest: Swi
 
   public static func ==(lhs: ReallyMeProtoCryptoKeyAgreementGenerateKeyPairRequest, rhs: ReallyMeProtoCryptoKeyAgreementGenerateKeyPairRequest) -> Bool {
     if lhs._algorithm != rhs._algorithm {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoRsaSigningKeyImportRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoRsaSigningKeyImportRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}secret_key\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBytesField(value: &self.secretKey) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.secretKey.isEmpty {
+      try visitor.visitSingularBytesField(value: self.secretKey, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoRsaSigningKeyImportRequest, rhs: ReallyMeProtoCryptoRsaSigningKeyImportRequest) -> Bool {
+    if lhs.secretKey != rhs.secretKey {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoRsaSigningKeyImportResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoRsaSigningKeyImportResult"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}public_key_spki_der\0\u{1}modulus\0\u{1}exponent\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBytesField(value: &self.publicKeySpkiDer) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.modulus) }()
+      case 3: try { try decoder.decodeSingularBytesField(value: &self.exponent) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.publicKeySpkiDer.isEmpty {
+      try visitor.visitSingularBytesField(value: self.publicKeySpkiDer, fieldNumber: 1)
+    }
+    if !self.modulus.isEmpty {
+      try visitor.visitSingularBytesField(value: self.modulus, fieldNumber: 2)
+    }
+    if !self.exponent.isEmpty {
+      try visitor.visitSingularBytesField(value: self.exponent, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoRsaSigningKeyImportResult, rhs: ReallyMeProtoCryptoRsaSigningKeyImportResult) -> Bool {
+    if lhs.publicKeySpkiDer != rhs.publicKeySpkiDer {return false}
+    if lhs.modulus != rhs.modulus {return false}
+    if lhs.exponent != rhs.exponent {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoRsaPkcs1v15Sha256SignRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoRsaPkcs1v15Sha256SignRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}secret_key\0\u{1}message\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBytesField(value: &self.secretKey) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.message) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.secretKey.isEmpty {
+      try visitor.visitSingularBytesField(value: self.secretKey, fieldNumber: 1)
+    }
+    if !self.message.isEmpty {
+      try visitor.visitSingularBytesField(value: self.message, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoRsaPkcs1v15Sha256SignRequest, rhs: ReallyMeProtoCryptoRsaPkcs1v15Sha256SignRequest) -> Bool {
+    if lhs.secretKey != rhs.secretKey {return false}
+    if lhs.message != rhs.message {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoRsaPkcs1v15Sha256SignResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoRsaPkcs1v15Sha256SignResult"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}signature\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBytesField(value: &self.signature) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.signature.isEmpty {
+      try visitor.visitSingularBytesField(value: self.signature, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoRsaPkcs1v15Sha256SignResult, rhs: ReallyMeProtoCryptoRsaPkcs1v15Sha256SignResult) -> Bool {
+    if lhs.signature != rhs.signature {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoLegacyAes256SivOpenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoLegacyAes256SivOpenRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}secret_key\0\u{1}nonce\0\u{3}associated_data\0\u{1}ciphertext\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBytesField(value: &self.secretKey) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.nonce) }()
+      case 3: try { try decoder.decodeSingularBytesField(value: &self.associatedData) }()
+      case 4: try { try decoder.decodeSingularBytesField(value: &self.ciphertext) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.secretKey.isEmpty {
+      try visitor.visitSingularBytesField(value: self.secretKey, fieldNumber: 1)
+    }
+    if !self.nonce.isEmpty {
+      try visitor.visitSingularBytesField(value: self.nonce, fieldNumber: 2)
+    }
+    if !self.associatedData.isEmpty {
+      try visitor.visitSingularBytesField(value: self.associatedData, fieldNumber: 3)
+    }
+    if !self.ciphertext.isEmpty {
+      try visitor.visitSingularBytesField(value: self.ciphertext, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoLegacyAes256SivOpenRequest, rhs: ReallyMeProtoCryptoLegacyAes256SivOpenRequest) -> Bool {
+    if lhs.secretKey != rhs.secretKey {return false}
+    if lhs.nonce != rhs.nonce {return false}
+    if lhs.associatedData != rhs.associatedData {return false}
+    if lhs.ciphertext != rhs.ciphertext {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoLegacyAes256SivOpenResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoLegacyAes256SivOpenResult"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}plaintext\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBytesField(value: &self.plaintext) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.plaintext.isEmpty {
+      try visitor.visitSingularBytesField(value: self.plaintext, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoLegacyAes256SivOpenResult, rhs: ReallyMeProtoCryptoLegacyAes256SivOpenResult) -> Bool {
+    if lhs.plaintext != rhs.plaintext {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoEcdsaDigestVerifyRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoEcdsaDigestVerifyRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}algorithm\0\u{3}public_key\0\u{1}digest\0\u{1}signature\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._algorithm) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.publicKey) }()
+      case 3: try { try decoder.decodeSingularBytesField(value: &self.digest) }()
+      case 4: try { try decoder.decodeSingularBytesField(value: &self.signature) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._algorithm {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    if !self.publicKey.isEmpty {
+      try visitor.visitSingularBytesField(value: self.publicKey, fieldNumber: 2)
+    }
+    if !self.digest.isEmpty {
+      try visitor.visitSingularBytesField(value: self.digest, fieldNumber: 3)
+    }
+    if !self.signature.isEmpty {
+      try visitor.visitSingularBytesField(value: self.signature, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoEcdsaDigestVerifyRequest, rhs: ReallyMeProtoCryptoEcdsaDigestVerifyRequest) -> Bool {
+    if lhs._algorithm != rhs._algorithm {return false}
+    if lhs.publicKey != rhs.publicKey {return false}
+    if lhs.digest != rhs.digest {return false}
+    if lhs.signature != rhs.signature {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoCryptoRsaPssParamsDerRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CryptoRsaPssParamsDerRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}parameters_der\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBytesField(value: &self.parametersDer) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.parametersDer.isEmpty {
+      try visitor.visitSingularBytesField(value: self.parametersDer, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoCryptoRsaPssParamsDerRequest, rhs: ReallyMeProtoCryptoRsaPssParamsDerRequest) -> Bool {
+    if lhs.parametersDer != rhs.parametersDer {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

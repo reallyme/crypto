@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-chacha20-poly1305"
-version = "0.4.4"
+version = "0.4.3"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -15,6 +15,8 @@ description = "ChaCha20-Poly1305 and XChaCha20-Poly1305 primitives for ReallyMe 
 
 [package.metadata.cargo-machete]
 ignored = [
+    # ChaCha20Poly1305's zeroize feature does not forward to Poly1305 state.
+    "poly1305",
     # Enables getrandom's wasm entropy backend for the transitive RustCrypto stack.
     "getrandom",
 ]
@@ -24,13 +26,14 @@ name = "crypto_chacha20_poly1305"
 
 [features]
 default = []
-native = ["dep:chacha20poly1305", "dep:getrandom"]
-wasm = ["dep:chacha20poly1305", "dep:getrandom"]
+native = ["dep:chacha20poly1305", "dep:poly1305", "dep:getrandom"]
+wasm = ["dep:chacha20poly1305", "dep:poly1305", "dep:getrandom"]
 
 [dependencies]
-crypto-core = { package = "reallyme-crypto-core", version = "=0.4.4", path = "../crypto/core" }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.4.3", path = "../crypto/core" }
 zeroize = { workspace = true, features = ["zeroize_derive"] }
 chacha20poly1305 = { workspace = true, optional = true, features = ["zeroize"] }
+poly1305 = { workspace = true, optional = true }
 getrandom = { workspace = true, features = ["wasm_js"], optional = true }
 
 [lints]

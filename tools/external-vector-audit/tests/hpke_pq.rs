@@ -4,6 +4,8 @@
 
 //! Public HPKE checks against published Base vectors and the IETF reference PSK fixtures.
 
+#![cfg(feature = "native")]
+
 use crypto_hpke::{
     open_base, receiver_export, seal_base_derand, sender_export_derand, setup_receiver_psk,
     setup_sender_psk_derand, HpkeAeadId, HpkeDerandPskSenderSetupRequest, HpkeDerandSealRequest,
@@ -99,7 +101,6 @@ struct Export {
 }
 
 #[test]
-#[ignore = "vendored PQ HPKE draft-05 corpus; run via the external-vector audit"]
 fn hpke_pq_vectors_match_and_reject_substituted_encapsulations() -> Result<(), AuditError> {
     let vectors: Vec<Vector> = load_json(CORPUS)?;
     for suite in AUDITED_SUITES {
@@ -116,7 +117,6 @@ fn hpke_pq_vectors_match_and_reject_substituted_encapsulations() -> Result<(), A
 }
 
 #[test]
-#[ignore = "reference-generated PQ PSK corpus; run via the external-vector audit"]
 fn hpke_pq_psk_contexts_reject_each_others_records() -> Result<(), AuditError> {
     let vectors: Vec<PskVector> = load_json(PSK_CORPUS)?;
     assert_eq!(vectors.len(), PSK_VECTOR_COUNT);
@@ -128,7 +128,6 @@ fn hpke_pq_psk_contexts_reject_each_others_records() -> Result<(), AuditError> {
 }
 
 #[test]
-#[ignore = "reference-generated PQ PSK corpus; run via the external-vector audit"]
 fn hpke_pq_psk_open_binds_identifier_and_info() -> Result<(), AuditError> {
     let vectors: Vec<PskVector> = load_json(PSK_CORPUS)?;
     assert_eq!(vectors.len(), PSK_VECTOR_COUNT);

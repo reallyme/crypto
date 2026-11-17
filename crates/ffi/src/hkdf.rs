@@ -23,7 +23,14 @@ fn suite_from_u32(value: u32) -> Result<HkdfSuite, CryptoStatus> {
     }
 }
 
-fn derive_to_output<const N: usize>(
+/// # Safety
+///
+/// Non-empty raw inputs must remain initialized, readable, and immutable
+/// for their declared lengths throughout this call. Raw outputs must name
+/// live, exclusively writable allocations of their declared lengths and
+/// must not alias inputs. Typed length outputs must also be aligned. The
+/// caller retains ownership; an active pointer-range scope is required.
+unsafe fn derive_to_output<const N: usize>(
     request: &DeriveRequest<'_>,
     output_out: *mut u8,
     output_out_len: usize,
@@ -109,13 +116,18 @@ pub unsafe extern "C" fn rm_crypto_hkdf_derive(
             info: &info,
         };
 
-        match output_out_len {
-            16 => derive_to_output::<16>(&request, output_out, output_out_len),
-            24 => derive_to_output::<24>(&request, output_out, output_out_len),
-            32 => derive_to_output::<32>(&request, output_out, output_out_len),
-            48 => derive_to_output::<48>(&request, output_out, output_out_len),
-            64 => derive_to_output::<64>(&request, output_out, output_out_len),
-            _ => CRYPTO_INVALID_ARGUMENT,
+        // SAFETY: The caller keeps this output allocation exclusively writable
+        // for output_out_len bytes and disjoint from the request's borrowed
+        // inputs throughout the call. The selected helper validates its bounds.
+        unsafe {
+            match output_out_len {
+                16 => derive_to_output::<16>(&request, output_out, output_out_len),
+                24 => derive_to_output::<24>(&request, output_out, output_out_len),
+                32 => derive_to_output::<32>(&request, output_out, output_out_len),
+                48 => derive_to_output::<48>(&request, output_out, output_out_len),
+                64 => derive_to_output::<64>(&request, output_out, output_out_len),
+                _ => CRYPTO_INVALID_ARGUMENT,
+            }
         }
     })
 }

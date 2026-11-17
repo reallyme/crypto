@@ -15,6 +15,10 @@ use crate::{
     HPKE_X448_PUBLIC_KEY_LEN,
 };
 
+// ML-KEM encapsulation uses 32 bytes; P-256 reserves a 128-byte seed for
+// four scalar candidates, including the candidates not needed after success.
+pub(crate) const MLKEM768_P256_ENCAPSULATION_RANDOMNESS_LEN: usize = 160;
+
 #[derive(Clone, Copy)]
 pub(crate) struct KemParameters {
     pub(crate) public_key_len: usize,
@@ -121,7 +125,7 @@ pub(crate) fn kem_parameters(kem: HpkeKemId) -> Result<KemParameters, HpkeError>
             public_key_len: 1_249,
             private_key_len: 32,
             encapsulated_key_len: 1_153,
-            encapsulation_randomness_len: 64,
+            encapsulation_randomness_len: MLKEM768_P256_ENCAPSULATION_RANDOMNESS_LEN,
         }),
         HpkeKemId::MlKem1024P384 => Ok(KemParameters {
             public_key_len: 1_665,
@@ -149,6 +153,10 @@ pub(crate) fn validate_public_key(suite: HpkeSuite, public_key: &[u8]) -> Result
     if public_key.len() != kem_parameters(suite.kem)?.public_key_len {
         return Err(HpkeError::PRIMITIVE_INVALID_PUBLIC_KEY);
     }
+    #[cfg(any(feature = "kem-x25519", feature = "kem-x448"))]
+    if !crate::validate_dh_public_key::has_contributory_dh_public_key(suite.kem, public_key) {
+        return Err(HpkeError::PRIMITIVE_INVALID_PUBLIC_KEY);
+    }
     Ok(())
 }
 
@@ -168,6 +176,10 @@ pub(crate) fn validate_encapsulated_key(
 ) -> Result<(), HpkeError> {
     require_executable_suite(suite)?;
     if encapsulated_key.len() != kem_parameters(suite.kem)?.encapsulated_key_len {
+        return Err(HpkeError::PRIMITIVE_MALFORMED_CIPHERTEXT);
+    }
+    #[cfg(any(feature = "kem-x25519", feature = "kem-x448"))]
+    if !crate::validate_dh_public_key::has_contributory_dh_public_key(suite.kem, encapsulated_key) {
         return Err(HpkeError::PRIMITIVE_MALFORMED_CIPHERTEXT);
     }
     Ok(())

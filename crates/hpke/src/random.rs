@@ -22,6 +22,11 @@ impl<'a> FixedRandomness<'a> {
     pub(crate) fn was_consumed_exactly(&self) -> bool {
         !self.exhausted && self.remaining.is_empty()
     }
+
+    #[cfg(feature = "kem-ml-kem-768-p256")]
+    pub(crate) fn was_exhausted(&self) -> bool {
+        self.exhausted
+    }
 }
 
 impl TryRng for FixedRandomness<'_> {

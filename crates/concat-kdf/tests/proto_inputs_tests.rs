@@ -104,7 +104,7 @@ fn adapter_rejects_width_disagreement_zero_and_invalid_native_fields() {
     wire.shared_secret.clear();
     assert_eq!(
         ConcatKdfInputs::<17>::try_from(&wire).err(),
-        Some(CryptoError::PRIMITIVE_INVALID_PASSWORD)
+        Some(CryptoError::PRIMITIVE_INVALID_SHARED_SECRET)
     );
     let mut wire = request(17);
     wire.algorithm_id.clear();

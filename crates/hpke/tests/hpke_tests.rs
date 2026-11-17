@@ -120,9 +120,9 @@ fn rfc9180_section_7_1_4_rejects_invalid_dhkem_points() {
     })
     .err()
     .expect("low-order recipient point must fail");
-    // The HPKE engine reports a low-order X25519 key during encapsulation,
-    // after byte decoding, so the wrapper preserves its typed seal failure.
-    assert_eq!(x25519_seal_error, HpkeError::BACKEND_INTERNAL);
+    // Peer-key admission uses the same role-specific error before any
+    // backend setup, regardless of whether decoding alone accepts the bytes.
+    assert_eq!(x25519_seal_error, HpkeError::PRIMITIVE_INVALID_PUBLIC_KEY);
 
     let x25519_open_error = open_base(&HpkeOpenRequest {
         suite: HPKE_DHKEM_X25519_HKDF_SHA256_CHACHA20POLY1305,
@@ -134,10 +134,7 @@ fn rfc9180_section_7_1_4_rejects_invalid_dhkem_points() {
     })
     .err()
     .expect("low-order encapsulated point must fail");
-    assert_eq!(
-        x25519_open_error,
-        HpkeError::PRIMITIVE_AUTHENTICATION_FAILED
-    );
+    assert_eq!(x25519_open_error, HpkeError::PRIMITIVE_MALFORMED_CIPHERTEXT);
 }
 
 #[test]

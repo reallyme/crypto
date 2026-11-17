@@ -28,3 +28,6 @@ pub use verify::verify_p256_sha256_message_der_interoperable;
 #[allow(deprecated)]
 pub use verify_digest::verify_p256_digest_der;
 pub use verify_digest::verify_p256_sha256_digest_low_s_der;
+
+mod verify_digest_interoperable;
+pub use verify_digest_interoperable::verify_p256_digest_der_interoperable;

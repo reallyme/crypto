@@ -951,6 +951,56 @@ assertContains(
 );
 runNodeCheck("scripts/generate_provider_matrix.mjs", ["--check"]);
 
+for (const name of ["MlKem", "MlDsa", "SlhDsa", "XWing", "Hpke", "RustProtocols"]) {
+  const path = `packages/kotlin/src/main/kotlin/me/really/crypto/${name}.kt`;
+  const source = readText(path);
+  assertNotContains(path, source, "org.bouncycastle");
+  if (name !== "RustProtocols") assertContains(path, source, "ReallyMeRustProtocols");
+}
+
+for (const name of ["P256Ecdh", "P384Ecdh", "P521Ecdh", "RustKeyAgreement"]) {
+  const path = `packages/kotlin/src/main/kotlin/me/really/crypto/${name}.kt`;
+  const source = readText(path);
+  assertNotContains(path, source, "org.bouncycastle");
+  assertNotContains(path, source, "BigInteger");
+  assertNotContains(path, source, ".multiply(");
+  if (name !== "RustKeyAgreement") assertContains(path, source, "ReallyMeRustKeyAgreement");
+}
+
+for (const id of ["P-256-ECDH", "P-384-ECDH", "P-521-ECDH"]) {
+  const algorithm = resolvedAlgorithms.find((entry) => entry.id === id);
+  if (algorithm === undefined) {
+    fail(`${id} provider route is missing`);
+    continue;
+  }
+  for (const name of ["kotlin_jvm", "kotlin_android"]) {
+    const lane = resolveAlgorithm(algorithm).lanes[name];
+    if (!lane.usesRust || !lane.providers.includes("ReallyMe Rust C ABI") || lane.providers.includes("BouncyCastle")) {
+      fail(`${id}/${name} software key agreement must execute in Rust`);
+    }
+  }
+}
+
+for (const name of ["CryptoFacade", "MlKem", "XWing", "Hpke", "RustProtocols"]) {
+  const path = `packages/kotlin/src/main/kotlin/me/really/crypto/${name}.kt`;
+  const source = readText(path);
+  assertNotContains(path, source, "encapsulateDeterministic");
+  assertNotContains(path, source, "sealDeterministic");
+  assertNotContains(path, source, "ReallyMeProtocolConformance");
+}
+
+// Protocol and post-quantum behavior has one owner. A provider manifest must
+// not reintroduce a JVM implementation merely because its KATs happen to match.
+for (const algorithm of resolvedAlgorithms) {
+  if (!/^(?:ML-DSA-|SLH-DSA-|ML-KEM-|X-Wing-|DHKEM-)/u.test(algorithm.id)) continue;
+  for (const laneName of ["kotlin_jvm", "kotlin_android"]) {
+    const lane = resolveAlgorithm(algorithm).lanes[laneName];
+    if (!lane.usesRust || lane.providers.length !== 1 || lane.providers[0] !== "ReallyMe Rust C ABI") {
+      fail(`${algorithm.id}/${laneName} must execute through the Rust protocol owner`);
+    }
+  }
+}
+
 if (failures.length !== 0) {
   for (const message of failures) {
     console.error(`provider routing check failed: ${message}`);

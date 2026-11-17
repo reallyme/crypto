@@ -11,7 +11,7 @@ import {
   MAX_CRYPTO_INPUT_LENGTH,
   readIndependentByteArrayProperty,
 } from "./validateBytes.js";
-import { requireReallyMeWasmProvider } from "./wasmProvider.js";
+import { requireReallyMeWasmProvider, requireTrustedReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 
 export const ML_DSA_44_PUBLIC_KEY_LENGTH = 1_312;
@@ -45,6 +45,7 @@ const mlDsaSuiteWithProvider = (
   algorithm: ReallyMeSignatureAlgorithm,
   provider: ReallyMeWasmProvider,
 ): MlDsaSuite => {
+  requireTrustedReallyMeWasmProvider(provider);
   switch (algorithm) {
     case "ML-DSA-44":
       return {

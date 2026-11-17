@@ -209,6 +209,7 @@ impl EcdsaKey {
             ($backend:ident) => {{
                 let private = $backend::SecretKey::from_slice(self.private.expose_secret())
                     .map_err(|_| CryptoError::PRIMITIVE_INVALID_PRIVATE_KEY)?;
+                super::verify::validate_public_key_encoding(self.curve, peer_sec1)?;
                 let public = $backend::PublicKey::from_sec1_bytes(peer_sec1)
                     .map_err(|_| CryptoError::PRIMITIVE_INVALID_PUBLIC_KEY)?;
                 let shared =

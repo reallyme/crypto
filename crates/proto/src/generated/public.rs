@@ -36,6 +36,7 @@ pub mod reallyme {
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoConstantTimeRequireEqualResult;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoEcdsaAgreementRequest;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoEcdsaCurveIdentifier;
+            pub use crate::generated::raw::reallyme::crypto::v1::CryptoEcdsaDigestVerifyRequest;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoEcdsaInput;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoEcdsaKeyDescriptor;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoEcdsaKeyGenerateRequest;
@@ -134,6 +135,8 @@ pub mod reallyme {
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoKeyWrapResult;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoKmac256DeriveRequest;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoKmac256DeriveResult;
+            pub use crate::generated::raw::reallyme::crypto::v1::CryptoLegacyAes256SivOpenRequest;
+            pub use crate::generated::raw::reallyme::crypto::v1::CryptoLegacyAes256SivOpenResult;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoMacAuthenticateRequest;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoMacAuthenticateResult;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoMacVerifyRequest;
@@ -210,11 +213,16 @@ pub mod reallyme {
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoRandomBytesResult;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoRandomFillPolicyQueryRequest;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoRsaHashIdentifier;
+            pub use crate::generated::raw::reallyme::crypto::v1::CryptoRsaPkcs1v15Sha256SignRequest;
+            pub use crate::generated::raw::reallyme::crypto::v1::CryptoRsaPkcs1v15Sha256SignResult;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoRsaPssParams;
+            pub use crate::generated::raw::reallyme::crypto::v1::CryptoRsaPssParamsDerRequest;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoRsaPssVerifyRequest;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoRsaPublicKeyDerEncodingIdentifier;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoRsaPublicRepresentativesRequest;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoRsaPublicRepresentativesResult;
+            pub use crate::generated::raw::reallyme::crypto::v1::CryptoRsaSigningKeyImportRequest;
+            pub use crate::generated::raw::reallyme::crypto::v1::CryptoRsaSigningKeyImportResult;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoRsaVerifyRequest;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoSecp256k1AgreementRequest;
             pub use crate::generated::raw::reallyme::crypto::v1::CryptoSecp256k1SignatureTranscodeRequest;
@@ -1068,6 +1076,30 @@ pub mod reallyme {
                         crate::GuardedOwnedView<
                             CryptoKeyAgreementGenerateKeyPairRequestView<'static>,
                         >;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoRsaSigningKeyImportRequestView;
+                    pub type CryptoRsaSigningKeyImportRequestOwnedView =
+                        crate::GuardedOwnedView<CryptoRsaSigningKeyImportRequestView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoRsaSigningKeyImportResultView;
+                    pub type CryptoRsaSigningKeyImportResultOwnedView =
+                        crate::GuardedOwnedView<CryptoRsaSigningKeyImportResultView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoRsaPkcs1v15Sha256SignRequestView;
+                    pub type CryptoRsaPkcs1v15Sha256SignRequestOwnedView =
+                        crate::GuardedOwnedView<CryptoRsaPkcs1v15Sha256SignRequestView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoRsaPkcs1v15Sha256SignResultView;
+                    pub type CryptoRsaPkcs1v15Sha256SignResultOwnedView =
+                        crate::GuardedOwnedView<CryptoRsaPkcs1v15Sha256SignResultView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoLegacyAes256SivOpenRequestView;
+                    pub type CryptoLegacyAes256SivOpenRequestOwnedView =
+                        crate::GuardedOwnedView<CryptoLegacyAes256SivOpenRequestView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoLegacyAes256SivOpenResultView;
+                    pub type CryptoLegacyAes256SivOpenResultOwnedView =
+                        crate::GuardedOwnedView<CryptoLegacyAes256SivOpenResultView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoEcdsaDigestVerifyRequestView;
+                    pub type CryptoEcdsaDigestVerifyRequestOwnedView =
+                        crate::GuardedOwnedView<CryptoEcdsaDigestVerifyRequestView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoRsaPssParamsDerRequestView;
+                    pub type CryptoRsaPssParamsDerRequestOwnedView =
+                        crate::GuardedOwnedView<CryptoRsaPssParamsDerRequestView<'static>>;
                 }
                 pub use crate::generated::raw::reallyme::crypto::v1::__buffa::register_types;
             }
@@ -1131,6 +1163,9 @@ pub mod reallyme {
             };
             pub use self::__buffa::view::{
                 CryptoEcdsaCurveIdentifierOwnedView, CryptoEcdsaCurveIdentifierView,
+            };
+            pub use self::__buffa::view::{
+                CryptoEcdsaDigestVerifyRequestOwnedView, CryptoEcdsaDigestVerifyRequestView,
             };
             pub use self::__buffa::view::{CryptoEcdsaInputOwnedView, CryptoEcdsaInputView};
             pub use self::__buffa::view::{
@@ -1429,6 +1464,12 @@ pub mod reallyme {
                 CryptoKmac256DeriveResultOwnedView, CryptoKmac256DeriveResultView,
             };
             pub use self::__buffa::view::{
+                CryptoLegacyAes256SivOpenRequestOwnedView, CryptoLegacyAes256SivOpenRequestView,
+            };
+            pub use self::__buffa::view::{
+                CryptoLegacyAes256SivOpenResultOwnedView, CryptoLegacyAes256SivOpenResultView,
+            };
+            pub use self::__buffa::view::{
                 CryptoMacAuthenticateRequestOwnedView, CryptoMacAuthenticateRequestView,
             };
             pub use self::__buffa::view::{
@@ -1671,6 +1712,15 @@ pub mod reallyme {
             pub use self::__buffa::view::{
                 CryptoRsaHashIdentifierOwnedView, CryptoRsaHashIdentifierView,
             };
+            pub use self::__buffa::view::{
+                CryptoRsaPkcs1v15Sha256SignRequestOwnedView, CryptoRsaPkcs1v15Sha256SignRequestView,
+            };
+            pub use self::__buffa::view::{
+                CryptoRsaPkcs1v15Sha256SignResultOwnedView, CryptoRsaPkcs1v15Sha256SignResultView,
+            };
+            pub use self::__buffa::view::{
+                CryptoRsaPssParamsDerRequestOwnedView, CryptoRsaPssParamsDerRequestView,
+            };
             pub use self::__buffa::view::{CryptoRsaPssParamsOwnedView, CryptoRsaPssParamsView};
             pub use self::__buffa::view::{
                 CryptoRsaPssVerifyRequestOwnedView, CryptoRsaPssVerifyRequestView,
@@ -1686,6 +1736,12 @@ pub mod reallyme {
             pub use self::__buffa::view::{
                 CryptoRsaPublicRepresentativesResultOwnedView,
                 CryptoRsaPublicRepresentativesResultView,
+            };
+            pub use self::__buffa::view::{
+                CryptoRsaSigningKeyImportRequestOwnedView, CryptoRsaSigningKeyImportRequestView,
+            };
+            pub use self::__buffa::view::{
+                CryptoRsaSigningKeyImportResultOwnedView, CryptoRsaSigningKeyImportResultView,
             };
             pub use self::__buffa::view::{
                 CryptoRsaVerifyRequestOwnedView, CryptoRsaVerifyRequestView,

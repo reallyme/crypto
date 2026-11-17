@@ -9,7 +9,7 @@ import {
   ensureByteArrayAtMost,
   MAX_CRYPTO_INPUT_LENGTH,
 } from "./validateBytes.js";
-import { requireReallyMeWasmProvider } from "./wasmProvider.js";
+import { requireReallyMeWasmProvider, requireTrustedReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 
 export type ReallyMeRsaPublicKeyDerEncoding = "PKCS1" | "SPKI";
@@ -114,6 +114,7 @@ const verifyWithProvider = (
   publicKeyDer: Uint8Array,
   publicKeyEncoding: ReallyMeRsaPublicKeyDerEncoding,
 ): void => {
+  requireTrustedReallyMeWasmProvider(provider);
   validateBytes(publicKeyDer, RSA_PUBLIC_KEY_DER_MAX_LENGTH);
   validateBytes(signature, RSA_SIGNATURE_MAX_LENGTH);
   ensureByteArrayAtMost(message, MAX_CRYPTO_INPUT_LENGTH);

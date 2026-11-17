@@ -7,10 +7,10 @@ import { ReallyMeCryptoError } from "./errors.js";
 import {
   ensureByteArrayAtMost,
   ensureBytes,
-  ensureIndependentByteArray,
+  readIndependentProviderBytes,
   MAX_CRYPTO_INPUT_LENGTH,
 } from "./validateBytes.js";
-import { requireReallyMeWasmProvider } from "./wasmProvider.js";
+import { requireReallyMeWasmProvider, requireTrustedReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 
 export const AEAD_KEY_LENGTH = 32;
@@ -44,6 +44,7 @@ const aeadSuiteWithProvider = (
   algorithm: ReallyMeAeadAlgorithm,
   provider: ReallyMeWasmProvider,
 ): AeadSuite => {
+  requireTrustedReallyMeWasmProvider(provider);
   switch (algorithm) {
     case "AES-128-GCM":
       return {
@@ -137,17 +138,7 @@ const requireBytesOutput = (
   expectedLength: number,
   inputs: ReadonlyArray<Uint8Array>,
 ): Uint8Array => {
-  if (!(value instanceof Uint8Array)) {
-    throw new ReallyMeCryptoError("provider-failure");
-  }
-  // Validate ownership before clearing malformed provider output so an alias
-  // cannot turn error cleanup into mutation of caller-owned secret material.
-  ensureIndependentByteArray(value, inputs);
-  if (value.length !== expectedLength) {
-    value.fill(0);
-    throw new ReallyMeCryptoError("provider-failure");
-  }
-  return value;
+  return readIndependentProviderBytes(value, expectedLength, inputs);
 };
 
 export const ReallyMeAead = {

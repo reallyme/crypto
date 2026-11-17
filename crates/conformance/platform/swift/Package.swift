@@ -27,11 +27,11 @@ let package = Package(
     ),
     .package(
       url: "https://github.com/leif-ibsen/Digest",
-      from: "1.13.0"
+      exact: "1.13.0"
     ),
     .package(
       url: "https://github.com/reallyme/CSecp256k1",
-      from: "0.1.0"
+      exact: "0.1.0"
     ),
   ],
   targets: [

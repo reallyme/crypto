@@ -33,12 +33,13 @@ pub fn generate_secp256k1_keypair_from_secret_key(
         .map(|key_pair| (key_pair.public_key, key_pair.secret_key))
 }
 
-/// Sign a message with secp256k1 ECDSA and return a DER-encoded signature.
+/// Sign a message with secp256k1 ECDSA and return a 64-byte compact `r || s`
+/// signature.
 pub fn sign_secp256k1(secret_key: &[u8], message: &[u8]) -> Result<Vec<u8>, CryptoError> {
     crate::operations::signature::sign(Algorithm::Secp256k1, secret_key, message)
 }
 
-/// Verify a DER-encoded secp256k1 ECDSA signature.
+/// Verify a 64-byte compact `r || s` secp256k1 ECDSA signature.
 pub fn verify_secp256k1(
     signature: &[u8],
     message: &[u8],

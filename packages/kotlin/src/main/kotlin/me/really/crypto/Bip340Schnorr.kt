@@ -25,6 +25,8 @@ public object ReallyMeBip340Schnorr {
     public const val MESSAGE_LENGTH: Int = 32
     public const val AUX_RAND_LENGTH: Int = 32
     public const val SIGNATURE_LENGTH: Int = 64
+    private const val COMPRESSED_PUBLIC_KEY_LENGTH: Int = 33
+    private const val EVEN_Y_PREFIX: Byte = 0x02
 
     public fun generateKeyPair(): Pair<ByteArray, ByteArray> {
         val secp = provider()
@@ -72,6 +74,16 @@ public object ReallyMeBip340Schnorr {
             throw ReallyMeCryptoException.InvalidInput()
         }
         val secp = provider()
+        // A point that cannot be lifted is a bad key, rather than a bad
+        // signature. Validate before libsecp256k1 folds both into false.
+        val compressedKey = ByteArray(COMPRESSED_PUBLIC_KEY_LENGTH)
+        compressedKey[0] = EVEN_Y_PREFIX
+        publicKey.copyInto(compressedKey, destinationOffset = 1)
+        try {
+            secp.pubkeyParse(compressedKey)
+        } catch (_: Secp256k1Exception) {
+            throw ReallyMeCryptoException.InvalidInput()
+        }
         val valid = try {
             secp.verifySchnorr(signature, message32, publicKey)
         } catch (_: Secp256k1Exception) {

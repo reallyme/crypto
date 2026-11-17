@@ -4,7 +4,8 @@
 
 use crate::guard::ffi_guard;
 use crate::pointer::{
-    read_slice, validate_disjoint_output_pair, validate_output_len_pair, write_fixed, write_len,
+    read_slice, validate_disjoint_output_pair, validate_output_len_pair, write_fixed,
+    write_fixed_pair, write_len,
 };
 use crate::signature_status::{key_management_status, sign_status, verify_status};
 use crate::status::{CryptoStatus, CRYPTO_BUFFER_TOO_SMALL, CRYPTO_INVALID_KEY, CRYPTO_OK};
@@ -43,14 +44,17 @@ pub unsafe extern "C" fn rm_crypto_p384_generate_keypair(
                 Err(error) => return key_management_status(error),
             };
         // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
-        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
-        let status = unsafe { write_fixed(public_out, public_out_len, &key_pair.public_key) };
-        if status != CRYPTO_OK {
-            return status;
+        // Both capacities and all input/output ranges are checked before either copy; ownership stays with the caller.
+        unsafe {
+            write_fixed_pair(
+                public_out,
+                public_out_len,
+                &key_pair.public_key,
+                secret_out,
+                secret_out_len,
+                &key_pair.secret_key,
+            )
         }
-        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
-        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
-        unsafe { write_fixed(secret_out, secret_out_len, &key_pair.secret_key) }
     })
 }
 
@@ -88,14 +92,17 @@ pub unsafe extern "C" fn rm_crypto_p384_generate_keypair_from_secret_key(
             Err(error) => return key_management_status(error),
         };
         // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
-        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
-        let status = unsafe { write_fixed(public_out, public_out_len, &key_pair.public_key) };
-        if status != CRYPTO_OK {
-            return status;
+        // Both capacities and all input/output ranges are checked before either copy; ownership stays with the caller.
+        unsafe {
+            write_fixed_pair(
+                public_out,
+                public_out_len,
+                &key_pair.public_key,
+                secret_out,
+                secret_out_len,
+                &key_pair.secret_key,
+            )
         }
-        // SAFETY: The C caller keeps this output writable for the stated length until the call returns.
-        // write_fixed bounds the copy and rejects overlap with borrowed inputs; ownership stays with the caller.
-        unsafe { write_fixed(secret_out, secret_out_len, &key_pair.secret_key) }
     })
 }
 

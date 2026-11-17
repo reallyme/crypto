@@ -5,7 +5,7 @@
 //! Independent known-answer coverage for the post-quantum HPKE profiles used by MLS.
 //!
 //! The inputs and expected ciphertexts are from the immutable published
-//! `draft-ietf-hpke-pq-05`, Appendices A.3 and A.6:
+//! `draft-ietf-hpke-pq-05`, Appendices A.2, A.3, A.4, and A.6:
 //! <https://www.ietf.org/archive/id/draft-ietf-hpke-pq-05.txt>.
 
 #![allow(missing_docs)]
@@ -13,11 +13,12 @@
 #![cfg(all(feature = "native", feature = "test-vectors"))]
 
 use crypto_hpke::{
-    derive_keypair_from_ikm, open_base, seal_base_derand, HpkeDerandSealRequest, HpkeOpenRequest,
-    HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM, HPKE_MLKEM1024_HKDF_SHA384_AES256GCM,
-    HPKE_MLKEM768_HKDF_SHA384_AES256GCM,
+    derive_keypair_from_ikm, open_base, seal_base_derand, HpkeAeadId, HpkeDerandSealRequest,
+    HpkeKdfId, HpkeKemId, HpkeOpenRequest, HpkeSuite, HPKE_MLKEM1024P384_HKDF_SHA384_AES256GCM,
+    HPKE_MLKEM1024_HKDF_SHA384_AES256GCM, HPKE_MLKEM768_HKDF_SHA384_AES256GCM,
 };
 use sha2::{Digest, Sha256};
+use zeroize::Zeroizing;
 
 const INFO_HEX: &str =
     "34663634363532303666366532303631323034373732363536333639363136653230353537323665";
@@ -33,6 +34,69 @@ fn decode(encoded: &str) -> Vec<u8> {
 
 fn sha256_hex(bytes: &[u8]) -> String {
     hex::encode(Sha256::digest(bytes))
+}
+
+#[test]
+fn ml_kem_768_p256_matches_hpke_pq_draft_vector() {
+    // Appendix A.4 supplies the full 160-byte sender input, including unused
+    // P-256 candidates. Matching its ciphertext checks more than a round trip
+    // through two implementations with the same entropy-consumption mistake.
+    let suite = HpkeSuite::new(
+        HpkeKemId::MlKem768P256,
+        HpkeKdfId::HkdfSha256,
+        HpkeAeadId::Aes128Gcm,
+    );
+    let recipient_ikm = Zeroizing::new(decode(
+        "3bf888035cc5f48fa476c2ccdb73a5482e97a0d0578fa710b1e393ca9716b6f0",
+    ));
+    let sender_ikm = Zeroizing::new(decode(concat!(
+        "60bb82b558667cd90fdaa6dad511b68ecc36c74aaba659838978c2f1f6e9194f",
+        "e391cdcd5aaf218bd2132ee45652de419faeff24b210dcdefd78db2f4d80757d",
+        "c026148067910f470240b079c36f31463f43a33962585e1a84f6230384071be6",
+        "9eac96ecf1ff4b4b4be510631406690c62c037d7ab2623ae4980c5885284d8b6",
+        "10e446eb79b5b6ecbc914ed3b924db036e8604569bec37093231d13bf31eb9df"
+    )));
+    assert_eq!(suite.encapsulation_randomness_len(), Ok(160));
+    assert_eq!(sender_ikm.len(), 160);
+    let recipient = derive_keypair_from_ikm(suite, &recipient_ikm)
+        .expect("published recipient IKM must derive");
+    assert_eq!(
+        recipient.private_key(),
+        Zeroizing::new(decode(
+            "1f25a59a6b22ef57b8e48a6cfe739b9ec13e9cf57e82dfd6e0480e0324cf905b"
+        ))
+        .as_slice()
+    );
+    let info = decode(INFO_HEX);
+    let aad = decode(AAD_HEX);
+    let plaintext = Zeroizing::new(decode(PLAINTEXT_HEX));
+    let sealed = seal_base_derand(&HpkeDerandSealRequest {
+        suite,
+        recipient_public_key: &recipient.public_key,
+        encapsulation_randomness: &sender_ikm,
+        info: &info,
+        aad: &aad,
+        plaintext: &plaintext,
+    })
+    .expect("published sender randomness must encapsulate");
+    assert_eq!(
+        hex::encode(&sealed.ciphertext),
+        concat!(
+            "c55b375ecf13081a2448aefca58ca81ba771e04bc7299f9152aded351c76ac05cd",
+            "c985a1609335f1399855f528adb21f48dfcc841fd7ef1c38bc64d9bdcd9c18c68d",
+            "6d7a6c247429677d"
+        )
+    );
+    let opened = open_base(&HpkeOpenRequest {
+        suite,
+        encapsulated_key: &sealed.encapsulated_key,
+        recipient_private_key: recipient.private_key(),
+        info: &info,
+        aad: &aad,
+        ciphertext: &sealed.ciphertext,
+    })
+    .expect("published ciphertext must open");
+    assert_eq!(opened.plaintext.as_slice(), plaintext.as_slice());
 }
 
 #[test]

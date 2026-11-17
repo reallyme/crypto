@@ -116,13 +116,27 @@ export const readIndependentProviderBytes = (
   expectedLength: number,
   disallowedViews: ReadonlyArray<Uint8Array>,
 ): Uint8Array => {
+  return readIndependentProviderBytesInRange(
+    value,
+    expectedLength,
+    expectedLength,
+    disallowedViews,
+  );
+};
+
+export const readIndependentProviderBytesInRange = (
+  value: unknown,
+  minimumLength: number,
+  maximumLength: number,
+  disallowedViews: ReadonlyArray<Uint8Array>,
+): Uint8Array => {
   if (!(value instanceof Uint8Array)) {
     throw new ReallyMeCryptoError("provider-failure");
   }
   // Provider-owned secret outputs are cleared on malformed length, but only
   // after proving the provider did not hand back a caller-owned buffer.
   ensureIndependentByteArray(value, disallowedViews);
-  if (value.length !== expectedLength) {
+  if (value.length < minimumLength || value.length > maximumLength) {
     value.fill(0);
     throw new ReallyMeCryptoError("provider-failure");
   }

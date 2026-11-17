@@ -17,7 +17,7 @@ identical output.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.4.4")
+    implementation("me.really:crypto:0.4.3")
 }
 ```
 
@@ -58,15 +58,18 @@ Provider selection is explicit:
   routes.
 - BouncyCastle, pinned to the version exercised by the Kotlin conformance lane,
   for AES-GCM, AES-KW, RSA verification, deterministic NIST-curve,
-  post-quantum, and other explicitly declared routes.
+  and other explicitly declared classical primitive routes.
 - Bitcoin Core libsecp256k1 through ACINQ's pinned `secp256k1-kmp` JNI
   bindings for secp256k1 ECDSA and BIP-340 Schnorr.
-- The ReallyMe Rust C ABI for primitives that should stay shared with Rust.
+- ReallyMe Rust through JNI for ML-KEM, ML-DSA, SLH-DSA, X-Wing, HPKE,
+  software P-256/P-384/P-521 ECDH, Argon2id, and the Rust-backed AEADs. Load `ReallyMeRustNativeProvider`
+  explicitly before using these routes. Missing protocol/PQ and P-curve ECDH providers fail with
+  typed `UnsupportedAlgorithm`; there is no BouncyCastle fallback.
 
-P-256, P-384, and P-521 base-point secret-scalar operations use
-BouncyCastle's fixed-point comb multiplier to match the HPKE mitigation already
-used in this package. Raw ECDH peer-point multiplication remains a
-BouncyCastle-backed byte API until a reviewed Rust/native route is approved.
+Software P-curve ECDH key generation, public-key derivation, and agreement
+execute in Rust with constant-time curve arithmetic. ECDSA remains the explicit
+BouncyCastle deterministic-signature route; verification requires canonical
+DER and standard compressed or uncompressed SEC1 keys. HPKE executes in Rust.
 Android Keystore and StrongBox are not fallback providers for these raw-byte
 routes.
 
@@ -95,7 +98,15 @@ lanes are tracked in [PROVIDER_POLICY.md](../../PROVIDER_POLICY.md).
   deterministic nonces, low-S compact signatures, and compressed SEC1 public
   keys.
 - ML-KEM, ML-DSA, SLH-DSA-SHA2-128s, HPKE, and X-Wing are covered by the same
-  shared vectors as the Rust and TypeScript lanes.
+  shared vectors as the Rust and TypeScript lanes. Their JNI adapters preserve
+  the public API while Rust owns key generation, signing, KEMs, and HPKE.
+  Chosen-randomness helpers exist only in test sources and require a separately
+  built native library with `test-vectors`. The production Kotlin JAR has no
+  seeded encapsulation API, and production native libraries omit those symbols.
+  HPKE rejects low-order recipient and encapsulated keys with `InvalidInput`
+  across sealing, opening, and PSK context setup, matching the Rust core's
+  key-validation errors. Authentication failures with otherwise valid keys
+  return `AuthenticationFailed`.
 - Multicodec and multikey support is scoped to public-key metadata. It does not
   imply support for the corresponding signing or KEM primitive.
 
@@ -146,7 +157,10 @@ zeroized on native exit. KMAC keys and customization strings are capped at
 4 KiB, contexts at 64 KiB, and outputs at 64 KiB before native allocation.
 Rust-backed AEAD plaintext and AAD, plus Argon2id secrets, are capped at one
 mebibyte before JNI copies are created. Authenticated AEAD ciphertext may also
-contain its 16-byte tag.
+contain its 16-byte tag. Protocol and post-quantum JNI inputs are
+also capped at one mebibyte before copying; HPKE ciphertext permits the
+additional 16-byte authentication tag. Temporary native copies and Kotlin
+transport envelopes are wiped on both successful and failed operations.
 
 ```kotlin
 ReallyMeCryptoMemory.bestEffortClear(secretBytes)
@@ -198,6 +212,7 @@ val ed25519Signature = ReallyMeCrypto.sign(
     ed25519SecretKey,
 )
 
+ReallyMeRustNativeProvider.loadBundledLibrary()
 val mlKemKeyPair = ReallyMeCrypto.generateKemKeyPair(ReallyMeKemAlgorithm.ML_KEM_768)
 val mlKemEncapsulation = ReallyMeCrypto.encapsulate(
     ReallyMeKemAlgorithm.ML_KEM_768,
@@ -219,6 +234,12 @@ val hpkeMessage = ReallyMeCrypto.sealHpke(
 cd packages/kotlin
 ./gradlew test
 ```
+
+Protocol KATs run in an isolated JVM against a conformance-only Rust library.
+To select protocol cases, use `./gradlew testRustProtocols --tests '...pattern...'`.
+For focused production-facade tests, use
+`./gradlew test --tests '...pattern...' -x testRustProtocols`.
+The unfiltered `test` task includes both production and conformance coverage.
 
 ## Package
 

@@ -37,6 +37,19 @@ class ReallyMeCryptoTest : ReallyMeCryptoTestSupport() {
         policy.getAsJsonArray("valid_jwk").forEach { value ->
             assertTrue(ReallyMeJwk.fromJwkJson(value.toString()).publicKey.isNotEmpty())
         }
+        policy.getAsJsonArray("null_metadata_jwk").forEach { value ->
+            val case = value.asJsonObject
+            val withNull = ReallyMeJwk.fromJwkJson(case.get("with_null").toString())
+            val withoutNull = ReallyMeJwk.fromJwkJson(case.get("without_null").toString())
+            assertEquals(withoutNull.algorithm, withNull.algorithm)
+            assertContentEquals(withoutNull.publicKey, withNull.publicKey)
+            assertEquals(ReallyMeJwk.toJcs(withoutNull.jwk), ReallyMeJwk.toJcs(withNull.jwk))
+        }
+        policy.getAsJsonArray("invalid_jwk_json").forEach { value ->
+            assertFailsWith<ReallyMeCryptoException.InvalidInput> {
+                ReallyMeJwk.fromJwkJson(value.asString)
+            }
+        }
         policy.getAsJsonArray("invalid_jwk").forEach { value ->
             assertFailsWith<ReallyMeCryptoException.InvalidInput> {
                 ReallyMeJwk.fromJwkJson(value.toString())
@@ -434,6 +447,7 @@ class ReallyMeCryptoTest : ReallyMeCryptoTestSupport() {
 
     @Test
     fun secretBearingKeyPairResultsDoNotAliasCallerInputs() {
+        loadCryptoProviderForTest()
         val xWingSecret = ByteArray(ReallyMeXWing.SECRET_KEY_LENGTH) { index ->
             (index + 1).toByte()
         }

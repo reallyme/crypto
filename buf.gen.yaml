@@ -65,6 +65,8 @@ plugins:
       - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaAgreementRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaCurveIdentifier
       - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaCurveIdentifier
+      - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaDigestVerifyRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaDigestVerifyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaInput
       - borrowed_views_only_in=.reallyme.crypto.v1.CryptoEcdsaInput
       - deny_view_json=.reallyme.crypto.v1.CryptoEcdsaKeyDescriptor
@@ -253,6 +255,10 @@ plugins:
       - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKmac256DeriveRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoKmac256DeriveResult
       - borrowed_views_only_in=.reallyme.crypto.v1.CryptoKmac256DeriveResult
+      - deny_view_json=.reallyme.crypto.v1.CryptoLegacyAes256SivOpenRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoLegacyAes256SivOpenRequest
+      - deny_view_json=.reallyme.crypto.v1.CryptoLegacyAes256SivOpenResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoLegacyAes256SivOpenResult
       - deny_view_json=.reallyme.crypto.v1.CryptoMacAuthenticateRequest
       - borrowed_views_only_in=.reallyme.crypto.v1.CryptoMacAuthenticateRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoMacAuthenticateResult
@@ -397,8 +403,14 @@ plugins:
       - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRandomFillPolicyQueryRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoRsaHashIdentifier
       - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaHashIdentifier
+      - deny_view_json=.reallyme.crypto.v1.CryptoRsaPkcs1v15Sha256SignRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaPkcs1v15Sha256SignRequest
+      - deny_view_json=.reallyme.crypto.v1.CryptoRsaPkcs1v15Sha256SignResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaPkcs1v15Sha256SignResult
       - deny_view_json=.reallyme.crypto.v1.CryptoRsaPssParams
       - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaPssParams
+      - deny_view_json=.reallyme.crypto.v1.CryptoRsaPssParamsDerRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaPssParamsDerRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoRsaPssVerifyRequest
       - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaPssVerifyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoRsaPublicKeyDerEncodingIdentifier
@@ -407,6 +419,10 @@ plugins:
       - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaPublicRepresentativesRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoRsaPublicRepresentativesResult
       - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaPublicRepresentativesResult
+      - deny_view_json=.reallyme.crypto.v1.CryptoRsaSigningKeyImportRequest
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaSigningKeyImportRequest
+      - deny_view_json=.reallyme.crypto.v1.CryptoRsaSigningKeyImportResult
+      - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaSigningKeyImportResult
       - deny_view_json=.reallyme.crypto.v1.CryptoRsaVerifyRequest
       - borrowed_views_only_in=.reallyme.crypto.v1.CryptoRsaVerifyRequest
       - deny_view_json=.reallyme.crypto.v1.CryptoSecp256k1AgreementRequest
@@ -479,38 +495,40 @@ plugins:
     out: crates/proto/src/generated/buffa
     strategy: all
   # TypeScript
-  - remote: buf.build/bufbuild/es:v2.17.0
+  - local: [node, packages/ts/node_modules/@bufbuild/protoc-gen-es/bin/protoc-gen-es]
     out: gen/es
     opt:
       - target=ts
       - import_extension=js
-  - remote: buf.build/bufbuild/es:v2.17.0
+  - local: [node, packages/ts/node_modules/@bufbuild/protoc-gen-es/bin/protoc-gen-es]
     out: packages/ts/src/proto/generated
     opt:
       - target=ts
       - import_extension=js
 
   # JavaScript runtime
-  - remote: buf.build/bufbuild/es:v2.17.0
+  - local: [node, packages/ts/node_modules/@bufbuild/protoc-gen-es/bin/protoc-gen-es]
     out: gen/es
     opt:
       - target=js
       - import_extension=js
 
   # Swift
-  - remote: buf.build/apple/swift:v1.39.0
+  - local: protoc-gen-swift
     out: gen/swift
     opt:
       - Visibility=Public
 
   # Java core message classes used by Kotlin.
-  - remote: buf.build/protocolbuffers/java:v36.2
+  - protoc_builtin: java
+    protoc_path: protoc
     out: gen/java
     opt:
       - lite
 
   # Kotlin DSL/extensions.
-  - remote: buf.build/protocolbuffers/kotlin:v36.2
+  - protoc_builtin: kotlin
+    protoc_path: protoc
     out: gen/kotlin
     opt:
       - lite

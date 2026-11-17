@@ -2,9 +2,27 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crypto_core::CryptoError;
+use crypto_core::{has_standard_sec1_encoding, CryptoError};
 use k256::elliptic_curve::sec1::ToSec1Point;
 use k256::PublicKey;
+
+const SECP256K1_PUBLIC_KEY_COMPRESSED_LEN: usize =
+    crypto_core::contract_constants::secp256k1::SECP256K1_PUBLIC_KEY_COMPRESSED_LEN;
+const SECP256K1_UNCOMPRESSED_PUBLIC_KEY_LEN: usize =
+    crypto_core::contract_constants::secp256k1::SECP256K1_UNCOMPRESSED_PUBLIC_KEY_LEN;
+
+// k256 also parses compact (0x05) points. Keep the public boundary on the
+// documented compressed/uncompressed encodings before validating the point.
+pub(super) fn parse_public_key(bytes: &[u8]) -> Result<PublicKey, CryptoError> {
+    if !has_standard_sec1_encoding(
+        bytes,
+        SECP256K1_PUBLIC_KEY_COMPRESSED_LEN,
+        SECP256K1_UNCOMPRESSED_PUBLIC_KEY_LEN,
+    ) {
+        return Err(CryptoError::PRIMITIVE_INVALID_KEY);
+    }
+    PublicKey::from_sec1_bytes(bytes).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)
+}
 
 /// Validates this crate's canonical compressed SEC1 secp256k1 public key shape.
 ///
@@ -13,13 +31,16 @@ use k256::PublicKey;
 /// parse the point; callers that need full curve validation should call
 /// [`decompress_secp256k1_public_key`] or a signing/verification operation.
 pub fn assert_secp256k1_public_key(pubkey: &[u8]) -> Result<&[u8], CryptoError> {
-    if pubkey.len() != 33 {
+    if pubkey.len() != SECP256K1_PUBLIC_KEY_COMPRESSED_LEN
+        || !has_standard_sec1_encoding(
+            pubkey,
+            SECP256K1_PUBLIC_KEY_COMPRESSED_LEN,
+            SECP256K1_UNCOMPRESSED_PUBLIC_KEY_LEN,
+        )
+    {
         return Err(CryptoError::PRIMITIVE_INVALID_KEY);
     }
-    match pubkey[0] {
-        0x02 | 0x03 => Ok(pubkey),
-        _ => Err(CryptoError::PRIMITIVE_INVALID_KEY),
-    }
+    Ok(pubkey)
 }
 
 /// Returns the canonical compressed SEC1 public-key bytes after shape validation.
@@ -43,8 +64,8 @@ pub fn decode_secp256k1_public_key(pubkey: &[u8]) -> Result<Vec<u8>, CryptoError
 pub fn decompress_secp256k1_public_key(
     pubkey_compressed: &[u8],
 ) -> Result<(Vec<u8>, Vec<u8>), CryptoError> {
-    let pk = PublicKey::from_sec1_bytes(pubkey_compressed)
-        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    assert_secp256k1_public_key(pubkey_compressed)?;
+    let pk = parse_public_key(pubkey_compressed)?;
     let uncompressed = pk.to_sec1_point(false);
     let bytes = uncompressed.as_bytes();
 

@@ -83,7 +83,19 @@ fn empty_shared_secret_is_rejected() {
         Err(err) => err,
         Ok(_) => panic!("empty shared secret must fail"),
     };
-    assert_kdf_error(err, CryptoError::PRIMITIVE_INVALID_PASSWORD);
+    assert_kdf_error(err, CryptoError::PRIMITIVE_INVALID_SHARED_SECRET);
+}
+
+#[test]
+fn shared_secret_length_boundaries_have_shared_secret_errors() {
+    let maximum = crypto_concat_kdf::JWA_CONCAT_KDF_MAX_SHARED_SECRET_LENGTH;
+    assert!(JwaSharedSecret::from_slice(&[0x42]).is_ok());
+    assert!(JwaSharedSecret::from_slice(&vec![0x42; maximum]).is_ok());
+    let oversized = maximum.checked_add(1).expect("test boundary fits usize");
+    for input in [Vec::new(), vec![0x42; oversized]] {
+        let reason = JwaSharedSecret::from_slice(&input).err();
+        assert_eq!(reason, Some(CryptoError::PRIMITIVE_INVALID_SHARED_SECRET));
+    }
 }
 
 #[test]

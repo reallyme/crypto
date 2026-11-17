@@ -16,6 +16,8 @@ export const REQUIRED_WORKFLOW_GATES = [
   [".github/workflows/rust-ci.yml", [
     'node --test --test-concurrency=4 "scripts/**/*.test.mjs" "packages/ts/scripts/*.test.mjs"',
     "actionlint -color",
+    "node scripts/check_kmac_zeroization.mjs",
+    "node scripts/check_aead_zeroization.mjs",
     "cargo clippy --locked --workspace --all-targets --all-features -- -D warnings",
     "cargo nextest run --locked --workspace --no-default-features --features native",
     "cargo +1.100.0 test --locked --workspace --all-features",
@@ -88,6 +90,40 @@ export const workflowGateViolation = (source, requiredCommands) => {
     }
     if (MASKED_FAILURE.test(step)) {
       return "masked-required-command";
+    }
+  }
+  return null;
+};
+
+// Publishing identity must be available only after the verified release job
+// enters its matching environment. Stored registry tokens would bypass that
+// identity boundary, even if OIDC were also enabled.
+export const trustedPublishingViolation = (source, ecosystem) => {
+  const environments = new Map([["crates", "crates-io-release"], ["npm", "npm-release"]]);
+  const environment = environments.get(ecosystem);
+  if (environment === undefined) return "unsupported-publishing-ecosystem";
+  const lines = source.split("\n").filter((line) => !/^\s*#/u.test(line));
+  const start = lines.indexOf("  publish:");
+  if (start < 0) return "missing-publish-job";
+  const end = lines.findIndex((line, index) => index > start && /^(?:\S| {2}\S)/u.test(line));
+  const job = lines.slice(start, end < 0 ? lines.length : end).join("\n");
+  if (!job.includes(`    environment: ${environment}\n`) || !job.includes("    needs: verify-release-sha\n")) {
+    return "unscoped-publishing-identity";
+  }
+  const oidcGrants = lines.filter((line) => /^\s*id-token:\s*write\s*$/u.test(line));
+  if (oidcGrants.length !== 1 || !/^ {6}id-token:\s*write\s*$/mu.test(job)) return "unscoped-oidc-permission";
+  if (/\bsecrets\s*(?:\.|\[)/iu.test(source)) return "stored-publishing-secret";
+  if (CONDITIONAL_GATE.test(job)) return "conditional-publishing-step";
+  if (ecosystem === "crates") {
+    if (!job.includes("id: crates_auth") || !job.includes("rust-lang/crates-io-auth-action@3268eb413133e2960fa4ae0e963ca76380c54cd9")) {
+      return "unreviewed-crates-authentication";
+    }
+    if (!job.includes("CARGO_REGISTRY_TOKEN: ${{ steps.crates_auth.outputs.token }}")) return "non-oidc-crates-token";
+    if (job.indexOf("id: crates_auth") >= job.indexOf("node scripts/publish_crates_in_order.mjs publish")) return "late-crates-authentication";
+  } else {
+    if (/^\s*(?:NODE_AUTH_TOKEN|NPM_TOKEN|registry-url)\s*:/mu.test(job)) return "legacy-npm-authentication";
+    if (!job.includes("NPM_CONFIG_USERCONFIG: /dev/null") || !job.includes("--registry=https://registry.npmjs.org")) {
+      return "implicit-npm-authentication";
     }
   }
   return null;

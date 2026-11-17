@@ -5,9 +5,9 @@
 import { ReallyMeCryptoError } from "./errors.js";
 import {
   ensureByteArray,
-  ensureIndependentByteArray,
+  readIndependentProviderBytes,
 } from "./validateBytes.js";
-import { requireReallyMeWasmProvider } from "./wasmProvider.js";
+import { requireReallyMeWasmProvider, requireTrustedReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 
 export const KMAC256_MIN_KEY_LENGTH = 32;
@@ -44,17 +44,7 @@ const requireDerivedKey = (
   outputLength: number,
   inputs: ReadonlyArray<Uint8Array>,
 ): Uint8Array => {
-  if (!(value instanceof Uint8Array)) {
-    throw new ReallyMeCryptoError("provider-failure");
-  }
-  // A provider result must have independent ownership. Check overlap before
-  // clearing malformed output so validation cannot erase caller-owned input.
-  ensureIndependentByteArray(value, inputs);
-  if (value.length !== outputLength) {
-    value.fill(0);
-    throw new ReallyMeCryptoError("provider-failure");
-  }
-  return value;
+  return readIndependentProviderBytes(value, outputLength, inputs);
 };
 
 export const ReallyMeKmac = {
@@ -84,6 +74,7 @@ export const ReallyMeKmac = {
     customization: Uint8Array,
     outputLength: number,
   ): Uint8Array {
+    requireTrustedReallyMeWasmProvider(provider);
     validate(key, context, customization, outputLength);
     return requireDerivedKey(
       provider.kmac256Derive(key, context, customization, outputLength),

@@ -4,7 +4,7 @@
 
 use crypto_core::CryptoError;
 use k256::ecdh::diffie_hellman;
-use k256::{PublicKey, SecretKey};
+use k256::SecretKey;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 const SECP256K1_UNCOMPRESSED_PUBLIC_KEY_LEN: usize =
@@ -59,8 +59,7 @@ pub fn derive_secp256k1_shared_secret(
 
     let secret_key =
         SecretKey::from_slice(private_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
-    let public_key =
-        PublicKey::from_sec1_bytes(public_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    let public_key = super::encoding::parse_public_key(public_key)?;
     let shared_secret = diffie_hellman(secret_key.to_nonzero_scalar(), public_key.as_affine());
     // Initialize the final clearing owner before copying the raw x-coordinate.
     // The backend owner and returned owner then each clear their own storage.

@@ -71,3 +71,45 @@ fn invalid_lengths_and_low_order_points_fail_closed() {
     assert!(X448PublicKey::from_bytes(&[0_u8; X448_PUBLIC_KEY_LEN - 1]).is_err());
     assert!(X448PublicKey::from_bytes(&[0_u8; X448_PUBLIC_KEY_LEN]).is_err());
 }
+
+#[test]
+fn low_order_import_rejects_noncanonical_aliases() {
+    let mut prime = [0xff; X448_PUBLIC_KEY_LEN];
+    prime[28] = 0xfe;
+    let mut minus_one = prime;
+    minus_one[0] = 0xfe;
+    let mut prime_plus_one = [0xff; X448_PUBLIC_KEY_LEN];
+    prime_plus_one[..28].fill(0);
+    let mut one = [0; X448_PUBLIC_KEY_LEN];
+    one[0] = 1;
+    for encoded in [
+        [0; X448_PUBLIC_KEY_LEN],
+        one,
+        minus_one,
+        prime,
+        prime_plus_one,
+    ] {
+        assert_eq!(
+            X448PublicKey::from_bytes(&encoded).err(),
+            Some(CryptoError::PRIMITIVE_INVALID_KEY),
+        );
+    }
+}
+
+#[test]
+fn contributory_noncanonical_coordinate_still_agrees() -> Result<(), CryptoError> {
+    // RFC 7748 requires accepting noncanonical coordinates modulo p. p+2
+    // must remain usable even though the neighboring p and p+1 are rejected.
+    let mut noncanonical = [0xff; X448_PUBLIC_KEY_LEN];
+    noncanonical[..28].fill(0);
+    noncanonical[0] = 1;
+    let mut canonical = [0; X448_PUBLIC_KEY_LEN];
+    canonical[0] = 2;
+    let private_key = X448PrivateKey::from_bytes(&[0x73; X448_PRIVATE_KEY_LEN])?;
+    let from_noncanonical =
+        derive_x448_shared_secret(&private_key, X448PublicKey::from_bytes(&noncanonical)?)?;
+    let from_canonical =
+        derive_x448_shared_secret(&private_key, X448PublicKey::from_bytes(&canonical)?)?;
+    assert_eq!(from_noncanonical.as_bytes(), from_canonical.as_bytes());
+    Ok(())
+}

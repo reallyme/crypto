@@ -7,7 +7,6 @@ package me.really.crypto
 import java.math.BigInteger
 import java.security.MessageDigest
 import org.bouncycastle.asn1.ASN1Integer
-import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.DERSequence
 import org.bouncycastle.asn1.sec.SECNamedCurves
 import org.bouncycastle.crypto.digests.SHA256Digest
@@ -100,18 +99,14 @@ public object ReallyMeP256Ecdsa {
     }
 
     public fun verify(signature: ByteArray, message: ByteArray, publicKey: ByteArray) {
-        if (publicKey.size != COMPRESSED_PUBLIC_KEY_LENGTH &&
-            publicKey.size != UNCOMPRESSED_PUBLIC_KEY_LENGTH
-        ) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
+        requireStandardSec1PublicKey(publicKey, COMPRESSED_PUBLIC_KEY_LENGTH, UNCOMPRESSED_PUBLIC_KEY_LENGTH)
 
         val point = try {
             domain.curve.decodePoint(publicKey)
         } catch (_: IllegalArgumentException) {
             throw ReallyMeCryptoException.InvalidInput()
         }
-        val (r, s) = decodeDerSignature(signature)
+        val (r, s) = decodeCanonicalDerSignature(signature)
         val digest = MessageDigest.getInstance("SHA-256").digest(message)
         val verifier = ECDSASigner()
         verifier.init(false, ECPublicKeyParameters(point, domain))
@@ -152,36 +147,6 @@ public object ReallyMeP256Ecdsa {
         return output
     }
 
-    private fun decodeDerSignature(signature: ByteArray): Pair<BigInteger, BigInteger> {
-        val (r, s) = try {
-            val sequence = ASN1Sequence.getInstance(signature)
-            if (sequence.size() != 2) {
-                throw ReallyMeCryptoException.InvalidInput()
-            }
-            Pair(
-                ASN1Integer.getInstance(sequence.getObjectAt(0)).positiveValue,
-                ASN1Integer.getInstance(sequence.getObjectAt(1)).positiveValue,
-            )
-        } catch (_: RuntimeException) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        if (r.signum() <= 0 || r >= domain.n || s.signum() <= 0 || s >= domain.n) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        return Pair(r, s)
-    }
-
-    private fun decodeCanonicalDerSignature(signature: ByteArray): Pair<BigInteger, BigInteger> {
-        if (signature.isEmpty() || signature.size > DER_SIGNATURE_MAX_LENGTH) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        val components = decodeDerSignature(signature)
-        // BouncyCastle accepts some BER and non-minimal INTEGER encodings. A
-        // byte-for-byte DER round trip makes this public normalization boundary
-        // strict and keeps it aligned with the Rust implementation.
-        if (!encodeDerSignature(components.first, components.second).contentEquals(signature)) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        return components
-    }
+    private fun decodeCanonicalDerSignature(signature: ByteArray): Pair<BigInteger, BigInteger> =
+        decodeCanonicalEcdsaDer(signature, domain.n, DER_SIGNATURE_MAX_LENGTH)
 }

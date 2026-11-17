@@ -1,6 +1,6 @@
 # crypto-rsa
 
-RSA verification for ReallyMe Crypto.
+RSA signature operations for ReallyMe Crypto.
 
 This crate verifies RSASSA-PKCS1-v1_5 and RSASSA-PSS signatures over SHA-1,
 SHA-256, SHA-384, and SHA-512. SHA-1 is present only for historical document
@@ -15,5 +15,22 @@ particular, a modulus where `modBits % 8 == 1` uses an encoded message one byte
 shorter than the RSA signature. Limb-rounded arithmetic output is normalized
 only after its excess precision bytes have been verified as zero.
 
-This crate verifies signatures only. It does not expose RSA encryption,
-decryption, or signing.
+`RsaSigningKey` imports unencrypted PKCS#8 DER for RSASSA-PKCS1-v1_5/SHA-256
+(RS256). Signing accepts 2048..8192-bit keys, rejects inconsistent CRT fields,
+and bounds the exponent and input DER before private arithmetic. RSA 0.10.0
+provides the patched constant-time backend. Every signature uses explicit
+OS-backed blinding and entropy failures return a typed error. Imported private
+state is owned by `SecretBox`; backend factors and precomputations are destroyed
+on drop. Only public SPKI, modulus and exponent can be exported.
+
+Signing is available on Rust native and WASM lanes. Without either execution
+lane it returns `PROVIDER_UNSUPPORTED_ALGORITHM`. Standalone protobuf import
+and signing contracts do not advertise a new generic dispatch or SDK capability.
+The general RSA verification limits retain historical compatibility independently
+of the stronger signing profile. No encryption or decryption API is exposed.
+
+`parse_rsa_pss_sha2_params` imports bounded, complete DER for SHA-2 PSS metadata
+with MGF1. Protocols must still enforce their accepted hash/salt profile.
+
+The PKCS#8 keys under `src/testdata` are public test fixtures and are never
+appropriate for deployed identities.

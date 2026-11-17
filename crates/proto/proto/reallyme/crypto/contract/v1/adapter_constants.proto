@@ -118,6 +118,12 @@ option (reallyme.crypto.contract.v1.constant_registry) = {
       signed_value: 2
     }
     constants: {
+      native_name: "KOTLIN_NATIVE_UNSUPPORTED_ALGORITHM"
+      native_type: NATIVE_TYPE_I32
+      unit: UNIT_IDENTIFIER
+      signed_value: 3
+    }
+    constants: {
       native_name: "KOTLIN_NATIVE_BACKEND_INTERNAL"
       native_type: NATIVE_TYPE_I32
       unit: UNIT_IDENTIFIER

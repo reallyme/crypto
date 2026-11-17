@@ -12,6 +12,7 @@ import java.nio.file.attribute.PosixFilePermission
 import java.security.SecureRandom
 import java.util.Base64
 import kotlin.test.Test
+import kotlin.test.BeforeTest
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -28,6 +29,11 @@ import org.bouncycastle.asn1.DERSequence
 import org.junit.jupiter.api.Assumptions.assumeTrue
 
 class ReallyMeCryptoPostQuantumTest : ReallyMeCryptoTestSupport() {
+    @BeforeTest
+    fun loadRustProtocolProvider() {
+        loadCryptoProviderForTest()
+    }
+
     @Test
     fun mlKemVectorsDecapsulateAndRejectImplicitly() {
         validateMlKemVector("mlkem512.json", ReallyMeKemAlgorithm.ML_KEM_512)
@@ -65,12 +71,12 @@ class ReallyMeCryptoPostQuantumTest : ReallyMeCryptoTestSupport() {
         assertContentEquals(keyPair.publicKey, repeatedKeyPair.publicKey)
         assertContentEquals(secretKey, keyPair.secretKey)
 
-        val encapsulation = ReallyMeCrypto.encapsulateDeterministicForTest(
+        val encapsulation = ReallyMeProtocolConformance.encapsulate(
             ReallyMeKemAlgorithm.ML_KEM_768,
             keyPair.publicKey,
             randomness,
         )
-        val repeatedEncapsulation = ReallyMeCrypto.encapsulateDeterministicForTest(
+        val repeatedEncapsulation = ReallyMeProtocolConformance.encapsulate(
             ReallyMeKemAlgorithm.ML_KEM_768,
             keyPair.publicKey,
             randomness,
@@ -109,7 +115,7 @@ class ReallyMeCryptoPostQuantumTest : ReallyMeCryptoTestSupport() {
             ReallyMeCrypto.deriveKemKeyPair(ReallyMeKemAlgorithm.ML_KEM_512, ByteArray(63))
         }
         assertFailsWith<ReallyMeCryptoException.InvalidInput> {
-            ReallyMeCrypto.encapsulateDeterministicForTest(
+            ReallyMeProtocolConformance.encapsulate(
                 ReallyMeKemAlgorithm.ML_KEM_512,
                 ByteArray(800),
                 ByteArray(31),
@@ -206,7 +212,7 @@ class ReallyMeCryptoPostQuantumTest : ReallyMeCryptoTestSupport() {
                 destinationOffset = nonContributoryPublicKey.size - lowOrderPoint.size,
             )
             assertFailsWith<ReallyMeCryptoException.InvalidInput> {
-                ReallyMeXWing.encapsulateDeterministicForTest(
+                ReallyMeProtocolConformance.encapsulate(
                     ReallyMeKemAlgorithm.X_WING_768,
                     nonContributoryPublicKey,
                     encapsulationSeed,
@@ -423,6 +429,7 @@ class ReallyMeCryptoPostQuantumTest : ReallyMeCryptoTestSupport() {
             )
         }
 
+        // Both key roles fail admission before backend setup or AEAD opening.
         assertFailsWith<ReallyMeCryptoException.InvalidInput> {
             ReallyMeCrypto.sealHpke(
                 ReallyMeHpkeSuite.DHKEM_X25519_HKDF_SHA256_HKDF_SHA256_CHACHA20_POLY1305,
@@ -463,7 +470,7 @@ class ReallyMeCryptoPostQuantumTest : ReallyMeCryptoTestSupport() {
         val encapsulationSeed = vectorCaseField("x_wing.json", caseName, "encaps_seed")
         val ciphertext = vectorCaseField("x_wing.json", caseName, "ciphertext")
         val sharedSecret = vectorCaseField("x_wing.json", caseName, "shared_secret")
-        val encapsulation = ReallyMeXWing.encapsulateDeterministicForTest(
+        val encapsulation = ReallyMeProtocolConformance.encapsulate(
             algorithm,
             publicKey,
             encapsulationSeed,
@@ -502,7 +509,7 @@ class ReallyMeCryptoPostQuantumTest : ReallyMeCryptoTestSupport() {
         val encapsulatedKey = vectorCaseField("hpke.json", caseName, "encapsulated_key")
         val ciphertext = vectorCaseField("hpke.json", caseName, "ciphertext")
         val tamperedCiphertext = vectorCaseField("hpke.json", caseName, "tampered_ciphertext")
-        val sealed = ReallyMeHpke.sealDeterministicForTest(
+        val sealed = ReallyMeProtocolConformance.seal(
             suite,
             recipientPublicKey,
             encapsulationSeed,

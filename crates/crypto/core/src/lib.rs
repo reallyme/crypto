@@ -13,6 +13,7 @@ pub mod algorithm;
 mod authenticate_record;
 /// Canonical schema-defined error types.
 pub mod error;
+mod sec1;
 
 /// Random output-purpose vocabulary shared with entropy providers.
 pub mod random;
@@ -24,6 +25,8 @@ pub use authenticate_record::authenticate_record;
 pub use crypto_proto::contract_constants;
 pub use error::{CryptoError, CryptoErrorBranch, CryptoErrorReason};
 pub use random::RngOutputKind;
+#[doc(hidden)]
+pub use sec1::has_standard_sec1_encoding;
 
 /// Owner-local conversions from schema-defined algorithm identities.
 #[cfg(feature = "protobuf")]

@@ -12,6 +12,8 @@ pub(crate) enum VectorGenError {
     SerializeJson,
     #[error("failed to write vector json")]
     WriteJson,
+    #[error("invalid canonical ECDSA vector encoding")]
+    EcdsaEncoding,
     #[error("failed to decompress P-256 public key")]
     P256Decompress,
     #[error("failed to derive P-256 ECDH vector")]

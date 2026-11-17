@@ -18,6 +18,32 @@ fn shared_jwk_metadata_policy() {
         let jwk: Jwk = serde_json::from_value(value.clone()).expect("valid JWK must parse");
         public_key_bytes_from_jwk(&jwk).expect("valid JWK must decode");
     }
+    for case in policy["null_metadata_jwk"]
+        .as_array()
+        .expect("null metadata cases must be an array")
+    {
+        let with_null: Jwk = serde_json::from_value(case["with_null"].clone())
+            .expect("optional null metadata must parse");
+        let without_null: Jwk = serde_json::from_value(case["without_null"].clone())
+            .expect("absent metadata must parse");
+        assert_eq!(
+            public_key_bytes_from_jwk(&with_null).expect("null metadata key must decode"),
+            public_key_bytes_from_jwk(&without_null).expect("absent metadata key must decode"),
+        );
+        assert_eq!(
+            serde_json::to_value(&with_null).expect("public JWK must serialize"),
+            serde_json::to_value(&without_null).expect("public JWK must serialize"),
+        );
+    }
+    for value in policy["invalid_jwk_json"]
+        .as_array()
+        .expect("invalid raw JSON cases must be an array")
+    {
+        assert!(
+            serde_json::from_str::<Jwk>(value.as_str().expect("JSON case must be a string"))
+                .is_err()
+        );
+    }
     for value in policy["invalid_jwk"]
         .as_array()
         .expect("invalid JWK cases must be an array")

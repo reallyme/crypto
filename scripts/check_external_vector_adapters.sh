@@ -32,7 +32,11 @@ adapters=(
 for adapter in "${adapters[@]}"; do
   test_file="${adapter%%:*}"
   test_name="${adapter#*:}"
-  bash scripts/run_exact_cargo_test.sh --ignored "$test_name" \
+  test_flags=(--ignored)
+  case "$test_file" in
+    rfc9180_hpke|hpke_pq) test_flags=() ;;
+  esac
+  bash scripts/run_exact_cargo_test.sh "${test_flags[@]}" "$test_name" \
     --locked -p external-vector-audit --no-default-features --features native \
     --test "$test_file"
 done

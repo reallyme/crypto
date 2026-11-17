@@ -15,9 +15,9 @@ public inline fun cryptoIncrementalHashStartRequest(block: me.really.crypto.v1.C
  * Incremental hashing is a local, exclusively owned SDK lifecycle. A successful
  * start creates a fresh context; updates append exact bytes in order, including
  * empty chunks; finalize consumes the context and returns CryptoHashResult.
- * Supported algorithms are SHA2_256 and SHA3_256. UNSPECIFIED/unknown selectors
- * fail with PRIMITIVE_INVALID_PARAMETER; other algorithms fail with
- * PROVIDER_UNSUPPORTED_ALGORITHM. Context state is never serialized, imported,
+ * Supported algorithms are SHA2_256 and SHA3_256. UNSPECIFIED, unknown, and
+ * unavailable selectors fail with PROVIDER_UNSUPPORTED_ALGORITHM, matching
+ * one-shot hashing. Context state is never serialized, imported,
  * cloned, or addressed through a process-global handle. These standalone
  * contracts deliberately do not enter the stateless CryptoOperationRequest.
  * ```

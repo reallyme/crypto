@@ -175,7 +175,7 @@ public object ReallyMeJwk {
         return fromJwkObject(objectMap)
     }
 
-    private fun fromJwkObject(objectMap: Map<String, String>): ReallyMeJwkKey {
+    private fun fromJwkObject(objectMap: Map<String, String?>): ReallyMeJwkKey {
         if (objectMap.keys.any(privateMemberNames::contains)) {
             throw ReallyMeCryptoException.InvalidInput()
         }
@@ -327,7 +327,7 @@ public object ReallyMeJwk {
         return element.asJsonObject
     }
 
-    private fun stringMembers(jsonObject: JsonObject): Map<String, String> =
+    private fun stringMembers(jsonObject: JsonObject): Map<String, String?> =
         buildMap {
             if (jsonObject.size() > 16) {
                 throw ReallyMeCryptoException.InvalidInput()
@@ -336,6 +336,12 @@ public object ReallyMeJwk {
                 // Private members must remain visible to the public-only guard;
                 // registered extensions do not participate in key identity.
                 if (name.startsWith("x-")) {
+                    return@forEach
+                }
+                // Only optional metadata treats JSON null as absence. Retain
+                // the member so admission limits and private-member guards still apply.
+                if (name in setOf("alg", "use", "kid") && value.isJsonNull) {
+                    put(name, null)
                     return@forEach
                 }
                 if (!value.isJsonPrimitive || !value.asJsonPrimitive.isString) {

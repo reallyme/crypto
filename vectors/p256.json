@@ -9,5 +9,10 @@
   "peer_secret_key": "ahBF8jOegBKrdMYo3pEHW0nvMhiELbxgE6V3yQ5LJtE",
   "peer_public_key_compressed": "Ali-yYlmw_dYNuAs1pru8ZlUqrQouhAoBlJ4W_zPnhEh",
   "peer_public_key_uncompressed": "BFi-yYlmw_dYNuAs1pru8ZlUqrQouhAoBlJ4W_zPnhEhEQj5N59c_YItnc9okvfZ_R-KA3LHSL8KQ_xjE6RiqhQ",
-  "shared_secret": "iOVlde6amQQJ4-QGzYLITKXVKdLax4Hs46FesLh2_nE"
+  "shared_secret": "iOVlde6amQQJ4-QGzYLITKXVKdLax4Hs46FesLh2_nE",
+  "signature_der_nonminimal_sequence_length": "MIIARQIgbjA4Zm8GVaaBwWNskZFQkiczXGFSf_IgQmgJppXgftcCIQCjc3ejSQh6JEbVg5wNtwXK8gueQu3EuBmJLku-hmdUxg",
+  "signature_der_indefinite_sequence_length": "MIACIG4wOGZvBlWmgcFjbJGRUJInM1xhUn_yIEJoCaaV4H7XAiEAo3N3o0kIeiRG1YOcDbcFyvILnkLtxLgZiS5LvoZnVMYAAA",
+  "signature_der_nonminimal_integer_length": "MEYCgSBuMDhmbwZVpoHBY2yRkVCSJzNcYVJ_8iBCaAmmleB-1wIhAKNzd6NJCHokRtWDnA23BcryC55C7cS4GYkuS76GZ1TG",
+  "public_key_hybrid_even": "Bgf8y0NFCW-WIXJvxOQ3vgz4HEMQgfMo5VSWcjmsVSLuDZcUdT7G939Veqc3FCadWs_rcpS-vc_8Z8FaZREVX4A",
+  "public_key_hybrid_odd": "Bwf8y0NFCW-WIXJvxOQ3vgz4HEMQgfMo5VSWcjmsVSLuDZcUdT7G939Veqc3FCadWs_rcpS-vc_8Z8FaZREVX4A"
 }

@@ -8,7 +8,6 @@ import java.math.BigInteger
 import java.security.MessageDigest
 import java.security.SecureRandom
 import org.bouncycastle.asn1.ASN1Integer
-import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.DERSequence
 import org.bouncycastle.asn1.sec.SECNamedCurves
 import org.bouncycastle.crypto.digests.SHA512Digest
@@ -30,6 +29,7 @@ public object ReallyMeP521Ecdsa {
     public const val SECRET_KEY_LENGTH: Int = 66
     public const val COMPRESSED_PUBLIC_KEY_LENGTH: Int = 67
     public const val UNCOMPRESSED_PUBLIC_KEY_LENGTH: Int = 133
+    private const val DER_SIGNATURE_MAX_LENGTH: Int = 144
     private const val SCALAR_HIGH_BYTE_MASK: Int = 0x01
 
     private val domain: ECDomainParameters =
@@ -73,18 +73,14 @@ public object ReallyMeP521Ecdsa {
     }
 
     public fun verify(signature: ByteArray, message: ByteArray, publicKey: ByteArray) {
-        if (publicKey.size != COMPRESSED_PUBLIC_KEY_LENGTH &&
-            publicKey.size != UNCOMPRESSED_PUBLIC_KEY_LENGTH
-        ) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
+        requireStandardSec1PublicKey(publicKey, COMPRESSED_PUBLIC_KEY_LENGTH, UNCOMPRESSED_PUBLIC_KEY_LENGTH)
 
         val point = try {
             domain.curve.decodePoint(publicKey)
         } catch (_: IllegalArgumentException) {
             throw ReallyMeCryptoException.InvalidInput()
         }
-        val (r, s) = decodeDerSignature(signature)
+        val (r, s) = decodeCanonicalDerSignature(signature)
         val digest = MessageDigest.getInstance("SHA-512").digest(message)
         val verifier = ECDSASigner()
         verifier.init(false, ECPublicKeyParameters(point, domain))
@@ -107,22 +103,6 @@ public object ReallyMeP521Ecdsa {
     private fun encodeDerSignature(r: BigInteger, s: BigInteger): ByteArray =
         DERSequence(arrayOf(ASN1Integer(r), ASN1Integer(s))).encoded
 
-    private fun decodeDerSignature(signature: ByteArray): Pair<BigInteger, BigInteger> {
-        val (r, s) = try {
-            val sequence = ASN1Sequence.getInstance(signature)
-            if (sequence.size() != 2) {
-                throw ReallyMeCryptoException.InvalidInput()
-            }
-            Pair(
-                ASN1Integer.getInstance(sequence.getObjectAt(0)).positiveValue,
-                ASN1Integer.getInstance(sequence.getObjectAt(1)).positiveValue,
-            )
-        } catch (_: RuntimeException) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        if (r.signum() <= 0 || r >= domain.n || s.signum() <= 0 || s >= domain.n) {
-            throw ReallyMeCryptoException.InvalidInput()
-        }
-        return Pair(r, s)
-    }
+    private fun decodeCanonicalDerSignature(signature: ByteArray): Pair<BigInteger, BigInteger> =
+        decodeCanonicalEcdsaDer(signature, domain.n, DER_SIGNATURE_MAX_LENGTH)
 }

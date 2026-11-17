@@ -8,7 +8,6 @@ use crypto_core::CryptoError;
 use ecdsa::elliptic_curve::scalar::IsHigh;
 use ecdsa::signature::hazmat::PrehashVerifier;
 use k256::ecdsa::{Signature, VerifyingKey};
-use k256::PublicKey;
 use sha2::{Digest, Sha256};
 
 /// Verifies a 64-byte compact secp256k1 ECDSA signature over `message`.
@@ -31,8 +30,7 @@ pub fn verify_secp256k1(
         return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SIGNATURE);
     }
 
-    let pk = PublicKey::from_sec1_bytes(public_key_sec1)
-        .map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    let pk = super::encoding::parse_public_key(public_key_sec1)?;
 
     let vk = VerifyingKey::from(pk);
 

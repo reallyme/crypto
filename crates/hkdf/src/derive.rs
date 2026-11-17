@@ -27,7 +27,8 @@ pub struct DeriveRequest<'a> {
 
 /// Run HKDF-Expand for `request`, producing `N` bytes of output.
 ///
-/// Errors if the input keying material is empty or `N` is zero.
+/// Errors if the input keying material is empty, or `N` is zero or exceeds
+/// RFC 5869's limit of 255 times the selected hash output length.
 ///
 pub fn derive<const N: usize>(request: &DeriveRequest<'_>) -> Result<HkdfOutput<N>, CryptoError> {
     if request.ikm.as_bytes().is_empty() {
@@ -40,6 +41,8 @@ pub fn derive<const N: usize>(request: &DeriveRequest<'_>) -> Result<HkdfOutput<
 
     // Install the clearing owner before expansion can write key material. A
     // backend error then drops the same owner as a successful derivation.
+    // Expand's InvalidLength is the RFC 5869 output bound, a caller error
+    // rather than an internal backend failure.
     let mut output = HkdfOutput::from_array([0u8; N]);
 
     match request.suite {
@@ -47,13 +50,13 @@ pub fn derive<const N: usize>(request: &DeriveRequest<'_>) -> Result<HkdfOutput<
             let hkdf =
                 Hkdf::<Sha256>::new(request.salt.map(HkdfSalt::as_bytes), request.ikm.as_bytes());
             hkdf.expand(request.info.as_bytes(), output.as_mut_bytes())
-                .map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
+                .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)?;
         }
         HkdfSuite::Sha2_384 => {
             let hkdf =
                 Hkdf::<Sha384>::new(request.salt.map(HkdfSalt::as_bytes), request.ikm.as_bytes());
             hkdf.expand(request.info.as_bytes(), output.as_mut_bytes())
-                .map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
+                .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)?;
         }
         HkdfSuite::Sha3_256 => {
             #[cfg(feature = "sha3")]
@@ -67,7 +70,7 @@ pub fn derive<const N: usize>(request: &DeriveRequest<'_>) -> Result<HkdfOutput<
                     request.ikm.as_bytes(),
                 );
                 hkdf.expand(request.info.as_bytes(), output.as_mut_bytes())
-                    .map_err(|_| crypto_core::CryptoError::BACKEND_INTERNAL)?;
+                    .map_err(|_| crypto_core::CryptoError::PRIMITIVE_INVALID_LENGTH)?;
             }
 
             #[cfg(not(feature = "sha3"))]

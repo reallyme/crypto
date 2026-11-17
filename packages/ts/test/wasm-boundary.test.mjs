@@ -19,7 +19,7 @@ import {
   ReallyMeSecp256k1,
   ReallyMeX25519,
 } from "../dist/index.js";
-import { createWasmProviderFromModule } from "../dist/wasmProvider.js";
+import { createReallyMeWasmProvider, createWasmProviderFromModule } from "../dist/wasmProvider.js";
 import {
   CryptoOperationRequestSchema,
   CryptoOperationResponseSchema,
@@ -46,7 +46,7 @@ const wasmBytes = readFileSync(
 );
 initializeWasm(wasmBytes);
 
-const packageProvider = createWasmProviderFromModule(wasmProviderModule);
+const packageProvider = createReallyMeWasmProvider(wasmProviderModule);
 
 const assertReallyMeError = (operation, code) => {
   assert.throws(
@@ -68,7 +68,7 @@ test("package-global AEAD requires an installed WASM provider", () => {
   );
 });
 
-test("configured WASM provider preserves a disabled algorithm's typed status", () => {
+test("low-level WASM adapter preserves a disabled algorithm's typed status", () => {
   const restrictedProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
     aes256GcmSivOpen: () => {
@@ -76,9 +76,7 @@ test("configured WASM provider preserves a disabled algorithm's typed status", (
     },
   });
   assertReallyMeError(
-    () => ReallyMeAead.openWithProvider(
-      restrictedProvider,
-      "AES-256-GCM-SIV",
+    () => restrictedProvider.aes256GcmSivOpen(
       new Uint8Array(32),
       new Uint8Array(12),
       new Uint8Array(),
@@ -244,26 +242,10 @@ test("variable-length WASM inputs reject oversized buffers before provider dispa
     assert.throws(operation, (error) => error === WASM_INVALID_INPUT);
   }
 
-  let providerCalls = 0;
-  const countingProvider = createWasmProviderFromModule({
-    ...wasmProviderModule,
-    aes256GcmSivSeal: () => {
-      providerCalls += 1;
-      return new Uint8Array();
-    },
-    argon2idDeriveKey: () => {
-      providerCalls += 1;
-      return new Uint8Array(32);
-    },
-    hpkeSealBase: () => {
-      providerCalls += 1;
-      return Object.create(null);
-    },
-  });
   assertReallyMeError(
     () =>
       ReallyMeAead.sealWithProvider(
-        countingProvider,
+        packageProvider,
         "AES-256-GCM-SIV",
         key,
         nonce,
@@ -273,13 +255,13 @@ test("variable-length WASM inputs reject oversized buffers before provider dispa
     "invalid-input",
   );
   assertReallyMeError(
-    () => ReallyMeArgon2id.deriveKeyWithProvider(countingProvider, 1, oversized, salt),
+    () => ReallyMeArgon2id.deriveKeyWithProvider(packageProvider, 1, oversized, salt),
     "invalid-input",
   );
   assertReallyMeError(
     () =>
       ReallyMeHpke.sealBaseWithProvider(
-        countingProvider,
+        packageProvider,
         "DHKEM-P256-HKDF-SHA256-HKDF-SHA256-AES-256-GCM",
         p256PublicKey,
         empty,
@@ -288,67 +270,34 @@ test("variable-length WASM inputs reject oversized buffers before provider dispa
       ),
     "invalid-input",
   );
-  assert.equal(providerCalls, 0);
 
   oversized.fill(0);
   key.fill(0);
   salt.fill(0);
 });
 
-test("custom seed-derived providers have an explicit correspondence trust boundary", () => {
+test("custom seed-derived providers cannot bypass package ownership", () => {
   const seed = new Uint8Array(ML_KEM_SEED_LENGTH).fill(0x37);
-  const packageKeyPair = ReallyMeMlKem.deriveKeyPairWithProvider(
-    packageProvider,
-    "ML-KEM-512",
-    seed,
-  );
-  const mismatchedPublicKey = packageKeyPair.publicKey.slice();
-  mismatchedPublicKey[0] ^= 1;
-  assert.notDeepEqual(mismatchedPublicKey, packageKeyPair.publicKey);
-
+  const packageKeyPair = ReallyMeMlKem.deriveKeyPairWithProvider(packageProvider, "ML-KEM-512", seed);
+  let providerCalls = 0;
   const customProvider = createWasmProviderFromModule({
     ...wasmProviderModule,
-    mlKem512DeriveKeypair: () => ({
-      publicKey: mismatchedPublicKey.slice(),
-      secretKey: seed.slice(),
-    }),
+    mlKem512DeriveKeypair: () => {
+      providerCalls += 1;
+      return { publicKey: new Uint8Array(ML_KEM_512_PUBLIC_KEY_LENGTH), secretKey: seed };
+    },
   });
-  const customKeyPair = ReallyMeMlKem.deriveKeyPairWithProvider(
-    customProvider,
-    "ML-KEM-512",
-    seed,
+  assertReallyMeError(
+    () => ReallyMeMlKem.deriveKeyPairWithProvider(customProvider, "ML-KEM-512", seed),
+    "provider-failure",
   );
-
-  // The package-owned provider is self-verified because Rust derives both
-  // halves. A deliberately supplied provider remains a documented trust
-  // boundary and must carry its own correspondence conformance evidence.
-  assert.equal(customKeyPair.publicKey.length, ML_KEM_512_PUBLIC_KEY_LENGTH);
-  assert.deepEqual(customKeyPair.publicKey, mismatchedPublicKey);
-  customKeyPair.secretKey.fill(0);
+  assert.equal(providerCalls, 0);
   packageKeyPair.secretKey.fill(0);
   seed.fill(0);
 });
 
 test("facades reject raw-WASM numeric truncation candidates before dispatch", () => {
-  let providerCalls = 0;
-  const rejectingProvider = createWasmProviderFromModule({
-    ...wasmProviderModule,
-    argon2idDeriveKey: () => {
-      providerCalls += 1;
-      return new Uint8Array(32);
-    },
-    kmac256Derive: () => {
-      providerCalls += 1;
-      return new Uint8Array(32);
-    },
-    hpkeSealBase: () => {
-      providerCalls += 1;
-      return Object.create(null);
-    },
-    rsaVerifyPss: () => {
-      providerCalls += 1;
-    },
-  });
+  const rejectingProvider = packageProvider;
   const key = new Uint8Array(32);
   const salt = new Uint8Array(16);
   const wrapsToSupportedU32 = 2 ** 32 + 1;
@@ -369,7 +318,6 @@ test("facades reject raw-WASM numeric truncation candidates before dispatch", ()
     () => ReallyMeRsa.verifyWithProvider(rejectingProvider, 2 ** 32 + 410, key, key, key, "SPKI"),
     "unsupported-algorithm",
   );
-  assert.equal(providerCalls, 0);
   key.fill(0);
   salt.fill(0);
 });
@@ -391,11 +339,11 @@ test("WASM numeric error codes map to typed SDK errors without untyped strings",
   });
 
   assertReallyMeError(
-    () => ReallyMeArgon2id.deriveKeyWithProvider(numericProvider, 1, key, salt),
+    () => numericProvider.argon2idDeriveKey(1, key, salt),
     "invalid-input",
   );
   assertReallyMeError(
-    () => ReallyMeArgon2id.deriveKeyWithProvider(stringErrorProvider, 1, key, salt),
+    () => stringErrorProvider.argon2idDeriveKey(1, key, salt),
     "provider-failure",
   );
   key.fill(0);

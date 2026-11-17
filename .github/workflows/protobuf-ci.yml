@@ -21,7 +21,7 @@ env:
 jobs:
   protobuf:
     name: lint, immutable contracts, generated freshness
-    runs-on: ubuntu-24.04
+    runs-on: macos-26
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -61,6 +61,19 @@ jobs:
           cargo install reallyme-protoc-gen-buffa --version "=$BUFFA_VERSION" --locked
           cargo install reallyme-protoc-gen-buffa-packaging --version "=$BUFFA_VERSION" --locked
 
+      - name: Select Xcode 26.6
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.6.app
+          swift --version
+
+      - name: Install TypeScript protocol generator
+        run: npm ci --prefix packages/ts
+
+      - name: Install pinned local protocol tools
+        run: |
+          bash scripts/install_local_proto_tools.sh
+          printf '%s\n' "$PWD/.build/crypto-proto-tools/bin" >> "$GITHUB_PATH"
+
       # The reviewed 0.3.17 schema baseline is pinned by commit so moving a tag
       # cannot weaken compatibility validation for existing generated clients.
       - name: Check protobuf compatibility
@@ -74,7 +87,7 @@ jobs:
 
   verified:
     name: Record verified candidate
-    runs-on: ubuntu-24.04
+    runs-on: macos-26
     timeout-minutes: 5
     needs: [protobuf]
     outputs:

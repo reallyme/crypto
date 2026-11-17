@@ -29,7 +29,10 @@ enum State {
 }
 
 impl IncrementalHash {
-    /// Start an enabled algorithm, rejecting unspecified and unknown selectors.
+    /// Start an enabled algorithm.
+    ///
+    /// Unspecified, unknown, and unavailable selectors return
+    /// `PROVIDER_UNSUPPORTED_ALGORITHM`, matching one-shot hashing.
     pub fn start(request: &CryptoIncrementalHashStartRequest) -> Result<Self, CryptoError> {
         let state = match request.algorithm.as_known() {
             #[cfg(feature = "sha2")]
@@ -40,10 +43,7 @@ impl IncrementalHash {
             Some(HashAlgorithm::HASH_ALGORITHM_SHA3_256) => {
                 State::Sha3(crate::sha3::Sha3_256Hasher::new())
             }
-            None | Some(HashAlgorithm::HASH_ALGORITHM_UNSPECIFIED) => {
-                return Err(CryptoError::PRIMITIVE_INVALID_PARAMETER)
-            }
-            Some(_) => return Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
+            _ => return Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM),
         };
         Ok(Self { state })
     }

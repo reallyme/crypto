@@ -18,7 +18,7 @@ plugins {
 }
 
 group = "me.really"
-version = "0.4.4"
+version = "0.4.3"
 
 dependencyLocking {
     lockAllConfigurations()
@@ -234,11 +234,40 @@ dependencies {
     // natives; an Android consumer swaps it for `secp256k1-kmp-jni-android`.
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jvm:0.24.0")
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.24.0")
-    implementation("me.really:codec:0.4.3")
+    implementation("me.really:codec:0.4.4")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.3")
     testImplementation(kotlin("test"))
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.1.3")
+}
+
+// Deterministic KATs use a separate JNI image and JVM. Production resources
+// remain release-ffi builds without the conformance-only native exports.
+val protocolConformanceLibrary = layout.projectDirectory.file("../../target/debug/$hostNativeLibraryName")
+val buildProtocolConformanceLibrary = tasks.register<Exec>("buildProtocolConformanceLibrary") {
+    group = "verification"
+    description = "Builds a test-only Rust JNI image for protocol known-answer tests."
+    workingDir = layout.projectDirectory.dir("../..").asFile
+    environment("RUSTFLAGS", "")
+    environment("CARGO_ENCODED_RUSTFLAGS", "")
+    environment("CARGO_BUILD_JOBS", "2")
+    environment("CARGO_INCREMENTAL", "0")
+    environment("CARGO_PROFILE_DEV_DEBUG", "0")
+    commandLine(
+        "cargo", "build", "--locked", "-p", "crypto-ffi", "--features", "test-vectors",
+        "--target-dir", layout.projectDirectory.dir("../../target").asFile.absolutePath,
+    )
+}
+val postQuantumProviderTests = "**/ReallyMeCryptoPostQuantumTest.class"
+val testRustProtocols = tasks.register<Test>("testRustProtocols") {
+    description = "Checks Rust protocol and post-quantum known-answer vectors in an isolated JVM."
+    group = "verification"
+    dependsOn(buildProtocolConformanceLibrary)
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    include(postQuantumProviderTests)
+    environment("REALLYME_CRYPTO_FFI_LIBRARY_PATH", protocolConformanceLibrary.asFile.absolutePath)
+    useJUnitPlatform()
 }
 
 // JNI activation is process-wide. Run the unconfigured-provider contract in a
@@ -254,7 +283,11 @@ val testUnconfiguredRustProvider = tasks.register<Test>("testUnconfiguredRustPro
 }
 
 tasks.test {
+    dependsOn(tasks.jar)
+    systemProperty("reallyme.crypto.productionJar", tasks.jar.get().archiveFile.get().asFile.absolutePath)
     dependsOn(testUnconfiguredRustProvider)
+    dependsOn(testRustProtocols)
+    exclude(postQuantumProviderTests)
     exclude(unconfiguredProviderTests)
     useJUnitPlatform()
     val ffiLibraryPath = providers.environmentVariable("REALLYME_CRYPTO_FFI_LIBRARY_PATH")

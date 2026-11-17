@@ -18,6 +18,21 @@ final class ReallyMeCryptoJwkTests: XCTestCase {
       let json = try JSONSerialization.data(withJSONObject: value)
       XCTAssertFalse(try ReallyMeJwk.fromJwkJson(json).publicKey.isEmpty)
     }
+    let nullCases = try XCTUnwrap(decoded["null_metadata_jwk"] as? [[String: Any]])
+    for value in nullCases {
+      let withNull = try ReallyMeJwk.fromJwkJson(
+        JSONSerialization.data(withJSONObject: XCTUnwrap(value["with_null"])))
+      let withoutNull = try ReallyMeJwk.fromJwkJson(
+        JSONSerialization.data(withJSONObject: XCTUnwrap(value["without_null"])))
+      XCTAssertEqual(withNull.algorithm, withoutNull.algorithm)
+      XCTAssertEqual(withNull.publicKey, withoutNull.publicKey)
+      XCTAssertEqual(try ReallyMeJwk.toJcs(withNull.jwk), try ReallyMeJwk.toJcs(withoutNull.jwk))
+    }
+    for json in try XCTUnwrap(decoded["invalid_jwk_json"] as? [String]) {
+      XCTAssertThrowsError(try ReallyMeJwk.fromJwkJson(Data(json.utf8))) { error in
+        XCTAssertEqual(error as? ReallyMeCryptoError, .invalidInput)
+      }
+    }
     for value in invalid {
       let json = try JSONSerialization.data(withJSONObject: value)
       XCTAssertThrowsError(try ReallyMeJwk.fromJwkJson(json)) { error in

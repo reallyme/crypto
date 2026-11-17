@@ -10,6 +10,7 @@
     clippy::unwrap_used
 )]
 
+#[cfg(any(feature = "native", feature = "wasm"))]
 fn assert_package_name() {
     let package_name = std::env::var("CARGO_PKG_NAME")
         .expect("cargo should set CARGO_PKG_NAME for integration tests");

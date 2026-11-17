@@ -36,14 +36,19 @@ pub unsafe extern "C" fn rm_crypto_process_operation_response(
     len_out: *mut usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
-        process_request(
-            request_ptr,
-            request_len,
-            output_ptr,
-            output_len,
-            len_out,
-            process_operation_response,
-        )
+        // SAFETY: The caller keeps all declared input ranges live and immutable
+        // and outputs exclusively writable through this call. Scoped helpers
+        // check bounds and aliases; the caller retains their ownership.
+        unsafe {
+            process_request(
+                request_ptr,
+                request_len,
+                output_ptr,
+                output_len,
+                len_out,
+                process_operation_response,
+            )
+        }
     })
 }
 
@@ -65,18 +70,30 @@ pub unsafe extern "C" fn rm_crypto_process_operation_response_json(
     len_out: *mut usize,
 ) -> CryptoStatus {
     ffi_guard(|| {
-        process_request(
-            request_ptr,
-            request_len,
-            output_ptr,
-            output_len,
-            len_out,
-            process_operation_response_json,
-        )
+        // SAFETY: The caller keeps all declared input ranges live and immutable
+        // and outputs exclusively writable through this call. Scoped helpers
+        // check bounds and aliases; the caller retains their ownership.
+        unsafe {
+            process_request(
+                request_ptr,
+                request_len,
+                output_ptr,
+                output_len,
+                len_out,
+                process_operation_response_json,
+            )
+        }
     })
 }
 
-fn process_request(
+/// # Safety
+///
+/// Non-empty raw inputs must remain initialized, readable, and immutable
+/// for their declared lengths throughout this call. Raw outputs must name
+/// live, exclusively writable allocations of their declared lengths and
+/// must not alias inputs. Typed length outputs must also be aligned. The
+/// caller retains ownership; an active pointer-range scope is required.
+unsafe fn process_request(
     request_ptr: *const u8,
     request_len: usize,
     output_ptr: *mut u8,

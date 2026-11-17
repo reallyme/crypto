@@ -10,11 +10,13 @@ import {
 } from "./encodeEcdsaDer.js";
 import { ReallyMeCryptoError } from "./errors.js";
 import { ensureByteArray } from "./validateBytes.js";
+import { ensureStandardSec1PublicKey } from "./validateSec1PublicKey.js";
 
 export const P521_ECDSA_SECRET_KEY_LENGTH = 66;
 export const P521_ECDSA_COMPRESSED_PUBLIC_KEY_LENGTH = 67;
 export const P521_ECDSA_COMPACT_SIGNATURE_LENGTH = 132;
 export const P521_ECDSA_DER_SIGNATURE_MAX_LENGTH = 139;
+const P521_ECDSA_UNCOMPRESSED_PUBLIC_KEY_LENGTH = 133;
 
 /**
  * P-521 ECDSA backed by @noble/curves.
@@ -75,10 +77,11 @@ export const ReallyMeP521Ecdsa = {
   ): void {
     ensureByteArray(signature);
     ensureByteArray(message);
-    ensureByteArray(publicKey);
-    if (publicKey.length !== P521_ECDSA_COMPRESSED_PUBLIC_KEY_LENGTH) {
-      throw new ReallyMeCryptoError("invalid-input");
-    }
+    ensureStandardSec1PublicKey(
+      publicKey,
+      P521_ECDSA_COMPRESSED_PUBLIC_KEY_LENGTH,
+      P521_ECDSA_UNCOMPRESSED_PUBLIC_KEY_LENGTH,
+    );
 
     let compactSignature: Uint8Array;
     try {

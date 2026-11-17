@@ -7,11 +7,11 @@ import { ReallyMeCryptoError } from "./errors.js";
 import {
   ensureByteArrayAtMost,
   ensureBytes,
-  ensureIndependentByteArray,
+  readIndependentProviderBytes,
   MAX_CRYPTO_INPUT_LENGTH,
   readIndependentByteArrayProperty,
 } from "./validateBytes.js";
-import { requireReallyMeWasmProvider } from "./wasmProvider.js";
+import { requireReallyMeWasmProvider, requireTrustedReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 
 export const HPKE_P256_PRIVATE_KEY_LENGTH = 32;
@@ -81,15 +81,7 @@ const requirePlaintext = (
   expectedLength: number,
   inputs: ReadonlyArray<Uint8Array>,
 ): Uint8Array => {
-  if (!(value instanceof Uint8Array)) {
-    throw new ReallyMeCryptoError("provider-failure");
-  }
-  ensureIndependentByteArray(value, inputs);
-  if (value.length !== expectedLength) {
-    value.fill(0);
-    throw new ReallyMeCryptoError("provider-failure");
-  }
-  return value;
+  return readIndependentProviderBytes(value, expectedLength, inputs);
 };
 
 export const ReallyMeHpke = {
@@ -127,6 +119,7 @@ export const ReallyMeHpke = {
     aad: Uint8Array,
     plaintext: Uint8Array,
   ): ReallyMeHpkeSealedMessage {
+    requireTrustedReallyMeWasmProvider(provider);
     const config = hpkeSuite(suite);
     ensureBytes(recipientPublicKey, config.publicKeyLength);
     ensureByteArrayAtMost(info, HPKE_INFO_MAX_LENGTH);
@@ -183,6 +176,7 @@ export const ReallyMeHpke = {
     aad: Uint8Array,
     ciphertext: Uint8Array,
   ): Uint8Array {
+    requireTrustedReallyMeWasmProvider(provider);
     const config = hpkeSuite(suite);
     ensureBytes(recipientSecretKey, config.privateKeyLength);
     ensureBytes(encapsulatedKey, config.publicKeyLength);

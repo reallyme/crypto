@@ -117,7 +117,7 @@ pub(super) fn register_input_range(ptr: *const u8, len: usize) -> Result<(), Cry
                 .try_borrow_mut()
                 .map_err(|_| CRYPTO_INVALID_ARGUMENT)?;
             if !ranges.active {
-                return Ok(());
+                return Err(CRYPTO_INVALID_ARGUMENT);
             }
             for output in &ranges.outputs[..ranges.output_count] {
                 validate_disjoint_ranges(ptr, len, output.range.ptr.cast_mut(), output.range.len)?;
@@ -147,7 +147,7 @@ pub(super) fn register_output_range<T>(
                 .try_borrow_mut()
                 .map_err(|_| CRYPTO_INVALID_ARGUMENT)?;
             if !ranges.active {
-                return Ok(());
+                return Err(CRYPTO_INVALID_ARGUMENT);
             }
             for input in &ranges.inputs[..ranges.input_count] {
                 validate_disjoint_ranges(input.ptr, input.len, ptr.cast::<u8>(), len_bytes)?;
@@ -196,6 +196,9 @@ pub(super) fn validate_registered_inputs_against_output<T>(
     RANGES
         .try_with(|registry| {
             let ranges = registry.try_borrow().map_err(|_| CRYPTO_INVALID_ARGUMENT)?;
+            if !ranges.active {
+                return Err(CRYPTO_INVALID_ARGUMENT);
+            }
             for input in &ranges.inputs[..ranges.input_count] {
                 validate_disjoint_ranges(
                     input.ptr,

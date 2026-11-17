@@ -36,6 +36,9 @@ if [[ "$ABI_TEST_MODE" != missing-export ]]; then
   if [[ "$ABI_TEST_HOST" == Darwin ]]; then echo '_rm_crypto_ed25519_verify'; else echo 'rm_crypto_ed25519_verify'; fi
 fi
 if [[ "$ABI_TEST_MODE" == conformance-export ]]; then echo 'rm_crypto_ml_kem_768_encapsulate_derand'; fi
+if [[ "$ABI_TEST_MODE" == legacy-jni-conformance-export ]]; then echo 'Java_me_really_crypto_ReallyMeRustProtocols_encapsulateDeterministicNative'; fi
+if [[ "$ABI_TEST_MODE" == jni-kem-conformance-export ]]; then echo 'Java_me_really_crypto_ReallyMeProtocolConformance_encapsulateNative'; fi
+if [[ "$ABI_TEST_MODE" == jni-hpke-conformance-export ]]; then echo 'Java_me_really_crypto_ReallyMeProtocolConformance_hpkeSealNative'; fi
 `);
   executable("clang", `
 touch "$ABI_TEST_ROOT/clang-called"
@@ -83,7 +86,7 @@ test("abort rejection requires the intended compilation diagnostic", (context) =
 });
 
 test("missing production exports and leaked conformance exports fail the gate", (context) => {
-  for (const mode of ["missing-export", "conformance-export"]) {
+  for (const mode of ["missing-export", "conformance-export", "jni-kem-conformance-export", "jni-hpke-conformance-export", "legacy-jni-conformance-export"]) {
     const { result } = runFixture(context, mode);
     assert.equal(result.status, 1, result.stderr);
     assert.doesNotMatch(result.stdout, /passed C sanitizer checks/u);

@@ -9,7 +9,7 @@ import {
   readIndependentByteArrayProperty,
   readIndependentProviderBytes,
 } from "./validateBytes.js";
-import { requireReallyMeWasmProvider } from "./wasmProvider.js";
+import { requireReallyMeWasmProvider, requireTrustedReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 
 export const X_WING_SECRET_KEY_LENGTH = 32;
@@ -44,6 +44,7 @@ const xWingSuiteWithProvider = (
   algorithm: ReallyMeKemAlgorithm,
   provider: ReallyMeWasmProvider,
 ): XWingSuite => {
+  requireTrustedReallyMeWasmProvider(provider);
   switch (algorithm) {
     case "ML-KEM-512":
     case "ML-KEM-768":

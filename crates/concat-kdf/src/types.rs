@@ -49,7 +49,7 @@ impl JwaSharedSecret {
             ..=JWA_CONCAT_KDF_MAX_SHARED_SECRET_LENGTH)
             .contains(&input.len())
         {
-            return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_PASSWORD);
+            return Err(crypto_core::CryptoError::PRIMITIVE_INVALID_SHARED_SECRET);
         }
 
         Ok(Self {

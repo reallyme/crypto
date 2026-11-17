@@ -127,18 +127,18 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/reallyme/codec",
-      exact: "0.4.3"
+      exact: "0.4.4"
     ),
     .package(
       url: "https://github.com/reallyme/CSecp256k1",
-      from: "0.1.0"
+      exact: "0.1.0"
     ),
     // Digest supplies SHA-3 (CryptoKit has none). Post-quantum goes
     // through the ReallyMe Rust C ABI per PROVIDER_POLICY.md, so no
     // Swift-native PQ package (SwiftKyber/SwiftDilithium) is linked.
     .package(
       url: "https://github.com/leif-ibsen/Digest",
-      from: "1.13.0"
+      exact: "1.13.0"
     ),
     .package(
       url: "https://github.com/apple/swift-protobuf.git",

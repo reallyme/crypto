@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crypto_core::CryptoError;
-use p256::{PublicKey, SecretKey};
+use p256::SecretKey;
 use zeroize::Zeroizing;
 
 const P256_SECRET_KEY_LEN: usize = crypto_core::contract_constants::p256::P256_SECRET_KEY_LEN;
@@ -26,8 +26,7 @@ pub fn derive_p256_shared_secret(
 
     let secret =
         SecretKey::from_slice(secret_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
-    let public =
-        PublicKey::from_sec1_bytes(public_key).map_err(|_| CryptoError::PRIMITIVE_INVALID_KEY)?;
+    let public = super::encoding::parse_public_key(public_key)?;
     let shared = secret.diffie_hellman(&public);
     let shared_bytes = shared.raw_secret_bytes();
     if shared_bytes.len() != P256_SHARED_SECRET_LEN {

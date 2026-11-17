@@ -7,13 +7,16 @@ package me.really.crypto
 import java.security.ProviderException
 import java.security.SecureRandom
 import kotlin.test.Test
+import kotlin.test.BeforeTest
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import org.bouncycastle.asn1.sec.SECNamedCurves
 
-class ReallyMeP521KeyGenerationTest {
+class ReallyMeP521KeyGenerationTest : ReallyMeCryptoTestSupport() {
+    @BeforeTest
+    fun loadProvider() = loadCryptoProviderForTest()
     private val generators: List<(SecureRandom) -> Pair<ByteArray, ByteArray>> = listOf(
         { random -> ReallyMeP521Ecdh.generateKeyPair(random) },
         { random -> ReallyMeP521Ecdsa.generateKeyPair(random) },

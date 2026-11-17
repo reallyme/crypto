@@ -50,39 +50,20 @@ impl DhGroup for Secp256k1Group {
         extract.input_ikm(input_key_material);
         let (mut prk, hkdf) = extract.finalize();
 
-        let mut last_candidate = Zeroizing::new([0_u8; HPKE_SECP256K1_PRIVATE_KEY_LEN]);
-        for counter in 0_u8..=u8::MAX {
-            if hkdf
-                .expand_multi_info(
-                    &[
-                        &PRIVATE_KEY_LEN_U16,
-                        VERSION_LABEL,
-                        KEM_SUITE_ID,
-                        CANDIDATE_LABEL,
-                        &[counter],
-                    ],
-                    last_candidate.as_mut_slice(),
-                )
-                .is_ok()
-            {
-                if let Ok(secret_key) = SecretKey::from_slice(last_candidate.as_slice()) {
-                    prk.zeroize();
-                    return secret_key;
-                }
-            }
-            last_candidate.zeroize();
-        }
-
-        // RFC 9180 specifies aborting after 256 rejected candidates, but the
-        // selected backend's `Kem` trait cannot report DeriveKeyPairError.
-        // Reduce the final pseudorandom candidate into [1, order) rather than
-        // inheriting the backend's production panic. Reaching this branch has
-        // probability below 2^-8000; the registered derivation is unchanged
-        // for every conforming execution.
-        let candidate = Zeroizing::new(FieldBytes::from(*last_candidate));
-        let fallback = NonZeroScalar::reduce_nonzero(&*candidate);
+        let private_key = derive_private_key_from_candidates(|counter, candidate| {
+            hkdf.expand_multi_info(
+                &[
+                    &PRIVATE_KEY_LEN_U16,
+                    VERSION_LABEL,
+                    KEM_SUITE_ID,
+                    CANDIDATE_LABEL,
+                    &[counter],
+                ],
+                candidate,
+            )
+        });
         prk.zeroize();
-        SecretKey::from(fallback)
+        private_key
     }
 
     fn private_key_from_bytes(encoded: &[u8]) -> Result<Self::PrivateKey, hpke::HpkeError> {
@@ -90,7 +71,10 @@ impl DhGroup for Secp256k1Group {
     }
 
     fn write_private_key(private_key: &Self::PrivateKey, output: &mut [u8]) {
-        output.copy_from_slice(&private_key.to_bytes());
+        // Serialization creates a second scalar owner; wipe it independently
+        // of the SecretKey and the caller-owned output buffer.
+        let encoded_private_key = Zeroizing::new(private_key.to_bytes());
+        output.copy_from_slice(encoded_private_key.as_slice());
     }
 
     fn public_key_from_bytes(encoded: &[u8]) -> Result<Self::PublicKey, hpke::HpkeError> {
@@ -117,8 +101,9 @@ impl DhGroup for Secp256k1Group {
         public_key: &Self::PublicKey,
     ) -> Result<Self::RawSharedSecret, hpke::HpkeError> {
         let encoded_public_key = public_key.as_affine().to_sec1_point(false);
+        let encoded_private_key = Zeroizing::new(private_key.to_bytes());
         derive_secp256k1_shared_secret(
-            private_key.to_bytes().as_slice(),
+            encoded_private_key.as_slice(),
             encoded_public_key.as_bytes(),
         )
         .map_err(|_| hpke::HpkeError::EncapError)
@@ -128,3 +113,33 @@ impl DhGroup for Secp256k1Group {
         secret.as_bytes()
     }
 }
+
+fn derive_private_key_from_candidates(
+    mut derive_candidate: impl FnMut(u8, &mut [u8]) -> Result<(), hkdf::InvalidLength>,
+) -> SecretKey {
+    let mut last_candidate = Zeroizing::new([0_u8; HPKE_SECP256K1_PRIVATE_KEY_LEN]);
+    for counter in 0_u8..=u8::MAX {
+        // Wipe before replacement, preserving the final rejected candidate
+        // until the fallback consumes it. The owner also wipes on every return.
+        last_candidate.zeroize();
+        if derive_candidate(counter, last_candidate.as_mut_slice()).is_ok() {
+            if let Ok(secret_key) = SecretKey::from_slice(last_candidate.as_slice()) {
+                return secret_key;
+            }
+        }
+    }
+
+    // RFC 9180 specifies aborting after 256 rejected candidates, but the
+    // selected backend's `Kem` trait cannot report DeriveKeyPairError.
+    // Reduce the final pseudorandom candidate into [1, order) rather than
+    // inheriting the backend's production panic. Reaching this branch has
+    // probability below 2^-8000; the registered derivation is unchanged
+    // for every conforming execution.
+    let candidate = Zeroizing::new(FieldBytes::from(*last_candidate));
+    let fallback = Zeroizing::new(NonZeroScalar::reduce_nonzero(&*candidate));
+    SecretKey::from(&*fallback)
+}
+
+#[cfg(test)]
+#[path = "secp256k1_tests.rs"]
+mod tests;

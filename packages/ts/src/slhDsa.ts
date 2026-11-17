@@ -11,7 +11,7 @@ import {
   MAX_CRYPTO_INPUT_LENGTH,
   readIndependentByteArrayProperty,
 } from "./validateBytes.js";
-import { requireReallyMeWasmProvider } from "./wasmProvider.js";
+import { requireReallyMeWasmProvider, requireTrustedReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 
 export const SLH_DSA_SHA2_128S_PUBLIC_KEY_LENGTH = 32;
@@ -81,6 +81,7 @@ export const ReallyMeSlhDsa = {
     provider: ReallyMeWasmProvider,
     algorithm: ReallyMeSignatureAlgorithm,
   ): ReallyMeSlhDsaKeyPair {
+    requireTrustedReallyMeWasmProvider(provider);
     assertSlhDsa(algorithm);
     return readKeyPair(provider.slhDsaSha2128sGenerateKeypair());
   },
@@ -105,6 +106,7 @@ export const ReallyMeSlhDsa = {
     message: Uint8Array,
     secretKey: Uint8Array,
   ): Uint8Array {
+    requireTrustedReallyMeWasmProvider(provider);
     assertSlhDsa(algorithm);
     ensureByteArrayAtMost(message, MAX_CRYPTO_INPUT_LENGTH);
     ensureBytes(secretKey, SLH_DSA_SHA2_128S_SECRET_KEY_LENGTH);
@@ -140,6 +142,7 @@ export const ReallyMeSlhDsa = {
     message: Uint8Array,
     publicKey: Uint8Array,
   ): void {
+    requireTrustedReallyMeWasmProvider(provider);
     assertSlhDsa(algorithm);
     ensureByteArrayAtMost(message, MAX_CRYPTO_INPUT_LENGTH);
     ensureBytes(publicKey, SLH_DSA_SHA2_128S_PUBLIC_KEY_LENGTH);
@@ -172,6 +175,7 @@ export const deriveSlhDsaSha2128sKeypairWithProviderForTest = (
   skPrf: Uint8Array,
   pkSeed: Uint8Array,
 ): ReallyMeSlhDsaKeyPair => {
+  requireTrustedReallyMeWasmProvider(provider);
   ensureBytes(skSeed, SLH_DSA_SHA2_128S_KEYGEN_SEED_LENGTH);
   ensureBytes(skPrf, SLH_DSA_SHA2_128S_KEYGEN_SEED_LENGTH);
   ensureBytes(pkSeed, SLH_DSA_SHA2_128S_KEYGEN_SEED_LENGTH);

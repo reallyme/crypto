@@ -11,3 +11,6 @@ mod verify_pss;
 
 pub use recover_public_representatives::PublicRepresentativesInputs;
 pub use verify_pss::RsaPssVerifyInputs;
+
+mod sign_rs256;
+pub use sign_rs256::RsaPkcs1v15Sha256SignInputs;

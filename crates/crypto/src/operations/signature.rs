@@ -292,3 +292,28 @@ fn signature_key_pair((public_key, secret_key): (Vec<u8>, Zeroizing<Vec<u8>>)) -
         secret_key,
     }
 }
+
+/// Verifies DER ECDSA over an externally selected SHA-256/384/512 digest with
+/// PKI high-S interoperability. Device low-S verification remains a separate API.
+pub fn verify_ecdsa_digest_der(
+    algorithm: Algorithm,
+    public_key: &[u8],
+    digest: &[u8],
+    signature: &[u8],
+) -> Result<(), OperationError> {
+    let _policy = bind_operation_policy(SecretMaterialOperation::SignatureVerify);
+    match algorithm {
+        #[cfg(all(feature = "p256", any(feature = "native", feature = "wasm")))]
+        Algorithm::P256 => {
+            crypto_p256::verify_p256_digest_der_interoperable(public_key, digest, signature)
+        }
+        #[cfg(all(feature = "p384", any(feature = "native", feature = "wasm")))]
+        Algorithm::P384 => {
+            crypto_p384::verify_p384_digest_der_interoperable(public_key, digest, signature)
+        }
+        _ => {
+            let _ = (public_key, digest, signature);
+            Err(crypto_core::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+        }
+    }
+}

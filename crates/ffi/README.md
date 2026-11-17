@@ -24,6 +24,12 @@ The crate builds an `rlib`, `staticlib`, and `cdylib`. The public C header is
 - errors never carry secret or caller-provided data
 - callers own output buffers and any platform-specific zeroization policy
 
+Keypair and KEM encapsulation calls validate both output capacities and ranges
+before copying either result. A buffer-size rejection leaves both outputs
+unchanged. The pointer helpers are crate-private implementation details.
+Foreign-memory access runs inside the scope established by `guard::ffi_guard`;
+access without a scope fails closed.
+
 These checks cannot prove that a non-null address belongs to a live allocation.
 Callers must provide readable/writable allocations of the declared size, keep
 them alive for the call, and prevent concurrent mutation or invalid aliasing.

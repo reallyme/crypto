@@ -14130,9 +14130,9 @@ impl<'a> ::buffa::MessageName for CryptoHashResultView<'a> {
 /// Incremental hashing is a local, exclusively owned SDK lifecycle. A successful
 /// start creates a fresh context; updates append exact bytes in order, including
 /// empty chunks; finalize consumes the context and returns CryptoHashResult.
-/// Supported algorithms are SHA2_256 and SHA3_256. UNSPECIFIED/unknown selectors
-/// fail with PRIMITIVE_INVALID_PARAMETER; other algorithms fail with
-/// PROVIDER_UNSUPPORTED_ALGORITHM. Context state is never serialized, imported,
+/// Supported algorithms are SHA2_256 and SHA3_256. UNSPECIFIED, unknown, and
+/// unavailable selectors fail with PROVIDER_UNSUPPORTED_ALGORITHM, matching
+/// one-shot hashing. Context state is never serialized, imported,
 /// cloned, or addressed through a process-global handle. These standalone
 /// contracts deliberately do not enter the stateless CryptoOperationRequest.
 #[derive(Clone, Default)]
@@ -51433,3 +51433,1318 @@ impl<'a> ::buffa::MessageName for CryptoKeyAgreementGenerateKeyPairRequestView<'
 ::buffa::unsafe_impl_view_lifetime_parametric!(
     CryptoKeyAgreementGenerateKeyPairRequestView
 );
+/// RS256 signing is intentionally separate from historical RSA verification:
+/// only SHA-256 and keys of 2048..8192 bits are accepted. Private DER is PKCS#8.
+#[derive(Clone, Default)]
+pub struct CryptoRsaSigningKeyImportRequestView<'a> {
+    /// Field 1: `secret_key`
+    pub secret_key: &'a [u8],
+}
+impl<'a> ::core::fmt::Debug for CryptoRsaSigningKeyImportRequestView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoRsaSigningKeyImportRequestView")
+            .field("secret_key", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for CryptoRsaSigningKeyImportRequestView<'a> {
+    fn zeroize(&mut self) {}
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for CryptoRsaSigningKeyImportRequestView<'a> {}
+impl<'a> ::core::ops::Drop for CryptoRsaSigningKeyImportRequestView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoRsaSigningKeyImportRequestView<'a> {
+    type Owned = super::super::CryptoRsaSigningKeyImportRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.secret_key = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoRsaSigningKeyImportRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoRsaSigningKeyImportRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::CryptoRsaSigningKeyImportRequest as ::core::default::Default>::default();
+        __owned.secret_key = ::core::convert::Into::into((self.secret_key).to_vec());
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoRsaSigningKeyImportRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.secret_key.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.secret_key) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.secret_key.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.secret_key, buf);
+        }
+    }
+}
+impl<'__a> ::serde::Serialize for CryptoRsaSigningKeyImportRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        Err(
+            <__S::Error as ::serde::ser::Error>::custom(
+                ::buffa::json_helpers::ViewJsonErrorReason::Denied,
+            ),
+        )
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoRsaSigningKeyImportRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoRsaSigningKeyImportRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoRsaSigningKeyImportRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoRsaSigningKeyImportRequest";
+}
+::buffa::impl_default_view_instance!(CryptoRsaSigningKeyImportRequestView);
+::buffa::impl_view_reborrow!(CryptoRsaSigningKeyImportRequestView);
+::buffa::unsafe_impl_view_lifetime_parametric!(CryptoRsaSigningKeyImportRequestView);
+/// Public components use minimal unsigned big-endian integers (JWK n and e).
+#[derive(Clone, Default)]
+pub struct CryptoRsaSigningKeyImportResultView<'a> {
+    /// Field 1: `public_key_spki_der`
+    pub public_key_spki_der: &'a [u8],
+    /// Field 2: `modulus`
+    pub modulus: &'a [u8],
+    /// Field 3: `exponent`
+    pub exponent: &'a [u8],
+}
+impl<'a> ::core::fmt::Debug for CryptoRsaSigningKeyImportResultView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoRsaSigningKeyImportResultView")
+            .field("public_key_spki_der", &::core::format_args!("[REDACTED]"))
+            .field("modulus", &::core::format_args!("[REDACTED]"))
+            .field("exponent", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for CryptoRsaSigningKeyImportResultView<'a> {
+    fn zeroize(&mut self) {}
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for CryptoRsaSigningKeyImportResultView<'a> {}
+impl<'a> ::core::ops::Drop for CryptoRsaSigningKeyImportResultView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoRsaSigningKeyImportResultView<'a> {
+    type Owned = super::super::CryptoRsaSigningKeyImportResult;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.public_key_spki_der = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.modulus = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.exponent = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoRsaSigningKeyImportResult,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoRsaSigningKeyImportResult,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::CryptoRsaSigningKeyImportResult as ::core::default::Default>::default();
+        __owned.public_key_spki_der = ::core::convert::Into::into(
+            (self.public_key_spki_der).to_vec(),
+        );
+        __owned.modulus = ::core::convert::Into::into((self.modulus).to_vec());
+        __owned.exponent = ::core::convert::Into::into((self.exponent).to_vec());
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoRsaSigningKeyImportResultView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.public_key_spki_der.is_empty() {
+            size
+                += 1u64
+                    + ::buffa::types::bytes_encoded_len(&self.public_key_spki_der)
+                        as u64;
+        }
+        if !self.modulus.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.modulus) as u64;
+        }
+        if !self.exponent.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.exponent) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.public_key_spki_der.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.public_key_spki_der, buf);
+        }
+        if !self.modulus.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.modulus, buf);
+        }
+        if !self.exponent.is_empty() {
+            ::buffa::types::put_shared_bytes_field(3u32, &self.exponent, buf);
+        }
+    }
+}
+impl<'__a> ::serde::Serialize for CryptoRsaSigningKeyImportResultView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        Err(
+            <__S::Error as ::serde::ser::Error>::custom(
+                ::buffa::json_helpers::ViewJsonErrorReason::Denied,
+            ),
+        )
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoRsaSigningKeyImportResultView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoRsaSigningKeyImportResult";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoRsaSigningKeyImportResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoRsaSigningKeyImportResult";
+}
+::buffa::impl_default_view_instance!(CryptoRsaSigningKeyImportResultView);
+::buffa::impl_view_reborrow!(CryptoRsaSigningKeyImportResultView);
+::buffa::unsafe_impl_view_lifetime_parametric!(CryptoRsaSigningKeyImportResultView);
+#[derive(Clone, Default)]
+pub struct CryptoRsaPkcs1v15Sha256SignRequestView<'a> {
+    /// Field 1: `secret_key`
+    pub secret_key: &'a [u8],
+    /// Field 2: `message`
+    pub message: &'a [u8],
+}
+impl<'a> ::core::fmt::Debug for CryptoRsaPkcs1v15Sha256SignRequestView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoRsaPkcs1v15Sha256SignRequestView")
+            .field("secret_key", &::core::format_args!("[REDACTED]"))
+            .field("message", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for CryptoRsaPkcs1v15Sha256SignRequestView<'a> {
+    fn zeroize(&mut self) {}
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop
+for CryptoRsaPkcs1v15Sha256SignRequestView<'a> {}
+impl<'a> ::core::ops::Drop for CryptoRsaPkcs1v15Sha256SignRequestView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoRsaPkcs1v15Sha256SignRequestView<'a> {
+    type Owned = super::super::CryptoRsaPkcs1v15Sha256SignRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.secret_key = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.message = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoRsaPkcs1v15Sha256SignRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoRsaPkcs1v15Sha256SignRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::CryptoRsaPkcs1v15Sha256SignRequest as ::core::default::Default>::default();
+        __owned.secret_key = ::core::convert::Into::into((self.secret_key).to_vec());
+        __owned.message = ::core::convert::Into::into((self.message).to_vec());
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoRsaPkcs1v15Sha256SignRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.secret_key.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.secret_key) as u64;
+        }
+        if !self.message.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.message) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.secret_key.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.secret_key, buf);
+        }
+        if !self.message.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.message, buf);
+        }
+    }
+}
+impl<'__a> ::serde::Serialize for CryptoRsaPkcs1v15Sha256SignRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        Err(
+            <__S::Error as ::serde::ser::Error>::custom(
+                ::buffa::json_helpers::ViewJsonErrorReason::Denied,
+            ),
+        )
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoRsaPkcs1v15Sha256SignRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoRsaPkcs1v15Sha256SignRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoRsaPkcs1v15Sha256SignRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoRsaPkcs1v15Sha256SignRequest";
+}
+::buffa::impl_default_view_instance!(CryptoRsaPkcs1v15Sha256SignRequestView);
+::buffa::impl_view_reborrow!(CryptoRsaPkcs1v15Sha256SignRequestView);
+::buffa::unsafe_impl_view_lifetime_parametric!(CryptoRsaPkcs1v15Sha256SignRequestView);
+#[derive(Clone, Default)]
+pub struct CryptoRsaPkcs1v15Sha256SignResultView<'a> {
+    /// Field 1: `signature`
+    pub signature: &'a [u8],
+}
+impl<'a> ::core::fmt::Debug for CryptoRsaPkcs1v15Sha256SignResultView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoRsaPkcs1v15Sha256SignResultView")
+            .field("signature", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for CryptoRsaPkcs1v15Sha256SignResultView<'a> {
+    fn zeroize(&mut self) {}
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop
+for CryptoRsaPkcs1v15Sha256SignResultView<'a> {}
+impl<'a> ::core::ops::Drop for CryptoRsaPkcs1v15Sha256SignResultView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoRsaPkcs1v15Sha256SignResultView<'a> {
+    type Owned = super::super::CryptoRsaPkcs1v15Sha256SignResult;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.signature = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoRsaPkcs1v15Sha256SignResult,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoRsaPkcs1v15Sha256SignResult,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::CryptoRsaPkcs1v15Sha256SignResult as ::core::default::Default>::default();
+        __owned.signature = ::core::convert::Into::into((self.signature).to_vec());
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoRsaPkcs1v15Sha256SignResultView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.signature.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.signature) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.signature.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.signature, buf);
+        }
+    }
+}
+impl<'__a> ::serde::Serialize for CryptoRsaPkcs1v15Sha256SignResultView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        Err(
+            <__S::Error as ::serde::ser::Error>::custom(
+                ::buffa::json_helpers::ViewJsonErrorReason::Denied,
+            ),
+        )
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoRsaPkcs1v15Sha256SignResultView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoRsaPkcs1v15Sha256SignResult";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoRsaPkcs1v15Sha256SignResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoRsaPkcs1v15Sha256SignResult";
+}
+::buffa::impl_default_view_instance!(CryptoRsaPkcs1v15Sha256SignResultView);
+::buffa::impl_view_reborrow!(CryptoRsaPkcs1v15Sha256SignResultView);
+::buffa::unsafe_impl_view_lifetime_parametric!(CryptoRsaPkcs1v15Sha256SignResultView);
+/// Decrypt-only compatibility for retained AES-256-SIV records. New encryption
+/// must use an existing approved AEAD seal operation, never this legacy profile.
+#[derive(Clone, Default)]
+pub struct CryptoLegacyAes256SivOpenRequestView<'a> {
+    /// Field 1: `secret_key`
+    pub secret_key: &'a [u8],
+    /// Field 2: `nonce`
+    pub nonce: &'a [u8],
+    /// Field 3: `associated_data`
+    pub associated_data: &'a [u8],
+    /// Field 4: `ciphertext`
+    pub ciphertext: &'a [u8],
+}
+impl<'a> ::core::fmt::Debug for CryptoLegacyAes256SivOpenRequestView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoLegacyAes256SivOpenRequestView")
+            .field("secret_key", &::core::format_args!("[REDACTED]"))
+            .field("nonce", &::core::format_args!("[REDACTED]"))
+            .field("associated_data", &::core::format_args!("[REDACTED]"))
+            .field("ciphertext", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for CryptoLegacyAes256SivOpenRequestView<'a> {
+    fn zeroize(&mut self) {}
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for CryptoLegacyAes256SivOpenRequestView<'a> {}
+impl<'a> ::core::ops::Drop for CryptoLegacyAes256SivOpenRequestView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoLegacyAes256SivOpenRequestView<'a> {
+    type Owned = super::super::CryptoLegacyAes256SivOpenRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.secret_key = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.nonce = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.associated_data = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.ciphertext = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoLegacyAes256SivOpenRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoLegacyAes256SivOpenRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::CryptoLegacyAes256SivOpenRequest as ::core::default::Default>::default();
+        __owned.secret_key = ::core::convert::Into::into((self.secret_key).to_vec());
+        __owned.nonce = ::core::convert::Into::into((self.nonce).to_vec());
+        __owned.associated_data = ::core::convert::Into::into(
+            (self.associated_data).to_vec(),
+        );
+        __owned.ciphertext = ::core::convert::Into::into((self.ciphertext).to_vec());
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoLegacyAes256SivOpenRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.secret_key.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.secret_key) as u64;
+        }
+        if !self.nonce.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.nonce) as u64;
+        }
+        if !self.associated_data.is_empty() {
+            size
+                += 1u64
+                    + ::buffa::types::bytes_encoded_len(&self.associated_data) as u64;
+        }
+        if !self.ciphertext.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.ciphertext) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.secret_key.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.secret_key, buf);
+        }
+        if !self.nonce.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.nonce, buf);
+        }
+        if !self.associated_data.is_empty() {
+            ::buffa::types::put_shared_bytes_field(3u32, &self.associated_data, buf);
+        }
+        if !self.ciphertext.is_empty() {
+            ::buffa::types::put_shared_bytes_field(4u32, &self.ciphertext, buf);
+        }
+    }
+}
+impl<'__a> ::serde::Serialize for CryptoLegacyAes256SivOpenRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        Err(
+            <__S::Error as ::serde::ser::Error>::custom(
+                ::buffa::json_helpers::ViewJsonErrorReason::Denied,
+            ),
+        )
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoLegacyAes256SivOpenRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoLegacyAes256SivOpenRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoLegacyAes256SivOpenRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoLegacyAes256SivOpenRequest";
+}
+::buffa::impl_default_view_instance!(CryptoLegacyAes256SivOpenRequestView);
+::buffa::impl_view_reborrow!(CryptoLegacyAes256SivOpenRequestView);
+::buffa::unsafe_impl_view_lifetime_parametric!(CryptoLegacyAes256SivOpenRequestView);
+#[derive(Clone, Default)]
+pub struct CryptoLegacyAes256SivOpenResultView<'a> {
+    /// Field 1: `plaintext`
+    pub plaintext: &'a [u8],
+}
+impl<'a> ::core::fmt::Debug for CryptoLegacyAes256SivOpenResultView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoLegacyAes256SivOpenResultView")
+            .field("plaintext", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for CryptoLegacyAes256SivOpenResultView<'a> {
+    fn zeroize(&mut self) {}
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for CryptoLegacyAes256SivOpenResultView<'a> {}
+impl<'a> ::core::ops::Drop for CryptoLegacyAes256SivOpenResultView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoLegacyAes256SivOpenResultView<'a> {
+    type Owned = super::super::CryptoLegacyAes256SivOpenResult;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.plaintext = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoLegacyAes256SivOpenResult,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoLegacyAes256SivOpenResult,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::CryptoLegacyAes256SivOpenResult as ::core::default::Default>::default();
+        __owned.plaintext = ::core::convert::Into::into((self.plaintext).to_vec());
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoLegacyAes256SivOpenResultView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.plaintext.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.plaintext) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.plaintext.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.plaintext, buf);
+        }
+    }
+}
+impl<'__a> ::serde::Serialize for CryptoLegacyAes256SivOpenResultView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        Err(
+            <__S::Error as ::serde::ser::Error>::custom(
+                ::buffa::json_helpers::ViewJsonErrorReason::Denied,
+            ),
+        )
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoLegacyAes256SivOpenResultView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoLegacyAes256SivOpenResult";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoLegacyAes256SivOpenResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoLegacyAes256SivOpenResult";
+}
+::buffa::impl_default_view_instance!(CryptoLegacyAes256SivOpenResultView);
+::buffa::impl_view_reborrow!(CryptoLegacyAes256SivOpenResultView);
+::buffa::unsafe_impl_view_lifetime_parametric!(CryptoLegacyAes256SivOpenResultView);
+/// PKI interoperability uses externally selected SHA-256/384/512 digests and
+/// accepts both valid ECDSA S representatives. Only P-256 and P-384 are supported.
+/// This operation must not replace the existing low-S device-signature profile.
+#[derive(Clone, Default)]
+pub struct CryptoEcdsaDigestVerifyRequestView<'a> {
+    /// Field 1: `algorithm`
+    pub algorithm: ::buffa::MessageFieldView<
+        super::super::__buffa::view::CryptoAlgorithmIdentifierView<'a>,
+    >,
+    /// Field 2: `public_key`
+    pub public_key: &'a [u8],
+    /// Field 3: `digest`
+    pub digest: &'a [u8],
+    /// Field 4: `signature`
+    pub signature: &'a [u8],
+}
+impl<'a> ::core::fmt::Debug for CryptoEcdsaDigestVerifyRequestView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoEcdsaDigestVerifyRequestView")
+            .field("algorithm", &::core::format_args!("[REDACTED]"))
+            .field("public_key", &::core::format_args!("[REDACTED]"))
+            .field("digest", &::core::format_args!("[REDACTED]"))
+            .field("signature", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for CryptoEcdsaDigestVerifyRequestView<'a> {
+    fn zeroize(&mut self) {
+        fn __requires_view_wipe_owner<
+            T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+        >() {}
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::CryptoAlgorithmIdentifierView<'a>,
+        >();
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.algorithm);
+    }
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for CryptoEcdsaDigestVerifyRequestView<'a> {}
+impl<'a> ::core::ops::Drop for CryptoEcdsaDigestVerifyRequestView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoEcdsaDigestVerifyRequestView<'a> {
+    type Owned = super::super::CryptoEcdsaDigestVerifyRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.algorithm.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.algorithm = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::CryptoAlgorithmIdentifierView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.public_key = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.digest = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.signature = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaDigestVerifyRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoEcdsaDigestVerifyRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::CryptoEcdsaDigestVerifyRequest as ::core::default::Default>::default();
+        __owned.algorithm = match self.algorithm.as_option() {
+            Some(v) => {
+                ::buffa::MessageField::<
+                    super::super::CryptoAlgorithmIdentifier,
+                    ::buffa::Inline<super::super::CryptoAlgorithmIdentifier>,
+                >::some(v.to_owned_from_source(__buffa_src)?)
+            }
+            None => ::buffa::MessageField::none(),
+        };
+        __owned.public_key = ::core::convert::Into::into((self.public_key).to_vec());
+        __owned.digest = ::core::convert::Into::into((self.digest).to_vec());
+        __owned.signature = ::core::convert::Into::into((self.signature).to_vec());
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoEcdsaDigestVerifyRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(__v) = self.algorithm.as_option() {
+            let __slot = __cache.reserve();
+            let inner_size = __v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if !self.public_key.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.public_key) as u64;
+        }
+        if !self.digest.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.digest) as u64;
+        }
+        if !self.signature.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.signature) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(__v) = self.algorithm.as_option() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            __v.write_to(__cache, buf);
+        }
+        if !self.public_key.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.public_key, buf);
+        }
+        if !self.digest.is_empty() {
+            ::buffa::types::put_shared_bytes_field(3u32, &self.digest, buf);
+        }
+        if !self.signature.is_empty() {
+            ::buffa::types::put_shared_bytes_field(4u32, &self.signature, buf);
+        }
+    }
+}
+impl<'__a> ::serde::Serialize for CryptoEcdsaDigestVerifyRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        Err(
+            <__S::Error as ::serde::ser::Error>::custom(
+                ::buffa::json_helpers::ViewJsonErrorReason::Denied,
+            ),
+        )
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoEcdsaDigestVerifyRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoEcdsaDigestVerifyRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoEcdsaDigestVerifyRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoEcdsaDigestVerifyRequest";
+}
+::buffa::impl_default_view_instance!(CryptoEcdsaDigestVerifyRequestView);
+::buffa::impl_view_reborrow!(CryptoEcdsaDigestVerifyRequestView);
+::buffa::unsafe_impl_view_lifetime_parametric!(CryptoEcdsaDigestVerifyRequestView);
+/// Strict DER import for PKI SHA-2 RSASSA-PSS parameters. Result is the existing
+/// CryptoRsaPssParams model; SHA-1 defaults and unknown mask functions fail closed.
+#[derive(Clone, Default)]
+pub struct CryptoRsaPssParamsDerRequestView<'a> {
+    /// Field 1: `parameters_der`
+    pub parameters_der: &'a [u8],
+}
+impl<'a> ::core::fmt::Debug for CryptoRsaPssParamsDerRequestView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CryptoRsaPssParamsDerRequestView")
+            .field("parameters_der", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for CryptoRsaPssParamsDerRequestView<'a> {
+    fn zeroize(&mut self) {}
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for CryptoRsaPssParamsDerRequestView<'a> {}
+impl<'a> ::core::ops::Drop for CryptoRsaPssParamsDerRequestView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for CryptoRsaPssParamsDerRequestView<'a> {
+    type Owned = super::super::CryptoRsaPssParamsDerRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.parameters_der = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::CryptoRsaPssParamsDerRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::CryptoRsaPssParamsDerRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::CryptoRsaPssParamsDerRequest as ::core::default::Default>::default();
+        __owned.parameters_der = ::core::convert::Into::into(
+            (self.parameters_der).to_vec(),
+        );
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for CryptoRsaPssParamsDerRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.parameters_der.is_empty() {
+            size
+                += 1u64 + ::buffa::types::bytes_encoded_len(&self.parameters_der) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.parameters_der.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.parameters_der, buf);
+        }
+    }
+}
+impl<'__a> ::serde::Serialize for CryptoRsaPssParamsDerRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        _serializer: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        Err(
+            <__S::Error as ::serde::ser::Error>::custom(
+                ::buffa::json_helpers::ViewJsonErrorReason::Denied,
+            ),
+        )
+    }
+}
+impl<'a> ::buffa::MessageName for CryptoRsaPssParamsDerRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.crypto.v1";
+    const NAME: &'static str = "CryptoRsaPssParamsDerRequest";
+    const FULL_NAME: &'static str = "reallyme.crypto.v1.CryptoRsaPssParamsDerRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.crypto.v1.CryptoRsaPssParamsDerRequest";
+}
+::buffa::impl_default_view_instance!(CryptoRsaPssParamsDerRequestView);
+::buffa::impl_view_reborrow!(CryptoRsaPssParamsDerRequestView);
+::buffa::unsafe_impl_view_lifetime_parametric!(CryptoRsaPssParamsDerRequestView);

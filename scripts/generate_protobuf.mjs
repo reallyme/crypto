@@ -93,7 +93,10 @@ function main() {
       { local: "protoc-gen-reallyme-buffa", out: "crates/proto/src/generated/buffa", strategy: "all", opt: options },
       { local: "protoc-gen-reallyme-buffa-packaging", out: "crates/proto/src/generated/buffa", strategy: "all" },
     ] })]);
-  } else run("buf", ["generate"]);
+  } else {
+    run(process.execPath, ["scripts/check_local_proto_tools.mjs"]);
+    run("buf", ["generate"]);
+  }
   // A separate local schema exercises imported guarded types without adding
   // them to the production descriptor or sending fixtures to hosted plugins.
   run("buf", ["generate", FIXTURE_DIRECTORY, "--template", JSON.stringify({ version: "v2", plugins: [

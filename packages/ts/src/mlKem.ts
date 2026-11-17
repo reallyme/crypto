@@ -9,7 +9,7 @@ import {
   readIndependentByteArrayProperty,
   readIndependentProviderBytes,
 } from "./validateBytes.js";
-import { requireReallyMeWasmProvider } from "./wasmProvider.js";
+import { requireReallyMeWasmProvider, requireTrustedReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 
 export const ML_KEM_512_PUBLIC_KEY_LENGTH = 800;
@@ -49,6 +49,7 @@ const mlKemSuiteWithProvider = (
   algorithm: ReallyMeKemAlgorithm,
   provider: ReallyMeWasmProvider,
 ): MlKemSuite => {
+  requireTrustedReallyMeWasmProvider(provider);
   switch (algorithm) {
     case "ML-KEM-512":
       return {

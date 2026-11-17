@@ -52,3 +52,6 @@ pub use import_pem::{
     private_key_from_pkcs8_pem, private_key_from_sec1_der, private_key_from_sec1_pem,
     public_key_from_spki_der, public_key_from_spki_pem,
 };
+
+#[cfg(any(feature = "native", feature = "wasm"))]
+pub use native::verify_p256_digest_der_interoperable;

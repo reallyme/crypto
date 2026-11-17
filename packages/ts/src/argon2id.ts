@@ -5,9 +5,9 @@
 import { ReallyMeCryptoError } from "./errors.js";
 import {
   ensureByteArrayAtMost,
-  ensureIndependentByteArray,
+  readIndependentProviderBytes,
 } from "./validateBytes.js";
-import { requireReallyMeWasmProvider } from "./wasmProvider.js";
+import { requireReallyMeWasmProvider, requireTrustedReallyMeWasmProvider } from "./wasmProvider.js";
 import type { ReallyMeWasmProvider } from "./wasmProvider.js";
 
 export const ARGON2ID_DERIVED_KEY_LENGTH = 32;
@@ -44,15 +44,7 @@ const requireDerivedKey = (
   value: unknown,
   inputs: ReadonlyArray<Uint8Array>,
 ): Uint8Array => {
-  if (!(value instanceof Uint8Array)) {
-    throw new ReallyMeCryptoError("provider-failure");
-  }
-  ensureIndependentByteArray(value, inputs);
-  if (value.length !== ARGON2ID_DERIVED_KEY_LENGTH) {
-    value.fill(0);
-    throw new ReallyMeCryptoError("provider-failure");
-  }
-  return value;
+  return readIndependentProviderBytes(value, ARGON2ID_DERIVED_KEY_LENGTH, inputs);
 };
 
 export const ReallyMeArgon2id = {
@@ -72,6 +64,7 @@ export const ReallyMeArgon2id = {
     secret: Uint8Array,
     salt: Uint8Array,
   ): Uint8Array {
+    requireTrustedReallyMeWasmProvider(provider);
     validateVersion(kdfVersion);
     validateSecret(secret);
     validateSalt(salt);

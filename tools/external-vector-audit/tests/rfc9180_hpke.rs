@@ -15,6 +15,8 @@
 //! A second stateful test checks isolation between two encapsulations with
 //! the same PSK and record inputs.
 
+#![cfg(feature = "native")]
+
 use crypto_hpke::{
     open_base, open_psk, receiver_export, seal_base_derand, sender_export_derand,
     setup_receiver_psk, setup_sender_psk_derand, HpkeAeadId, HpkeDerandPskSenderSetupRequest,
@@ -77,7 +79,6 @@ struct HpkeEncryption {
 }
 
 #[test]
-#[ignore = "vendored RFC 9180 corpus; run via the external-vectors audit workflow after vendoring"]
 fn rfc9180_hpke_base_vectors_execute_against_public_api() -> Result<(), AuditError> {
     let vectors: Vec<HpkeVector> = load_json(CORPUS)?;
     let mut executed = 0usize;
@@ -152,7 +153,6 @@ fn matches_suite(vector: &HpkeVector, suite: HpkeSuite) -> bool {
 }
 
 #[test]
-#[ignore = "vendored RFC 9180 corpus; run via the external-vectors audit workflow after vendoring"]
 fn rfc9180_hpke_public_psk_contexts_retry_each_record() -> Result<(), AuditError> {
     let vectors: Vec<HpkeVector> = load_json(CORPUS)?;
     for suite in AUDITED_SUITES {
@@ -207,7 +207,6 @@ fn rfc9180_hpke_public_psk_contexts_retry_each_record() -> Result<(), AuditError
 }
 
 #[test]
-#[ignore = "vendored RFC 9180 corpus; run via the external-vectors audit workflow after vendoring"]
 fn rfc9180_hpke_public_psk_contexts_reject_each_others_records() -> Result<(), AuditError> {
     let vectors: Vec<HpkeVector> = load_json(CORPUS)?;
     for suite in AUDITED_SUITES {
@@ -300,7 +299,6 @@ fn setup_public_psk_contexts(
 }
 
 #[test]
-#[ignore = "vendored RFC 9180 corpus; run via the external-vectors audit workflow after vendoring"]
 fn rfc9180_hpke_open_binds_context_in_base_and_psk_modes() -> Result<(), AuditError> {
     let vectors: Vec<HpkeVector> = load_json(CORPUS)?;
     for suite in AUDITED_SUITES {
@@ -462,7 +460,6 @@ fn open_vector(
 }
 
 #[test]
-#[ignore = "vendored RFC 9180 corpus; run via the external-vectors audit workflow after vendoring"]
 fn rfc9180_hpke_public_base_exporters_match() -> Result<(), AuditError> {
     let vectors: Vec<HpkeVector> = load_json(CORPUS)?;
     let export_only = HpkeSuite::new(
