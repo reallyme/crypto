@@ -66,7 +66,7 @@ bp256 = { workspace = true, optional = true }
 bp384 = { workspace = true, optional = true }
 ed448-goldilocks = { workspace = true, optional = true }
 shake = { workspace = true, optional = true }
-sha2-backend = { package = "sha2", version = "0.11", features = ["zeroize"], optional = true }
+sha2-backend = { package = "sha2", version = "0.11.1", features = ["zeroize"], optional = true }
 crypto-bigint = { workspace = true, features = ["zeroize"], optional = true }
 p256 = { workspace = true, features = ["ecdh", "ecdsa"], optional = true }
 p384 = { workspace = true, features = ["ecdh", "ecdsa"], optional = true }

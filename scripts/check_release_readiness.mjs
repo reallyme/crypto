@@ -311,7 +311,7 @@ assertContains("Cargo.toml", 'default-members = ["crates/crypto"]');
 assertContains("Cargo.toml", '"crates/crypto"');
 assertContains(
   "Cargo.toml",
-  'aes-gcm = { version = "0.11", features = ["zeroize"] }',
+  'aes-gcm = { version = "0.11.1", features = ["zeroize"] }',
 );
 assertNotContains("Cargo.toml", "\n[package]\n");
 

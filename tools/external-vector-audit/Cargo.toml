@@ -47,7 +47,7 @@ native = [
 ]
 
 [dependencies]
-flate2 = "1"
+flate2 = "1.1.11"
 hex = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
