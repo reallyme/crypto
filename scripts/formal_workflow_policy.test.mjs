@@ -48,17 +48,20 @@ test("proof commands retain portable zeroization and inherited compiler flags", 
       writeFileSync(path, '#!/bin/sh\nprintf "%s\\n" "$RUSTFLAGS" >> "$PROOF_FLAGS_CAPTURE"\n');
       chmodSync(path, 0o700);
     }
-    for (const scope of ["plaintext-release", "hpke-state"]) {
-      const result = spawnSync("/bin/bash", ["scripts/verify_formal_scope.sh"], {
-        env: { ...process.env, PATH: `${temporary}:${process.env.PATH}`, FORMAL_SCOPE: scope,
-          RUSTFLAGS: "-C debuginfo=0", PROOF_FLAGS_CAPTURE: capture },
-        encoding: "utf8",
-      });
-      assert.equal(result.status, 0, result.stderr);
+    for (const inheritedFlags of ["", "-C debuginfo=0"]) {
+      for (const scope of ["plaintext-release", "hpke-state"]) {
+        const result = spawnSync("/bin/bash", ["scripts/verify_formal_scope.sh"], {
+          env: { ...process.env, PATH: `${temporary}:${process.env.PATH}`, FORMAL_SCOPE: scope,
+            RUSTFLAGS: inheritedFlags, PROOF_FLAGS_CAPTURE: capture },
+          encoding: "utf8",
+        });
+        assert.equal(result.status, 0, result.stderr);
+      }
     }
     const flags = readFileSync(capture, "utf8").trim().split("\n");
-    assert.equal(flags.length, 5);
-    for (const value of flags) assert.equal(value, "-C debuginfo=0 --cfg miri");
+    assert.equal(flags.length, 10);
+    assert.deepEqual(flags.slice(0, 5), Array(5).fill("--cfg miri"));
+    assert.deepEqual(flags.slice(5), Array(5).fill("-C debuginfo=0 --cfg miri"));
   } finally {
     rmSync(temporary, { recursive: true, force: true });
   }

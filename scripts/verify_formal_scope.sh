@@ -11,7 +11,7 @@ kani_args=(-Z unstable-options --harness-timeout 15m --jobs 2 --output-format te
 export CARGO_NET_OFFLINE=true
 # Kani cannot execute inline assembly. Select the portable implementations,
 # including zeroize's barrier, while retaining the writes being verified.
-export RUSTFLAGS="${RUSTFLAGS:-} --cfg miri"
+export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }--cfg miri"
 
 case "${FORMAL_SCOPE:-}" in
   operation-wire)

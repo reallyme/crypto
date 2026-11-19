@@ -9,10 +9,10 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Package version from preflight, such as 0.4.3
+        description: Package version from preflight, such as 0.4.4
         required: true
         type: string
-        default: 0.4.3
+        default: 0.4.4
       source_sha:
         description: Copy the full source SHA from this ecosystem's successful package preflight summary
         required: true

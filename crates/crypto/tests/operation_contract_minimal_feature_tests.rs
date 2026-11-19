@@ -41,12 +41,31 @@
 
 use buffa::Message;
 use crypto_proto::generated::proto::reallyme::crypto::v1::{
+    __buffa::oneof::crypto_algorithm_identifier::Algorithm as ProtoAlgorithm,
     __buffa::oneof::crypto_error::Error as CryptoErrorBranch,
     __buffa::oneof::crypto_operation_request::Operation as CryptoOperation,
     __buffa::oneof::crypto_operation_response::Outcome as CryptoOperationOutcome,
-    CryptoErrorReason, CryptoOperationRequest,
+    CryptoAlgorithmIdentifier, CryptoEcdsaDigestVerifyRequest, CryptoErrorReason,
+    CryptoOperationRequest, SignatureAlgorithm,
 };
 use crypto_proto::operation_response_wire::decode_operation_response;
+
+#[test]
+fn digest_verification_contract_fails_closed_without_curve_providers() {
+    let mut request = CryptoEcdsaDigestVerifyRequest::default();
+    for algorithm in [
+        SignatureAlgorithm::SIGNATURE_ALGORITHM_ECDSA_P256_SHA256,
+        SignatureAlgorithm::SIGNATURE_ALGORITHM_ECDSA_P384_SHA384,
+    ] {
+        request.algorithm = buffa::MessageField::some(CryptoAlgorithmIdentifier {
+            algorithm: Some(ProtoAlgorithm::Signature(algorithm.into())),
+        });
+        assert!(matches!(
+            reallyme_crypto::ecdsa_digest_contract::verify(&request),
+            Err(reallyme_crypto::CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+        ));
+    }
+}
 
 #[test]
 fn every_declared_branch_fails_closed_without_algorithm_features() {

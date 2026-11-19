@@ -51,12 +51,12 @@ struct P256Vector {
     // native lanes may verify this vector without claiming deterministic emit.
     ecdsa_message: String,
     ecdsa_signature_der: String,
-    #[serde(flatten)]
-    invalid_encodings: EcdsaInvalidEncodings,
     peer_secret_key: String,
     peer_public_key_compressed: String,
     peer_public_key_uncompressed: String,
     shared_secret: String,
+    #[serde(flatten)]
+    invalid_encodings: EcdsaInvalidEncodings,
 }
 
 #[derive(Serialize)]
@@ -68,12 +68,12 @@ struct Sec1EcdsaVector {
     public_key_uncompressed: String,
     message: String,
     signature_der: String,
-    #[serde(flatten)]
-    invalid_encodings: EcdsaInvalidEncodings,
     peer_secret_key: String,
     peer_public_key_compressed: String,
     peer_public_key_uncompressed: String,
     shared_secret: String,
+    #[serde(flatten)]
+    invalid_encodings: EcdsaInvalidEncodings,
 }
 
 #[derive(Serialize)]

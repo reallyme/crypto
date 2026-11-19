@@ -14,7 +14,7 @@ const RELEASE_READINESS_COMMIT = "16aab5287de498e858ff3b85d9e66d7c9f7ebb74";
 const RELEASE_READINESS_CORE_SHA256 =
   "56ae3823215f5bca908d2fce3c9304d4ea6bab0334038f37ebe33023dadb8594";
 const LOCAL_CHECKER_SHA256 =
-  "d9f74840a4e486edda9f400c4b65b1ed4b2d84a17f625e61a0448e440c43d477";
+  "e6b49c8e8742904ef6e6342c2de1ae3c2a8f83ffc78ab28b2c44bf0c0023bfa2";
 // The checker imports local policy modules. Pinning only its entry file
 // would let an unreviewed dependency change the release decision.
 const LOCAL_CHECKER_DEPENDENCIES = [

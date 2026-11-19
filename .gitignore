@@ -127,6 +127,12 @@ xcuserdata/
 **/.kotlin/
 build/
 **/build/
+# Standard AAR compatibility metadata is public; adjacent files stay excluded.
+!META-INF/com/android/build/
+META-INF/com/android/build/*
+!META-INF/com/android/build/gradle/
+META-INF/com/android/build/gradle/*
+!META-INF/com/android/build/gradle/aar-metadata.properties
 local.properties
 **/local.properties
 *.iml

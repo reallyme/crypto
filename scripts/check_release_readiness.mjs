@@ -169,11 +169,11 @@ for (const path of ["packages/kotlin/build.gradle.kts", "packages/kotlin-android
   assertContains(path, 'name.set("Apache License, Version 2.0")');
 }
 
-const rustRootVersion = "0.4.3";
-const cryptoProtoPackageVersion = "0.4.3";
-const typescriptPackageVersion = "0.4.3";
-const kotlinPackageVersion = "0.4.3";
-const kotlinAndroidPackageVersion = "0.4.3";
+const rustRootVersion = "0.4.4";
+const cryptoProtoPackageVersion = "0.4.4";
+const typescriptPackageVersion = "0.4.4";
+const kotlinPackageVersion = "0.4.4";
+const kotlinAndroidPackageVersion = "0.4.4";
 const rustCodecVersion = "0.4.4";
 const tsCodecVersion = "0.4.4";
 const swiftCodecVersion = "0.4.4";
@@ -3255,7 +3255,8 @@ assertContains(".github/workflows/npm-package-preflight.yml", "wasm-pack@0.15.1"
 assertContains(".github/workflows/npm-package-preflight.yml", "wasm-bindgen-cli@0.2.130");
 assertContains(".github/workflows/npm-package-preflight.yml", "npm test");
 assertContains(".github/workflows/npm-package-preflight.yml", "npm run pack:check");
-assertContains(".github/workflows/npm-package-preflight.yml", "npm pack --ignore-scripts");
+assertContains(".github/workflows/npm-package-preflight.yml", 'node scripts/pack.mjs "$GITHUB_WORKSPACE/build/npm"');
+assertContains("packages/ts/scripts/pack.mjs", '"pack", "--ignore-scripts"');
 assertContains(".github/workflows/npm-package-release.yml", "reallyme-crypto-${RELEASE_VERSION}.tgz");
 
 assertContains(".github/workflows/crates-package-preflight.yml", "node scripts/check_rust_semver.mjs");

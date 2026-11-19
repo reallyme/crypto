@@ -18,7 +18,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.4.3
+        default: 0.4.4
 
 permissions:
   contents: read
@@ -178,7 +178,7 @@ jobs:
       - name: Build immutable npm tarball
         run: |
           mkdir -p ../../build/npm
-          npm pack --ignore-scripts --pack-destination ../../build/npm
+          node scripts/pack.mjs "$GITHUB_WORKSPACE/build/npm"
           artifact="../../build/npm/reallyme-crypto-${RELEASE_VERSION}.tgz"
           if [ ! -f "${artifact}" ]; then
             echo "::error::npm did not create the expected ${artifact}"

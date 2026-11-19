@@ -6,6 +6,7 @@
     "lib": ["ES2022"],
     "declaration": true,
     "outDir": "dist",
+    "rootDirs": ["src", "dist"],
     "rootDir": "src",
     "strict": true,
     "noImplicitAny": true,

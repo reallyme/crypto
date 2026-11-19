@@ -62,7 +62,7 @@ import {
   xWing768DeriveKeypair,
   xWing768Encapsulate,
   xWing768Decapsulate,
-} from "../dist/wasm/reallyme_crypto_wasm.js";
+} from "./wasm/reallyme_crypto_wasm.js";
 
 export const bundledWasmFunctions = Object.freeze({
   processOperationResponse,

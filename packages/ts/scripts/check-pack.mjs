@@ -4,23 +4,24 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { stagePackage } from "./pack.mjs";
 
 const packageDirectory = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryDirectory = resolve(packageDirectory, "../..");
 const packageJsonPath = resolve(packageDirectory, "package.json");
 const readUtf8 = (path) => readFileSync(path, "utf8");
 const requiredFiles = [
-  "package/dist/index.js",
-  "package/dist/index.d.ts",
-  "package/dist/proto.js",
-  "package/dist/proto.d.ts",
-  "package/dist/wasm/reallyme_crypto_wasm.js",
-  "package/dist/wasm/reallyme_crypto_wasm_bg.wasm",
-  "package/dist/wasmModuleTypes.d.ts",
+  "package/src/index.js",
+  "package/src/index.d.ts",
+  "package/src/proto.js",
+  "package/src/proto.d.ts",
+  "package/src/wasm/reallyme_crypto_wasm.js",
+  "package/src/wasm/reallyme_crypto_wasm_bg.wasm",
+  "package/src/wasmModuleTypes.d.ts",
   "package/LICENSE",
   "package/README.md",
   "package/package.json",
@@ -47,9 +48,10 @@ const args = process.argv.slice(2);
 if (args.length > 1 || (args.length === 1 && args[0] !== "--use-built")) {
   fail("usage: node scripts/check-pack.mjs [--use-built]");
 }
-const packArgs = ["pack", "--dry-run", "--json"];
-if (args[0] === "--use-built") {
-  packArgs.push("--ignore-scripts");
+const packArgs = ["pack", "--dry-run", "--json", "--ignore-scripts"];
+if (args[0] !== "--use-built") {
+  const build = spawnSync("npm", ["run", "build"], { cwd: packageDirectory, stdio: "inherit" });
+  if (build.status !== 0) fail("The package build failed.");
 }
 
 const sourcePrivacy = spawnSync("python3", ["-B", "scripts/check_repository_privacy.py", "--index"], {
@@ -87,8 +89,15 @@ const npmCacheDirectory = mkdtempSync(
 );
 let result;
 try {
+  const stage = join(npmCacheDirectory, "package");
+  stagePackage(packageDirectory, stage);
+  symlinkSync(join(packageDirectory, "node_modules"), join(stage, "node_modules"), "junction");
+  const imports = spawnSync(process.execPath, ["--input-type=module", "--eval",
+    'await import("./src/index.js"); await import("./src/proto.js"); await import("./src/wasm/reallyme_crypto_wasm.js");',
+  ], { cwd: stage, encoding: "utf8" });
+  if (imports.status !== 0) fail("The staged package entry points cannot be imported.");
   result = spawnSync("npm", packArgs, {
-    cwd: packageDirectory,
+    cwd: stage,
     encoding: "utf8",
     env: {
       ...process.env,

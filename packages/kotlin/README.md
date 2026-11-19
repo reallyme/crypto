@@ -9,7 +9,7 @@ Kotlin facade.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.4.3")
+    implementation("me.really:crypto:0.4.4")
 }
 ```
 

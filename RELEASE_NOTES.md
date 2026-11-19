@@ -1,6 +1,6 @@
 # Release Notes
 
-## 0.4.3
+## 0.4.4
 
 - Requires Rust 1.100.0 for Buffa 0.1.3. Generated owned views use
   non-cloneable clearing storage.

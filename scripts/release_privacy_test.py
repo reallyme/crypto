@@ -77,6 +77,18 @@ class ReleasePrivacyTests(unittest.TestCase):
         result = self.check("--archive", str(path), "--source-root", "crates/proto", "--strip-components", "1")
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_android_metadata_exception_does_not_admit_adjacent_files(self):
+        # Use the production rules so narrowing this exception remains covered.
+        (self.root / ".gitignore").write_bytes((SOURCE / ".gitignore").read_bytes())
+        subprocess.run(["git", "-C", str(self.root), "add", ".gitignore"], check=True)
+        metadata = "META-INF/com/android/build/gradle/aar-metadata.properties"
+        path = self.zip("metadata.aar", [(metadata, b"aarFormatVersion=1.0\n")])
+        self.assertEqual(self.check("--archive", str(path)).returncode, 0)
+        for excluded in (metadata + ".local", "META-INF/com/android/build/private",
+                         "META-INF/com/android/build/gradle/private", "nested/build/private"):
+            path = self.zip("excluded.aar", [(excluded, b"local test data")])
+            self.assertEqual(self.check("--archive", str(path)).returncode, 1, excluded)
+
     def test_stripped_archive_wrapper_cannot_hide_private_directory(self):
         path = self.tar("private.tgz", [(".local/public.txt", b"local test data")])
         self.assertEqual(self.check("--archive", str(path), "--strip-components", "1").returncode, 1)

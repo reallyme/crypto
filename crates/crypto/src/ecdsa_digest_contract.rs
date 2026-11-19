@@ -19,12 +19,21 @@ pub fn verify(
             .ok_or(CryptoError::PRIMITIVE_INVALID_PARAMETER)?,
     )
     .map_err(|_| CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)?;
-    crate::operations::signature::verify_ecdsa_digest_der(
+    #[cfg(any(feature = "p256", feature = "p384"))]
+    let verified = crate::operations::signature::verify_ecdsa_digest_der(
         algorithm,
         &request.public_key,
         &request.digest,
         &request.signature,
-    )?;
+    );
+    // The contract remains available without providers so reduced builds can
+    // reject requests deterministically without enabling an algorithm.
+    #[cfg(not(any(feature = "p256", feature = "p384")))]
+    let verified: Result<(), CryptoError> = {
+        let _ = algorithm;
+        Err(CryptoError::PROVIDER_UNSUPPORTED_ALGORITHM)
+    };
+    verified?;
     Ok(CryptoNativeVerificationResult {
         status: CryptoVerificationStatus::CRYPTO_VERIFICATION_STATUS_VALID.into(),
     })
