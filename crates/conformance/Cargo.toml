@@ -101,14 +101,14 @@ base64 = { workspace = true }
 thiserror = { workspace = true }
 getrandom = { version = "0.4.3", features = ["wasm_js"], optional = true }
 
-ed25519-dalek-conformance = { package = "ed25519-dalek", version = "3.0" }
-k256-conformance = { package = "k256", version = "0.14", features = ["ecdsa"] }
+ed25519-dalek-conformance = { package = "ed25519-dalek", version = "3.0.0" }
+k256-conformance = { package = "k256", version = "0.14.0", features = ["ecdsa"] }
 ml-dsa-conformance = { package = "ml-dsa", version = "0.1.2" }
 ml-kem-conformance = { package = "ml-kem", version = "0.3.4", features = ["zeroize"] }
-p256-conformance = { package = "p256", version = "0.14", features = ["ecdh", "ecdsa"] }
-p384-conformance = { package = "p384", version = "0.14", features = ["ecdsa"] }
-p521-conformance = { package = "p521", version = "0.14", features = ["ecdsa"] }
-x25519-dalek-conformance = { package = "x25519-dalek", version = "3", features = ["static_secrets"] }
+p256-conformance = { package = "p256", version = "0.14.0", features = ["ecdh", "ecdsa"] }
+p384-conformance = { package = "p384", version = "0.14.0", features = ["ecdsa"] }
+p521-conformance = { package = "p521", version = "0.14.0", features = ["ecdsa"] }
+x25519-dalek-conformance = { package = "x25519-dalek", version = "3.0.0", features = ["static_secrets"] }
 
 crypto-aes-kw = { package = "reallyme-crypto-aes-kw", version = "=0.4.3", path = "../aes-kw", default-features = false }
 crypto-aes256-gcm = { package = "reallyme-crypto-aes256-gcm", version = "=0.4.3", path = "../aes256-gcm", default-features = false }

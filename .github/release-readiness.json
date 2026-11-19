@@ -16,11 +16,8 @@
         "Package.resolved",
         "deny.toml",
         "CONTRACT.md",
-        "PROVIDER_POLICY.md",
-        "SECURITY_MEMORY_MODEL.md",
         "docs/conformance.md",
-        "docs/protobuf.md",
-        "docs/rust-publishing.md"
+        "docs/protobuf.md"
       ]
     },
     "proto": {

@@ -20,4 +20,4 @@ These domains are separate from the seven-curve ECDSA interface.
 
 Outputs preserve fixed widths and leading zeros. Scalar and point inputs must
 use the selected domain's canonical encoding. See the
-[portable Brainpool memory limitation](../SECURITY_MEMORY_MODEL.md#known-portable-brainpool-limitation).
+[portable Brainpool memory limitation](../SECURITY.md#portable-brainpool).

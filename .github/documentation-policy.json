@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "documents": [
+    {
+      "path": "CONTRACT.md",
+      "kind": "contract",
+      "purpose": "Define wire compatibility, provider behavior and shared error semantics."
+    },
+    {
+      "path": "RELEASE_NOTES.md",
+      "kind": "changelog",
+      "purpose": "Provide API migration steps, compiler requirements and release compatibility warnings."
+    },
+    {
+      "path": "docs/conformance.md",
+      "kind": "guide",
+      "purpose": "Explain cross-language conformance checks and validation commands for releases."
+    },
+    {
+      "path": "docs/external-conformance-vectors.md",
+      "kind": "reference",
+      "purpose": "Record external vector sources, adapter coverage and reproducible conformance commands."
+    },
+    {
+      "path": "docs/jwk.md",
+      "kind": "contract",
+      "purpose": "Define JWK and JWKS validation, canonical encodings and conversion behavior."
+    },
+    {
+      "path": "docs/legacy-prime-groups.md",
+      "kind": "reference",
+      "purpose": "Describe supported legacy group domains, parameter sources and encoding restrictions."
+    },
+    {
+      "path": "docs/prime-group-domain-validation.md",
+      "kind": "contract",
+      "purpose": "Specify explicit DH parameter validation, accepted encodings and typed failures."
+    },
+    {
+      "path": "docs/proto-json.md",
+      "kind": "guide",
+      "purpose": "Show supported ProtoJSON requests and explain binary responses and secret restrictions."
+    },
+    {
+      "path": "docs/protobuf.md",
+      "kind": "contract",
+      "purpose": "Define protobuf operation boundaries, generated SDK surfaces and decoding limits."
+    },
+    {
+      "path": "docs/reader-primitive-compatibility.md",
+      "kind": "reference",
+      "purpose": "Describe document-reader primitives, feature selection and protocol integration limits."
+    },
+    {
+      "path": "vectors/external/pbkdf2/brycx_pbkdf2_hmac_sha2.md",
+      "kind": "reference",
+      "purpose": "Preserve upstream PBKDF2 HMAC-SHA2 known-answer vectors for conformance testing."
+    }
+  ]
+}

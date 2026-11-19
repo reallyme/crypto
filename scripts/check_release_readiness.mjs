@@ -105,6 +105,11 @@ const projectLicense = "MIT OR Apache-2.0";
 const packageLicenseText = readText("packages/ts/LICENSE");
 const trackedFiles = loadTrackedFiles();
 const trackedPaths = new Set(trackedFiles);
+readinessContext.assertPathsAbsent([
+  "SECURITY_MEMORY_MODEL.md", "RELEASE_CHECKLIST.md",
+  "PROVIDER_POLICY.md", "docs/release-process.md", "docs/trusted-publishing.md",
+  "scripts/generate_provider_matrix.mjs",
+]);
 for (const [path, toolsVersion] of [
   ["Package.swift", "6.3"],
   ["crates/conformance/platform/swift/Package.swift", "6.0"],
@@ -169,14 +174,14 @@ const cryptoProtoPackageVersion = "0.4.3";
 const typescriptPackageVersion = "0.4.3";
 const kotlinPackageVersion = "0.4.3";
 const kotlinAndroidPackageVersion = "0.4.3";
-const rustCodecVersion = "0.4.3";
-const tsCodecVersion = "0.4.3";
-const swiftCodecVersion = "0.4.3";
-const mavenCodecVersion = "0.4.3";
+const rustCodecVersion = "0.4.4";
+const tsCodecVersion = "0.4.4";
+const swiftCodecVersion = "0.4.4";
+const mavenCodecVersion = "0.4.4";
 const rustSemverBaselineCommit = "54de2955ebf73e9fd1c306eba207550b3716d767";
 const cargoSemverChecksVersion = "0.51.0";
-const buffaVersion = "0.1.2";
-const releaseReadinessCommit = "a89da82a662e02ecb3b7cfc6756c450aff64417a";
+const buffaVersion = "0.1.3";
+const releaseReadinessCommit = "16aab5287de498e858ff3b85d9e66d7c9f7ebb74";
 const releaseReadinessCommand = "node scripts/run_pinned_release_readiness.mjs";
 const gradleWrapperValidationAction =
   "gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c";
@@ -451,14 +456,14 @@ const assertCodecDependencyProvenance = () => {
   }
 
   const registryCodecChecksums = new Map([
-    ["reallyme-codec", "e53a0c5596946d755bd97a0d6fe330fe57d2c34fc69df7a02297630dd9cd409e"],
-    ["reallyme-codec-base64url", "6fe9960da38e6a14c3bf3eec4f0c7905bf7b314eee0531c0347138c4a25bf5ff"],
-    ["reallyme-codec-jcs", "0b72760f71b7060022ad75c0e6125b887677a5d69d8f765b6628ce5fd8d33767"],
-    ["reallyme-codec-multibase", "1aa31e131dce09d12676fee371344d292d32cfd69e69c02493cb9eecf98e02ff"],
-    ["reallyme-codec-multicodec", "0c04438bbb69d9ed74e7ba26d327058d41bc01956d2da23a77c3d7eb965d8081"],
-    ["reallyme-codec-multikey", "59b548f9d8140a04eb4ae9006f5e2d03004ed652e7a652c40c060427bad4db36"],
-    ["reallyme-codec-pem", "b71b6140fd37c924e308d342baa38f36be47330d3032f1ece2c8ff51a3ec04c1"],
-    ["reallyme-codec-proto", "6672a3b72134b10877d33da2763ff4caf90881d6820dd0868e81f6d525678cfd"],
+    ["reallyme-codec", "aaadbb251e7a815c78a2e9310c0350c02f83e919aa90d9eeaec45c5f47b8871b"],
+    ["reallyme-codec-base64url", "f8d5446a783e5137e5e506b6df860567a87a44a3cb68e1ad797ff10f636d484e"],
+    ["reallyme-codec-jcs", "59d1c2f528648b0a7e924d6cfff9a5e9d909acc4bc13c13ae33b2beb66194950"],
+    ["reallyme-codec-multibase", "762a4a0c8ff8389f5a3776d6b5fc653614a1ec9eb502db7fa3d0ff5ca24c77f9"],
+    ["reallyme-codec-multicodec", "d8be8accc5c0b9f54aeb33ee0b046f7b6ff06f4ef2d3ead0704b3bed622f66ea"],
+    ["reallyme-codec-multikey", "62f5bf0bfc7badbe17bf09d2c2e668f0b780b3668a9b6dfc106ac1af29c86a8f"],
+    ["reallyme-codec-pem", "8440c31054a01bec229ae0318b52fd0d0056df2bb6d90248f6617e9912d703da"],
+    ["reallyme-codec-proto", "0494356128c95c6ab27a158d184f775d88ee4ba6a22b48534d15202a94fe2a4a"],
   ]);
   for (const lockPath of ["Cargo.lock", "fuzz/Cargo.lock"]) {
     for (const [packageName, checksum] of registryCodecChecksums) {
@@ -514,7 +519,7 @@ assertContains("README.md", "standalone `reallyme-crypto-x448` Rust crate");
 assertNotContains("README.md", "It does not enable `dispatch`");
 assertContains(
   "crates/conformance/tests/vectors/contract_tests/package_policy_tests.rs",
-  '.split_once("<!-- BEGIN GENERATED PROVIDER MATRIX -->")',
+  'field_array(&manifest, "algorithms")?',
 );
 for (const primitivePolicy of [
   {
@@ -1580,8 +1585,8 @@ for (const metadataPath of [
   assertContains(metadataPath, "<verification-metadata");
   assertContains(metadataPath, "<sha256 value=");
 }
-assertContains("docs/maven-provenance.md", "scripts/verify_gradle_checksum_provenance.py");
-assertContains("docs/maven-provenance.md", "gradle/verification-metadata.xml");
+assertContains("packages/kotlin/README.md", "scripts/verify_gradle_checksum_provenance.py");
+assertContains("packages/kotlin/README.md", "gradle/verification-metadata.xml");
 assertContains("packages/kotlin/README.md", "Android package use Gradle 9.9.1");
 assertContains("packages/kotlin/README.md", "Android package uses Android Gradle Plugin 9.5.1");
 
@@ -1744,33 +1749,12 @@ assertContains(
 );
 
 assertContains("README.md", "actions/workflows/ci.yml/badge.svg");
-assertContains("README.md", "PROVIDER_POLICY.md");
+assertContains("README.md", "provider_manifest.json");
 assertContains("README.md", "CONTRACT.md");
 assertContains("README.md", "The protobuf schema is the source of truth");
-assertContains("SECURITY.md", "PROVIDER_POLICY.md");
-assertContains("SECURITY_MEMORY_MODEL.md", "scripts/check_release_readiness.mjs");
-assertContains("SECURITY_MEMORY_MODEL.md", "Managed-runtime best-effort cleanup helpers");
-assertContains("SECURITY_MEMORY_MODEL.md", "ReallyMeCryptoMemory.bestEffortClear(&bytes)");
-assertContains("SECURITY_MEMORY_MODEL.md", "bestEffortClear(bytes)");
-assertContains("SECURITY_MEMORY_MODEL.md", "not guaranteed-zeroized storage");
-assertContains(
-  "SECURITY_MEMORY_MODEL.md",
-  "fail serde `Serialize` with a fixed error",
-);
-assertContains(
-  "SECURITY_MEMORY_MODEL.md",
-  "Generic AEAD primitive and dispatch APIs treat `aad` as caller-provided bytes",
-);
-assertContains("RELEASE_NOTES.md", "## 0.3.0");
-assertContains("RELEASE_NOTES.md", `## ${rustRootVersion}`);
-assertContains("RELEASE_NOTES.md", "legacy `reallyme.codec.v1` protobuf/package surface was removed");
-assertContains("RELEASE_NOTES.md", "not a `reallyme.crypto.v1` wire break");
-assertContains("RELEASE_NOTES.md", "permanently retired in this repository");
-assertContains("RELEASE_CHECKLIST.md", "# Release Integrity");
-assertContains("RELEASE_CHECKLIST.md", "its exact\n  checksum");
-assertContains("RELEASE_CHECKLIST.md", "`me.really:crypto-android`");
-assertContains("RELEASE_CHECKLIST.md", "`@reallyme/crypto`");
-assertContains("RELEASE_CHECKLIST.md", "artifact bytes");
+assertContains("SECURITY.md", "provider_manifest.json");
+assertContains("SECURITY.md", "Portable Brainpool");
+assertContains("SECURITY.md", "Caller-owned copies");
 assertContains(".github/workflows/rust-ci.yml", "cargo package --locked -p reallyme-crypto --list");
 assertContains(".github/workflows/rust-ci.yml", "Verify OpenMLS HPKE dependency isolation");
 for (const [path, requiredCommands] of REQUIRED_WORKFLOW_GATES) {
@@ -1791,11 +1775,11 @@ assertContains(
   ".github/workflows/rust-ci.yml",
   "p256|p521|k256|x448|reallyme-crypto-secp256k1|reallyme-crypto-x448",
 );
-assertContains(".github/workflows/rust-ci.yml", "node scripts/generate_provider_matrix.mjs --check");
+assertContains(".github/workflows/rust-ci.yml", "node scripts/check_provider_routing.mjs");
 assertContains(".github/workflows/release-readiness.yml", "REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI");
 assertContains(".github/workflows/release-readiness.yml", "node packages/ts/scripts/browser-wasm-test.mjs");
 assertContains(".github/workflows/rust-ci.yml", "bash scripts/check_wasm_browser_backends.sh");
-assertContains(".github/workflows/rust-ci.yml", "toolchain: 1.96.0");
+assertContains(".github/workflows/rust-ci.yml", "toolchain: 1.100.0");
 assertContains(".github/workflows/rust-ci.yml", "--target aarch64-linux-android");
 assertContains(".github/workflows/rust-ci.yml", "--target aarch64-apple-ios");
 assertContains(".github/workflows/rust-ci.yml", "bash scripts/test_native_sanitizers.sh");
@@ -1819,9 +1803,9 @@ for (const workflow of [
 }
 assertContains("scripts/maven-central-bundle.local.sh", "scripts/stage-maven-central-bundle.sh");
 assertContains(".github/workflows/fuzz.yml", "cargo install cargo-fuzz --version 0.13.2 --locked");
-assertContains(".github/workflows/fuzz.yml", "cargo +nightly-2026-07-01 fuzz build");
+assertContains(".github/workflows/fuzz.yml", "cargo +nightly-2026-11-19 fuzz build");
 assertContains(".github/workflows/fuzz-scheduled.yml", "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9");
-assertContains(".github/workflows/fuzz-scheduled.yml", "cargo +nightly-2026-07-01 fuzz run");
+assertContains(".github/workflows/fuzz-scheduled.yml", "cargo +nightly-2026-11-19 fuzz run");
 for (const target of ["operation_response", "jwk_multikey", "key_encodings", "post_quantum_encodings", "operation_family_boundaries"]) {
   assertContains(".github/workflows/fuzz-scheduled.yml", target);
 }
@@ -1968,10 +1952,6 @@ assertContains(
   "crates/p256/src/import_pem.rs",
   "P256_MIN_KEY_DER_LEN..=P256_MAX_KEY_DER_LEN",
 );
-assertContains("PROVIDER_POLICY.md", "Generated from `provider_manifest.json`");
-assertContains("PROVIDER_POLICY.md", "Every provider route must implement identical input validation");
-assertNotContains("PROVIDER_POLICY.md", "JCA/JCE -> BouncyCastle");
-assertNotContains("PROVIDER_POLICY.md", "JCA/JCE → BouncyCastle");
 assertContains("README.md", "AES-128/192/256-KW");
 assertContains("packages/kotlin/README.md", "BouncyCastle for SHA-3, AES-GCM, AES-KW");
 assertContains("CONTRACT.md", "## Canonical Contract");
@@ -2315,7 +2295,6 @@ for (const registryFile of ["key_exchange.rs", "key_management.rs", "signature.r
 assertNotContains("crates/crypto/src/operations/error.rs", "ContractErrorReason");
 assertNotContains("crates/crypto/src/operations/error.rs", "MalformedProtobuf");
 assertContains("vectors/manifest.json", '"vectors"');
-assertContains("docs/architecture.md", "ReallyMe Crypto is a proto-first");
 assertContains("crates/crypto/dispatch/README.md", "inspectable `ProviderDecision`");
 assertContains("packages/ts/src/proto.ts", "ReallyMeCryptoWireError");
 assertNotContains("packages/ts/src/proto.ts", "ReallyMeCryptoProtoResult");
@@ -2389,7 +2368,7 @@ const primaryOperationBoundaryPolicy = {
 const repositoryPolicy = {
   generatedFreshnessMode,
   vendoredCore: {
-    version: "0.9.6",
+    version: "0.9.9",
     scriptPath: "scripts/check_release_readiness.mjs",
     corePath: "scripts/release-readiness/core.mjs",
   },
@@ -2691,7 +2670,7 @@ const repositoryPolicy = {
         path: "scripts/run_pinned_release_readiness.mjs",
         required: [
           `const RELEASE_READINESS_COMMIT = "${releaseReadinessCommit}";`,
-          'const RELEASE_READINESS_CORE_SHA256 =\n  "edabd3b86b812ff821517d0adf4d383f066d95a65bb9b4b364809eacdb6ec639";',
+          'const RELEASE_READINESS_CORE_SHA256 =\n  "56ae3823215f5bca908d2fce3c9304d4ea6bab0334038f37ebe33023dadb8594";',
           "const LOCAL_CHECKER_SHA256 =",
           "const LOCAL_CHECKER_DEPENDENCIES =",
           "scripts/crypto_operation_route_readiness.mjs",
@@ -3096,8 +3075,6 @@ assertContains("scripts/build_swift_xcframework.sh", "@rpath/ReallyMeCryptoFFI.f
 assertContains("scripts/prepare_swift_release_candidate.sh", "build_swift_xcframework.sh");
 assertContains("scripts/prepare_swift_release_candidate.sh", "prepare_swift_binary_manifest.mjs");
 assertContains("scripts/prepare_swift_release_candidate.sh", "verify_swift_release_artifact.mjs");
-assertContains("RELEASE_CHECKLIST.md", "published manifest and binary artifact must agree");
-assertContains("docs/release-process.md", "reviewed source commit must agree across published");
 assertContains(
   "packages/kotlin/src/main/kotlin/me/really/crypto/OperationResponse.kt",
   "processOperationResponseNative(request: ByteArray): ByteArray?",
@@ -3126,7 +3103,7 @@ if (denyInstaller === undefined || denyAudit === undefined || denyInstaller.inde
 const denyInstallerInputs = readWorkflowStepInputs(
   `${rustWorkflow} rust/Install cargo-deny`, denyInstaller, readText(rustWorkflow).split(/\r?\n/u),
 );
-if (denyInstallerInputs.size !== 3 || denyInstallerInputs.get("tool") !== "cargo-deny@0.20.2" ||
+if (denyInstallerInputs.size !== 3 || denyInstallerInputs.get("tool") !== "cargo-deny@0.21.0" ||
     denyInstallerInputs.get("checksum") !== "true" || denyInstallerInputs.get("fallback") !== "none") {
   fail(`${rustWorkflow} must install the pinned Cargo Deny binary with checksum verification`);
 }

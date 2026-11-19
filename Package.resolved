@@ -1,13 +1,13 @@
 {
-  "originHash" : "c81969d8ccbf77f4359e7ad00dd48abe0cf2f3ef9ac8984b4a7daddb3670b6e1",
+  "originHash" : "4f97f7c0613bf0815cc3ec8bec45fa3f2f9cdd02cfb0089b4ab2f0fa63ffa0a5",
   "pins" : [
     {
       "identity" : "codec",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/reallyme/codec",
       "state" : {
-        "revision" : "2f93ffdbfaa71a556b0d736e29936aee14ed634d",
-        "version" : "0.4.3"
+        "revision" : "a52d10b7d68c29cc39fe90aefd90617eef1b6dfb",
+        "version" : "0.4.4"
       }
     },
     {

@@ -39,6 +39,74 @@ test("every pinned tool installer disables fallback downloads", () => {
   assert.ok(installers > 0);
 });
 
+test("dependency review uses cargo-deny 0.21.0 with verified downloads", () => {
+  const path = ".github/workflows/rust-ci.yml";
+  const installer = steps(path).find((step) => step.job === "rust" && step.name === "Install cargo-deny");
+  assert.ok(installer);
+  const inputs = context.readWorkflowStepInputs(path, installer, source(path).split(/\r?\n/u));
+  assert.equal(inputs.get("tool"), "cargo-deny@0.21.0");
+  assert.equal(inputs.get("checksum"), "true");
+  assert.equal(inputs.get("fallback"), "none");
+});
+
+test("package preflights install dependency review tools after pin verification", () => {
+  for (const ecosystem of ["crates", "npm", "swift", "kotlin-android"]) {
+    const path = `.github/workflows/${ecosystem}-package-preflight.yml`;
+    const job = steps(path).filter((step) => step.job === "verify-source-sha");
+    const authenticated = job.findIndex((step) => step.name === "Authenticate release-readiness pins");
+    const installed = job.findIndex((step) => step.name === "Install dependency maintenance tools");
+    const outdated = job.findIndex((step) => step.name === "Install cargo-outdated");
+    const checked = job.findIndex((step) => step.name === "Verify release candidate");
+    assert.ok(authenticated >= 0 && authenticated < installed && installed < outdated && outdated < checked, path);
+    const installer = job[installed];
+    assert.match(installer.uses, /^taiki-e\/install-action@[a-f0-9]{40}$/u);
+    assert.equal(installer.condition, null);
+    assert.equal(installer.continueOnError, null);
+    const inputs = context.readWorkflowStepInputs(path, installer, source(path).split(/\r?\n/u));
+    assert.equal(inputs.get("tool"), "cargo-audit@0.23.0");
+    assert.equal(inputs.get("checksum"), "true");
+    assert.equal(inputs.get("fallback"), "none");
+    assert.equal(job[outdated].run, "cargo +1.100.0 install cargo-outdated --version '=0.19.0' --locked");
+    assert.equal(job[outdated].condition, null);
+    assert.equal(job[outdated].continueOnError, null);
+  }
+});
+
+test("fuzz, sanitizer and Miri jobs share the pinned nightly", () => {
+  const workflows = ["rust-ci", "fuzz", "fuzz-scheduled"];
+  const nightlies = new Set();
+  let installations = 0;
+  for (const name of workflows) {
+    const path = `.github/workflows/${name}.yml`;
+    const text = source(path);
+    for (const step of steps(path)) {
+      if (!step.uses?.startsWith("dtolnay/rust-toolchain@")) continue;
+      const toolchain = context.readWorkflowStepInputs(path, step, text.split(/\r?\n/u)).get("toolchain");
+      if (!toolchain?.startsWith("nightly")) continue;
+      assert.match(toolchain, /^nightly-\d{4}-\d{2}-\d{2}$/u);
+      nightlies.add(toolchain);
+      installations += 1;
+    }
+  }
+  assert.equal(installations, 4);
+  assert.equal(nightlies.size, 1);
+  const [nightly] = nightlies;
+  assert.ok(source("scripts/test_native_sanitizers.sh").includes(`:-${nightly}}`));
+  for (const path of [".github/workflows/fuzz.yml", ".github/workflows/fuzz-scheduled.yml"]) {
+    assert.ok(source(path).includes(`cargo +${nightly} fuzz `), path);
+    assert.ok(source(path).includes(`shared-key: fuzz-${nightly}`), path);
+  }
+  assert.ok(source(".github/workflows/rust-ci.yml").includes(`cargo +${nightly} miri test`));
+});
+
+test("the MSRV job and cache identify the declared workspace compiler", () => {
+  const msrv = /^rust-version = "(\d+\.\d+)"$/mu.exec(source("Cargo.toml"))?.[1];
+  assert.ok(msrv);
+  const workflow = source(".github/workflows/rust-ci.yml");
+  assert.ok(workflow.includes(`name: Rust ${msrv} minimum version`));
+  assert.ok(workflow.includes(`shared-key: msrv-${msrv}`));
+});
+
 test("only signature processing has CLA write permissions", () => {
   context.assertWorkflowPermissionsPolicy({
     path: claPath,

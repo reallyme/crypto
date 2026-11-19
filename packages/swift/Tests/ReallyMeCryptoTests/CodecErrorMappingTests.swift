@@ -25,4 +25,47 @@ final class CodecErrorMappingTests: XCTestCase {
       XCTAssertEqual(mapCodecError(codecError), expected)
     }
   }
+
+  func testOperationFailuresMapToStableCryptoErrors() {
+    let cases: [(ReallyMeCodecError, ReallyMeCryptoError)] = [
+      (
+        .operationFailure(
+          category: .invalidInput, reason: .baseInvalidBase64URL, origin: .caller
+        ), .invalidInput
+      ),
+      (
+        .operationFailure(
+          category: .nonCanonical, reason: .baseNonCanonicalHex, origin: .caller
+        ), .invalidInput
+      ),
+      (
+        .operationFailure(
+          category: .unsupportedIpldValue, reason: .canonicalUnsupportedIpldValue, origin: .caller
+        ), .invalidInput
+      ),
+      (
+        .operationFailure(
+          category: .unsupportedCodec, reason: .multiformatUnknownMulticodec, origin: .caller
+        ), .invalidInput
+      ),
+      (
+        .operationFailure(
+          category: .providerFailure, reason: .backendInternal, origin: .provider
+        ), .providerFailure
+      ),
+    ]
+
+    for (codecError, expected) in cases {
+      XCTAssertEqual(mapCodecError(codecError), expected)
+    }
+  }
+
+  func testUnknownOperationCategoriesFailClosed() {
+    for category in [ReallyMeProtoCodecSdkErrorCategory.unspecified, .UNRECOGNIZED(Int.max)] {
+      let error = ReallyMeCodecError.operationFailure(
+        category: category, reason: .backendInternal, origin: .provider
+      )
+      XCTAssertEqual(mapCodecError(error), .providerFailure)
+    }
+  }
 }

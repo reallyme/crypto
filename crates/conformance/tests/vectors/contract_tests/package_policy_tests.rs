@@ -226,21 +226,18 @@ fn rust_crates_do_not_publish_swift_or_kotlin_feature_lanes() -> Result<(), Vect
 }
 
 #[test]
-fn provider_policy_records_every_package_algorithm_identifier() -> Result<(), VectorTestError> {
-    let policy = read_repo_file("PROVIDER_POLICY.md")?;
-    let algorithm_policy = policy
-        .split_once("<!-- BEGIN GENERATED PROVIDER MATRIX -->")
-        .and_then(|(_, remainder)| remainder.split_once("<!-- END GENERATED PROVIDER MATRIX -->"))
-        .map(|(section, _)| section)
-        .ok_or(VectorTestError::InvalidField)?;
-
+fn provider_manifest_records_every_package_algorithm_identifier() -> Result<(), VectorTestError> {
+    let source = read_repo_file("provider_manifest.json")?;
+    let manifest: Value =
+        serde_json::from_str(&source).map_err(|_| VectorTestError::ParseVector)?;
+    let algorithms = field_array(&manifest, "algorithms")?;
+    let identifiers = algorithms
+        .iter()
+        .map(|algorithm| field_string(algorithm, "id"))
+        .collect::<Result<BTreeSet<_>, _>>()?;
     for identifier in PACKAGE_ALGORITHM_IDENTIFIERS {
-        assert!(
-            algorithm_policy.contains(&format!("| `{identifier}` |")),
-            "provider matrix is missing canonical identifier {identifier}"
-        );
+        assert!(identifiers.contains(identifier), "missing provider identifier {identifier}");
     }
-
     Ok(())
 }
 
@@ -265,27 +262,15 @@ fn readme_records_messaging_bundle_and_x448_scope() -> Result<(), VectorTestErro
 }
 
 #[test]
-fn provider_policy_documents_setup_and_failure_behavior() -> Result<(), VectorTestError> {
-    let policy = read_repo_file("PROVIDER_POLICY.md")?;
-
-    for required in [
-        "No silent fallback",
-        "Swift",
-        "Kotlin/JVM",
-        "Kotlin/Android",
-        "TypeScript/WASM",
-        "ReallyMeRustNativeProvider.loadBundledLibrary()",
-        "createReallyMeCrypto",
-        "ReallyMeAndroidPlatformKeys",
-        "StrongBox",
-        "WebCrypto is not a provider for the synchronous TypeScript facade",
+fn sdk_readmes_document_required_provider_initialization() -> Result<(), VectorTestError> {
+    for (path, required) in [
+        ("packages/swift/README.md", "ReallyMeRustCAbiLibrary"),
+        ("packages/kotlin/README.md", "ReallyMeRustNativeProvider.loadBundledLibrary()"),
+        ("packages/kotlin-android/README.md", "ReallyMeAndroidPlatformKeys"),
+        ("packages/ts/README.md", "createReallyMeCrypto"),
     ] {
-        assert!(
-            policy.contains(required),
-            "provider policy is missing required provider rule: {required}"
-        );
+        assert!(read_repo_file(path)?.contains(required), "missing provider setup in {path}");
     }
-
     Ok(())
 }
 
@@ -297,7 +282,7 @@ fn provider_catalogs_name_explicit_provider_sets() -> Result<(), VectorTestError
     let ts = read_repo_file("packages/ts/src/providerCatalog.ts")?;
 
     // Post-quantum on Swift routes through the ReallyMe Rust C ABI per
-    // PROVIDER_POLICY.md, so no Swift-native PQ package (SwiftKyber/
+    // provider_manifest.json, so no Swift-native PQ package (SwiftKyber/
     // SwiftDilithium) is linked or named in the catalog.
     for required in ["CryptoKit", "CSecp256k1", "Digest", "ReallyMe Rust C ABI"] {
         assert!(

@@ -63,7 +63,7 @@ Signature verification throws on invalid signatures.
 
 Released packages link the Rust C ABI provider. Use `ReallyMeCrypto()` for its
 configured routes; algorithm-specific types expose the lower-level APIs.
-[PROVIDER_POLICY.md](../../PROVIDER_POLICY.md) lists supported algorithms and
+[provider_manifest.json](../../provider_manifest.json) lists supported algorithms and
 providers. Unspecified identifiers or unsupported combinations throw
 `ReallyMeCryptoError.unsupportedAlgorithm`; provider failures do not trigger
 fallback.

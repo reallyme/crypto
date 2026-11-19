@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-readonly TOOLCHAIN="${REALLYME_CRYPTO_SANITIZER_TOOLCHAIN:-nightly-2026-07-01}"
+readonly TOOLCHAIN="${REALLYME_CRYPTO_SANITIZER_TOOLCHAIN:-nightly-2026-11-19}"
 readonly TARGET="${REALLYME_CRYPTO_SANITIZER_TARGET:-$(rustc +"$TOOLCHAIN" -vV | sed -n 's/^host: //p')}"
 readonly TEST_ARGS=(
   test --locked -p crypto-ffi --lib --tests --target "$TARGET"

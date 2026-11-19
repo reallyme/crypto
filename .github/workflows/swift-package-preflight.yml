@@ -56,7 +56,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: a89da82a662e02ecb3b7cfc6756c450aff64417a
+          ref: 16aab5287de498e858ff3b85d9e66d7c9f7ebb74
           path: .release-readiness
           persist-credentials: false
 
@@ -73,6 +73,16 @@ jobs:
       - name: Authenticate release-readiness pins
         run: node scripts/run_pinned_release_readiness.mjs --check-pins
 
+      - name: Install dependency maintenance tools
+        uses: taiki-e/install-action@75a7c0f87bd666af3cdb75c5b9e9d03ab6044e6f # v2.90.6
+        with:
+          tool: cargo-audit@0.23.0
+          checksum: true
+          fallback: none
+
+      - name: Install cargo-outdated
+        run: cargo +1.100.0 install cargo-outdated --version '=0.19.0' --locked
+
       - name: Verify dependency security for the candidate
         run: node scripts/verify_release_attestation.mjs --dependency-security
         env:
@@ -87,6 +97,12 @@ jobs:
           RELEASE_VERSION: ${{ inputs.version }}
           RELEASE_TAG: v${{ inputs.version }}
           SOURCE_SHA: ${{ inputs.source_sha }}
+
+      - name: Verify publication privacy
+        shell: bash
+        env:
+          PUBLICATION_PATH: ${{ runner.temp }}/release-readiness-ci.json
+        run: node .release-readiness/scripts/repository-privacy.mjs --artifact "$PUBLICATION_PATH"
 
       - name: Record verified CI
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -108,6 +124,14 @@ jobs:
           persist-credentials: false
           # This immutable event SHA has already been checked against main.
           ref: ${{ github.sha }}
+
+      - name: Checkout release-readiness runner
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: reallyme/release-readiness
+          ref: 16aab5287de498e858ff3b85d9e66d7c9f7ebb74
+          path: .release-readiness
+          persist-credentials: false
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
@@ -137,6 +161,14 @@ jobs:
       # promotes these bytes rather than compiling a second archive.
       - name: Reject excluded Swift artifact files
         run: python3 -B scripts/check_release_privacy.py --archive build/swift/ReallyMeCryptoFFI.xcframework.zip
+
+      - name: Verify publication privacy
+        shell: bash
+        env:
+          PUBLICATION_PATH: |
+            build/swift/ReallyMeCryptoFFI.xcframework.zip
+            build/swift/ReallyMeCryptoFFI.xcframework.checksum
+        run: node .release-readiness/scripts/repository-privacy.mjs --artifact "$PUBLICATION_PATH"
 
       - name: Upload Swift release candidate
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

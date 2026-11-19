@@ -19,6 +19,10 @@ Use native facade types for ordinary in-process calls. Use generated messages
 when transmitting or storing a structured operation, key envelope or error.
 Public JWK/JWKS JSON has its [own contract](jwk.md).
 
+Rust `*OwnedView` handles own clearing storage and do not implement `Clone`.
+Their `to_owned_message()` conversion returns a `Result`. Serialize public
+metadata using its message or borrowed view; owned-handle serialization is denied.
+
 ## Calling operations
 
 Enable Rust's `operation-response` feature and the required algorithms:
@@ -146,16 +150,16 @@ randomness is test-only and is not a production request field.
 Keep sensitive messages short-lived and avoid logging or unnecessary cloning.
 Rust generated secret owners clear their retained storage. Caller-owned inputs,
 exported bytes, borrowed backing buffers and managed-runtime copies have
-separate cleanup obligations. Read [memory ownership](../SECURITY_MEMORY_MODEL.md).
+separate cleanup obligations. Read [memory ownership](../SECURITY.md).
 
 ## Generation
 
 Normal Cargo builds use committed generated code. To regenerate locally, use
-Buf 1.75.0 and Buffa 0.1.2:
+Buf 1.75.0 and Buffa 0.1.3:
 
 ```sh
-cargo install reallyme-protoc-gen-buffa --version '=0.1.2' --locked
-cargo install reallyme-protoc-gen-buffa-packaging --version '=0.1.2' --locked
+cargo install reallyme-protoc-gen-buffa --version '=0.1.3' --locked
+cargo install reallyme-protoc-gen-buffa-packaging --version '=0.1.3' --locked
 npm ci --prefix packages/ts
 bash scripts/install_local_proto_tools.sh
 export PATH="$PWD/.build/crypto-proto-tools/bin:$PATH"

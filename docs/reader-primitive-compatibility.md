@@ -112,13 +112,6 @@ Platform SDK arrays and borrowed views have different ownership guarantees.
 
 Portable Brainpool ECDH has a known unguarded coordinate-serialization buffer in
 `primefield` 0.14.0. The published dependency graph does not include the candidate
-repair. Read [the memory limitation](../SECURITY_MEMORY_MODEL.md#known-portable-brainpool-limitation)
+repair. Read [the memory limitation](../SECURITY.md#portable-brainpool)
 before choosing that path for a deployment requiring complete secret-buffer
 cleanup.
-
-## Validation
-
-Run the selected profiles with `cargo check --locked` and the matching native
-or WASM tests. The [conformance commands](conformance.md#release-checks) cover
-the release checks. Compilation alone does not establish target runtime support
-or an independent cryptographic audit.

@@ -52,7 +52,7 @@ ReallyMeRustNativeProvider.loadBundledLibrary()
 
 Missing Rust providers return typed `UnsupportedAlgorithm` or provider errors.
 There is no BouncyCastle or Android Keystore fallback. Other routes use the
-providers listed in [PROVIDER_POLICY.md](../../PROVIDER_POLICY.md): JCA/JCE
+providers listed in [provider_manifest.json](../../provider_manifest.json): JCA/JCE
 for SHA-2, HMAC and JWA Concat KDF; BouncyCastle for SHA-3, AES-GCM, AES-KW,
 RSA verification and deterministic NIST ECDSA; libsecp256k1 JNI for secp256k1 and BIP-340.
 
@@ -126,7 +126,15 @@ The process needs a writable temporary location; loaded files may remain until
 process exit. Android loads the AAR's packaged `jniLibs` instead.
 
 Dependency verification metadata is committed in
-`gradle/verification-metadata.xml`. Review downloaded artifacts before updating it:
+`gradle/verification-metadata.xml` for both JVM and Android. Check lockfiles
+and artifact hashes from the repository root:
+
+```sh
+python3 scripts/gradle_runtime_lockfiles.py --check
+python3 scripts/verify_gradle_checksum_provenance.py
+```
+
+Review downloaded artifacts before updating the verification metadata:
 
 ```sh
 ./gradlew --write-verification-metadata sha256 help

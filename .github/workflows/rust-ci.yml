@@ -54,7 +54,7 @@ jobs:
         run: python3 -B -m unittest discover -s scripts -p '*_test.py'
 
       - name: Install ShellCheck
-        uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
+        uses: taiki-e/install-action@75a7c0f87bd666af3cdb75c5b9e9d03ab6044e6f # v2.90.6
         with:
           tool: shellcheck@0.11.0
           fallback: none
@@ -92,7 +92,7 @@ jobs:
         run: cargo check --locked -p crypto-ffi --target aarch64-linux-android
 
   rust-msrv:
-    name: Rust 1.96 minimum version
+    name: Rust 1.100 minimum version
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -103,147 +103,147 @@ jobs:
       - name: Install minimum Rust toolchain
         uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
-          toolchain: 1.96.0
+          toolchain: 1.100.0
 
       - name: Cache Rust rust-msrv
         uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
-          shared-key: msrv-1.96
+          shared-key: msrv-1.100
 
       # The all-feature tests select the OpenSSL Brainpool provider.
       - name: Build reviewed optional native provider
         env:
           NUM_JOBS: '4'
         run: |
-          cargo +1.96.0 run --locked -p optional-provider-build -- --target x86_64-unknown-linux-gnu --out-dir "$PWD/target/optional-provider"
+          cargo +1.100.0 run --locked -p optional-provider-build -- --target x86_64-unknown-linux-gnu --out-dir "$PWD/target/optional-provider"
           echo "OPENSSL_DIR=$PWD/target/optional-provider/install" >> "$GITHUB_ENV"
           echo "OPENSSL_STATIC=1" >> "$GITHUB_ENV"
 
       - name: Check workspace at declared minimum Rust version
-        run: cargo +1.96.0 check --locked --workspace --all-features
+        run: cargo +1.100.0 check --locked --workspace --all-features
 
       - name: Test reallyme-crypto at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto --all-features
 
       - name: Test reallyme-crypto-aes-kw at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-aes-kw --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-aes-kw --all-features
 
       - name: Test reallyme-crypto-aes256-gcm at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-aes256-gcm --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-aes256-gcm --all-features
 
       - name: Test reallyme-crypto-aes256-gcm-siv at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-aes256-gcm-siv --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-aes256-gcm-siv --all-features
 
       - name: Test reallyme-crypto-argon2id at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-argon2id --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-argon2id --all-features
 
       - name: Test reallyme-crypto-chacha20-poly1305 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-chacha20-poly1305 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-chacha20-poly1305 --all-features
 
       - name: Test reallyme-crypto-concat-kdf at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-concat-kdf --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-concat-kdf --all-features
 
       - name: Test reallyme-crypto-constant-time at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-constant-time --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-constant-time --all-features
 
       - name: Test reallyme-crypto-core at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-core --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-core --all-features
 
       - name: Test reallyme-crypto-csprng at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-csprng --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-csprng --all-features
 
       - name: Test reallyme-crypto-dispatch at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-dispatch --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-dispatch --all-features
 
       - name: Test reallyme-crypto-ed25519 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-ed25519 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-ed25519 --all-features
 
       - name: Test reallyme-crypto-hkdf at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-hkdf --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-hkdf --all-features
 
       - name: Test reallyme-crypto-hmac at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-hmac --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-hmac --all-features
 
       - name: Test reallyme-crypto-hpke at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-hpke --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-hpke --all-features
 
       - name: Test reallyme-crypto-jwk at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-jwk --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-jwk --all-features
 
       - name: Test reallyme-crypto-jwk-multikey at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-jwk-multikey --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-jwk-multikey --all-features
 
       - name: Test reallyme-crypto-kmac at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-kmac --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-kmac --all-features
 
       - name: Test reallyme-crypto-ml-dsa-44 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-ml-dsa-44 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-ml-dsa-44 --all-features
 
       - name: Test reallyme-crypto-ml-dsa-65 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-ml-dsa-65 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-ml-dsa-65 --all-features
 
       - name: Test reallyme-crypto-ml-dsa-87 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-ml-dsa-87 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-ml-dsa-87 --all-features
 
       - name: Test reallyme-crypto-ml-kem-1024 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-ml-kem-1024 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-ml-kem-1024 --all-features
 
       - name: Test reallyme-crypto-ml-kem-512 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-ml-kem-512 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-ml-kem-512 --all-features
 
       - name: Test reallyme-crypto-ml-kem-768 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-ml-kem-768 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-ml-kem-768 --all-features
 
       - name: Test reallyme-crypto-p256 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-p256 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-p256 --all-features
 
       - name: Test reallyme-crypto-p384 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-p384 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-p384 --all-features
 
       - name: Test reallyme-crypto-p521 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-p521 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-p521 --all-features
 
       - name: Test reallyme-crypto-pbkdf2 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-pbkdf2 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-pbkdf2 --all-features
 
       - name: Test reallyme-crypto-poseidon2 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-poseidon2 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-poseidon2 --all-features
 
       - name: Test reallyme-crypto-proto at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-proto --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-proto --all-features
 
       - name: Test reallyme-crypto-rsa at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-rsa --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-rsa --all-features
 
       - name: Test reallyme-crypto-secp256k1 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-secp256k1 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-secp256k1 --all-features
 
       - name: Test reallyme-crypto-sha2 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-sha2 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-sha2 --all-features
 
       - name: Test reallyme-crypto-sha2-256 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-sha2-256 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-sha2-256 --all-features
 
       - name: Test reallyme-crypto-sha3 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-sha3 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-sha3 --all-features
 
       - name: Test reallyme-crypto-sha3-256 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-sha3-256 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-sha3-256 --all-features
 
       - name: Test reallyme-crypto-signer at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-signer --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-signer --all-features
 
       - name: Test reallyme-crypto-slh-dsa at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-slh-dsa --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-slh-dsa --all-features
 
       - name: Test reallyme-crypto-x-wing at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-x-wing --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-x-wing --all-features
 
       - name: Test reallyme-crypto-x25519 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-x25519 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-x25519 --all-features
 
       - name: Test reallyme-crypto-x448 at its declared MSRV
-        run: cargo +1.96.0 test --locked --package reallyme-crypto-x448 --all-features
+        run: cargo +1.100.0 test --locked --package reallyme-crypto-x448 --all-features
 
   rust-semver:
     name: Rust public API semver
@@ -330,20 +330,20 @@ jobs:
           echo "OPENSSL_STATIC=1" >> "$GITHUB_ENV"
 
       - name: Install nextest
-        uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
+        uses: taiki-e/install-action@75a7c0f87bd666af3cdb75c5b9e9d03ab6044e6f # v2.90.6
         with:
           tool: nextest@0.9.152
           fallback: none
 
       - name: Install cargo-deny
-        uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
+        uses: taiki-e/install-action@75a7c0f87bd666af3cdb75c5b9e9d03ab6044e6f # v2.90.6
         with:
-          tool: cargo-deny@0.20.2
+          tool: cargo-deny@0.21.0
           checksum: true
           fallback: none
 
       - name: Install cargo-audit
-        uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
+        uses: taiki-e/install-action@75a7c0f87bd666af3cdb75c5b9e9d03ab6044e6f # v2.90.6
         with:
           tool: cargo-audit@0.23.0
           fallback: none
@@ -428,8 +428,8 @@ jobs:
       - name: Verify committed external vectors against public APIs
         run: bash scripts/check_external_vector_adapters.sh
 
-      - name: Check generated provider matrix
-        run: node scripts/generate_provider_matrix.mjs --check
+      - name: Validate provider routing
+        run: node scripts/check_provider_routing.mjs
 
       - name: Dependency policy
         run: cargo +1.100.0 deny --locked --workspace --all-features --config deny.toml check advisories licenses sources
@@ -473,13 +473,13 @@ jobs:
           shared-key: typescript-wasm
 
       - name: Install wasm-pack
-        uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
+        uses: taiki-e/install-action@75a7c0f87bd666af3cdb75c5b9e9d03ab6044e6f # v2.90.6
         with:
           tool: wasm-pack@0.15.1
           fallback: none
 
       - name: Install wasm-bindgen-cli
-        uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
+        uses: taiki-e/install-action@75a7c0f87bd666af3cdb75c5b9e9d03ab6044e6f # v2.90.6
         with:
           tool: wasm-bindgen-cli@0.2.130
           fallback: none
@@ -523,7 +523,7 @@ jobs:
       - name: Install pinned Rust nightly
         uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
-          toolchain: nightly-2026-07-01
+          toolchain: nightly-2026-11-19
 
       - name: Cache Rust native-sanitizers
         uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
@@ -570,7 +570,7 @@ jobs:
       - name: Install pinned Miri toolchain
         uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
-          toolchain: nightly-2026-07-01
+          toolchain: nightly-2026-11-19
           components: miri
 
       - name: Cache Rust ffi-miri
@@ -580,8 +580,8 @@ jobs:
 
       - name: Test FFI pointer and panic boundaries
         run: |
-          cargo +nightly-2026-07-01 miri test --locked -p crypto-ffi --lib pointer::tests
-          cargo +nightly-2026-07-01 miri test --locked -p crypto-ffi --lib guard::tests
+          cargo +nightly-2026-11-19 miri test --locked -p crypto-ffi --lib pointer::tests
+          cargo +nightly-2026-11-19 miri test --locked -p crypto-ffi --lib guard::tests
 
   verified:
     name: Record verified candidate

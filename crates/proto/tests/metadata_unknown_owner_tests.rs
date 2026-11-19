@@ -99,34 +99,39 @@ fn numeric_metadata_json_defaults_and_values_remain_unchanged() -> Result<(), se
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[cfg_attr(not(target_arch = "wasm32"), test)]
-fn numeric_metadata_views_keep_clone_and_json_with_redacted_debug() -> Result<(), DecodeError> {
+fn numeric_metadata_views_keep_borrowed_json_with_guarded_owned_storage() -> Result<(), DecodeError>
+{
     let owned = Argon2Caps {
         mem_cap_kib: 32768,
         time_cost_cap: 912,
         lanes_cap: 2,
     };
     let handle = Argon2CapsOwnedView::from_owned(&owned)?;
-    let clone = handle.clone();
-    let view = clone.view().clone();
-    for debug in [
-        format!("{owned:?}"),
-        format!("{handle:?}"),
-        format!("{view:?}"),
-    ] {
+    fn require_cleanup<T: zeroize::ZeroizeOnDrop>() {}
+    require_cleanup::<Argon2CapsOwnedView>();
+    let view = handle.view().clone();
+    for debug in [format!("{owned:?}"), format!("{view:?}")] {
         assert!(debug.contains("[REDACTED]"));
         assert!(!debug.contains("32768"));
         assert!(!debug.contains("912"));
     }
     let json = serde_json::to_value(&owned).expect("numeric metadata serializes");
-    assert_eq!(
-        serde_json::to_value(&handle).expect("owned metadata view serializes"),
-        json
-    );
+    assert_eq!(format!("{handle:?}"), "GuardedOwnedView(<redacted>)");
+    assert!(serde_json::to_value(&handle).is_err());
     assert_eq!(
         serde_json::to_value(&view).expect("borrowed metadata view serializes"),
         json
     );
-    let round_trip = handle.to_owned_message();
+    let round_trip = handle.to_owned_message()?;
     assert_eq!(round_trip, owned);
     Ok(())
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn numeric_metadata_owned_views_reject_unknown_fields() {
+    assert!(matches!(
+        Argon2CapsOwnedView::decode(buffa::bytes::Bytes::from_static(UNKNOWN_GROUP)),
+        Err(DecodeError::UnknownFieldLimitExceeded)
+    ));
 }

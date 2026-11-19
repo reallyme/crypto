@@ -12,7 +12,6 @@ import {
   readdirSync,
   readSync,
 } from "node:fs";
-import { spawnSync } from "node:child_process";
 import { relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -130,17 +129,6 @@ const assertFileExists = (label, path) => {
     if (descriptor !== undefined) {
       closeSync(descriptor);
     }
-  }
-};
-
-const runNodeCheck = (scriptPath, args) => {
-  const result = spawnSync(process.execPath, [scriptPath, ...args], {
-    cwd: root,
-    encoding: "utf8",
-  });
-  if (result.status !== 0) {
-    const output = `${result.stdout ?? ""}${result.stderr ?? ""}`.trim();
-    fail(`${scriptPath} ${args.join(" ")} failed${output.length === 0 ? "" : `:\n${output}`}`);
   }
 };
 
@@ -933,23 +921,11 @@ assertNotContains(
   "Signature.getInstance(algorithm)",
 );
 
-assertContains("generated provider policy", readText("PROVIDER_POLICY.md"), "provider_manifest.json");
-assertContains(
-  "generated provider policy",
-  readText("PROVIDER_POLICY.md"),
-  "<!-- BEGIN GENERATED PROVIDER MATRIX -->",
-);
-assertContains(
-  "generated provider policy",
-  readText("PROVIDER_POLICY.md"),
-  "<!-- END GENERATED PROVIDER MATRIX -->",
-);
 assertContains(
   "release readiness checks",
   readText("scripts/check_release_readiness.mjs"),
   "check_provider_routing.mjs",
 );
-runNodeCheck("scripts/generate_provider_matrix.mjs", ["--check"]);
 
 for (const name of ["MlKem", "MlDsa", "SlhDsa", "XWing", "Hpke", "RustProtocols"]) {
   const path = `packages/kotlin/src/main/kotlin/me/really/crypto/${name}.kt`;

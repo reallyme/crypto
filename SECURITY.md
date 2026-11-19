@@ -24,15 +24,28 @@ and attribution with the maintainers.
 Pin a published release or exact commit and monitor releases and security
 advisories. Security fixes are released on the active package line.
 
-Select a supported provider from [PROVIDER_POLICY.md](PROVIDER_POLICY.md).
+Select a supported provider from [provider_manifest.json](provider_manifest.json)
+and follow the SDK's setup instructions.
 Algorithm availability differs by SDK and build features. An unavailable
 provider returns a typed error; it does not select a substitute.
 
 The library supplies primitives, not application trust policy. Applications
 must authenticate public keys, bind protocol context, enforce nonce and replay
-rules, and protect caller-owned secret copies. Read the
-[memory limitations](SECURITY_MEMORY_MODEL.md), including the known portable
-Brainpool serialization limitation, before choosing a deployment profile.
+rules, and protect caller-owned secret copies. AEAD callers must supply their
+protocol's AAD; the primitive does not add protocol context.
+
+Rust secret owners clear their retained storage on drop. Caller-owned copies
+and exported bytes require separate cleanup. Swift, Kotlin and JavaScript
+buffers cannot guarantee erasure of runtime, provider or compiler copies.
+Keep secrets in byte buffers, clear them promptly, and use binary protobuf
+for secret-bearing requests rather than JSON strings.
+
+## Portable Brainpool
+
+Portable Brainpool ECDH uses `primefield` 0.14.0, which leaves an unguarded
+coordinate-serialization buffer. The returned secret owner clears its retained
+bytes but cannot clear that intermediate copy. Do not choose this path when
+your deployment requires every library-owned secret buffer to be wiped.
 
 For local verification commands, see [conformance](docs/conformance.md).
 Formal verification covers bounded properties under the assumptions documented

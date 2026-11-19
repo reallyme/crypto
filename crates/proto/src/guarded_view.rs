@@ -29,6 +29,14 @@ use crate::contract_constants::proto_wire::{
 /// type Raw = <CryptoOperationRequest as buffa::HasMessageView>::ViewHandle;
 /// fn duplicate(view: &Raw) -> Raw { (*view).clone() }
 /// ```
+/// Scalar-only messages retain the same clearing-owner boundary:
+///
+/// ```compile_fail
+/// use reallyme_crypto_proto::generated::proto::reallyme::crypto::v1::Argon2CapsOwnedView;
+/// fn duplicate(view: &Argon2CapsOwnedView) -> Argon2CapsOwnedView {
+///     (*view).clone()
+/// }
+/// ```
 pub struct GuardedOwnedView<V> {
     inner: BuffaOwnedView<V>,
 }

@@ -10,7 +10,7 @@ import Foundation
 /// Providers compiled into the Swift package.
 ///
 /// This lists only providers an operational code path actually routes to,
-/// matching `PROVIDER_POLICY.md`: post-quantum (ML-KEM/ML-DSA/SLH-DSA/X-Wing)
+/// matching `provider_manifest.json`: post-quantum (ML-KEM/ML-DSA/SLH-DSA/X-Wing)
 /// goes through the ReallyMe Rust C ABI, so no Swift-native PQ package is
 /// linked. Do not add a provider here without a code path that uses it.
 public enum ReallyMeCryptoProvider: String, CaseIterable, Sendable {

@@ -134,7 +134,7 @@ let package = Package(
       exact: "0.1.0"
     ),
     // Digest supplies SHA-3 (CryptoKit has none). Post-quantum goes
-    // through the ReallyMe Rust C ABI per PROVIDER_POLICY.md, so no
+    // through the ReallyMe Rust C ABI per provider_manifest.json, so no
     // Swift-native PQ package (SwiftKyber/SwiftDilithium) is linked.
     .package(
       url: "https://github.com/leif-ibsen/Digest",

@@ -55,9 +55,10 @@ export function publicFacade(document) {
   lines.push("}");
   for (const { name } of policy.messages) {
     lines.push(`pub use crate::generated::raw::reallyme::crypto::v1::${name}View;`);
-    lines.push(policy.privateNames.has(name)
-      ? `pub type ${name}OwnedView = crate::GuardedOwnedView<${name}View<'static>>;`
-      : `pub use crate::generated::raw::reallyme::crypto::v1::${name}OwnedView;`);
+    // The package-wide zeroize rule also covers scalar-only metadata. Buffa
+    // suppresses raw owned handles for every clearing owner, so keep all public
+    // owned-view names backed by storage that is cleared on drop.
+    lines.push(`pub type ${name}OwnedView = crate::GuardedOwnedView<${name}View<'static>>;`);
   }
   lines.push("}", "pub use crate::generated::raw::reallyme::crypto::v1::__buffa::register_types;", "}");
   for (const { name } of policy.messages) lines.push(`pub use self::__buffa::view::{${name}View, ${name}OwnedView};`);
@@ -75,7 +76,7 @@ function main() {
     return result.stdout;
   };
   for (const executable of ["protoc-gen-reallyme-buffa", "protoc-gen-reallyme-buffa-packaging"]) {
-    if (run(executable, ["--version"]).trim() !== `${executable} 0.1.2`) fail("generator-version");
+    if (run(executable, ["--version"]).trim() !== `${executable} 0.1.3`) fail("generator-version");
   }
   if (run("buf", ["--version"]).trim() !== "1.75.0") fail("buf-version");
   const document = JSON.parse(run("buf", ["build", "--exclude-source-info", "--as-file-descriptor-set", "-o", "-#format=json"]));

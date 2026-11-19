@@ -17,7 +17,7 @@ algorithms return typed errors.
 cargo add reallyme-crypto --features native,dispatch,ed25519
 ```
 
-Requires Rust `1.96.0` or newer.
+Requires Rust `1.100.0` or newer.
 
 When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
@@ -314,10 +314,8 @@ for schemas, generated SDK adapters, limits, and JSON restrictions.
 ## Documentation
 
 See the [repository overview](https://github.com/reallyme/crypto) for the complete
-algorithm list and other SDKs. The [provider policy](https://github.com/reallyme/crypto/blob/main/PROVIDER_POLICY.md),
-[memory model](https://github.com/reallyme/crypto/blob/main/SECURITY_MEMORY_MODEL.md),
-and [conformance instructions](https://github.com/reallyme/crypto/blob/main/docs/conformance.md)
-define the shared guarantees and validation requirements.
+algorithm list and other SDKs. See [security precautions](https://github.com/reallyme/crypto/blob/main/SECURITY.md)
+and [conformance instructions](https://github.com/reallyme/crypto/blob/main/docs/conformance.md).
 
 ## License
 

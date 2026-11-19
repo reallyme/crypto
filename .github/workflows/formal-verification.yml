@@ -79,7 +79,7 @@ jobs:
       # release workspace and its runtime dependencies.
       - name: Install Kani
         run: |
-          cargo install --locked kani-verifier@0.68.0
+          cargo install kani-verifier --version '=0.68.0' --locked
           cargo kani setup
 
       - name: Verify proof obligations
@@ -130,7 +130,7 @@ jobs:
       - name: Install Kani and its verification toolchain
         if: matrix.scope != 'hpke-vectors'
         run: |
-          cargo install --locked kani-verifier@0.68.0
+          cargo install kani-verifier --version '=0.68.0' --locked
           cargo kani setup
 
       # Offline metadata in the dependency proof runners resolves all targets.

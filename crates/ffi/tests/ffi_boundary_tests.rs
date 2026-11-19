@@ -128,6 +128,13 @@ fn raw_slice_construction_stays_in_pointer_module() {
         if source_path.file_name().and_then(|name| name.to_str()) == Some("pointer.rs") {
             continue;
         }
+        if source_path.file_name().and_then(|name| name.to_str()) == Some("pointer_tests.rs") {
+            // These tests deliberately construct aliased ranges. They must
+            // remain a test-only child of the pointer validation module.
+            assert!(include_str!("../src/pointer.rs")
+                .contains("#[cfg(test)]\n#[path = \"pointer_tests.rs\"]\nmod tests;"));
+            continue;
+        }
 
         let source = fs::read_to_string(&source_path).expect("source file should be readable");
         assert!(
@@ -150,7 +157,20 @@ fn raw_null_pointer_checks_stay_in_pointer_module() {
             continue;
         }
 
-        let source = fs::read_to_string(&source_path).expect("source file should be readable");
+        let mut source = fs::read_to_string(&source_path).expect("source file should be readable");
+        // JNI's safe array handles have a null state independent of C
+        // pointer/length validation. Permit only these typed handle checks.
+        let managed_handle = match source_path.file_name().and_then(|name| name.to_str()) {
+            Some("kotlin_post_quantum.rs") => Some(("secret", "secret: JByteArray<'local>")),
+            Some("kotlin_protocol_support.rs") => Some(("value", "value: &JByteArray<'_>")),
+            _ => None,
+        };
+        if let Some((name, declaration)) = managed_handle {
+            assert!(source.contains(declaration));
+            assert!(!source.contains("*const "));
+            assert!(!source.contains("*mut "));
+            source = source.replace(&format!("{name}.is_null()"), "managed_array_is_null");
+        }
         assert!(
             !source.contains(".is_null()"),
             "{} must use pointer.rs for raw pointer validation",
@@ -187,7 +207,8 @@ fn exported_ffi_symbols_route_through_panic_guard() {
 #[test]
 fn exported_jni_symbols_have_a_panic_boundary() {
     const JNI_EXPORT_PREFIX: &str = "pub extern \"system\" fn";
-    const EXPECTED_JNI_EXPORTS: usize = 11;
+    // Include the shared Rust protocol adapters and conformance-only exports.
+    const EXPECTED_JNI_EXPORTS: usize = 24;
     let mut inspected = 0_usize;
 
     for source_path in ffi_source_files() {
@@ -212,6 +233,8 @@ fn exported_jni_symbols_have_a_panic_boundary() {
             let guarded = if name.ends_with("_probeNative") {
                 // A constant symbol probe has no fallible work or unwind path.
                 body.trim() == "{\n    1\n}"
+            } else if routes_through_protocol_guard(&source, body) {
+                true
             } else if name.ends_with("_processOperationResponseNative")
                 || name.ends_with("_processOperationResponseJsonNative")
             {
@@ -265,6 +288,7 @@ fn exported_jni_symbols_route_through_the_jni_panic_boundary() {
             let body = exported_function_body(&source, start)
                 .expect("JNI export body should have balanced braces");
             let routes_through_guard = body.contains("env.with_env(")
+                || routes_through_protocol_guard(&source, body)
                 || ["seal_native", "open_native", "process_operation_response"]
                     .iter()
                     .any(|helper| {
@@ -290,6 +314,23 @@ fn exported_jni_symbols_route_through_the_jni_panic_boundary() {
                 .expect("search offset should not overflow");
         }
     }
+}
+
+#[test]
+fn protocol_guard_must_wrap_the_entire_export() {
+    let source = "use crate::kotlin_protocol_support::{input, pair, run};";
+    assert!(routes_through_protocol_guard(
+        source,
+        "{ run(env, project, |env| operation(env)) }"
+    ));
+    assert!(!routes_through_protocol_guard(
+        source,
+        "{ operation(); run(env, project, |env| operation(env)) }"
+    ));
+    assert!(!routes_through_protocol_guard(
+        "fn run() {}",
+        "{ run(env, project, |env| operation(env)) }"
+    ));
 }
 
 #[test]
@@ -375,6 +416,22 @@ fn header_declares_every_exported_ffi_symbol() {
 
 const EXTERN_EXPORT_PREFIX: &str = "pub unsafe extern \"C\" fn";
 const JNI_EXPORT_PREFIX: &str = "pub extern \"system\" fn Java_";
+
+fn routes_through_protocol_guard(source: &str, body: &str) -> bool {
+    let support = include_str!("../src/kotlin_protocol_support.rs");
+    let start = support
+        .find("pub(super) fn run<'local>(")
+        .expect("shared JNI protocol guard should exist");
+    let guard = exported_function_body(support, start)
+        .expect("shared JNI protocol guard should have balanced braces");
+    source.contains("use crate::kotlin_protocol_support::{")
+        && !source.contains("fn run")
+        && body
+            .strip_prefix('{')
+            .is_some_and(|operation| operation.trim_start().starts_with("run(env,"))
+        && guard.contains("env.with_env(")
+        && guard.contains("Outcome::Panic(_)")
+}
 
 fn ffi_source_files() -> Vec<PathBuf> {
     let src_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("src");

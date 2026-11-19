@@ -62,11 +62,22 @@ swift test --package-path crates/conformance/platform/swift
 (cd packages/kotlin && ./gradlew test --rerun-tasks)
 (cd crates/conformance/platform/kotlin && ./gradlew test --rerun-tasks)
 npm --prefix packages/ts ci && npm --prefix packages/ts test
-node scripts/generate_provider_matrix.mjs --check
+node scripts/check_provider_routing.mjs
 node scripts/check_release_readiness.mjs
 cargo deny check
 bash scripts/audit_committed_lockfiles.sh
 ```
+
+Install local Git safeguards after cloning:
+
+```sh
+python3 -B scripts/install_repository_hooks.py
+python3 -B scripts/check_repository_privacy.py --index
+```
+
+The installer refuses to replace active hooks; add these checks to an existing
+hook chain when needed. To stop tracking an excluded file while preserving its
+local contents, use `git rm --cached -- PATH`.
 
 The generation commands above must reproduce the committed files. Review any
 diff before accepting it. Do not change expected bytes to accommodate an

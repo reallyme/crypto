@@ -8,6 +8,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 import { checkGeneratedOwners } from "./native_buffa_readiness.mjs";
+import { publicFacade } from "./generate_protobuf.mjs";
 
 test("a secret owned view cannot escape through the native trait", () => {
   const root = "../crates/proto/tests/fixtures/guarded/generated/";
@@ -20,6 +21,16 @@ test("a secret owned view cannot escape through the native trait", () => {
     assert.doesNotMatch(eager, new RegExp(`\\b${name}OwnedView\\b`, "u"));
     assert.doesNotMatch(eager, new RegExp(`HasMessageView\\s+for\\s+super::super::${name}\\b`, "u"));
   }
+});
+
+test("scalar-only metadata retains its public owned-view name with clearing storage", () => {
+  const facade = publicFacade({ file: [{
+    name: "reallyme/crypto/v1/crypto.proto",
+    package: "reallyme.crypto.v1",
+    messageType: [{ name: "PublicMetadata", field: [{ name: "count", type: "TYPE_UINT32" }] }],
+  }] });
+  assert.match(facade, /pub type PublicMetadataOwnedView = crate::GuardedOwnedView<PublicMetadataView<'static>>;/u);
+  assert.doesNotMatch(facade, /pub use crate::generated::raw::reallyme::crypto::v1::PublicMetadataOwnedView;/u);
 });
 
 test("native guards cover optional and nonoptional byte slots", () => {

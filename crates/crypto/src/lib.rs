@@ -17,7 +17,7 @@
 //! outputs, failures, and edge cases.
 //!
 //! Unsafe code is forbidden, secret owners zeroize, and verification fails closed.
-//! See `SECURITY.md`, `SECURITY_MEMORY_MODEL.md`, and the compile-checked examples
+//! See `SECURITY.md` and the compile-checked examples
 //! in the crate README.
 
 #![doc = include_str!("../README.md")]

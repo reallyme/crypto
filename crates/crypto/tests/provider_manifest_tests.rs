@@ -26,7 +26,6 @@ const UNSUPPORTED: &str = "unsupported";
 #[serde(rename_all = "camelCase")]
 struct ProviderManifest {
     schema_version: u16,
-    generated_document: String,
     required_lanes: Vec<String>,
     fallback_behaviors: Vec<String>,
     algorithms: Vec<ManifestAlgorithm>,
@@ -90,7 +89,6 @@ fn every_manifest_algorithm_has_required_lanes_and_explicit_fallback() {
     let root = workspace_root();
     let manifest = load_manifest(&root);
     assert_eq!(manifest.schema_version, 1);
-    assert_eq!(manifest.generated_document, "PROVIDER_POLICY.md");
     assert_eq!(
         manifest.required_lanes,
         [
@@ -303,18 +301,17 @@ fn hardware_backed_providers_are_explicit_handle_backed_routes_only() {
 }
 
 #[test]
-fn platform_backend_matrix_is_generated_from_manifest() {
+fn provider_routing_matches_manifest() {
     let root = workspace_root();
     let status = Command::new("node")
-        .arg("scripts/generate_provider_matrix.mjs")
-        .arg("--check")
+        .arg("scripts/check_provider_routing.mjs")
         .current_dir(root)
         .status()
-        .expect("node can run provider matrix generator");
+        .expect("node can validate provider routing");
 
     assert!(
         status.success(),
-        "PROVIDER_POLICY.md backend matrix is stale"
+        "provider routing differs from provider_manifest.json"
     );
 }
 

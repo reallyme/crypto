@@ -9,14 +9,12 @@ on:
     paths-ignore:
       - "**/*.md"
       - "docs/**"
-      - "!docs/maven-provenance.md"
   push:
     branches:
       - main
     paths-ignore:
       - "**/*.md"
       - "docs/**"
-      - "!docs/maven-provenance.md"
   workflow_dispatch:
   schedule:
     - cron: '30 12 * * 1'

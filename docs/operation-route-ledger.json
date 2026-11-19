@@ -3,7 +3,6 @@
   "schema_version": 1,
   "purpose": "Machine-readable map from exposed operation routes to their authoritative operation owner.",
   "scope": {
-    "architecture": "docs/architecture.md",
     "operation_protocol": "docs/protobuf.md",
     "route_granularity": "Each listed callable symbol maps to exactly one owner. Route groups may use symbols_by_owner to keep nearby source symbols together while preserving one owner per symbol. Constants, pure data types, and generated schema descriptors are outside operation ownership unless they expose a callable boundary."
   },

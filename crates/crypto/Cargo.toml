@@ -15,8 +15,8 @@ include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 
 [dependencies]
 # Clear every legacy SIV key schedule and CMAC state, including standalone builds.
-legacy-siv-aes = { package = "aes", version = "0.9", default-features = false, features = ["zeroize"], optional = true }
-legacy-siv-cmac = { package = "cmac", version = "0.8", default-features = false, features = ["zeroize"], optional = true }
+legacy-siv-aes = { package = "aes", version = "0.9.4", default-features = false, features = ["zeroize"], optional = true }
+legacy-siv-cmac = { package = "cmac", version = "0.8.0", default-features = false, features = ["zeroize"], optional = true }
 aes-siv-backend = { package = "aes-siv", version = "0.8.0", default-features = false, features = ["alloc", "zeroize"], optional = true }
 buffa = { workspace = true, optional = true }
 hex-literal = { workspace = true, optional = true }

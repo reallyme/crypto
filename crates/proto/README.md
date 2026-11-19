@@ -31,18 +31,14 @@ refuses export. Borrow fields by slice, or transfer a byte owner into a
 `Zeroizing<Vec<u8>>`. Secret owned views retain a clearing backing allocation
 and expose lifetime-bound borrows. Use an eager decoder for admission.
 
-The examples target the 0.4.3 source release. Use a matching local
-checkout until that version is available on crates.io.
-
 ```toml
 [dependencies]
 reallyme-crypto-proto = { version = "0.4.3", features = ["generated"] }
 ```
 
 The `generated` feature includes Buffa protobuf bytes and strict ProtoJSON
-support for the generated operation request/response contract. ProtoJSON is a
-restricted request and conformance lane for JSON-only adapters and fixtures; it
-is not a casual JSON crypto facade. Secret-bearing operations are binary-only.
+support for the generated operation request/response contract. Secret-bearing
+operations are binary-only.
 See the repository's `docs/proto-json.md` for operation-family JSON examples.
 
 For native error types without message codecs, select the minimal feature:

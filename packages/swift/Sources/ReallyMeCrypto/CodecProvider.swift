@@ -58,7 +58,9 @@ func mapCodecError(_ error: Error) -> ReallyMeCryptoError {
   guard let codecError = error as? ReallyMeCodecError else {
     return .providerFailure
   }
-  switch codecError {
+  // Codec uses the same schema category for local errors and wire failures
+  // carrying a reason and origin. Project both onto Crypto's stable errors.
+  switch codecError.category {
   case .unsupportedPlatform:
     return .unsupportedPlatform
   case .dynamicLibraryNotFound:
@@ -79,7 +81,7 @@ func mapCodecError(_ error: Error) -> ReallyMeCryptoError {
     return .unsupportedAlgorithm
   case .unsupportedCodec:
     return .invalidInput
-  case .providerFailure:
+  case .providerFailure, .unspecified, .UNRECOGNIZED:
     return .providerFailure
   }
 }

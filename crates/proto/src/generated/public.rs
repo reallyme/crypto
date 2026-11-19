@@ -332,23 +332,30 @@ pub mod reallyme {
                         pub use crate::generated::raw::reallyme::crypto::v1::__buffa::view::oneof::public_jwk;
                         pub use crate::generated::raw::reallyme::crypto::v1::__buffa::view::oneof::public_jwk_document;
                     }
-                    pub use crate::generated::raw::reallyme::crypto::v1::Argon2CapsOwnedView;
                     pub use crate::generated::raw::reallyme::crypto::v1::Argon2CapsView;
-                    pub use crate::generated::raw::reallyme::crypto::v1::Argon2ParamsProfileOwnedView;
+                    pub type Argon2CapsOwnedView = crate::GuardedOwnedView<Argon2CapsView<'static>>;
                     pub use crate::generated::raw::reallyme::crypto::v1::Argon2ParamsProfileView;
-                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoBackendErrorOwnedView;
-                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoBackendErrorView;
-                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoErrorOwnedView;
-                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoErrorView;
-                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoOperationRequestView;
-                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoPrimitiveErrorOwnedView;
-                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoPrimitiveErrorView;
-                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoProviderErrorOwnedView;
-                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoProviderErrorView;
-                    pub use crate::generated::raw::reallyme::crypto::v1::MaterialPolicyOwnedView;
+                    pub type Argon2ParamsProfileOwnedView =
+                        crate::GuardedOwnedView<Argon2ParamsProfileView<'static>>;
                     pub use crate::generated::raw::reallyme::crypto::v1::MaterialPolicyView;
-                    pub use crate::generated::raw::reallyme::crypto::v1::OperationSecretMaterialPolicyOwnedView;
+                    pub type MaterialPolicyOwnedView =
+                        crate::GuardedOwnedView<MaterialPolicyView<'static>>;
                     pub use crate::generated::raw::reallyme::crypto::v1::OperationSecretMaterialPolicyView;
+                    pub type OperationSecretMaterialPolicyOwnedView =
+                        crate::GuardedOwnedView<OperationSecretMaterialPolicyView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoErrorView;
+                    pub type CryptoErrorOwnedView =
+                        crate::GuardedOwnedView<CryptoErrorView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoPrimitiveErrorView;
+                    pub type CryptoPrimitiveErrorOwnedView =
+                        crate::GuardedOwnedView<CryptoPrimitiveErrorView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoProviderErrorView;
+                    pub type CryptoProviderErrorOwnedView =
+                        crate::GuardedOwnedView<CryptoProviderErrorView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoBackendErrorView;
+                    pub type CryptoBackendErrorOwnedView =
+                        crate::GuardedOwnedView<CryptoBackendErrorView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoOperationRequestView;
                     pub type CryptoOperationRequestOwnedView =
                         crate::GuardedOwnedView<CryptoOperationRequestView<'static>>;
                     pub use crate::generated::raw::reallyme::crypto::v1::CryptoOperationResponseView;
@@ -477,16 +484,19 @@ pub mod reallyme {
                     pub use crate::generated::raw::reallyme::crypto::v1::CryptoHashResultView;
                     pub type CryptoHashResultOwnedView =
                         crate::GuardedOwnedView<CryptoHashResultView<'static>>;
-                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashStartRequestOwnedView;
                     pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashStartRequestView;
+                    pub type CryptoIncrementalHashStartRequestOwnedView =
+                        crate::GuardedOwnedView<CryptoIncrementalHashStartRequestView<'static>>;
                     pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashUpdateRequestView;
                     pub type CryptoIncrementalHashUpdateRequestOwnedView =
                         crate::GuardedOwnedView<CryptoIncrementalHashUpdateRequestView<'static>>;
-                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoAeadSealRequestView;
-                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashFinalizeRequestOwnedView;
-                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashFinalizeRequestView;
-                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashUpdateResultOwnedView;
                     pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashUpdateResultView;
+                    pub type CryptoIncrementalHashUpdateResultOwnedView =
+                        crate::GuardedOwnedView<CryptoIncrementalHashUpdateResultView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoIncrementalHashFinalizeRequestView;
+                    pub type CryptoIncrementalHashFinalizeRequestOwnedView =
+                        crate::GuardedOwnedView<CryptoIncrementalHashFinalizeRequestView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoAeadSealRequestView;
                     pub type CryptoAeadSealRequestOwnedView =
                         crate::GuardedOwnedView<CryptoAeadSealRequestView<'static>>;
                     pub use crate::generated::raw::reallyme::crypto::v1::CryptoAeadSealResultView;
@@ -639,9 +649,10 @@ pub mod reallyme {
                     pub use crate::generated::raw::reallyme::crypto::v1::CryptoHpkeSealedMessageView;
                     pub type CryptoHpkeSealedMessageOwnedView =
                         crate::GuardedOwnedView<CryptoHpkeSealedMessageView<'static>>;
-                    pub use crate::generated::raw::reallyme::crypto::v1::AndroidPlatformKeyPolicyView;
-                    pub use crate::generated::raw::reallyme::crypto::v1::ApplePlatformKeyPolicyOwnedView;
                     pub use crate::generated::raw::reallyme::crypto::v1::ApplePlatformKeyPolicyView;
+                    pub type ApplePlatformKeyPolicyOwnedView =
+                        crate::GuardedOwnedView<ApplePlatformKeyPolicyView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::AndroidPlatformKeyPolicyView;
                     pub type AndroidPlatformKeyPolicyOwnedView =
                         crate::GuardedOwnedView<AndroidPlatformKeyPolicyView<'static>>;
                     pub use crate::generated::raw::reallyme::crypto::v1::PlatformKeyPolicyView;
@@ -684,9 +695,10 @@ pub mod reallyme {
                     pub use crate::generated::raw::reallyme::crypto::v1::CryptoPlatformKeyDeleteRequestView;
                     pub type CryptoPlatformKeyDeleteRequestOwnedView =
                         crate::GuardedOwnedView<CryptoPlatformKeyDeleteRequestView<'static>>;
-                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoPlatformKeyAttestRequestView;
-                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoPlatformKeyDeleteResultOwnedView;
                     pub use crate::generated::raw::reallyme::crypto::v1::CryptoPlatformKeyDeleteResultView;
+                    pub type CryptoPlatformKeyDeleteResultOwnedView =
+                        crate::GuardedOwnedView<CryptoPlatformKeyDeleteResultView<'static>>;
+                    pub use crate::generated::raw::reallyme::crypto::v1::CryptoPlatformKeyAttestRequestView;
                     pub type CryptoPlatformKeyAttestRequestOwnedView =
                         crate::GuardedOwnedView<CryptoPlatformKeyAttestRequestView<'static>>;
                     pub use crate::generated::raw::reallyme::crypto::v1::CryptoPlatformKeyAttestationCertificateView;

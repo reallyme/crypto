@@ -7,8 +7,8 @@ lockfile, features and assumptions of the run.
 
 [Formal Verification](../.github/workflows/formal-verification.yml) runs only
 by manual dispatch. Required CI and package preflight receipts do not include
-it. The [release checklist](../RELEASE_CHECKLIST.md#formal-verification-before-publication)
-requires a successful run for the exact release commit.
+it. Before publication, dispatch the workflow for the exact release commit and
+require every proof job to pass. Repeat it if the release source SHA changes.
 
 ## Rust implementation proofs
 

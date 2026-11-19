@@ -8,9 +8,8 @@ The schema at
 result types and wire errors. Rust remains the reference implementation.
 
 [`provider_manifest.json`](provider_manifest.json) records supported SDK
-providers. [`PROVIDER_POLICY.md`](PROVIDER_POLICY.md) lists availability by
-algorithm and platform. [`vectors/`](vectors/) contains the shared byte and
-error fixtures.
+providers and availability by algorithm and platform. [`vectors/`](vectors/)
+contains the shared byte and error fixtures.
 
 Every provider route must implement identical input validation, output
 encodings and typed failure semantics. A missing provider or unsupported
@@ -46,7 +45,7 @@ Errors contain no caller bytes or backend exception text.
 
 Keep secret-bearing messages short-lived. Clear caller-owned inputs and
 exported secrets after use; copying a result creates another cleanup obligation.
-See [memory ownership and limitations](SECURITY_MEMORY_MODEL.md).
+See [secret ownership and limitations](SECURITY.md#using-the-packages-safely).
 
 ## SDK differences
 

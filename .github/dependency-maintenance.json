@@ -1,0 +1,644 @@
+{
+  "schema": 1,
+  "exceptions": [
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "ed448-goldilocks",
+      "current": "0.14.0-pre.15",
+      "latest": "0.9.0",
+      "reason": "The X448 0.14 backend and portable Ed448 API require this reviewed 0.14 prerelease; the older stable line uses incompatible key and trait APIs.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "slh-dsa",
+      "current": "0.2.0-rc.5",
+      "latest": "0.1.0",
+      "reason": "The reviewed FIPS 205 implementation uses the 0.2 key, signing and zeroization APIs; stable 0.1 would require a backend downgrade.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "x448",
+      "current": "0.14.0-pre.12",
+      "latest": "0.6.0",
+      "reason": "HPKE and standalone X448 use the reviewed 0.14 key and zeroization APIs; stable 0.6 is not an API-compatible replacement.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "ed448-goldilocks",
+      "current": "0.14.0-pre.15",
+      "latest": "0.9.0",
+      "reason": "The X448 0.14 backend and portable Ed448 API require this reviewed 0.14 prerelease; the older stable line uses incompatible key and trait APIs.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "slh-dsa",
+      "current": "0.2.0-rc.5",
+      "latest": "0.1.0",
+      "reason": "The reviewed FIPS 205 implementation uses the 0.2 key, signing and zeroization APIs; stable 0.1 would require a backend downgrade.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "x448",
+      "current": "0.14.0-pre.12",
+      "latest": "0.6.0",
+      "reason": "HPKE and standalone X448 use the reviewed 0.14 key and zeroization APIs; stable 0.6 is not an API-compatible replacement.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "requirement",
+      "path": "crates/crypto/Cargo.toml",
+      "name": "ed448-goldilocks",
+      "current": "=0.14.0-pre.15",
+      "latest": "0.9.0",
+      "reason": "The X448 0.14 backend and portable Ed448 API require this reviewed 0.14 prerelease; the older stable line uses incompatible key and trait APIs.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "requirement",
+      "path": "crates/slh-dsa/Cargo.toml",
+      "name": "slh-dsa",
+      "current": "=0.2.0-rc.5",
+      "latest": "0.1.0",
+      "reason": "The reviewed FIPS 205 implementation uses the 0.2 key, signing and zeroization APIs; stable 0.1 would require a backend downgrade.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "requirement",
+      "path": "crates/x448/Cargo.toml",
+      "name": "x448",
+      "current": "=0.14.0-pre.12",
+      "latest": "0.6.0",
+      "reason": "HPKE and standalone X448 use the reviewed 0.14 key and zeroization APIs; stable 0.6 is not an API-compatible replacement.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "requirement",
+      "path": "tools/external-vector-audit/Cargo.toml",
+      "name": "slh-dsa",
+      "current": "=0.2.0-rc.5",
+      "latest": "0.1.0",
+      "reason": "The reviewed FIPS 205 implementation uses the 0.2 key, signing and zeroization APIs; stable 0.1 would require a backend downgrade.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "allocator-api2",
+      "current": "0.2.21",
+      "latest": "0.4.0",
+      "reason": "Current upstream releases require this compatibility line: hashbrown 0.17.1 (^0.2.9). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "block-buffer",
+      "current": "0.10.4",
+      "latest": "0.12.1",
+      "reason": "Current upstream releases require this compatibility line: digest 0.10.7 (^0.10). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "cpufeatures",
+      "current": "0.2.17",
+      "latest": "0.3.1",
+      "reason": "Current upstream releases require this compatibility line: keccak 0.1.6 (^0.2). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "crypto-common",
+      "current": "0.1.7",
+      "latest": "0.2.2",
+      "reason": "Current upstream releases require this compatibility line: digest 0.10.7 (^0.1.3). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "digest",
+      "current": "0.10.7",
+      "latest": "0.11.3",
+      "reason": "Current upstream releases require this compatibility line: ark-ff 0.6.0 (^0.10); ark-serialize 0.6.0 (^0.10); sha3 0.10.9 (^0.10.7). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "educe",
+      "current": "0.6.0",
+      "latest": "0.8.2",
+      "reason": "Current upstream releases require this compatibility line: ark-ec 0.6.0 (^0.6.0); ark-ff 0.6.0 (^0.6.0); ark-poly 0.6.0 (^0.6.0). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "foreign-types",
+      "current": "0.3.2",
+      "latest": "0.5.0",
+      "reason": "Current upstream releases require this compatibility line: openssl 0.10.82 (^0.3.1). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "foreign-types-shared",
+      "current": "0.1.1",
+      "latest": "0.3.1",
+      "reason": "Current upstream releases require this compatibility line: foreign-types 0.3.2 (^0.1). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "generic-array",
+      "current": "0.14.7",
+      "latest": "1.4.5",
+      "reason": "Current upstream releases require this compatibility line: block-buffer 0.10.4 (^0.14); crypto-common 0.1.7 (=0.14.7). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "getrandom",
+      "current": "0.2.17",
+      "latest": "0.4.3",
+      "reason": "Current upstream releases require this compatibility line: rand_core 0.6.4 (^0.2). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "itertools",
+      "current": "0.14.0",
+      "latest": "0.15.0",
+      "reason": "Current upstream releases require this compatibility line: ark-ec 0.6.0 (^0.14). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "keccak",
+      "current": "0.1.6",
+      "latest": "0.2.2",
+      "reason": "Current upstream releases require this compatibility line: sha3 0.10.9 (^0.1.4). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "minicov",
+      "current": "0.3.8",
+      "latest": "0.3.9",
+      "reason": "Current upstream releases require this compatibility line: wasm-bindgen-test 0.3.80 (=0.3.8). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "num-bigint",
+      "current": "0.4.8",
+      "latest": "0.5.1",
+      "reason": "Current upstream releases require this compatibility line: ark-ec 0.6.0 (^0.4); ark-ff 0.6.0 (^0.4); ark-ff-macros 0.6.0 (^0.4). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "r-efi",
+      "current": "6.0.0",
+      "latest": "7.2.0",
+      "reason": "Current upstream releases require this compatibility line: getrandom 0.4.3 (^6). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "rand",
+      "current": "0.8.8",
+      "latest": "0.10.4",
+      "reason": "Current upstream releases require this compatibility line: ark-std 0.6.0 (^0.8). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "rand_chacha",
+      "current": "0.3.1",
+      "latest": "0.10.0",
+      "reason": "Current upstream releases require this compatibility line: rand 0.8.8 (^0.3.0). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "rand_core",
+      "current": "0.6.4",
+      "latest": "0.10.1",
+      "reason": "Current upstream releases require this compatibility line: rand 0.8.8 (^0.6.0); rand_chacha 0.3.1 (^0.6.0). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "requirement",
+      "path": "crates/kmac/Cargo.toml",
+      "name": "sha3",
+      "current": "^0.10.9",
+      "latest": "0.12.0",
+      "reason": "sha3-kmac 0.3.0 requires SHA-3 0.10; this matching direct dependency enables zeroization of its keyed state.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "requirement",
+      "path": "crates/poseidon2/Cargo.toml",
+      "name": "getrandom",
+      "current": "^0.2.17",
+      "latest": "0.4.3",
+      "reason": "Arkworks 0.6 uses rand 0.8 and getrandom 0.2; this target dependency enables that dependency graph's WASM entropy backend.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "sha3",
+      "current": "0.10.9",
+      "latest": "0.12.0",
+      "reason": "Current upstream releases require this compatibility line: sha3-kmac 0.3.0 (^0.10). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "sha3",
+      "current": "0.11.0",
+      "latest": "0.12.0",
+      "reason": "Current upstream releases require this compatibility line: slh-dsa 0.2.0-rc.5 (^0.11). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "syn",
+      "current": "2.0.119",
+      "latest": "3.0.10",
+      "reason": "Current upstream releases require this compatibility line: ark-ff-asm 0.6.0 (^2.0); ark-ff-macros 0.6.0 (^2.0); ark-serialize-derive 0.6.0 (^2.0). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "wasi",
+      "current": "0.11.1+wasi-snapshot-preview1",
+      "latest": "0.14.7+wasi-0.2.4",
+      "reason": "Current upstream releases require this compatibility line: getrandom 0.2.17 (^0.11). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "windows-link",
+      "current": "0.2.1",
+      "latest": "0.100.0",
+      "reason": "Current upstream releases require this compatibility line: jni 0.22.4 (^0.2); windows-sys 0.61.2 (^0.2.1). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "allocator-api2",
+      "current": "0.2.21",
+      "latest": "0.4.0",
+      "reason": "Current upstream releases require this compatibility line: hashbrown 0.17.1 (^0.2.9). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "block-buffer",
+      "current": "0.10.4",
+      "latest": "0.12.1",
+      "reason": "Current upstream releases require this compatibility line: digest 0.10.7 (^0.10). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "cpufeatures",
+      "current": "0.2.17",
+      "latest": "0.3.1",
+      "reason": "Current upstream releases require this compatibility line: keccak 0.1.6 (^0.2). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "crypto-common",
+      "current": "0.1.7",
+      "latest": "0.2.2",
+      "reason": "Current upstream releases require this compatibility line: digest 0.10.7 (^0.1.3). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "digest",
+      "current": "0.10.7",
+      "latest": "0.11.3",
+      "reason": "Current upstream releases require this compatibility line: ark-ff 0.6.0 (^0.10); ark-serialize 0.6.0 (^0.10); sha3 0.10.9 (^0.10.7). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "educe",
+      "current": "0.6.0",
+      "latest": "0.8.2",
+      "reason": "Current upstream releases require this compatibility line: ark-ec 0.6.0 (^0.6.0); ark-ff 0.6.0 (^0.6.0); ark-poly 0.6.0 (^0.6.0). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "generic-array",
+      "current": "0.14.7",
+      "latest": "1.4.5",
+      "reason": "Current upstream releases require this compatibility line: block-buffer 0.10.4 (^0.14); crypto-common 0.1.7 (=0.14.7). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "getrandom",
+      "current": "0.2.17",
+      "latest": "0.4.3",
+      "reason": "Current upstream releases require this compatibility line: rand_core 0.6.4 (^0.2). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "itertools",
+      "current": "0.14.0",
+      "latest": "0.15.0",
+      "reason": "Current upstream releases require this compatibility line: ark-ec 0.6.0 (^0.14). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "keccak",
+      "current": "0.1.6",
+      "latest": "0.2.2",
+      "reason": "Current upstream releases require this compatibility line: sha3 0.10.9 (^0.1.4). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "num-bigint",
+      "current": "0.4.8",
+      "latest": "0.5.1",
+      "reason": "Current upstream releases require this compatibility line: ark-ec 0.6.0 (^0.4); ark-ff 0.6.0 (^0.4); ark-ff-macros 0.6.0 (^0.4). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "r-efi",
+      "current": "6.0.0",
+      "latest": "7.2.0",
+      "reason": "Current upstream releases require this compatibility line: getrandom 0.4.3 (^6). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "rand",
+      "current": "0.8.8",
+      "latest": "0.10.4",
+      "reason": "Current upstream releases require this compatibility line: ark-std 0.6.0 (^0.8). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "rand_chacha",
+      "current": "0.3.1",
+      "latest": "0.10.0",
+      "reason": "Current upstream releases require this compatibility line: rand 0.8.8 (^0.3.0). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "rand_core",
+      "current": "0.6.4",
+      "latest": "0.10.1",
+      "reason": "Current upstream releases require this compatibility line: rand 0.8.8 (^0.6.0); rand_chacha 0.3.1 (^0.6.0). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "sha3",
+      "current": "0.10.9",
+      "latest": "0.12.0",
+      "reason": "Current upstream releases require this compatibility line: sha3-kmac 0.3.0 (^0.10). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "sha3",
+      "current": "0.11.0",
+      "latest": "0.12.0",
+      "reason": "Current upstream releases require this compatibility line: slh-dsa 0.2.0-rc.5 (^0.11). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "syn",
+      "current": "2.0.119",
+      "latest": "3.0.10",
+      "reason": "Current upstream releases require this compatibility line: ark-ff-asm 0.6.0 (^2.0); ark-ff-macros 0.6.0 (^2.0); ark-serialize-derive 0.6.0 (^2.0). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "wasi",
+      "current": "0.11.1+wasi-snapshot-preview1",
+      "latest": "0.14.7+wasi-0.2.4",
+      "reason": "Current upstream releases require this compatibility line: getrandom 0.2.17 (^0.11). Updating it requires an upstream dependency migration.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/crates-package-preflight.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The reviewed current commit is two commits ahead of the v1 tag. Selecting the older tag commit would downgrade the action; retain this exact newer pin.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/crates-release.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The reviewed current commit is two commits ahead of the v1 tag. Selecting the older tag commit would downgrade the action; retain this exact newer pin.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/external-vectors-audit.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The reviewed current commit is two commits ahead of the v1 tag. Selecting the older tag commit would downgrade the action; retain this exact newer pin.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/formal-verification.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The reviewed current commit is two commits ahead of the v1 tag. Selecting the older tag commit would downgrade the action; retain this exact newer pin.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/fuzz-scheduled.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The reviewed current commit is two commits ahead of the v1 tag. Selecting the older tag commit would downgrade the action; retain this exact newer pin.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/fuzz.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The reviewed current commit is two commits ahead of the v1 tag. Selecting the older tag commit would downgrade the action; retain this exact newer pin.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/jvm-native-resources.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The reviewed current commit is two commits ahead of the v1 tag. Selecting the older tag commit would downgrade the action; retain this exact newer pin.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/kotlin-android-package-preflight.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The reviewed current commit is two commits ahead of the v1 tag. Selecting the older tag commit would downgrade the action; retain this exact newer pin.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/kotlin-android-package-release.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The reviewed current commit is two commits ahead of the v1 tag. Selecting the older tag commit would downgrade the action; retain this exact newer pin.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/npm-package-preflight.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The reviewed current commit is two commits ahead of the v1 tag. Selecting the older tag commit would downgrade the action; retain this exact newer pin.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/npm-package-release.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The reviewed current commit is two commits ahead of the v1 tag. Selecting the older tag commit would downgrade the action; retain this exact newer pin.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/protobuf-ci.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The reviewed current commit is two commits ahead of the v1 tag. Selecting the older tag commit would downgrade the action; retain this exact newer pin.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/release-readiness.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The reviewed current commit is two commits ahead of the v1 tag. Selecting the older tag commit would downgrade the action; retain this exact newer pin.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/rust-ci.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The reviewed current commit is two commits ahead of the v1 tag. Selecting the older tag commit would downgrade the action; retain this exact newer pin.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": ".github/workflows/rust-ci.yml",
+      "name": "cargo-deny",
+      "current": "0.21.0",
+      "latest": "0.22.0",
+      "reason": "Retain the repository owner's explicitly selected cargo-deny 0.21.0 pending review of 0.22.0. Dependency security audits remain mandatory.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/swift-package-preflight.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The reviewed current commit is two commits ahead of the v1 tag. Selecting the older tag commit would downgrade the action; retain this exact newer pin.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/swift-package-release.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The reviewed current commit is two commits ahead of the v1 tag. Selecting the older tag commit would downgrade the action; retain this exact newer pin.",
+      "expires": "2026-12-19"
+    }
+  ]
+}

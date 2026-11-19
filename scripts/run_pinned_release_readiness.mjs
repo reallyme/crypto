@@ -10,15 +10,15 @@ import { fileURLToPath } from "node:url";
 
 // The upstream core and this repository's policy checker are separate inputs.
 // Pinning both makes an unreviewed policy edit fail before the checker runs.
-const RELEASE_READINESS_COMMIT = "a89da82a662e02ecb3b7cfc6756c450aff64417a";
+const RELEASE_READINESS_COMMIT = "16aab5287de498e858ff3b85d9e66d7c9f7ebb74";
 const RELEASE_READINESS_CORE_SHA256 =
-  "edabd3b86b812ff821517d0adf4d383f066d95a65bb9b4b364809eacdb6ec639";
+  "56ae3823215f5bca908d2fce3c9304d4ea6bab0334038f37ebe33023dadb8594";
 const LOCAL_CHECKER_SHA256 =
-  "feed2cf519eebc16d340b4277e275fe8de57e4535c94f5612240a89d58f7157a";
+  "e72ee6621bb974968c0f66a08b3ba5a60640935dbd87629528062567e0e3cd6b";
 // The checker imports local policy modules. Pinning only its entry file
 // would let an unreviewed dependency change the release decision.
 const LOCAL_CHECKER_DEPENDENCIES = [
-  ["scripts/generate_protobuf.mjs", "63870985d67667e2b4f5b71d5517ded059624b546dcee63d4109e21c14994e49"],
+  ["scripts/generate_protobuf.mjs", "2cc10784a4e7699a0ff271f88014b2da7bab5ca69009c4f97228c72d9ab1d394"],
   ["scripts/check_local_proto_tools.mjs", "d3c542bacd20f41e3cfbff48cd751d07f7af8ae65f7d903d4d57642a71a2db82"],
   ["scripts/install_local_proto_tools.sh", "b7fe4e8b2402599b0b494c7ec178d1b76dfb55f88e8bfc2cfc65e46b542d7288"],
   ["scripts/native_buffa_readiness.mjs", "bdc838ba6bb5a07a36bb060a4cc1524baeaf70205b10f09e7ee8630f8ff128ca"],

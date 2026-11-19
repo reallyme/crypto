@@ -57,7 +57,7 @@ exclude = ["core", "fuzz"]
 
 [workspace.package]
 edition = "2021"
-rust-version = "1.96"
+rust-version = "1.100"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/reallyme/crypto"
 publish = false
@@ -76,7 +76,7 @@ publish = false
 # Error handling
 thiserror = "2.0.21"
 # Memory hygiene / secrets
-zeroize = "1.9.1"
+zeroize = "1.9.2"
 secrecy = "0.10.3"
 subtle = "2.6.1"
 # Randomness
@@ -84,16 +84,16 @@ getrandom = "0.4.3"
 # Hashing / KDF
 hybrid-array = "0.4.15"
 sha2 = { version = "0.11.1", features = ["zeroize"] }
-sha3 = { version = "0.12", features = ["zeroize"] }
+sha3 = { version = "0.12.0", features = ["zeroize"] }
 # This release still uses digest 0.10 and crypto-common 0.1.7, which pins
 # generic-array to 0.14.7. Upgrade that stack when sha3-kmac supports it.
 sha3-kmac = { version = "0.3.0", default-features = false }
-shake = { version = "0.1", default-features = false, features = ["zeroize"] }
-sha1 = "0.11"
-hkdf = "0.13"
-hmac = { version = "0.13", features = ["zeroize"] }
-pbkdf2 = "0.13"
-argon2 = { version = "0.6", default-features = false }
+shake = { version = "0.1.0", default-features = false, features = ["zeroize"] }
+sha1 = "0.11.0"
+hkdf = "0.13.0"
+hmac = { version = "0.13.0", features = ["zeroize"] }
+pbkdf2 = "0.13.0"
+argon2 = { version = "0.6.0", default-features = false }
 hpke = { version = "0.15.1", default-features = false }
 # AEAD
 aes = "0.9.4"
@@ -102,33 +102,33 @@ aes-gcm-siv = { version = "0.12.1", features = ["zeroize"] }
 polyval = { version = "0.7.3", features = ["zeroize"] }
 poly1305 = { version = "0.9.1", features = ["zeroize"] }
 aes-kw = { version = "0.3.1", default-features = false }
-chacha20poly1305 = "0.11"
+chacha20poly1305 = "0.11.0"
 # Signatures / key agreement
-ed25519-dalek = "3"
-curve25519-dalek = "5"
-x25519-dalek = "3"
+ed25519-dalek = "3.0.0"
+curve25519-dalek = "5.0.0"
+x25519-dalek = "3.0.0"
 # These Curve448 releases remain prereleases upstream. Keep the current reviewed
 # versions until newer releases are available; older stable releases would be a
 # downgrade and would split the shared elliptic-curve dependency stack.
 x448 = { version = "=0.14.0-pre.12", default-features = false }
-p256 = { version = "0.14", default-features = false }
-p384 = "0.14"
-p521 = "0.14"
-k256 = "0.14"
-ecdsa = "0.17"
+p256 = { version = "0.14.0", default-features = false }
+p384 = "0.14.0"
+p521 = "0.14.0"
+k256 = "0.14.0"
+ecdsa = "0.17.0"
 elliptic-curve = { version = "0.14.3", features = ["arithmetic", "ecdh"] }
-primefield = "0.14"
-primeorder = "0.14"
-bp256 = { version = "0.14", default-features = false, features = ["arithmetic", "ecdsa", "sha256"] }
-bp384 = { version = "0.14", default-features = false, features = ["arithmetic", "ecdsa", "sha384"] }
+primefield = "0.14.0"
+primeorder = "0.14.0"
+bp256 = { version = "0.14.0", default-features = false, features = ["arithmetic", "ecdsa", "sha256"] }
+bp384 = { version = "0.14.0", default-features = false, features = ["arithmetic", "ecdsa", "sha384"] }
 ed448-goldilocks = { version = "=0.14.0-pre.15", default-features = false }
 # Only explicitly selected native Brainpool/Ed448 providers use this dependency.
 openssl = { version = "0.10.82", default-features = false }
 openssl-src = "=400.0.2"
 crypto-bigint = { version = "0.7.11", features = ["alloc"] }
 const-oid = { version = "0.10.3", features = ["db"] }
-ark-bn254 = "0.6"
-ark-ff = "0.6"
+ark-bn254 = "0.6.0"
+ark-ff = "0.6.0"
 taceo-poseidon2 = { version = "=0.3.1", default-features = false, features = ["bn254", "t4"] }
 spki = "0.8.1"
 # Post-quantum
@@ -137,7 +137,7 @@ ml-kem = "0.3.4"
 # No stable 0.2 release is published yet; retain the existing release candidate.
 slh-dsa = "=0.2.0-rc.5"
 # Encoding / serialization
-buffa = { package = "reallyme-buffa", version = "=0.1.2", default-features = false }
+buffa = { package = "reallyme-buffa", version = "=0.1.3", default-features = false }
 base64 = "0.23.1"
 serde = "1.0.229"
 serde_json = "1.0.154"
@@ -146,7 +146,7 @@ wasm-bindgen = "0.2.130"
 js-sys = "0.3.107"
 # Dev / test
 hex = "0.4.3"
-hex-literal = "1.1"
+hex-literal = "1.1.0"
 # Upstream pins minicov to 0.3.8; its 0.3.9 update needs a wasm-bindgen-test release.
 wasm-bindgen-test = "0.3.80"
 

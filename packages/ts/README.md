@@ -165,7 +165,7 @@ rejected before JSON value deserialization and must use protobuf bytes.
 
 ## Documentation
 
-See the [provider matrix](https://github.com/reallyme/crypto/blob/main/PROVIDER_POLICY.md)
+See the [provider manifest](https://github.com/reallyme/crypto/blob/main/provider_manifest.json)
 and [wire API](https://github.com/reallyme/crypto/blob/main/docs/protobuf.md).
 
 ## License

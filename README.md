@@ -73,7 +73,7 @@ X-Wing-768 follows the IETF CFRG Internet-Draft
 which defines a hybrid KEM built from X25519 and ML-KEM-768.
 
 Availability varies by SDK lane. The exact provider and support map lives in
-[PROVIDER_POLICY.md](PROVIDER_POLICY.md). For each language lane,
+[provider_manifest.json](provider_manifest.json). For each language lane,
 an algorithm is either handled by its declared provider
 or rejected with a typed unsupported-algorithm error.
 
@@ -121,9 +121,9 @@ deterministic signatures, post-quantum primitives, memory-hard KDFs, and
 provider-ambiguous algorithms default to the ReallyMe Rust implementation
 through FFI, JNI, or WASM unless a native route is explicitly proven equivalent.
 
-RSA support is intentionally verification-only for historical X.509 and eMRTD
-PKI interoperability. The package does not generate RSA keys, sign with RSA
-private keys, or provide RSA encryption/decryption APIs.
+SDK facades expose RSA verification for historical X.509 and eMRTD PKI
+interoperability. The [Rust RSA crate](crates/rsa/README.md) also supports
+imported RS256 signing keys. RSA encryption and decryption are not exposed.
 
 ## Install
 
@@ -136,9 +136,8 @@ cargo add reallyme-crypto --features native,dispatch,ed25519
 Development and CI use Rust `1.100.0`, including its matching Cargo, Clippy and
 rustfmt components.
 
-The Rust crates require Rust `1.96.0` or newer. That MSRV is intentional:
-ReallyMe Crypto tracks current stable Rust so the public packages can use the
-compiler, dependency, lint, and target support expected by the conformance wall.
+The Rust crates require Rust `1.100.0` or newer. Buffa 0.1.3 requires
+this compiler version.
 
 When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
@@ -386,11 +385,7 @@ policy.
 
 ## Documentation
 
-- [PROVIDER_POLICY.md](PROVIDER_POLICY.md) — provider matrix and backend
-  selection for every algorithm and lane.
 - [CONTRACT.md](CONTRACT.md) — the public package and wire contract.
-- [docs/architecture.md](docs/architecture.md) — workspace boundaries and
-  dependency direction.
 - [docs/jwk.md](docs/jwk.md) — JWK and multikey encoding.
 - [docs/protobuf.md](docs/protobuf.md) — structured operations, algorithm
   identifiers, typed wire errors, and boundary rules.
@@ -399,27 +394,11 @@ policy.
 - [docs/external-conformance-vectors.md](docs/external-conformance-vectors.md)
   — External conformance vectors from NIST ACVP, CCTV, Wycheproof, BIP-340, and
   RFC 8032, plus the optional audit workflow and formal-methods notes.
-- [docs/dependency-updates.md](docs/dependency-updates.md) — dependency update
-  policy and manual review requirements.
-- [docs/rust-publishing.md](docs/rust-publishing.md) — Rust package layout and features.
-- [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) — public artifact integrity requirements.
-- [SECURITY.md](SECURITY.md), [SECURITY_MEMORY_MODEL.md](SECURITY_MEMORY_MODEL.md)
-  — reporting security issues and how secret material is handled.
+- [SECURITY.md](SECURITY.md) — vulnerability reporting and required safety precautions.
 
 Formal verification runs only through the [manual GitHub workflow](.github/workflows/formal-verification.yml)
 for the selected revision. Automatic Required CI retains build, SDK, conformance,
 and dependency-security checks.
-
-## Security Rules
-
-This repository is security-sensitive code. The project policy is:
-
-- no panics, unwraps, or generic string errors in production paths;
-- typed errors only;
-- zeroizing owners for secret material;
-- checked arithmetic for buffer sizes and offsets;
-- negative tests and conformance vectors for every primitive;
-- no silent platform fallback in release platform lanes.
 
 ## Conformance
 
@@ -434,7 +413,7 @@ The everyday all-feature Rust check is:
 cargo nextest run --workspace --all-features
 ```
 
-The full release wall is documented in [docs/conformance.md](docs/conformance.md).
+The release checks are documented in [docs/conformance.md](docs/conformance.md).
 
 ## License
 

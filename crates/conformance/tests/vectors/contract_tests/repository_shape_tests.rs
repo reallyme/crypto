@@ -107,22 +107,14 @@ fn vector_algorithm_strings_are_stable() -> Result<(), VectorTestError> {
 }
 
 #[test]
-fn matrix_records_kotlin_jvm_and_android_separately() -> Result<(), VectorTestError> {
-    // The backend matrix is generated into PROVIDER_POLICY.md by
-    // scripts/generate_provider_matrix.mjs from provider_manifest.json.
-    let matrix = read_repo_file("PROVIDER_POLICY.md")?;
-
-    assert!(
-        matrix.contains(
-            "| Algorithm | Family | Swift | Kotlin/JVM | Kotlin/Android | TypeScript/WASM |"
-        ),
-        "Kotlin provider matrix must split JVM and Android policy"
-    );
-    assert!(
-        matrix.contains("Generated from `provider_manifest.json`"),
-        "Kotlin lane split must be generated from the provider manifest"
-    );
-
+fn manifest_records_kotlin_jvm_and_android_separately() -> Result<(), VectorTestError> {
+    let source = read_repo_file("provider_manifest.json")?;
+    let manifest: Value =
+        serde_json::from_str(&source).map_err(|_| VectorTestError::ParseVector)?;
+    let lanes = field_array(&manifest, "requiredLanes")?;
+    assert!(lanes.iter().any(|lane| lane.as_str() == Some("kotlin_jvm")));
+    assert!(lanes.iter().any(|lane| lane.as_str() == Some("kotlin_android")));
+    assert!(!lanes.iter().any(|lane| lane.as_str() == Some("kotlin")));
     Ok(())
 }
 
@@ -130,11 +122,9 @@ fn matrix_records_kotlin_jvm_and_android_separately() -> Result<(), VectorTestEr
 fn typescript_contract_is_sync_and_webcrypto_free() -> Result<(), VectorTestError> {
     let contract = read_repo_file("CONTRACT.md")?;
     let package = read_repo_file("packages/ts/package.json")?;
-    let policy = read_repo_file("PROVIDER_POLICY.md")?;
 
     assert!(contract.contains("The TypeScript facade is synchronous."));
     assert!(contract.contains("WebCrypto is not part of the facade"));
-    assert!(policy.contains("WebCrypto is not a provider for the synchronous TypeScript facade"));
     assert!(!package.contains("\"zod\""));
     assert!(!package.contains("\"io-ts\""));
 
@@ -145,7 +135,6 @@ fn typescript_contract_is_sync_and_webcrypto_free() -> Result<(), VectorTestErro
 fn canonical_contract_is_documented_and_not_rust_api_only() -> Result<(), VectorTestError> {
     let contract = read_repo_file("CONTRACT.md")?;
     let readme = read_repo_file("README.md")?;
-    let policy = read_repo_file("PROVIDER_POLICY.md")?;
     let protobuf = read_repo_file("docs/protobuf.md")?;
     let conformance = read_repo_file("docs/conformance.md")?;
     let root_rustdoc = read_repo_file("crates/crypto/src/lib.rs")?;
@@ -173,16 +162,6 @@ fn canonical_contract_is_documented_and_not_rust_api_only() -> Result<(), Vector
             "The canonical contract is not mechanically generated from one language API.",
         ),
         (
-            "PROVIDER_POLICY.md",
-            policy.as_str(),
-            "No silent fallback",
-        ),
-        (
-            "PROVIDER_POLICY.md",
-            policy.as_str(),
-            "Every provider route must implement identical input validation",
-        ),
-        (
             "docs/protobuf.md",
             protobuf.as_str(),
             "not a generated mirror of the Rust package API",
@@ -195,7 +174,12 @@ fn canonical_contract_is_documented_and_not_rust_api_only() -> Result<(), Vector
         (
             "crates/crypto/src/lib.rs",
             root_rustdoc.as_str(),
-            "The canonical contract is not the Rust API by itself.",
+            "Protobuf operations and enums, package identifiers, typed errors",
+        ),
+        (
+            "crates/crypto/src/lib.rs",
+            root_rustdoc.as_str(),
+            "manifest, and conformance vectors define the shared contract.",
         ),
     ] {
         assert!(
