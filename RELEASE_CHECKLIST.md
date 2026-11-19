@@ -1,8 +1,6 @@
 # Release Integrity
 
-ReallyMe Crypto releases are identified by a version and a reviewed source
-commit. The public artifacts for that version must have the same source and
-cryptographic behavior across supported Rust and SDK lanes.
+Use one version and reviewed source commit for every package in a release.
 
 Verify [trusted publisher identities and release-environment protections](docs/trusted-publishing.md)
 for npm and every published crate. Complete the workflow cutover and revoke
@@ -27,8 +25,7 @@ legacy publishing tokens in repository and organization secret stores.
 
 Release evidence must identify the source commit, package version, and exact
 artifact bytes. A checksum or signature is meaningful only for the bytes that
-are published. A failed or unavailable verification is recorded as a release
-risk rather than treated as a passing check.
+are published. Do not publish when a required verification fails or is unavailable.
 
 After each package preflight succeeds, copy its version and full source SHA
 from the Actions summary to that ecosystem's release form. Use the same

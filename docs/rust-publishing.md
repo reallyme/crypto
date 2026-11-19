@@ -1,48 +1,26 @@
-# Rust Publishing
+# Rust packages and features
 
-Rust crates are published as a namespaced workspace, not as one collapsed
-crate. Consumers normally depend on the umbrella crate, or on the proto crate
-when they only need the stable protobuf/wire contract:
+Use `reallyme-crypto` for the Rust facade or `reallyme-crypto-proto` for wire
+types without the facade. Other `reallyme-crypto-*` crates provide individual
+primitives. Workspace packages share one release version and require Rust 1.96.0+.
 
-- `reallyme-crypto`
-- `reallyme-crypto-proto`
+With defaults disabled, select an execution lane (`native` or `wasm`) and the
+algorithms you call. The `wasm` lane targets `wasm32-unknown-unknown`; host builds
+use `native`. `dispatch` and `signer` do not enable every algorithm.
 
-The smaller `reallyme-crypto-*` crates are transitive workspace components.
-They keep the development boundaries, lint posture, and feature gates clear
-while allowing crates.io to resolve published dependencies.
+```toml
+reallyme-crypto = { version = "0.4.3", default-features = false, features = [
+  "native", "messaging-primitives"
+] }
+```
 
-## Toolchain
+`messaging-primitives` enables ChaCha20-Poly1305/XChaCha20-Poly1305, HKDF, HMAC,
+ML-KEM-768, SHA-2 and X25519, including `dispatch` but not `signer`.
 
-The Rust packages require Rust `1.96.0` or newer. The project intentionally
-tracks current stable Rust for public releases so the conformance wall, lints,
-target support, and dependency graph are exercised on the same compiler family
-used by CI. Lowering MSRV should be treated as a toolchain-support project, not a
-metadata-only edit.
+Use `hpke-openmls` for the narrow MLS component set or `hpke` for the full HPKE
+aggregate. The [HPKE crate](../crates/hpke/README.md#feature-selection) also
+provides individual `kem-*`, `kdf-*` and `aead-*` features.
 
-Backend features are separate from algorithm features. `native` and `wasm`
-select the Rust backend lane for whichever primitive crates are enabled; they
-do not enable every algorithm by themselves. The root crate also exposes
-`messaging-primitives` for consumers that only need ChaCha20-Poly1305,
-HKDF, HMAC, ML-KEM-768, SHA-2, and X25519. This bundle includes `dispatch`
-because ML-KEM-768 and X25519 are algorithm-selected routes. `dispatch` and
-`signer` are algorithm-feature gated; they should be paired with the specific
-algorithm features a consumer actually calls.
-
-HPKE follows the same rule. The root `hpke` feature is the complete
-compatibility aggregate, while `hpke-openmls` selects only ML-KEM-768,
-ML-KEM-1024, ML-KEM-1024/P-384, X-Wing, HKDF-SHA256, HKDF-SHA384,
-AES-256-GCM, and ChaCha20-Poly1305. The focused HPKE crate also exposes granular `kem-*`,
-`kdf-*`, and `aead-*` features for protocol-specific dependency graphs. CI
-rejects unrelated P-256, P-521, secp256k1/K-256, and X448 packages in the
-OpenMLS graph. The OpenMLS aggregate does not enable the SHAKE256 HPKE KDF;
-ML-KEM retains its required SHAKE primitive dependency for KEM-internal use.
-
-The `wasm` lane is a `wasm32-unknown-unknown` lane. Host checks should use
-`native`; wasm checks should include `--target wasm32-unknown-unknown`.
-
-## Package Contents
-
-`reallyme-crypto-proto` is a separately versioned public crate. The umbrella
-crate exposes its optional `operation-response` feature through that package.
-Published crates contain their source, README, license, and notice files. Their
-workspace dependency versions agree with the release version.
+Published crates contain source, README, license and notice files. For publishing
+commands and artifact checks, follow [the release process](release-process.md)
+and [release checklist](../RELEASE_CHECKLIST.md).

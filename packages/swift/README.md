@@ -4,13 +4,6 @@
 [ReallyMe Crypto](https://github.com/reallyme/crypto). It combines native Apple
 providers with explicit Rust C ABI routes behind one typed Swift facade.
 
-The package shares algorithm identifiers, byte formats, typed failures, and
-conformance vectors with the Rust, Kotlin, Android, and TypeScript SDKs.
-Availability is provider-specific; unsupported routes fail closed.
-
-The manifest sits at the repository root (`Package.swift`) so SwiftPM can add it
-by Git URL; the source lives under `packages/swift` with the other language SDKs.
-
 ## Install
 
 ```swift
@@ -24,9 +17,7 @@ by Git URL; the source lives under `packages/swift` with the other language SDKs
 .product(name: "ReallyMeCrypto", package: "crypto")
 ```
 
-The `from:` version resolves after publication; an unreleased version has no tag.
-Crypto 0.4.3 requires Swift 6.3 or later. Its Codec dependency
-declares that tools version.
+Requires Swift 6.3 or later.
 
 Applications that process structured operations or store ReallyMe Crypto
 algorithm identifiers can add the proto products at the same boundary:
@@ -36,7 +27,7 @@ algorithm identifiers can add the proto products at the same boundary:
 .product(name: "ReallyMeCryptoProtoAdapters", package: "crypto")
 ```
 
-## Quick Start
+## Example
 
 ```swift
 import ReallyMeCrypto
@@ -66,39 +57,20 @@ let plaintext = try ReallyMeCrypto.open(
 )
 ```
 
-Signature verification throws on invalid signatures. It does not return a
-boolean that can be accidentally ignored.
+Signature verification throws on invalid signatures.
 
-## Provider Model
+## Providers
 
-Provider selection is explicit:
-
-- CryptoKit for Apple-native classical primitives where it matches the shared
-  contract.
-- Security.framework / Secure Enclave for P-256 ECDH and P-256 ECDSA signing
-  keys that must stay non-exportable.
-- [reallyme/CSecp256k1](https://github.com/reallyme/CSecp256k1) for
-  secp256k1 ECDSA, since CryptoKit does not provide secp256k1.
-- Digest for SHA-3, which CryptoKit does not expose.
-- The ReallyMe Rust C ABI for primitives that should stay shared with Rust,
-  including deterministic Ed25519 and P-256/P-384/P-521 ECDSA signing,
-  ML-KEM, ML-DSA, SLH-DSA, X-Wing, Argon2id, AES-KW, HPKE, and RSA
-  verification.
-
-The public API has two layers:
-
-- algorithm-specific types, such as `ReallyMeX25519`, `ReallyMeP256Ecdh`, and
-  `ReallyMeSecp256k1`;
-- `ReallyMeCrypto`, a typed facade keyed by repository-wide algorithm enums.
+Released packages link the Rust C ABI provider. Use `ReallyMeCrypto()` for its
+configured routes; algorithm-specific types expose the lower-level APIs.
+[PROVIDER_POLICY.md](../../PROVIDER_POLICY.md) lists supported algorithms and
+providers. Unspecified identifiers or unsupported combinations throw
+`ReallyMeCryptoError.unsupportedAlgorithm`; provider failures do not trigger
+fallback.
 
 `ReallyMeP256EcdsaSignature` normalizes canonical DER or 64-byte `r || s`
-signatures to low-S form. Secure Enclave signing applies that policy before
-returning, while external HSM integrations can call the helper explicitly.
-
-Unspecified identifiers and algorithm/operation combinations that a method
-does not define throw `ReallyMeCryptoError.unsupportedAlgorithm`. The Swift package does not
-silently fall back to a different provider. The complete lane is tracked in
-[PROVIDER_POLICY.md](../../PROVIDER_POLICY.md).
+signatures to low-S. Secure Enclave signing applies normalization automatically;
+external HSM integrations can call it explicitly.
 
 ## Secure Enclave ECDH
 
@@ -131,11 +103,9 @@ Application tags are unique key identifiers. Generation with an existing tag
 fails as `ReallyMeCryptoError.invalidInput` unless `overwriteExisting` is true;
 delete remains idempotent for missing keys.
 
-Secure Enclave storage identifiers are purpose-separated hashes. Public handles
-remain opaque facade values and resolve only the current storage identifier;
-raw application tags are deliberately not lookup handles.
+Store the returned handle; raw application tags are not lookup handles.
 
-Secure Enclave ECDH keys deliberately use non-interactive `.privateKeyUsage`
+Secure Enclave ECDH keys use non-interactive `.privateKeyUsage`
 access control so background receive/decryption flows can derive shared
 secrets. Secure Enclave residency prevents private-key export; it does not add
 per-operation user-presence or biometric authorization. Applications that
@@ -144,9 +114,8 @@ require an interactive policy must enforce that policy before invoking ECDH.
 ## Secure Enclave Signing
 
 Use the handle-backed P-256 signing API when a user-presence or biometric-gated
-device key should sign a challenge without exporting the private key. This is a
-Security.framework / Secure Enclave route, not the Rust deterministic ECDSA
-route used for cross-lane raw-key vectors.
+device key should sign a challenge without exporting the private key. Hardware
+signing does not reproduce deterministic software-signing bytes.
 
 ```swift
 let tag = Array("me.really.example.p256.signing".utf8)
@@ -199,16 +168,8 @@ let protoAlgorithm = ReallyMeCryptoProtoAdapters.toProto(facadeAlgorithm)
 ## Rust C ABI Providers
 
 Released SwiftPM packages ship the `ReallyMeCryptoFFI` binary target and link
-the Rust C ABI provider automatically. A consumer that adds the package and uses
-`ReallyMeCrypto()` gets Apple-native routes where those are approved and the
-bundled Rust provider for Rust-backed primitives such as deterministic
-P-256/P-384/P-521 ECDSA, Ed25519, ML-KEM, ML-DSA, SLH-DSA, X-Wing, Argon2id,
-AES-KW, HPKE, and RSA verification.
-
-Deterministic ECDSA signing is intentionally provider-aware on Swift. Use the
-instance facade, or the explicit `rustCAbiLibrary:` overloads in tests and local
-provider development. The ECDSA contract returns SEC1 compressed public keys and
-DER signatures:
+the Rust provider automatically. The instance facade returns compressed SEC1
+public keys and deterministic DER ECDSA signatures:
 
 ```swift
 let crypto = ReallyMeCrypto()
@@ -265,32 +226,23 @@ accepts the strict generated ProtoJSON view only for non-secret hash,
 verification, key-generation, encapsulation, and sender-export requests. Both return
 binary `CryptoOperationResponse` bytes, preserving exact `CryptoError` branches
 and reasons rather than projecting operation failures into Swift errors.
-This is the single executable structured response contract.
 
 ProtoJSON is request-only. Secret-bearing operation selectors are rejected
-before JSON value deserialization and must use protobuf bytes. Clear
-caller-owned arrays after processing because Swift cannot guarantee removal of
-ARC or framework-created copies.
+before JSON value deserialization and must use protobuf bytes.
 
-## Memory Hygiene
+## Secret buffers
 
-Rust-owned secret buffers are zeroized by the Rust implementation and FFI
-adapters. Swift-managed arrays are best-effort only: ARC, framework providers,
-protobuf codecs, debuggers, and crash reporters can create copies outside the
-SDK's control. Clear caller-owned byte arrays as soon as practical:
-
-The AES-KW adapter rejects any Rust provider result whose produced length is not
-exactly the RFC 3394 `plaintext + 8` or `wrapped - 8` length. Temporary native
-unwrapped-key and derived-key owners are zeroized after copying into
-Swift-managed arrays. KMAC keys and customization strings are capped at 4 KiB,
-contexts at 64 KiB, and outputs at 64 KiB before crossing the C ABI.
+Rust owners clear their retained secret buffers. Swift arrays can have copies
+retained by ARC, providers, codecs or debuggers; clearing one array does not
+clear those copies. Clear caller-owned arrays when no longer needed:
 
 ```swift
 ReallyMeCryptoMemory.bestEffortClear(&secretBytes)
 ```
 
-Do not move private keys, passwords, plaintext, shared secrets, or derived keys
-through strings or JSON paths.
+KMAC keys and customization strings are capped at 4 KiB, contexts and outputs
+at 64 KiB. Do not transport private keys, passwords, plaintext, shared secrets
+or derived keys as strings or JSON.
 
 ## Test
 
@@ -313,6 +265,3 @@ The SwiftPM runtime-FFI override is development-only and requires both
 `REALLYME_CRYPTO_SWIFTPM_RUNTIME_FFI=1` and the repo-local
 `.reallyme-crypto-runtime-ffi` marker; the environment variable alone is ignored
 so normal consumers keep the reviewed binary target.
-
-This package is the SDK API. The Swift conformance harness under
-`crates/conformance/platform/swift` remains a test harness.

@@ -5,16 +5,9 @@
 [![Security Policy](https://img.shields.io/badge/security-policy-0f766e)](https://github.com/reallyme/crypto/blob/main/SECURITY.md)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](https://github.com/reallyme/crypto/blob/main/LICENSE)
 
-ReallyMe Crypto is the Rust facade for a cross-platform cryptography workspace
-spanning Rust, Swift, Kotlin, Android, and TypeScript. It exposes typed
-operation owners, explicit provider routing, and the package surfaces used by
-the native and WASM adapters.
-
-The protobuf schema is the source of truth for executable structured requests,
-responses, algorithm identifiers, and wire errors. Generated bindings feed a
-single Rust operation boundary. `provider_manifest.json` fixes the provider
-selected for each SDK lane, and positive and negative vectors prove the byte
-and failure contract. Missing providers and unsupported algorithms fail closed.
+Typed Rust cryptographic operations, with algorithm features, native/WASM
+execution and an optional protobuf boundary. Missing providers and unsupported
+algorithms return typed errors.
 
 ## Install
 
@@ -24,15 +17,13 @@ and failure contract. Missing providers and unsupported algorithms fail closed.
 cargo add reallyme-crypto --features native,dispatch,ed25519
 ```
 
-The Rust crates require Rust `1.96.0` or newer. That MSRV is intentional:
-ReallyMe Crypto tracks current stable Rust so the public packages can use the
-compiler, dependency, lint, and target support expected by the conformance wall.
+Requires Rust `1.96.0` or newer.
 
 When default features are disabled, enable one backend lane and each algorithm
 surface your crate calls:
 
 ```toml
-reallyme-crypto = { version = "0.3.17", default-features = false, features = [
+reallyme-crypto = { version = "0.4.3", default-features = false, features = [
   "native",
   "ed25519",
   "p256",
@@ -45,7 +36,7 @@ Messaging-focused consumers can use the narrow primitive bundle instead of the
 default feature set:
 
 ```toml
-reallyme-crypto = { version = "0.3.17", default-features = false, features = [
+reallyme-crypto = { version = "0.4.3", default-features = false, features = [
   "native",
   "messaging-primitives",
 ] }
@@ -86,9 +77,8 @@ manifest-declared provider-backed P-384/P-521 ECDH surfaces.
 
 For standalone X25519 and secp256k1 random key generation, prefer
 `try_generate_x25519_keypair` and `try_generate_secp256k1_keypair`. These
-return typed errors when operating-system entropy is unavailable. The legacy
-infallible functions remain for compatibility; the dispatch API uses the
-fallible path.
+return typed errors when operating-system entropy is unavailable. The deprecated `generate_*` aliases also return `Result` in 0.4; use `?` or
+an explicit match when migrating from 0.3.
 
 The Swift package also includes a P-256 ECDH Secure Enclave / Keychain API for
 applications that need non-exportable private-key residency, such as JOSE/JWE
@@ -139,8 +129,7 @@ verify_bip340(&signature, &message32, &key_pair.public_key)?;
 # fn main() {}
 ```
 
-Hashing is owned by the semantic operation layer. Adapters should call this
-surface instead of selecting a primitive independently:
+Hash a byte slice:
 
 ```rust
 // This example requires the `sha2` feature.
@@ -165,8 +154,7 @@ assert_eq!(
 # fn main() {}
 ```
 
-HMAC authentication and fail-closed verification share the same semantic
-operation owner across Rust, structured protobuf, and C ABI adapters:
+Authenticate and verify a message with HMAC:
 
 ```rust
 // This example requires the `hmac` feature.
@@ -185,8 +173,7 @@ mac::verify(MacAlgorithm::HmacSha256, &key, message, &tag)?;
 # fn main() {}
 ```
 
-Authenticated encryption uses the same operation owner for algorithm selection,
-typed failures, and zeroizing recovered plaintext:
+Seal a message and open it into a zeroizing plaintext owner:
 
 ```rust
 // This example requires the `aes` feature.
@@ -279,8 +266,7 @@ assert_eq!(opened.plaintext.as_slice(), b"confidential payload");
 # fn main() {}
 ```
 
-AES-KW uses the operation owner for suite selection and returns unwrapped key
-material in a zeroizing owner:
+Wrap and unwrap key material:
 
 ```rust
 // This example requires the `aes-kw` feature.

@@ -2,506 +2,157 @@
 
 ## 0.4.3
 
-- Adds Rust-only cleanup-owned incremental SHA-256 and SHA3-256 contexts with
-  checked input lengths and consuming finalization. Existing one-shot APIs and
-  digest bytes remain compatible.
-- Defines the incremental lifecycle in protobuf. Swift, Kotlin, TypeScript,
-  FFI, and WASM entry points and cross-language tests are not included.
-- Aligns the Rust package family and SDK package metadata at `0.4.3` for the
-  protobuf-defined JWK contract updates.
-- Refreshes dependency lockfiles and build tooling, and adopts Release Readiness
-  `0.9.6`. Formal verification runs on explicit GitHub workflow dispatch;
-  automatic CI retains the required build, security, and conformance checks.
+- Adds Rust-only incremental SHA-256 and SHA3-256 with fallible updates and
+  consuming finalization. One-shot digest bytes are unchanged. There are no
+  incremental Swift, Kotlin, TypeScript, C ABI or WASM entry points.
+- Aligns optional JWK `alg`, `use` and `kid` null handling across SDKs and accepts
+  standard uncompressed P-curve verification keys in TypeScript.
+- Kotlin HPKE, post-quantum operations and software P-curve ECDH use Rust JNI.
+  Load the native provider before using them; there is no BouncyCastle fallback.
+- Removes Kotlin's public deterministic encapsulation test helper; use the
+  randomized production API.
+- Requires canonical ECDSA DER and standard SEC1 encodings across supported
+  verification/agreement routes. Compact `0x05` and hybrid keys are rejected.
 
 ## 0.4.2
 
-- Adds formal checks for authenticated plaintext release, restricted provider dispatch,
-  HPKE context and exporter binding, and record sequencing. Independent vectors
-  cover classical and post-quantum HPKE, including implicit rejection.
-- Adds verification for ML-KEM key admission, the X-Wing combiner, canonical
-  ECDSA signatures, key agreement, AES Key Wrap, and the portable Keccak round.
-- Preserves typed provider failure for missing SDK providers. Restricted Rust builds
-  still report typed unsupported algorithm for disabled algorithms.
-- Integrates the formal checks with Release Readiness 0.9.4. Package preflight
-  summaries include a publish command with the version and reviewed commit SHA.
+- Adds bounded Rust and symbolic HPKE verification harnesses. See
+  [formal verification](formal/README.md) for commands and scope limits.
 
 ## 0.4.1
 
-- Updates ReallyMe Buffa to `0.1.2` and ReallyMe Codec to `0.4.2` across all SDKs.
-  The Swift package builds alongside CSecp256k1 under Swift Build.
-- Updates release-readiness to `0.8.0`, Gradle to `9.9.1`, and OSV Scanner to `2.7.1`.
-- Refreshes compatible Rust dependencies and updates Bouncy Castle to `1.87` and
-  SwiftProtobuf to `1.41.0`.
+- Fixes Swift Build compatibility when linking Crypto alongside CSecp256k1.
 
 ## 0.4.0
 
-- Migrated to ReallyMe Buffa `0.1.1` for generated Rust zeroization, guarded views, and redaction.
-- Preserves the published protobuf field numbers and encodings. Rust now returns canonical
-  `CryptoErrorReason` values in place of per-operation error variants. SDKs keep their typed errors.
-- Adds protected prime-group and RSA representative operations. Deprecated X25519 and secp256k1
-  key-generation functions now return `Result`.
-- Updates Rust and TypeScript/WASM Codec dependencies to `0.4.0` and fixes Android NDK discovery.
+- Rust now returns canonical `CryptoErrorReason` values instead of
+  per-operation variants. SDK facades retain their typed errors.
+- Preserves the published protobuf field numbers and encodings.
+- Deprecated `generate_x25519_keypair` and `generate_secp256k1_keypair` now
+  return `Result<(Vec<u8>, Zeroizing<Vec<u8>>), CryptoError>`. Handle failures
+  with `?` or an explicit match; `try_generate_*` remains preferred.
+- Adds protected prime-group and RSA representative operations and guarded
+  secret storage in generated Rust messages.
 
 ## 0.3.17
 
-- Makes HPKE sender and receiver contexts `Send` through explicit backend
-  bounds, allowing single-owner contexts to move across threads and compatible
-  async tasks while remaining non-`Clone`, non-serializable, and non-`Sync`.
-- Adds explicit P-256 SHA-256 message and digest APIs, including the
-  zeroizing `P256Sha256Digest` boundary and names that distinguish canonical
-  low-S verification from interoperable verification. The legacy entry points
-  remain available with their existing behavior and are deprecated in favor of
-  the unambiguous APIs.
-- Updates ReallyMe Codec to `0.3.2` across Rust, Swift, Kotlin/JVM, Android, and
-  TypeScript, including refreshed lockfiles and artifact provenance. Android
-  now compiles against API level 37 as required by the updated Codec artifact
-  while retaining API level 26 as its minimum runtime target.
-- Refreshes audited patch dependencies and build tooling, including `aes`
-  `0.9.4`, `ml-dsa` `0.1.2`, `ml-kem` `0.3.4`, Gradle `9.9.0`, Android Gradle
-  Plugin `9.5.1`, and immutable GitHub Actions pins.
-- Updates the repository policy gate to release-readiness `v0.6.9` and aligns
-  every published package lane at version `0.3.17`.
-- Preserves existing wire formats and the compatibility behavior of deprecated
-  P-256 entry points; callers can migrate to the new typed APIs additively.
+- Makes HPKE sender and receiver contexts `Send` for single-owner transfer
+  between threads. They remain non-`Sync`, non-cloneable and non-serializable.
+- Adds `P256Sha256Digest` and explicit P-256 message/digest signing and
+  verification APIs. Existing entry points are deprecated but remain compatible.
+- Android uses compile SDK 37 and Android Gradle Plugin 9.5.1; minimum API 26
+  and existing wire formats are unchanged.
 
 ## 0.3.16
 
-- Updates `ctutils` from `0.4.6` to `0.4.7` for constant-time hardening on
-  Thumb-1 and RISC-V 32-bit targets.
-- Updates `hpke` from `0.14.1` to `0.15.1`, aligns the direct `ml-kem` and
-  `spki` requirements with their current stable releases, and refreshes the
-  compatible Cargo graph with `log` `0.4.35` using Rust `1.99.1`.
-- Updates the WASM dependency family to `wasm-bindgen` `0.2.130` and `js-sys`
-  `0.3.107`, incorporating upstream lifetime-safety, argument-release, and
-  binding-collision fixes.
-- Updates the pinned WASM build tool to `wasm-pack` `0.15.1`, including fixes
-  for modern `wasm-bindgen` package metadata, snippet packaging, and prebuilt
-  tool selection across supported hosts.
-- Updates the Android build to Android Gradle Plugin `9.5.0` and Gson `2.15.0`,
-  including stricter malformed-JSON handling for Kotlin and Android callers.
-- Updates the pinned Gradle Actions security release to `6.4.1` and the pinned
-  installer action to `2.88.0`.
-- Rebuilds every package lane with Rust `1.99.1` while preserving the `1.96`
-  minimum supported Rust version.
-- Preserves the `0.3.15` public API and wire contracts; this release contains no
-  intentional API, serialization, or algorithm-policy changes.
+- Updates `ctutils`, HPKE and WASM bindings, including upstream lifetime and
+  argument-release fixes. Rust MSRV remains 1.96.
 
 ## 0.3.15
 
-- Updates `crypto-bigint` from `0.7.5` to `0.7.10` to remediate
-  `RUSTSEC-2026-0387` and updates `ctutils` from `0.4.3` to `0.4.6` to
-  remediate `RUSTSEC-2026-0385`.
-- Refreshes the remaining compatible Cargo lockfile graph, including `cc`
-  `1.10.0`, `der` `0.8.3`, and `elliptic-curve` `0.14.3`.
-- Rebuilds the Rust, Swift, TypeScript, Kotlin/JVM, and Android packages against
-  the patched dependency graph. Applications with an existing Cargo lockfile
-  should update it so the fixed transitive versions are selected.
-- Preserves the `0.3.14` public API and wire contracts; this release contains no
-  intentional API, serialization, or algorithm-policy changes.
+- Updates `crypto-bigint` and `ctutils` for `RUSTSEC-2026-0387` and
+  `RUSTSEC-2026-0385`. Refresh application Cargo lockfiles to select the fixes.
 
 ## 0.3.14
 
-- Corrects Android hardware-backed P-256 key inspection so every required key
-  purpose is checked before an existing Keystore key is accepted.
-- Reuses the platform `SecureRandom` instance for Kotlin Ed25519, X25519,
-  ML-KEM, and X-Wing key generation and encapsulation without changing their
-  public APIs or output formats.
-- Refreshes compatible dependencies, including `taceo-poseidon2` `0.3.1`,
-  Swift Protobuf `1.39.0`, Kotlin `2.4.21`, Gradle `9.8.2`, `ml-kem` `0.3.3`,
-  and the current compatible Cargo lockfile graph.
-- Hardens package and release workflows, preserves authenticated wrapper and
-  action provenance, and aligns the supported Rust toolchain with `1.99.1`.
-- Uses descriptor-bound, size-limited reads for release policy and semver
-  baseline inputs so path replacement cannot change a file after validation.
-- Updates the Rust, Swift, TypeScript, Kotlin/JVM, and Android package versions
-  to `0.3.14` while preserving the `0.3.13` public API contract.
+- Android hardware-backed P-256 key inspection checks every required purpose
+  before accepting an existing Keystore key.
 
 ## 0.3.13
 
-- Adds strict, backend-independent P-256 ECDSA low-S normalization for both
-  canonical DER and fixed-width 64-byte `r || s` signatures. Invalid lengths,
-  non-canonical DER, zero scalars, and scalars outside the P-256 subgroup are
-  rejected with typed errors.
-- Exposes the normalization contract through the Rust facade, C ABI, Swift,
-  Kotlin, Android, and TypeScript SDKs. DER normalization delegates to the same
-  fixed-width scalar policy so every lane produces identical output.
-- Normalizes signatures returned by the Swift Secure Enclave and Android
-  Keystore signing paths. Caller-managed Android biometric signing operations
-  can normalize their completed result through the public SDK helper.
-- Adds positive, negative, boundary, idempotence, ABI, and cross-SDK tests for
-  low-S behavior while preserving the general P-256 verifier's existing
-  interoperability contract.
-
-## 0.3.12
-
-- Updates the Rust, Swift, TypeScript, Kotlin/JVM, and Android package versions
-  to `0.3.12` and targets ReallyMe Codec `0.3.1` in every supported lane.
-- Refreshes dependency locks, Maven artifact provenance, and release checks for
-  the Codec update. Advances the Rust API compatibility baseline to `0.3.11`.
+- Adds strict P-256 low-S normalization for DER and 64-byte `r || s` signatures
+  across Rust, C, Swift, Kotlin, Android and TypeScript.
+- Applies normalization to Secure Enclave and Android Keystore signing results.
+  External biometric signing flows can normalize completed results explicitly.
 
 ## 0.3.11
 
-- Updates all published ReallyMe Crypto crate and SDK package versions to
-  `0.3.11` and refreshes their dependency locks.
-- Updates compatible Rust dependencies, including `cc`, `libc`, and `x-wing`, and
-  updates the Kotlin and Android Bouncy Castle runtime dependency to `1.86`.
-- Updates the pinned Rust toolchain to `1.99.1` and the Rust API semver checker
-  to `0.50.0`. Migrates the Android build to Android Gradle Plugin `9.4.1`
-  with Gradle `9.8.0` and built-in Kotlin.
-- Updates Buf to `1.73.0` and regenerates Java and Kotlin protobuf bindings
-  with the `v36.2` generators.
-- Adds grouped weekly dependency update proposals for Rust, npm, Gradle,
-  Swift conformance dependencies, GitHub Actions, and the Rust toolchain.
-- Packages the Swift FFI as a dynamic XCFramework so Crypto and Codec `0.3.0`
-  can link together without duplicate Rust runtime symbols. Apps that integrate
-  the XCFramework directly must embed and sign it.
+- Packages Swift FFI as a dynamic XCFramework. Applications integrating it
+  directly must embed and sign it.
 
 ## 0.3.10
 
-- Adds support for BN254 Poseidon2 byte hashing in Rust, with the fixed
-  parameters, length framing, input bound, and canonical output encoding used
-  by ReallyMe ZK circuits. Cross-checks full and partial blocks against the ZK
-  fixture oracle. The umbrella crate exposes it through the explicit
-  `poseidon2` feature; the default feature set does not select it.
-- Adds canonical P-256 prehashed ECDSA helpers in Rust and exposes typed
-  `throws(ReallyMeCryptoError)` across the Swift public API. The already-hashed
-  SHA-256 entry points are `sign_p256_digest_der` and
-  `verify_p256_digest_der`; callers must pass exactly 32 digest bytes.
-- Updates the ReallyMe Codec dependency to `0.3.0` across Rust, Swift,
-  TypeScript, Kotlin/JVM, and Android, including the new multikey accessor,
-  Swift error mapping, and TypeScript WASM provider contract.
-- Requires Swift 6.3 or later for the Swift package, matching Codec 0.3.0.
-- Fixes Ed25519 feature-only builds by exposing public-key encoding helpers
-  only when a Rust backend is selected. Backendless signature operations
-  continue to fail with typed unsupported errors.
-- Upgrades release-readiness to `0.6.7` and refreshes compatible Cargo and npm
-  lockfile dependencies, including wasm-bindgen `0.2.129` and
-  `@bufbuild/protobuf` `2.16.0`.
-- Updates Kotlin to `2.4.21`, JVM and Android protobuf libraries to `4.36.2`,
-  and JVM JUnit to `6.1.3`, with refreshed Gradle verification metadata.
-- Sets Rust, npm, Swift, Kotlin/JVM, and Android package metadata to `0.3.10`.
-- The Swift package checksum is bound to the `0.3.10` XCFramework artifact.
-  Android Gradle Plugin 9 and the compatibility-bound `getrandom` and `sha3` lines
-  remain separate migrations.
-- Adds published-runtime dependency scanning, publisher checksum provenance,
-  multi-language CodeQL analysis, browser WASM execution, and C ABI sanitizer
-  and Miri checks.
-- Aligns Kotlin RSA public-key limits with the Rust verifier, gives decoded
-  TypeScript protobuf byte fields independent ownership, and limits global
-  WASM provider installation to the package's initialized module.
-- Requires prime-subgroup public and signature points for Ed25519 verification
-  across Rust, TypeScript, and Kotlin, with shared rejection cases for
-  torsion-bearing signatures. JWK and multikey encoding and parsing reject
-  noncanonical, low-order, and non-prime-subgroup Ed25519 public keys in every
-  package lane. This also tightens the raw Rust Ed25519 public-key
-  encode/decode functions and their C ABI: previously accepted small-order,
-  mixed-order, and noncanonical encodings now return invalid-key errors.
-  Failed WASM HPKE opens now return a typed authentication error.
-- Bounds PBKDF2's combined iteration and output-block work before derivation
-  in Rust, Swift, Kotlin, and TypeScript. Over-limit requests fail with typed
-  errors before provider dispatch; the Rust umbrella facade preserves the
-  resource-limit error kind.
-- Aligns Secure Enclave ECDH provider errors with signing and reserves the
-  handle-owned Keychain tag namespace from caller-owned references. Swift adds
-  `ReallyMeP256SecureEnclaveEcdhKeyReference` for caller-owned Keychain tags;
-  Android exposes `generateKeyAgreementKeyPair` and
-  `completeKeyAgreementOperation` for hardware-backed ECDH completion.
-- Redacts Swift key material from reflection and keeps Kotlin's Android key
-  alias domain and protobuf error sets private to their implementations.
-- Separates unavailable EC backends from malformed JWK metadata, rejects
-  X25519 field-element aliases at or above the field prime and conflicting AKP key use in
-  JWK and multikey adapters, and validates verification-result status and error
-  consistency in all SDKs.
-- Keeps the TypeScript package synchronously loadable through Node's CommonJS
-  bridge and uses a static reference to its package-owned WASM module.
-- Restricts explicit TypeScript facade providers to the initialized package
-  WASM module and freezes the returned facade against method replacement.
-  **Breaking SDK API change:** MAC verification in Swift, Kotlin, and
-  TypeScript now returns without a value on success and throws a typed
-  authentication error for an invalid tag. Callers that branch on a boolean
-  must use exception handling instead.
-- Serializes Android Keystore key generation and deletion on one lock and
-  rejects software JCA objects at the hardware key-agreement completion API.
-- Caps Swift, Kotlin, and TypeScript protobuf value-envelope byte decoders at one megabyte,
-  matching the Rust wire-size boundary.
-- Restores the JWK/multikey adapter's native default so P-256 and secp256k1
-  conversions remain available without an explicit backend feature. JWK
-  parsers now accept optional, matching EC and AKP metadata, public `kid` and
-  `x-*` extensions, and additional JWKS metadata across all package lanes;
-  conflicting key use and private members remain rejected.
-- Requires canonical X25519 field elements in raw public-key encode/decode
-  paths, including the C ABI. RFC 7748 key agreement continues to accept its
-  specified input representations.
-- Requires at least 32 bytes of HPKE input keying material at the raw Rust
-  derivation boundary, matching the existing operation and serialized routes.
-  This rejects previously accepted short inputs; callers must supply secret
-  IKM with at least 256 bits of entropy.
-- Rejects exact-range cross-output aliasing in the HPKE C ABI before any
-  produced-length pointer or output buffer is written.
-- Requires external-vector integrity checks to execute their exact named
-  tests, so a renamed test cannot silently turn the gate green.
+- Adds Rust BN254 Poseidon2 hashing behind `poseidon2`, with a 515-byte input
+  limit, and explicit P-256 prehashed ECDSA helpers.
+- Requires Swift 6.3+ and uses typed Swift throws.
+- Rejects noncanonical, low-order and non-prime-subgroup Ed25519 keys in
+  verification and public-key envelopes. Previously accepted keys can now fail.
+- **SDK migration:** MAC verification in Swift, Kotlin and TypeScript returns
+  no value on success and throws on failure. Replace boolean branching with
+  typed error handling.
+- Requires canonical X25519 field elements in public-key encode/decode and
+  JWK/multikey identities. RFC 7748 agreement retains its input rules.
+- Requires at least 32 bytes of secret IKM for raw HPKE derivation. Callers must
+  supply at least 256 bits of entropy; length alone cannot establish that.
+- Adds caller-owned Secure Enclave key references and Android hardware ECDH
+  completion. Tightens TypeScript provider identity and protobuf input bounds.
+- Accepts optional matching JWK metadata, public `kid`, `x-*` extensions and
+  set-level JWKS metadata; conflicting key use and private members remain invalid.
 
 ## 0.3.9
 
-- Adds the MLS draft profiles for ML-KEM-768 with ML-DSA-65 and the X-Wing
-  ML-KEM-768/X25519 hybrid with Ed25519, using the required HPKE HKDF-SHA384
-  and AES-256-GCM components.
-- Extends the focused OpenMLS HPKE feature set with ML-KEM-768 and adds
-  identifier, draft-vector, round-trip, and OpenMLS compatibility coverage for
-  the new profiles.
-- Prepares Rust, npm, Swift, Kotlin/JVM, and Android packages for `0.3.9`.
+- Adds MLS profiles for ML-KEM-768/ML-DSA-65 and X-Wing/Ed25519 using
+  HPKE HKDF-SHA384 and AES-256-GCM.
 
 ## 0.3.8
 
-- Accepts HPKE HKDF contexts larger than 64 KiB, including MLS Welcomes with
-  inline post-quantum ratchet trees. The original HKDF key schedule and wire
-  encoding are unchanged. SHAKE context limits remain enforced, and oversized
-  SHAKE pre-shared keys return a typed error before backend setup.
-- Prepares Rust, npm, Swift, Kotlin/JVM, and Android packages for `0.3.8`.
+- Allows HPKE HKDF contexts larger than 64 KiB for MLS Welcomes. SHAKE context
+  limits remain enforced.
 
 ## 0.3.7
 
-- Offers project-owned code under either the MIT License or Apache License,
-  Version 2.0, at the recipient's option. Third-party licenses remain unchanged.
-- Updates Buffa to `0.9.2`, refreshes generated Rust protobuf bindings, and
-  fixes generator hardening compatibility with regression coverage.
-- Updates ReallyMe Codec dependencies to `0.2.3` across Rust, Swift,
-  TypeScript, Kotlin/JVM, and Android.
-- Fixes standalone SHA3-256 builds by finalizing into the zeroizing digest owner.
-- Includes the complete license and notice texts in every published Rust crate.
-- Improves secret-buffer zeroization, fallible key generation, FFI pointer
-  validation, public JWK validation, and TypeScript byte handling.
-- Reduces RSA public-exponent computation while preserving verification behavior.
-- Fixes native build output selection to prevent staging stale libraries and
-  audits all committed Cargo lockfiles for advisories and yanked dependencies.
-- Consolidates documentation and removes the unused top-level `proto` directory.
-- Prepares Rust, npm, Swift, Kotlin/JVM, and Android packages for `0.3.7`,
-  preserving conformance vectors and the two-step Swift artifact binding process.
-
-## 0.3.6
-
-- Updates ReallyMe Codec to `0.2.2` across Rust, Swift, TypeScript, Kotlin/JVM,
-  and Android, including refreshed registry locks and artifact verification
-  metadata.
-- Replaces the deprecated `bufbuild/buf-setup-action` with the SHA-pinned
-  `bufbuild/buf-action` `v1.5.0` in setup-only mode. Buf CLI remains on the
-  current `1.72.0` release and Buffa remains on the current `0.9.2` release.
-- Pins the vendored release-readiness core to the reviewed upstream commit that
-  enforces latest-stable Cargo requirements for ReallyMe Codec dependencies.
+- Offers project-owned code under MIT or Apache-2.0. Third-party licenses remain
+  unchanged. Improves secret-buffer cleanup, FFI validation and public-key import.
 
 ## 0.3.5
 
-- Removes the yanked transitive `chacha20` `0.10.1` release from the reviewed
-  dependency graph by refreshing it to `0.10.2`.
-- Updates the Rust cryptographic and encoding stack, including `argon2` `0.6`,
-  `aes-gcm-siv` `0.12`, and `base64` `0.23`, together with the latest
-  compatible transitive releases.
-- Refreshes the TypeScript and conformance packages to current Buf, Noble,
-  ReallyMe Codec, and TypeScript releases, including the Noble post-quantum
-  `0.7` line.
-- Updates the Swift, Kotlin/JVM, and Android dependency lanes to ReallyMe Codec
-  `0.2.1`, and refreshes Kotlin, Gradle, Android Gradle Plugin, protobuf,
-  Bouncy Castle, secp256k1, Gson, and JUnit within their stable compatible
-  release lines.
-- Stages the Rust crates, npm package, Swift binary package, Kotlin/JVM package,
-  and Android AAR package at version `0.3.5` for coordinated release.
-
-## 0.3.4
-
-- Refreshes Rust release dependencies for the coordinated `0.3.x` package set,
-  including `buffa` `0.9.2` and the Rust `reallyme-codec-*` crates at
-  `0.2.1`.
-- Keeps Swift, npm, Kotlin/JVM, and Android package dependencies on the
-  published `reallyme-codec` `0.2.0` artifacts while release-readiness validates
-  the Rust `0.2.1` codec provenance separately.
-- Aligns protobuf CI generator policy with the reviewed `buffa` version and
-  refreshes the main and fuzz lockfiles with the latest compatible registry
-  versions.
-- Stages the Rust crates, npm package, Swift binary package, Kotlin/JVM package,
-  and Android AAR package at version `0.3.4` for coordinated release.
+- Replaces yanked `chacha20` 0.10.1 with 0.10.2 and updates cryptographic
+  dependencies. Refresh application lockfiles when upgrading.
 
 ## 0.3.3
 
-- Corrects all three named post-quantum MLS HPKE profile aliases to the
-  draft-06 KDF selection: HKDF-SHA384 (`0x0002`). Draft-06 restored the
-  two-stage HKDF construction because MLS requires separate Extract and Expand
-  operations. Generic SHAKE256 HPKE suites remain available through explicit
-  constants and component features.
-- This correction changes the HPKE traffic state and ciphertexts produced by
-  the three aliases and is not wire-compatible with their `0.3.1`/`0.3.2`
-  SHAKE256 mapping. Deployments must upgrade all participants atomically.
-  Callers that intentionally need to process legacy HPKE data can select
-  `HPKE_MLKEM1024_SHAKE256_AES256GCM` or
-  `HPKE_MLKEM1024P384_SHAKE256_AES256GCM` explicitly.
-- Updates the narrow `hpke-openmls` aggregate to enable HKDF-SHA384 instead of
-  SHAKE256, while retaining HKDF-SHA256 for the deployed X-Wing profile. The
-  graph remains restricted to the three intended KEMs and two intended AEADs.
-- Adds explicit generic HKDF-SHA384 suite constants plus independent
-  known-answer coverage from the ML-KEM-1024 and MLKEM1024-P384 vectors in
-  `draft-ietf-hpke-pq-05`. Serialized operation and C-FFI matrices now exercise
-  both the draft-06 MLS triples and the separately supported SHAKE256 triples.
-- Strengthens Swift artifact checksum verification.
-- Stages the Rust crates, npm package, Swift binary package, Kotlin/JVM package,
-  and Android AAR package at version `0.3.3` for coordinated release.
+- Corrects the three MLS draft-profile aliases from HPKE SHAKE256 to draft-06
+  HKDF-SHA384 (`0x0002`). This changes traffic keys and ciphertexts relative to
+  0.3.1/0.3.2: upgrade all participants together.
+- For legacy data, explicitly select `HPKE_MLKEM1024_SHAKE256_AES256GCM` or
+  `HPKE_MLKEM1024P384_SHAKE256_AES256GCM` rather than an MLS alias.
 
 ## 0.3.2
 
-- Splits the HPKE native backend into independently selectable KEM, KDF, and
-  AEAD features while retaining `native` as the backward-compatible full-suite
-  aggregate. The root `hpke-openmls` profile enables only ML-KEM-1024,
-  ML-KEM-1024/P-384, X-Wing, HPKE SHAKE256, HKDF-SHA256, AES-256-GCM, and
-  ChaCha20-Poly1305. This draft-05 mapping is superseded by the draft-06
-  correction in `0.3.3`.
-- Adds a package-owned ML-KEM-1024/P-384 HPKE KEM adapter so the OpenMLS graph
-  does not inherit the upstream HPKE crate's monolithic NIST-curve feature.
-  P-256, P-521, secp256k1/K-256, and X448 are absent from the narrow production
-  graph, while registered but disabled identifiers continue to fail closed.
-- Exact-pins coordinated ReallyMe Crypto crate dependencies to `=0.3.2`,
-  preventing independently resolved patch versions from crossing internal
-  facade, dispatch, signer, primitive, HPKE, protobuf, FFI, and tooling
-  boundaries.
-- Stages the Rust crates, npm package, Swift binary package, Kotlin/JVM package,
-  and Android AAR package at version `0.3.2` for coordinated release.
-- Adds one-command Swift release-candidate preparation that builds the
-  deterministic XCFramework, patches `Package.swift`, and verifies the
-  checksum before the release commit. Release commits no longer need to be
-  amended or force-updated merely to record the SwiftPM checksum.
+- Adds individual HPKE KEM/KDF/AEAD features and the narrow `hpke-openmls`
+  aggregate. Its original SHAKE256 MLS mapping is superseded in 0.3.3.
+- Exact-pins workspace crate dependencies to the same release version.
 
 ## 0.3.1
 
-### Compatibility notice
-
-`0.3.0` already exported
-`MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384`, but incorrectly assigned
-HPKE HKDF-SHA384 to it. `0.3.1` changed that constant to the then-current
-SHAKE256 KDF (`0x0011`); draft-06 subsequently restored HKDF-SHA384, and the
-`0.3.3` aliases follow that newer draft. The `0.3.1` change altered HPKE traffic state and
-ciphertext compatibility for callers that used the `0.3.0` constant. Such
-deployments must coordinate the upgrade; historical data can be opened by
-constructing the former explicit `(MLKEM1024-P384, HKDF-SHA384, AES-256-GCM)`
-triple. The other two MLS profile aliases listed below are new in `0.3.1`.
-
-- Adds a split HPKE PSK sender setup for OpenMLS targeted messages. Sender
-  setup returns the encapsulated key and an opaque, non-exportable context so
-  callers can bind the KEM output into AAD before sealing; single-shot PSK seal
-  and open now use the same sender and receiver context implementation paths.
-- Adds deterministic HPKE keypair derivation from non-empty arbitrary-length
-  IKM by delegating to each KEM's registered `DeriveKeyPair` procedure,
-  removing adapter-owned MLS secret normalization. A fixed
-  OpenMLS/libcrux X-Wing draft-06 compatibility vector locks the deployed
-  arbitrary-IKM private key and complete public-key fingerprint. Raw Rust
-  callers retain the KEM-defined non-empty input contract; operation and
-  serialized boundaries require at least 32 bytes of high-entropy IKM.
-- Adds exact MLS draft-profile aliases for the 192-bit ML-KEM-1024/P-384,
-  256-bit ML-KEM-1024/ML-DSA-87, and 192-bit MLKEM1024-P384/P-384 profiles.
-  The `0.3.1` aliases selected HPKE SHAKE256 (`0x0011`) under the prior draft;
-  `0.3.3` supersedes that mapping with draft-06 HPKE HKDF-SHA384 (`0x0002`).
-  Deterministic Base seal and split PSK setup coverage for all three profiles
-  is available only through the `test-vectors` feature.
-- Makes the root Rust HPKE error boundary explicit with `*_operation` aliases
-  returning `OperationError` and `*_raw` aliases returning `HpkeError` directly
-  for protocol adapters.
-- Adds operation-layer deterministic Base seal and sender-export APIs behind
-  `test-vectors`, preserving secret-material policy binding and typed operation
-  errors while producing stable OpenMLS conformance data.
-- Adds suite-generic PSK receiver setup and live receiver contexts alongside
-  sender contexts. New setup APIs require validated `HpkePskRef` and
-  `HpkePskIdRef` values; published single-shot request structs remain
-  source-compatible for the patch release.
-- Routes protobuf HPKE key derivation through arbitrary-length IKM semantics and
-  regenerates hardened Rust, Swift, Kotlin/Java, and TypeScript bindings.
-  Serialized operation-contract and C ABI tests now cover the ML-KEM-1024,
-  MLKEM1024-P384, and X-Wing HPKE suites, including negative boundaries.
+- Adds suite-generic live PSK sender/receiver contexts and arbitrary-length
+  HPKE key derivation, plus MLS profile aliases.
+- Changes `MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384` from 0.3.0's HKDF-SHA384
+  to SHAKE256. This is not ciphertext-compatible with 0.3.0; use an explicit
+  suite for historical data. Version 0.3.3 restores the draft-06 HKDF-SHA384 map.
 
 ## 0.3.0
 
-- Establishes the protobuf schema as the source of truth for executable
-  structured requests, responses, algorithm identifiers, and wire errors.
-  Rust, Swift, Kotlin, and TypeScript adapters process generated
-  `CryptoOperationRequest` messages and return generated
-  `CryptoOperationResponse` bytes through one operation contract.
-- Gives each primitive and protocol family a single semantic owner. Native,
-  JNI, FFI, and WASM adapters validate their boundary and delegate to that
-  owner; provider selection is explicit, generated from the reviewed manifest,
-  and fails closed without ambient or silent fallback.
-- Ships package-owned Rust WASM implementations for the Rust-routed algorithm
-  lanes. Browser and Node consumers receive the generated WASM artifact in the
-  npm package and use it only through the typed TypeScript provider facade.
-- Hardens secret-bearing generated Rust messages with redacted debug output,
-  drop-time zeroization, disabled serde serialization for sensitive generated
-  views, bounded protobuf and ProtoJSON decoding, and typed errors that do not
-  contain raw input or backend exception text. Executable ProtoJSON accepts
-  only the eight request selectors without caller-provided key material or
-  PSKs; binary protobuf remains the complete operation transport.
-- Publishes versioned Rust, npm, SwiftPM, JVM, and Android artifacts.
-- This is a breaking Rust API release relative to `0.2.x`. Structured callers
-  must construct a generated `CryptoOperationRequest` branch and use
-  `operation_contract::process_operation_response` or the SDK
-  `processOperationResponse` helper.
-- Removes compatibility-only Rust surfaces that had no workspace production
-  callers: permissive P-256 and secp256k1 DER parsers, the
-  `messaging-dispatch` feature alias, no-op dispatch feature aliases, and the
-  `constant_time` and `operation_response` forwarding modules. Use the strict
-  signature converters, `messaging-primitives`, real algorithm features,
-  `operations::constant_time`, and `operation_contract`, respectively.
-- AES-KW callers now pass plaintext and wrapped-key slices directly to
-  `wrap_key*` and `unwrap_key*`. `AesKwKeyData::from_slice` and
-  `AesKwWrappedKey::from_slice` are removed, and plaintext ownership transfer
-  uses `AesKwKeyData::into_zeroizing` instead of the unprotected
-  `AesKwKeyData::into_vec` return.
-- The Rust release graph now resolves the ReallyMe Codec `0.2.x`
-  compatibility line exclusively from crates.io. The workspace and fuzz
-  lockfiles record registry sources and reviewed checksums for the transitive
-  base64url, JCS, multibase, multicodec, multikey, and PEM crates; release
-  validation no longer depends on an adjacent Codec checkout.
-- ReallyMe Codec `0.2.0` is a breaking pre-1.0 compatibility line relative to
-  `0.1.x`. Consumers extending the Crypto JWK, multikey, canonicalization, or
-  PEM surfaces must update against Codec `0.2.x` rather than assuming `0.1.x`
-  source compatibility.
-- TypeScript KDF facade parameters now use family-specific selector unions.
-  PBKDF2, HKDF, JWA Concat KDF, KMAC, and versioned Argon2id remain distinct
-  compile-time routes instead of accepting selectors that can only be rejected
-  at runtime.
-- Swift caller-owned byte cleanup uses Darwin `memset_s` to prevent elision of
-  the current-storage overwrite. The development-only dynamic-library loader
-  now requires an absolute path, and the non-interactive Secure Enclave ECDH
-  access policy is explicit in the public documentation.
-- The npm registry record for `@reallyme/crypto@0.3.0` reports 84 packaged
-  files, an unpacked size of 3,724,373 bytes, shasum
-  `40b595f91620c7c118a5e0e9ecc48f6fee7e1719`, and integrity
-  `sha512-rbRI0tRUdoyFck8cBP6HSpvQN5bCOvpwJWTX0QHbrchQniIf8UGlF+Vy2ecBaR3RHDitWsfyQEaC6AejHG8pBA==`.
+- Adds `CryptoOperationRequest`/`CryptoOperationResponse` processing across
+  Rust and SDKs. Structured callers use `operation_contract::process_operation_response`
+  or the SDK's `processOperationResponse`. Secret-bearing requests are binary-only.
+- Removes permissive DER parsers, `messaging-dispatch`, no-op dispatch feature
+  aliases, and the `constant_time`/`operation_response` forwarding modules.
+  Use strict converters, `messaging-primitives`, real algorithm features,
+  `operations::constant_time` and `operation_contract`.
+- AES-KW callers pass slices directly to `wrap_key*` and `unwrap_key*`.
+  Replace removed `AesKwKeyData::into_vec` with `into_zeroizing`.
+- TypeScript KDF methods use family-specific selectors. Swift's development
+  library loader requires an absolute path.
 
 ## 0.2.1
 
-- Adds KMAC256 and extends AES-KW from AES-256 to AES-128/192/256 across the
-  supported Rust and SDK provider lanes, with generated cross-lane
-  conformance vectors.
-- Hardens the existing ML-KEM-512/768/1024 WASM bridges by catching provider
-  exceptions, validating returned lengths, and clearing transient JavaScript
-  secret buffers.
-- Enforces independent output ownership at TypeScript provider boundaries,
-  rejects all FFI input/output and cross-output aliases before writes, and
-  keeps PBKDF2 and AES-KW plaintext outputs in zeroizing Rust owners.
-- Pins platform-provider routing to the audited provider manifest and fails
-  closed when a required Rust, WASM, JCA/JCE, or native provider is
-  unavailable. Non-Rust routes are checked to remain isolated from Rust
-  bridges.
-- Extends the generated Crypto protobuf and strict Buffa proto-JSON surface
-  for the new operations and algorithm selectors. Every public package
-  algorithm now has exactly one typed selector. Family enums use sparse,
-  documented subfamily bands and ten-value spacing within related groups.
-  Post-quantum and hybrid algorithms use values at `1000+`; superseded dense
-  values are reserved so they cannot be silently reinterpreted. Assignments
-  are immutable after this release and remain distinct from IANA registry
-  values.
+- Adds KMAC256 and AES-128/192-KW alongside AES-256-KW.
+- Assigns permanent sparse protobuf algorithm identifiers and reserves retired
+  assignments. These are distinct from external registry identifiers.
 
 ## 0.2.0
 
-- ReallyMe Crypto now treats the canonical SDK contract as the combination of
-  protobuf messages and enums, provider manifest policy, typed errors,
-  algorithm identifiers, and cross-language conformance vectors.
-- The legacy `reallyme.codec.v1` protobuf/package surface was removed from
-  this repository because Codec is now consumed from the standalone
-  ReallyMe Codec packages. This is a package and repository surface removal,
-  not a `reallyme.crypto.v1` wire break; the Crypto protobuf changes in this
-  release are additive. The `reallyme.codec.v1` package name is permanently retired in this repository and must not be reused here.
+- The legacy `reallyme.codec.v1` protobuf/package surface was removed in favor
+  of the standalone Codec packages. This is not a `reallyme.crypto.v1` wire break.
+  The old package name is permanently retired in this repository.

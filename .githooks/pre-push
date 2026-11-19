@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+# SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+set -eu
+hook_directory=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
+exec python3 "$hook_directory/../scripts/check_repository_privacy.py" --pre-push

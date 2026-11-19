@@ -1,68 +1,30 @@
-# Explicit DH domain validation
+# Explicit DH parameter validation
 
-`PrimeGroup::validate_dh_parameters(p, g, q, j)` validates explicit public
-parameters against the selected built-in RFC 5114 group. It is available with
-`prime-groups`; defaults can remain disabled. The operation admits no additional
-group, changes no agreement arithmetic and makes no protocol-strength decision.
+With `prime-groups`, call `PrimeGroup::validate_dh_parameters(p, g, q, j)` to
+match explicit parameters against one of the three built-in RFC 5114 groups.
+It does not admit arbitrary groups or decide whether a protocol permits them.
 
-The canonical schema first defines
-`CryptoPrimeGroupDhParametersValidationRequest` and
-`CryptoPrimeGroupDhParametersValidationResult`. With `operation-response`,
-`prime_groups::contract::validate_dh_parameters` borrows that request and returns
-the validated identifier. Existing error reasons and group identifiers retain
-their numbers. All generated language bindings carry the same optional fields.
+| Input | Requirement |
+| --- | --- |
+| Selected `PrimeGroup` | One of the three RFC 5114 finite-field groups |
+| `p`, `g` | Required; exactly the built-in modulus and standard generator |
+| `q` | Optional; if present, exactly the built-in subgroup order |
+| `j` | Optional; if present, exactly `(p - 1) / q`, using the built-in order |
 
-| Schema field | Native input or result | Validation |
-| --- | --- | --- |
-| `request.group` | Method receiver `PrimeGroup` | Exactly one of the three existing RFC 5114 DH groups; elliptic curves are rejected. |
-| `request.p` | Borrowed `p` bytes | Minimal, nonzero, unsigned big-endian; exact built-in modulus. |
-| `request.g` | Borrowed `g` bytes | Same representation; exact built-in standard generator. |
-| `request.q` | `Option<&[u8]>` | Absent order is established by exact built-in `p`/`g`; a present order must match the built-in `q`. |
-| `request.j` | `Option<&[u8]>` | A present cofactor must equal `(p - 1) / q`, using the built-in order whether or not `request.q` is present. |
-| `result.group` | Successful schema result | Echoes only the validated built-in identity; confers no trust or policy approval. |
+Integers are minimal, nonzero, unsigned big-endian bytes. Present-empty values,
+leading-zero padding and ASN.1 signed representations are rejected. Decode DER
+and remove its sign padding before calling this API. Field lengths must not
+exceed the selected field or subgroup width.
 
-Optional `q` and `j` use real protobuf presence. Present-empty values are
-invalid; they are not treated as absence. Leading-zero padding and ASN.1 signed
-representations are rejected. DER decoding, positivity and sign-pad removal
-belong to the caller's strict codec boundary. `p`, `g` and `j` cannot exceed the
-selected field width; `q` cannot exceed its subgroup-order width. Validation
-borrows those bytes without normalizing or copying them.
+With `operation-response`,
+`prime_groups::contract::validate_dh_parameters` accepts
+`CryptoPrimeGroupDhParametersValidationRequest` and returns the validated group
+identifier. Optional `q` and `j` preserve presence; absence is not empty bytes.
 
-The built-in parameters are specified in
-[RFC 5114 sections 2.1–2.3](https://www.rfc-editor.org/rfc/rfc5114.html#section-2).
-The optional X9.42 cofactor relationship is described in
-[RFC 3279 section 2.3.3](https://www.rfc-editor.org/rfc/rfc3279.html#section-2.3.3).
-This native operation can check metadata extracted from different parameter
-encodings; it is not an ASN.1 parser or an implementation of either container.
+Empty or oversized fields return `PRIMITIVE_INVALID_LENGTH`. Noncanonical
+integers, mismatches, inconsistent cofactors and elliptic-curve selections
+return `PRIMITIVE_INVALID_PARAMETER`. Success establishes parameter identity,
+not trust or protocol approval.
 
-## Bounded arithmetic and errors
-
-All lengths, canonical forms and exact `p`/`g`/supplied-`q` identity are checked
-before cofactor arithmetic. That arithmetic uses the existing `crypto-bigint`
-helpers and only built-in public widths and divisors. No attacker-selected
-primality testing, generator search, modulus preprocessing or unbounded
-allocation is performed. Temporary integers, quotient and remainder retain
-clearing owners. The operation does not import private scalars or export keys.
-
-Empty/oversized integer fields return `PRIMITIVE_INVALID_LENGTH`.
-Noncanonical integers, mismatched parameters, inconsistent cofactors and an
-elliptic-curve selection return `PRIMITIVE_INVALID_PARAMETER`. The schema
-adapter rejects missing selectors, unknown enum values and unknown modifiers
-through the existing checked identity and canonical error contracts; it does
-not introduce a second error vocabulary.
-
-## Regression coverage
-
-`crates/crypto/tests/prime_group_dh_parameters_tests.rs` contains independent
-cofactor inputs calculated from the published RFC parameters. Its five test
-functions cover all optional combinations for every built-in DH domain,
-same-width cross-domain confusion, malformed and oversized integers, mismatched
-`p`/`g`/`q`/`j`, elliptic-curve rejection, generated/native parity, wire-level
-absent versus present-empty fields, unknown fields and clearing-owner traits.
-Each function registers for both native and WASM execution.
-
-The five DH validation tests and ten independent group tests passed in native
-and WASM execution at `561b7b02561b63452844d95221f448b5bbce647f`. That run used
-the repaired prime-field source override recorded in the
-[patch manifest](../patches/primefield/manifest.json). The results cover the
-native adapters and group primitives exercised in that run.
+Parameter sources: [RFC 5114 §§2.1–2.3](https://www.rfc-editor.org/rfc/rfc5114.html#section-2)
+and [RFC 3279 §2.3.3](https://www.rfc-editor.org/rfc/rfc3279.html#section-2.3.3).

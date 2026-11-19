@@ -1,16 +1,13 @@
 # ReallyMe Crypto SHA-256
 
-The `digest` function returns the established fixed-size, cleanup-owned SHA-256 digest.
+`digest` returns a zeroizing 32-byte SHA-256 digest.
 
-`Sha2_256Hasher` provides `new`, checked `update`, `processed_bytes`, and consuming
-`finalize` methods. Chunked input produces the same digest bytes as the one-shot
-operation, including for empty input. A rejected update leaves the transcript
-unchanged. Explicit zeroization invalidates the context; dropping an unfinished
-context erases its retained state and buffered input.
+`Sha2_256Hasher` supports `new`, fallible `update`, `processed_bytes` and
+consuming `finalize`. A failed update leaves the transcript unchanged. Explicit
+zeroization invalidates the context; drop clears retained state and input.
+Callers own cleanup of their original input and exported digest copies.
 
-The canonical lifecycle, algorithms, limits, and failure reasons are defined in
-[`crypto.proto`](../proto/proto/reallyme/crypto/v1/crypto.proto). The umbrella
-crate's `operation_contract::incremental_hash::IncrementalHash` adapter accepts generated protobuf
-requests and returns the existing `CryptoHashResult`. Partial hash state remains
-local and cannot be serialized, cloned, or imported. Callers retain responsibility
-for cleanup of their original input and any exported digest copies.
+The Rust `operation_contract::incremental_hash::IncrementalHash` adapter accepts
+the schema-defined lifecycle messages and returns `CryptoHashResult`. Hash
+state cannot be serialized, cloned or imported. Incremental hashing has no
+Swift, Kotlin, TypeScript, C ABI or WASM entry point.

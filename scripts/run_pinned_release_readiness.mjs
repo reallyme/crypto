@@ -14,7 +14,7 @@ const RELEASE_READINESS_COMMIT = "a89da82a662e02ecb3b7cfc6756c450aff64417a";
 const RELEASE_READINESS_CORE_SHA256 =
   "edabd3b86b812ff821517d0adf4d383f066d95a65bb9b4b364809eacdb6ec639";
 const LOCAL_CHECKER_SHA256 =
-  "0e96e53c4a05431c911dba699f3b404c72630196f9dcd9e493a9b717c4ad0f34";
+  "feed2cf519eebc16d340b4277e275fe8de57e4535c94f5612240a89d58f7157a";
 // The checker imports local policy modules. Pinning only its entry file
 // would let an unreviewed dependency change the release decision.
 const LOCAL_CHECKER_DEPENDENCIES = [
@@ -24,7 +24,7 @@ const LOCAL_CHECKER_DEPENDENCIES = [
   ["scripts/native_buffa_readiness.mjs", "bdc838ba6bb5a07a36bb060a4cc1524baeaf70205b10f09e7ee8630f8ff128ca"],
   ["scripts/proto_scalar_policy.mjs", "f7b071722aa93a0f75a7fe57f994ae7a12e030ee0bedb1be7058e48543cac377"],
   ["scripts/crypto_operation_route_readiness.mjs", "2b15c4e6778f18cf10b493fb5644e47baf537185b6e4411909ba875b5bd38db4"],
-  ["scripts/workflow_gate_policy.mjs", "e3a26acfda8b8dddf9f3b40a0c247f3e14d343be263f5a3c047d2fead0163a37"],
+  ["scripts/workflow_gate_policy.mjs", "d5d1a5b4dda702602f28f282e033c0876d445cbd0ebb24c51074fdba9539b761"],
 ];
 const RELEASE_READINESS_CORE_URL =
   `https://raw.githubusercontent.com/reallyme/release-readiness/${RELEASE_READINESS_COMMIT}/core.mjs`;

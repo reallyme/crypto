@@ -1,10 +1,6 @@
 # crypto-x-wing
 
-X-Wing hybrid KEM primitives for ReallyMe Crypto.
-
-This crate implements the draft X-Wing construction over X25519 and ML-KEM-768.
-
-The X-Wing construction follows the IETF CFRG Internet-Draft
+X-Wing combines X25519 and ML-KEM-768 using
 [`draft-connolly-cfrg-xwing-kem`](https://datatracker.ietf.org/doc/draft-connolly-cfrg-xwing-kem/).
 
 The private key is a 32-byte seed. The public key is the ML-KEM public key

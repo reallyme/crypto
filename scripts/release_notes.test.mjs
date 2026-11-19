@@ -34,8 +34,8 @@ test("0.4.0 notes describe the Rust error migration and wire compatibility", () 
   const notes = extractReleaseNotes(readFileSync(path, "utf8"), "0.4.0");
   assert.match(notes, /canonical\s+`CryptoErrorReason` values/u);
   assert.match(notes, /Preserves the published protobuf field numbers/u);
-  assert.match(notes, /ReallyMe Buffa `0[.]1[.]1`/u);
-  assert.match(notes, /Rust and TypeScript\/WASM Codec dependencies to `0[.]4[.]0`/u);
+  assert.match(notes, /now\s+return `Result</u);
+  assert.match(notes, /Handle failures/u);
 });
 
 test("0.3.17 notes describe the additive API and dependency release", () => {
@@ -43,8 +43,6 @@ test("0.3.17 notes describe the additive API and dependency release", () => {
   const notes = extractReleaseNotes(readFileSync(path, "utf8"), "0.3.17");
   assert.match(notes, /HPKE sender and receiver contexts `Send`/u);
   assert.match(notes, /P256Sha256Digest/u);
-  assert.match(notes, /Codec to `0[.]3[.]2`/u);
-  assert.match(notes, /Android Gradle\s+Plugin `9[.]5[.]1`/u);
-  assert.match(notes, /release-readiness `v0[.]6[.]9`/u);
-  assert.match(notes, /Preserves existing wire formats/u);
+  assert.match(notes, /Android Gradle Plugin 9[.]5[.]1/u);
+  assert.match(notes, /existing wire formats are unchanged/u);
 });

@@ -1,70 +1,37 @@
-# Dependency Updates
+# Updating dependencies
 
-Renovate is currently disabled in `.github/renovate.json`. Dependency updates
-across Cargo, npm, Gradle, SwiftPM, and GitHub Actions are reviewed manually.
+Update manifests and lockfiles together. Keep GitHub Actions pinned to immutable
+revisions and review cryptographic output, errors and provider changes against
+the [conformance checks](conformance.md). Do not regenerate vectors to hide an
+unexpected output change.
 
-The policy is simple:
+KMAC's `sha3-kmac-state` alias must resolve to the SHA-3 version used by
+`sha3-kmac`, with `zeroize` enabled. Enabling that feature on a different major
+version does not clear the keyed sponge. Retain `zeroize` on `aes-gcm-siv`,
+`polyval` and `poly1305` in each supported dependency graph.
 
-- If Renovate is enabled, configure it to open reviewable pull requests without
-  automerging them.
-- Runtime cryptography updates are reviewed one dependency at a time.
-- GitHub Actions stay pinned to immutable revisions.
-- Lockfile maintenance is allowed, but still review-only.
-- Every crypto dependency update must pass the conformance wall before merge.
-- Provider behavior must remain explicit. No update may introduce silent
-  fallback to another implementation.
-- KMAC256 dependency updates for `sha3-kmac`, `sha3-utils`, or their transitive
-  `sha3` implementation require a focused checksum, API, zeroization, and
-  conformance-vector review.
+```sh
+cargo update
+cargo outdated
+cargo audit
+node scripts/check_kmac_zeroization.mjs
+node scripts/check_aead_zeroization.mjs
+bash scripts/audit_committed_lockfiles.sh
+```
 
-The `sha3-kmac-state` alias in `crates/kmac/Cargo.toml` must resolve to the same
-SHA-3 release as `sha3-kmac` so its `zeroize` feature reaches the keyed sponge.
-Upgrade them together; enabling zeroization on the workspace's newer SHA-3
-release does not protect KMAC's separate dependency. The KMAC backend cleanup
-regression test checks the backend itself rather than the alias.
+Source manifests require Codec 0.4.4, while the checked-in lockfiles and Maven
+provenance still describe earlier releases. Complete dependency resolution and
+refresh verified artifacts before building or publishing this source version.
+Do not substitute invented checksums or silently use an older Codec release.
 
-AEAD updates must retain `zeroize` on `aes-gcm-siv`, `polyval`, and `poly1305`.
-The standalone AES-GCM-SIV, ChaCha20-Poly1305, and HPKE dependency graphs need
-their own feature activation; workspace-wide feature unification is insufficient
-evidence. `scripts/check_aead_zeroization.mjs` checks isolated native and WASM
-graphs in CI, and backend cleanup tests require drop-based state wiping.
+Release policy files have SHA-256 pins in
+`scripts/run_pinned_release_readiness.mjs`. After reviewing a checker edit,
+update its pin with:
 
-The Codec `0.4.4` dependency declarations await the corresponding published
-artifacts. On 2026-11-17, that version was unavailable from crates.io, npm,
-Maven Central, and the Swift Git tag. Existing verified lockfiles and artifact
-provenance therefore remain unchanged. Dependency resolution, full Rust and SDK
-tests, generated-binding freshness, and release readiness cannot pass in this
-state. After publication, refresh the Cargo, npm, Gradle, and Swift lockfiles,
-the reviewed artifact checksums, and the Codec version policy in the release
-checker, then repeat complete validation before release.
+```sh
+node scripts/run_pinned_release_readiness.mjs --refresh-checker-pin
+node scripts/run_pinned_release_readiness.mjs --check-pins
+```
 
-Use [conformance.md](conformance.md) as the release gate. If an update changes
-cryptographic bytes, provider behavior, error behavior, or supported algorithms,
-update the vectors, policy, package facades, and documentation in the same
-change.
-
-Release-readiness policy files have reviewed SHA-256 pins in
-`scripts/run_pinned_release_readiness.mjs`. When changing the checker or a
-pinned dependency, review the policy diff and update its digest in the same
-change. After reviewing a checker edit, run
-`node scripts/run_pinned_release_readiness.mjs --refresh-checker-pin`.
-This explicit operation updates only the checker digest and is forbidden in CI.
-Dependency and core pins still require individual review and updates.
-
-Run `node scripts/run_pinned_release_readiness.mjs --check-pins` and
-`node --test --test-concurrency=4 "scripts/**/*.test.mjs" "packages/ts/scripts/*.test.mjs"`
-before pushing.
-These offline checks verify the current pins and rejection of modified,
-missing, oversized, and substituted policy files. Both Code Checks and
-Protobuf Checks verify the pins before installing their build dependencies.
-Code Checks runs tooling tests independently on Linux and macOS and lints every
-workflow with pinned actionlint and ShellCheck versions. Linux checks use an
-explicit runner release. Concurrency separates event types and commit hashes,
-so an older queued push cannot hold up checks for a new commit. Pull request
-runs share their request number and allow cancellation of superseded work.
-The direct local readiness checker verifies pins before importing policy modules.
-The full runner executes the
-hash-verified vendored core without downloading the same bytes again. Policy
-upgrades must review and update the vendored core and its upstream commit and
-digest together. To additionally verify the pinned upstream download, run
-`node scripts/run_pinned_release_readiness.mjs --check-pins --verify-upstream`.
+Changes to pinned dependencies or the vendored core require individual digest
+updates after review. CI cannot refresh its own checker pin.

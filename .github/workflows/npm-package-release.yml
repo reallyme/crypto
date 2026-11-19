@@ -134,6 +134,13 @@ jobs:
         env:
           RELEASE_VERSION: ${{ inputs.version }}
 
+      - name: Reject excluded release files
+        run: |
+          python3 -B scripts/check_repository_privacy.py --index
+          python3 -B scripts/check_release_privacy.py --archive "build/npm/reallyme-crypto-${RELEASE_VERSION}.tgz" --source-root packages/ts --strip-components 1
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+
       - name: Publish verified npm tarball with provenance
         working-directory: build/npm
         run: |

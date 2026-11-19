@@ -29,14 +29,16 @@ target/
 .secrets/
 **/.secrets/
 
-# Local developer state
-/AGENTS.md
-/.claude/
-/.codex/
-/.reallyme-crypto-runtime-ffi
-/.release-readiness/
-/.agents/
-/.semver-baseline/
+# Local developer state: excluded at every repository depth.
+AGENTS.md
+.claude/
+.codex/
+.local/
+.build/
+.reallyme-crypto-runtime-ffi
+.release-readiness/
+.agents/
+.semver-baseline/
 
 # Generated artifacts
 /coverage/
@@ -93,6 +95,10 @@ pnpm-debug.log*
 dist/
 coverage/
 packages/ts/wasm/
+
+# Python tooling
+__pycache__/
+*.py[cod]
 
 # Swift Package Manager
 .build/

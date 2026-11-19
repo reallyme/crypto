@@ -18,9 +18,7 @@ Both contexts are `Send` so native async executors can move their single owner
 between threads. They remain non-`Sync`, neither cloneable nor serializable,
 and zeroize traffic state on drop. Their setup requests require validated
 `HpkePskRef` and `HpkePskIdRef` values so secret material and its public
-identifier cannot be swapped accidentally. The single-shot PSK APIs remain
-source-compatible. They delegate to these same live context paths and do not
-maintain a parallel PSK key schedule.
+identifier cannot be swapped accidentally.
 
 `derive_keypair_from_ikm` accepts MLS input keying material of at least 32 bytes
 and delegates normalization to the selected KEM's registered HPKE
@@ -36,11 +34,6 @@ inject a random or externally selected nonce. A fresh Base-mode seal obtains
 new KEM randomness from the operating system. Deterministic KEM randomness is
 available only through the `test-vectors` feature and is intended exclusively
 for reproducible conformance vectors.
-
-MLKEM768-P256 encapsulation reserves exactly 160 bytes of randomness: 32 bytes
-for ML-KEM and a 128-byte P-256 seed containing four scalar candidates. The
-complete seed is consumed even when an earlier candidate succeeds. Exhausting
-all four candidates fails the encapsulation without producing a sender context.
 
 Low-order X25519 and X448 inputs are rejected consistently across Base mode,
 PSK mode, context setup, and exporters. An invalid recipient public key returns
@@ -97,34 +90,32 @@ signature profile and is not part of the HPKE triple. The ML-KEM-1024 aliases
 therefore resolve to the same ML-KEM-1024, HKDF-SHA384, AES-256-GCM suite.
 
 The `test-vectors` feature exposes deterministic Base-mode seal, Base-mode
-sender export, and PSK sender setup for reproducible conformance data. The root
-facade supplies matching operation-layer wrappers so vectors exercise the same
-secret-material policy and `OperationError` mapping as production operations.
-Published production integrations must use the randomized setup functions.
+sender export and PSK sender setup for reproducible conformance data.
+MLKEM768-P256 deterministic encapsulation requires 160 bytes of randomness.
+Production integrations must use the randomized setup functions.
 
 ## Feature selection
 
-`native` remains the compatibility aggregate for the complete reviewed HPKE
+`native` remains the compatibility aggregate for the complete HPKE
 implementation. Protocol adapters can instead select the individual `kem-*`,
 `kdf-*`, and `aead-*` features they execute. Each component feature includes
 the internal native backend automatically; registered components that were not
 selected remain recognizable but fail closed as unavailable.
 
-The `openmls` aggregate enables only ML-KEM-1024, ML-KEM-1024/P-384, X-Wing,
+The `openmls` aggregate enables only ML-KEM-768, ML-KEM-1024, ML-KEM-1024/P-384, X-Wing,
 HKDF-SHA256, HKDF-SHA384, AES-256-GCM, and ChaCha20-Poly1305. It deliberately
 does not enable P-256, P-521, secp256k1, X448, the SHAKE256 HPKE KDF, or
 unrelated KDF and AEAD implementations. ML-KEM still brings its required
 SHAKE primitive dependency for KEM-internal operations. Consumers needing
-another reviewed component can compose its individual feature explicitly.
+another component can compose its individual feature explicitly.
 
 ## IANA registry and runtime support
 
 The identifier enums cover the complete assigned IANA HPKE registry snapshot
 dated 2026-04-16. Registry recognition and runtime support are deliberately
 separate: `support()` returns `Executable` or `RegisteredUnavailable`, and any
-unavailable component fails before backend setup with `UnsupportedKem` or
-`UnsupportedKdf`. Registry-only entries are parser metadata, not deferred
-implementation commitments or advertised package algorithms.
+unavailable component fails before backend setup with
+`PROVIDER_UNSUPPORTED_ALGORITHM`.
 
 | KEM ID | KEM | `native` compatibility aggregate |
 |---:|---|---|

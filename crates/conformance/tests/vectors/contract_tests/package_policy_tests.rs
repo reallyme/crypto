@@ -229,16 +229,15 @@ fn rust_crates_do_not_publish_swift_or_kotlin_feature_lanes() -> Result<(), Vect
 fn provider_policy_records_every_package_algorithm_identifier() -> Result<(), VectorTestError> {
     let policy = read_repo_file("PROVIDER_POLICY.md")?;
     let algorithm_policy = policy
-        .split_once("## Algorithm Policy")
-        .and_then(|(_, remainder)| remainder.split_once("## Policy Tests"))
+        .split_once("<!-- BEGIN GENERATED PROVIDER MATRIX -->")
+        .and_then(|(_, remainder)| remainder.split_once("<!-- END GENERATED PROVIDER MATRIX -->"))
         .map(|(section, _)| section)
         .ok_or(VectorTestError::InvalidField)?;
 
     for identifier in PACKAGE_ALGORITHM_IDENTIFIERS {
         assert!(
             algorithm_policy.contains(&format!("| `{identifier}` |")),
-            "hand-written algorithm policy is missing canonical identifier {identifier}; \
-             generated matrix text must not mask policy-table drift"
+            "provider matrix is missing canonical identifier {identifier}"
         );
     }
 
@@ -266,27 +265,20 @@ fn readme_records_messaging_bundle_and_x448_scope() -> Result<(), VectorTestErro
 }
 
 #[test]
-fn provider_policy_records_lane_hierarchies() -> Result<(), VectorTestError> {
+fn provider_policy_documents_setup_and_failure_behavior() -> Result<(), VectorTestError> {
     let policy = read_repo_file("PROVIDER_POLICY.md")?;
 
     for required in [
-        "Swift provider order:",
-        "CryptoKit or Security.framework",
-        "`CSecp256k1`, only for secp256k1 operations",
-        "ReallyMe Rust C ABI",
-        "Kotlin/JVM provider order:",
-        "JCA/JCE, only when provider behavior is byte-stable",
-        "BouncyCastle",
-        "Kotlin/Android provider order:",
-        "The Android platform provider or Conscrypt",
-        "ReallyMeAndroidPlatformKeys",
-        "A requested StrongBox residency never",
-        "downgrades to TEE.",
-        "TypeScript provider order:",
-        "Audited synchronous JavaScript providers",
-        "ReallyMe WASM/Rust",
-        "Typed `unsupportedAlgorithm`",
         "No silent fallback",
+        "Swift",
+        "Kotlin/JVM",
+        "Kotlin/Android",
+        "TypeScript/WASM",
+        "ReallyMeRustNativeProvider.loadBundledLibrary()",
+        "createReallyMeCrypto",
+        "ReallyMeAndroidPlatformKeys",
+        "StrongBox",
+        "WebCrypto is not a provider for the synchronous TypeScript facade",
     ] {
         assert!(
             policy.contains(required),

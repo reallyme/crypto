@@ -48,23 +48,9 @@ const statusLabel = (status) => {
   }
 };
 
-const fallbackLabel = (fallback) => {
-  switch (fallback) {
-    case "typed_provider_failure":
-      return "typed provider failure";
-    case "typed_unsupported_algorithm":
-      return "typed unsupportedAlgorithm";
-    case "explicit_provider_required":
-      return "explicit provider required";
-    default:
-      throw new Error(`unknown fallback ${fallback}`);
-  }
-};
-
 const laneCell = (lane) => {
   const providers = lane.providers.length === 0 ? "none" : lane.providers.join(" + ");
-  const rust = lane.usesRust ? "Rust: yes" : "Rust: no";
-  return `${statusLabel(lane.status)}<br>${lane.api}<br>Providers: ${providers}<br>${rust}<br>Fallback: ${fallbackLabel(lane.fallback)}`;
+  return `${statusLabel(lane.status)}<br>${providers}`;
 };
 
 const tableLines = [

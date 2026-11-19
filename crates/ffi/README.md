@@ -1,8 +1,6 @@
 # crypto-ffi
 
-`crypto-ffi` builds the native C ABI for ReallyMe Crypto. Swift, Kotlin, and
-other non-Rust package bindings use this boundary when a primitive should stay
-shared with Rust.
+`crypto-ffi` provides the C ABI and JNI adapters for ReallyMe Crypto.
 
 The crate builds an `rlib`, `staticlib`, and `cdylib`. The public C header is
 [abi/reallyme_crypto_ffi.h](abi/reallyme_crypto_ffi.h). ABI names use the
@@ -26,9 +24,7 @@ The crate builds an `rlib`, `staticlib`, and `cdylib`. The public C header is
 
 Keypair and KEM encapsulation calls validate both output capacities and ranges
 before copying either result. A buffer-size rejection leaves both outputs
-unchanged. The pointer helpers are crate-private implementation details.
-Foreign-memory access runs inside the scope established by `guard::ffi_guard`;
-access without a scope fails closed.
+unchanged.
 
 These checks cannot prove that a non-null address belongs to a live allocation.
 Callers must provide readable/writable allocations of the declared size, keep
@@ -53,10 +49,9 @@ and its compile-time assertion:
 cargo build --locked -p crypto-ffi --profile release-ffi
 ```
 
-The ordinary workspace `release` profile intentionally uses `panic = "abort"`
-and is not a valid packaging profile for this crate. As a negative policy check,
-`cargo check -p crypto-ffi --release` must fail at compile time; otherwise
-`catch_unwind` could not implement the documented panic firewall.
+Do not package this crate with the ordinary `release` profile, which uses
+`panic = "abort"`. `cargo check -p crypto-ffi --release` must fail; use
+`release-ffi` for artifacts that catch panics at the foreign boundary.
 
 Scalar AEAD decrypt and HPKE open functions intentionally coarsen
 authentication/tag failures to `RM_CRYPTO_AUTHENTICATION_FAILED`. Generated
@@ -65,9 +60,8 @@ classification without exposing backend exception text.
 
 ## Calling the ABI from Rust
 
-Rust callers normally use `reallyme-crypto` directly. This example exists to
-compile-check the pointer, length, status, and output-buffer contract exposed to
-C, Swift, and Kotlin bindings:
+Rust callers normally use `reallyme-crypto` directly. For direct ABI calls, provide
+valid, disjoint input and output buffers and check the status:
 
 ```rust
 use crypto_ffi::sha2_256::{rm_crypto_sha2_256_digest, SHA2_256_DIGEST_LEN};

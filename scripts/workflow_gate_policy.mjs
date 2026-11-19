@@ -14,6 +14,7 @@ export const LOCKED_DEPENDENCY_AUDIT =
 
 export const REQUIRED_WORKFLOW_GATES = [
   [".github/workflows/rust-ci.yml", [
+    "python3 -B scripts/check_repository_privacy.py --index",
     'node --test --test-concurrency=4 "scripts/**/*.test.mjs" "packages/ts/scripts/*.test.mjs"',
     "actionlint -color",
     "node scripts/check_kmac_zeroization.mjs",

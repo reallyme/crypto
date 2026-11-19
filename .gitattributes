@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+# Defense in depth for Git-generated source archives. The privacy validator
+# remains authoritative for the complete effective ignore policy.
+AGENTS.md export-ignore
+**/AGENTS.md export-ignore
+.claude export-ignore
+**/.claude export-ignore
+.claude/** export-ignore
+**/.claude/** export-ignore
+.codex export-ignore
+**/.codex export-ignore
+.codex/** export-ignore
+**/.codex/** export-ignore
+.local export-ignore
+**/.local export-ignore
+.local/** export-ignore
+**/.local/** export-ignore
+.build export-ignore
+**/.build export-ignore
+.build/** export-ignore
+**/.build/** export-ignore

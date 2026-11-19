@@ -514,13 +514,8 @@ assertContains("README.md", "standalone `reallyme-crypto-x448` Rust crate");
 assertNotContains("README.md", "It does not enable `dispatch`");
 assertContains(
   "crates/conformance/tests/vectors/contract_tests/package_policy_tests.rs",
-  '.split_once("## Algorithm Policy")',
+  '.split_once("<!-- BEGIN GENERATED PROVIDER MATRIX -->")',
 );
-assertContains(
-  "SECURITY.md",
-  "published Swift package tag binds",
-);
-
 for (const primitivePolicy of [
   {
     crateRoot: "crates/aes256-gcm",
@@ -1098,7 +1093,7 @@ assertContains(
   "best-effort memory cleanup overwrites caller-owned TypeScript bytes",
 );
 assertContains("packages/ts/README.md", "createReallyMeCrypto");
-assertContains("packages/ts/README.md", "Both paths reject replacement verification functions");
+assertContains("packages/ts/README.md", "Only the package's initialized WASM module is accepted.");
 assertContains("packages/ts/README.md", "bestEffortClear(secretBytes)");
 assertContains("packages/ts/README.md", "Direct raw WASM calls are unsupported for application logic.");
 assertContains("packages/ts/README.md", "Explicit facades reject");
@@ -1585,18 +1580,8 @@ for (const metadataPath of [
   assertContains(metadataPath, "<verification-metadata");
   assertContains(metadataPath, "<sha256 value=");
 }
-assertContains(
-  "docs/maven-provenance.md",
-  "976826b466f0f5668ec1dc7db9672607bb2d466d010832e61218e9d5bdfacc4e",
-);
-assertContains(
-  "docs/maven-provenance.md",
-  "25d3d6e964acd323e12cdaee1680cfe5534fec77671fddf62776e4bfc8520190",
-);
-assertContains(
-  "docs/maven-provenance.md",
-  "a3d61910e69398a199ca11305ca555a28f4fa09b",
-);
+assertContains("docs/maven-provenance.md", "scripts/verify_gradle_checksum_provenance.py");
+assertContains("docs/maven-provenance.md", "gradle/verification-metadata.xml");
 assertContains("packages/kotlin/README.md", "Android package use Gradle 9.9.1");
 assertContains("packages/kotlin/README.md", "Android package uses Android Gradle Plugin 9.5.1");
 
@@ -1988,7 +1973,7 @@ assertContains("PROVIDER_POLICY.md", "Every provider route must implement identi
 assertNotContains("PROVIDER_POLICY.md", "JCA/JCE -> BouncyCastle");
 assertNotContains("PROVIDER_POLICY.md", "JCA/JCE → BouncyCastle");
 assertContains("README.md", "AES-128/192/256-KW");
-assertContains("packages/kotlin/README.md", "for AES-GCM, AES-KW, RSA verification");
+assertContains("packages/kotlin/README.md", "BouncyCastle for SHA-3, AES-GCM, AES-KW");
 assertContains("CONTRACT.md", "## Canonical Contract");
 assertContains("CONTRACT.md", "CryptoOperationRequest");
 assertContains("CONTRACT.md", "provider_manifest.json");
@@ -2027,7 +2012,7 @@ assertContains("docs/protobuf.md", "reallyme_crypto::operation_contract::process
 assertContains("README.md", "reallyme_crypto::operation_contract::process_operation_response");
 assertNotContains("README.md", "reallyme_crypto::operation_response::process_operation_response");
 assertContains("docs/protobuf.md", "PROVIDER_UNSUPPORTED_ALGORITHM");
-assertContains("docs/conformance.md", "Every provider route must prove the same contract");
+assertContains("docs/conformance.md", "Provider tests compare input validation");
 assertContains("crates/crypto/Cargo.toml", "operation-response = [");
 assertNotContains("crates/crypto/src/lib.rs", "pub mod constant_time");
 assertNotContains("crates/crypto/src/lib.rs", "pub mod proto_process");
@@ -2331,7 +2316,7 @@ assertNotContains("crates/crypto/src/operations/error.rs", "ContractErrorReason"
 assertNotContains("crates/crypto/src/operations/error.rs", "MalformedProtobuf");
 assertContains("vectors/manifest.json", '"vectors"');
 assertContains("docs/architecture.md", "ReallyMe Crypto is a proto-first");
-assertContains("docs/provider-selection.md", "inspectable `ProviderDecision`");
+assertContains("crates/crypto/dispatch/README.md", "inspectable `ProviderDecision`");
 assertContains("packages/ts/src/proto.ts", "ReallyMeCryptoWireError");
 assertNotContains("packages/ts/src/proto.ts", "ReallyMeCryptoProtoResult");
 assertNotContains("packages/ts/src/proto.ts", "cryptoProtoResult");

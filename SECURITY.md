@@ -1,107 +1,39 @@
 # Security Policy
 
-`reallyme-crypto` is cryptographic infrastructure. We take vulnerability
-reports seriously and appreciate coordinated disclosure.
+## Reporting a vulnerability
 
-## Reporting a Vulnerability
+Report vulnerabilities privately through this repository's **Security →
+Advisories → Report a vulnerability** page or email **security@really.me**.
+Do not put vulnerability details in a public issue.
 
-**Do not open a public issue for a security vulnerability.**
+Include the affected package and version or commit, platform/provider, a minimal
+reproduction and the observed impact. Use test keys and synthetic input;
+do not send production keys, credentials or personal data.
 
-Report privately through either channel:
+Reports may cover incorrect cryptographic results, authentication bypass,
+secret disclosure, side channels, untrusted-input crashes or denial of service,
+and undeclared provider substitution. Report dependency vulnerabilities upstream
+and notify this repository when its packages are affected.
 
-- GitHub private vulnerability reporting: use the **"Report a vulnerability"**
-  button under this repository's **Security** tab
-  (`Security` → `Advisories` → `Report a vulnerability`).
-- Email: **security@really.me**. For end-to-end encrypted disclosure, request
-  our current PGP key in a first, contentless message; we will reply with it
-  before you send details.
+Reports are acknowledged within three business days and initially triaged within
+ten. The coordinated-disclosure target is 90 days from triage; agree the date
+and attribution with the maintainers.
 
-Please include, to the extent you can:
+## Using the packages safely
 
-- the affected crate, function, and lane (`native`, `wasm`, `swift`,
-  `kotlin`, `android`, or `typescript`);
-- the commit or version you tested;
-- a minimal reproduction (input bytes, steps, or a failing test);
-- your assessment of impact (e.g. key recovery, forgery, panic/DoS,
-  side-channel).
+Pin a published release or exact commit and monitor releases and security
+advisories. Security fixes are released on the active package line.
 
-## What to Expect
+Select a supported provider from [PROVIDER_POLICY.md](PROVIDER_POLICY.md).
+Algorithm availability differs by SDK and build features. An unavailable
+provider returns a typed error; it does not select a substitute.
 
-- **Acknowledgement** within 3 business days.
-- **Triage and initial assessment** within 10 business days, including a
-  severity rating and whether we can reproduce.
-- **Coordinated disclosure**: we aim to ship a fix and publish an advisory
-  within 90 days of triage, sooner for actively exploited issues. We will
-  agree on a disclosure date with you and credit you unless you prefer to
-  remain anonymous.
+The library supplies primitives, not application trust policy. Applications
+must authenticate public keys, bind protocol context, enforce nonce and replay
+rules, and protect caller-owned secret copies. Read the
+[memory limitations](SECURITY_MEMORY_MODEL.md), including the known portable
+Brainpool serialization limitation, before choosing a deployment profile.
 
-We will keep you updated as the fix progresses and will let you know if we
-need more time or information.
-
-## Scope
-
-In scope — vulnerabilities in this repository's code, for example:
-
-- key recovery, signature forgery, or authentication bypass;
-- incorrect cryptographic output versus the referenced standard (FIPS 203/204,
-  RFC 8032/6979/8785/8439, SEC1, etc.);
-- panics, unbounded allocation, or stack exhaustion reachable from untrusted
-  input (denial of service);
-- timing or other side channels in secret-dependent code paths;
-- secret material that is not zeroized, or that leaks through errors, logs,
-  or the FFI boundary;
-- a platform lane silently substituting a different cryptographic backend
-  than the one selected.
-
-Out of scope:
-
-- vulnerabilities in dependencies (report those upstream; tell us so we can
-  pin or mitigate);
-- issues that require an already-compromised host, a malicious build
-  toolchain, or physical access;
-- missing hardening that has no concrete exploit (send it as a normal issue
-  or pull request).
-
-## Supported Versions
-
-Security fixes are released on the active package line.
-
-| Version | Status |
-| --- | --- |
-| `0.3.x` | Supported |
-| `0.2.x` and earlier | Unsupported |
-
-For source-based consumption, pin a release tag or exact commit and watch
-GitHub releases and security advisories.
-
-Version install examples describe published releases. Before publication, the
-corresponding tag is intentionally absent. A published Swift package tag binds
-the package manifest to the matching XCFramework artifact.
-
-## Cryptography And Assurance
-
-- We build on cryptographic implementations (RustCrypto, `ed25519-dalek`, `x25519-dalek`, `ml-kem`,
-  `ml-dsa`, BouncyCastle, Bitcoin Core `libsecp256k1` through
-  `reallyme/CSecp256k1`) and platform crypto (CryptoKit, JCA/JCE) behind a
-  typed API with package-owned validation, encodings, and protocol composition.
-- Cross-implementation conformance vectors pin our Rust output against an
-  independent oracle (`@noble/*`), including deterministic ML-KEM
-  encapsulation, implicit rejection, and deterministic ML-DSA signatures.
-- Coverage-guided fuzz harnesses exercise the operation protobuf/ProtoJSON,
-  JWK/multikey, RSA DER, and P-256 SEC1/ECDSA DER boundaries. The complete
-  current coverage and gap inventory is in `fuzz/README.md`; we do not claim
-  that every parser and platform decoder is fuzzed yet.
-- The symbolic HPKE Base and PSK model verifies plaintext secrecy and agreement
-  on the suite, recipient public key, `info`, AAD, and PSK identifier for
-  successful opens of the same ciphertext. Matching exports bind the setup
-  inputs, exporter context, and requested length. Its assumptions and vectors
-  are documented in [Formal verification](formal/README.md#symbolic-hpke-model).
-  Run `bash formal/tamarin/verify.sh` to check the model.
-- Provider choice is part of the security contract. The generated backend
-  matrix in `PROVIDER_POLICY.md` records each Swift, Kotlin/JVM,
-  Kotlin/Android, and TypeScript/WASM lane; unsupported lanes must fail with a
-  typed unsupported-algorithm result instead of silently choosing another
-  backend.
-
-See [`SECURITY_MEMORY_MODEL.md`](SECURITY_MEMORY_MODEL.md) for the
-secret-memory model and operational controls this codebase is held to.
+For local verification commands, see [conformance](docs/conformance.md).
+Formal verification covers bounded properties under the assumptions documented
+in [formal/README.md](formal/README.md); it is not a proof of the entire SDK.

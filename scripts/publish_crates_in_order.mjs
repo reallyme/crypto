@@ -5,7 +5,7 @@
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { constants, copyFileSync, mkdirSync, readFileSync } from "node:fs";
-import { isAbsolute, join } from "node:path";
+import { dirname, isAbsolute, join, relative, sep } from "node:path";
 
 import {
   PublishFailureCode,
@@ -65,6 +65,9 @@ function run(command, args, options = {}) {
 function sleepMs(delayMs) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, delayMs);
 }
+
+const privacyResult = run("python3", ["-B", "scripts/check_repository_privacy.py", "--index"]);
+if (privacyResult.status !== 0) process.exit(privacyResult.status ?? 1);
 
 const metadataResult = run("cargo", ["metadata", "--format-version", "1", "--no-deps"], {
   capture: true,
@@ -333,10 +336,20 @@ const packagedArchive = (pkg) => join(packageOutput, archiveName(pkg));
 const preflightArchive = (pkg) => join(archiveDirectory, archiveName(pkg));
 const archiveDigest = (path) => createHash("sha256").update(readFileSync(path)).digest();
 
+function assertArchivePrivacy(pkg, path) {
+  const sourceRoot = relative(metadata.workspace_root, dirname(pkg.manifest_path)).split(sep).join("/");
+  const checked = run("python3", [
+    "-B", "scripts/check_release_privacy.py", "--archive", path,
+    "--source-root", sourceRoot || ".", "--strip-components", "1",
+  ]);
+  if (checked.status !== 0) process.exit(checked.status ?? 1);
+}
+
 function stageArchives() {
   // Rust 1.100's workspace publish dry run keeps the exact upload archives
   // in tmp-crate. The single-crate cargo package command uses package/.
   const verifiedOutput = join(packageOutput, "tmp-crate");
+  for (const pkg of ordered) assertArchivePrivacy(pkg, join(verifiedOutput, archiveName(pkg)));
   mkdirSync(archiveDirectory);
   for (const pkg of ordered) {
     copyFileSync(join(verifiedOutput, archiveName(pkg)), preflightArchive(pkg), constants.COPYFILE_EXCL);
@@ -356,6 +369,7 @@ function publishPackage(pkg) {
         const repacked = run("cargo", ["package", "-p", pkg.name, "--locked", "--no-verify"],
           { capture: true, env: packagingEnv });
         if (repacked.status !== 0) return repacked;
+        assertArchivePrivacy(pkg, packagedArchive(pkg));
         if (!archiveDigest(packagedArchive(pkg)).equals(archiveDigest(preflightArchive(pkg)))) {
           console.error(`${pkg.name} packaged bytes differ from the reviewed preflight archive.`);
           process.exit(1);

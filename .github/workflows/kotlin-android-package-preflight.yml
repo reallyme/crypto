@@ -219,6 +219,9 @@ jobs:
         env:
           RELEASE_VERSION: ${{ inputs.version }}
 
+      - name: Reject excluded jvm artifact files
+        run: python3 -B scripts/check_release_privacy.py --directory "$RUNNER_TEMP/maven-jvm"
+
       - name: Upload verified package
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -305,6 +308,9 @@ jobs:
         run: node scripts/stage_maven_publications.mjs android packages/kotlin-android/build/repos/releases "$RELEASE_VERSION" "$RUNNER_TEMP/maven-android"
         env:
           RELEASE_VERSION: ${{ inputs.version }}
+
+      - name: Reject excluded android artifact files
+        run: python3 -B scripts/check_release_privacy.py --directory "$RUNNER_TEMP/maven-android"
 
       - name: Upload verified package
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

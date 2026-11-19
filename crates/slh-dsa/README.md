@@ -16,6 +16,3 @@ Backend feature lanes:
 - `native`: RustCrypto `slh-dsa` implementation with zeroization enabled.
 - `wasm`: the same package-owned RustCrypto implementation, with WASM-compatible
   entropy support.
-
-Swift and Kotlin provider selection lives in their package facades, not in this
-primitive crate.

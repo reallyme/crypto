@@ -1,7 +1,7 @@
 # ReallyMe Crypto Android
 
 `me.really:crypto-android` is the Android AAR for the ReallyMe Crypto Kotlin
-facade. It packages the validated Android provider graph and the Rust JNI
+facade. It packages the Android provider routes and the Rust JNI
 libraries required by Rust-backed routes.
 
 ## Install
@@ -12,7 +12,7 @@ dependencies {
 }
 ```
 
-The package reuses the audited Kotlin facade sources from `packages/kotlin`,
+The package reuses the Kotlin facade sources from `packages/kotlin`,
 requires `me.really:codec-android:0.4.4`, and bundles
 `libcrypto_ffi.so` for the standard Android ABIs:
 
@@ -40,19 +40,15 @@ external-verification artifact for the bundled JNI libraries. Android runtime
 loading still uses `System.loadLibrary("crypto_ffi")` from the app's signed
 native library locations; it does not parse the manifest at runtime.
 
-Release packaging verifies that `arm64-v8a` and `x86_64` JNI libraries have
-16 KiB-compatible ELF `LOAD` segment alignment. The 32-bit `armeabi-v7a` and
-`x86` libraries are still required and checksummed, but they are intentionally
-not held to the 64-bit page-size rule. The native rebuild scripts pass the
-64-bit linker max-page-size flag explicitly and print the selected NDK and
-the audited `release-ffi` profile.
+Release packaging checks 16 KiB ELF segment alignment for the 64-bit JNI
+libraries and checksums all four ABIs.
 
 ## Android Keystore and StrongBox
 
 The Android AAR exposes non-exportable P-256 signing and ECDH keys through
 `ReallyMeAndroidPlatformKeys`. This handle-backed API is separate from the
-deterministic raw-byte facade: raw P-256 operations remain BouncyCastle routes
-and never silently fall back to Android Keystore.
+raw-byte facade: software P-256 signing uses BouncyCastle and software ECDH
+uses Rust JNI. Neither falls back to Android Keystore.
 
 Platform signing returns canonical low-S DER. When an initialized signing
 operation is completed outside the SDK—for example through a biometric
@@ -73,15 +69,9 @@ ReallyMeAndroidPlatformKeys.verify(signature, message, keyPair.publicKey)
 ReallyMeAndroidPlatformKeys.deleteKey(keyPair.privateKeyHandle)
 ```
 
-Application-tag bytes are bounded, domain-separated, and hashed before they
-become a purpose-specific Keystore alias. Handles do not contain the raw tag.
-Generation verifies non-exportability, key purpose, origin, size, and actual
-hardware security level through `KeyInfo`; software-backed keys are deleted and
-reported as `HardwareUnavailable`. A StrongBox request is strict and never
-downgrades to TEE. The complete platform-key API requires Android API 31 so
-every signing and ECDH operation can authenticate exact TEE or StrongBox
-residency through `KeyInfo`; `PURPOSE_AGREE_KEY` also begins there. Other AAR
-cryptography remains available from the package's declared `minSdk` of 26.
+The platform-key API requires Android API 31. A StrongBox request is strict and never
+downgrades to TEE. Software-backed or indeterminate-security-level keys are
+rejected. Other AAR cryptography remains available from `minSdk` 26.
 
 Policies can require biometric or device-credential authentication, an unlocked
 device, user confirmation, and a generation-time attestation challenge. For
@@ -93,8 +83,7 @@ biometric-only keys because other Android policy combinations do not enforce
 that property.
 `attest` returns the certificate chain; the relying party remains responsible
 for validating the challenge, authorization extension, trusted root, and
-revocation state. Errors are typed and contain no aliases, tags, handles,
-prompts, certificates, or provider exception text.
+revocation state.
 
 The local JNI build script is a Bash wrapper around the repository-level Android
 native resource builder and is intended for macOS/Linux CI or a Unix-like shell.

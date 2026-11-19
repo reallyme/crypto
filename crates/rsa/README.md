@@ -12,20 +12,16 @@ Multikey callers should use PKCS#1 DER for the `rsa-pub` multicodec.
 
 RSA-PSS verification follows RFC 8017's `emBits = modBits - 1` rule. In
 particular, a modulus where `modBits % 8 == 1` uses an encoded message one byte
-shorter than the RSA signature. Limb-rounded arithmetic output is normalized
-only after its excess precision bytes have been verified as zero.
+shorter than the RSA signature.
 
 `RsaSigningKey` imports unencrypted PKCS#8 DER for RSASSA-PKCS1-v1_5/SHA-256
 (RS256). Signing accepts 2048..8192-bit keys, rejects inconsistent CRT fields,
-and bounds the exponent and input DER before private arithmetic. RSA 0.10.0
-provides the patched constant-time backend. Every signature uses explicit
-OS-backed blinding and entropy failures return a typed error. Imported private
-state is owned by `SecretBox`; backend factors and precomputations are destroyed
-on drop. Only public SPKI, modulus and exponent can be exported.
+and bounds the exponent and input DER before private arithmetic. Signing uses
+OS-backed blinding and returns a typed error if entropy is unavailable. Only public SPKI, modulus and exponent can be exported.
 
 Signing is available on Rust native and WASM lanes. Without either execution
 lane it returns `PROVIDER_UNSUPPORTED_ALGORITHM`. Standalone protobuf import
-and signing contracts do not advertise a new generic dispatch or SDK capability.
+and signing do not enable RSA signing in generic dispatch or SDK facades.
 The general RSA verification limits retain historical compatibility independently
 of the stronger signing profile. No encryption or decryption API is exposed.
 

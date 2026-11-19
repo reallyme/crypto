@@ -5,9 +5,7 @@ wrappers for the ReallyMe Crypto workspace. SHA3-256 remains in
 `reallyme-crypto-sha3-256` so callers that only need SHA3-256 can keep a
 smaller dependency surface.
 
-The crate owns fixed-size digest types, zeroizes digest buffers on drop, and
-leaves algorithm dispatch, FFI, and platform package bindings to adapter
-crates.
+Digest wrappers clear their bytes on drop. Callers must clear exported copies.
 
 ## Test
 

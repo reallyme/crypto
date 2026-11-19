@@ -1,0 +1,50 @@
+# SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+name: Repository Privacy
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+  merge_group:
+    types: [checks_requested]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  privacy:
+    name: Reject excluded repository files
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      # On PR and merge-queue events the validator comes from the trusted
+      # base. The candidate is fetched as data and is never checked out or run.
+      - name: Checkout trusted privacy policy
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate candidate and intermediate commits
+        env:
+          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$CANDIDATE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::Invalid candidate SHA"
+            exit 1
+          fi
+          git fetch --no-tags --no-recurse-submodules origin "$CANDIDATE_SHA"
+          if [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$BASE_SHA" != 0000000000000000000000000000000000000000 ]]; then
+            git fetch --no-tags --no-recurse-submodules origin "$BASE_SHA"
+            python3 -B scripts/check_repository_privacy.py --commit "$CANDIDATE_SHA" --base "$BASE_SHA"
+          else
+            python3 -B scripts/check_repository_privacy.py --commit "$CANDIDATE_SHA" --all-ancestors
+          fi

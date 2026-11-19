@@ -152,15 +152,13 @@ fn canonical_contract_is_documented_and_not_rust_api_only() -> Result<(), Vector
 
     for required in [
         "## Canonical Contract",
-        "protobuf enums and boundary messages",
-        "package algorithm identifiers",
-        "typed Rust error taxonomy",
+        "CryptoOperationRequest",
+        "CryptoOperationResponse",
+        "CryptoErrorReason",
         "provider_manifest.json",
-        "shared positive and negative conformance vectors",
+        "vectors/",
         "Rust remains the reference implementation",
-        "platform facade is a first-class SDK surface",
         "Every provider route must implement identical input validation",
-        "differential tests",
     ] {
         assert!(
             contract.contains(required),
@@ -177,12 +175,12 @@ fn canonical_contract_is_documented_and_not_rust_api_only() -> Result<(), Vector
         (
             "PROVIDER_POLICY.md",
             policy.as_str(),
-            "Provider policy is one part of the canonical Crypto contract",
+            "No silent fallback",
         ),
         (
             "PROVIDER_POLICY.md",
             policy.as_str(),
-            "A native provider is interchangeable only when shared vectors",
+            "Every provider route must implement identical input validation",
         ),
         (
             "docs/protobuf.md",
@@ -192,7 +190,7 @@ fn canonical_contract_is_documented_and_not_rust_api_only() -> Result<(), Vector
         (
             "docs/conformance.md",
             conformance.as_str(),
-            "Every provider route must prove the same contract",
+            "Provider tests compare input validation",
         ),
         (
             "crates/crypto/src/lib.rs",

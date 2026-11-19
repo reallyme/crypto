@@ -1,15 +1,12 @@
 # reallyme-crypto-p521
 
-NIST P-521 ECDSA and ECDH primitive for ReallyMe Crypto.
+NIST P-521 ECDSA and ECDH with raw 66-byte private scalars,
+SHA-512 message hashing and DER signatures. Key generation emits compressed
+SEC1 public keys. Verification and agreement accept standard compressed or
+uncompressed SEC1 points; compact and hybrid encodings are rejected.
 
-The public API uses compressed SEC1 public keys, raw 66-byte private scalars,
-SHA-512 prehashing, and DER-encoded ECDSA signatures. Secret key material is
-returned in zeroizing buffers.
+Invalid signatures return typed errors. ECDH returns the fixed-width raw
+x-coordinate; apply the protocol's KDF before using it as a key. Secret results
+use zeroizing owners; clear any caller-owned copies.
 
-Verification fails closed with a typed error. It does not return a boolean.
-ECDH returns the raw shared-secret x-coordinate; protocol code must pass that
-through the appropriate KDF before key use.
-
-The `native` and `wasm` feature lanes both compile this crate's package-owned
-Rust implementation. Swift and Kotlin provider selection remains in their SDK
-facades rather than in Rust Cargo features.
+Select `native` or `wasm` for the execution target.

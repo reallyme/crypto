@@ -3,10 +3,13 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+import { spawnSync } from "node:child_process";
 import { readFileSync, statSync } from "node:fs";
-import { basename } from "node:path";
+import { basename, dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const PORTAL = "https://central.sonatype.com/api/v1/publisher";
+const repositoryDirectory = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const MAX_BUNDLE_BYTES = 536_870_912;
 const POLL_INTERVAL_MS = 20_000;
 const MAX_POLLS = 180;
@@ -46,6 +49,21 @@ const main = async () => {
   }
   if (!status.isFile() || status.size === 0 || status.size > MAX_BUNDLE_BYTES) {
     fail("bundle-size-invalid");
+  }
+
+  // Keep the direct uploader subject to the same policy as CI promotion.
+  // Validate before constructing authentication material or sending a request.
+  for (const arguments_ of [
+    ["-B", "scripts/check_repository_privacy.py", "--index"],
+    ["-B", "scripts/check_release_privacy.py", "--archive", resolve(bundlePath)],
+  ]) {
+    const privacy = spawnSync("python3", arguments_, {
+      cwd: repositoryDirectory,
+      stdio: "inherit",
+    });
+    if (privacy.status !== 0) {
+      fail("publication-privacy-rejected");
+    }
   }
 
   const authentication = Buffer.from(`${username}:${password}`, "utf8");

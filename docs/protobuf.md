@@ -1,39 +1,157 @@
-# Protobuf
+# Protobuf API
 
-The canonical structured wire contract lives at
-[../crates/proto/proto/reallyme/crypto/v1/crypto.proto](../crates/proto/proto/reallyme/crypto/v1/crypto.proto).
-It defines executable operation requests and responses, algorithm identifiers,
-typed results, and non-secret error envelopes. Services and applications can
-import the same schema for RPC, storage, or message boundaries.
+[`crypto.proto`](../crates/proto/proto/reallyme/crypto/v1/crypto.proto) defines
+`CryptoOperationRequest`, `CryptoOperationResponse`, typed results, algorithm
+identifiers and errors. It is not a generated mirror of the Rust package API.
+The schema declares messages, not an RPC service; applications supply their
+transport.
 
-Use proto enums for API and storage boundaries, not string algorithm names.
-Inside SDK and application code, use the native facade types for each language.
-`CryptoError` is a non-PII boundary envelope. It is lossless at the wire layer:
-the primitive, provider, and backend branches stay distinct, and the exact
-`CryptoErrorReason` is preserved through protobuf bytes. Broad facade errors
-remain convenience projections above this layer and must not be used when a
-service, FFI/JNI/WASM boundary, or persisted message needs error pass-through.
+## Generated surfaces
 
-The protobuf schema is the source of truth for the structured wire contract;
-it is not a generated mirror of the Rust package API. Native facades, Rust
-dispatch, FFI/JNI, WASM, and service wrappers all converge on its generated
-operation messages. Provider policy and conformance vectors determine which
-lanes may execute each algorithm and what output they must produce.
-
-## Generated Surfaces
-
-| Language | Surface |
-|---|---|
-| Rust | `reallyme-crypto-proto` for `reallyme.crypto.v1` |
-| Swift | `ReallyMeCryptoProto` plus `ReallyMeCryptoProtoAdapters` |
-| Kotlin | generated `me.really.crypto.v1` types plus `me.really.crypto.proto.ReallyMeCryptoProtoAdapters` |
+| Language | Package |
+| --- | --- |
+| Rust | `reallyme-crypto-proto` |
+| Swift | `ReallyMeCryptoProto`, `ReallyMeCryptoProtoAdapters` |
+| Kotlin | `me.really.crypto.v1`, `me.really.crypto.proto.ReallyMeCryptoProtoAdapters` |
 | TypeScript | `@reallyme/crypto/proto` |
+
+Use native facade types for ordinary in-process calls. Use generated messages
+when transmitting or storing a structured operation, key envelope or error.
+Public JWK/JWKS JSON has its [own contract](jwk.md).
+
+## Calling operations
+
+Enable Rust's `operation-response` feature and the required algorithms:
+
+```rust
+reallyme_crypto::operation_contract::process_operation_response(request_bytes)
+```
+
+The SDKs expose `processOperationResponse`; their provider must be initialized
+as described in the package README. Input is binary `CryptoOperationRequest`.
+Output is binary `CryptoOperationResponse` with either a typed `result` or an
+`error`. Missing algorithms return `PROVIDER_UNSUPPORTED_ALGORITHM` without
+fallback.
+
+The binary boundary supports hashing, AEAD, MAC, signatures, key agreement,
+KEMs, KDFs, key wrap and HPKE according to the selected provider/features.
+Standalone schema messages do not automatically add an executable operation.
+Platform-key handle messages use the SDK's platform APIs, not the Rust operation
+wrapper.
+
+The JSON entry point,
+`reallyme_crypto::operation_contract::process_operation_response_json`, also
+returns binary protobuf. It accepts only the non-secret request selectors in
+[ProtoJSON examples](proto-json.md). Private keys, plaintext, passwords, PSKs
+and shared secrets must use binary protobuf.
+
+## Limits and decoding
+
+- Standalone binary messages and operation requests: 1,048,576 bytes. Operation
+  responses have an additional envelope allowance; use the exported
+  `MAX_CRYPTO_OPERATION_RESPONSE_BYTES` or the C header's
+  `RM_CRYPTO_OPERATION_RESPONSE_MAX_LEN` when allocating a response buffer.
+- JSON input: 1,572,864 bytes; its decoded protobuf must still fit the binary
+  limit.
+- Recursion depth: 64.
+- Executable requests reject unknown fields, unknown selectors and additional
+  operation branches.
+
+Use `reallyme_crypto_proto::wire::decode_protobuf` for standalone untrusted Rust
+messages. A permissive decoder that discards unknown fields cannot establish
+the same admission policy. `wire::merge_protobuf` clears the destination if a
+merge fails.
+
+Swift and Kotlin value-envelope byte adapters also cap input at one mebibyte.
+Their general generated messages may retain unknown fields for schema evolution;
+do not use unknown fields to carry executable security policy.
+
+## Algorithms and field presence
+
+Select an algorithm by its family-specific enum. `UNSPECIFIED`, wrong-family
+choices and unknown modifiers are rejected. Recognizing an enum value does not
+mean a build has its implementation. Key metadata identifies a key; it does
+not supply a missing hash, signature encoding or operation.
+
+ReallyMe enum values are not JOSE, COSE, TLS or multicodec registry values.
+Translate by typed identity. `HpkeKemId`, `HpkeKdfId` and `HpkeAeadId` use HPKE
+registry numbers. Assigned numbers and retired names remain reserved; see
+[CONTRACT.md](../CONTRACT.md).
+
+Optional fields and `oneof` branches preserve presence. For existing implicit
+byte fields, omitted values become empty bytes: empty messages/AAD/context are
+permitted where the operation defines them, while keys and signatures still
+undergo their length checks. Empty HKDF salt follows RFC 5869's absent-salt
+convention.
+
+When extending the schema, use `optional` where absence differs from an explicit
+default; do not add a parallel `has_*` flag. Changing an existing field's presence
+changes generated API and default-value round trips even when the wire tag is
+unchanged. Coordinate versions before sending new fields to strict receivers.
+
+## Errors and verification
+
+`CryptoError` preserves its primitive, provider or backend branch and
+`CryptoErrorReason`. Pass the structured error through unchanged when another
+service needs its exact reason; broad SDK exceptions are convenience projections.
+Unknown future reason codes can pass through only within their branch's reserved
+range. Native `CryptoError` construction requires a known, nonzero reason.
+
+`CRYPTO_VERIFICATION_STATUS_INVALID` means a well-formed request failed to
+verify. Malformed input, unavailable providers and backend errors use
+`CRYPTO_VERIFICATION_STATUS_ERROR` with a structured error. Do not treat either
+status as success.
+
+## Operation-specific inputs
+
+- Ed25519 signing takes a 32-byte seed, not a 64-byte expanded key.
+- BIP-340 signing uses its dedicated request with 32-byte `message32`,
+  `secret_key` and `aux_rand32`. Generic signature signing cannot carry the
+  auxiliary input and rejects this algorithm.
+- Generic PBKDF2 accepts SHA-256/SHA-512 and 100,000–10,000,000 iterations.
+  Argon2id uses a dedicated immutable `kdf_version` profile.
+- RSA verification supports the declared PKCS#1 v1.5 and PSS suites. PSS uses
+  matching message/MGF1 hashes and digest-length salt. SHA-1 is for legacy
+  verification only. Protocols remain responsible for their accepted profiles.
+
+## HPKE Support
+
+`HpkeSuiteIdentifier` contains a KEM, KDF and AEAD. With the full Rust native
+profile, the executable component sets are:
+
+| Component | Implementations |
+| --- | --- |
+| KEM | DHKEM P-256/P-384/P-521/secp256k1/X25519/X448; ML-KEM-512/768/1024; MLKEM768-P256; MLKEM1024-P384; X-Wing |
+| KDF | HKDF-SHA256/SHA384/SHA512 and SHAKE256 |
+| AEAD | AES-128-GCM, AES-256-GCM, ChaCha20-Poly1305 and export-only |
+
+Each triple still passes capability checks. Seal/open reject export-only;
+export operations reject SHAKE256 with export-only. Disabled or unavailable
+combinations return a typed error before setup.
+
+The typed Swift, Kotlin, Android and TypeScript HPKE facades expose
+P-256/HKDF-SHA256/AES-256-GCM and X25519/HKDF-SHA256/ChaCha20-Poly1305 through
+Rust providers. Other Rust suites and MLS aliases are documented in the
+[HPKE crate](../crates/hpke/README.md).
+
+HPKE derivation requires at least 32 bytes of secret IKM and invokes the KEM's
+`DeriveKeyPair` procedure. Callers must provide sufficient entropy; the length
+check cannot establish it. Seal requests have no caller-supplied nonce.
+Live contexts and their keys, nonces and sequence state are not serializable;
+the wire API exposes individual operations. Deterministic encapsulation
+randomness is test-only and is not a production request field.
+
+## Secret storage
+
+Keep sensitive messages short-lived and avoid logging or unnecessary cloning.
+Rust generated secret owners clear their retained storage. Caller-owned inputs,
+exported bytes, borrowed backing buffers and managed-runtime copies have
+separate cleanup obligations. Read [memory ownership](../SECURITY_MEMORY_MODEL.md).
 
 ## Generation
 
-From the repository root, using Buf `1.75.0` and the published ReallyMe
-Buffa `0.1.2` generators, matching protobuf CI. All schema builds and
-generators run locally:
+Normal Cargo builds use committed generated code. To regenerate locally, use
+Buf 1.75.0 and Buffa 0.1.2:
 
 ```sh
 cargo install reallyme-protoc-gen-buffa --version '=0.1.2' --locked
@@ -45,410 +163,15 @@ buf lint
 node scripts/generate_protobuf.mjs
 ```
 
-The driver verifies the exact executable names and versions, builds the
-descriptor with local `buf build`, and invokes only local plugins. SDK generation
-requires protoc `36.2`, protoc-gen-swift `1.39.0`, and protoc-gen-es `2.17.0`. Buffa generates
-Rust redaction, cleanup, guarded collection storage, and view export policy
-from `buf.gen.yaml`. The `borrowed_views_only_in` selectors omit standard
-owned handles for private message families. The driver leaves generated
-Buffa code intact.
-Use `--rust-only` when working without the local SDK generators. The separate
-SDK step retains Swift and Java diagnostic redaction. Rust outputs live under
-`crates/proto/src/generated`, TypeScript
-package bindings under `packages/ts/src/proto/generated`, and additional
-TypeScript, JavaScript, Swift, Java, and Kotlin outputs under `gen/`.
-Review generated diffs and run the conformance checks before accepting them.
+SDK generation also requires protoc 36.2, protoc-gen-swift 1.39.0 and
+protoc-gen-es 2.17.0. The installer and generator check the local tools;
+`--rust-only` skips SDK generation. Outputs go to `crates/proto/src/generated`,
+`packages/ts/src/proto/generated` and `gen/`.
 
-For Rust, pass untrusted bytes through `reallyme_crypto_proto::wire::decode_protobuf`
-or the operation-specific decoder before converting a DTO to a native input.
-These decoders validate the complete tree and reject unknown fields. Buffa's
-default decoder can discard unknowns because cleanup DTOs do not store them.
-Use `wire::merge_protobuf` when an existing owner must accept an update; the
-destination is cleared if the update fails. Borrowed views do not own their
-wire buffer. The secret-owned view facade retains clearing backing bytes and
-does not implement `Clone`.
+Review generated diffs, run the pinned protobuf compatibility check in CI and
+[conformance tests](conformance.md). Do not edit generated files by hand.
 
-## Algorithm Identity
-
-Operation-independent asymmetric key metadata uses `KeyAlgorithm` inside
-`CryptoKeyAlgorithmIdentifier`. It is separate from executable signature,
-key-agreement and KEM suites: a key identity never supplies a missing hash,
-signature encoding or operation choice. Existing operation oneofs and their
-wire tags are unchanged. The native `Algorithm` compatibility type converts
-through this schema identity; its existing variants and discriminants remain
-unchanged.
-
-The total native conversions in `reallyme_crypto_proto::convert` accept a
-borrowed generated identifier, including the generated unknown-value wrapper.
-They reject missing choices, `UNSPECIFIED`, unknown values, wrong families and
-unknown modifier fields at wire admission. Published closed-enum convenience conversions delegate
-to the same path. The optional `hpke-identities` feature adds suite-triple
-conversion using the existing HPKE identity types without enabling a backend;
-operation provider policy still determines whether a registered suite executes.
-
-Curve and prime-group identities are standalone metadata as well:
-`CryptoEcdsaCurveIdentifier` uses the seven-value `EcdsaCurve` enum, and
-`CryptoPrimeGroupIdentifier` uses the schema-defined `PrimeGroup` enum. Both assign
-100-199 to NIST curves and 200-299 to Brainpool curves; `PrimeGroup` assigns
-300-399 to RFC 5114 finite-field domains. Zero is `UNSPECIFIED`, 1-99 are
-reserved, and assigned values are permanent. Registration of a legacy group
-says nothing about a protocol's required strength.
-
-With `operation-response` and the relevant primitive feature selected, native
-curve/group owners expose one total conversion from borrowed generated
-metadata. They recognize identities without checking provider availability and
-reject omitted, zero, unknown and modified identifiers. `EcdsaHash` uses the
-existing `CryptoAlgorithmIdentifier` hash branch and accepts only SHA-2-256,
-SHA-2-384 and SHA-2-512; no second hash namespace is introduced. Generated
-scalar metadata clears its known fields on drop and stores no unknown bytes.
-
-These metadata messages do not add executable operation branches, choose a
-signature encoding or hash implicitly, or supply a group base or mapping policy.
-Protocol callers still provide those choices through the existing primitive APIs.
-
-Protobuf CI checks compatibility with the published 0.3.17 schema commit
-`e57caf7a035c1ffe33aad0038d603b793a69b28a` before regeneration. The baseline is
-pinned by commit, and compatibility validation runs once in the protobuf lane.
-
-## Field Presence And Compatibility
-
-Presence is part of the public contract. Prefer proto3 `optional` for new
-scalar and byte fields unless omitted and default values are deliberately
-equivalent. Fields that distinguish an omitted value from an explicitly
-supplied default must use `optional`, or a `oneof` when the alternatives are
-mutually exclusive.
-Do not add a separate `has_*` boolean: it permits contradictory states and
-requires every binary and JSON caller to maintain the same convention.
-Generated presence accessors on messages, optional fields, and oneofs remain
-the supported way to query presence.
-
-The current crypto schema contains no hand-written presence flags. Existing
-byte-string fields intentionally retain their published implicit defaults:
-
-| Field role | Omitted or empty value |
-|---|---|
-| `message` byte strings, plaintext, hash input, AAD, HPKE info/exporter context, KMAC context/customization, Concat KDF party info | The empty byte string; no protocol-specific defaults or normalization are inserted. |
-| Keys, nonces, signatures, ciphertext, required KDF parameters | The selected operation applies its existing length and encoding validation; omission cannot bypass validation. |
-| HKDF salt | The RFC 5869 absent-salt convention; an empty salt is equivalent under HMAC. |
-| Algorithm and operation choices | Message and `oneof` presence are preserved. `UNSPECIFIED = 0` never selects a usable algorithm. Missing or unsupported choices produce typed errors. |
-
-The executable ProtoJSON route still rejects secret-bearing operations before
-decoding their values. Field presence does not relax that policy.
-
-Do not relabel published fields as `optional` solely to modernize the schema.
-Although the field number and wire type can remain the same, generated public
-types and default-value round trips change, as described in the
-[Protocol Buffers field-presence guidance](https://protobuf.dev/programming-guides/field_presence/).
-Removing a legacy presence flag would also affect strict JSON decoding and
-empty values from older senders.
-Such migrations need an explicit compatibility plan, including supported
-reader/writer versions and reserved numbers and names for retired fields.
-Because executable requests reject unknown fields, adding a new field also
-requires coordinating adapter versions before callers send it.
-
-Schema guards and `field_presence_tests` cover the no-flag rule, default-value
-wire compatibility, explicit message/oneof presence, and strict JSON rejection
-of unrecognized presence flags.
-
-## Boundary Rule
-
-Convert at API, storage, and message boundaries:
-
-```text
-proto enum -> facade enum/string union -> crypto operation
-crypto result -> facade type -> proto enum when persisted or transmitted
-```
-
-For protobuf-facing operations, use the generated operation response helpers
-exposed by each package lane. A successful operation returns
-`CryptoOperationResponse.result` with one typed `CryptoOperationResult` branch.
-A structured crypto failure returns `CryptoOperationResponse.error` with a
-generated `CryptoError`. Callers that need native ergonomics may project that
-error to `ReallyMeCryptoError` / `ReallyMeCryptoException`, but Connect wrappers
-should pass the structured protobuf error through unchanged.
-
-Use the same protobuf reason for the same operation failure across Swift,
-WASM, and JNI. Each SDK can surface that reason through its existing error type.
-Setup failures may have platform-specific codes. Swift's `symbolNotFound`
-helps a caller diagnose a native library. TypeScript and Kotlin can report a
-generic provider failure when their callers have the same recovery path.
-Add an SDK error code when it gives callers a distinct action to take. Add a
-shared protobuf reason when the distinction needs to cross the wire.
-
-The schema defines messages only and intentionally declares no protobuf
-service. `CryptoOperationRequest` carries one typed request in its `oneof`, and
-`CryptoOperationResponse` carries either one typed generated result branch or a
-structured `CryptoError`. Connect or RPC implementations wrap these messages
-in their own transport schema and must
-apply the same one-megabyte protobuf limit, recursion limit, strict
-unknown-field policy, provider policy, and no-fallback behavior as the local
-operation lane.
-
-Swift and Kotlin value-envelope byte adapters also reject messages larger than
-one megabyte. Their generated protobuf messages retain unknown fields for
-schema evolution, and facade projections ignore those fields. The stricter
-zero-unknown-field rule above applies to executable operation requests and
-responses; callers must not encode security policy in unknown envelope fields.
-
-Platform-resident private keys use typed, opaque handles rather than raw
-private-key bytes. A handle records its provider, purpose, algorithm, requested
-security level, and actual security level; the requested level is never proof
-that hardware residency was obtained. Attestation is a separate evidence
-operation, and platform-key deletion is idempotent without echoing the
-privacy-sensitive handle in its result. These are standalone provider-owned
-messages rather than branches of the Rust-executable operation wrapper:
-provider-specific Swift and Android SDK routes implement the matching handle
-lifecycle directly and reject provider or purpose mismatches.
-
-Rust exposes an `operation-response` feature for service adapters that want a
-single executable protobuf lane.
-`reallyme_crypto::operation_contract::process_operation_response` takes
-serialized `CryptoOperationRequest` bytes and returns the same binary generated
-response shape used by the SDK proto helpers. The ProtoJSON entrypoint accepts
-only the generated representation of non-secret hash, verification,
-key-generation, encapsulation, and sender-export requests, and returns that
-binary response. Secret-bearing operations must use binary protobuf. The
-operation contract executes hash, AEAD seal/open,
-MAC authenticate/verify, signature key
-generation/derivation/sign/verify, key-agreement key derivation and
-shared-secret derivation, KEM generation/derivation/encapsulation/decapsulation,
-versioned Argon2id derivation, HKDF-SHA256/SHA384 derivation, modern-policy
-PBKDF2-HMAC-SHA256/SHA512 derivation, KMAC256 derivation, fixed-size JWA Concat
-KDF SHA-256 derivation, and AES-128/192/256
-key wrap/unwrap, BIP-340 Schnorr signing, and RSA PKCS#1 v1.5/PSS
-verification. It also executes HPKE Base-mode and PSK seal/open,
-key-generation, deterministic key-derivation, and sender/receiver exporter
-operations for suites admitted by provider policy. Registered but unavailable
-HPKE combinations fail closed with a structured
-`PROVIDER_UNSUPPORTED_ALGORITHM` error. Generic PBKDF2 requests enforce a public
-work-factor range of 100,000 through 10,000,000 iterations before derivation.
-Argon2id uses its dedicated operation branch and requires an explicit immutable
-`kdf_version` profile selector instead of accepting caller-controlled memory,
-time, or parallelism parameters. Ed25519 signature signing uses a
-32-byte seed-only `secret_key` contract; 64-byte expanded
-`seed || public_key` material is rejected as typed invalid-key input instead
-of ignoring the public-key half. BIP-340 signing uses a dedicated request with
-32-byte `message32`, 32-byte `secret_key`, and 32-byte `aux_rand32`; malformed
-lengths fail with typed primitive length/key errors. BIP-340 key generation,
-deterministic key derivation, and verification use the generic signature
-requests with the BIP-340 algorithm selector. Their public keys are canonical
-32-byte x-only secp256k1 keys. The generic signature-sign request deliberately
-rejects BIP-340 because it cannot carry the required auxiliary randomness.
-RSA verify supports the fixed protobuf suites
-for PKCS#1 v1.5 over SHA-1/SHA-256/SHA-384/SHA-512 and PSS over matching
-message/MGF1 hashes with salt length equal to the digest length. SHA-1 support
-is explicit historical-document verification support, not a signing
-recommendation. PSS uses RFC 8017 `emBits = modBits - 1`, including the
-one-byte-shorter encoded message required when `modBits % 8 == 1`. Valid and
-invalid-signature outcomes are result branches; malformed keys carry a typed
-nested verification error, and non-RSA selectors return a typed
-unsupported-algorithm response error.
-
-Algorithm adapters reject `UNSPECIFIED`, unrecognized algorithm values, and
-private/reserved key-prefix values with typed unsupported-algorithm errors.
-Every public package algorithm has exactly one family-scoped protobuf selector.
-The 0.3 schema treats assigned selectors as immutable and uses sparse bands:
-classical curves occupy 100-299, RSA occupies the 300 range, symmetric and KDF
-families use construction-specific 100-series bands, and post-quantum or
-hybrid algorithms start at 1000. Adjacent strength or size variants normally
-advance by ten. AES-GCM and AES-KW each use AES-128=`100`, AES-192=`110`, and
-AES-256=`120` within their separate enums; equal cross-enum values carry no
-shared meaning. With one deliberate exception, ReallyMe protobuf values are
-not IANA COSE, JOSE, JWA, TLS, or multicodec registry numbers. `HpkeKemId`,
-`HpkeKdfId`, and `HpkeAeadId` use the corresponding two-byte HPKE registry
-values so the HPKE suite-domain-separation inputs remain exact and inspectable.
-JOSE and COSE adapters must translate through typed algorithm identities and
-must never pass unrelated ReallyMe values through as registry identifiers.
-Error reasons follow a different wire-stability rule: `UNSPECIFIED` is invalid,
-known codes must match their owning branch, and unknown codes are preserved
-only when they fall inside that branch's reserved numeric range. This permits
-lossless pass-through from newer peers without accepting a cross-branch code.
-
-Provider routing is separate from protobuf serialization. A protobuf enum
-selects the algorithm contract; `provider_manifest.json`, `PROVIDER_POLICY.md`,
-typed errors, and vectors determine whether a lane may satisfy that contract
-with a native provider or must call the Rust implementation through FFI, JNI,
-or WASM.
-
-## HPKE Support
-
-The canonical `0.3.0` HPKE selector is `HpkeSuiteIdentifier`, containing one
-`HpkeKemId`, `HpkeKdfId`, and `HpkeAeadId`. These enums cover every assigned
-entry in the IANA HPKE KEM, KDF, and AEAD registries as of 2026-04-16.
-Registration does not imply provider availability: each concrete triple is
-checked against the provider capability policy and an unavailable or
-unsupported combination fails closed without fallback.
-
-The Rust native operation lane classifies these components as executable:
-
-| Component | Executable identifiers |
-|---|---|
-| KEM | DHKEM P-256, P-384, P-521, secp256k1, X25519, and X448; ML-KEM-512/768/1024; MLKEM768-P256; MLKEM1024-P384; X-Wing |
-| KDF | HKDF-SHA256, HKDF-SHA384, HKDF-SHA512, SHAKE256 |
-| AEAD | AES-128-GCM, AES-256-GCM, ChaCha20-Poly1305, export-only |
-
-Sealing and opening reject the export-only AEAD. Export operations reject the
-SHAKE256 plus export-only combination because the selected backend's fixed
-internal buffer cannot safely execute it. Every unsupported
-component or combination returns a typed error before provider setup.
-
-The stable Swift, Kotlin, Android, and TypeScript facades expose two portable
-profiles:
-
-| Profile | Swift | Kotlin/JVM and Android | TypeScript |
-|---|---|---|---|
-| `DHKEM-P256-HKDF-SHA256-HKDF-SHA256-AES-256-GCM` | Rust C ABI provider | Rust JNI provider | Rust WASM provider |
-| `DHKEM-X25519-HKDF-SHA256-HKDF-SHA256-CHACHA20-POLY1305` | Rust C ABI provider | Rust JNI provider | Rust WASM provider |
-
-Swift requires the Rust C ABI provider explicitly. No SDK retries through a
-different provider when its declared route is unavailable.
-
-The Rust HPKE surface provides OpenMLS-friendly names for five draft profiles:
-
-| MLS profile alias | HPKE KEM | HPKE KDF | HPKE AEAD |
-|---|---|---|---|
-| `MLS_128_MLKEM768X25519_AES256GCM_SHA384_Ed25519` | `HPKE_KEM_ID_X_WING` (`0x647A`) | `HPKE_KDF_ID_HKDF_SHA384` (`0x0002`) | `HPKE_AEAD_ID_AES_256_GCM` |
-| `MLS_192_MLKEM768_AES256GCM_SHA384_MLDSA65` | `HPKE_KEM_ID_ML_KEM_768` (`0x0041`) | `HPKE_KDF_ID_HKDF_SHA384` (`0x0002`) | `HPKE_AEAD_ID_AES_256_GCM` |
-| `MLS_192_MLKEM1024_AES256GCM_SHA384_P384` | `HPKE_KEM_ID_ML_KEM_1024` (`0x0042`) | `HPKE_KDF_ID_HKDF_SHA384` (`0x0002`) | `HPKE_AEAD_ID_AES_256_GCM` |
-| `MLS_256_MLKEM1024_AES256GCM_SHA384_MLDSA87` | `HPKE_KEM_ID_ML_KEM_1024` (`0x0042`) | `HPKE_KDF_ID_HKDF_SHA384` (`0x0002`) | `HPKE_AEAD_ID_AES_256_GCM` |
-| `MLS_192_MLKEM1024P384_AES256GCM_SHA384_P384` | `HPKE_KEM_ID_ML_KEM_1024_P384` (`0x0051`) | `HPKE_KDF_ID_HKDF_SHA384` (`0x0002`) | `HPKE_AEAD_ID_AES_256_GCM` |
-
-Draft-06 selects the two-stage HPKE HKDF-SHA384 KDF because MLS requires both
-Extract and Expand. The signature suffix (`Ed25519`, `P384`, `MLDSA65`, or
-`MLDSA87`) is not an HPKE component. The two ML-KEM-1024 aliases therefore
-encode the same canonical protobuf HPKE triple, and all five use HPKE
-HKDF-SHA384 (`0x0002`).
-
-Messages use `CryptoAlgorithmIdentifier.hpke_suite`; superseded field numbers
-and names remain reserved against reuse. Live HPKE contexts,
-traffic keys, nonces, and sequence state are deliberately not serializable; the
-protobuf surface exposes single operations for key generation, deterministic
-key derivation, Base-mode seal/open, sender/receiver export, and PSK seal/open.
-HPKE seal requests do not carry a nonce because the HPKE key schedule derives
-the 12-byte AEAD nonce internally.
-
-`CryptoHpkeDeriveKeyPairRequest.input_key_material` accepts arbitrary-length
-IKM of at least 32 bytes. The operation owner invokes the selected KEM's
-registered HPKE `DeriveKeyPair` procedure; serialized adapters must not invent
-a KEM-specific normalization step. The raw Rust primitive and operation,
-protobuf, FFI, JNI, and WASM routes all apply the 256-bit floor.
-
-For in-process OpenMLS targeted messages, the Rust API additionally exposes a
-split PSK sender setup that returns the encapsulated key beside a live opaque
-sender context, plus matching receiver setup and context opening. These APIs
-are suite-generic across every executable HPKE combination and require typed
-PSK and PSK-identifier references. The caller can construct AAD from the
-encapsulated key before sealing. Stateful contexts intentionally have no
-protobuf, FFI, JNI, or WASM representation because serializing traffic keys,
-base nonces, or sequence state would violate the context ownership boundary.
-Likewise, deterministic encapsulation randomness is test-only and is never
-accepted by a production protobuf message.
-
-Serialized operation-contract and C ABI tests execute Base seal/open, exporter
-agreement, malformed-key and tampered-ciphertext failures, and oversized export
-rejection for the draft-06 ML-KEM-1024/HKDF-SHA384/AES-256-GCM and
-MLKEM1024-P384/HKDF-SHA384/AES-256-GCM profiles. They retain separate coverage
-for the generic SHAKE256 combinations and X-Wing/HKDF-SHA256/
-ChaCha20-Poly1305. Swift, Kotlin, Android, and TypeScript therefore consume the
-same generated identifiers and typed response boundary.
-
-The error envelope intentionally splits failures by owning subpart:
-
-| Package | Envelope | Sub-errors |
-|---|---|---|
-| `reallyme.crypto.v1` | `CryptoError` | `CryptoPrimitiveError`, `CryptoProviderError`, `CryptoBackendError` |
-
-## Data Lanes
-
-ReallyMe Crypto exposes three boundary lanes. They are deliberately narrower
-than the codec package because cryptographic outputs often carry secrets or
-protocol-sensitive material.
-
-### Raw Binary
-
-Raw bytes are the primary lane for primitive operations. Single byte-string
-results stay as `Uint8Array`, `[UInt8]`, `ByteArray`, or Rust byte slices and
-owned byte containers. This includes signatures, hashes, ciphertexts, public
-keys, shared secrets, wrapped keys, tags, nonces, and similar primitive
-outputs.
-
-Do not wrap a single byte-string result in protobuf only to make it look more
-structured. The byte contract belongs to the primitive API.
-
-### Protobuf Binary
-
-Use protobuf bytes when a result has a fixed multi-field shape or crosses an
-FFI, protocol, storage, RPC, or package boundary. `CryptoError`, operation
-request/result messages, `CryptoKeyPair`, `CryptoKemEncapsulation`,
-`CryptoHpkeSealedMessage`, `CryptoVerificationResult`, `JsonWebKey`, and
-`JsonWebKeySet` follow this rule.
-
-These messages should reference `CryptoAlgorithmIdentifier` instead of
-free-form algorithm strings, and should map failures through `CryptoError`
-instead of leaking provider exception text.
-
-For verification results, `CRYPTO_VERIFICATION_STATUS_INVALID` means the
-request was well-formed and processed, but the MAC, signature, proof, or
-constant-time comparison did not verify. Malformed inputs, unsupported
-algorithms, unavailable providers, and backend/internal failures use
-`CRYPTO_VERIFICATION_STATUS_ERROR` with the structured `CryptoError` field.
-
-### Proto-JSON Transport
-
-Generated bindings define ProtoJSON shapes for the operation messages, but
-the executable adapter accepts only non-secret request selectors and returns
-binary protobuf responses. This is a transport and conformance lane,
-not a separate crypto facade. It exists for Connect JSON clients, CLIs,
-browser-facing adapters, fixtures, and cross-language tests that need
-human-inspectable requests while preserving the protobuf schema: algorithms are
-enum-backed, byte fields are base64-encoded, malformed JSON maps to typed
-malformed-JSON errors, and size limits are enforced before conversion to protobuf
-bytes.
-
-Secret-bearing selectors, including AEAD, MAC, KDF, key-wrap, private-key
-derivation, signing, and decapsulation, are rejected before JSON value
-deserialization. Use binary protobuf for those operations. JSON parsers, logs,
-middleware, browser developer tools, crash reporters, and managed runtimes make
-extra copies that are harder to zeroize; a JSON-only transport does not bypass
-this restriction.
-
-Generated bindings retain the copy/clone behavior required by their protobuf
-runtimes. Rust-owned byte fields are redacted from `Debug`, zeroized on drop,
-and decoded through zeroizing temporary buffers. Swift, Kotlin/Java, and
-TypeScript generated messages live in managed memory and cannot promise
-deterministic destruction; keep secret-bearing messages short-lived, avoid
-unnecessary copies, and move secret bytes into the package's explicit
-best-effort-clearing APIs as soon as the boundary permits.
-
-For secret-bearing requests, the Rust guarded view uses Buffa's private wiping
-storage. It eagerly validates nested wire data and borrows from its own
-allocation. Its constructors keep Crypto's size, recursion, and unknown-field
-limits. Standard reference-counted owned views remain available for public
-metadata. The caller owns any input buffer it passes to a decoder.
-
-Do not add casual JSON convenience wrappers such as `hash_json(value)` or
-stringly typed crypto APIs. If an application wants to hash a JSON document, it
-must first choose and document a canonicalization scheme, such as JCS, and then
-pass the resulting bytes into the byte-oriented hash API or the typed
-`CryptoHashRequest` envelope.
-
-See [proto-json.md](proto-json.md) for operation-family JSON examples.
-
-JWK and JWKS remain the exception for JSON convenience because they are
-standards-defined JSON key formats, and this repository's protobuf `JsonWebKey`
-message intentionally stores public key material only.
-
-The rule of thumb is:
-
-| Shape | Preferred lane |
-|---|---|
-| Single byte-string result | Raw binary |
-| Multiple fields or typed boundary result | Protobuf binary |
-| Connect JSON / CLI / conformance request | Strict proto-JSON |
-| Human/app-facing public metadata | JSON convenience |
-| Secret-bearing material | Raw binary or protobuf binary; executable ProtoJSON rejects secret-bearing selectors |
-
-## TypeScript Example
+## TypeScript example
 
 ```ts
 import {
@@ -460,13 +183,3 @@ import {
 const facadeAlgorithm = hashAlgorithmFromProto(HashAlgorithm.SHA2_256);
 const protoAlgorithm = hashAlgorithmToProto(facadeAlgorithm);
 ```
-
-## When To Use Proto
-
-Use the proto definitions when another protocol needs to refer to a crypto
-choice: Connect APIs, durable configuration, stored keys, network messages, or
-log-safe status records.
-
-Do not force proto types into ordinary facade calls when the caller is already
-inside one language package. The facade types are intentionally more ergonomic
-there.

@@ -1,40 +1,22 @@
-# ReallyMe Crypto Vectors
+# Conformance vectors
 
-This directory contains crypto conformance vectors used by tests.
-Application-specific document, token, and container formats are not part of this vector set.
+`manifest.json` lists the positive and negative vector files and runtime lanes.
+Most positive fixtures live directly in this directory; `positive/` and
+`negative/` describe their required fields. `external/` contains pinned
+third-party corpora indexed by `external/provenance.json`.
 
-- `positive/`: inputs expected to validate or round-trip.
-- `negative/`: malformed, tampered, downgraded, unsupported, or wrong-context inputs expected to fail closed with typed errors.
-- `external/`: pinned third-party corpora used for default and optional extended
-  conformance checks. Source URLs, commits, license status, and SHA-256 hashes
-  are recorded in `external/provenance.json`.
+When adding a vector, record its algorithm, inputs, expected bytes or typed
+error, and the lanes that execute it. Unsupported lanes need an explicit
+unsupported-provider test. Register shared negative files under
+`negative_vectors` and run:
 
-## Current Artifacts
+```sh
+node scripts/check_negative_vectors.mjs
+```
 
-[`manifest.json`](manifest.json) lists the complete current positive and negative
-vector files. Positive cryptographic vectors live directly in this directory;
-`positive/` describes their required structure.
+Use the [conformance commands](../docs/conformance.md) to generate and verify
+fixtures. Do not regenerate expected bytes to hide a failure. Corpus inventory
+alone does not establish that every provider executed the cases.
 
-`manifest.json` also declares the runtime lane matrix for Rust native, Rust
-WASM, TypeScript native noble, Swift native, and Kotlin/JVM native conformance.
-Provider-gated lanes must remain explicit until their missing algorithms have
-audited native providers and executable vector comparisons.
-
-`manifest.json` declares shared fail-closed vectors under `negative_vectors`.
-Those files pin cross-lane typed failure semantics for malformed, tampered, or
-wrong-context inputs; lane-local tests may add more cases, but must not
-contradict the shared negative vector contract.
-
-## Adding Coverage
-
-Every new primitive, backend, or security hardening change must add or reference:
-
-- at least one positive vector;
-- at least one negative/tampered vector;
-- typed error assertions for the negative path;
-- runtime-lane coverage for Rust native, Rust WASM, Swift, and Kotlin, or an
-  explicit guard test explaining why a lane cannot execute that vector.
-
-Vectors must not contain real user data, production secrets, production private keys, or
-regulated evidence. Deterministic test keys are public fixtures and must never
-be used to protect real data.
+Keys and seeds in these files are public test fixtures. Do not use them to
+protect real data or add production secrets or personal data to the corpus.

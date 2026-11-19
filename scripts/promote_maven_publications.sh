@@ -44,6 +44,8 @@ readonly bundle="$work_dir/bundle"
 mkdir -p "$bundle"
 
 node "$script_dir/stage_maven_publications.mjs" "$packages" "$version" "$source_sha" "$bundle"
+python3 -B "$script_dir/check_repository_privacy.py" --index
+python3 -B "$script_dir/check_release_privacy.py" --directory "$bundle"
 
 gpg --batch --import >/dev/null 2>&1 <<<"$signing_key" ||
     fail 'could not import the Maven signing key'
@@ -67,5 +69,6 @@ done
 
 readonly archive="$work_dir/reallyme-maven-central-$version.zip"
 (cd "$bundle" && zip -X -q -r "$archive" me)
+python3 -B "$script_dir/check_release_privacy.py" --archive "$archive"
 CENTRAL_PORTAL_USERNAME="$portal_username" CENTRAL_PORTAL_PASSWORD="$portal_password" \
     node "$script_dir/upload_maven_central_bundle.mjs" "$archive" "$version"

@@ -187,6 +187,8 @@ jobs:
 
       - name: Create immutable GitHub release with Swift artifact
         run: |
+          python3 -B scripts/check_repository_privacy.py --index
+          python3 -B scripts/check_release_privacy.py --archive build/swift/ReallyMeCryptoFFI.xcframework.zip
           node scripts/verify_swift_release_artifact.mjs build/swift/ReallyMeCryptoFFI.xcframework.zip build/swift/ReallyMeCryptoFFI.xcframework.checksum Package.swift "${RELEASE_VERSION}"
           node scripts/extract_release_notes.mjs "${RELEASE_VERSION}" > "${RUNNER_TEMP}/release-notes.md"
           if gh release view "v${RELEASE_VERSION}" >/dev/null 2>&1; then

@@ -10,6 +10,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const packageDirectory = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const repositoryDirectory = resolve(packageDirectory, "../..");
 const packageJsonPath = resolve(packageDirectory, "package.json");
 const readUtf8 = (path) => readFileSync(path, "utf8");
 const requiredFiles = [
@@ -51,6 +52,14 @@ if (args[0] === "--use-built") {
   packArgs.push("--ignore-scripts");
 }
 
+const sourcePrivacy = spawnSync("python3", ["-B", "scripts/check_repository_privacy.py", "--index"], {
+  cwd: repositoryDirectory,
+  stdio: "inherit",
+});
+if (sourcePrivacy.status !== 0) {
+  fail("Repository privacy validation rejected the package source.");
+}
+
 const packageJson = JSON.parse(readUtf8(packageJsonPath));
 const packageExports = packageJson.exports;
 if (
@@ -69,7 +78,6 @@ if (
 const readme = readUtf8(resolve(packageDirectory, "README.md"));
 assertContains("README.md", readme, "## Raw WASM Module Contract");
 assertContains("README.md", readme, "Direct raw WASM calls are unsupported for application logic.");
-assertContains("README.md", readme, "no ambient global crypto-provider functions");
 
 // Pack inspection must not depend on the ownership or integrity of a developer's
 // global npm cache. A private cache also prevents concurrent repository checks
@@ -122,9 +130,24 @@ if (!Array.isArray(files)) {
 
 const names = new Set();
 for (const file of files) {
-  if (typeof file?.path === "string") {
-    names.add(`package/${file.path}`);
+  if (typeof file?.path !== "string" || file.path.length === 0 || file.path.includes("\0")) {
+    fail("npm pack --dry-run --json reported an invalid file path.");
   }
+  names.add(`package/${file.path}`);
+}
+
+// npm's files allowlist can include ignored build output. Apply the repository
+// policy to the actual publication list, including force-added local state.
+const artifactPrivacy = spawnSync("python3", [
+  "-B", "scripts/check_release_privacy.py", "--paths-stdin",
+  "--source-root", "packages/ts", "--strip-components", "1",
+], {
+  cwd: repositoryDirectory,
+  input: [...names].join("\0") + "\0",
+  stdio: ["pipe", "inherit", "inherit"],
+});
+if (artifactPrivacy.status !== 0) {
+  fail("Repository privacy validation rejected the npm publication contents.");
 }
 
 const missing = requiredFiles.filter((file) => !names.has(file));

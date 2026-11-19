@@ -2,9 +2,6 @@
 
 Shared vectors live in [../vectors](../vectors). The generator and platform
 verifiers live in [../crates/conformance](../crates/conformance).
-Those vectors complement the proto-first structured operation contract, typed
-error taxonomy, package facade types, and provider manifest.
-
 Third-party vector coverage from NIST ACVP, CCTV, and supplementary corpora is tracked separately in
 [External conformance vectors](external-conformance-vectors.md). Those adapters
 exercise public primitive boundaries and keep raw upstream files intact under
@@ -20,25 +17,22 @@ node scripts/run_wasm_browser_tests.mjs --browser=chrome
 node scripts/run_wasm_browser_tests.mjs --browser=firefox
 ```
 
-Every provider route must prove the same contract: identical input validation
-and normalization, output encoding, typed failure semantics, and edge-case
-behavior. Positive vectors prove byte output. Negative vectors and malformed
-input tests prove fail-closed behavior. Where a native/provider route replaces
-the Rust/reference path, differential tests should prove the two routes remain
-interchangeable.
+Provider tests compare input validation, output bytes and typed errors across
+supported SDKs. Run the affected positive and negative cases when changing a
+provider; test unavailable-provider behavior as well as success.
 
 Shared negative vectors are listed in `vectors/manifest.json` under
 `negative_vectors` and validated by `scripts/check_negative_vectors.mjs`.
 Lane-local malformed-input tests may add broader coverage, but they do not
 replace the shared cases that pin cross-lane typed failure semantics.
 
-The normal Rust all-feature check is:
+For Rust-only changes:
 
 ```sh
 cargo nextest run --workspace --all-features
 ```
 
-## Full Release Wall
+## Release checks
 
 Before publishing a release or changing a cryptographic contract, run the
 [protobuf generation checks](protobuf.md#generation), then the following
@@ -75,6 +69,6 @@ bash scripts/audit_committed_lockfiles.sh
 ```
 
 The generation commands above must reproduce the committed files. Review any
-diff before accepting it; vector changes require an intentional public byte
-contract change. If vectors change, update proto adapters, provider policy, package
+diff before accepting it. Do not change expected bytes to accommodate an
+unexplained mismatch. If vectors change, update proto adapters, provider policy, package
 facades, and conformance tests in the same pass.

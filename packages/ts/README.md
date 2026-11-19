@@ -7,10 +7,6 @@
 synchronous APIs for Node.js and browsers, with explicit JavaScript and
 package-owned WASM providers.
 
-The package shares algorithm identifiers, byte formats, typed failures, and
-conformance vectors with the Rust, Swift, Kotlin, and Android SDKs. Availability
-is provider-specific; unsupported routes fail closed.
-
 ## Installation
 
 ```sh
@@ -29,7 +25,7 @@ const digest = ReallyMeCrypto.hash(
 ```
 
 The API is synchronous. Signature verification throws `ReallyMeCryptoError` on
-invalid input rather than returning a boolean that can be accidentally ignored.
+malformed input or an invalid signature.
 
 `ReallyMeP256Ecdsa` normalizes canonical DER or fixed-width 64-byte `r || s`
 signatures to low-S form for HSM and platform-keystore integrations. The helper
@@ -42,20 +38,16 @@ an immutable profile version rather than an iteration count.
 
 ## Post-Quantum and WASM
 
-Classical primitives are backed by pinned `@noble` packages. The primitives that
-must stay identical to Rust — ML-KEM, ML-DSA, SLH-DSA, X-Wing, Argon2id, HPKE,
-and others — are backed by a WASM module that ships prebuilt with the package.
+Hashes and selected classical asymmetric operations use the pinned JavaScript
+providers. ML-KEM, ML-DSA, SLH-DSA, X-Wing, Argon2id, HPKE and other
+Rust-backed operations require the
+bundled WASM module. Initialize it before calling those methods.
 
-Applications may install the package's initialized WASM module once for the
-package-level `ReallyMeCrypto` convenience API, or build isolated facade
-instances with `createReallyMeWasmProvider` and the same package-owned module.
-Both paths reject replacement verification functions. Explicit facades reject
-structural provider objects; missing or untrusted providers fail with
-`provider-failure`. Algorithm-specific `*WithProvider` operations enforce the
-same identity check before reading provider hooks; copied objects and proxies
-cannot substitute verification functions. JWK/JWKS helpers delegate base64url
-and JCS canonicalization to the published `@reallyme/codec` package, so applications that use those
-helpers should also install the Codec WASM provider.
+Use `installReallyMeWasmProvider` for the package-level facade or
+`createReallyMeCrypto` for an isolated instance. Explicit facades reject
+structural provider objects, copied hooks and proxies with `provider-failure`.
+Only the package's initialized WASM module is accepted. JWK/JWKS helpers also
+require the Codec WASM provider.
 
 JSON and protobuf JWKS ingress routes accept at most 1,024 keys. Encoded JWK
 and JWKS protobuf inputs are capped at one mebibyte before decoding, and an
@@ -74,8 +66,6 @@ import {
 } from "@reallyme/crypto";
 import { initSync as initCryptoWasm } from "@reallyme/crypto/wasm/reallyme_crypto_wasm.js";
 
-// Both the global installer and explicit facade bind to this package's
-// initialized module namespace after verifying callable identity.
 const wasmProvider: unknown = await import(
   "@reallyme/crypto/wasm/reallyme_crypto_wasm.js"
 );
@@ -102,13 +92,6 @@ const keyPair = ReallyMeCrypto.generateKemKeyPair("X-Wing-768");
 const isolatedKeyPair = isolatedCrypto.generateKemKeyPair("X-Wing-768");
 ```
 
-The explicit facade form is useful for Workers, SSR, tests, and multi-bundle
-applications because each instance owns its provider routing. The provider
-must come from this package's initialized WASM module.
-
-The package-owned WASM provider derives ML-DSA, ML-KEM, and X-Wing seed-based
-keypairs inside Rust and returns the public key produced by that implementation.
-
 P-256, P-384, and P-521 ECDSA verification accepts standard compressed SEC1
 keys (`0x02` or `0x03`) and uncompressed SEC1 keys (`0x04`) at the curve's exact
 width. Key generation and public-key derivation continue to emit compressed
@@ -121,14 +104,6 @@ provider artifact for installing or constructing `ReallyMeWasmProvider`
 instances. Direct raw WASM calls are unsupported for application logic. Use the
 typed TypeScript facades, which validate caller inputs, numeric ranges, provider
 outputs, aliasing, and cleanup before invoking the raw module.
-
-This distinction matters for numeric parameters: JavaScript-to-WASM glue can
-coerce raw `number` arguments before Rust receives them. The supported facades
-reject out-of-range Argon2id, KMAC, HPKE, and RSA selector or length values
-before provider dispatch. Package checks verify that the README, package
-exports, TypeScript declarations, and generated WASM glue continue to agree on
-this support boundary and that no ambient global crypto-provider functions are
-used.
 
 Variable-length direct primitive inputs are capped at one mebibyte before any
 WASM copy or provider dispatch. Authenticated ciphertext may additionally carry
@@ -154,7 +129,7 @@ but applications that separately host WASM bytes should use immutable asset
 URLs and verify those bytes against a deployment-controlled digest before
 initialization.
 
-## Memory Hygiene
+## Secret buffers
 
 Rust-owned secret buffers are zeroized by the Rust implementation and WASM
 adapters. JavaScript `Uint8Array` values are best-effort only: engines, WASM
@@ -163,20 +138,13 @@ create copies outside the SDK's control. Clear caller-owned byte arrays as soon
 as practical:
 
 ```ts
+import { bestEffortClear } from "@reallyme/crypto";
+
 bestEffortClear(secretBytes);
 ```
 
-Explicit provider results must be independently owned `Uint8Array` values that
-do not overlap caller inputs or sibling result fields. The facade rejects
-aliases as `provider-failure` without modifying caller storage. Malformed
-provider-owned secret outputs are cleared before the same typed failure is
-returned.
-
-AES-KW provider results must have the exact RFC 3394 `plaintext + 8` or
-`wrapped - 8` length. The facade wipes and rejects a returned typed array whose
-length violates that contract. KMAC keys and customization strings are capped
-at 4 KiB, contexts at 64 KiB, and outputs at 64 KiB before WASM copies are
-created.
+KMAC keys and customization strings are capped at 4 KiB, contexts and outputs
+at 64 KiB.
 
 Do not move private keys, passwords, plaintext, shared secrets, or derived keys
 through strings or JSON paths.
@@ -189,19 +157,16 @@ the strict generated ProtoJSON view only for non-secret hash, verification,
 key-generation, encapsulation, and sender-export requests. Both return binary
 `CryptoOperationResponse` bytes, so malformed input, unsupported algorithms,
 and resource-limit failures preserve their structured protobuf branch and
-reason. This is the single executable structured response contract.
+reason.
 
 ProtoJSON is request-only. Decode returned binary protobuf with the generated
 exports from `@reallyme/crypto/proto`. Secret-bearing operation selectors are
-rejected before JSON value deserialization and must use protobuf bytes. Clear
-caller-owned `Uint8Array` values after use.
+rejected before JSON value deserialization and must use protobuf bytes.
 
 ## Documentation
 
-The complete documentation, provider matrix, protocol contracts, and conformance
-specifications are available in the main repository:
-
-https://github.com/reallyme/crypto
+See the [provider matrix](https://github.com/reallyme/crypto/blob/main/PROVIDER_POLICY.md)
+and [wire API](https://github.com/reallyme/crypto/blob/main/docs/protobuf.md).
 
 ## License
 
