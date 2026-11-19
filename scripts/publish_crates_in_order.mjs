@@ -269,65 +269,16 @@ requirePublishOrderBefore("reallyme-crypto-proto", "reallyme-crypto");
 requirePublishOrderBefore("reallyme-crypto-proto", "reallyme-crypto-core");
 requirePublishOrderBefore("reallyme-crypto-proto", "reallyme-crypto-hpke");
 
-function unresolvedRegistryPackages(output) {
-  const missing = [];
-  const noMatchPattern = /no matching package named `([^`]+)` found/g;
-  for (let match = noMatchPattern.exec(output); match !== null; match = noMatchPattern.exec(output)) {
-    missing.push(match[1]);
+function inspectPackages() {
+  // Select the entire release set so Cargo resolves unpublished workspace
+  // dependencies together instead of substituting older registry packages.
+  const selectors = ordered.flatMap((pkg) => ["-p", pkg.name]);
+  for (const operation of [["package", "--list"], ["publish", "--dry-run"]]) {
+    const args = [...operation, "--locked", ...selectors];
+    if (allowDirty) args.push("--allow-dirty");
+    const result = run("cargo", args);
+    if (result.status !== 0) process.exit(result.status ?? 1);
   }
-
-  const versionSelectPattern = /failed to select a version for the requirement `([^`\s]+) =/g;
-  for (
-    let match = versionSelectPattern.exec(output);
-    match !== null;
-    match = versionSelectPattern.exec(output)
-  ) {
-    missing.push(match[1]);
-  }
-
-  return [...new Set(missing)];
-}
-
-function isEarlierWorkspaceDependency(pkg, depName) {
-  const pkgIndex = orderedIndexByName.get(pkg.name);
-  const depIndex = orderedIndexByName.get(depName);
-  return depIndex !== undefined && pkgIndex !== undefined && depIndex < pkgIndex;
-}
-
-function inspectPackage(pkg) {
-  const listArgs = ["package", "-p", pkg.name, "--list"];
-  if (allowDirty) {
-    listArgs.push("--allow-dirty");
-  }
-  const listResult = run("cargo", listArgs);
-  if (listResult.status !== 0) {
-    process.exit(listResult.status ?? 1);
-  }
-
-  const dryRunArgs = ["publish", "-p", pkg.name, "--dry-run", "--locked"];
-  if (allowDirty) {
-    dryRunArgs.push("--allow-dirty");
-  }
-  const dryRunResult = run("cargo", dryRunArgs, { capture: true });
-  process.stdout.write(dryRunResult.stdout);
-  process.stderr.write(dryRunResult.stderr);
-  if (dryRunResult.status === 0) {
-    return;
-  }
-
-  const combined = `${dryRunResult.stdout}\n${dryRunResult.stderr}`;
-  const missing = unresolvedRegistryPackages(combined);
-  if (
-    missing.length !== 0 &&
-    missing.every((depName) => isEarlierWorkspaceDependency(pkg, depName))
-  ) {
-    console.log(
-      `${pkg.name} dry-run reached unpublished ordered workspace dependencies: ${missing.join(", ")}`,
-    );
-    return;
-  }
-
-  process.exit(dryRunResult.status ?? 1);
 }
 
 const archiveName = (pkg) => `${pkg.name}-${pkg.version}.crate`;
@@ -412,15 +363,8 @@ if (mode === MODE_STAGE) {
   process.exit(0);
 }
 
-for (const pkg of ordered) {
-  if (mode === MODE_ORDER) {
-    continue;
-  }
-
-  if (mode === MODE_INSPECT) {
-    inspectPackage(pkg);
-    continue;
-  }
-
-  publishPackage(pkg);
+if (mode === MODE_INSPECT) {
+  inspectPackages();
+} else if (mode === MODE_PUBLISH) {
+  for (const pkg of ordered) publishPackage(pkg);
 }

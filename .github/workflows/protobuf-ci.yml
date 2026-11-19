@@ -77,7 +77,7 @@ jobs:
       # The reviewed 0.3.17 schema baseline is pinned by commit so moving a tag
       # cannot weaken compatibility validation for existing generated clients.
       - name: Check protobuf compatibility
-        run: buf breaking --against '.git#ref=e57caf7a035c1ffe33aad0038d603b793a69b28a,subdir=crates/proto/proto'
+        run: buf breaking --against '.git#ref=ea731e6f2366d68bf4dc4a9d4ac7ce35a49e592f,subdir=crates/proto/proto'
 
       # The all-feature Rust suite owns immutable selectors and wire goldens.
       # This lane owns reproducible generation, the shared error contract, and

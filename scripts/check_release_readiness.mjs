@@ -178,7 +178,7 @@ const rustCodecVersion = "0.4.4";
 const tsCodecVersion = "0.4.4";
 const swiftCodecVersion = "0.4.4";
 const mavenCodecVersion = "0.4.4";
-const rustSemverBaselineCommit = "54de2955ebf73e9fd1c306eba207550b3716d767";
+const rustSemverBaselineCommit = "4350f869b1e2b56ce387fe34e1e855729f3f098e";
 const cargoSemverChecksVersion = "0.51.0";
 const buffaVersion = "0.1.3";
 const releaseReadinessCommit = "16aab5287de498e858ff3b85d9e66d7c9f7ebb74";
@@ -1755,7 +1755,7 @@ assertContains("README.md", "The protobuf schema is the source of truth");
 assertContains("SECURITY.md", "provider_manifest.json");
 assertContains("SECURITY.md", "Portable Brainpool");
 assertContains("SECURITY.md", "Caller-owned copies");
-assertContains(".github/workflows/rust-ci.yml", "cargo package --locked -p reallyme-crypto --list");
+assertContains(".github/workflows/rust-ci.yml", "node scripts/publish_crates_in_order.mjs inspect");
 assertContains(".github/workflows/rust-ci.yml", "Verify OpenMLS HPKE dependency isolation");
 for (const [path, requiredCommands] of REQUIRED_WORKFLOW_GATES) {
   assertUnconditionalRequiredWorkflow(path, requiredCommands);
@@ -2317,7 +2317,7 @@ assertContains(".github/workflows/protobuf-ci.yml", `BUFFA_VERSION: ${buffaVersi
 assertContains(".github/workflows/protobuf-ci.yml", "BUF_VERSION: 1.75.0");
 assertContains(".github/workflows/protobuf-ci.yml", "setup_only: true");
 assertContains(".github/workflows/protobuf-ci.yml", "scripts/run_pinned_release_readiness.mjs");
-assertContains(".github/workflows/protobuf-ci.yml", "buf breaking --against '.git#ref=e57caf7a035c1ffe33aad0038d603b793a69b28a,subdir=crates/proto/proto'");
+assertContains(".github/workflows/protobuf-ci.yml", "buf breaking --against '.git#ref=ea731e6f2366d68bf4dc4a9d4ac7ce35a49e592f,subdir=crates/proto/proto'");
 // The full Rust suite executes immutable-selector and wire-golden tests once.
 // Protobuf CI independently verifies generation against committed bytes.
 assertNotContains(".github/workflows/protobuf-ci.yml", "cargo test -p");
@@ -2696,7 +2696,7 @@ const repositoryPolicy = {
       runSteps: [
         {
           name: "Check protobuf compatibility",
-          run: "buf breaking --against '.git#ref=e57caf7a035c1ffe33aad0038d603b793a69b28a,subdir=crates/proto/proto'",
+          run: "buf breaking --against '.git#ref=ea731e6f2366d68bf4dc4a9d4ac7ce35a49e592f,subdir=crates/proto/proto'",
         },
         {
           name: "Check release readiness generated freshness",

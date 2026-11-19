@@ -376,9 +376,6 @@ jobs:
       - name: Format
         run: cargo fmt --check
 
-      - name: Check umbrella crate tarball
-        run: cargo package --locked -p reallyme-crypto --list
-
       - name: Inspect publishable crate tarballs
         run: node scripts/publish_crates_in_order.mjs inspect
 

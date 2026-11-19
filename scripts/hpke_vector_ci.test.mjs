@@ -52,26 +52,29 @@ set -euo pipefail
 printf '%s\\0' "$@" >> "$ADAPTER_CAPTURE"
 printf '\\n' >> "$ADAPTER_CAPTURE"
 `);
-  const capture = join(directory, "arguments");
-  const result = spawnSync("bash", ["scripts/adapters.sh"], {
-    cwd: directory, encoding: "utf8", timeout: 10_000,
-    env: { ...process.env, ADAPTER_CAPTURE: capture },
-  });
-  assert.equal(result.error, undefined);
-  assert.equal(result.status, 0, result.stderr);
-  const invocations = readFileSync(capture, "utf8").trimEnd().split("\0\n").map((line) => line.split("\0"));
-  let hpke = 0;
-  let ignored = 0;
-  for (const args of invocations) {
-    const target = args[args.indexOf("--test") + 1];
-    if (target === "rfc9180_hpke" || target === "hpke_pq") {
-      assert.equal(args.includes("--ignored"), false);
-      hpke += 1;
-    } else {
-      assert.equal(args[0], "--ignored");
-      ignored += 1;
+  const shells = process.platform === "darwin" ? ["bash", "/bin/bash"] : ["bash"];
+  for (const [index, shell] of shells.entries()) {
+    const capture = join(directory, `arguments-${index}`);
+    const result = spawnSync(shell, ["scripts/adapters.sh"], {
+      cwd: directory, encoding: "utf8", timeout: 10_000,
+      env: { ...process.env, ADAPTER_CAPTURE: capture },
+    });
+    assert.equal(result.error, undefined);
+    assert.equal(result.status, 0, result.stderr);
+    const invocations = readFileSync(capture, "utf8").trimEnd().split("\0\n").map((line) => line.split("\0"));
+    let hpke = 0;
+    let ignored = 0;
+    for (const args of invocations) {
+      const target = args[args.indexOf("--test") + 1];
+      if (target === "rfc9180_hpke" || target === "hpke_pq") {
+        assert.equal(args.includes("--ignored"), false);
+        hpke += 1;
+      } else {
+        assert.equal(args[0], "--ignored");
+        ignored += 1;
+      }
     }
+    assert.equal(hpke, 8);
+    assert.equal(ignored, 11);
   }
-  assert.equal(hpke, 8);
-  assert.equal(ignored, 11);
 });

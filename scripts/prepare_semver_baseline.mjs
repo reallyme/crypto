@@ -17,7 +17,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 // The tagged 0.3.11 release is the immutable baseline for the current API check.
-export const RUST_SEMVER_BASELINE_COMMIT = "54de2955ebf73e9fd1c306eba207550b3716d767";
+export const RUST_SEMVER_BASELINE_COMMIT = "4350f869b1e2b56ce387fe34e1e855729f3f098e";
 
 const BASELINE_CODEC_VERSION = "0.3.0";
 const MAX_MANIFEST_BYTES = 65_536;

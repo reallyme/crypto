@@ -32,11 +32,15 @@ adapters=(
 for adapter in "${adapters[@]}"; do
   test_file="${adapter%%:*}"
   test_name="${adapter#*:}"
-  test_flags=(--ignored)
+  # Bash 3.2 treats an empty array as unset under nounset. Keep the common
+  # arguments present and prepend the ignored-test flag only where needed.
+  test_args=(
+    "$test_name" --locked -p external-vector-audit --no-default-features
+    --features native --test "$test_file"
+  )
   case "$test_file" in
-    rfc9180_hpke|hpke_pq) test_flags=() ;;
+    rfc9180_hpke|hpke_pq) ;;
+    *) test_args=(--ignored "${test_args[@]}") ;;
   esac
-  bash scripts/run_exact_cargo_test.sh "${test_flags[@]}" "$test_name" \
-    --locked -p external-vector-audit --no-default-features --features native \
-    --test "$test_file"
+  bash scripts/run_exact_cargo_test.sh "${test_args[@]}"
 done
