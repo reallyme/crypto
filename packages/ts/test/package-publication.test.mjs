@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -56,5 +57,20 @@ test("publication rejects linked build inputs and malformed export targets", () 
     writeFileSync(join(source, "package.json"), JSON.stringify(manifest));
     assert.throws(() => stagePackage(source, destination),
       (error) => error instanceof PackageError && error.code === "INVALID_EXPORT_TARGET");
+  });
+});
+
+test("npm refuses direct source-tree packaging before producing an archive", () => {
+  fixture(({ source, manifest }) => {
+    const actualManifest = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+    manifest.scripts.prepack = actualManifest.scripts.prepack;
+    mkdirSync(join(source, "scripts"));
+    writeFileSync(join(source, "scripts", "pack.mjs"), readFileSync(new URL("../scripts/pack.mjs", import.meta.url)));
+    writeFileSync(join(source, "package.json"), JSON.stringify(manifest));
+    const result = spawnSync("npm", ["pack", "--dry-run", "--cache", join(source, "cache")], {
+      cwd: source, encoding: "utf8",
+    });
+    assert.notEqual(result.status, 0);
+    assert.match(result.stdout + result.stderr, /PUBLICATION_REQUIRES_STAGED_PACKAGE/u);
   });
 });

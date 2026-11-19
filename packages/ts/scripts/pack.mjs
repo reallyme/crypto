@@ -70,6 +70,9 @@ function checkedRun(command, args, cwd, env = process.env) {
 
 function main() {
   const args = process.argv.slice(2);
+  if (args.length === 1 && args[0] === "--require-staged") {
+    throw new PackageError("PUBLICATION_REQUIRES_STAGED_PACKAGE");
+  }
   if (args.length !== 1 || !isAbsolute(args[0])) throw new PackageError("ABSOLUTE_OUTPUT_DIRECTORY_REQUIRED");
   const output = args[0];
   const scratch = mkdtempSync(join(tmpdir(), "crypto-npm-publication-"));
