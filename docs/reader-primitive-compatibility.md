@@ -5,8 +5,9 @@ the pinned edition-2 DIS to their Rust APIs, schema contracts, and tests.
 Complete reader conformance also requires protocol encoding, certificate and
 revocation policy, replay protection, request binding, and session counters.
 
-The [fallible key-generation migration guide](0.4-entropy-error-migration.md)
-covers callers using the deprecated X25519 and secp256k1 entry points.
+The deprecated X25519 and secp256k1 key-generation entry points return a
+`Result`. Prefer their `try_generate_*` counterparts and propagate entropy
+failures with `?` or handle them explicitly.
 
 ## Source baseline
 

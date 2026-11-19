@@ -83,9 +83,9 @@ SDKs and transports
 -> primitive and protocol implementations
 ```
 
-See [dependency-boundaries.md](dependency-boundaries.md) for the enforced crate
-rules and [operation-route-ledger.json](operation-route-ledger.json) for
-the machine-readable route-to-owner map.
+See the [contract](../CONTRACT.md) for crate boundaries and
+[operation-route-ledger.json](operation-route-ledger.json) for the
+machine-readable route-to-owner map.
 
 ## Security Invariants
 

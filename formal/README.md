@@ -120,7 +120,7 @@ JVM so an earlier test cannot activate the native provider. Swift also checks
 provider failure when the bundled library fails to load. TypeScript checks
 that a separately configured provider cannot satisfy an explicit empty
 configuration and that a configured provider's unsupported-algorithm status
-maps to the typed SDK error. See [Provider Selection](../docs/provider-selection.md).
+maps to the typed SDK error. See the [provider policy](../PROVIDER_POLICY.md).
 
 ## Symbolic HPKE model
 

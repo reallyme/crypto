@@ -2308,7 +2308,7 @@ assertNotContains("crates/crypto/src/operations/error.rs", "ContractErrorReason"
 assertNotContains("crates/crypto/src/operations/error.rs", "MalformedProtobuf");
 assertContains("vectors/manifest.json", '"vectors"');
 assertContains("docs/architecture.md", "ReallyMe Crypto is a proto-first");
-assertContains("docs/provider-selection.md", "inspectable `ProviderDecision`");
+assertContains("PROVIDER_POLICY.md", "unsupportedAlgorithm");
 assertContains("packages/ts/src/proto.ts", "ReallyMeCryptoWireError");
 assertNotContains("packages/ts/src/proto.ts", "ReallyMeCryptoProtoResult");
 assertNotContains("packages/ts/src/proto.ts", "cryptoProtoResult");
