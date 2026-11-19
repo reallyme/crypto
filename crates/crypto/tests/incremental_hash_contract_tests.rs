@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! Incremental hash state transitions and parity with one-shot hashing.
+
 #![cfg(all(feature = "operation-response", feature = "sha2", feature = "sha3"))]
 #![allow(clippy::unwrap_used, missing_docs)]
 

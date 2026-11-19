@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! Incremental hash selector errors and availability across feature selections.
+
 #![cfg(all(
     feature = "operation-response",
     any(feature = "sha2", feature = "sha3")
