@@ -1760,6 +1760,13 @@ assertContains(".github/workflows/rust-ci.yml", "Verify OpenMLS HPKE dependency 
 for (const [path, requiredCommands] of REQUIRED_WORKFLOW_GATES) {
   assertUnconditionalRequiredWorkflow(path, requiredCommands);
 }
+// Proof results describe one source revision. Keeping this lane unscoped makes
+// release qualification require fresh proofs instead of ancestor evidence.
+const formalLane = readJson(".github/release-readiness.json").lanes?.formal;
+if (formalLane?.mode !== "required" || (formalLane.paths ?? []).length !== 0) {
+  fail("formal verification must be required for every candidate without path exclusions");
+}
+readinessContext.assertFormalVerificationWorkflow(".github/workflows/formal-verification.yml", "proofs");
 for (const command of [
   "cargo clippy --locked --workspace --all-targets --all-features -- -D warnings",
   "cargo nextest run --locked --workspace --no-default-features --features native",

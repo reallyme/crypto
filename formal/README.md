@@ -5,10 +5,11 @@ Neither establishes correctness of the complete library, constant-time machine
 code or physical memory erasure. Results apply to the source revision,
 lockfile, features and assumptions of the run.
 
-[Formal Verification](../.github/workflows/formal-verification.yml) runs only
-by manual dispatch. Required CI and package preflight receipts do not include
-it. Before publication, dispatch the workflow for the exact release commit and
-require every proof job to pass. Repeat it if the release source SHA changes.
+[Formal Verification](../.github/workflows/formal-verification.yml) runs for
+every CI candidate. Required CI accepts its source SHA receipt only after all
+Tamarin and Kani jobs pass. Package preflight and publication require successful
+CI evidence for the exact release commit; proof results cannot carry forward
+from an earlier commit.
 
 ## Rust implementation proofs
 

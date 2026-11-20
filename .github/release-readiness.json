@@ -39,37 +39,7 @@
     },
     "formal": {
       "workflow": "formal-verification.yml",
-      "paths": [
-        "crates/aes-kw/",
-        "crates/aes256-gcm-siv/",
-        "crates/aes256-gcm/",
-        "crates/chacha20-poly1305/",
-        "crates/crypto/core/",
-        "crates/crypto/dispatch/",
-        "crates/crypto/src/operation_contract/",
-        "crates/crypto/src/operations/",
-        "crates/crypto/tests/ml_kem_public_key_validation_tests.rs",
-        "crates/crypto/tests/restricted_operation_dispatch_tests.rs",
-        "crates/ffi/",
-        "crates/hpke/",
-        "crates/ml-kem-1024/",
-        "crates/ml-kem-512/",
-        "crates/ml-kem-768/",
-        "crates/p256/",
-        "crates/proto/",
-        "crates/secp256k1/",
-        "crates/sha3-256/",
-        "crates/sha3/",
-        "crates/wasm/",
-        "crates/x25519/",
-        "crates/x448/",
-        "formal/",
-        "tools/external-vector-audit/",
-        "vectors/external/hpke/",
-        "vectors/external/nist-acvp/ml-kem/encap-decap/internalProjection.json",
-        "vectors/external/provenance.json"
-      ],
-      "mode": "manual"
+      "mode": "required"
     }
   },
   "release": {

@@ -396,9 +396,9 @@ policy.
   RFC 8032, plus the optional audit workflow and formal-methods notes.
 - [SECURITY.md](SECURITY.md) — vulnerability reporting and required safety precautions.
 
-Formal verification runs only through the [manual GitHub workflow](.github/workflows/formal-verification.yml)
-for the selected revision. Automatic Required CI retains build, SDK, conformance,
-and dependency-security checks.
+Formal verification is required for every CI candidate through the
+[formal workflow](.github/workflows/formal-verification.yml). Package preflight
+and publication require successful CI evidence for the release commit.
 
 ## Conformance
 

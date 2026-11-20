@@ -67,7 +67,7 @@ another implementation.
 Signature adapters use [`refenc.rs`](../tools/external-vector-audit/src/refenc.rs)
 for DER and SEC1 construction, separately from production encoders. Its tests
 and bounded Kani proofs run in the
-[manual formal workflow](../.github/workflows/formal-verification.yml).
+[required formal workflow](../.github/workflows/formal-verification.yml).
 See [formal verification](../formal/README.md) for assumptions and commands.
 
 ## Updating corpora

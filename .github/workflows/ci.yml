@@ -46,7 +46,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           BASE_SHA: ${{ github.event.merge_group.base_sha || github.event.before }}
           HEAD_SHA: ${{ github.sha }}
-          LANE_PATHS: '{"policy":[],"code":["CONTRACT.md","Package.resolved","Package.swift","crates/","deny.toml","docs/conformance.md","docs/protobuf.md","gen/","packages/","tools/","vectors/"],"proto":["crates/hpke/","crates/proto/","gen/","packages/ts/src/proto/generated/"],"fuzz":["crates/","fuzz/","vectors/"]}'
+          LANE_PATHS: '{"policy":[],"code":["CONTRACT.md","Package.resolved","Package.swift","crates/","deny.toml","docs/conformance.md","docs/protobuf.md","gen/","packages/","tools/","vectors/"],"proto":["crates/hpke/","crates/proto/","gen/","packages/ts/src/proto/generated/"],"fuzz":["crates/","fuzz/","vectors/"],"formal":[]}'
           SHARED_PATHS: '[".github/release-readiness.json",".github/workflows/",".github/actions/",".github/scripts/","scripts/",".cargo/","rust-toolchain.toml","Cargo.toml","Cargo.lock","buf.yaml","buf.gen.yaml","buf.lock","package.json","package-lock.json"]'
           CHECKOUT_ATTRIBUTES: '(?:^|\/)\.gitattributes$'
           FORMAL_BUILD_INPUT: '(?:^|\/)(?:Cargo\.(?:toml|lock)|rust-toolchain(?:\.toml)?|\.cargo\/config(?:\.toml)?)$'
@@ -106,10 +106,14 @@ jobs:
     if: ${{ fromJSON(needs.scope.outputs.lanes).fuzz }}
     uses: ./.github/workflows/fuzz.yml
 
+  formal:
+    if: ${{ github.repository_owner == 'reallyme' && toJSON(github.event.repository.private) == 'false' && (github.event.repository.visibility == null || github.event.repository.visibility == 'public') }}
+    uses: ./.github/workflows/formal-verification.yml
+
   required:
     name: Required CI
     if: ${{ always() && github.repository_owner == 'reallyme' && toJSON(github.event.repository.private) == 'false' && (github.event.repository.visibility == null || github.event.repository.visibility == 'public') }}
-    needs: [scope, policy, code, proto, fuzz]
+    needs: [scope, policy, code, proto, fuzz, formal]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

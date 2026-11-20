@@ -5,7 +5,10 @@
 name: Formal Verification
 
 on:
-  workflow_dispatch:
+  workflow_call:
+    outputs:
+      verified_sha:
+        value: ${{ jobs.proofs.outputs.verified_sha }}
 
 permissions:
   contents: read
@@ -148,3 +151,14 @@ jobs:
           bash -e -o pipefail scripts/verify_formal_scope.sh
           test "$(git rev-parse --verify HEAD)" = "$GITHUB_SHA"
           git diff --no-ext-diff --exit-code "$GITHUB_SHA" --
+
+  proofs:
+    name: Record verified formal candidate
+    needs: [tamarin, kani-reference, kani-verification]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      verified_sha: ${{ github.sha }}
+    steps:
+      - name: Record successful proofs
+        run: echo "All formal verification jobs passed for $GITHUB_SHA"
