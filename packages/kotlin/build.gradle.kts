@@ -243,7 +243,10 @@ dependencies {
 
 // Deterministic KATs use a separate JNI image and JVM. Production resources
 // remain release-ffi builds without the conformance-only native exports.
-val protocolConformanceLibrary = layout.projectDirectory.file("../../target/debug/$hostNativeLibraryName")
+// A separate target directory also prevents this build from replacing an
+// explicitly configured production debug library used by another test worker.
+val protocolConformanceTarget = layout.projectDirectory.dir("../../target/kotlin-protocol-conformance")
+val protocolConformanceLibrary = protocolConformanceTarget.file("debug/$hostNativeLibraryName")
 val buildProtocolConformanceLibrary = tasks.register<Exec>("buildProtocolConformanceLibrary") {
     group = "verification"
     description = "Builds a test-only Rust JNI image for protocol known-answer tests."
@@ -255,7 +258,7 @@ val buildProtocolConformanceLibrary = tasks.register<Exec>("buildProtocolConform
     environment("CARGO_PROFILE_DEV_DEBUG", "0")
     commandLine(
         "cargo", "build", "--locked", "-p", "crypto-ffi", "--features", "test-vectors",
-        "--target-dir", layout.projectDirectory.dir("../../target").asFile.absolutePath,
+        "--target-dir", protocolConformanceTarget.asFile.absolutePath,
     )
 }
 val postQuantumProviderTests = "**/ReallyMeCryptoPostQuantumTest.class"
