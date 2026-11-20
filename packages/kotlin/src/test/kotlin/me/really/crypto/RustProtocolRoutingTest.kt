@@ -11,6 +11,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import java.util.jar.JarFile
 import me.really.crypto.proto.ReallyMeCryptoProtoAdapters
 
@@ -98,6 +99,7 @@ class RustProtocolRoutingTest : ReallyMeCryptoTestSupport() {
 
     @Test
     fun productionProviderOmitsDeterministicConformanceEntryPoints() {
+        assertTrue(System.getenv("REALLYME_CRYPTO_FFI_LIBRARY_PATH").isNullOrEmpty())
         assertFailsWith<ReallyMeCryptoException.UnsupportedAlgorithm> {
             ReallyMeProtocolConformance.encapsulate(
                 ReallyMeKemAlgorithm.X_WING_768,

@@ -293,10 +293,9 @@ tasks.test {
     exclude(postQuantumProviderTests)
     exclude(unconfiguredProviderTests)
     useJUnitPlatform()
-    val ffiLibraryPath = providers.environmentVariable("REALLYME_CRYPTO_FFI_LIBRARY_PATH")
-    if (ffiLibraryPath.isPresent) {
-        systemProperty("java.library.path", file(ffiLibraryPath.get()).parent)
-    }
+    // The production worker verifies the same bundled image consumers load.
+    // An ambient path may belong to another SDK or a conformance build.
+    environment("REALLYME_CRYPTO_FFI_LIBRARY_PATH", "")
     val codecFfiLibraryPath = providers.environmentVariable("REALLYME_CODEC_FFI_LIBRARY_PATH")
     if (codecFfiLibraryPath.isPresent) {
         systemProperty("reallyme.codec.ffiLibraryPath", codecFfiLibraryPath.get())
