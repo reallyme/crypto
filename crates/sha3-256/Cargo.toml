@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-sha3-256"
-version = "0.4.4"
+version = "0.4.5"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -28,7 +28,7 @@ native = []
 wasm = ["dep:getrandom"]
 
 [dependencies]
-crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.4", path = "../proto", default-features = false, features = ["contract-types", "error-types"] }
+crypto-proto = { package = "reallyme-crypto-proto", version = "=0.4.5", path = "../proto", default-features = false, features = ["contract-types", "error-types"] }
 getrandom = { version = "0.4.3", features = ["wasm_js"], optional = true }
 sha3 = { workspace = true }
 zeroize = { workspace = true, features = ["derive"] }

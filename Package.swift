@@ -8,7 +8,7 @@
 // SwiftPM and Xcode only read a `Package.swift` at the repository root when a
 // package is consumed by URL, e.g.
 //
-//     .package(url: "https://github.com/reallyme/crypto", from: "0.4.0")
+//     .package(url: "https://github.com/reallyme/crypto", from: "0.4.5")
 //     .product(name: "ReallyMeCrypto", package: "crypto")
 //
 // The Swift sources live under `packages/swift/` to keep symmetry with the
@@ -18,8 +18,8 @@
 import Foundation
 import PackageDescription
 
-let ffiArtifactChecksum = "f63419c521b4a1c16b74d22ef412ffea3260777c7642ec147422c329741b4318"
-let ffiArtifactVersion = "0.4.0"
+let ffiArtifactChecksum = "5fb535adb159f1f5cc81859daa397608476d96eeab47d2ea8cd4d7d4387ee020"
+let ffiArtifactVersion = "0.4.5"
 let ffiArtifactLocalPathOverride = ""
 // Source-tree CI explicitly exercises the runtime loader before testing the
 // linked release artifact. Public consumers do not set this development-only
@@ -127,7 +127,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/reallyme/codec",
-      exact: "0.4.4"
+      exact: "0.4.5"
     ),
     .package(
       url: "https://github.com/reallyme/CSecp256k1",

@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.4.5
+
+- Updates Codec dependencies to 0.4.5 across Rust, Swift, Kotlin, Android and
+  TypeScript.
+
 ## 0.4.4
 
 - Requires Rust 1.100.0 for Buffa 0.1.3. Generated owned views use

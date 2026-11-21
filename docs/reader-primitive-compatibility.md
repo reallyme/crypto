@@ -9,7 +9,7 @@ transcript encoding or a complete ISO/IEC 18013-5 reader.
 Disable defaults when selecting a narrow set of primitives:
 
 ```toml
-reallyme-crypto = { version = "0.4.4", default-features = false, features = [
+reallyme-crypto = { version = "0.4.5", default-features = false, features = [
   "brainpool", "ed448", "key-identifier-sha1", "operation-response"
 ] }
 ```

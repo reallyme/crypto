@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "me.really"
-version = "0.4.4"
+version = "0.4.5"
 
 dependencyLocking {
     lockAllConfigurations()
@@ -312,7 +312,7 @@ dependencies {
     implementation("org.bouncycastle:bcprov-jdk18on:1.87")
     implementation("fr.acinq.secp256k1:secp256k1-kmp:0.24.0")
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.24.0")
-    implementation("me.really:codec-android:0.4.4")
+    implementation("me.really:codec-android:0.4.5")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
 }

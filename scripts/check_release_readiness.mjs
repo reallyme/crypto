@@ -169,15 +169,15 @@ for (const path of ["packages/kotlin/build.gradle.kts", "packages/kotlin-android
   assertContains(path, 'name.set("Apache License, Version 2.0")');
 }
 
-const rustRootVersion = "0.4.4";
-const cryptoProtoPackageVersion = "0.4.4";
-const typescriptPackageVersion = "0.4.4";
-const kotlinPackageVersion = "0.4.4";
-const kotlinAndroidPackageVersion = "0.4.4";
-const rustCodecVersion = "0.4.4";
-const tsCodecVersion = "0.4.4";
-const swiftCodecVersion = "0.4.4";
-const mavenCodecVersion = "0.4.4";
+const rustRootVersion = "0.4.5";
+const cryptoProtoPackageVersion = "0.4.5";
+const typescriptPackageVersion = "0.4.5";
+const kotlinPackageVersion = "0.4.5";
+const kotlinAndroidPackageVersion = "0.4.5";
+const rustCodecVersion = "0.4.5";
+const tsCodecVersion = "0.4.5";
+const swiftCodecVersion = "0.4.5";
+const mavenCodecVersion = "0.4.5";
 const rustSemverBaselineCommit = "4350f869b1e2b56ce387fe34e1e855729f3f098e";
 const cargoSemverChecksVersion = "0.51.0";
 const buffaVersion = "0.1.3";
@@ -456,14 +456,14 @@ const assertCodecDependencyProvenance = () => {
   }
 
   const registryCodecChecksums = new Map([
-    ["reallyme-codec", "aaadbb251e7a815c78a2e9310c0350c02f83e919aa90d9eeaec45c5f47b8871b"],
-    ["reallyme-codec-base64url", "f8d5446a783e5137e5e506b6df860567a87a44a3cb68e1ad797ff10f636d484e"],
-    ["reallyme-codec-jcs", "59d1c2f528648b0a7e924d6cfff9a5e9d909acc4bc13c13ae33b2beb66194950"],
-    ["reallyme-codec-multibase", "762a4a0c8ff8389f5a3776d6b5fc653614a1ec9eb502db7fa3d0ff5ca24c77f9"],
-    ["reallyme-codec-multicodec", "d8be8accc5c0b9f54aeb33ee0b046f7b6ff06f4ef2d3ead0704b3bed622f66ea"],
-    ["reallyme-codec-multikey", "62f5bf0bfc7badbe17bf09d2c2e668f0b780b3668a9b6dfc106ac1af29c86a8f"],
-    ["reallyme-codec-pem", "8440c31054a01bec229ae0318b52fd0d0056df2bb6d90248f6617e9912d703da"],
-    ["reallyme-codec-proto", "0494356128c95c6ab27a158d184f775d88ee4ba6a22b48534d15202a94fe2a4a"],
+    ["reallyme-codec", "84b8a164c8db1344bab160c4f54da5284dd214435f6e4a7e86976850a33f0c12"],
+    ["reallyme-codec-base64url", "e2246f04d0a99d6d5548c816f0e9db79d02178ae6869180dbc54b3d58f41358b"],
+    ["reallyme-codec-jcs", "0209c8b190aa78aad0e237bfd36f074333f320e10592b8a628257a418d09650a"],
+    ["reallyme-codec-multibase", "7a25c5ed629c772bddef914d462061ce7afe363a6b8f414a817214388f9fa9c1"],
+    ["reallyme-codec-multicodec", "46e1b577ab0f7602fa260aa2c6d64b92ed82a3a50bb550eb0697581a74d37278"],
+    ["reallyme-codec-multikey", "2300b26b991c9cd9d642d830ca60c86dff96f5d4aae7a16b66a976e802b6d060"],
+    ["reallyme-codec-pem", "27299163beb2e767091da71c4ae37e470f2b69f982d14dc1fbdb678d6698a7f5"],
+    ["reallyme-codec-proto", "96b5335ef4adbc8a6c527ffe58dc25cb6e77689481530592c6bfe16fe8eee0ed"],
   ]);
   for (const lockPath of ["Cargo.lock", "fuzz/Cargo.lock"]) {
     for (const [packageName, checksum] of registryCodecChecksums) {
