@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { closeSync, constants, copyFileSync, createReadStream, lstatSync, mkdirSync, openSync, readFileSync, readdirSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { MavenPublicationError, publicationLayout, stageMavenPublication, stageMavenPublications } from "./stage_maven_publications.mjs";
 
 const BUILD_TIMEOUT_MS = 1_800_000;
@@ -13,6 +14,11 @@ const REQUEST_TIMEOUT_MS = 120_000;
 const MAX_NATIVE_BYTES = 536_870_912;
 const MAX_MANIFEST_BYTES = 65_536;
 const NATIVE_ROOT = "me/really/crypto/native";
+const LOCAL_PUBLICATION_TOOLS = Object.freeze([
+  "scripts/maven-central-bundle.local.sh", "scripts/maven_central_bundle.test.mjs",
+  "scripts/build_maven_publications.mjs", "scripts/build_maven_publications.test.mjs",
+  "scripts/check_release_privacy.py", "scripts/release_privacy_test.py",
+]);
 const JVM_LIBRARIES = Object.freeze([
   ["linux-x86_64", "libcrypto_ffi.so"],
   ["linux-aarch64", "libcrypto_ffi.so"],
@@ -39,9 +45,25 @@ function runner(root, environment) {
       cwd: root, env: environment, encoding: "utf8", maxBuffer: 16_777_216,
       timeout: REQUEST_TIMEOUT_MS, ...options,
     });
+    if (result.error?.code === "ETIMEDOUT") fail("local Maven publication command timed out");
     if (result.error !== undefined || result.status !== 0) fail(message);
     return result.stdout ?? "";
   };
+}
+
+export function verifyLocalMavenSource(root, sourceSha, run = runner(root, process.env)) {
+  publicationLayout("0.0.0", sourceSha);
+  if (run("git", ["rev-parse", "HEAD"], "could not read the local release source").trim() !== sourceSha) {
+    fail("the checkout changed during the local Maven build");
+  }
+  // Local publisher repairs may await review after another SDK has shipped.
+  // Every compiled source, schema, dependency pin and package/build setting
+  // must still match that release commit; only these publisher tools may vary.
+  run("git", ["diff", "--quiet", "--no-ext-diff", sourceSha, "--", ".",
+    ...LOCAL_PUBLICATION_TOOLS.map((path) => `:(exclude)${path}`)], "tracked release inputs changed during the local Maven build");
+  if (run("git", ["ls-files", "--others", "--exclude-standard", "-z"], "could not check untracked release inputs").length !== 0) {
+    fail("untracked files must be removed from the release source before building");
+  }
 }
 
 async function digest(path) {
@@ -170,15 +192,14 @@ export async function buildLocalMavenPublications(root, version, sourceSha, dest
     const versions = [...source.matchAll(/^version = "([^"]+)"$/gmu)];
     if (versions.length !== 1 || versions[0][1] !== version) fail("JVM and Android versions must match the selected release");
   }
-  const assertSource = () => {
-    if (run("git", ["rev-parse", "HEAD"], "could not read the local release source").trim() !== sourceSha) fail("the checkout changed during the local Maven build");
-    run("git", ["diff", "--quiet", "--no-ext-diff", sourceSha, "--"], "tracked release inputs changed during the local Maven build");
-  };
+  const assertSource = () => verifyLocalMavenSource(root, sourceSha, run);
   assertSource();
   run("python3", ["-B", "scripts/check_repository_privacy.py", "--index"], "local release inputs failed privacy validation");
+  console.error("Preparing desktop native libraries for the selected release commit...");
   const resources = await acquireNativeResources(root, sourceSha, scratch, environment, run);
   const jni = join(scratch, "android-jniLibs");
   const assets = join(scratch, "android-native-assets");
+  console.error("Building Android JNI libraries...");
   run("bash", [join(root, "packages/kotlin-android/scripts/build-jni-libs.sh"), jni], "could not build Android JNI libraries", {
     timeout: BUILD_TIMEOUT_MS, stdio: "inherit",
   });
@@ -187,9 +208,11 @@ export async function buildLocalMavenPublications(root, version, sourceSha, dest
   const gradle = (lane, tasks, properties) => run(join(root, "packages", lane, "gradlew"), [
     "--dependency-verification", "strict", "-p", join(root, "packages", lane), ...tasks, ...properties,
   ], "local Gradle publication build failed", { timeout: BUILD_TIMEOUT_MS, stdio: "inherit" });
+  console.error("Building and testing the JVM publication...");
   gradle("kotlin", ["test", "publishMavenPublicationToLocalReleaseRepository"], [
     `-Preallyme.crypto.nativeResourcesDir=${resources}`, "-Preallyme.crypto.requireFullNativeResources=true",
   ]);
+  console.error("Building and checking the Android publication...");
   gradle("kotlin-android", ["check", "publishAndroidReleasePublicationToLocalReleaseRepository"], [
     `-Preallyme.crypto.androidJniLibsDir=${jni}`, `-Preallyme.crypto.androidNativeAssetsDir=${assets}`,
     "-Preallyme.crypto.requireAndroidJniLibs=true",
@@ -202,5 +225,17 @@ export async function buildLocalMavenPublications(root, version, sourceSha, dest
       join(packages, `maven-${kind}-${version}-${sourceSha}`), kind, version);
   }
   stageMavenPublications(packages, version, sourceSha, destination);
-  run("python3", ["-B", "scripts/check_release_privacy.py", "--directory", destination], "local Maven publications failed privacy validation");
+  console.error("Checking publication privacy before signing...");
+  run("python3", ["-B", "scripts/check_release_privacy.py", "--directory", destination], "local Maven publications failed privacy validation", { stdio: "inherit" });
+}
+
+if (process.argv[1] !== undefined && fileURLToPath(import.meta.url) === process.argv[1]) {
+  try {
+    const [, , option, sourceSha, ...extra] = process.argv;
+    if (option !== "--verify-source" || extra.length !== 0) fail("expected --verify-source and a full release source SHA");
+    verifyLocalMavenSource(fileURLToPath(new URL("../", import.meta.url)), sourceSha);
+  } catch (error) {
+    console.error(error instanceof MavenPublicationError ? error.message : "could not verify the local release source");
+    process.exitCode = 1;
+  }
 }

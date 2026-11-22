@@ -27,6 +27,7 @@ MAX_ENTRIES = 100_000
 MAX_TOTAL_BYTES = 2 * 1024 * 1024 * 1024
 MAX_NESTED_BYTES = 256 * 1024 * 1024
 MAX_DEPTH = 4
+MAX_POLICY_BATCH_PATHS = 256
 ARCHIVE_SUFFIXES = (".zip", ".jar", ".aar", ".crate", ".tgz", ".tar", ".tar.gz")
 
 
@@ -97,6 +98,26 @@ class ArchiveAudit:
         self.npm_outputs = npm_outputs
         self.entries = 0
         self.total_bytes = 0
+        self.pending_paths = []
+
+    def check_policy(self, mapped, original):
+        checked_path(mapped)
+        self.pending_paths.append((mapped, original))
+        if len(self.pending_paths) >= MAX_POLICY_BATCH_PATHS:
+            self.flush()
+
+    def flush(self):
+        if not self.pending_paths:
+            return
+        # One Git process per archive entry can exceed the publication timeout.
+        # Bounded batches preserve Git's complete ignore semantics and keep the
+        # validator's memory use independent of the archive's total size.
+        violations = self.policy.violations([path for path, _ in self.pending_paths], "artifact")
+        if violations:
+            rejected = violations[0].path
+            original = next(original for mapped, original in self.pending_paths if mapped == rejected)
+            raise ReleasePrivacyError(ReleasePrivacyReason.EXCLUDED_PATH, original)
+        self.pending_paths.clear()
 
     def check_name(self, name, directory=False, nested=False):
         raw = archive_path(name)
@@ -105,10 +126,10 @@ class ArchiveAudit:
         parts = raw.split(b"/")
         if not nested:
             prefix = b"/".join(parts[:self.strip_components])
-            if prefix and self.policy.violations([prefix + b"/privacy-directory-probe"], "artifact"):
+            if prefix:
                 # Package wrappers are still published paths. Strip them for
                 # source mapping only after checking that they are permitted.
-                raise ReleasePrivacyError(ReleasePrivacyReason.EXCLUDED_PATH, raw)
+                self.check_policy(prefix + b"/privacy-directory-probe", raw)
             parts = parts[self.strip_components:]
         if not parts:
             return
@@ -122,9 +143,7 @@ class ArchiveAudit:
                 return
         if directory:
             mapped += b"/privacy-directory-probe"
-        violations = self.policy.violations([mapped], "artifact")
-        if violations:
-            raise ReleasePrivacyError(ReleasePrivacyReason.EXCLUDED_PATH, raw)
+        self.check_policy(mapped, raw)
 
     def account(self, size):
         self.entries += 1
@@ -254,6 +273,7 @@ def main():
                     if path.is_file() and path.name.lower().endswith(ARCHIVE_SUFFIXES):
                         with path.open("rb") as file:
                             audit.scan(file, path.name)
+        audit.flush()
     sys.stdout.write("release artifact privacy check passed\n")
     return 0
 

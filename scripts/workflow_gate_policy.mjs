@@ -96,10 +96,9 @@ export const workflowGateViolation = (source, requiredCommands) => {
   return null;
 };
 
-// Publishing identity must be available only after the verified release job
-// enters its matching environment. Stored registry tokens would bypass that
-// identity boundary, even if OIDC were also enabled.
-export const trustedPublishingViolation = (source, ecosystem) => {
+// Release credentials belong to the verified publication step. Crates uses
+// the configured registry secret; npm obtains its publishing identity via OIDC.
+export const publishingCredentialViolation = (source, ecosystem) => {
   const environments = new Map([["crates", "crates-io-release"], ["npm", "npm-release"]]);
   const environment = environments.get(ecosystem);
   if (environment === undefined) return "unsupported-publishing-ecosystem";
@@ -111,17 +110,28 @@ export const trustedPublishingViolation = (source, ecosystem) => {
   if (!job.includes(`    environment: ${environment}\n`) || !job.includes("    needs: verify-release-sha\n")) {
     return "unscoped-publishing-identity";
   }
-  const oidcGrants = lines.filter((line) => /^\s*id-token:\s*write\s*$/u.test(line));
-  if (oidcGrants.length !== 1 || !/^ {6}id-token:\s*write\s*$/mu.test(job)) return "unscoped-oidc-permission";
-  if (/\bsecrets\s*(?:\.|\[)/iu.test(source)) return "stored-publishing-secret";
   if (CONDITIONAL_GATE.test(job)) return "conditional-publishing-step";
   if (ecosystem === "crates") {
-    if (!job.includes("id: crates_auth") || !job.includes("rust-lang/crates-io-auth-action@3268eb413133e2960fa4ae0e963ca76380c54cd9")) {
-      return "unreviewed-crates-authentication";
-    }
-    if (!job.includes("CARGO_REGISTRY_TOKEN: ${{ steps.crates_auth.outputs.token }}")) return "non-oidc-crates-token";
-    if (job.indexOf("id: crates_auth") >= job.indexOf("node scripts/publish_crates_in_order.mjs publish")) return "late-crates-authentication";
+    if (/^\s*id-token\s*:/mu.test(source) || source.includes("rust-lang/crates-io-auth-action@")) return "unexpected-crates-oidc";
+    const command = "node scripts/publish_crates_in_order.mjs publish";
+    const commandIndex = job.indexOf(command);
+    if (commandIndex < 0 || job.lastIndexOf(command) !== commandIndex) return "missing-crates-publisher";
+    const starts = [...job.matchAll(STEP_START)];
+    const index = starts.findLastIndex((match) => match.index <= commandIndex);
+    if (index < 0) return "unscoped-crates-token";
+    const step = job.slice(starts[index].index, starts[index + 1]?.index ?? job.length);
+    const binding = "          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}";
+    const stepLines = step.split("\n");
+    const envStart = stepLines.indexOf("        env:");
+    const envEnd = stepLines.findIndex((line, position) => position > envStart && /^ {0,8}\S/u.test(line));
+    const environmentLines = stepLines.slice(envStart + 1, envEnd < 0 ? stepLines.length : envEnd);
+    if (envStart < 0 || !environmentLines.includes(binding) ||
+        [...source.matchAll(/^\s*CARGO_REGISTRY_TOKEN\s*:/gmu)].length !== 1 ||
+        [...source.matchAll(/\bsecrets\s*(?:\.|\[)/giu)].length !== 1) return "unscoped-crates-token";
   } else {
+    const oidcGrants = lines.filter((line) => /^\s*id-token:\s*write\s*$/u.test(line));
+    if (oidcGrants.length !== 1 || !/^ {6}id-token:\s*write\s*$/mu.test(job)) return "unscoped-oidc-permission";
+    if (/\bsecrets\s*(?:\.|\[)/iu.test(source)) return "stored-publishing-secret";
     if (/^\s*(?:NODE_AUTH_TOKEN|NPM_TOKEN|registry-url)\s*:/mu.test(job)) return "legacy-npm-authentication";
     if (!job.includes("NPM_CONFIG_USERCONFIG: /dev/null") || !job.includes("--registry=https://registry.npmjs.org")) {
       return "implicit-npm-authentication";

@@ -28,6 +28,9 @@ function fixture(t) {
   const calls = join(root, "gpg-calls");
   const pom = "<project>sample release</project>\n";
   writeFileSync(helper, readFileSync(new URL("./maven-central-bundle.local.sh", import.meta.url)), { mode: 0o755 });
+  for (const name of ["build_maven_publications.mjs", "stage_maven_publications.mjs"]) {
+    writeFileSync(join(repo, "scripts", name), readFileSync(new URL(name, import.meta.url)));
+  }
   const executable = (path, script) => writeFileSync(path, `#!/usr/bin/env bash\nset -euo pipefail\n${script}\n`, { mode: 0o755 });
   executable(join(repo, "scripts/stage-maven-central-bundle.sh"), `
     [[ -z "\${MAVEN_SIGNING_PASSWORD:-}" && -z "\${signing_passphrase:-}" ]] || exit 1
@@ -93,8 +96,25 @@ function fixture(t) {
       MAVEN_CENTRAL_OUTPUT_DIR: output, ...overrides,
     },
   });
-  return { run, output, calls, pom };
+  return { run, output, calls, pom, repo };
 }
+
+test("local publisher repairs preserve the release SHA and reject changed or untracked release inputs", { skip: process.platform === "win32" }, (t) => {
+  const { run, repo } = fixture(t);
+  const helper = join(repo, "scripts/maven-central-bundle.local.sh");
+  writeFileSync(helper, readFileSync(helper, "utf8") + "\n# Local publishing repair.\n");
+  assert.equal(run("1.2.3").status, 0);
+  const metadata = join(repo, "packages/kotlin/build.gradle.kts");
+  writeFileSync(metadata, 'version = "9.0.0"\n');
+  const changed = run("1.2.3");
+  assert.equal(changed.status, 1);
+  assert.match(changed.stderr, /tracked release inputs changed/u);
+  writeFileSync(metadata, 'version = "1.2.3"\n');
+  writeFileSync(join(repo, "untracked-source.kt"), "// Untracked release input.\n");
+  const untracked = run("1.2.3");
+  assert.equal(untracked.status, 1);
+  assert.match(untracked.stderr, /untracked files/u);
+});
 
 test("Maven bundle template verifies each signature and retains every completed ZIP", { skip: process.platform === "win32" }, (t) => {
   const { run, output, calls, pom } = fixture(t);

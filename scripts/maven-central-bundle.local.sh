@@ -38,7 +38,7 @@ done
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 readonly adapter=scripts/stage-maven-central-bundle.sh
 cd -- "$repo_root"
-if [[ "$(git rev-parse --verify HEAD)" != "$source_sha" ]] || ! git diff --quiet --no-ext-diff HEAD --; then
+if ! node scripts/build_maven_publications.mjs --verify-source "$source_sha"; then
   fail "check out the selected source SHA with unchanged tracked files"
 fi
 if ! git ls-files --error-unmatch -- "$adapter" >/dev/null 2>&1 ||

@@ -22,7 +22,7 @@ if (policyPins.error !== undefined || policyPins.status !== 0) {
   process.exit(1);
 }
 const { assertCryptoOperationRouteReadiness } = await import("./crypto_operation_route_readiness.mjs");
-const { LOCKED_DEPENDENCY_AUDIT, REQUIRED_WORKFLOW_GATES, trustedPublishingViolation, workflowGateViolation } =
+const { LOCKED_DEPENDENCY_AUDIT, REQUIRED_WORKFLOW_GATES, publishingCredentialViolation, workflowGateViolation } =
   await import("./workflow_gate_policy.mjs");
 const { assertNativeBuffaReadiness } = await import("./native_buffa_readiness.mjs");
 const localCore = new URL("./release-readiness/core.mjs", import.meta.url);
@@ -2755,8 +2755,8 @@ const assertReleaseWorkflowCredentialGates = () => {
     ["crates", ".github/workflows/crates-release.yml"],
     ["npm", ".github/workflows/npm-package-release.yml"],
   ]) {
-    const violation = trustedPublishingViolation(readText(path), ecosystem);
-    if (violation !== null) fail(`${path} violates trusted publishing policy: ${violation}`);
+    const violation = publishingCredentialViolation(readText(path), ecosystem);
+    if (violation !== null) fail(`${path} violates publishing credential policy: ${violation}`);
   }
   assertContains(".github/workflows/crates-release.yml", "CRATE_ARCHIVE_DIR:");
   assertContains("scripts/publish_crates_in_order.mjs", "packaged bytes differ from the reviewed preflight archive");
@@ -2815,7 +2815,7 @@ const assertReleaseWorkflowPermissions = () => {
     workflow: readOnlyWorkflow,
     jobs: {
       "verify-release-sha": { actions: "read", contents: "read" },
-      publish: { actions: "read", contents: "read", "id-token": "write" },
+      publish: { actions: "read", contents: "read" },
     },
   });
   assertWorkflowPermissionsPolicy({
