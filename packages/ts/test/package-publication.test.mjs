@@ -31,17 +31,17 @@ function fixture(run) {
   }
 }
 
-test("publication retains public imports, dependency pins and compiled bytes outside ignored paths", () => {
+test("publication retains public imports, dependency pins and compiled bytes for both local and CI publishing", () => {
   fixture(({ source, destination, manifest }) => {
     stagePackage(source, destination);
     const staged = JSON.parse(readFileSync(join(destination, "package.json"), "utf8"));
     assert.deepEqual(Object.keys(staged.exports), Object.keys(manifest.exports));
-    assert.equal(staged.main, "./src/index.js");
-    assert.equal(staged.types, "./src/index.d.ts");
-    assert.equal(staged.exports["./wasm/reallyme_crypto_wasm.js"].default, "./src/wasm/reallyme_crypto_wasm.js");
+    assert.equal(staged.main, "./dist/index.js");
+    assert.equal(staged.types, "./dist/index.d.ts");
+    assert.equal(staged.exports["./wasm/reallyme_crypto_wasm.js"].default, "./dist/wasm/reallyme_crypto_wasm.js");
     assert.deepEqual(staged.dependencies, manifest.dependencies);
-    assert.equal(staged.scripts, undefined);
-    assert.deepEqual(readFileSync(join(source, "dist", "index.js")), readFileSync(join(destination, "src", "index.js")));
+    assert.deepEqual(staged.scripts, manifest.scripts);
+    assert.deepEqual(readFileSync(join(source, "dist", "index.js")), readFileSync(join(destination, "dist", "index.js")));
     assert.deepEqual(JSON.parse(readFileSync(join(source, "package.json"), "utf8")), manifest);
   });
 });
@@ -60,17 +60,26 @@ test("publication rejects linked build inputs and malformed export targets", () 
   });
 });
 
-test("npm refuses direct source-tree packaging before producing an archive", () => {
+test("standard npm publish runs build and privacy validation without uploading", () => {
   fixture(({ source, manifest }) => {
     const actualManifest = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
-    manifest.scripts.prepack = actualManifest.scripts.prepack;
+    manifest.scripts = {
+      build: "node scripts/build.mjs",
+      prepack: actualManifest.scripts.prepack,
+    };
     mkdirSync(join(source, "scripts"));
-    writeFileSync(join(source, "scripts", "pack.mjs"), readFileSync(new URL("../scripts/pack.mjs", import.meta.url)));
+    writeFileSync(join(source, "scripts", "build.mjs"),
+      'import { writeFileSync } from "node:fs"; writeFileSync("build-ran", "yes");\n');
+    writeFileSync(join(source, "scripts", "check-pack.mjs"),
+      'import { existsSync, writeFileSync } from "node:fs"; if (!existsSync("build-ran") || process.argv[2] !== "--use-built") process.exit(1); writeFileSync("privacy-checked", "yes");\n');
     writeFileSync(join(source, "package.json"), JSON.stringify(manifest));
-    const result = spawnSync("npm", ["pack", "--dry-run", "--cache", join(source, "cache")], {
-      cwd: source, encoding: "utf8",
+    const result = spawnSync("npm", ["publish", "--dry-run", "--access", "public",
+      "--registry", "http://127.0.0.1:9", "--fetch-retries", "0", "--cache", join(source, "cache")], {
+      cwd: source, encoding: "utf8", env: { ...process.env, NPM_CONFIG_USERCONFIG: "/dev/null" },
     });
-    assert.notEqual(result.status, 0);
-    assert.match(result.stdout + result.stderr, /PUBLICATION_REQUIRES_STAGED_PACKAGE/u);
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.equal(readFileSync(join(source, "build-ran"), "utf8"), "yes");
+    assert.equal(readFileSync(join(source, "privacy-checked"), "utf8"), "yes");
+    assert.match(result.stdout + result.stderr, /dry-run/u);
   });
 });

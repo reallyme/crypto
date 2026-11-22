@@ -15,13 +15,13 @@ const repositoryDirectory = resolve(packageDirectory, "../..");
 const packageJsonPath = resolve(packageDirectory, "package.json");
 const readUtf8 = (path) => readFileSync(path, "utf8");
 const requiredFiles = [
-  "package/src/index.js",
-  "package/src/index.d.ts",
-  "package/src/proto.js",
-  "package/src/proto.d.ts",
-  "package/src/wasm/reallyme_crypto_wasm.js",
-  "package/src/wasm/reallyme_crypto_wasm_bg.wasm",
-  "package/src/wasmModuleTypes.d.ts",
+  "package/dist/index.js",
+  "package/dist/index.d.ts",
+  "package/dist/proto.js",
+  "package/dist/proto.d.ts",
+  "package/dist/wasm/reallyme_crypto_wasm.js",
+  "package/dist/wasm/reallyme_crypto_wasm_bg.wasm",
+  "package/dist/wasmModuleTypes.d.ts",
   "package/LICENSE",
   "package/README.md",
   "package/package.json",
@@ -93,7 +93,7 @@ try {
   stagePackage(packageDirectory, stage);
   symlinkSync(join(packageDirectory, "node_modules"), join(stage, "node_modules"), "junction");
   const imports = spawnSync(process.execPath, ["--input-type=module", "--eval",
-    'await import("./src/index.js"); await import("./src/proto.js"); await import("./src/wasm/reallyme_crypto_wasm.js");',
+    'await import("./dist/index.js"); await import("./dist/proto.js"); await import("./dist/wasm/reallyme_crypto_wasm.js");',
   ], { cwd: stage, encoding: "utf8" });
   if (imports.status !== 0) fail("The staged package entry points cannot be imported.");
   result = spawnSync("npm", packArgs, {

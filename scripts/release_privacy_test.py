@@ -72,6 +72,29 @@ class ReleasePrivacyTests(unittest.TestCase):
             result = self.check("--archive", str(path), "--source-root", "packages/ts", "--strip-components", "1")
             self.assertEqual(result.returncode, 1, result.stderr)
 
+    def test_npm_compiler_outputs_are_public_but_private_build_contents_are_not(self):
+        source = self.root / "packages/ts/src/index.ts"
+        source.parent.mkdir(parents=True)
+        source.write_text("export const value = 1;\n")
+        subprocess.run(["git", "-C", str(self.root), "add", str(source)], check=True)
+        allowed = ("dist/index.js", "dist/index.d.ts", "dist/wasm/reallyme_crypto_wasm_bg.wasm")
+        for name in allowed:
+            archive = self.tar("package.tgz", [("package/" + name, b"public")])
+            result = self.check("--archive", str(archive), "--source-root", "packages/ts", "--strip-components", "1")
+            self.assertEqual(result.returncode, 0, result.stderr)
+        for name in ("dist/AGENTS.md", "dist/.local/index.js", "dist/.env", "dist/private.js", "dist/unreviewed.wasm"):
+            archive = self.tar("package.tgz", [("package/" + name, b"local test data")])
+            result = self.check("--archive", str(archive), "--source-root", "packages/ts", "--strip-components", "1")
+            self.assertEqual(result.returncode, 1, result.stderr)
+        archive = self.root / "linked.tgz"
+        with tarfile.open(archive, "w:gz") as tar:
+            member = tarfile.TarInfo("package/dist/index.js")
+            member.type = tarfile.SYMTYPE
+            member.linkname = ".local/private"
+            tar.addfile(member)
+        result = self.check("--archive", str(archive), "--source-root", "packages/ts", "--strip-components", "1")
+        self.assertEqual(result.returncode, 1, result.stderr)
+
     def test_source_mapping_preserves_explicit_generated_binding_exception(self):
         path = self.tar("proto.crate", [("proto-1.0.0/src/generated/public.rs", b"public")])
         result = self.check("--archive", str(path), "--source-root", "crates/proto", "--strip-components", "1")

@@ -21,7 +21,7 @@ fi
 readonly version="$1" source_sha="$2"
 [[ "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] ||
   fail "select a stable release version"
-[[ "$source_sha" =~ ^[a-f0-9]{40}$ ]] || fail "select a full source SHA from Maven preflight"
+[[ "$source_sha" =~ ^[a-f0-9]{40}$ ]] || fail "select a full release source SHA"
 
 # Keep the passphrase out of child environments. Only GPG receives it on stdin.
 export -n signing_key signing_passphrase
@@ -60,8 +60,8 @@ trap 'rm -rf -- "$scratch"' EXIT
 readonly repository="$scratch/repository" payload="$scratch/files"
 mkdir -- "$repository"
 
-# The repository adapter verifies the selected preflight and stages the
-# unsigned Maven files for this version and SHA.
+# Build the unsigned JVM and Android publications locally. Foreign-platform
+# JVM libraries may be supplied locally or fetched from the native-build matrix.
 bash -e -o pipefail "$adapter" "$version" "$source_sha" "$repository" >&2
 [[ -d "$repository" && ! -L "$repository" ]] || fail "the adapter must preserve the staging directory"
 special="$(find "$repository" -mindepth 1 ! -type f ! -type d -print -quit)"

@@ -36,7 +36,10 @@ function copyRegularTree(source, destination) {
 
 function publicationTarget(value) {
   if (typeof value === "string") {
-    return value.startsWith("./dist/") ? `./src/${value.slice("./dist/".length)}` : value;
+    if (!value.startsWith("./dist/") || value.split("/").includes("..")) {
+      throw new PackageError("INVALID_EXPORT_TARGET");
+    }
+    return value;
   }
   if (value !== null && typeof value === "object" && !Array.isArray(value)) {
     return Object.fromEntries(Object.entries(value).map(([key, target]) => [key, publicationTarget(target)]));
@@ -52,13 +55,12 @@ export function stagePackage(source, destination) {
       manifest.exports === null || typeof manifest.exports !== "object" || Array.isArray(manifest.exports)) {
     throw new PackageError("INVALID_PACKAGE_MANIFEST");
   }
-  // Publication uses its own directory. The ignored development build remains
-  // local, and the package's public import names remain unchanged.
+  // CI and local npm publish must package the same layout and metadata.
+  // Keeping the manifest intact also preserves npm's normal lifecycle hooks.
   const published = { ...manifest, main: publicationTarget(manifest.main), types: publicationTarget(manifest.types),
-    exports: publicationTarget(manifest.exports), files: ["src", "LICENSE", "README.md"] };
-  delete published.scripts;
+    exports: publicationTarget(manifest.exports), files: ["dist", "LICENSE", "README.md"] };
   mkdirSync(destination);
-  copyRegularTree(join(source, "dist"), join(destination, "src"));
+  copyRegularTree(join(source, "dist"), join(destination, "dist"));
   for (const name of ["LICENSE", "README.md"]) copyRegularTree(join(source, name), join(destination, name));
   writeFileSync(join(destination, "package.json"), `${JSON.stringify(published, null, 2)}\n`);
 }
@@ -70,9 +72,6 @@ function checkedRun(command, args, cwd, env = process.env) {
 
 function main() {
   const args = process.argv.slice(2);
-  if (args.length === 1 && args[0] === "--require-staged") {
-    throw new PackageError("PUBLICATION_REQUIRES_STAGED_PACKAGE");
-  }
   if (args.length !== 1 || !isAbsolute(args[0])) throw new PackageError("ABSOLUTE_OUTPUT_DIRECTORY_REQUIRED");
   const output = args[0];
   const scratch = mkdtempSync(join(tmpdir(), "crypto-npm-publication-"));

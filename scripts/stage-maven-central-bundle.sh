@@ -5,12 +5,10 @@
 
 set -euo pipefail
 
-for tool in gh jar; do
-    if ! command -v "$tool" >/dev/null; then
-        printf 'Maven staging failed: %s is required\n' "$tool" >&2
-        exit 1
-    fi
-done
+if ! command -v jar >/dev/null; then
+    printf 'Maven staging failed: jar is required\n' >&2
+    exit 1
+fi
 
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 cd -- "$script_dir/.."

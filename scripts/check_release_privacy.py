@@ -65,11 +65,36 @@ def archive_path(value):
     return checked_path(encoded)
 
 
+def public_npm_outputs(snapshot):
+    """Allow compiler output without treating private build contents as public.
+
+    npm publishes dist directly. Its JavaScript and declarations must correspond
+    to tracked TypeScript sources; the Rust-generated WASM provider has a fixed
+    file set. Git's exclusions still apply to every other artifact path.
+    """
+    source_prefix = b"packages/ts/src/"
+    output_prefix = b"packages/ts/dist/"
+    result = set()
+    for entry in snapshot:
+        if entry.mode not in (b"100644", b"100755"):
+            continue
+        if entry.path.startswith(source_prefix) and entry.path.endswith(b".ts") and not entry.path.endswith(b".d.ts"):
+            relative = entry.path[len(source_prefix):-3]
+            result.update((output_prefix + relative + b".js", output_prefix + relative + b".d.ts"))
+    if output_prefix + b"index.js" in result:
+        result.update(output_prefix + b"wasm/" + name for name in (
+            b"LICENSE", b"reallyme_crypto_wasm.js", b"reallyme_crypto_wasm.d.ts",
+            b"reallyme_crypto_wasm_bg.wasm",
+        ))
+    return frozenset(result)
+
+
 class ArchiveAudit:
-    def __init__(self, policy, source_root=b"", strip_components=0):
+    def __init__(self, policy, source_root=b"", strip_components=0, npm_outputs=frozenset()):
         self.policy = policy
         self.source_root = source_root
         self.strip_components = strip_components
+        self.npm_outputs = npm_outputs
         self.entries = 0
         self.total_bytes = 0
 
@@ -90,6 +115,11 @@ class ArchiveAudit:
         mapped = b"/".join(parts)
         if self.source_root and not nested:
             mapped = self.source_root + b"/" + mapped
+        if not nested and self.source_root == b"packages/ts":
+            if (not directory and mapped in self.npm_outputs) or (
+                directory and any(path.startswith(mapped + b"/") for path in self.npm_outputs)
+            ):
+                return
         if directory:
             mapped += b"/privacy-directory-probe"
         violations = self.policy.violations([mapped], "artifact")
@@ -192,8 +222,9 @@ def main():
         parser.error("invalid prefix component count")
     source_root = b"" if arguments.source_root == "." else archive_path(arguments.source_root)
     repository = repository_root()
-    with IgnorePolicy(repository, entries(repository)) as policy:
-        audit = ArchiveAudit(policy, source_root, arguments.strip_components)
+    snapshot = entries(repository)
+    with IgnorePolicy(repository, snapshot) as policy:
+        audit = ArchiveAudit(policy, source_root, arguments.strip_components, public_npm_outputs(snapshot))
         if arguments.paths_stdin:
             data = sys.stdin.buffer.read(16 * 1024 * 1024 + 1)
             if len(data) > 16 * 1024 * 1024 or (data and not data.endswith(b"\0")):

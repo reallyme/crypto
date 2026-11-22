@@ -46,7 +46,7 @@
     "build:ts": "tsc",
     "build:wasm": "node scripts/build-wasm.mjs",
     "pack:check": "node scripts/check-pack.mjs",
-    "prepack": "node scripts/pack.mjs --require-staged",
+    "prepack": "npm run build && node scripts/check-pack.mjs --use-built",
     "prepublishOnly": "npm test && npm run pack:check",
     "typecheck": "npm run build:wasm && tsc --noEmit",
     "test": "npm run build && node --test \"test/*.test.mjs\"",

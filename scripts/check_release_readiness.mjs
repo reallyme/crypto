@@ -917,8 +917,8 @@ if (JSON.stringify(tsPackage.dependencies ?? {}).includes("../../../codec")) {
 if ((tsPackage.dependencies ?? {})["@reallyme/codec"] !== tsCodecVersion) {
   fail(`packages/ts/package.json must depend on published @reallyme/codec ${tsCodecVersion}`);
 }
-if ((tsPackage.scripts ?? {}).prepack !== "node scripts/pack.mjs --require-staged") {
-  fail("packages/ts/package.json must reject source-tree publication in prepack");
+if ((tsPackage.scripts ?? {}).prepack !== "npm run build && node scripts/check-pack.mjs --use-built") {
+  fail("packages/ts/package.json must build and validate its npm publication in prepack");
 }
 if (!((tsPackage.scripts ?? {}).prepublishOnly ?? "").includes("npm run pack:check")) {
   fail("packages/ts/package.json prepublishOnly must run the npm pack artifact check");
