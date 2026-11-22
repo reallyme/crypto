@@ -59,7 +59,7 @@ test("local Maven staging builds publications without querying ecosystem preflig
   });
   assert.ok(calls.some(({ command, args }) => command.endsWith("/kotlin/gradlew") && args.includes("publishMavenPublicationToLocalReleaseRepository")));
   assert.ok(calls.some(({ command, args }) => command.endsWith("/kotlin-android/gradlew") && args.includes("publishAndroidReleasePublicationToLocalReleaseRepository")));
-  assert.ok(calls.some(({ command, args }) => command === "bash" && args[0].endsWith("build_android_native_resources.sh")));
+  assert.ok(calls.some(({ command, args }) => command === "bash" && args[0].endsWith("kotlin-android/scripts/build-jni-libs.sh")));
   for (const publication of publicationLayout("0.4.5", SHA)) {
     for (const file of publication.files) assert.equal(readFileSync(join(f.destination, file.target), "utf8"), "local publication");
   }

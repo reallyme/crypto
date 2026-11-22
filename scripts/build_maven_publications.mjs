@@ -179,7 +179,7 @@ export async function buildLocalMavenPublications(root, version, sourceSha, dest
   const resources = await acquireNativeResources(root, sourceSha, scratch, environment, run);
   const jni = join(scratch, "android-jniLibs");
   const assets = join(scratch, "android-native-assets");
-  run("bash", [join(root, "scripts/build_android_native_resources.sh"), jni], "could not build Android JNI libraries", {
+  run("bash", [join(root, "packages/kotlin-android/scripts/build-jni-libs.sh"), jni], "could not build Android JNI libraries", {
     timeout: BUILD_TIMEOUT_MS, stdio: "inherit",
   });
   run(process.execPath, [join(root, "scripts/write_native_manifest.mjs"), jni,
