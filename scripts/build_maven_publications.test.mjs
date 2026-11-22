@@ -31,8 +31,8 @@ function fixture(t) {
   writeFileSync(join(native, "native-manifest.json"), JSON.stringify(manifest));
   for (const [lane, kind] of [["kotlin", "jvm"], ["kotlin-android", "android"]]) {
     mkdirSync(join(root, "packages", lane), { recursive: true });
-    writeFileSync(join(root, "packages", lane, "build.gradle.kts"), 'version = "0.4.5"\n');
-    const publication = publicationLayout("0.4.5", SHA).find(({ name }) => name.startsWith(`maven-${kind}-`));
+    writeFileSync(join(root, "packages", lane, "build.gradle.kts"), 'version = "0.4.6"\n');
+    const publication = publicationLayout("0.4.6", SHA).find(({ name }) => name.startsWith(`maven-${kind}-`));
     for (const file of publication.files) {
       const target = join(root, "packages", lane, "build/repos/releases", file.source);
       mkdirSync(join(target, ".."), { recursive: true });
@@ -49,7 +49,7 @@ function fixture(t) {
 test("local Maven staging builds publications without querying ecosystem preflights", async (t) => {
   const f = fixture(t);
   const calls = [];
-  await buildLocalMavenPublications(f.root, "0.4.5", SHA, f.destination, f.scratch, {
+  await buildLocalMavenPublications(f.root, "0.4.6", SHA, f.destination, f.scratch, {
     environment: { KOTLIN_NATIVE_RESOURCES_DIR: f.resources, MAVEN_SIGNING_PASSWORD: "fixture-only" },
     run: (command, args) => {
       calls.push({ command, args });
@@ -60,7 +60,7 @@ test("local Maven staging builds publications without querying ecosystem preflig
   assert.ok(calls.some(({ command, args }) => command.endsWith("/kotlin/gradlew") && args.includes("publishMavenPublicationToLocalReleaseRepository")));
   assert.ok(calls.some(({ command, args }) => command.endsWith("/kotlin-android/gradlew") && args.includes("publishAndroidReleasePublicationToLocalReleaseRepository")));
   assert.ok(calls.some(({ command, args }) => command === "bash" && args[0].endsWith("kotlin-android/scripts/build-jni-libs.sh")));
-  for (const publication of publicationLayout("0.4.5", SHA)) {
+  for (const publication of publicationLayout("0.4.6", SHA)) {
     for (const file of publication.files) assert.equal(readFileSync(join(f.destination, file.target), "utf8"), "local publication");
   }
 });
@@ -125,16 +125,16 @@ function nativeBuildRunner(f, scenario) {
 
 test("local staging can obtain only matching native-build artifacts without a package preflight", async (t) => {
   const f = fixture(t);
-  await buildLocalMavenPublications(f.root, "0.4.5", SHA, f.destination, f.scratch, {
+  await buildLocalMavenPublications(f.root, "0.4.6", SHA, f.destination, f.scratch, {
     environment: {}, run: nativeBuildRunner(f, "valid"),
   });
-  assert.equal(readFileSync(join(f.destination, "me/really/crypto/0.4.5/crypto-0.4.5.jar"), "utf8"), "local publication");
+  assert.equal(readFileSync(join(f.destination, "me/really/crypto/0.4.6/crypto-0.4.6.jar"), "utf8"), "local publication");
 });
 
 for (const scenario of ["wrong-source", "expired", "bad-digest"]) {
   test(`local staging rejects ${scenario} native-build artifacts`, async (t) => {
     const f = fixture(t);
-    await assert.rejects(buildLocalMavenPublications(f.root, "0.4.5", SHA, f.destination, f.scratch, {
+    await assert.rejects(buildLocalMavenPublications(f.root, "0.4.6", SHA, f.destination, f.scratch, {
       environment: {}, run: nativeBuildRunner(f, scenario),
     }), MavenPublicationError);
   });
@@ -154,14 +154,14 @@ test("native resource directories and libraries cannot be symlinks", async (t) =
 test("local builds stop before publication when the checkout or package versions disagree", async (t) => {
   const f = fixture(t);
   let calls = 0;
-  await assert.rejects(buildLocalMavenPublications(f.root, "0.4.5", SHA, f.destination, f.scratch, {
+  await assert.rejects(buildLocalMavenPublications(f.root, "0.4.6", SHA, f.destination, f.scratch, {
     environment: { KOTLIN_NATIVE_RESOURCES_DIR: f.resources },
     run: () => { calls += 1; return "b".repeat(40); },
   }), MavenPublicationError);
   assert.equal(calls, 1);
   writeFileSync(join(f.root, "packages/kotlin/build.gradle.kts"), 'version = "0.4.4"\n');
   calls = 0;
-  await assert.rejects(buildLocalMavenPublications(f.root, "0.4.5", SHA, f.destination, f.scratch, {
+  await assert.rejects(buildLocalMavenPublications(f.root, "0.4.6", SHA, f.destination, f.scratch, {
     run: () => { calls += 1; return ""; },
   }), MavenPublicationError);
   assert.equal(calls, 0);

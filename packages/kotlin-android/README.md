@@ -8,12 +8,12 @@ libraries required by Rust-backed routes.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto-android:0.4.5")
+    implementation("me.really:crypto-android:0.4.6")
 }
 ```
 
 The package reuses the Kotlin facade sources from `packages/kotlin`,
-requires `me.really:codec-android:0.4.5`, and bundles
+requires `me.really:codec-android:0.4.6` and Kotlin stdlib 2.4.21, and bundles
 `libcrypto_ffi.so` for the standard Android ABIs:
 
 - `arm64-v8a`
@@ -30,7 +30,7 @@ ReallyMeRustNativeProvider.loadBundledLibrary()
 
 The AAR declares `minSdk = 26`. `compileSdk` is a build-time API level and does
 not limit newer Android runtimes. Because the package is built with Android
-Gradle Plugin 9.5.1 and Java 21, consuming builds need a toolchain that can
+Gradle Plugin 9.5.2 and Java 21, consuming builds need a toolchain that can
 compile against `compileSdk = 37` and Java 21 bytecode. The release artifact is
 the supported consumption boundary for app developers; local source builds should use
 the same Android SDK/NDK versions as CI.

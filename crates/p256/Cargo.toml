@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-crypto-p256"
-version = "0.4.5"
+version = "0.4.6"
 include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 edition.workspace = true
 rust-version.workspace = true
@@ -43,9 +43,9 @@ wasm = [
 ]
 
 [dependencies]
-crypto-core = { package = "reallyme-crypto-core", version = "=0.4.5", path = "../crypto/core" }
-codec-der = { package = "reallyme-codec", version = "=0.4.5", default-features = false, features = ["der"] }
-codec-pem = { package = "reallyme-codec-pem", version = "0.4.5", optional = true }
+crypto-core = { package = "reallyme-crypto-core", version = "=0.4.6", path = "../crypto/core" }
+codec-der = { package = "reallyme-codec", version = "=0.4.6", default-features = false, features = ["der"] }
+codec-pem = { package = "reallyme-codec-pem", version = "0.4.6", optional = true }
 zeroize = { workspace = true, features = ["derive"] }
 
 # -----------------------------

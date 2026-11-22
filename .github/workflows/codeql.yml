@@ -72,6 +72,9 @@ jobs:
             packages/kotlin/gradle.lockfile
             packages/kotlin-android/gradle.lockfile
             crates/conformance/platform/kotlin/gradle.lockfile
+            packages/kotlin/buildscript-gradle.lockfile
+            packages/kotlin-android/buildscript-gradle.lockfile
+            crates/conformance/platform/kotlin/buildscript-gradle.lockfile
             packages/kotlin/gradle/verification-metadata.xml
             packages/kotlin-android/gradle/verification-metadata.xml
             crates/conformance/platform/kotlin/gradle/verification-metadata.xml

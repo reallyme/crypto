@@ -19,6 +19,11 @@ on:
         description: Unique artifact name for this scan lane
         required: true
         type: string
+      gradle-tooling-inventory:
+        description: Include trusted Gradle plugin and detached tool dependencies
+        required: false
+        default: false
+        type: boolean
 
 # The upstream reusable workflow requests security write access even when
 # SARIF uploads are disabled. Use its pinned scanner and reporter directly
@@ -42,6 +47,10 @@ jobs:
           set -euo pipefail
           # A checked-in report must never stand in for a failed scan's output.
           rm -f -- results.json results.sarif
+
+      - name: Derive Gradle build tooling scan input
+        if: ${{ inputs.gradle-tooling-inventory }}
+        run: python3 scripts/verify_gradle_checksum_provenance.py --osv-lockfile build/dependency-security/gradle.lockfile
 
       - name: Scan lockfiles
         id: scan

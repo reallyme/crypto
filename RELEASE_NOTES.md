@@ -1,5 +1,14 @@
 # Release Notes
 
+## 0.4.6
+
+- Updates Codec dependencies to 0.4.6 across Rust, Swift, Kotlin, Android and
+  TypeScript.
+- Updates build tools and patches vulnerable build dependencies. Gradle plugin
+  classpaths are locked, and build-tool advisories block CI.
+- Android now resolves Kotlin stdlib 2.4.21 through Codec. Kotlin 2.2 consumers
+  need a newer compiler.
+
 ## 0.4.5
 
 - Updates Codec dependencies to 0.4.5 across Rust, Swift, Kotlin, Android and

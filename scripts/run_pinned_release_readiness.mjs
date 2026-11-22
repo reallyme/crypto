@@ -14,13 +14,13 @@ const RELEASE_READINESS_COMMIT = "16aab5287de498e858ff3b85d9e66d7c9f7ebb74";
 const RELEASE_READINESS_CORE_SHA256 =
   "56ae3823215f5bca908d2fce3c9304d4ea6bab0334038f37ebe33023dadb8594";
 const LOCAL_CHECKER_SHA256 =
-  "125c74d516f261d12339ec2a9c0a98a16bad56d13a1a164e42e74c4028422242";
+  "a4d36070ce67add8145b2f9152817d34b059048da634b52fdac96e292ae0ca28";
 // The checker imports local policy modules. Pinning only its entry file
 // would let an unreviewed dependency change the release decision.
 const LOCAL_CHECKER_DEPENDENCIES = [
   ["scripts/generate_protobuf.mjs", "2cc10784a4e7699a0ff271f88014b2da7bab5ca69009c4f97228c72d9ab1d394"],
-  ["scripts/check_local_proto_tools.mjs", "d3c542bacd20f41e3cfbff48cd751d07f7af8ae65f7d903d4d57642a71a2db82"],
-  ["scripts/install_local_proto_tools.sh", "b7fe4e8b2402599b0b494c7ec178d1b76dfb55f88e8bfc2cfc65e46b542d7288"],
+  ["scripts/check_local_proto_tools.mjs", "576e2be8e86cacd3110576c6128cea026ff8c05f6fb353e7bf2fcadb28681638"],
+  ["scripts/install_local_proto_tools.sh", "997e25952f4ad4c7721698001ecd3624d80654fde71688999c301a2bd660195b"],
   ["scripts/native_buffa_readiness.mjs", "bdc838ba6bb5a07a36bb060a4cc1524baeaf70205b10f09e7ee8630f8ff128ca"],
   ["scripts/proto_scalar_policy.mjs", "f7b071722aa93a0f75a7fe57f994ae7a12e030ee0bedb1be7058e48543cac377"],
   ["scripts/crypto_operation_route_readiness.mjs", "2b15c4e6778f18cf10b493fb5644e47baf537185b6e4411909ba875b5bd38db4"],

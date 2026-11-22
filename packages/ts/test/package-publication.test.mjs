@@ -19,7 +19,7 @@ function fixture(run) {
     const manifest = { name: "@reallyme/crypto", version: "1.0.0", main: "./dist/index.js", types: "./dist/index.d.ts",
       exports: { ".": { types: "./dist/index.d.ts", default: "./dist/index.js" },
         "./wasm/reallyme_crypto_wasm.js": { default: "./dist/wasm/reallyme_crypto_wasm.js" } },
-      dependencies: { "@reallyme/codec": "0.4.5" }, scripts: { prepack: "must never execute" } };
+      dependencies: { "@reallyme/codec": "0.4.6" }, scripts: { prepack: "must never execute" } };
     writeFileSync(join(source, "package.json"), JSON.stringify(manifest));
     for (const name of ["LICENSE", "README.md"]) writeFileSync(join(source, name), name);
     writeFileSync(join(source, "dist", "index.js"), "export const value = 1;\n");

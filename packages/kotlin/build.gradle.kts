@@ -10,6 +10,12 @@ import java.io.File
 import java.nio.file.Files
 import java.security.MessageDigest
 
+buildscript {
+    configurations.classpath {
+        resolutionStrategy.activateDependencyLocking()
+    }
+}
+
 plugins {
     kotlin("jvm") version "2.4.21"
     `java-library`
@@ -18,10 +24,21 @@ plugins {
 }
 
 group = "me.really"
-version = "0.4.5"
+version = "0.4.6"
 
 dependencyLocking {
     lockAllConfigurations()
+}
+
+// Kotlin resolves its signing provider separately from the SDK runtime.
+// Keep that isolated provider patched without exporting tooling constraints.
+configurations.configureEach {
+    if (name == "kotlinBouncyCastleConfiguration") {
+        for (component in listOf("bcpg-jdk18on", "bcpkix-jdk18on", "bcprov-jdk18on", "bcutil-jdk18on")) {
+            project.dependencies.constraints.add(name, "org.bouncycastle:$component:1.87")
+                .because("The compiler signing provider needs the current Bouncy Castle security fixes")
+        }
+    }
 }
 
 val remoteMavenRepositoryUrl = providers.gradleProperty("reallyme.maven.repositoryUrl")
@@ -234,7 +251,7 @@ dependencies {
     // natives; an Android consumer swaps it for `secp256k1-kmp-jni-android`.
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jvm:0.24.0")
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:0.24.0")
-    implementation("me.really:codec:0.4.5")
+    implementation("me.really:codec:0.4.6")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.3")
     testImplementation(kotlin("test"))

@@ -2,12 +2,22 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+buildscript {
+    configurations.classpath {
+        resolutionStrategy.activateDependencyLocking()
+    }
+}
+
 plugins {
     kotlin("jvm") version "2.4.21"
 }
 
 group = "me.really"
-version = "0.1.1"
+version = "0.4.6"
+
+dependencyLocking {
+    lockAllConfigurations()
+}
 
 kotlin {
     jvmToolchain(21)

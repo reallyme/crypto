@@ -33,7 +33,7 @@ and expose lifetime-bound borrows. Use an eager decoder for admission.
 
 ```toml
 [dependencies]
-reallyme-crypto-proto = { version = "0.4.5", features = ["generated"] }
+reallyme-crypto-proto = { version = "0.4.6", features = ["generated"] }
 ```
 
 The `generated` feature includes Buffa protobuf bytes and strict ProtoJSON
@@ -45,7 +45,7 @@ For native error types without message codecs, select the minimal feature:
 
 ```toml
 [dependencies]
-reallyme-crypto-proto = { version = "0.4.5", default-features = false, features = ["error-types"] }
+reallyme-crypto-proto = { version = "0.4.6", default-features = false, features = ["error-types"] }
 ```
 
 `error-types` depends only on `thiserror`. It exposes the schema-generated

@@ -12,22 +12,77 @@ import java.io.File
 import java.security.MessageDigest
 import java.util.zip.ZipFile
 
+buildscript {
+    configurations.classpath {
+        resolutionStrategy.activateDependencyLocking()
+    }
+    dependencies {
+        // AGP's built-in Kotlin otherwise selects an older, vulnerable KGP.
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.21")
+        for (coordinate in listOf(
+            "org.bouncycastle:bcpkix-jdk18on:1.87",
+            "org.bouncycastle:bcprov-jdk18on:1.87",
+            "org.bouncycastle:bcutil-jdk18on:1.87",
+            "com.google.guava:guava:33.8.0-jre",
+            "org.apache.commons:commons-lang3:3.22.0",
+            "org.bitbucket.b_c:jose4j:0.9.7",
+            "org.jdom:jdom2:2.0.6.1",
+        )) {
+            constraints.add("classpath", coordinate)
+                .because("AGP's plugin classpath must include the patched parsers and cryptographic providers")
+        }
+    }
+}
+
 plugins {
-    id("com.android.library") version "9.5.1"
+    id("com.android.library") version "9.5.2"
     `maven-publish`
     signing
 }
 
 group = "me.really"
-version = "0.4.5"
+version = "0.4.6"
 
 dependencyLocking {
     lockAllConfigurations()
 }
 
+// AGP's lint/device tools and Kotlin's signing provider have independent
+// classpaths. Patch those tools without changing the SDK's published runtime.
+configurations.configureEach {
+    if (name == "kotlinBouncyCastleConfiguration" || name == "androidLintTool") {
+        for (component in listOf("bcpg-jdk18on", "bcpkix-jdk18on", "bcprov-jdk18on", "bcutil-jdk18on")) {
+            project.dependencies.constraints.add(name, "org.bouncycastle:$component:1.87")
+                .because("Isolated build tools need the current Bouncy Castle security fixes")
+        }
+    }
+    if (name == "androidLintTool" || name == "unified-test-platform-gradle-work-action") {
+        for (coordinate in listOf(
+            "com.google.guava:guava:33.8.0-jre",
+            "com.google.protobuf:protobuf-java:3.25.9",
+            "com.google.protobuf:protobuf-kotlin:3.25.9",
+        )) {
+            project.dependencies.constraints.add(name, coordinate)
+                .because("AGP tool dependencies must include the patched deserialization and parser implementations")
+        }
+    }
+    if (name == "androidLintTool") {
+        for (coordinate in listOf(
+            "org.apache.commons:commons-lang3:3.22.0",
+            "org.apache.httpcomponents:httpclient:4.5.14",
+        )) {
+            project.dependencies.constraints.add(name, coordinate)
+                .because("Lint must use the patched input handling and HTTP host validation implementations")
+        }
+    }
+}
+
 kotlin {
     compilerOptions {
         allWarningsAsErrors.set(true)
+        // Security updates to KGP must not raise the SDK's language baseline.
+        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
+        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
     }
 }
 
@@ -77,7 +132,7 @@ val androidJniLib32BitAlignmentPolicy = mapOf(
     "x86/libcrypto_ffi.so" to "presence-and-manifest",
 )
 val requiredAndroidNativeManifest = "reallyme-crypto/native-manifest.json"
-val androidNdkVersion = "29.0.14206865"
+val androidNdkVersion = "30.0.16248370"
 
 fun sha256Hex(bytes: ByteArray): String {
     val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
@@ -312,7 +367,7 @@ dependencies {
     implementation("org.bouncycastle:bcprov-jdk18on:1.87")
     implementation("fr.acinq.secp256k1:secp256k1-kmp:0.24.0")
     implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.24.0")
-    implementation("me.really:codec-android:0.4.5")
+    implementation("me.really:codec-android:0.4.6")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
 }

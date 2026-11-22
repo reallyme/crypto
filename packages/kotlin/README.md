@@ -9,7 +9,7 @@ Kotlin facade.
 
 ```kotlin
 dependencies {
-    implementation("me.really:crypto:0.4.5")
+    implementation("me.really:crypto:0.4.6")
 }
 ```
 
@@ -140,8 +140,8 @@ Review downloaded artifacts before updating the verification metadata:
 ./gradlew --write-verification-metadata sha256 help
 ```
 
-The JVM package, Kotlin conformance lane, and Android package use Gradle 9.9.1.
-The Android package uses Android Gradle Plugin 9.5.1 with built-in Kotlin.
+The JVM package, Kotlin conformance lane, and Android package use Gradle 9.9.2.
+The Android package uses Android Gradle Plugin 9.5.2 with built-in Kotlin.
 
 ## More Examples
 

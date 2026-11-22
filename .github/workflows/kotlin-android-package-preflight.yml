@@ -18,7 +18,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.4.5
+        default: 0.4.6
 
 permissions:
   contents: read
@@ -344,8 +344,8 @@ jobs:
       - name: Install pinned Android SDK packages
         run: |
           "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
-            "platforms;android-37.0" "ndk;29.0.14206865" <<< "$(printf 'y\n%.0s' {1..32})"
-          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/29.0.14206865" >> "${GITHUB_ENV}"
+            "platforms;android-37.0" "ndk;30.0.16248370" <<< "$(printf 'y\n%.0s' {1..32})"
+          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/30.0.16248370" >> "${GITHUB_ENV}"
 
       - name: Stage Android JNI libraries
         run: scripts/build_android_native_resources.sh build/android-jniLibs
@@ -426,9 +426,9 @@ jobs:
             "platforms;android-${{ matrix.api }}" \
             "emulator" \
             "platform-tools" \
-            "ndk;29.0.14206865" \
+            "ndk;30.0.16248370" \
             "system-images;android-${{ matrix.api }};google_apis;x86_64"
-          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/29.0.14206865" >> "${GITHUB_ENV}"
+          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/30.0.16248370" >> "${GITHUB_ENV}"
 
       - name: Download candidate Android publication
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2

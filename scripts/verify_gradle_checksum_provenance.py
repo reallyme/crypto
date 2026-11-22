@@ -7,6 +7,7 @@
 
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
+import argparse
 import hashlib
 import re
 import subprocess
@@ -130,8 +131,29 @@ def verify(item):
     return ("unavailable", "", (group, name, version, artifact))
 
 
+def tooling_records(artifacts):
+    """Include every trusted executable dependency, including plugin classpaths."""
+    coordinates = {
+        ":".join((group, name, version))
+        for group, name, version, artifact in artifacts
+        if artifact.endswith((".jar", ".aar"))
+        and not artifact.endswith(("-sources.jar", "-javadoc.jar"))
+    }
+    if not coordinates:
+        raise ValueError("Gradle verification metadata has no executable dependencies")
+    return "".join(f"{coordinate}=buildTooling\n" for coordinate in sorted(coordinates))
+
+
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--osv-lockfile", type=Path, help="Write a temporary scan input instead of fetching publisher bytes")
+    args = parser.parse_args()
     all_entries = entries()
+    if args.osv_lockfile is not None:
+        records = tooling_records(all_entries)
+        args.osv_lockfile.parent.mkdir(parents=True, exist_ok=True)
+        args.osv_lockfile.write_text(records)
+        raise SystemExit(0)
     with ThreadPoolExecutor(max_workers=12) as executor:
         results = list(executor.map(verify, all_entries.items()))
     counts = Counter(result[0] for result in results)

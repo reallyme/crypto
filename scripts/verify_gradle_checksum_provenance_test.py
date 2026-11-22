@@ -15,6 +15,26 @@ from scripts import verify_gradle_checksum_provenance as provenance
 
 
 class ProvenanceTests(unittest.TestCase):
+    def test_tooling_inventory_includes_plugin_jars_and_aars_once(self):
+        artifacts = {
+            ("example.org", "plugin", "1.0", "plugin-1.0.jar"): "0" * 64,
+            ("example.org", "plugin", "1.0", "plugin-1.0-linux.jar"): "1" * 64,
+            ("example.org", "android", "2.0", "android-2.0.aar"): "2" * 64,
+            ("example.org", "metadata", "3.0", "metadata-3.0.pom"): "3" * 64,
+            ("example.org", "sources", "4.0", "sources-4.0-sources.jar"): "4" * 64,
+            ("example.org", "docs", "5.0", "docs-5.0-javadoc.jar"): "5" * 64,
+        }
+        self.assertEqual(
+            provenance.tooling_records(artifacts),
+            "example.org:android:2.0=buildTooling\nexample.org:plugin:1.0=buildTooling\n",
+        )
+
+    def test_tooling_inventory_rejects_empty_executable_dependencies(self):
+        for artifacts in ({}, {("example.org", "parent", "1.0", "parent-1.0.pom"): "0" * 64}):
+            with self.subTest(artifacts=artifacts):
+                with self.assertRaisesRegex(ValueError, "no executable dependencies"):
+                    provenance.tooling_records(artifacts)
+
     def test_metadata_rejects_empty_artifact_set(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

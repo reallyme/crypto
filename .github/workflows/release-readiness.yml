@@ -87,6 +87,9 @@ jobs:
             packages/kotlin/gradle.lockfile
             packages/kotlin-android/gradle.lockfile
             crates/conformance/platform/kotlin/gradle.lockfile
+            packages/kotlin/buildscript-gradle.lockfile
+            packages/kotlin-android/buildscript-gradle.lockfile
+            crates/conformance/platform/kotlin/buildscript-gradle.lockfile
             packages/kotlin/gradle/verification-metadata.xml
             packages/kotlin-android/gradle/verification-metadata.xml
             crates/conformance/platform/kotlin/gradle/verification-metadata.xml
@@ -94,8 +97,8 @@ jobs:
       - name: Install pinned Android SDK packages
         run: |
           "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" \
-            "platforms;android-37.0" "ndk;29.0.14206865" <<< "$(printf 'y\n%.0s' {1..32})"
-          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/29.0.14206865" >> "${GITHUB_ENV}"
+            "platforms;android-37.0" "ndk;30.0.16248370" <<< "$(printf 'y\n%.0s' {1..32})"
+          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/30.0.16248370" >> "${GITHUB_ENV}"
 
       - name: Install wasm-pack
         uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c # v2.90.8

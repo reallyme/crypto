@@ -9,7 +9,7 @@ providers with explicit Rust C ABI routes behind one typed Swift facade.
 ```swift
 .package(
     url: "https://github.com/reallyme/crypto",
-    from: "0.4.5"
+    from: "0.4.6"
 )
 ```
 

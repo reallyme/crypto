@@ -167,7 +167,7 @@ buf lint
 node scripts/generate_protobuf.mjs
 ```
 
-SDK generation also requires protoc 36.2, protoc-gen-swift 1.39.0 and
+SDK generation also requires protoc 36.2, protoc-gen-swift 1.41.0 and
 protoc-gen-es 2.17.0. The installer and generator check the local tools;
 `--rust-only` skips SDK generation. Outputs go to `crates/proto/src/generated`,
 `packages/ts/src/proto/generated` and `gen/`.

@@ -169,15 +169,15 @@ for (const path of ["packages/kotlin/build.gradle.kts", "packages/kotlin-android
   assertContains(path, 'name.set("Apache License, Version 2.0")');
 }
 
-const rustRootVersion = "0.4.5";
-const cryptoProtoPackageVersion = "0.4.5";
-const typescriptPackageVersion = "0.4.5";
-const kotlinPackageVersion = "0.4.5";
-const kotlinAndroidPackageVersion = "0.4.5";
-const rustCodecVersion = "0.4.5";
-const tsCodecVersion = "0.4.5";
-const swiftCodecVersion = "0.4.5";
-const mavenCodecVersion = "0.4.5";
+const rustRootVersion = "0.4.6";
+const cryptoProtoPackageVersion = "0.4.6";
+const typescriptPackageVersion = "0.4.6";
+const kotlinPackageVersion = "0.4.6";
+const kotlinAndroidPackageVersion = "0.4.6";
+const rustCodecVersion = "0.4.6";
+const tsCodecVersion = "0.4.6";
+const swiftCodecVersion = "0.4.6";
+const mavenCodecVersion = "0.4.6";
 const rustSemverBaselineCommit = "4350f869b1e2b56ce387fe34e1e855729f3f098e";
 const cargoSemverChecksVersion = "0.51.0";
 const buffaVersion = "0.1.3";
@@ -456,14 +456,14 @@ const assertCodecDependencyProvenance = () => {
   }
 
   const registryCodecChecksums = new Map([
-    ["reallyme-codec", "84b8a164c8db1344bab160c4f54da5284dd214435f6e4a7e86976850a33f0c12"],
-    ["reallyme-codec-base64url", "e2246f04d0a99d6d5548c816f0e9db79d02178ae6869180dbc54b3d58f41358b"],
-    ["reallyme-codec-jcs", "0209c8b190aa78aad0e237bfd36f074333f320e10592b8a628257a418d09650a"],
-    ["reallyme-codec-multibase", "7a25c5ed629c772bddef914d462061ce7afe363a6b8f414a817214388f9fa9c1"],
-    ["reallyme-codec-multicodec", "46e1b577ab0f7602fa260aa2c6d64b92ed82a3a50bb550eb0697581a74d37278"],
-    ["reallyme-codec-multikey", "2300b26b991c9cd9d642d830ca60c86dff96f5d4aae7a16b66a976e802b6d060"],
-    ["reallyme-codec-pem", "27299163beb2e767091da71c4ae37e470f2b69f982d14dc1fbdb678d6698a7f5"],
-    ["reallyme-codec-proto", "96b5335ef4adbc8a6c527ffe58dc25cb6e77689481530592c6bfe16fe8eee0ed"],
+    ["reallyme-codec", "ab4da118f2104a4d7ae3d0b51d7bde662f5800ec8cb5a87ee259e9cfe1b964f4"],
+    ["reallyme-codec-base64url", "48aa041b5ef855590c922fa367b667b7491f1473f4c995a8c1b2a7b48d0735c8"],
+    ["reallyme-codec-jcs", "151d308e693b7c7acd0852b12b041876d201172859d6923463d2a34f190a8337"],
+    ["reallyme-codec-multibase", "100cb9d522bd078c435718f68e5e9f7c0f5c01cf594e3e27b4c98b38b7361f5e"],
+    ["reallyme-codec-multicodec", "2097fec41c5f00da0f4d15521e62057b5a28b618d78a0919b6a42da889977746"],
+    ["reallyme-codec-multikey", "2e29337fcb2fc73b2e45e8de7b4424cce01ff01e438fc43c4dec99a8b08bc6f2"],
+    ["reallyme-codec-pem", "9dff25d322b64a5b0cf0480779126600866d1193d0d5f82b53c07cdb67e56fc4"],
+    ["reallyme-codec-proto", "9f773753f95a378495a6f6e2aae5a3e1f1e0d35d5a3dcdb1af45f94b5e47c5c2"],
   ]);
   for (const lockPath of ["Cargo.lock", "fuzz/Cargo.lock"]) {
     for (const [packageName, checksum] of registryCodecChecksums) {
@@ -1371,7 +1371,7 @@ const gradleWrapperPaths = [
   "crates/conformance/platform/kotlin/gradle/wrapper/gradle-wrapper.properties",
 ];
 const gradleDistributionSha256 =
-  "d8a18a7a841dd5df825d35a685fad6f2d7f12ac0c280e57b67c27b4a520ba228";
+  "971fcd7150ca4ba04852c0b2ca0d2d0ab9468e14b03473eab19528809914c76b";
 const gradleNetworkTimeoutMs = 60_000;
 const gradleDownloadRetries = 3;
 const gradleRetryBackOffMs = 1_000;
@@ -1587,8 +1587,8 @@ for (const metadataPath of [
 }
 assertContains("packages/kotlin/README.md", "scripts/verify_gradle_checksum_provenance.py");
 assertContains("packages/kotlin/README.md", "gradle/verification-metadata.xml");
-assertContains("packages/kotlin/README.md", "Android package use Gradle 9.9.1");
-assertContains("packages/kotlin/README.md", "Android package uses Android Gradle Plugin 9.5.1");
+assertContains("packages/kotlin/README.md", "Android package use Gradle 9.9.2");
+assertContains("packages/kotlin/README.md", "Android package uses Android Gradle Plugin 9.5.2");
 
 const kotlinAndroidBuild = readText("packages/kotlin-android/build.gradle.kts");
 if (!kotlinAndroidBuild.includes(`version = "${kotlinAndroidPackageVersion}"`)) {
@@ -1623,14 +1623,14 @@ assertContains("packages/kotlin-android/build.gradle.kts", "16_384L");
 assertContains("packages/kotlin-android/build.gradle.kts", "androidJniLib32BitAlignmentPolicy");
 assertContains("scripts/build_android_native_resources.sh", "max-page-size=16384");
 assertContains("scripts/build_android_native_resources.sh", 'llvm-strip" --strip-debug');
-assertContains("packages/kotlin-android/scripts/build-jni-libs.sh", "29.0.14206865");
+assertContains("packages/kotlin-android/scripts/build-jni-libs.sh", "30.0.16248370");
 assertContains(
   "packages/kotlin-android/gradle/verification-metadata.xml",
-  "aapt2-8.13.0-13719691-linux.jar",
+  "aapt2-9.5.2-16666295-linux.jar",
 );
 assertContains(
   "packages/kotlin-android/gradle/verification-metadata.xml",
-  "aapt2-8.13.0-13719691-osx.jar",
+  "aapt2-9.5.2-16666295-osx.jar",
 );
 assertContains("packages/kotlin-android/build.gradle.kts", 'testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"');
 assertContains("packages/kotlin-android/build.gradle.kts", 'consumerProguardFiles("consumer-rules.pro")');

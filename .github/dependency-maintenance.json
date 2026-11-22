@@ -97,7 +97,7 @@
       "name": "allocator-api2",
       "current": "0.2.21",
       "latest": "0.4.0",
-      "reason": "Current upstream releases require this compatibility line: hashbrown 0.17.1 (^0.2.9). Updating it requires an upstream dependency migration.",
+      "reason": "Current upstream releases require this compatibility line: hashbrown 0.17.2 (^0.2.9). Updating it requires an upstream dependency migration.",
       "expires": "2026-12-19"
     },
     {
@@ -322,7 +322,7 @@
       "name": "allocator-api2",
       "current": "0.2.21",
       "latest": "0.4.0",
-      "reason": "Current upstream releases require this compatibility line: hashbrown 0.17.1 (^0.2.9). Updating it requires an upstream dependency migration.",
+      "reason": "Current upstream releases require this compatibility line: hashbrown 0.17.2 (^0.2.9). Updating it requires an upstream dependency migration.",
       "expires": "2026-12-19"
     },
     {

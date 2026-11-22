@@ -147,20 +147,34 @@ test("the required CLA check fails for failed, cancelled, or skipped required wo
   }
 });
 
-test("dependency scanners are read-only and preserve separate runtime and tooling policies", () => {
+test("dependency scanners are read-only and gate both runtime and tooling vulnerabilities", () => {
   for (const path of [".github/workflows/dependency-security.yml", osvPath]) {
     context.assertWorkflowPermissionsPolicy({ path, workflow: { contents: "read" }, jobs: {} });
   }
   const caller = source(".github/workflows/dependency-security.yml");
   assert.equal(caller.split(`uses: ./${osvPath}`).length - 1, 2);
   assert.match(caller, /report-name: runtime-OSV-report\n\s+fail-on-vuln: true/u);
-  assert.match(caller, /report-name: build-tooling-OSV-report/u);
-  assert.match(caller, /fail-on-vuln: false/u);
+  assert.match(caller, /report-name: build-tooling-OSV-report\n\s+fail-on-vuln: true/u);
+  assert.doesNotMatch(caller, /fail-on-vuln: false/u);
+  assert.match(caller, /gradle-tooling-inventory: true/u);
+  for (const project of ["packages/kotlin", "packages/kotlin-android", "crates/conformance/platform/kotlin"]) {
+    assert.match(source(`${project}/build.gradle.kts`), /buildscript\s*\{\s*configurations\.classpath\s*\{\s*resolutionStrategy\.activateDependencyLocking\(\)/u);
+    assert.match(source(`${project}/build.gradle.kts`), /dependencyLocking\s*\{\s*lockAllConfigurations\(\)/u);
+    assert.ok(caller.includes(`--lockfile=./${project}/gradle.lockfile`));
+    assert.ok(caller.includes(`--lockfile=./${project}/buildscript-gradle.lockfile`));
+    assert.match(source(`${project}/buildscript-gradle.lockfile`), /^[^#\n]+:[^:\n]+:[^=\n]+=classpath$/mu);
+  }
+  assert.match(caller, /--lockfile=\.\/build\/dependency-security\/gradle\.lockfile/u);
   const scanSteps = steps(osvPath);
   const prepare = scanSteps.findIndex((step) => step.name === "Prepare scan outputs");
   const scan = scanSteps.findIndex((step) => step.name === "Scan lockfiles");
   const completed = scanSteps.findIndex((step) => step.name === "Require completed scan results");
   const report = scanSteps.findIndex((step) => step.name === "Report vulnerabilities");
+  const inventory = scanSteps.findIndex((step) => step.name === "Derive Gradle build tooling scan input");
+  assert.ok(prepare < inventory && inventory < scan);
+  assert.equal(scanSteps[inventory].condition, "${{ inputs.gradle-tooling-inventory }}");
+  assert.equal(scanSteps[inventory].continueOnError, null);
+  assert.match(scanSteps[inventory].run, /verify_gradle_checksum_provenance\.py --osv-lockfile build\/dependency-security\/gradle\.lockfile/u);
   assert.ok(prepare >= 0 && prepare < scan && scan < completed && completed < report);
   assert.equal(scanSteps[completed].condition, null);
   assert.equal(scanSteps[completed].continueOnError, null);
