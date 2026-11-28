@@ -95,7 +95,6 @@ import {
   REALLYME_KEY_WRAP_ALGORITHMS,
   REALLYME_MAC_ALGORITHMS,
   REALLYME_SIGNATURE_ALGORITHMS,
-  ReallyMeAead,
   ReallyMeCrypto,
   ReallyMeCryptoError,
   ReallyMeAesKw,
@@ -217,7 +216,6 @@ import {
   verificationResultToProto,
   verificationResultToProtoBytes,
 } from "../dist/proto.js";
-import { createReallyMeCryptoFacade } from "../dist/cryptoFacade.js";
 import { createWasmProviderFromModule } from "../dist/wasmProvider.js";
 
 test("package entry point supports synchronous CommonJS loading", () => {

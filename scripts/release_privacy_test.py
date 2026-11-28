@@ -13,8 +13,11 @@ import subprocess
 import tarfile
 import tempfile
 import unittest
+from unittest.mock import Mock, patch
 from urllib.parse import quote
 import zipfile
+
+from check_release_privacy import ReleasePrivacyError, ReleasePrivacyReason, scan_stdin_archive
 
 
 SOURCE = Path(__file__).resolve().parent.parent
@@ -57,6 +60,35 @@ class ReleasePrivacyTests(unittest.TestCase):
                      self.tar("clean.tgz", [("src/public.rs", b"public")])):
             with self.subTest(path=path):
                 self.assertEqual(self.check("--archive", str(path)).returncode, 0)
+
+    def test_stdin_archive_validates_the_supplied_bytes(self):
+        for path, suffix in ((self.zip("clean.zip", [("lib/public.so", b"public")]), ".zip"),
+                             (self.tar("clean.tgz", [("src/public.rs", b"public")]), ".tgz")):
+            data = path.read_bytes()
+            path.unlink()
+            result = self.check("--archive-stdin", suffix, data=data)
+            self.assertEqual(result.returncode, 0, result.stderr)
+        private = self.zip("private.zip", [("nested/AGENTS.md", b"local test data")])
+        result = self.check("--archive-stdin", ".zip", data=private.read_bytes())
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertNotIn(b"local test data", result.stderr)
+        self.assertNotEqual(self.check("--archive-stdin", ".zip", data=b"").returncode, 0)
+        self.assertNotEqual(self.check("--archive-stdin", ".zip", data=b"not a zip").returncode, 0)
+
+    def test_stdin_archive_rejects_empty_and_oversized_input_before_scanning(self):
+        with patch("check_release_privacy.MAX_STDIN_ARCHIVE_BYTES", 16):
+            for data, reason in ((b"", ReleasePrivacyReason.INVALID_SIZE),
+                                 (b"x" * 17, ReleasePrivacyReason.ARCHIVE_LIMIT)):
+                audit = Mock()
+                with self.assertRaises(ReleasePrivacyError) as failure:
+                    scan_stdin_archive(audit, io.BytesIO(data), ".zip")
+                self.assertEqual(failure.exception.reason, reason)
+                audit.scan.assert_not_called()
+            audit = Mock()
+            observed = []
+            audit.scan.side_effect = lambda file, name: observed.append((file.read(), name))
+            scan_stdin_archive(audit, io.BytesIO(b"x" * 16), ".zip")
+            self.assertEqual(observed, [(b"x" * 16, "bundle.zip")])
 
     def test_all_local_state_names_are_rejected_at_any_depth(self):
         for name in ("AGENTS.md", ".claude/state", ".codex/state", ".local/state", ".build/state"):
@@ -183,7 +215,7 @@ class ReleasePrivacyTests(unittest.TestCase):
 
     def test_direct_maven_uploader_rejects_private_artifact_before_network(self):
         for name in ("upload_maven_central_bundle.mjs", "check_release_privacy.py",
-                     "check_repository_privacy.py", "repository_privacy.py"):
+                     "check_repository_privacy.py", "repository_privacy.py", "read_bounded_file.mjs"):
             destination = self.root / "scripts" / name
             destination.parent.mkdir(exist_ok=True)
             shutil.copyfile(SOURCE / "scripts" / name, destination)

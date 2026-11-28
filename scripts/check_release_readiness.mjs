@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import { lstatSync, readdirSync, readFileSync } from "node:fs";
+import { readdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
@@ -25,23 +25,16 @@ const { assertCryptoOperationRouteReadiness } = await import("./crypto_operation
 const { LOCKED_DEPENDENCY_AUDIT, REQUIRED_WORKFLOW_GATES, publishingCredentialViolation, workflowGateViolation } =
   await import("./workflow_gate_policy.mjs");
 const { assertNativeBuffaReadiness } = await import("./native_buffa_readiness.mjs");
-const localCore = new URL("./release-readiness/core.mjs", import.meta.url);
 const managedCoreUrl = process.env.RELEASE_READINESS_CORE_URL;
-if (managedCoreUrl !== undefined) {
-  try {
-    const corePath = new URL(managedCoreUrl);
-    const reviewedCore = readFileSync(localCore);
-    const status = lstatSync(corePath);
-    if (!status.isFile() || status.size !== reviewedCore.length ||
-        !reviewedCore.equals(readFileSync(corePath))) {
-      throw new Error("unreviewed shared runner core");
-    }
-  } catch {
-    console.error("release readiness check failed: shared runner core does not match the reviewed bytes");
-    process.exit(1);
-  }
+const { loadReleaseReadinessCore } = await import("./load_release_readiness_core.mjs");
+let readinessCore;
+try {
+  readinessCore = await loadReleaseReadinessCore(managedCoreUrl);
+} catch {
+  console.error("release readiness check failed: shared runner core does not match the reviewed bytes");
+  process.exit(1);
 }
-const { createReleaseReadinessContext } = await import(managedCoreUrl ?? localCore.href);
+const { createReleaseReadinessContext } = readinessCore;
 
 // The checker parses Cargo's registry output. Rust setup actions export
 // CARGO_TERM_COLOR=always, which otherwise inserts ANSI escapes into crate names
@@ -178,7 +171,6 @@ const rustCodecVersion = "0.4.6";
 const tsCodecVersion = "0.4.6";
 const swiftCodecVersion = "0.4.6";
 const mavenCodecVersion = "0.4.6";
-const rustSemverBaselineCommit = "4350f869b1e2b56ce387fe34e1e855729f3f098e";
 const cargoSemverChecksVersion = "0.51.0";
 const buffaVersion = "0.1.3";
 const releaseReadinessCommit = "16aab5287de498e858ff3b85d9e66d7c9f7ebb74";

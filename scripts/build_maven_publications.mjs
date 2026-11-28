@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
-import { closeSync, constants, copyFileSync, createReadStream, lstatSync, mkdirSync, openSync, readFileSync, readdirSync } from "node:fs";
+import { closeSync, constants, copyFileSync, lstatSync, mkdirSync, openSync, readFileSync, readdirSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { MavenPublicationError, publicationLayout, stageMavenPublication, stageMavenPublications } from "./stage_maven_publications.mjs";
+import { hashBoundedFile, readBoundedFile } from "./read_bounded_file.mjs";
 
 const BUILD_TIMEOUT_MS = 1_800_000;
 const REQUEST_TIMEOUT_MS = 120_000;
@@ -17,6 +17,7 @@ const NATIVE_ROOT = "me/really/crypto/native";
 const LOCAL_PUBLICATION_TOOLS = Object.freeze([
   "scripts/maven-central-bundle.local.sh", "scripts/maven_central_bundle.test.mjs",
   "scripts/build_maven_publications.mjs", "scripts/build_maven_publications.test.mjs",
+  "scripts/read_bounded_file.mjs", "scripts/read_bounded_file.test.mjs",
   "scripts/check_release_privacy.py", "scripts/release_privacy_test.py",
 ]);
 const JVM_LIBRARIES = Object.freeze([
@@ -67,13 +68,7 @@ export function verifyLocalMavenSource(root, sourceSha, run = runner(root, proce
 }
 
 async function digest(path) {
-  const status = lstatSync(path);
-  if (!status.isFile() || status.isSymbolicLink() || status.size === 0 || status.size > MAX_NATIVE_BYTES) {
-    fail("native inputs must be bounded regular files");
-  }
-  const hash = createHash("sha256");
-  for await (const chunk of createReadStream(path)) hash.update(chunk);
-  return { sha256: hash.digest("hex"), size: status.size };
+  return hashBoundedFile(path, MAX_NATIVE_BYTES);
 }
 
 function directory(path) {
@@ -90,9 +85,7 @@ async function verifyNativeResources(resources, sourceSha) {
     directory(native);
   }
   const manifestPath = join(native, "native-manifest.json");
-  if (lstatSync(manifestPath).size > MAX_MANIFEST_BYTES) fail("native checksum manifest exceeds its size limit");
-  await digest(manifestPath);
-  const manifest = parseJson(readFileSync(manifestPath, "utf8"));
+  const manifest = parseJson(readBoundedFile(manifestPath, MAX_MANIFEST_BYTES).toString("utf8"));
   if (!record(manifest) || manifest.schemaVersion !== 1 || manifest.package !== "reallyme-crypto-native" ||
       manifest.commitSha !== sourceSha || !Array.isArray(manifest.entries) || manifest.entries.length !== JVM_LIBRARIES.length) {
     fail("native resources must include a checksum manifest for the selected source SHA");

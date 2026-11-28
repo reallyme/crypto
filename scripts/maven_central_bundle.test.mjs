@@ -28,7 +28,7 @@ function fixture(t) {
   const calls = join(root, "gpg-calls");
   const pom = "<project>sample release</project>\n";
   writeFileSync(helper, readFileSync(new URL("./maven-central-bundle.local.sh", import.meta.url)), { mode: 0o755 });
-  for (const name of ["build_maven_publications.mjs", "stage_maven_publications.mjs"]) {
+  for (const name of ["build_maven_publications.mjs", "stage_maven_publications.mjs", "read_bounded_file.mjs"]) {
     writeFileSync(join(repo, "scripts", name), readFileSync(new URL(name, import.meta.url)));
   }
   const executable = (path, script) => writeFileSync(path, `#!/usr/bin/env bash\nset -euo pipefail\n${script}\n`, { mode: 0o755 });

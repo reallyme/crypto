@@ -14,10 +14,12 @@ const RELEASE_READINESS_COMMIT = "16aab5287de498e858ff3b85d9e66d7c9f7ebb74";
 const RELEASE_READINESS_CORE_SHA256 =
   "56ae3823215f5bca908d2fce3c9304d4ea6bab0334038f37ebe33023dadb8594";
 const LOCAL_CHECKER_SHA256 =
-  "a4d36070ce67add8145b2f9152817d34b059048da634b52fdac96e292ae0ca28";
+  "61e4588bb3f9fa3818354ae9be0742f06ce73c907468a661e2c05ea7877f4f09";
 // The checker imports local policy modules. Pinning only its entry file
 // would let an unreviewed dependency change the release decision.
 const LOCAL_CHECKER_DEPENDENCIES = [
+  ["scripts/load_release_readiness_core.mjs", "731ceea6d062b02b4733395141c6294a33c376783dd880cca2857208dad8ef04"],
+  ["scripts/read_bounded_file.mjs", "4bc8516fd12972477ddf740bad58c155fd49f38962288bf1e3d71c077afde640"],
   ["scripts/generate_protobuf.mjs", "2cc10784a4e7699a0ff271f88014b2da7bab5ca69009c4f97228c72d9ab1d394"],
   ["scripts/check_local_proto_tools.mjs", "576e2be8e86cacd3110576c6128cea026ff8c05f6fb353e7bf2fcadb28681638"],
   ["scripts/install_local_proto_tools.sh", "997e25952f4ad4c7721698001ecd3624d80654fde71688999c301a2bd660195b"],

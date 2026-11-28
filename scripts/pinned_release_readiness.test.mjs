@@ -28,6 +28,8 @@ const pinnedInputs = [
   { path: "scripts/crypto_operation_route_readiness.mjs", maximumBytes: 524_288 },
   { path: "scripts/workflow_gate_policy.mjs", maximumBytes: 524_288 },
   { path: "scripts/native_buffa_readiness.mjs", maximumBytes: 524_288 },
+  { path: "scripts/read_bounded_file.mjs", maximumBytes: 524_288 },
+  { path: "scripts/load_release_readiness_core.mjs", maximumBytes: 524_288 },
 ];
 // Any attempted upstream request must fail the test, even on a connected host.
 const forbidNetwork = `data:text/javascript,${encodeURIComponent("globalThis.fetch = () => { process.exit(97); };")}`;

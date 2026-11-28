@@ -28,6 +28,8 @@ MAX_TOTAL_BYTES = 2 * 1024 * 1024 * 1024
 MAX_NESTED_BYTES = 256 * 1024 * 1024
 MAX_DEPTH = 4
 MAX_POLICY_BATCH_PATHS = 256
+MAX_STDIN_ARCHIVE_BYTES = 512 * 1024 * 1024
+ARCHIVE_COPY_BYTES = 64 * 1024
 ARCHIVE_SUFFIXES = (".zip", ".jar", ".aar", ".crate", ".tgz", ".tar", ".tar.gz")
 
 
@@ -228,10 +230,30 @@ class ArchiveAudit:
                             self.nested(reader, member.size, member.name, depth)
 
 
+def scan_stdin_archive(audit, reader, suffix):
+    # Anonymous storage keeps validation independent of mutable caller paths
+    # and bounds memory even for large publication bundles.
+    with tempfile.TemporaryFile() as file:
+        total = 0
+        while True:
+            chunk = reader.read(min(ARCHIVE_COPY_BYTES, MAX_STDIN_ARCHIVE_BYTES - total + 1))
+            if not chunk:
+                break
+            total += len(chunk)
+            if total > MAX_STDIN_ARCHIVE_BYTES:
+                raise ReleasePrivacyError(ReleasePrivacyReason.ARCHIVE_LIMIT)
+            file.write(chunk)
+        if total == 0:
+            raise ReleasePrivacyError(ReleasePrivacyReason.INVALID_SIZE)
+        file.seek(0)
+        audit.scan(file, "bundle" + suffix)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     selection = parser.add_mutually_exclusive_group(required=True)
     selection.add_argument("--archive", type=Path)
+    selection.add_argument("--archive-stdin", choices=ARCHIVE_SUFFIXES)
     selection.add_argument("--directory", type=Path)
     selection.add_argument("--paths-stdin", action="store_true")
     parser.add_argument("--source-root", default=".")
@@ -252,6 +274,8 @@ def main():
                 if path:
                     audit.account(0)
                     audit.check_name(os.fsdecode(path), path.endswith(b"/"))
+        elif arguments.archive_stdin:
+            scan_stdin_archive(audit, sys.stdin.buffer, arguments.archive_stdin)
         elif arguments.archive:
             if arguments.archive.is_symlink() or not arguments.archive.is_file():
                 raise ReleasePrivacyError(ReleasePrivacyReason.NOT_REGULAR_FILE)

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync, statSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
+import { closeSync, fstatSync, mkdtempSync, openSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -101,10 +101,13 @@ test("generation preserves timestamps and does not follow output symlinks", (con
   writeErrorContractOutput(output, source);
   const past = new Date("2000-01-01T00:00:00Z");
   utimesSync(output, past, past);
-  const before = statSync(output).mtimeMs;
-  writeErrorContractOutput(output, source);
-  assert.equal(statSync(output).mtimeMs, before);
-  assert.equal(readFileSync(output, "utf8"), source);
+  const descriptor = openSync(output, "r");
+  try {
+    const before = fstatSync(descriptor).mtimeMs;
+    writeErrorContractOutput(output, source);
+    assert.equal(fstatSync(descriptor).mtimeMs, before);
+    assert.equal(readFileSync(descriptor, "utf8"), source);
+  } finally { closeSync(descriptor); }
   const target = join(root, "other.rs");
   writeFileSync(target, "untouched\n");
   const substituted = join(root, "substituted.rs");
