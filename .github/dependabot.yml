@@ -51,9 +51,20 @@ updates:
           - patch
 
   - package-ecosystem: swift
-    directories:
-      - /
-      - /crates/conformance/platform/swift
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      compatible:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: swift
+    directory: /crates/conformance/platform/swift
     schedule:
       interval: weekly
     groups:
