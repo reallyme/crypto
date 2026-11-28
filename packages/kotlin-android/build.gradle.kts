@@ -59,7 +59,7 @@ configurations.configureEach {
     if (name == "androidLintTool" || name == "unified-test-platform-gradle-work-action") {
         for (coordinate in listOf(
             "com.google.guava:guava:33.8.0-jre",
-            "com.google.protobuf:protobuf-java:3.25.9",
+            "com.google.protobuf:protobuf-java:4.36.2",
             "com.google.protobuf:protobuf-kotlin:3.25.9",
         )) {
             project.dependencies.constraints.add(name, coordinate)
