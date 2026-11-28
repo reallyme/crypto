@@ -35,7 +35,7 @@ buildscript {
 }
 
 plugins {
-    id("com.android.library") version "9.5.2"
+    id("com.android.library") version "9.5.3"
     `maven-publish`
     signing
 }
