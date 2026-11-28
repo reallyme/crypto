@@ -60,7 +60,7 @@ configurations.configureEach {
         for (coordinate in listOf(
             "com.google.guava:guava:33.8.0-jre",
             "com.google.protobuf:protobuf-java:3.25.9",
-            "com.google.protobuf:protobuf-kotlin:3.25.9",
+            "com.google.protobuf:protobuf-kotlin:4.36.2",
         )) {
             project.dependencies.constraints.add(name, coordinate)
                 .because("AGP tool dependencies must include the patched deserialization and parser implementations")
